@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.utils.WinRegistry;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -37,10 +38,6 @@ public class OCIUtils
     public static final String WIN_REG_ORA_HOME = "ORACLE_HOME";
     public static final String WIN_REG_ORA_HOME_NAME = "ORACLE_HOME_NAME";
 
-    public static final String VAR_ORA_HOME = "ORA_HOME";
-    public static final String VAR_ORACLE_HOME = "ORACLE_HOME";
-    public static final String VAR_TNS_ADMIN = "TNS_ADMIN";
-    public static final String VAR_PATH = "PATH";
     public static final String TNSNAMES_FILE_NAME = "tnsnames.ora";
     public static final String TNSNAMES_FILE_PATH = "network/admin/";
 
@@ -137,7 +134,7 @@ public class OCIUtils
     private static void findOraHomes()
     {
         // read system environment variables
-        String path = System.getenv(VAR_PATH);
+        String path = System.getenv(OracleConstants.VAR_PATH);
         if (path != null) {
             for (String token : path.split(System.getProperty("path.separator"))) {
                 if (token.toLowerCase().contains("oracle")) {
@@ -154,9 +151,9 @@ public class OCIUtils
             }
         }
 
-        String oraHome = System.getenv(VAR_ORA_HOME);
+        String oraHome = System.getenv(OracleConstants.VAR_ORA_HOME);
         if (oraHome == null) {
-            oraHome = System.getenv(VAR_ORACLE_HOME);
+            oraHome = System.getenv(OracleConstants.VAR_ORACLE_HOME);
         }
         if (oraHome != null) {
             try {
@@ -261,7 +258,7 @@ public class OCIUtils
     {
         File tnsNamesFile = null;
         if (checkTnsAdmin) {
-            String tnsAdmin = System.getenv(VAR_TNS_ADMIN);
+            String tnsAdmin = System.getenv(OracleConstants.VAR_TNS_ADMIN);
             if (tnsAdmin != null) {
                 tnsNamesFile = new File (tnsAdmin, TNSNAMES_FILE_NAME);
             }

@@ -32,10 +32,11 @@ import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
@@ -43,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
@@ -70,6 +72,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     private OracleConstants.ConnectionType connectionType = OracleConstants.ConnectionType.BASIC;
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png"); //$NON-NLS-1$
+    private TextWithOpenFolder tnsPathText;
 
     @Override
     public void dispose()
@@ -177,13 +180,34 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         targetContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         protocolTabTNS.setControl(targetContainer);
 
+        UIUtils.createControlLabel(targetContainer, "Network Alias");
         tnsNameCombo = new Combo(targetContainer, SWT.DROP_DOWN);
         tnsNameCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         tnsNameCombo.addModifyListener(controlModifyListener);
+
+        UIUtils.createControlLabel(targetContainer, "TNS names path");
+        tnsPathText = new TextWithOpenFolder(targetContainer, "Oracle TNS names path");
+        tnsPathText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        tnsPathText.setToolTipText("Path to TNSNAMES.ora file");
+        tnsPathText.getTextControl().addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                populateTnsNameCombo();
+                updateUI();
+            }
+        });
     }
 
     private Collection<String> getAvailableServiceNames()
     {
+        String tnsPath = tnsPathText.getText();
+        if (!CommonUtils.isEmpty(tnsPath)) {
+            File tnsFile = new File(tnsPath);
+            if (tnsFile.exists()) {
+                return OCIUtils.readTnsNames(tnsFile, false).keySet();
+            }
+            return Collections.emptyList();
+        }
         String oraHome = oraHomeSelector.getSelectedHome();
         if (CommonUtils.isEmpty(oraHome)) {
             return OCIUtils.readTnsNames(null, true).keySet();
@@ -198,9 +222,22 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     }
 
     private void populateTnsNameCombo() {
+        String oldText = tnsNameCombo.getText();
         tnsNameCombo.removeAll();
-        for (String alias : getAvailableServiceNames()) {
-            tnsNameCombo.add(alias);
+        Collection<String> serviceNames = getAvailableServiceNames();
+        if (serviceNames.isEmpty()) {
+            tnsNameCombo.setEnabled(false);
+        } else {
+            tnsNameCombo.setEnabled(true);
+            for (String alias : serviceNames) {
+                tnsNameCombo.add(alias);
+            }
+            if (!oldText.isEmpty()) {
+                UIUtils.setComboSelection(tnsNameCombo, oldText);
+            }
+            if (tnsNameCombo.getSelectionIndex() < 0) {
+                tnsNameCombo.select(0);
+            }
         }
     }
 
@@ -361,9 +398,17 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
                 serviceNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
                 break;
-            case TNS:
+            case TNS: {
                 tnsNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+                Object tnsPathProperty = connectionProperties.get(OracleConstants.PROP_TNS_PATH);
+//                if (tnsPathProperty == null) {
+//                    tnsPathProperty = System.getenv(OracleConstants.VAR_TNS_ADMIN);
+//                }
+                if (tnsPathProperty != null) {
+                    tnsPathText.setText(tnsPathProperty.toString());
+                }
                 break;
+            }
             case CUSTOM:
                 connectionUrlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
                 break;
@@ -408,6 +453,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
                 break;
             case TNS:
                 connectionInfo.setDatabaseName(tnsNameCombo.getText().trim());
+                connectionProperties.put(OracleConstants.PROP_TNS_PATH, tnsPathText.getText());
                 break;
             case CUSTOM:
                 connectionInfo.setUrl(connectionUrlText.getText());
