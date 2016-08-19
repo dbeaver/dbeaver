@@ -68,6 +68,7 @@ public class OracleConstants {
     public static final String PROP_CONNECTION_TARGET = "connection_target";
     public static final String PROP_DRIVER_TYPE = DBConstants.INTERNAL_PROP_PREFIX + "driver-type@";
     public static final String PROP_INTERNAL_LOGON = DBConstants.INTERNAL_PROP_PREFIX + "internal-logon@";
+    public static final String PROP_TNS_PATH = DBConstants.INTERNAL_PROP_PREFIX + "tns-path@";
 
     public static final String PROP_SESSION_LANGUAGE = DBConstants.INTERNAL_PROP_PREFIX + "session-language@";
     public static final String PROP_SESSION_TERRITORY = DBConstants.INTERNAL_PROP_PREFIX + "session-territory@";
@@ -134,6 +135,11 @@ public class OracleConstants {
     public static final String NLS_DEFAULT_VALUE = "Default";
     public static final String PREF_KEY_DDL_FORMAT = "oracle.ddl.format";
     public static final int MAXIMUM_DBMS_OUTPUT_SIZE = 1000000;
+
+    public static final String VAR_ORA_HOME = "ORA_HOME";
+    public static final String VAR_ORACLE_HOME = "ORACLE_HOME";
+    public static final String VAR_TNS_ADMIN = "TNS_ADMIN";
+    public static final String VAR_PATH = "PATH";
 
     /**
      * Connection type

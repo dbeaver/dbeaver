@@ -45,6 +45,6 @@ public enum OracleConnectionType
                 return odt;
             }
         }
-        return null;
+        return SID;
     }
 }
