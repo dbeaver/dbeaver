@@ -356,7 +356,7 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public boolean isDirty()
     {
-        if (super.isDirty()) {
+        if (!isNonPersistentEditor() && super.isDirty()) {
             return true;
         }
         for (QueryProcessor queryProcessor : queryProcessors) {
