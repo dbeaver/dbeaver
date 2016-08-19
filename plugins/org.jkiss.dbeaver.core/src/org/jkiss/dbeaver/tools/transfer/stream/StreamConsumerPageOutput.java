@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -89,6 +91,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             fileNameText = new Text(generalSettings, SWT.BORDER);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
+            fileNameText.setToolTipText("Output file name pattern. Allowed variables: {table} and {timestamp}.");
             fileNameText.setLayoutData(gd);
             fileNameText.addModifyListener(new ModifyListener() {
                 @Override
@@ -97,6 +100,10 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                     updatePageCompletion();
                 }
             });
+            UIUtils.installContentProposal(
+                fileNameText,
+                new TextContentAdapter(),
+                new SimpleContentProposalProvider(new String[] { "{table}", "{timestamp}"} ));
 
             {
                 UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_output_label_encoding);
