@@ -407,27 +407,22 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     @Nullable
-    public String copySelectionToString(
-        boolean copyHeader,
-        boolean copyRowNumbers,
-        boolean cut,
-        String delimiter,
-        DBDDisplayFormat format)
+    public String copySelectionToString(ResultSetCopySettings settings)
     {
-        if (delimiter == null) {
-            delimiter = "\t";
+        if (settings.getDelimiter() == null) {
+            settings.setDelimiter("\t");
         }
         String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         List<Object> selectedColumns = spreadsheet.getColumnSelection();
         IGridLabelProvider labelProvider = spreadsheet.getLabelProvider();
         StringBuilder tdt = new StringBuilder();
-        if (copyHeader) {
-            if (copyRowNumbers) {
+        if (settings.isCopyHeader()) {
+            if (settings.isCopyRowNumbers()) {
                 tdt.append("#");
             }
             for (Object column : selectedColumns) {
                 if (tdt.length() > 0) {
-                    tdt.append(delimiter);
+                    tdt.append(settings.getDelimiter());
                 }
                 tdt.append(labelProvider.getText(column));
             }
@@ -444,21 +439,21 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     // Fill empty row tail
                     int prevColIndex = selectedColumns.indexOf(prevCell.col);
                     for (int i = prevColIndex; i < selectedColumns.size() - 1; i++) {
-                        tdt.append(delimiter);
+                        tdt.append(settings.getDelimiter());
                     }
                 }
                 if (prevCell != null) {
                     tdt.append(lineSeparator);
                 }
-                if (copyRowNumbers) {
-                    tdt.append(labelProvider.getText(cell.row)).append(delimiter);
+                if (settings.isCopyRowNumbers()) {
+                    tdt.append(labelProvider.getText(cell.row)).append(settings.getDelimiter());
                 }
             }
             if (prevCell != null && prevCell.col != cell.col) {
                 int prevColIndex = selectedColumns.indexOf(prevCell.col);
                 int curColIndex = selectedColumns.indexOf(cell.col);
                 for (int i = prevColIndex; i < curColIndex; i++) {
-                    tdt.append(delimiter);
+                    tdt.append(settings.getDelimiter());
                 }
             }
 
@@ -469,10 +464,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             String cellText = column.getValueRenderer().getValueDisplayString(
                 column.getAttribute(),
                 value,
-                format);
+                settings.getFormat());
             tdt.append(cellText);
 
-            if (cut) {
+            if (settings.isCut()) {
                 IValueController valueController = new SpreadsheetValueController(
                     controller, column, row, IValueController.EditType.NONE, null);
                 if (!valueController.isReadOnly()) {
