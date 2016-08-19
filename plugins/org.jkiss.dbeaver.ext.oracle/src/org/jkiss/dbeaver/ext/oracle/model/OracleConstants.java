@@ -140,6 +140,7 @@ public class OracleConstants {
     public static final String VAR_ORACLE_HOME = "ORACLE_HOME";
     public static final String VAR_TNS_ADMIN = "TNS_ADMIN";
     public static final String VAR_PATH = "PATH";
+    public static final String VAR_ORACLE_NET_TNS_ADMIN = "oracle.net.tns_admin";
 
     /**
      * Connection type

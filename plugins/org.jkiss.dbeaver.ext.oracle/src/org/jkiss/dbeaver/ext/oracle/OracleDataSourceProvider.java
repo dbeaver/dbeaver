@@ -89,23 +89,28 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             // TNS name specified
             // Try to get description from TNSNAMES
             File oraHomePath;
-            Object tnsPathProp = connectionInfo.getProperty(OracleConstants.PROP_TNS_PATH);
-            if (tnsPathProp != null) {
-                oraHomePath = new File(tnsPathProp.toString());
+            boolean checkTnsAdmin;
+            String tnsPathProp = CommonUtils.toString(connectionInfo.getProperty(OracleConstants.PROP_TNS_PATH));
+            if (!CommonUtils.isEmpty(tnsPathProp)) {
+                oraHomePath = new File(tnsPathProp);
+                checkTnsAdmin = false;
             } else {
                 final String clientHomeId = connectionInfo.getClientHomeId();
                 final OracleHomeDescriptor oraHome = CommonUtils.isEmpty(clientHomeId) ? null : OCIUtils.getOraHome(clientHomeId);
                 oraHomePath = oraHome == null ? null : oraHome.getHomePath();
+                checkTnsAdmin = true;
             }
 
-            final Map<String, String> tnsNames = OCIUtils.readTnsNames(oraHomePath, true);
+            final Map<String, String> tnsNames = OCIUtils.readTnsNames(oraHomePath, checkTnsAdmin);
             final String tnsDescription = tnsNames.get(connectionInfo.getDatabaseName());
             if (!CommonUtils.isEmpty(tnsDescription)) {
                 url.append(tnsDescription);
             } else {
-                final File tnsNamesFile = OCIUtils.findTnsNamesFile(oraHomePath, true);
+                // TNS name not found.
+                // Last chance - set TNS path and hope that Oracle driver find figure something out
+                final File tnsNamesFile = OCIUtils.findTnsNamesFile(oraHomePath, checkTnsAdmin);
                 if (tnsNamesFile != null && tnsNamesFile.exists()) {
-                    System.setProperty("oracle.net.tns_admin", tnsNamesFile.getAbsolutePath());
+                    System.setProperty(OracleConstants.VAR_ORACLE_NET_TNS_ADMIN, tnsNamesFile.getAbsolutePath());
                 }
                 url.append(connectionInfo.getDatabaseName());
             }

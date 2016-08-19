@@ -103,11 +103,19 @@ public class OracleDataSource extends JDBCDataSource
 
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBCException {
+/*
         // Set tns admin directory
-        DBPClientHome clientHome = getContainer().getClientHome();
-        if (clientHome != null) {
-            System.setProperty("oracle.net.tns_admin", new File(clientHome.getHomePath(), OCIUtils.TNSNAMES_FILE_PATH).getAbsolutePath());
+        DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
+        String tnsPathProp = CommonUtils.toString(connectionInfo.getProperty(OracleConstants.PROP_TNS_PATH));
+        if (!CommonUtils.isEmpty(tnsPathProp)) {
+            System.setProperty(OracleConstants.VAR_ORACLE_NET_TNS_ADMIN, tnsPathProp);
+        } else {
+            DBPClientHome clientHome = getContainer().getClientHome();
+            if (clientHome != null) {
+                System.setProperty(OracleConstants.VAR_ORACLE_NET_TNS_ADMIN, new File(clientHome.getHomePath(), OCIUtils.TNSNAMES_FILE_PATH).getAbsolutePath());
+            }
         }
+*/
 
         Connection connection = super.openConnection(monitor, purpose);
 /*
