@@ -1604,7 +1604,7 @@
             <command commandId="org.eclipse.ui.edit.rename">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <menu label="Filter">
+            <menu label="Filter" icon="icons/misc/filter.png">
                 <command commandId="org.jkiss.dbeaver.core.object.filter.add.exclude">
                     <visibleWhen checkEnabled="true"/>
                 </command>
