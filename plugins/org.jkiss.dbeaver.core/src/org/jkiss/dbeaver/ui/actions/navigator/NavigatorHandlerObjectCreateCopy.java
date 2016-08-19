@@ -80,9 +80,10 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                             }
                         }
                     } else {
-                        UIUtils.showErrorDialog(HandlerUtil.getActiveShell(event), "Paste error", "Clipboard contains data in unsupported format");
-                        return null;
+                        UIUtils.showErrorDialog(HandlerUtil.getActiveShell(event), "Paste error", "Unsupported clipboard format. File or folder were expected.");
                     }
+                } else {
+                    UIUtils.showErrorDialog(HandlerUtil.getActiveShell(event), "Paste error", "Clipboard contains data in unsupported format");
                 }
             } finally {
                 clipboard.dispose();
