@@ -205,7 +205,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
             case IWorkbenchCommandConstants.EDIT_COPY:
                 ResultSetUtils.copyToClipboard(
                     presentation.copySelectionToString(
-                        false, false, false, null, DBDDisplayFormat.EDIT));
+                        new ResultSetCopySettings(false, false, false, null, DBDDisplayFormat.EDIT)));
                 break;
             case IWorkbenchCommandConstants.EDIT_PASTE:
             case CoreCommands.CMD_PASTE_SPECIAL:
@@ -216,7 +216,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
             case IWorkbenchCommandConstants.EDIT_CUT:
                 ResultSetUtils.copyToClipboard(
                     presentation.copySelectionToString(
-                        false, false, true, null, DBDDisplayFormat.EDIT)
+                        new ResultSetCopySettings(false, false, true, null, DBDDisplayFormat.EDIT))
                 );
                 break;
             case IWorkbenchCommandConstants.FILE_PRINT:

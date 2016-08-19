@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 
 /**
  * Result set renderer.
@@ -92,12 +91,7 @@ public interface IResultSetPresentation {
     Point getCursorLocation();
 
     @Nullable
-    String copySelectionToString(
-        boolean copyHeader,
-        boolean copyRowNumbers,
-        boolean cut,
-        String delimiter,
-        DBDDisplayFormat format);
+    String copySelectionToString(ResultSetCopySettings settings);
 
     void printResultSet();
 

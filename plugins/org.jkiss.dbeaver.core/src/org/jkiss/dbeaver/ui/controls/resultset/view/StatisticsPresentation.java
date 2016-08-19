@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 
 /**
@@ -102,7 +103,7 @@ public class StatisticsPresentation extends AbstractPresentation {
 
     @Nullable
     @Override
-    public String copySelectionToString(boolean copyHeader, boolean copyRowNumbers, boolean cut, String delimiter, DBDDisplayFormat format) {
+    public String copySelectionToString(ResultSetCopySettings settings) {
         return null;
     }
 

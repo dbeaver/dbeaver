@@ -409,7 +409,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
     @Nullable
     @Override
-    public String copySelectionToString(boolean copyHeader, boolean copyRowNumbers, boolean cut, String delimiter, DBDDisplayFormat format) {
+    public String copySelectionToString(ResultSetCopySettings settings) {
         return text.getSelectionText();
     }
 

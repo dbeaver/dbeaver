@@ -52,11 +52,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             ConfigDialog configDialog = new ConfigDialog(HandlerUtil.getActiveShell(event));
             if (configDialog.open() == IDialogConstants.OK_ID) {
                 ResultSetUtils.copyToClipboard(resultSet.getActivePresentation().copySelectionToString(
-                    configDialog.copyHeader,
-                    configDialog.copyRows,
-                    false,
-                    configDialog.delimiter,
-                    configDialog.format));
+                    configDialog.copySettings));
             }
         }
         return null;
@@ -81,26 +77,28 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
         private Combo formatCombo;
         private Combo delimCombo;
 
-        private boolean copyHeader = true;
-        private boolean copyRows = false;
-        private DBDDisplayFormat format = DBDDisplayFormat.UI;
-        private String delimiter = "\t";
+        private ResultSetCopySettings copySettings;
 
         protected ConfigDialog(Shell shell)
         {
             super(shell);
             settings = UIUtils.getDialogSettings("AdvanceCopySettings");
+            copySettings = new ResultSetCopySettings();
+            copySettings.setCopyHeader(true);
+            copySettings.setCopyRowNumbers(false);
+            copySettings.setFormat(DBDDisplayFormat.UI);
+            copySettings.setDelimiter("\t");
             if (settings.get(PARAM_COPY_HEADER) != null) {
-                copyHeader = settings.getBoolean(PARAM_COPY_HEADER);
+                copySettings.setCopyHeader(settings.getBoolean(PARAM_COPY_HEADER));
             }
             if (settings.get(PARAM_COPY_ROWS) != null) {
-                copyRows = settings.getBoolean("copyRows");
+                copySettings.setCopyRowNumbers(settings.getBoolean("copyRows"));
             }
             if (settings.get(PARAM_FORMAT) != null) {
-                format = DBDDisplayFormat.valueOf(settings.get("format"));
+                copySettings.setFormat(DBDDisplayFormat.valueOf(settings.get("format")));
             }
             if (settings.get(PARAM_DELIMITER) != null) {
-                delimiter = settings.get("delimiter");
+                copySettings.setDelimiter(settings.get("delimiter"));
             }
         }
 
@@ -116,15 +114,15 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             Composite group = (Composite)super.createDialogArea(parent);
             ((GridLayout)group.getLayout()).numColumns = 2;
 
-            copyHeaderCheck = UIUtils.createLabelCheckbox(group, "Copy header", copyHeader);
-            copyRowsCheck = UIUtils.createLabelCheckbox(group, "Copy row numbers", copyRows);
+            copyHeaderCheck = UIUtils.createLabelCheckbox(group, "Copy header", copySettings.isCopyHeader());
+            copyRowsCheck = UIUtils.createLabelCheckbox(group, "Copy row numbers", copySettings.isCopyRowNumbers());
 
             UIUtils.createControlLabel(group, "Format");
             formatCombo = new Combo(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             formatCombo.add("Display (default)");
             formatCombo.add("Editable");
             formatCombo.add("Database native");
-            formatCombo.select(format == DBDDisplayFormat.UI ? 0 : format == DBDDisplayFormat.EDIT ? 1 : 2);
+            formatCombo.select(copySettings.getFormat() == DBDDisplayFormat.UI ? 0 : copySettings.getFormat() == DBDDisplayFormat.EDIT ? 1 : 2);
 
             UIUtils.createControlLabel(group, "Delimiter");
             delimCombo = new Combo(group, SWT.BORDER | SWT.DROP_DOWN);
@@ -132,6 +130,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             delimCombo.add("\t");
             delimCombo.add(";");
             delimCombo.add(",");
+            String delimiter = copySettings.getDelimiter();
             if (!delimiter.equals("\t") && !delimiter.equals(";") && !delimiter.equals(",")) {
                 delimCombo.add(delimiter);
             }
@@ -149,19 +148,21 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
         @Override
         protected void okPressed()
         {
-            copyHeader = copyHeaderCheck.getSelection();
-            copyRows = copyRowsCheck.getSelection();
+            copySettings.setCopyHeader(copyHeaderCheck.getSelection());
+            copySettings.setCopyRowNumbers(copyRowsCheck.getSelection());
+            DBDDisplayFormat format = DBDDisplayFormat.UI;
             switch (formatCombo.getSelectionIndex()) {
                 case 0: format = DBDDisplayFormat.UI; break;
                 case 1: format = DBDDisplayFormat.EDIT; break;
                 case 2: format = DBDDisplayFormat.NATIVE; break;
             }
-            delimiter = delimCombo.getText();
+            copySettings.setFormat(format);
+            copySettings.setDelimiter(delimCombo.getText());
 
-            settings.put(PARAM_COPY_HEADER, copyHeader);
-            settings.put(PARAM_COPY_ROWS, copyRows);
+            settings.put(PARAM_COPY_HEADER, copySettings.isCopyHeader());
+            settings.put(PARAM_COPY_ROWS, copySettings.isCopyRowNumbers());
             settings.put(PARAM_FORMAT, format.name());
-            settings.put(PARAM_DELIMITER, delimiter);
+            settings.put(PARAM_DELIMITER, copySettings.getDelimiter());
             super.okPressed();
         }
     }
