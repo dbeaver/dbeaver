@@ -409,10 +409,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     @Nullable
     public String copySelectionToString(ResultSetCopySettings settings)
     {
-        if (settings.getDelimiter() == null) {
-            settings.setDelimiter("\t");
+        String columnDelimiter = settings.getColumnDelimiter();
+        if (columnDelimiter == null) {
+            columnDelimiter = "\t";
         }
-        String lineSeparator = GeneralUtils.getDefaultLineSeparator();
+
+        String rowDelimiter = settings.getRowDelimiter();
+        if (rowDelimiter == null) {
+            rowDelimiter = GeneralUtils.getDefaultLineSeparator();
+        }
         List<Object> selectedColumns = spreadsheet.getColumnSelection();
         IGridLabelProvider labelProvider = spreadsheet.getLabelProvider();
         StringBuilder tdt = new StringBuilder();
@@ -422,11 +427,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
             for (Object column : selectedColumns) {
                 if (tdt.length() > 0) {
-                    tdt.append(settings.getDelimiter());
+                    tdt.append(columnDelimiter);
                 }
                 tdt.append(labelProvider.getText(column));
             }
-            tdt.append(lineSeparator);
+            tdt.append(rowDelimiter);
         }
 
         List<GridCell> selectedCells = spreadsheet.getCellSelection();
@@ -439,21 +444,21 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     // Fill empty row tail
                     int prevColIndex = selectedColumns.indexOf(prevCell.col);
                     for (int i = prevColIndex; i < selectedColumns.size() - 1; i++) {
-                        tdt.append(settings.getDelimiter());
+                        tdt.append(columnDelimiter);
                     }
                 }
                 if (prevCell != null) {
-                    tdt.append(lineSeparator);
+                    tdt.append(rowDelimiter);
                 }
                 if (settings.isCopyRowNumbers()) {
-                    tdt.append(labelProvider.getText(cell.row)).append(settings.getDelimiter());
+                    tdt.append(labelProvider.getText(cell.row)).append(columnDelimiter);
                 }
             }
             if (prevCell != null && prevCell.col != cell.col) {
                 int prevColIndex = selectedColumns.indexOf(prevCell.col);
                 int curColIndex = selectedColumns.indexOf(cell.col);
                 for (int i = prevColIndex; i < curColIndex; i++) {
-                    tdt.append(settings.getDelimiter());
+                    tdt.append(columnDelimiter);
                 }
             }
 
