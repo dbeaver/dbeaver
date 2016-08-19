@@ -23,9 +23,15 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
+import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.eclipse.jface.fieldassist.IControlContentAdapter;
+import org.eclipse.jface.fieldassist.IControlContentAdapter2;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.StringConverter;
@@ -1511,6 +1517,21 @@ public class UIUtils {
 
     public static ImageDescriptor getShardImageDescriptor(String id) {
         return PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(id);
+    }
+
+    public static void installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider) {
+        try {
+            KeyStroke keyStroke = KeyStroke.getInstance("Ctrl+Space");
+            final ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(
+                control,
+                contentAdapter,
+                provider,
+                keyStroke,
+                new char[]{'.', '('});
+            proposalAdapter.setPopupSize(new Point(300, 200));
+        } catch (ParseException e) {
+            log.error("Error installing filters content assistant");
+        }
     }
 
 }
