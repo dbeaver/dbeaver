@@ -155,7 +155,6 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
-        super.saveSettings(dataSource);
         Map<Object, Object> connectionProperties = dataSource.getConnectionConfiguration().getProperties();
 
         {

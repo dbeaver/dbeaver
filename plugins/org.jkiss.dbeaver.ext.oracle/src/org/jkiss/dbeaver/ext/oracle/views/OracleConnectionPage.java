@@ -434,7 +434,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-        super.saveSettings(dataSource);
+        //super.saveSettings(dataSource);
         Map<Object, Object> connectionProperties = connectionInfo.getProperties();
         //if (isOCI) {
             connectionInfo.setClientHomeId(oraHomeSelector.getSelectedHome());
