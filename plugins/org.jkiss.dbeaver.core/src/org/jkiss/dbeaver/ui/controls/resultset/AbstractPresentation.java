@@ -41,6 +41,7 @@ import java.util.List;
 public abstract class AbstractPresentation implements IResultSetPresentation, ISelectionProvider {
 
     private static final String PRESENTATION_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.presentation";
+    public static final StructuredSelection EMPTY_SELECTION = new StructuredSelection();
 
     @NotNull
     protected IResultSetController controller;
@@ -168,7 +169,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
 
     @Override
     public ISelection getSelection() {
-        return new StructuredSelection();
+        return EMPTY_SELECTION;
     }
 
     @Override
