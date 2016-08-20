@@ -150,6 +150,11 @@ public class ViewValuePanel implements IResultSetPanel {
 
     }
 
+    @Override
+    public void refresh() {
+        refreshValue();
+    }
+
     private void refreshValue() {
         DBDAttributeBinding attr = presentation.getCurrentAttribute();
         ResultSetRow row = presentation.getController().getCurrentRow();

@@ -778,6 +778,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         final ResultSetRow row = (ResultSetRow)(recordMode ? colElement : rowElement);
         controller.getModel().resetCellValue(attr, row);
         updateValueView();
+        controller.updatePanelsContent();
     }
 
     ///////////////////////////////////////////////
