@@ -135,6 +135,7 @@ public class ResultSetViewer extends Viewer
     private ResultSetPresentationDescriptor activePresentationDescriptor;
     private List<ResultSetPresentationDescriptor> availablePresentations;
     private PresentationSwitchCombo presentationSwitchCombo;
+    private List<ResultSetPanelDescriptor> availablePanels = new ArrayList<>();
 
     @NotNull
     private final IResultSetContainer container;
@@ -416,6 +417,10 @@ public class ResultSetViewer extends Viewer
         }
         // Set new one
         activePresentation = presentation;
+        availablePanels.clear();
+        if (activePresentationDescriptor != null) {
+            availablePanels.addAll(ResultSetPresentationRegistry.getInstance().getSupportedPanels(activePresentationDescriptor));
+        }
         activePresentation.createPresentation(this, presentationPanel);
         presentationPanel.layout();
 
@@ -2261,19 +2266,21 @@ public class ResultSetViewer extends Viewer
     {
         @Override
         protected IContributionItem[] getContributionItems() {
-            IResultSetController rsv = ResultSetCommandHandler.getActiveResultSet(
+            ResultSetViewer rsv = (ResultSetViewer) ResultSetCommandHandler.getActiveResultSet(
                 DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart());
             if (rsv == null) {
                 return new IContributionItem[0];
             }
-            return new IContributionItem[] {
-                new ActionContributionItem(new Action("Some panel", Action.AS_CHECK_BOX) {
-                    @Override
-                    public void run() {
-                        super.run();
-                    }
-                })
-            };
+            List<IContributionItem> items = new ArrayList<>();
+            for (ResultSetPanelDescriptor panel : rsv.availablePanels) {
+                items.add(new ActionContributionItem(new Action(panel.getId(), Action.AS_CHECK_BOX) {
+                        @Override
+                        public void run() {
+                            super.run();
+                        }
+                    }));
+            }
+            return items.toArray(new IContributionItem[items.size()]);
         }
     }
 
