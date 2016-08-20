@@ -26,11 +26,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.code.Nullable;
@@ -46,13 +42,13 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -71,6 +67,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.List;
 
 /**
  * EntityEditor
@@ -739,9 +736,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     protected Control createTopRightControl(Composite composite) {
         // Path
-        Composite breadcrumbsPanel = new Composite(composite, SWT.NONE);
+        ToolBar breadcrumbsPanel = new ToolBar(composite, SWT.HORIZONTAL | SWT.RIGHT);
         breadcrumbsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        breadcrumbsPanel.setLayout(new RowLayout());
+        //breadcrumbsPanel.setLayout(new RowLayout());
 
         // Make base node path
         DBNDatabaseNode node = getEditorInput().getNavigatorNode();
@@ -771,18 +768,19 @@ public class EntityEditor extends MultiPageDatabaseEditor
         return breadcrumbsPanel;
     }
 
-    private void createPathRow(Composite infoGroup, DBPImage image, String label, String value, @Nullable SelectionListener selectionListener)
+    private void createPathRow(ToolBar infoGroup, DBPImage image, String label, String value, @Nullable SelectionListener selectionListener)
     {
-        UIUtils.createLabel(infoGroup, image);
-
-        Link objectLink = new Link(infoGroup, SWT.NONE);
+        //UIUtils.createLabel(infoGroup, image);
+        ToolItem item = new ToolItem(infoGroup, SWT.PUSH);
+        item.setText(value);
+        item.setImage(DBeaverIcons.getImage(image));
+        //Link objectLink = new Link(infoGroup, SWT.NONE);
         if (selectionListener == null) {
-            objectLink.setText(value);
-            objectLink.setToolTipText(label);
+            item.setToolTipText(label);
+            item.setEnabled(false);
         } else {
-            objectLink.setText("<A>" + value + "</A>   ");
-            objectLink.addSelectionListener(selectionListener);
-            objectLink.setToolTipText("Open " + label + " Editor");
+            item.addSelectionListener(selectionListener);
+            item.setToolTipText("Open " + label + " Editor");
         }
     }
 
