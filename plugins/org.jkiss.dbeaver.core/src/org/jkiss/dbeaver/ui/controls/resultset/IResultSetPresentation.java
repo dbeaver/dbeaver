@@ -35,8 +35,11 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
  */
 public interface IResultSetPresentation {
 
-    String PRES_TOOLS_BEGIN = "rsv_pres_begin";
-    String PRES_TOOLS_END = "rsv_pres_end";
+    enum PresentationType {
+        COLUMNS,
+        DOCUMENT,
+        CUSTOM
+    }
 
     enum RowPosition {
         FIRST,

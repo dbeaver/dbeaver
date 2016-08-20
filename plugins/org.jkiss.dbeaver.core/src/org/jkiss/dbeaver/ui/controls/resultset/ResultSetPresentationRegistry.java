@@ -34,6 +34,7 @@ import java.util.List;
 public class ResultSetPresentationRegistry {
 
     private static final String TAG_PRESENTATION = "presentation"; //NON-NLS-1
+    private static final String TAG_PANEL = "panel"; //NON-NLS-1
 
     private static ResultSetPresentationRegistry instance;
 
@@ -45,11 +46,11 @@ public class ResultSetPresentationRegistry {
     }
 
     private List<ResultSetPresentationDescriptor> presentations = new ArrayList<>();
-
+    private List<ResultSetPanelDescriptor> panels = new ArrayList<>();
 
     private ResultSetPresentationRegistry(IExtensionRegistry registry)
     {
-        // Load datasource providers from external plugins
+        // Load presentation descriptors
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(ResultSetPresentationDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             if (TAG_PRESENTATION.equals(ext.getName())) {
@@ -63,9 +64,18 @@ public class ResultSetPresentationRegistry {
                 return o1.getOrder() - o2.getOrder();
             }
         });
+
+        // Load panel descriptors
+        IConfigurationElement[] panelElements = registry.getConfigurationElementsFor(ResultSetPanelDescriptor.EXTENSION_ID);
+        for (IConfigurationElement ext : panelElements) {
+            if (TAG_PANEL.equals(ext.getName())) {
+                ResultSetPanelDescriptor descriptor = new ResultSetPanelDescriptor(ext);
+                panels.add(descriptor);
+            }
+        }
     }
 
-    public ResultSetPresentationDescriptor getDescriptor(Class<? extends IResultSetPresentation> implType)
+    public ResultSetPresentationDescriptor getPresentation(Class<? extends IResultSetPresentation> implType)
     {
         for (ResultSetPresentationDescriptor descriptor : presentations) {
             if (descriptor.matches(implType)) {
@@ -86,5 +96,18 @@ public class ResultSetPresentationRegistry {
         return result;
     }
 
+    public List<ResultSetPanelDescriptor> getAllPanels() {
+        return panels;
+    }
+
+    public List<ResultSetPanelDescriptor> getSupportedPanels(ResultSetPresentationDescriptor presentation) {
+        List<ResultSetPanelDescriptor> result = new ArrayList<>();
+        for (ResultSetPanelDescriptor panel : panels) {
+            if (panel.supportedBy(presentation)) {
+                result.add(panel);
+            }
+        }
+        return result;
+    }
 
 }

@@ -78,7 +78,6 @@ import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
-import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -100,8 +99,6 @@ import java.util.List;
 
 /**
  * ResultSetViewer
- *
- * TODO: fix presentation contributions to toolbar
  *
  * TODO: fix copy multiple cells - tabulation broken
  * TODO: links in both directions, multiple links support (context menu)
@@ -157,8 +154,8 @@ public class ResultSetViewer extends Viewer
     private volatile ResultSetDataPumpJob dataPumpJob;
 
     private final ResultSetModel model = new ResultSetModel();
-    private StateItem curState = null;
-    private final List<StateItem> stateHistory = new ArrayList<>();
+    private HistoryStateItem curState = null;
+    private final List<HistoryStateItem> stateHistory = new ArrayList<>();
     private int historyPosition = -1;
 
     private final Color colorRed;
@@ -689,8 +686,6 @@ public class ResultSetViewer extends Viewer
 
         toolBarManager.add(new Separator());
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
-        toolBarManager.add(new GroupMarker(IResultSetPresentation.PRES_TOOLS_BEGIN));
-        toolBarManager.add(new GroupMarker(IResultSetPresentation.PRES_TOOLS_END));
 
         CommandContributionItem panelsAction = new CommandContributionItem(new CommandContributionItemParameter(
             site,
@@ -787,7 +782,7 @@ public class ResultSetViewer extends Viewer
     ///////////////////////////////////////
     // History
 
-    List<StateItem> getStateHistory() {
+    List<HistoryStateItem> getStateHistory() {
         return stateHistory;
     }
 
@@ -796,7 +791,7 @@ public class ResultSetViewer extends Viewer
         dataFilter = new DBDDataFilter(dataFilter);
         // Search in history
         for (int i = 0; i < stateHistory.size(); i++) {
-            StateItem item = stateHistory.get(i);
+            HistoryStateItem item = stateHistory.get(i);
             if (item.dataContainer == dataContainer && CommonUtils.equalObjects(item.filter, dataFilter)) {
                 curState = item;
                 historyPosition = i;
@@ -807,7 +802,7 @@ public class ResultSetViewer extends Viewer
         while (historyPosition < stateHistory.size() - 1) {
             stateHistory.remove(stateHistory.size() - 1);
         }
-        curState = new StateItem(
+        curState = new HistoryStateItem(
             dataContainer,
             dataFilter,
             curRow == null ? -1 : curRow.getVisualNumber());
@@ -1546,7 +1541,7 @@ public class ResultSetViewer extends Viewer
             log.debug("Wrong history position: " + position);
             return;
         }
-        StateItem state = stateHistory.get(position);
+        HistoryStateItem state = stateHistory.get(position);
         int segmentSize = getSegmentMaxRows();
         if (state.rowNumber >= 0 && state.rowNumber >= segmentSize && segmentSize > 0) {
             segmentSize = (state.rowNumber / segmentSize + 1) * segmentSize;
@@ -2667,8 +2662,7 @@ public class ResultSetViewer extends Viewer
         {
             DBeaverUI.runUIJob("Edit virtual key", new DBRRunnableWithProgress() {
                 @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         if (define) {
                             editEntityIdentifier(monitor);
@@ -2751,12 +2745,12 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    class StateItem {
+    class HistoryStateItem {
         DBSDataContainer dataContainer;
         DBDDataFilter filter;
         int rowNumber;
 
-        public StateItem(DBSDataContainer dataContainer, @Nullable DBDDataFilter filter, int rowNumber) {
+        public HistoryStateItem(DBSDataContainer dataContainer, @Nullable DBDDataFilter filter, int rowNumber) {
             this.dataContainer = dataContainer;
             this.filter = filter;
             this.rowNumber = rowNumber;
@@ -2772,6 +2766,20 @@ public class ResultSetViewer extends Viewer
             }
             return desc;
         }
+    }
+
+    static class PanelStateItem {
+        String panelId;
+        boolean panelActivated;
+        IResultSetPanel panel;
+    }
+
+    static class PresentationStateItem {
+        ResultSetPresentationDescriptor presentation;
+        List<String> enabledPanelIds;
+        String activePanelId;
+        int[] sashWeights;
+        boolean panelsVisible;
     }
 
     public static void openNewDataEditor(DBNDatabaseNode targetNode, DBDDataFilter newFilter) {

@@ -31,6 +31,7 @@ import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * ResultSetPresentationDescriptor
@@ -46,9 +47,10 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     private final String id;
     private final String label;
     private final String description;
-    private final ObjectType presentationType;
+    private final ObjectType implClass;
     private final DBPImage icon;
     private final int order;
+    private final IResultSetPresentation.PresentationType presentationType;
     private final List<MimeType> contentTypes = new ArrayList<>();
 
     protected ResultSetPresentationDescriptor(IConfigurationElement config) {
@@ -57,9 +59,10 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.presentationType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
+        this.implClass = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER));
+        this.presentationType = IResultSetPresentation.PresentationType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE).toUpperCase(Locale.ENGLISH));
 
         for (IConfigurationElement typeCfg : config.getChildren(CONTENT_TYPE)) {
             String type = typeCfg.getAttribute(RegistryConstants.ATTR_TYPE);
@@ -92,16 +95,20 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
         return order;
     }
 
+    public IResultSetPresentation.PresentationType getPresentationType() {
+        return presentationType;
+    }
+
     public boolean supportedBy(DBCResultSet resultSet, IResultSetContext context) {
         return appliesTo(resultSet, context) || matchesContentType(context);
     }
 
     public IResultSetPresentation createInstance() throws DBException {
-        return presentationType.createInstance(IResultSetPresentation.class);
+        return implClass.createInstance(IResultSetPresentation.class);
     }
 
     public boolean matches(Class<? extends IResultSetPresentation> type) {
-        return presentationType.matchesType(type);
+        return implClass.matchesType(type);
     }
 
     private boolean matchesContentType(IResultSetContext context) {
