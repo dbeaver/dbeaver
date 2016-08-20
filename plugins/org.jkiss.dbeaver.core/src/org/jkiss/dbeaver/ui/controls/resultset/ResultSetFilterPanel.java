@@ -338,7 +338,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 filtersEnableState = null;
             }
             int historyPosition = viewer.getHistoryPosition();
-            List<ResultSetViewer.StateItem> stateHistory = viewer.getStateHistory();
+            List<ResultSetViewer.HistoryStateItem> stateHistory = viewer.getStateHistory();
 
             String filterText = filtersText.getText();
             filtersText.setEnabled(supportsDataFilter);
@@ -903,7 +903,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         @Override
         public void widgetSelected(SelectionEvent e) {
             int historyPosition = viewer.getHistoryPosition();
-            List<ResultSetViewer.StateItem> stateHistory = viewer.getStateHistory();
+            List<ResultSetViewer.HistoryStateItem> stateHistory = viewer.getStateHistory();
             if (e.detail == SWT.ARROW) {
                 ToolItem item = (ToolItem) e.widget;
                 Rectangle rect = item.getBounds();
@@ -914,7 +914,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 menu.setVisible(true);
                 for (int i = historyPosition + (back ? -1 : 1); i >= 0 && i < stateHistory.size(); i += back ? -1 : 1) {
                     MenuItem mi = new MenuItem(menu, SWT.NONE);
-                    ResultSetViewer.StateItem state = stateHistory.get(i);
+                    ResultSetViewer.HistoryStateItem state = stateHistory.get(i);
                     mi.setText(state.describeState());
                     final int statePosition = i;
                     mi.addSelectionListener(new SelectionAdapter() {
