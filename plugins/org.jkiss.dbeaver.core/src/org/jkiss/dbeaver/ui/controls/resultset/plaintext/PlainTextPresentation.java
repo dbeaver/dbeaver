@@ -20,9 +20,9 @@ package org.jkiss.dbeaver.ui.controls.resultset.plaintext;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IFindReplaceTarget;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -42,12 +42,15 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -67,6 +70,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     private int[] colWidths;
     private StyleRange curLineRange;
     private int totalRows = 0;
+    private String curSelection;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
@@ -83,6 +87,13 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             @Override
             public void caretMoved(CaretEvent event) {
                 onCursorChange(event.caretOffset);
+            }
+        });
+        text.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                curSelection = text.getSelectionText();
+                fireSelectionChanged(new PlainTextSelectionImpl());
             }
         });
 
@@ -172,6 +183,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 controller.readNextSegment();
             }
         }
+        fireSelectionChanged(new PlainTextSelectionImpl());
     }
 
     @Override
@@ -457,4 +469,77 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         }
         return null;
     }
+
+    @Override
+    public ISelection getSelection() {
+        return new PlainTextSelectionImpl();
+    }
+
+    private class PlainTextSelectionImpl implements IResultSetSelection {
+
+        @Nullable
+        @Override
+        public Object getFirstElement()
+        {
+            return curSelection;
+        }
+
+        @Override
+        public Iterator<String> iterator()
+        {
+            return toList().iterator();
+        }
+
+        @Override
+        public int size()
+        {
+            return 1;
+        }
+
+        @Override
+        public Object[] toArray()
+        {
+            return new Object[] { curSelection };
+        }
+
+        @Override
+        public List<String> toList()
+        {
+            return Collections.singletonList(curSelection);
+        }
+
+        @Override
+        public boolean isEmpty()
+        {
+            return false;
+        }
+
+        @NotNull
+        @Override
+        public IResultSetController getController()
+        {
+            return controller;
+        }
+
+        @NotNull
+        @Override
+        public Collection<DBDAttributeBinding> getSelectedAttributes() {
+            if (curAttribute == null) {
+                return Collections.emptyList();
+            }
+            return Collections.singleton(curAttribute);
+        }
+
+        @NotNull
+        @Override
+        public Collection<ResultSetRow> getSelectedRows()
+        {
+            ResultSetRow currentRow = controller.getCurrentRow();
+            if (currentRow == null) {
+                return Collections.emptyList();
+            }
+            return Collections.singletonList(currentRow);
+        }
+    }
+
 }
