@@ -181,6 +181,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
     @Override
     public void refreshData(boolean refreshMetadata, boolean append) {
+        colWidths = null;
         if (controller.isRecordMode()) {
             printRecord();
         } else {
