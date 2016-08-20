@@ -31,8 +31,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
  */
 public abstract class SpreadsheetCommandHandler extends AbstractHandler {
 
-    public static final String CMD_TOGGLE_PREVIEW = "org.jkiss.dbeaver.core.resultset.grid.togglePreview";
-
     public static Spreadsheet getActiveSpreadsheet(ExecutionEvent event)
     {
         Object control = HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);

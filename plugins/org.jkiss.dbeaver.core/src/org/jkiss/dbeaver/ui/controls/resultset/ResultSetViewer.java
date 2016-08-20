@@ -41,8 +41,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
+import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.NotNull;
@@ -670,6 +672,13 @@ public class ResultSetViewer extends Viewer
         toolBarManager.add(new GroupMarker(IResultSetPresentation.PRES_TOOLS_BEGIN));
         toolBarManager.add(new GroupMarker(IResultSetPresentation.PRES_TOOLS_END));
 
+        CommandContributionItem panelsAction = new CommandContributionItem(new CommandContributionItemParameter(
+            site,
+            "org.jkiss.dbeaver.core.resultset.panels",
+            ResultSetCommandHandler.CMD_TOGGLE_PANELS,
+            CommandContributionItem.STYLE_PULLDOWN));
+        //panelsAction.
+        toolBarManager.add(panelsAction);
         toolBarManager.add(new ConfigAction());
         toolBarManager.createControl(statusBar);
 
@@ -2224,6 +2233,21 @@ public class ResultSetViewer extends Viewer
         @Override
         public Collection<ResultSetRow> getSelectedRows() {
             return Collections.emptyList();
+        }
+    }
+
+    public static class PanelsMenuContributor extends CompoundContributionItem
+    {
+        @Override
+        protected IContributionItem[] getContributionItems() {
+            return new IContributionItem[] {
+                new ActionContributionItem(new Action("Some panel", Action.AS_CHECK_BOX) {
+                    @Override
+                    public void run() {
+                        super.run();
+                    }
+                })
+            };
         }
     }
 

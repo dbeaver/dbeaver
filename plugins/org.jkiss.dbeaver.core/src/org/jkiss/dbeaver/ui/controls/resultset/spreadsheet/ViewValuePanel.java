@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
@@ -117,7 +118,7 @@ abstract class ViewValuePanel extends Composite {
             @Override
             public void paintControl(PaintEvent e) {
                 if (viewPlaceholder.getChildren().length == 0) {
-                    String hidePanelCmd = ActionUtils.findCommandDescription(SpreadsheetCommandHandler.CMD_TOGGLE_PREVIEW, ViewValuePanel.this.resultSet.getSite(), true);
+                    String hidePanelCmd = ActionUtils.findCommandDescription(ResultSetCommandHandler.CMD_TOGGLE_PANELS, ViewValuePanel.this.resultSet.getSite(), true);
 
                     UIUtils.drawMessageOverControl(viewPlaceholder, e, "Select a cell to view/edit value", 0);
                     UIUtils.drawMessageOverControl(viewPlaceholder, e, "Press " + hidePanelCmd + " to hide this panel", 20);
@@ -287,7 +288,7 @@ abstract class ViewValuePanel extends Composite {
         toolBarManager.add(
             ActionUtils.makeCommandContribution(
                 resultSet.getSite(),
-                SpreadsheetCommandHandler.CMD_TOGGLE_PREVIEW,
+                ResultSetCommandHandler.CMD_TOGGLE_PANELS,
                 CommandContributionItem.STYLE_PUSH,
                 UIIcon.REJECT));
     }
