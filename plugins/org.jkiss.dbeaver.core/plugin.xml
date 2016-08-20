@@ -2745,7 +2745,13 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resultset.panel">
-        <panel id="value-view" class="org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel">
+        <panel
+                id="value-view"
+                label="Value viewer"
+                description="View/edit cell value"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/object.png"
+                default="true"
+                class="org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel">
             <supports type="columns"/>
         </panel>
     </extension>

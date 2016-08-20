@@ -230,10 +230,7 @@ public class ResultSetViewer extends Viewer
             public void close(CTabFolderEvent event) {
                 CTabItem item = (CTabItem) event.item;
                 String panelId = (String) item.getData();
-                activePanels.remove(panelId);
-                if (activePanels.isEmpty()) {
-                    showPanels(false);
-                }
+                removePanel(panelId);
             }
 
             @Override
@@ -484,11 +481,7 @@ public class ResultSetViewer extends Viewer
                 if (settings.panelRatio > 0) {
                     panelWeights = new int[] {1000 - settings.panelRatio, settings.panelRatio};
                 }
-                if (!CommonUtils.isEmpty(settings.enabledPanelIds)) {
-                    for (String panelId : settings.enabledPanelIds) {
-                        activatePanel(panelId, panelId.equals(settings.activePanelId));
-                    }
-                }
+                activateDefaultPanels(settings);
             }
             showPanels(panelsVisible);
             viewerSash.setWeights(panelWeights);
@@ -570,9 +563,7 @@ public class ResultSetViewer extends Viewer
                 PresentationSettings settings = new PresentationSettings();
                 String panelIdList = pSection.get("enabledPanelIds");
                 if (panelIdList != null) {
-                    for (String id : panelIdList.split(",")) {
-                        settings.enabledPanelIds.add(id);
-                    }
+                    Collections.addAll(settings.enabledPanelIds, panelIdList.split(","));
                 }
                 settings.activePanelId = pSection.get("activePanelId");
                 settings.panelRatio = pSection.getInt("panelRatio");
@@ -621,8 +612,8 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void activatePanel(String id, boolean show) {
-        if (!isPanelsVisible()) {
+    public void activatePanel(String id, boolean setActive, boolean showPanels) {
+        if (showPanels && !isPanelsVisible()) {
             showPanels(true);
         }
 
@@ -664,12 +655,27 @@ public class ResultSetViewer extends Viewer
         panelTab.setToolTipText(panel.getPanelDescription());
         panelTab.setControl(panelControl);
 
-        if (show || firstPanel) {
+        if (setActive || firstPanel) {
             panelFolder.setSelection(panelTab);
         }
 
         presentationSettings.enabledPanelIds.add(id);
         setActivePanel(id);
+    }
+
+    private void activateDefaultPanels(PresentationSettings settings) {
+        if (settings.enabledPanelIds.isEmpty()) {
+            for (ResultSetPanelDescriptor pd : availablePanels) {
+                if (pd.isShowByDefault()) {
+                    settings.enabledPanelIds.add(pd.getId());
+                }
+            }
+        }
+        if (!settings.enabledPanelIds.isEmpty()) {
+            for (String panelId : settings.enabledPanelIds) {
+                activatePanel(panelId, panelId.equals(settings.activePanelId), false);
+            }
+        }
     }
 
     private void setActivePanel(String panelId) {
@@ -680,6 +686,13 @@ public class ResultSetViewer extends Viewer
             panelToolBar.removeAll();
             panel.activatePanel(panelToolBar);
             panelToolBar.update(true);
+        }
+    }
+
+    private void removePanel(String panelId) {
+        activePanels.remove(panelId);
+        if (activePanels.isEmpty()) {
+            showPanels(false);
         }
     }
 
@@ -709,6 +722,7 @@ public class ResultSetViewer extends Viewer
         if (!show) {
             viewerSash.setMaximizedControl(presentationPanel);
         } else {
+            activateDefaultPanels(getPresentationSettings());
             viewerSash.setMaximizedControl(null);
             panelToolBar.removeAll();
             IResultSetPanel panel = getVisiblePanel();
@@ -2507,7 +2521,7 @@ public class ResultSetViewer extends Viewer
             }
             List<IContributionItem> items = new ArrayList<>();
             for (final ResultSetPanelDescriptor panel : rsv.availablePanels) {
-                ActionContributionItem item = new ActionContributionItem(new Action(panel.getId(), Action.AS_CHECK_BOX) {
+                Action panelAction = new Action(panel.getLabel(), Action.AS_CHECK_BOX) {
                     @Override
                     public boolean isChecked() {
                         return rsv.activePanels.containsKey(panel.getId());
@@ -2515,10 +2529,19 @@ public class ResultSetViewer extends Viewer
 
                     @Override
                     public void run() {
-                        rsv.activatePanel(panel.getId(), true);
+                        if (rsv.isPanelsVisible() && isChecked()) {
+                            CTabItem panelTab = rsv.getPanelTab(panel.getId());
+                            if (panelTab != null) {
+                                panelTab.dispose();
+                                rsv.removePanel(panel.getId());
+                            }
+                        } else {
+                            rsv.activatePanel(panel.getId(), true, true);
+                        }
                     }
-                });
-                items.add(item);
+                };
+                //panelAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
+                items.add(new ActionContributionItem(panelAction));
             }
             return items.toArray(new IContributionItem[items.size()]);
         }
