@@ -126,6 +126,7 @@ public class ResultSetViewer extends Viewer
     private ResultSetFilterPanel filtersPanel;
     private SashForm viewerSash;
     private CTabFolder panelFolder;
+    private ToolBarManager panelToolBar;
     private final Composite presentationPanel;
 
     private Text statusLabel;
@@ -148,7 +149,7 @@ public class ResultSetViewer extends Viewer
     @NotNull
     private final ResultSetDataReceiver dataReceiver;
 
-    private ToolBarManager toolBarManager;
+    private ToolBarManager mainToolbar;
 
     // Current row/col number
     @Nullable
@@ -200,6 +201,19 @@ public class ResultSetViewer extends Viewer
         this.panelFolder.marginWidth = 0;
         this.panelFolder.marginHeight = 0;
         this.panelFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
+        ToolBar panelToolbarControl = this.panelToolBar.createControl(panelFolder);
+        this.panelFolder.setTopRight(panelToolbarControl);
+        this.panelFolder.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                CTabItem activeTab = panelFolder.getSelection();
+                if (activeTab != null) {
+                    setActivePanel((String) activeTab.getData());
+                }
+            }
+        });
 
         setActivePresentation(new EmptyPresentation());
 
@@ -459,8 +473,8 @@ public class ResultSetViewer extends Viewer
             findReplaceTarget.setTarget(nested);
         }
 
-        if (toolBarManager != null) {
-            toolBarManager.update(true);
+        if (mainToolbar != null) {
+            mainToolbar.update(true);
         }
 
         // Set focus in presentation control
@@ -585,6 +599,7 @@ public class ResultSetViewer extends Viewer
                 log.warn("Panel '" + id + "' tab not found");
             }
         }
+        // Create panel
         ResultSetPanelDescriptor panelDescriptor = getPanelDescriptor(id);
         if (panelDescriptor == null) {
             log.error("Panel '" + id + "' not found");
@@ -597,20 +612,34 @@ public class ResultSetViewer extends Viewer
             return;
         }
         activePanels.put(id, panel);
+
+        // Create control and tab item
+        Control panelControl = panel.createContents(activePresentation, panelFolder);
+
         boolean firstPanel = panelFolder.getItemCount() == 0;
         CTabItem panelTab = new CTabItem(panelFolder, SWT.CLOSE);
-        panelTab.setData(panel);
+        panelTab.setData(id);
         panelTab.setText(panel.getPanelTitle());
         panelTab.setImage(DBeaverIcons.getImage(panel.getPanelImage()));
         panelTab.setToolTipText(panel.getPanelDescription());
+        panelTab.setControl(panelControl);
 
         if (show || firstPanel) {
             panelFolder.setSelection(panelTab);
         }
 
         presentationSettings.enabledPanelIds.add(id);
-        if (show || firstPanel) {
-            presentationSettings.activePanelId = id;
+        setActivePanel(id);
+    }
+
+    private void setActivePanel(String panelId) {
+        PresentationSettings settings = getPresentationSettings();
+        settings.activePanelId = panelId;
+        IResultSetPanel panel = activePanels.get(panelId);
+        if (panel != null) {
+            panelToolBar.removeAll();
+            panel.activatePanel(panelToolBar);
+            panelToolBar.update(true);
         }
     }
 
@@ -743,10 +772,10 @@ public class ResultSetViewer extends Viewer
      */
     private void updateToolbar()
     {
-        if (toolBarManager.isEmpty()) {
+        if (mainToolbar.isEmpty()) {
             return;
         }
-        for (IContributionItem item : toolBarManager.getItems()) {
+        for (IContributionItem item : mainToolbar.getItems()) {
             item.update();
         }
     }
@@ -799,42 +828,42 @@ public class ResultSetViewer extends Viewer
             }
         });
 
-        toolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+        mainToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
 
         // Add presentation switcher
         presentationSwitchCombo = new PresentationSwitchCombo();
         presentationSwitchCombo.createControl(statusBar);
-        //toolBarManager.add(presentationSwitchCombo);
-        //toolBarManager.add(new Separator());
+        //mainToolbar.add(presentationSwitchCombo);
+        //mainToolbar.add(new Separator());
 
         // handle own commands
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES));
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_REJECT_CHANGES));
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_GENERATE_SCRIPT));
-        toolBarManager.add(new Separator());
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_ADD));
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_COPY));
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_DELETE));
-        toolBarManager.add(new Separator());
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_FIRST));
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_PREVIOUS));
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_NEXT));
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_LAST));
-        toolBarManager.add(new Separator());
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_PAGE));
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_ALL));
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES));
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_REJECT_CHANGES));
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_GENERATE_SCRIPT));
+        mainToolbar.add(new Separator());
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_ADD));
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_COPY));
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_DELETE));
+        mainToolbar.add(new Separator());
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_FIRST));
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_PREVIOUS));
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_NEXT));
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_LAST));
+        mainToolbar.add(new Separator());
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_PAGE));
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_ALL));
         // Use simple action for refresh to avoid ambiguous behaviour of F5 shortcut
-        toolBarManager.add(new Separator());
+        mainToolbar.add(new Separator());
 //        // FIXME: Link to standard Find/Replace action - it has to be handled by owner site
-//        toolBarManager.add(ActionUtils.makeCommandContribution(
+//        mainToolbar.add(ActionUtils.makeCommandContribution(
 //            site,
 //            IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
 //            CommandContributionItem.STYLE_PUSH,
 //            UIIcon.FIND_TEXT));
 
-        toolBarManager.add(new Separator());
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
+        mainToolbar.add(new Separator());
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
 
         CommandContributionItem panelsAction = new CommandContributionItem(new CommandContributionItemParameter(
             site,
@@ -842,9 +871,9 @@ public class ResultSetViewer extends Viewer
             ResultSetCommandHandler.CMD_TOGGLE_PANELS,
             CommandContributionItem.STYLE_PULLDOWN));
         //panelsAction.
-        toolBarManager.add(panelsAction);
-        toolBarManager.add(new ConfigAction());
-        toolBarManager.createControl(statusBar);
+        mainToolbar.add(panelsAction);
+        mainToolbar.add(new ConfigAction());
+        mainToolbar.createControl(statusBar);
 
         //updateEditControls();
     }
@@ -892,9 +921,9 @@ public class ResultSetViewer extends Viewer
     {
         clearData();
 
-        if (toolBarManager != null) {
+        if (mainToolbar != null) {
             try {
-                toolBarManager.dispose();
+                mainToolbar.dispose();
             } catch (Throwable e) {
                 // ignore
                 log.debug("Error disposing toolbar", e);
