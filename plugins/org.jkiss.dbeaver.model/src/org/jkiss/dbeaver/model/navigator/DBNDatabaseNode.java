@@ -184,7 +184,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     }
 
     @Override
-    public DBNDatabaseNode[] getChildren(DBRProgressMonitor monitor)
+    public synchronized DBNDatabaseNode[] getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         if (childNodes == null && allowsChildren()) {
