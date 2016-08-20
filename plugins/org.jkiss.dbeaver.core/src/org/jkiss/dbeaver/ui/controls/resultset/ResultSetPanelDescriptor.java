@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
@@ -41,7 +42,11 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
     public static final String TAG_SUPPORTS = "supports"; //$NON-NLS-1$
 
     private final String id;
+    private final String label;
+    private final String description;
     private final ObjectType implClass;
+    private final DBPImage icon;
+    private final boolean showByDefault;
     private final List<IResultSetPresentation.PresentationType> supportedPresentationTypes = new ArrayList<>();
     private final List<String> supportedPresentations = new ArrayList<>();
 
@@ -49,7 +54,11 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
         super(config);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.implClass = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.showByDefault = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_DEFAULT));
 
         for (IConfigurationElement supports : config.getChildren(TAG_SUPPORTS)) {
             String type = supports.getAttribute(RegistryConstants.ATTR_TYPE);
@@ -65,6 +74,22 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
 
     public String getId() {
         return id;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public DBPImage getIcon() {
+        return icon;
+    }
+
+    public boolean isShowByDefault() {
+        return showByDefault;
     }
 
     public boolean supportedBy(ResultSetPresentationDescriptor presentation) {

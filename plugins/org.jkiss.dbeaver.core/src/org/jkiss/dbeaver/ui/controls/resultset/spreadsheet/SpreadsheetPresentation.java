@@ -763,7 +763,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (ArrayUtils.contains(supportedEditTypes, IValueController.EditType.PANEL)) {
                     // Inline editor isn't supported but panel viewer is
                     // Enable panel
-                    controller.activatePanel(ViewValuePanel.PANEL_ID, true);
+                    controller.activatePanel(ViewValuePanel.PANEL_ID, true, true);
                     return null;
                 }
             }
