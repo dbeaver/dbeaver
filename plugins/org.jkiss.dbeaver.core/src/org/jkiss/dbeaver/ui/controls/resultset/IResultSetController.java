@@ -58,9 +58,6 @@ public interface IResultSetController extends DBPContextProvider {
     @NotNull
     DBDDataReceiver getDataReceiver();
 
-    @NotNull
-    IResultSetFilterManager getFilterManager();
-
     boolean hasData();
 
     boolean isHasMoreData();
