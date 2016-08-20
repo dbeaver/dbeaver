@@ -21,14 +21,13 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPImage;
 
 /**
  * ResultSet panel.
  * RSV can embed multiple panels to provide additional visualization functionality
  */
-public interface IResultSetPanel extends DBPContextProvider {
+public interface IResultSetPanel {
 
     String getPanelTitle();
 

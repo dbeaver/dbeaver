@@ -148,9 +148,7 @@ public abstract class AbstractDescriptor {
             }
             try {
                 return objectClass.newInstance();
-            } catch (InstantiationException e) {
-                throw new DBException("Can't instantiate class '" + getImplName() + "'", e);
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 throw new DBException("Can't instantiate class '" + getImplName() + "'", e);
             }
         }

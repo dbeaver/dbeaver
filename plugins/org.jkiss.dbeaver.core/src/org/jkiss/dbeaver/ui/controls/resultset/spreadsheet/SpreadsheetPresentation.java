@@ -50,7 +50,6 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
@@ -58,7 +57,6 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.themes.ITheme;
@@ -72,7 +70,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -90,6 +87,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel;
 import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -112,13 +110,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
-    private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
-    private static final String VIEW_PANEL_RATIO = "viewPanelRatio";
-
-    private SashForm resultsSash;
     private Spreadsheet spreadsheet;
-    private ViewValuePanel previewPane;
-    private SpreadsheetValueController panelValueController;
 
     @Nullable
     private DBDAttributeBinding curAttribute;
@@ -167,69 +159,23 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
         this.foregroundNull = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
-        {
-            resultsSash = UIUtils.createPartDivider(controller.getSite().getPart(),
-                parent, SWT.HORIZONTAL | SWT.SMOOTH);
-            resultsSash.setBackgroundMode(SWT.INHERIT_FORCE);
-            resultsSash.setLayoutData(new GridData(GridData.FILL_BOTH));
-            resultsSash.setSashWidth(5);
-
-            this.spreadsheet = new Spreadsheet(
-                resultsSash,
-                SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
-                controller.getSite(),
-                this,
-                new ContentProvider(),
-                new GridLabelProvider());
-            this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            this.previewPane = new ViewValuePanel(controller, resultsSash) {
-                @Override
-                protected void hidePanel()
-                {
-                    togglePreview();
-                }
-            };
-
-            final DBPPreferenceStore preferences = getPreferenceStore();
-            int ratio = preferences.getInt(VIEW_PANEL_RATIO);
-            boolean viewPanelVisible = preferences.getBoolean(VIEW_PANEL_VISIBLE);
-            if (ratio <= 0) {
-                ratio = 750;
-            }
-            resultsSash.setWeights(new int[]{ratio, 1000 - ratio});
-            if (!viewPanelVisible) {
-                resultsSash.setMaximizedControl(spreadsheet);
-            }
-            previewPane.addListener(SWT.Resize, new Listener() {
-                @Override
-                public void handleEvent(Event event)
-                {
-                    DBPDataSource dataSource = getDataSource();
-                    if (dataSource != null) {
-                        if (!resultsSash.isDisposed()) {
-                            int[] weights = resultsSash.getWeights();
-                            int ratio = weights[0];
-                            DBeaverCore.getGlobalPreferenceStore().setValue(VIEW_PANEL_RATIO, ratio);
-                        }
-                    }
-                }
-            });
-        }
+        this.spreadsheet = new Spreadsheet(
+            parent,
+            SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
+            controller.getSite(),
+            this,
+            new ContentProvider(),
+            new GridLabelProvider());
+        this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         this.spreadsheet.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                fireSelectionChanged(new SpreadsheetSelectionImpl());
-            }
-        });
-        this.spreadsheet.addCursorChangeListener(new Listener() {
-            @Override
-            public void handleEvent(Event event) {
-                if (event.detail != SWT.DRAG && event.detail != SWT.DROP_DOWN) {
-                    updateGridCursor((GridCell) event.data);
+                if (e.detail != SWT.DRAG && e.detail != SWT.DROP_DOWN) {
+                    updateGridCursor((GridCell) e.data);
                 }
+                fireSelectionChanged(new SpreadsheetSelectionImpl());
             }
         });
 
@@ -400,7 +346,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_MOVE);
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
             spreadsheet.redrawGrid();
-            previewValue(true);
         }
     }
 
@@ -600,7 +545,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     @Override
     public void updateValueView() {
         spreadsheet.redrawGrid();
-        previewValue(false);
+        spreadsheet.updateScrollbars();
+
+        if (curAttribute != null) {
+            spreadsheet.showColumn(curAttribute);
+        }
     }
 
     @Override
@@ -637,8 +586,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
         }
         spreadsheet.layout(true, true);
-        previewValue(false);
-        //controller.setCurrentRow(oldRow);
     }
 
     public void fillContextMenu(@NotNull IMenuManager manager, @Nullable Object colObject, @Nullable Object rowObject) {
@@ -673,65 +620,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 });
             }
         }
-    }
-
-    ////////////////////////////////////////////////////////////
-    // Value preview
-
-    public boolean isPreviewVisible()
-    {
-        return resultsSash.getMaximizedControl() == null;
-    }
-
-    public void togglePreview()
-    {
-        spreadsheet.cancelInlineEditor();
-        if (resultsSash.getMaximizedControl() == null) {
-            resultsSash.setMaximizedControl(spreadsheet);
-        } else {
-            resultsSash.setMaximizedControl(null);
-            previewValue(true);
-            spreadsheet.updateScrollbars();
-
-            if (curAttribute != null) {
-                spreadsheet.showColumn(curAttribute);
-            }
-        }
-        DBeaverCore.getGlobalPreferenceStore().setValue(VIEW_PANEL_VISIBLE, isPreviewVisible());
-
-        // Refresh elements
-        ICommandService commandService = controller.getSite().getService(ICommandService.class);
-        if (commandService != null) {
-            commandService.refreshElements(ResultSetCommandHandler.CMD_TOGGLE_PANELS, null);
-        }
-    }
-
-    void previewValue(boolean savePrevious)
-    {
-        DBDAttributeBinding attr = getFocusAttribute();
-        ResultSetRow row = getFocusRow();
-        if (!isPreviewVisible()) {
-            return;
-        }
-        if (attr == null || row == null) {
-            previewPane.clearValue();
-            return;
-        }
-        if (savePrevious) {
-            // TODO: do smart save + dirty flag
-//            previewPane.saveValue();
-        }
-        if (panelValueController == null || panelValueController.getBinding() != attr) {
-            panelValueController = new SpreadsheetValueController(
-                controller,
-                attr,
-                row,
-                IValueController.EditType.PANEL,
-                previewPane.getViewPlaceholder());
-        } else {
-            panelValueController.setCurRow(row);
-        }
-        previewPane.viewValue(panelValueController);
     }
 
     /////////////////////////////////////////////////
@@ -875,9 +763,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (ArrayUtils.contains(supportedEditTypes, IValueController.EditType.PANEL)) {
                     // Inline editor isn't supported but panel viewer is
                     // Enable panel
-                    if (!isPreviewVisible()) {
-                        togglePreview();
-                    }
+                    controller.activatePanel(ViewValuePanel.PANEL_ID, true);
                     return null;
                 }
             }
@@ -1560,7 +1446,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public org.eclipse.jface.action.IContributionManager getEditBar()
         {
-            return isPreviewVisible() ? previewPane.getToolBar() : null;
+            return null;
         }
 
         @Override

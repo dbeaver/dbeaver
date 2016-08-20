@@ -47,7 +47,7 @@ public class StringInlineEditor extends BaseValueEditor<Text> {
     {
         final boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
         final Text editor = new Text(valueController.getEditPlaceholder(),
-            SWT.BORDER | (inline ? SWT.NONE : SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
+            (inline ? SWT.BORDER : SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
         editor.setTextLimit(MAX_STRING_LENGTH);
         editor.setEditable(!valueController.isReadOnly());
         return editor;

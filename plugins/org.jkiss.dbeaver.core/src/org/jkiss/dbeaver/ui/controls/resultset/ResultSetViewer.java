@@ -33,9 +33,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
@@ -200,6 +198,8 @@ public class ResultSetViewer extends Viewer
         this.panelFolder = new CTabFolder(this.viewerSash, SWT.TOP);
         this.panelFolder.marginWidth = 0;
         this.panelFolder.marginHeight = 0;
+        this.panelFolder.setMinimizeVisible(true);
+        //this.panelFolder.setMaximizeVisible(true);
         this.panelFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
@@ -212,6 +212,38 @@ public class ResultSetViewer extends Viewer
                 if (activeTab != null) {
                     setActivePanel((String) activeTab.getData());
                 }
+            }
+        });
+        this.panelFolder.addListener(SWT.Resize, new Listener() {
+            @Override
+            public void handleEvent(Event event)
+            {
+                PresentationSettings presentationSettings = getPresentationSettings();
+                if (!viewerSash.isDisposed()) {
+                    int[] weights = viewerSash.getWeights();
+                    presentationSettings.panelRatio = weights[0];
+                }
+            }
+        });
+        this.panelFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
+            @Override
+            public void close(CTabFolderEvent event) {
+                CTabItem item = (CTabItem) event.item;
+                String panelId = (String) item.getData();
+                activePanels.remove(panelId);
+                if (activePanels.isEmpty()) {
+                    showPanels(false);
+                }
+            }
+
+            @Override
+            public void minimize(CTabFolderEvent event) {
+                showPanels(false);
+            }
+
+            @Override
+            public void maximize(CTabFolderEvent event) {
+
             }
         });
 
@@ -579,6 +611,10 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    IResultSetPanel getVisiblePanel() {
+        return activePanels.get(getPresentationSettings().activePanelId);
+    }
+
     @Override
     public IResultSetPanel[] getActivePanels() {
         return activePanels.values().toArray(new IResultSetPanel[activePanels.size()]);
@@ -586,11 +622,15 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void activatePanel(String id, boolean show) {
+        if (!isPanelsVisible()) {
+            showPanels(true);
+        }
+
         PresentationSettings presentationSettings = getPresentationSettings();
 
         IResultSetPanel panel = activePanels.get(id);
         if (panel != null) {
-            CTabItem panelTab = getPanelTab(panel);
+            CTabItem panelTab = getPanelTab(id);
             if (panelTab != null) {
                 panelFolder.setSelection(panelTab);
                 presentationSettings.activePanelId = id;
@@ -608,7 +648,7 @@ public class ResultSetViewer extends Viewer
         try {
             panel = panelDescriptor.createInstance();
         } catch (DBException e) {
-            log.error(e);
+            UIUtils.showErrorDialog(getSite().getShell(), "Can't show panel", "Can't create panel '" + id + "'", e);
             return;
         }
         activePanels.put(id, panel);
@@ -652,20 +692,37 @@ public class ResultSetViewer extends Viewer
         return null;
     }
 
-    private CTabItem getPanelTab(IResultSetPanel panel) {
+    private CTabItem getPanelTab(String panelId) {
         for (CTabItem tab : panelFolder.getItems()) {
-            if (tab.getData() == panel) {
+            if (CommonUtils.equalObjects(tab.getData(), panelId)) {
                 return tab;
             }
         }
         return null;
     }
 
+    public boolean isPanelsVisible() {
+        return viewerSash.getMaximizedControl() == null;
+    }
+
     public void showPanels(boolean show) {
-        if (show) {
-            viewerSash.setMaximizedControl(null);
-        } else {
+        if (!show) {
             viewerSash.setMaximizedControl(presentationPanel);
+        } else {
+            viewerSash.setMaximizedControl(null);
+            panelToolBar.removeAll();
+            IResultSetPanel panel = getVisiblePanel();
+            if (panel != null) {
+                panel.activatePanel(panelToolBar);
+            }
+            panelToolBar.update(true);
+            activePresentation.updateValueView();
+        }
+
+        // Refresh elements
+        ICommandService commandService = getSite().getService(ICommandService.class);
+        if (commandService != null) {
+            commandService.refreshElements(ResultSetCommandHandler.CMD_TOGGLE_PANELS, null);
         }
     }
     ////////////////////////////////////////
@@ -772,11 +829,15 @@ public class ResultSetViewer extends Viewer
      */
     private void updateToolbar()
     {
-        if (mainToolbar.isEmpty()) {
-            return;
+        if (!mainToolbar.isEmpty()) {
+            for (IContributionItem item : mainToolbar.getItems()) {
+                item.update();
+            }
         }
-        for (IContributionItem item : mainToolbar.getItems()) {
-            item.update();
+        if (!panelToolBar.isEmpty()) {
+            for (IContributionItem item : panelToolBar.getItems()) {
+                item.update();
+            }
         }
     }
 
@@ -2439,19 +2500,25 @@ public class ResultSetViewer extends Viewer
     {
         @Override
         protected IContributionItem[] getContributionItems() {
-            ResultSetViewer rsv = (ResultSetViewer) ResultSetCommandHandler.getActiveResultSet(
+            final ResultSetViewer rsv = (ResultSetViewer) ResultSetCommandHandler.getActiveResultSet(
                 DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart());
             if (rsv == null) {
                 return new IContributionItem[0];
             }
             List<IContributionItem> items = new ArrayList<>();
-            for (ResultSetPanelDescriptor panel : rsv.availablePanels) {
-                items.add(new ActionContributionItem(new Action(panel.getId(), Action.AS_CHECK_BOX) {
-                        @Override
-                        public void run() {
-                            super.run();
-                        }
-                    }));
+            for (final ResultSetPanelDescriptor panel : rsv.availablePanels) {
+                ActionContributionItem item = new ActionContributionItem(new Action(panel.getId(), Action.AS_CHECK_BOX) {
+                    @Override
+                    public boolean isChecked() {
+                        return rsv.activePanels.containsKey(panel.getId());
+                    }
+
+                    @Override
+                    public void run() {
+                        rsv.activatePanel(panel.getId(), true);
+                    }
+                });
+                items.add(item);
             }
             return items.toArray(new IContributionItem[items.size()]);
         }
