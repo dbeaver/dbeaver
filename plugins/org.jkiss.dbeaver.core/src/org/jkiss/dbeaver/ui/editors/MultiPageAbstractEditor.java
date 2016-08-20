@@ -22,6 +22,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -97,11 +98,13 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
             CTabFolder tabFolder = (CTabFolder)pageContainer;
             tabFolder.setSimple(true);
             tabFolder.setMRUVisible(true);
+            tabFolder.setTabPosition(SWT.TOP);
             Control topRight = createTopRightControl(tabFolder);
             if (topRight != null) {
+                Point trSize = topRight.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                tabFolder.setTabHeight(trSize.y);
                 tabFolder.setTopRight(topRight, SWT.RIGHT | SWT.WRAP);
             }
-            tabFolder.setTabPosition(SWT.TOP);
 //            tabFolder.setSimple(false);
             //tabFolder.setBorderVisible(true);
             Layout parentLayout = tabFolder.getParent().getLayout();
@@ -117,7 +120,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
         Composite pageContainer = getContainer();
         if (pageContainer instanceof CTabFolder) {
             CTabFolder tabFolder = (CTabFolder)pageContainer;
-            if (index > 0 && index < tabFolder.getItemCount()) {
+            if (index < tabFolder.getItemCount()) {
                 tabFolder.getItem(index).setToolTipText(toolTip);
             }
         }
