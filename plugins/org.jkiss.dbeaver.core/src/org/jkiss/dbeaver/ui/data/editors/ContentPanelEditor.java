@@ -199,7 +199,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IVal
 
             IContributionManager editBar = valueController.getEditBar();
             if (imageDetector.isImage()) {
-                ImageViewer imageViewer = new ImageViewer(editPlaceholder, SWT.BORDER);
+                ImageViewer imageViewer = new ImageViewer(editPlaceholder, SWT.NONE);
                 if (editBar != null) {
                     imageViewer.fillToolBar(editBar);
                 }

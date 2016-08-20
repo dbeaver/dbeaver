@@ -113,6 +113,9 @@ public class ResultSetCommandHandler extends AbstractHandler {
             case CMD_TOGGLE_MODE:
                 rsv.toggleMode();
                 break;
+            case CMD_TOGGLE_PANELS:
+                rsv.showPanels(!rsv.isPanelsVisible());
+                break;
             case CMD_SWITCH_PRESENTATION:
                 rsv.switchPresentation();
                 break;
