@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ui.controls.resultset.view;
 
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -119,11 +118,6 @@ public class EmptyPresentation implements IResultSetPresentation {
 
     @Override
     public void updateValueView() {
-
-    }
-
-    @Override
-    public void fillToolbar(@NotNull IToolBarManager toolBar) {
 
     }
 

@@ -345,11 +345,6 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     }
 
     @Override
-    public void fillToolbar(@NotNull IToolBarManager toolBar) {
-
-    }
-
-    @Override
     public void fillMenu(@NotNull IMenuManager menu) {
 
     }

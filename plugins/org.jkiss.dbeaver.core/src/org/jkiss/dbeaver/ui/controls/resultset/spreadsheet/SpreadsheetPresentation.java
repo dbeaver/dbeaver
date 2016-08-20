@@ -606,14 +606,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     @Override
-    public void fillToolbar(@NotNull IToolBarManager toolBar) {
-//        toolBar.insertAfter(PRES_TOOLS_BEGIN, ActionUtils.makeCommandContribution(
-//            controller.getSite(),
-//            SpreadsheetCommandHandler.CMD_TOGGLE_PREVIEW,
-//            CommandContributionItem.STYLE_CHECK));
-    }
-
-    @Override
     public void fillMenu(@NotNull IMenuManager menu) {
         menu.add(ActionUtils.makeCommandContribution(
             controller.getSite(),
