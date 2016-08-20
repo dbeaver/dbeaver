@@ -41,7 +41,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -609,7 +608,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     public void fillMenu(@NotNull IMenuManager menu) {
         menu.add(ActionUtils.makeCommandContribution(
             controller.getSite(),
-            SpreadsheetCommandHandler.CMD_TOGGLE_PREVIEW,
+            ResultSetCommandHandler.CMD_TOGGLE_PANELS,
             CommandContributionItem.STYLE_CHECK));
     }
 
@@ -704,7 +703,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         // Refresh elements
         ICommandService commandService = controller.getSite().getService(ICommandService.class);
         if (commandService != null) {
-            commandService.refreshElements(SpreadsheetCommandHandler.CMD_TOGGLE_PREVIEW, null);
+            commandService.refreshElements(ResultSetCommandHandler.CMD_TOGGLE_PANELS, null);
         }
     }
 

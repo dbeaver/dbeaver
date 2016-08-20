@@ -1806,6 +1806,10 @@
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
         </menuContribution>
 
+        <!-- RSV panels config drop-down menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.resultset.panels">
+            <dynamic id="org.jkiss.dbeaver.core.resultset.panels" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer$PanelsMenuContributor"/>
+        </menuContribution>
     </extension>
 
     <extension point="org.eclipse.ui.bindings">

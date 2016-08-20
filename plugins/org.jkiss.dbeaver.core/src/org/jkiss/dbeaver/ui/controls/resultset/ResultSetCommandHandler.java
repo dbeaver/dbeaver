@@ -64,10 +64,9 @@ import java.util.List;
  */
 public class ResultSetCommandHandler extends AbstractHandler {
 
+    public static final String CMD_TOGGLE_PANELS = "org.jkiss.dbeaver.core.resultset.grid.togglePreview";
     public static final String CMD_TOGGLE_MODE = "org.jkiss.dbeaver.core.resultset.toggleMode";
-    public static final String CMD_TOGGLE_RESULT_PANEL = "org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel";
     public static final String CMD_SWITCH_PRESENTATION = "org.jkiss.dbeaver.core.resultset.switchPresentation";
-    public static final String CMD_SWITCH_PANEL = "org.jkiss.dbeaver.ui.editors.sql.switch.panel";
     public static final String CMD_ROW_FIRST = "org.jkiss.dbeaver.core.resultset.row.first";
     public static final String CMD_ROW_PREVIOUS = "org.jkiss.dbeaver.core.resultset.row.previous";
     public static final String CMD_ROW_NEXT = "org.jkiss.dbeaver.core.resultset.row.next";
@@ -185,7 +184,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                         String scriptText = DBUtils.generateScript(sqlScript.toArray(new DBEPersistAction[sqlScript.size()]), false);
                         scriptText =
                             SQLUtils.generateCommentLine(
-                                rsv.getExecutionContext().getDataSource(),
+                                rsv.getExecutionContext() == null ? null : rsv.getExecutionContext().getDataSource(),
                                 "Actual parameter values may differ, what you see is a default string representation of values") +
                             scriptText;
                         ViewSQLDialog dialog = new ViewSQLDialog(
