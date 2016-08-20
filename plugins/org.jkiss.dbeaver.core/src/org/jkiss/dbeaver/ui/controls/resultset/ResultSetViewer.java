@@ -390,7 +390,7 @@ public class ResultSetViewer extends Viewer
 
     }
 
-    private void setActivePresentation(IResultSetPresentation presentation) {
+    private void setActivePresentation(@NotNull IResultSetPresentation presentation) {
         // Dispose previous presentation
         for (Control child : presentationPanel.getChildren()) {
             child.dispose();
@@ -409,24 +409,7 @@ public class ResultSetViewer extends Viewer
             findReplaceTarget.setTarget(nested);
         }
 
-        // Update toolbar
         if (toolBarManager != null) {
-            // Cleanup previous presentation contributions
-            boolean presContributions = false;
-            for (IContributionItem item : toolBarManager.getItems()) {
-                if (presContributions) {
-                    if (IResultSetPresentation.PRES_TOOLS_END.equals(item.getId())) {
-                        break;
-                    }
-                    toolBarManager.remove(item);
-                } else if (IResultSetPresentation.PRES_TOOLS_BEGIN.equals(item.getId())) {
-                    presContributions = true;
-                }
-            }
-
-
-            // fill presentation contributions
-            activePresentation.fillToolbar(toolBarManager);
             toolBarManager.update(true);
         }
 
@@ -1143,8 +1126,13 @@ public class ResultSetViewer extends Viewer
             // Filters and View
             manager.add(new Separator());
             {
+                String filtersShortcut = ActionUtils.findCommandDescription(ResultSetCommandHandler.CMD_FILTER_MENU, getSite(), true);
+                String menuName = CoreMessages.controls_resultset_viewer_action_order_filter;
+                if (!CommonUtils.isEmpty(filtersShortcut)) {
+                    menuName += " (" + filtersShortcut + ")";
+                }
                 MenuManager filtersMenu = new MenuManager(
-                    CoreMessages.controls_resultset_viewer_action_order_filter,
+                    menuName,
                     DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
                     "filters"); //$NON-NLS-1$
                 filtersMenu.setRemoveAllWhenShown(true);

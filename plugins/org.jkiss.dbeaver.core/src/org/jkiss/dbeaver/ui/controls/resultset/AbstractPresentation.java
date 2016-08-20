@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.events.DisposeEvent;
@@ -56,11 +55,6 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
         this.controller = controller;
-    }
-
-    @Override
-    public void fillToolbar(@NotNull IToolBarManager toolBar) {
-
     }
 
     @Override

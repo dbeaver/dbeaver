@@ -65,12 +65,6 @@ public interface IResultSetPresentation {
     void updateValueView();
 
     /**
-     * Called by controller to fill edit toolbar
-     * @param toolBar    toolbar
-     */
-    void fillToolbar(@NotNull IToolBarManager toolBar);
-
-    /**
      * Called by controller to fill context menu.
      * Note: context menu invocation must be initiated by presentation, then it should call controller's
      * {@link org.jkiss.dbeaver.ui.controls.resultset.IResultSetController#fillContextMenu} which then will
