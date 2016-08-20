@@ -22,13 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * Common utils
@@ -372,6 +366,26 @@ public class CommonUtils {
             return str.substring(0, maxLength);
         }
         return str;
+    }
+
+    public static String joinStrings(String divider, String ... array) {
+        if (array == null) return "";
+        StringBuilder str = new StringBuilder();
+        for (int i = 0; i < array.length; i++) {
+            if (i > 0) str.append(divider);
+            str.append(array[i]);
+        }
+        return str.toString();
+    }
+
+    public static String joinStrings(String divider, Collection<String> col) {
+        if (col == null) return "";
+        StringBuilder str = new StringBuilder();
+        for (String item : col) {
+            if (str.length() > 0) str.append(divider);
+            str.append(item);
+        }
+        return str.toString();
     }
 
     public static boolean isEmptyTrimmed(@Nullable String str) {

@@ -173,7 +173,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             resultsSash.setBackgroundMode(SWT.INHERIT_FORCE);
             resultsSash.setLayoutData(new GridData(GridData.FILL_BOTH));
             resultsSash.setSashWidth(5);
-            //resultsSash.setBackground(resultsSash.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
             this.spreadsheet = new Spreadsheet(
                 resultsSash,

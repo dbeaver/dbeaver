@@ -75,6 +75,16 @@ public class ResultSetPresentationRegistry {
         }
     }
 
+    public ResultSetPresentationDescriptor getPresentation(String id)
+    {
+        for (ResultSetPresentationDescriptor descriptor : presentations) {
+            if (descriptor.getId().equals(id)) {
+                return descriptor;
+            }
+        }
+        return null;
+    }
+
     public ResultSetPresentationDescriptor getPresentation(Class<? extends IResultSetPresentation> implType)
     {
         for (ResultSetPresentationDescriptor descriptor : presentations) {

@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.text.IFindReplaceTarget;
@@ -91,6 +92,7 @@ import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -113,6 +115,7 @@ public class ResultSetViewer extends Viewer
     implements DBPContextProvider, IResultSetController, ISaveablePart2, IAdaptable
 {
     private static final Log log = Log.getLog(ResultSetViewer.class);
+    public static final String SETTINGS_SECTION_PRESENTATIONS = "presentations";
 
     @NotNull
     private static IResultSetFilterManager filterManager = new SimpleFilterManager();
@@ -135,7 +138,10 @@ public class ResultSetViewer extends Viewer
     private ResultSetPresentationDescriptor activePresentationDescriptor;
     private List<ResultSetPresentationDescriptor> availablePresentations;
     private PresentationSwitchCombo presentationSwitchCombo;
-    private List<ResultSetPanelDescriptor> availablePanels = new ArrayList<>();
+    private final List<ResultSetPanelDescriptor> availablePanels = new ArrayList<>();
+
+    private final Map<ResultSetPresentationDescriptor, PresentationSettings> presentationSettings = new HashMap<>();
+    private final Map<String, IResultSetPanel> activePanels = new HashMap<>();
 
     @NotNull
     private final IResultSetContainer container;
@@ -159,6 +165,8 @@ public class ResultSetViewer extends Viewer
     private final List<HistoryStateItem> stateHistory = new ArrayList<>();
     private int historyPosition = -1;
 
+    private final IDialogSettings viewerSettings;
+
     private final Color colorRed;
 
     private boolean actionsDisabled;
@@ -173,6 +181,8 @@ public class ResultSetViewer extends Viewer
         this.dataReceiver = new ResultSetDataReceiver(this);
 
         this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
+        this.viewerSettings = UIUtils.getDialogSettings(ResultSetViewer.class.getSimpleName());
+        loadPresentationSettings();
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
@@ -190,17 +200,6 @@ public class ResultSetViewer extends Viewer
         this.panelFolder.marginWidth = 0;
         this.panelFolder.marginHeight = 0;
         this.panelFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
-        CTabItem item = new CTabItem(panelFolder, SWT.CLOSE);
-        item.setText("Value");
-        item.setImage(DBeaverIcons.getImage(UIIcon.SQL_CONSOLE));
-
-        CTabItem item2 = new CTabItem(panelFolder, SWT.CLOSE);
-        item2.setText("Aggregate");
-        item2.setImage(DBeaverIcons.getImage(UIIcon.SQL_ANALYSE));
-        this.panelFolder.setSelection(item);
-
-        this.viewerSash.setWeights(new int[] { 700, 300 } );
-        this.viewerSash.setMaximizedControl(this.presentationPanel);
 
         setActivePresentation(new EmptyPresentation());
 
@@ -411,17 +410,44 @@ public class ResultSetViewer extends Viewer
     }
 
     private void setActivePresentation(@NotNull IResultSetPresentation presentation) {
-        // Dispose previous presentation
+        // Dispose previous presentation and panels
         for (Control child : presentationPanel.getChildren()) {
             child.dispose();
         }
-        // Set new one
+        for (CTabItem panelItem : panelFolder.getItems()) {
+            panelItem.dispose();
+        }
+
+        // Set new presentation
         activePresentation = presentation;
         availablePanels.clear();
+        activePanels.clear();
         if (activePresentationDescriptor != null) {
             availablePanels.addAll(ResultSetPresentationRegistry.getInstance().getSupportedPanels(activePresentationDescriptor));
         }
         activePresentation.createPresentation(this, presentationPanel);
+
+        // Activate panels
+        {
+            boolean panelsVisible = false;
+            int[] panelWeights = new int[]{700, 300};
+
+            if (activePresentationDescriptor != null) {
+                PresentationSettings settings = getPresentationSettings();
+                panelsVisible = settings.panelsVisible;
+                if (settings.panelRatio > 0) {
+                    panelWeights = new int[] {1000 - settings.panelRatio, settings.panelRatio};
+                }
+                if (!CommonUtils.isEmpty(settings.enabledPanelIds)) {
+                    for (String panelId : settings.enabledPanelIds) {
+                        activatePanel(panelId, panelId.equals(settings.activePanelId));
+                    }
+                }
+            }
+            showPanels(panelsVisible);
+            viewerSash.setWeights(panelWeights);
+        }
+
         presentationPanel.layout();
 
         // Update dynamic find/replace target
@@ -485,16 +511,134 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    private void loadPresentationSettings() {
+        IDialogSettings pSections = viewerSettings.getSection(SETTINGS_SECTION_PRESENTATIONS);
+        if (pSections != null) {
+            for (IDialogSettings pSection : ArrayUtils.safeArray(pSections.getSections())) {
+                String pId = pSection.getName();
+                ResultSetPresentationDescriptor presentation = ResultSetPresentationRegistry.getInstance().getPresentation(pId);
+                if (presentation == null) {
+                    log.warn("Presentation '" + pId + "' not found. ");
+                    continue;
+                }
+                PresentationSettings settings = new PresentationSettings();
+                String panelIdList = pSection.get("enabledPanelIds");
+                if (panelIdList != null) {
+                    for (String id : panelIdList.split(",")) {
+                        settings.enabledPanelIds.add(id);
+                    }
+                }
+                settings.activePanelId = pSection.get("activePanelId");
+                settings.panelRatio = pSection.getInt("panelRatio");
+                settings.panelsVisible = pSection.getBoolean("panelsVisible");
+                presentationSettings.put(presentation, settings);
+            }
+        }
+    }
+
+    private PresentationSettings getPresentationSettings() {
+        PresentationSettings settings = this.presentationSettings.get(activePresentationDescriptor);
+        if (settings == null) {
+            settings = new PresentationSettings();
+            this.presentationSettings.put(activePresentationDescriptor, settings);
+        }
+        return settings;
+    }
+
+    private void savePresentationSettings() {
+        IDialogSettings pSections = viewerSettings.getSection(SETTINGS_SECTION_PRESENTATIONS);
+        if (pSections == null) {
+            pSections = viewerSettings.addNewSection(SETTINGS_SECTION_PRESENTATIONS);
+        }
+        for (Map.Entry<ResultSetPresentationDescriptor, PresentationSettings> pEntry : presentationSettings.entrySet()) {
+            String pId = pEntry.getKey().getId();
+            PresentationSettings settings = pEntry.getValue();
+            IDialogSettings pSection = pSections.getSection(pId);
+            if (pSection == null) {
+                pSection = pSections.addNewSection(pId);
+            }
+
+            pSection.put("enabledPanelIds", CommonUtils.joinStrings(",", settings.enabledPanelIds));
+            pSection.put("activePanelId", settings.activePanelId);
+            pSection.put("panelRatio", settings.panelRatio);
+            pSection.put("panelsVisible", settings.panelsVisible);
+        }
+    }
+
     @Override
     public IResultSetPanel[] getActivePanels() {
-        return new IResultSetPanel[0];
+        return activePanels.values().toArray(new IResultSetPanel[activePanels.size()]);
     }
 
     @Override
     public void activatePanel(String id, boolean show) {
+        PresentationSettings presentationSettings = getPresentationSettings();
 
+        IResultSetPanel panel = activePanels.get(id);
+        if (panel != null) {
+            CTabItem panelTab = getPanelTab(panel);
+            if (panelTab != null) {
+                panelFolder.setSelection(panelTab);
+                presentationSettings.activePanelId = id;
+                return;
+            } else {
+                log.warn("Panel '" + id + "' tab not found");
+            }
+        }
+        ResultSetPanelDescriptor panelDescriptor = getPanelDescriptor(id);
+        if (panelDescriptor == null) {
+            log.error("Panel '" + id + "' not found");
+            return;
+        }
+        try {
+            panel = panelDescriptor.createInstance();
+        } catch (DBException e) {
+            log.error(e);
+            return;
+        }
+        activePanels.put(id, panel);
+        boolean firstPanel = panelFolder.getItemCount() == 0;
+        CTabItem panelTab = new CTabItem(panelFolder, SWT.CLOSE);
+        panelTab.setData(panel);
+        panelTab.setText(panel.getPanelTitle());
+        panelTab.setImage(DBeaverIcons.getImage(panel.getPanelImage()));
+        panelTab.setToolTipText(panel.getPanelDescription());
+
+        if (show || firstPanel) {
+            panelFolder.setSelection(panelTab);
+        }
+
+        presentationSettings.enabledPanelIds.add(id);
+        if (show || firstPanel) {
+            presentationSettings.activePanelId = id;
+        }
     }
 
+    private ResultSetPanelDescriptor getPanelDescriptor(String id) {
+        for (ResultSetPanelDescriptor panel : availablePanels) {
+            if (panel.getId().equals(id)) {
+                return panel;
+            }
+        }
+        return null;
+    }
+
+    private CTabItem getPanelTab(IResultSetPanel panel) {
+        for (CTabItem tab : panelFolder.getItems()) {
+            if (tab.getData() == panel) {
+                return tab;
+            }
+        }
+        return null;
+    }
+
+    public void showPanels(boolean show) {
+        if (show) {
+            viewerSash.setMaximizedControl(null);
+        } else {
+            viewerSash.setMaximizedControl(presentationPanel);
+        }
+    }
     ////////////////////////////////////////
     // Actions
 
@@ -643,7 +787,7 @@ public class ResultSetViewer extends Viewer
         gl.marginHeight = 0;
         //gl.marginBottom = 5;
         statusBar.setLayout(gl);
-        
+
         statusLabel = new Text(statusBar, SWT.READ_ONLY);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         statusLabel.setLayoutData(gd);
@@ -2775,17 +2919,10 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    static class PanelStateItem {
-        String panelId;
-        boolean panelActivated;
-        IResultSetPanel panel;
-    }
-
-    static class PresentationStateItem {
-        ResultSetPresentationDescriptor presentation;
-        List<String> enabledPanelIds;
+    static class PresentationSettings {
+        Set<String> enabledPanelIds = new HashSet<>();
         String activePanelId;
-        int[] sashWeights;
+        int panelRatio;
         boolean panelsVisible;
     }
 
