@@ -32,6 +32,9 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
@@ -75,6 +78,7 @@ import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
+import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -116,18 +120,14 @@ public class ResultSetViewer extends Viewer
     @NotNull
     private static IResultSetFilterManager filterManager = new SimpleFilterManager();
 
-    public static void registerFilterManager(@Nullable IResultSetFilterManager filterManager) {
-        if (filterManager == null) {
-            filterManager = new SimpleFilterManager();
-        }
-        ResultSetViewer.filterManager = filterManager;
-    }
-
     @NotNull
     private final IWorkbenchPartSite site;
     private final Composite viewerPanel;
     private ResultSetFilterPanel filtersPanel;
+    private SashForm viewerSash;
+    private CTabFolder panelFolder;
     private final Composite presentationPanel;
+
     private Text statusLabel;
 
     private final DynamicFindReplaceTarget findReplaceTarget;
@@ -181,8 +181,28 @@ public class ResultSetViewer extends Viewer
 
         this.filtersPanel = new ResultSetFilterPanel(this);
         this.findReplaceTarget = new DynamicFindReplaceTarget();
-        this.presentationPanel = UIUtils.createPlaceholder(viewerPanel, 1);
+
+        this.viewerSash = UIUtils.createPartDivider(site.getPart(), viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
+        this.viewerSash.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        this.presentationPanel = UIUtils.createPlaceholder(this.viewerSash, 1);
         this.presentationPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        this.panelFolder = new CTabFolder(this.viewerSash, SWT.TOP);
+        this.panelFolder.marginWidth = 0;
+        this.panelFolder.marginHeight = 0;
+        this.panelFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+        CTabItem item = new CTabItem(panelFolder, SWT.CLOSE);
+        item.setText("Value");
+        item.setImage(DBeaverIcons.getImage(UIIcon.SQL_CONSOLE));
+
+        CTabItem item2 = new CTabItem(panelFolder, SWT.CLOSE);
+        item2.setText("Aggregate");
+        item2.setImage(DBeaverIcons.getImage(UIIcon.SQL_ANALYSE));
+        this.panelFolder.setSelection(item);
+
+        this.viewerSash.setWeights(new int[] { 700, 300 } );
+        this.viewerSash.setMaximizedControl(this.presentationPanel);
 
         setActivePresentation(new EmptyPresentation());
 
@@ -1019,6 +1039,18 @@ public class ResultSetViewer extends Viewer
     ///////////////////////////////////////////////////////
     // Context menu & filters
 
+    @NotNull
+    public static IResultSetFilterManager getFilterManager() {
+        return filterManager;
+    }
+
+    public static void registerFilterManager(@Nullable IResultSetFilterManager filterManager) {
+        if (filterManager == null) {
+            filterManager = new SimpleFilterManager();
+        }
+        ResultSetViewer.filterManager = filterManager;
+    }
+
     public void showFiltersMenu() {
         DBDAttributeBinding curAttribute = getActivePresentation().getCurrentAttribute();
         if (curAttribute == null) {
@@ -1586,12 +1618,6 @@ public class ResultSetViewer extends Viewer
     @Override
     public DBDDataReceiver getDataReceiver() {
         return dataReceiver;
-    }
-
-    @NotNull
-    @Override
-    public IResultSetFilterManager getFilterManager() {
-        return filterManager;
     }
 
     @Nullable
@@ -2240,6 +2266,11 @@ public class ResultSetViewer extends Viewer
     {
         @Override
         protected IContributionItem[] getContributionItems() {
+            IResultSetController rsv = ResultSetCommandHandler.getActiveResultSet(
+                DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart());
+            if (rsv == null) {
+                return new IContributionItem[0];
+            }
             return new IContributionItem[] {
                 new ActionContributionItem(new Action("Some panel", Action.AS_CHECK_BOX) {
                     @Override
