@@ -623,8 +623,10 @@ public class ResultSetViewer extends Viewer
         if (panel != null) {
             CTabItem panelTab = getPanelTab(id);
             if (panelTab != null) {
-                panelFolder.setSelection(panelTab);
-                presentationSettings.activePanelId = id;
+                if (setActive) {
+                    panelFolder.setSelection(panelTab);
+                    presentationSettings.activePanelId = id;
+                }
                 return;
             } else {
                 log.warn("Panel '" + id + "' tab not found");
@@ -1805,8 +1807,11 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void updatePanelsContent() {
-        activePresentation.updateValueView();
+        //activePresentation.updateValueView();
         updateEditControls();
+        for (IResultSetPanel panel : getActivePanels()) {
+            panel.refresh();
+        }
     }
 
     @Override

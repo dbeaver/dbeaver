@@ -41,4 +41,6 @@ public interface IResultSetPanel {
 
     void deactivatePanel();
 
+    void refresh();
+
 }
