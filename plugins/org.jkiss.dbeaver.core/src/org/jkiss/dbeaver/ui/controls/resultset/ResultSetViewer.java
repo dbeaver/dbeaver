@@ -692,7 +692,11 @@ public class ResultSetViewer extends Viewer
     }
 
     private void removePanel(String panelId) {
-        activePanels.remove(panelId);
+        IResultSetPanel panel = activePanels.remove(panelId);
+        if (panel != null) {
+            panel.deactivatePanel();
+        }
+        getPresentationSettings().enabledPanelIds.remove(panelId);
         if (activePanels.isEmpty()) {
             showPanels(false);
         }
@@ -1807,7 +1811,6 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void updatePanelsContent() {
-        //activePresentation.updateValueView();
         updateEditControls();
         for (IResultSetPanel panel : getActivePanels()) {
             panel.refresh();

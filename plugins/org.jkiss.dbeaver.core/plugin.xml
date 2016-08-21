@@ -2754,6 +2754,15 @@
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel">
             <supports type="columns"/>
         </panel>
+        <panel
+                id="column-aggregate"
+                label="Aggregate columns"
+                description="Aggregate/calculate column values"
+                icon="icons/misc/aggregate.png"
+                default="false"
+                class="org.jkiss.dbeaver.ui.controls.resultset.panel.AggregateColumnsPanel">
+            <supports type="columns"/>
+        </panel>
     </extension>
 
     <extension point="org.eclipse.e4.ui.css.swt.theme">
