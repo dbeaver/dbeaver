@@ -18,6 +18,10 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -27,6 +31,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
 
 /**
  * RSV value view panel
@@ -64,13 +69,22 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
         this.aggregateTable = new Table(parent, SWT.SINGLE);
 
+        if (this.presentation instanceof ISelectionProvider) {
+            ((ISelectionProvider) this.presentation).addSelectionChangedListener(new ISelectionChangedListener() {
+                @Override
+                public void selectionChanged(SelectionChangedEvent event) {
+                    refresh();
+                }
+            });
+        }
+
         return this.aggregateTable;
     }
 
     @Override
     public void activatePanel(IContributionManager contributionManager) {
         fillToolBar(contributionManager);
-        refreshValue();
+        refresh();
     }
 
     @Override
@@ -80,10 +94,17 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     @Override
     public void refresh() {
-        refreshValue();
+        aggregateTable.removeAll();
+        if (this.presentation instanceof ISelectionProvider) {
+            ISelection selection = ((ISelectionProvider) presentation).getSelection();
+            if (selection instanceof IResultSetSelection) {
+                aggregateSelection((IResultSetSelection)selection);
+            }
+        }
     }
 
-    private void refreshValue() {
+    private void aggregateSelection(IResultSetSelection selection) {
+
     }
 
     public void clearValue()

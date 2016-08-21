@@ -330,7 +330,7 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="icons/sql/grid.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.navigateLink" icon="icons/misc/link.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.cell.save" icon="icons/misc/confirm.png"/>
-        <image commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" icon="icons/sql/details.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" icon="icons/sql/panel_customize.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="icons/misc/filter.png"/>
         <image commandId="org.jkiss.dbeaver.core.qm.clear" icon="IMG_ETOOL_CLEAR"/>
@@ -2749,7 +2749,7 @@
                 id="value-view"
                 label="Value viewer"
                 description="View/edit cell value"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/object.png"
+                icon="icons/sql/panel_value.png"
                 default="true"
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel">
             <supports type="columns"/>
@@ -2758,7 +2758,7 @@
                 id="column-aggregate"
                 label="Aggregate columns"
                 description="Aggregate/calculate column values"
-                icon="icons/misc/aggregate.png"
+                icon="icons/sql/panel_aggregate.png"
                 default="false"
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.AggregateColumnsPanel">
             <supports type="columns"/>

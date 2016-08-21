@@ -100,6 +100,8 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
+ * TODO: save presentation/panel state
+ *
  * TODO: fix copy multiple cells - tabulation broken
  * TODO: links in both directions, multiple links support (context menu)
  * TODO: not-editable cells (struct owners in record mode)
@@ -653,7 +655,7 @@ public class ResultSetViewer extends Viewer
         CTabItem panelTab = new CTabItem(panelFolder, SWT.CLOSE);
         panelTab.setData(id);
         panelTab.setText(panel.getPanelTitle());
-        panelTab.setImage(DBeaverIcons.getImage(panel.getPanelImage()));
+        panelTab.setImage(DBeaverIcons.getImage(panelDescriptor.getIcon()));
         panelTab.setToolTipText(panel.getPanelDescription());
         panelTab.setControl(panelControl);
 
@@ -745,6 +747,36 @@ public class ResultSetViewer extends Viewer
             commandService.refreshElements(ResultSetCommandHandler.CMD_TOGGLE_PANELS, null);
         }
     }
+
+    private List<IContributionItem> fillPanelsMenu() {
+        List<IContributionItem> items = new ArrayList<>();
+
+        for (final ResultSetPanelDescriptor panel : availablePanels) {
+            Action panelAction = new Action(panel.getLabel(), Action.AS_CHECK_BOX) {
+                @Override
+                public boolean isChecked() {
+                    return activePanels.containsKey(panel.getId());
+                }
+
+                @Override
+                public void run() {
+                    if (isPanelsVisible() && isChecked()) {
+                        CTabItem panelTab = getPanelTab(panel.getId());
+                        if (panelTab != null) {
+                            panelTab.dispose();
+                            removePanel(panel.getId());
+                        }
+                    } else {
+                        activatePanel(panel.getId(), true, true);
+                    }
+                }
+            };
+            //panelAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
+            items.add(new ActionContributionItem(panelAction));
+        }
+        return items;
+    }
+
     ////////////////////////////////////////
     // Actions
 
@@ -1441,7 +1473,7 @@ public class ResultSetViewer extends Viewer
             }
             {
                 MenuManager viewMenu = new MenuManager(
-                    "View",
+                    "View/Format",
                     null,
                     "view"); //$NON-NLS-1$
 
@@ -1495,8 +1527,6 @@ public class ResultSetViewer extends Viewer
                     navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_NAVIGATE_LINK));
                     navigateMenu.add(new Separator());
                 }
-                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE));
-                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_SWITCH_PRESENTATION));
                 navigateMenu.add(new Separator());
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, ITextEditorActionDefinitionIds.LINE_GOTO));
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_FIRST));
@@ -1506,6 +1536,25 @@ public class ResultSetViewer extends Viewer
 
                 manager.add(navigateMenu);
             }
+            {
+                // Layout
+                MenuManager layoutMenu = new MenuManager(
+                    "Layout",
+                    null,
+                    "layout"); //$NON-NLS-1$
+                layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE));
+                layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_PANELS));
+                layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_SWITCH_PRESENTATION));
+                {
+                    layoutMenu.add(new Separator());
+                    for (IContributionItem item : fillPanelsMenu()) {
+                        layoutMenu.add(item);
+                    }
+                }
+                manager.add(layoutMenu);
+
+            }
+            manager.add(new Separator());
         }
 
         // Fill general menu
@@ -2527,30 +2576,7 @@ public class ResultSetViewer extends Viewer
             if (rsv == null) {
                 return new IContributionItem[0];
             }
-            List<IContributionItem> items = new ArrayList<>();
-            for (final ResultSetPanelDescriptor panel : rsv.availablePanels) {
-                Action panelAction = new Action(panel.getLabel(), Action.AS_CHECK_BOX) {
-                    @Override
-                    public boolean isChecked() {
-                        return rsv.activePanels.containsKey(panel.getId());
-                    }
-
-                    @Override
-                    public void run() {
-                        if (rsv.isPanelsVisible() && isChecked()) {
-                            CTabItem panelTab = rsv.getPanelTab(panel.getId());
-                            if (panelTab != null) {
-                                panelTab.dispose();
-                                rsv.removePanel(panel.getId());
-                            }
-                        } else {
-                            rsv.activatePanel(panel.getId(), true, true);
-                        }
-                    }
-                };
-                //panelAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
-                items.add(new ActionContributionItem(panelAction));
-            }
+            List<IContributionItem> items = rsv.fillPanelsMenu();
             return items.toArray(new IContributionItem[items.size()]);
         }
     }
