@@ -796,6 +796,12 @@ public class SQLEditor extends SQLEditorBase implements
                                 status);
                             return;
                         }
+                        // Make a small pause to let all UI connection listeners to finish
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            // it's ok
+                        }
                         UIUtils.runInUI(null, new Runnable() {
                             @Override
                             public void run() {
