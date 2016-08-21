@@ -18,6 +18,10 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -426,16 +430,23 @@ public class DBNModel implements IResourceChangeListener {
 
     void fireNodeEvent(final DBNEvent event)
     {
-        INavigatorListener[] listenersCopy;
+        final INavigatorListener[] listenersCopy;
         synchronized (this.listeners) {
             if (listeners.isEmpty()) {
                 return;
             }
             listenersCopy = this.listenersCopy;
         }
-        for (INavigatorListener listener :  listenersCopy) {
-            listener.nodeChanged(event);
-        }
+        // Notify listeners in detached job
+        new Job("Notify DBN listeners") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                for (INavigatorListener listener :  listenersCopy) {
+                    listener.nodeChanged(event);
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     @Override
