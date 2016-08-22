@@ -665,7 +665,9 @@ public class ResultSetViewer extends Viewer
         }
 
         presentationSettings.enabledPanelIds.add(id);
-        setActivePanel(id);
+        if (setActive) {
+            setActivePanel(id);
+        }
     }
 
     private void activateDefaultPanels(PresentationSettings settings) {
@@ -685,6 +687,9 @@ public class ResultSetViewer extends Viewer
 
     private void setActivePanel(String panelId) {
         PresentationSettings settings = getPresentationSettings();
+        if (CommonUtils.equalObjects(settings.activePanelId, panelId)) {
+            return;
+        }
         settings.activePanelId = panelId;
         IResultSetPanel panel = activePanels.get(panelId);
         if (panel != null) {
