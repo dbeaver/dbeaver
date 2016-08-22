@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.aggregate.*;
+import org.jkiss.dbeaver.model.data.aggregate.IAggregateFunction;
 import org.jkiss.dbeaver.registry.functions.AggregateFunctionDescriptor;
 import org.jkiss.dbeaver.registry.functions.FunctionsRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -39,9 +39,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -124,7 +122,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private void aggregateSelection(IResultSetSelection selection) {
         List<AggregateFunctionDescriptor> functions = new ArrayList<>(FunctionsRegistry.getInstance().getFunctions());
-        functions.sort(new Comparator<AggregateFunctionDescriptor>() {
+        Collections.sort(functions, new Comparator<AggregateFunctionDescriptor>() {
             @Override
             public int compare(AggregateFunctionDescriptor o1, AggregateFunctionDescriptor o2) {
                 return o1.getLabel().compareTo(o2.getLabel());
