@@ -50,8 +50,6 @@ public abstract class LightGrid extends Canvas {
     public static final int Event_ChangeSort = 1000;
     public static final int Event_NavigateLink = 1001;
 
-    private static final Object NULL_ELEMENT = new Object();
-
     /**
      * Horizontal scrolling increment, in pixels.
      */
@@ -120,7 +118,7 @@ public abstract class LightGrid extends Canvas {
     private int focusItem = -1;
 
     private final Set<GridPos> selectedCells = new TreeSet<>(new GridPos.PosComparator());
-    private final Set<GridPos> selectedCellsBeforeRangeSelect = new TreeSet<>(new GridPos.PosComparator());
+    private final List<GridPos> selectedCellsBeforeRangeSelect = new ArrayList<>();
     private final List<GridColumn> selectedColumns = new ArrayList<>();
     private final IntKeyMap<Boolean> selectedRows = new IntKeyMap<>();
 
@@ -244,9 +242,7 @@ public abstract class LightGrid extends Canvas {
 
     @NotNull
     private Color lineColor;
-    @NotNull
     private Color backgroundColor;
-    @NotNull
     private Color foregroundColor;
     @NotNull
     private Cursor sortCursor;
@@ -356,7 +352,7 @@ public abstract class LightGrid extends Canvas {
         cellRenderer = new GridCellRenderer(this);
 
         final Display display = getDisplay();
-        setLineColor(JFaceColors.getErrorBackground(display));
+        lineColor = JFaceColors.getErrorBackground(display);
         //setForeground(JFaceColors.getBannerForeground(display));
         //setBackground(JFaceColors.getBannerBackground(display));
 /*
@@ -1085,19 +1081,20 @@ public abstract class LightGrid extends Canvas {
     {
 
         // parameter preparation
+        int itemCount = getItemCount();
         if (startIndex == -1) {
             // search first visible item
             startIndex = 0;
-            if (startIndex == getItemCount()) return null;
+            if (startIndex == itemCount) return null;
         }
         if (endIndex == -1) {
             // search last visible item
-            endIndex = getItemCount() - 1;
+            endIndex = itemCount - 1;
             if (endIndex <= 0) return null;
         }
 
         // fail fast
-        if (startIndex < 0 || endIndex < 0 || startIndex >= getItemCount() || endIndex >= getItemCount()
+        if (startIndex < 0 || endIndex < 0 || startIndex >= itemCount || endIndex >= itemCount
             || endIndex < startIndex)
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
         RowRange range = new RowRange();
