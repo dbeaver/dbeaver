@@ -226,7 +226,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             } else if (!matchedDrivers.isEmpty()) {
                 // Multiple drivers with the same class - tru to find driver with the same sample URL or with the same name
                 for (DriverDescriptor tmpDriver : matchedDrivers) {
-                    if (tmpDriver.getSampleURL().equals(driverURL) || tmpDriver.getName().equals(driverName)) {
+                    if (CommonUtils.equalObjects(tmpDriver.getSampleURL(), driverURL) || CommonUtils.equalObjects(tmpDriver.getName(), driverName)) {
                         driver = tmpDriver;
                         break;
                     }
@@ -407,7 +407,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 } else {
                     throw new DBException("Unsupported container type '" + resource.getClass().getName() + "'");
                 }
-                folder.create(true, true, RuntimeUtils.getNestedMonitor(monitor));
+                if (!folder.exists()) {
+                    folder.create(true, true, RuntimeUtils.getNestedMonitor(monitor));
+                }
                 childResource = folder;
                 importChildResources(monitor, folder, childElement, entryPath, zipFile);
             } else {
@@ -419,7 +421,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 } else {
                     throw new DBException("Unsupported container type '" + resource.getClass().getName() + "'");
                 }
-                file.create(zipFile.getInputStream(resourceEntry), true, RuntimeUtils.getNestedMonitor(monitor));
+                if (!file.exists()) {
+                    file.create(zipFile.getInputStream(resourceEntry), true, RuntimeUtils.getNestedMonitor(monitor));
+                }
                 childResource = file;
             }
             loadResourceProperties(monitor, childResource, childElement);
