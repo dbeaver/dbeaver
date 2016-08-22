@@ -17,7 +17,10 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -27,8 +30,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 
@@ -106,13 +111,17 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private void aggregateSelection(IResultSetSelection selection) {
         ResultSetModel model = presentation.getController().getModel();
+        FunctionSum sum = new FunctionSum();
         for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
             Object element = iter.next();
             DBDAttributeBinding attr = selection.getElementAttribute(element);
             ResultSetRow row = selection.getElementRow(element);
             Object cellValue = model.getCellValue(attr, row);
-            //System.out.println(cellValue);
+            if (cellValue instanceof Number) {
+                sum.accumulate((Number) cellValue);
+            }
         }
+        System.out.println("SUM=" + sum.getResult());
     }
 
     public void clearValue()
@@ -122,8 +131,16 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private void fillToolBar(IContributionManager contributionManager)
     {
-//        contributionManager.add(new Separator());
-//        contributionManager.add(saveCellAction);
+        contributionManager.add(new Separator());
+        contributionManager.add(new Action("Group by columns", IAction.AS_CHECK_BOX) {
+            {
+                setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_COLUMN));
+            }
+            @Override
+            public void run() {
+                super.run();
+            }
+        });
     }
 
 
