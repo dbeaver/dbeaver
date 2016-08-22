@@ -15,18 +15,18 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.panel;
+package org.jkiss.dbeaver.model.data.aggregate;
 
 /**
  * FunctionSum
  */
-public class FunctionSum implements IAggregateFunction {
+public class FunctionMin implements IAggregateFunction {
 
-    double result = 0.0;
+    double result = Double.POSITIVE_INFINITY;
 
     @Override
     public void accumulate(Number value) {
-        result += value.doubleValue();
+        result = Math.min(result, value.doubleValue());
     }
 
     @Override

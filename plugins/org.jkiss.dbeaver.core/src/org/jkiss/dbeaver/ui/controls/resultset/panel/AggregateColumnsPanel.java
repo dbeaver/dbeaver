@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.aggregate.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -53,6 +54,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     private Tree aggregateTable;
 
     private boolean groupByColumns;
+    private boolean runServerQueries;
     private List<Class<? extends IAggregateFunction>> enabledFunctions = new ArrayList<>();
 
     public AggregateColumnsPanel() {

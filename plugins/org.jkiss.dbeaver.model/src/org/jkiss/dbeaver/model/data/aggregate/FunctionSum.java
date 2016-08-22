@@ -15,15 +15,22 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.panel;
+package org.jkiss.dbeaver.model.data.aggregate;
 
 /**
- * Aggregate function
+ * FunctionSum
  */
-public interface IAggregateFunction {
+public class FunctionSum implements IAggregateFunction {
 
-    void accumulate(Number value);
+    double result = 0.0;
 
-    Number getResult(int valueCount);
+    @Override
+    public void accumulate(Number value) {
+        result += value.doubleValue();
+    }
 
+    @Override
+    public Number getResult(int valueCount) {
+        return result;
+    }
 }
