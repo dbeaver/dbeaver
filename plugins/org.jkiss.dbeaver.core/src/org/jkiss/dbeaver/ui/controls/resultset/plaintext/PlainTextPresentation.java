@@ -540,6 +540,16 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             }
             return Collections.singletonList(currentRow);
         }
+
+        @Override
+        public DBDAttributeBinding getElementAttribute(Object element) {
+            return curAttribute;
+        }
+
+        @Override
+        public ResultSetRow getElementRow(Object element) {
+            return getController().getCurrentRow();
+        }
     }
 
 }

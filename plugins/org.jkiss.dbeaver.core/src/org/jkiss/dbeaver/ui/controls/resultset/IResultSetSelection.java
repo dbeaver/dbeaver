@@ -38,4 +38,8 @@ public interface IResultSetSelection extends IStructuredSelection {
     @NotNull
     Collection<ResultSetRow> getSelectedRows();
 
+    DBDAttributeBinding getElementAttribute(Object element);
+
+    ResultSetRow getElementRow(Object element);
+
 }

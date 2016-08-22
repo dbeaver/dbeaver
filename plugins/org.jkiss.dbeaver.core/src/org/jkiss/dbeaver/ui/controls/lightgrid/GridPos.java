@@ -41,7 +41,7 @@ public class GridPos
         this.row = copy.row;
     }
 
-   public boolean isValid()
+    public boolean isValid()
     {
         return col >= 0 && row >= 0;
     }

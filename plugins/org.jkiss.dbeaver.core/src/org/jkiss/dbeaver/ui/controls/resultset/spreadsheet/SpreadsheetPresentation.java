@@ -76,6 +76,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -1079,6 +1080,21 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
                 return rows;
             }
+        }
+
+        @Override
+        public DBDAttributeBinding getElementAttribute(Object element) {
+            GridPos pos = (GridPos)element;
+            return (DBDAttributeBinding) (controller.isRecordMode() ?
+                spreadsheet.getRowElement(pos.col) :
+                spreadsheet.getColumnElement(pos.col));
+        }
+
+        @Override
+        public ResultSetRow getElementRow(Object element) {
+            return (ResultSetRow) (controller.isRecordMode() ?
+                controller.getCurrentRow() :
+                spreadsheet.getRowElement(((GridPos) element).row));
         }
     }
 
