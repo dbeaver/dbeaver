@@ -15,22 +15,22 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.panel;
+package org.jkiss.dbeaver.model.data.aggregate;
 
 /**
- * FunctionSum
+ * FunctionAvg
  */
-public class FunctionMax implements IAggregateFunction {
+public class FunctionAvg implements IAggregateFunction {
 
-    double result = Double.NEGATIVE_INFINITY;
+    double result = 0.0;
 
     @Override
     public void accumulate(Number value) {
-        result = Math.max(result, value.doubleValue());
+        result += value.doubleValue();
     }
 
     @Override
     public Number getResult(int valueCount) {
-        return result;
+        return result / valueCount;
     }
 }
