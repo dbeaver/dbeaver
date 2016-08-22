@@ -1912,6 +1912,8 @@ public class ResultSetViewer extends Viewer
             ISelection selection = ((ISelectionProvider) activePresentation).getSelection();
             if (selection instanceof IResultSetSelection) {
                 return (IResultSetSelection) selection;
+            } else {
+                log.debug("Bad selection type (" + selection + ") in presentation " + activePresentation);
             }
         }
         return new EmptySelection();
@@ -2570,6 +2572,16 @@ public class ResultSetViewer extends Viewer
         @Override
         public Collection<ResultSetRow> getSelectedRows() {
             return Collections.emptyList();
+        }
+
+        @Override
+        public DBDAttributeBinding getElementAttribute(Object element) {
+            return null;
+        }
+
+        @Override
+        public ResultSetRow getElementRow(Object element) {
+            return null;
         }
     }
 
