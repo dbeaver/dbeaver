@@ -29,6 +29,7 @@
     <extension-point id="org.jkiss.dbeaver.dataManager" name="Data managers" schema="schema/org.jkiss.dbeaver.dataManager.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTransfer" name="Data Transfer Provider" schema="schema/org.jkiss.dbeaver.dataTransfer.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataFormatter" name="Data Formatters" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.aggregateFunction" name="Data Formatters" schema="schema/org.jkiss.dbeaver.aggregateFunction.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resourceHandler" name="Resource Handlers" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.networkHandler" name="Network Handlers" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resources" name="Resources" schema="schema/org.jkiss.dbeaver.resources.exsd"/>
@@ -2515,6 +2516,10 @@
                 <property id="roundingMode" label="%DateFormatter.number.general.roundingMode.label" type="string" description="%DateFormatter.number.general.roundingMode.description" validValues="UP,DOWN,CEILING,FLOOR,HALF_UP,HALF_DOWN,HALF_EVEN,UNNECESSARY"/>
             </propertyGroup>
         </formatter>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.aggregateFunction">
+        <function id="sum" class="org.jkiss.dbeaver.model.data.aggregate.FunctionSum" type="simple" label="Sum" description="Sum of numbers"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">
