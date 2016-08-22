@@ -18,12 +18,19 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
 /**
- * Aggregate function
+ * FunctionAvg
  */
-public interface IAggregateFunction {
+public class FunctionAvg implements IAggregateFunction {
 
-    void accumulate(Number value);
+    double result = 0.0;
 
-    Number getResult(int valueCount);
+    @Override
+    public void accumulate(Number value) {
+        result += value.doubleValue();
+    }
 
+    @Override
+    public Number getResult(int valueCount) {
+        return result / valueCount;
+    }
 }
