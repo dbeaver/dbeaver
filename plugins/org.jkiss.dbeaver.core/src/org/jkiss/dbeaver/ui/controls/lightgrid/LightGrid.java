@@ -2321,8 +2321,14 @@ public abstract class LightGrid extends Canvas {
             shiftSelectionAnchorItem = -1;
         }
 
+        List<GridPos> oldSelection = null;
         if (!shift && !ctrl) {
-            if (newCells.equals(selectedCells)) return null;
+            if (newCells.size() == 1 &&
+                newCells.size() == selectedCells.size() &&
+                newCells.get(0).equals(selectedCells.iterator().next()))
+            {
+                return null;
+            }
 
             selectedCells.clear();
             for (GridPos newCell : newCells) {
@@ -2331,8 +2337,8 @@ public abstract class LightGrid extends Canvas {
 
         } else if (shift) {
 
-            GridPos newCell = newCells.get(0); //shift selection should only occur with one
-            //cell, ignoring others
+            GridPos newCell = newCells.get(0); //shift selection should only occur with one cell, ignoring others
+            oldSelection = new ArrayList<>(selectedCells);
 
             if ((focusColumn == null) || (focusItem < 0)) {
                 return null;
@@ -2369,7 +2375,6 @@ public abstract class LightGrid extends Canvas {
             }
 
             boolean firstLoop = true;
-
             do {
                 if (!firstLoop) {
                     currentItem++;
@@ -2404,6 +2409,11 @@ public abstract class LightGrid extends Canvas {
                     }
                 } while (currentColumn != endColumn && currentColumn != null);
             } while (currentItem != endItem);
+
+            if (selectedCells.equals(newCells)) {
+                return null;
+            }
+
         } else /*if (eventSource == EventSource.MOUSE)*/ {
             // Ctrl selection works only for mouse events
             boolean reverse = reverseDuplicateSelections;
@@ -2423,6 +2433,9 @@ public abstract class LightGrid extends Canvas {
                 }
             }
         }
+        if (oldSelection != null && oldSelection.size() == selectedCells.size() && selectedCells.containsAll(oldSelection)) {
+            return null;
+        }
 
         updateSelectionCache();
 
@@ -2438,15 +2451,15 @@ public abstract class LightGrid extends Canvas {
         return e;
     }
 
-    private void addToCellSelection(GridPos newCell)
+    private boolean addToCellSelection(GridPos newCell)
     {
         if (newCell.col < 0 || newCell.col >= columns.size())
-            return;
+            return false;
 
         if (newCell.row < 0 || newCell.row >= getItemCount())
-            return;
+            return false;
 
-        selectedCells.add(newCell);
+        return selectedCells.add(newCell);
     }
 
     void updateSelectionCache()
@@ -2807,7 +2820,7 @@ public abstract class LightGrid extends Canvas {
         if (selectionEvent != null) {
             selectionEvent.stateMask = e.stateMask;
             selectionEvent.button = e.button;
-           selectionEvent.data = new GridCell(col == null ? null : col.getElement(), row < 0 ? null : rowElements[row]);
+            selectionEvent.data = new GridCell(col == null ? null : col.getElement(), row < 0 ? null : rowElements[row]);
             selectionEvent.x = e.x;
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);
@@ -3048,8 +3061,8 @@ public abstract class LightGrid extends Canvas {
 
                     showColumn(intentColumn);
                     showItem(intentItem);
-                    selectionEvent = updateCellSelection(new GridPos(intentColumn.getIndex(), intentItem),
-                                                         ctrlFlag | SWT.MOD2, true, false, EventSource.MOUSE);
+                    GridPos newCell = new GridPos(intentColumn.getIndex(), intentItem);
+                    selectionEvent = updateCellSelection(newCell, ctrlFlag | SWT.MOD2, true, false, EventSource.MOUSE);
                 }
                 if (cellRowDragSelectionOccurring && handleCellHover(e.x, e.y)) {
                     int intentItem = hoveringItem;
