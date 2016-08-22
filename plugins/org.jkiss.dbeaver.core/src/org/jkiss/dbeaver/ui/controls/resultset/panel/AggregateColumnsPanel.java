@@ -28,10 +28,11 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
+
+import java.util.Iterator;
 
 /**
  * RSV value view panel
@@ -104,7 +105,14 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     }
 
     private void aggregateSelection(IResultSetSelection selection) {
-
+        ResultSetModel model = presentation.getController().getModel();
+        for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
+            Object element = iter.next();
+            DBDAttributeBinding attr = selection.getElementAttribute(element);
+            ResultSetRow row = selection.getElementRow(element);
+            Object cellValue = model.getCellValue(attr, row);
+            //System.out.println(cellValue);
+        }
     }
 
     public void clearValue()
