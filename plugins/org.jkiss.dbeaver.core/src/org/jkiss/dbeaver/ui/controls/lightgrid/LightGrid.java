@@ -2804,10 +2804,10 @@ public abstract class LightGrid extends Canvas {
             focusColumn = column;
         }
 
-        if (selectionEvent != null && row >= 0) {
+        if (selectionEvent != null) {
             selectionEvent.stateMask = e.stateMask;
             selectionEvent.button = e.button;
-            selectionEvent.data = new GridCell(col == null ? null : col.getElement(), rowElements[row]);
+           selectionEvent.data = new GridCell(col == null ? null : col.getElement(), row < 0 ? null : rowElements[row]);
             selectionEvent.x = e.x;
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);
