@@ -18,12 +18,19 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
 /**
- * Aggregate function
+ * FunctionSum
  */
-public interface IAggregateFunction {
+public class FunctionMax implements IAggregateFunction {
 
-    void accumulate(Number value);
+    double result = Double.NEGATIVE_INFINITY;
 
-    Number getResult(int valueCount);
+    @Override
+    public void accumulate(Number value) {
+        result = Math.max(result, value.doubleValue());
+    }
 
+    @Override
+    public Number getResult(int valueCount) {
+        return result;
+    }
 }

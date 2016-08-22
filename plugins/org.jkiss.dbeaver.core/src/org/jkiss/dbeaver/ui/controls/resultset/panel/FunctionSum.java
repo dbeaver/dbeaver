@@ -30,7 +30,7 @@ public class FunctionSum implements IAggregateFunction {
     }
 
     @Override
-    public Number getResult() {
+    public Number getResult(int valueCount) {
         return result;
     }
 }

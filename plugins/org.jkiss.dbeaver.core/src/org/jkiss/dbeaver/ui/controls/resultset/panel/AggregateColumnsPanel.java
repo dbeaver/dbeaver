@@ -26,18 +26,19 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * RSV value view panel
@@ -49,9 +50,16 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     public static final String PANEL_ID = "column-aggregate";
 
     private IResultSetPresentation presentation;
-    private Table aggregateTable;
+    private Tree aggregateTable;
+
+    private boolean groupByColumns;
+    private List<Class<? extends IAggregateFunction>> enabledFunctions = new ArrayList<>();
 
     public AggregateColumnsPanel() {
+        enabledFunctions.add(FunctionSum.class);
+        enabledFunctions.add(FunctionAvg.class);
+        enabledFunctions.add(FunctionMin.class);
+        enabledFunctions.add(FunctionMax.class);
     }
 
     @Override
@@ -73,7 +81,11 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     public Control createContents(IResultSetPresentation presentation, Composite parent) {
         this.presentation = presentation;
 
-        this.aggregateTable = new Table(parent, SWT.SINGLE);
+        this.aggregateTable = new Tree(parent, SWT.SINGLE);
+        this.aggregateTable.setHeaderVisible(true);
+        this.aggregateTable.setLinesVisible(true);
+        new TreeColumn(this.aggregateTable, SWT.LEFT).setText("Function");
+        new TreeColumn(this.aggregateTable, SWT.RIGHT).setText("Value");
 
         if (this.presentation instanceof ISelectionProvider) {
             ((ISelectionProvider) this.presentation).addSelectionChangedListener(new ISelectionChangedListener() {
@@ -107,21 +119,37 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 aggregateSelection((IResultSetSelection)selection);
             }
         }
+        UIUtils.packColumns(aggregateTable, true, null);
     }
 
     private void aggregateSelection(IResultSetSelection selection) {
         ResultSetModel model = presentation.getController().getModel();
-        FunctionSum sum = new FunctionSum();
-        for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
-            Object element = iter.next();
-            DBDAttributeBinding attr = selection.getElementAttribute(element);
-            ResultSetRow row = selection.getElementRow(element);
-            Object cellValue = model.getCellValue(attr, row);
-            if (cellValue instanceof Number) {
-                sum.accumulate((Number) cellValue);
+        for (Class<? extends IAggregateFunction> funcClass : enabledFunctions) {
+            try {
+                int valueCount = 0;
+                IAggregateFunction func = funcClass.newInstance();
+                for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
+                    Object element = iter.next();
+                    DBDAttributeBinding attr = selection.getElementAttribute(element);
+                    ResultSetRow row = selection.getElementRow(element);
+                    Object cellValue = model.getCellValue(attr, row);
+                    if (cellValue instanceof Number) {
+                        func.accumulate((Number) cellValue);
+                        valueCount++;
+                    }
+                }
+                TreeItem funcItem = new TreeItem(aggregateTable, SWT.NONE);
+                funcItem.setText(0, funcClass.getSimpleName());
+                if (valueCount > 0) {
+                    Number result = func.getResult(valueCount);
+                    if (result != null) {
+                        funcItem.setText(1, result.toString());
+                    }
+                }
+            } catch (Exception e) {
+                log.error(e);
             }
         }
-        System.out.println("SUM=" + sum.getResult());
     }
 
     public void clearValue()
@@ -136,9 +164,16 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             {
                 setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_COLUMN));
             }
+
+            @Override
+            public boolean isChecked() {
+                return groupByColumns;
+            }
+
             @Override
             public void run() {
-                super.run();
+                groupByColumns = !groupByColumns;
+                refresh();
             }
         });
     }
