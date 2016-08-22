@@ -100,8 +100,6 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
- * TODO: save presentation/panel state
- *
  * TODO: fix copy multiple cells - tabulation broken
  * TODO: links in both directions, multiple links support (context menu)
  * TODO: not-editable cells (struct owners in record mode)
@@ -220,10 +218,9 @@ public class ResultSetViewer extends Viewer
             @Override
             public void handleEvent(Event event)
             {
-                PresentationSettings presentationSettings = getPresentationSettings();
                 if (!viewerSash.isDisposed()) {
                     int[] weights = viewerSash.getWeights();
-                    presentationSettings.panelRatio = weights[0];
+                    getPresentationSettings().panelRatio = weights[1];
                 }
             }
         });
@@ -543,6 +540,7 @@ public class ResultSetViewer extends Viewer
             presentationSwitchCombo.combo.select(activePresentationDescriptor);
             // Save in global preferences
             DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
+            savePresentationSettings();
         } catch (Throwable e1) {
             UIUtils.showErrorDialog(
                 viewerPanel.getShell(),
@@ -590,6 +588,9 @@ public class ResultSetViewer extends Viewer
             pSections = viewerSettings.addNewSection(SETTINGS_SECTION_PRESENTATIONS);
         }
         for (Map.Entry<ResultSetPresentationDescriptor, PresentationSettings> pEntry : presentationSettings.entrySet()) {
+            if (pEntry.getKey() == null) {
+                continue;
+            }
             String pId = pEntry.getKey().getId();
             PresentationSettings settings = pEntry.getValue();
             IDialogSettings pSection = pSections.getSection(pId);
@@ -740,6 +741,8 @@ public class ResultSetViewer extends Viewer
             panelToolBar.update(true);
             activePresentation.updateValueView();
         }
+
+        getPresentationSettings().panelsVisible = show;
 
         // Refresh elements
         ICommandService commandService = getSite().getService(ICommandService.class);
@@ -985,6 +988,7 @@ public class ResultSetViewer extends Viewer
             CommandContributionItem.STYLE_PULLDOWN));
         //panelsAction.
         mainToolbar.add(panelsAction);
+        mainToolbar.add(new Separator());
         mainToolbar.add(new ConfigAction());
         mainToolbar.createControl(statusBar);
 
@@ -1032,6 +1036,8 @@ public class ResultSetViewer extends Viewer
 
     private void dispose()
     {
+        savePresentationSettings();
+
         clearData();
 
         if (mainToolbar != null) {
