@@ -2520,6 +2520,9 @@
 
     <extension point="org.jkiss.dbeaver.aggregateFunction">
         <function id="sum" class="org.jkiss.dbeaver.model.data.aggregate.FunctionSum" type="simple" label="Sum" description="Sum of numbers"/>
+        <function id="avg" class="org.jkiss.dbeaver.model.data.aggregate.FunctionAvg" type="simple" label="Avg" description="Arithmetic mean"/>
+        <function id="avg" class="org.jkiss.dbeaver.model.data.aggregate.FunctionMin" type="simple" label="Min" description="Minimum value"/>
+        <function id="avg" class="org.jkiss.dbeaver.model.data.aggregate.FunctionMin" type="simple" label="Max" description="Maximum value"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">
