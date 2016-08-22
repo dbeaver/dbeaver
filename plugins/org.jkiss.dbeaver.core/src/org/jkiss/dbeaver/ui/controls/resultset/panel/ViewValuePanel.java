@@ -171,6 +171,10 @@ public class ViewValuePanel implements IResultSetPanel {
                 IValueController.EditType.PANEL,
                 viewPlaceholder);
         } else {
+            if (previewController.getCurRow() == row) {
+                // The same attr and row - just ignore
+                return;
+            }
             newController = previewController;
             previewController.setCurRow(row);
         }
