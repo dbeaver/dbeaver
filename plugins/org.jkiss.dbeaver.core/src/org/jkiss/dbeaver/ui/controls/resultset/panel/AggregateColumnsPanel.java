@@ -24,10 +24,12 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -111,6 +113,9 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             @Override
             public void menuAboutToShow(IMenuManager manager)
             {
+                manager.add(new CopyAction());
+                manager.add(new CopyAllAction());
+                manager.add(new Separator());
                 fillToolBar(manager);
             }
         });
@@ -134,6 +139,8 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         groupByColumns = panelSettings.getBoolean(PARAM_GROUP_BY_COLUMNS);
         IDialogSettings functionsSection = panelSettings.getSection("functions");
         if (functionsSection != null) {
+            final Map<AggregateFunctionDescriptor, Integer> funcIndexes = new HashMap<>();
+
             for (IDialogSettings funcSection : functionsSection.getSections()) {
                 String funcId = funcSection.getName();
                 if (!funcSection.getBoolean("enabled")) {
@@ -143,9 +150,16 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 if (func == null) {
                     log.debug("Function '" + funcId + "' not found");
                 } else {
+                    funcIndexes.put(func, funcSection.getInt("index"));
                     enabledFunctions.add(func);
                 }
             }
+            Collections.sort(enabledFunctions, new Comparator<AggregateFunctionDescriptor>() {
+                @Override
+                public int compare(AggregateFunctionDescriptor o1, AggregateFunctionDescriptor o2) {
+                    return funcIndexes.get(o1) - funcIndexes.get(o2);
+                }
+            });
         }
 
         if (enabledFunctions.isEmpty()) {
@@ -170,9 +184,16 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     private void saveSettings() {
         panelSettings.put(PARAM_GROUP_BY_COLUMNS, groupByColumns);
         IDialogSettings functionsSection = UIUtils.getSettingsSection(panelSettings, "functions");
-        for (AggregateFunctionDescriptor func : enabledFunctions) {
+
+        for (AggregateFunctionDescriptor func : FunctionsRegistry.getInstance().getFunctions()) {
             IDialogSettings funcSection = UIUtils.getSettingsSection(functionsSection, func.getId());
-            funcSection.put("enabled", true);
+            boolean enabled = enabledFunctions.contains(func);
+            funcSection.put("enabled", enabled);
+            if (enabled) {
+                funcSection.put("index", enabledFunctions.indexOf(func));
+            } else {
+                funcSection.put("index", -1);
+            }
         }
     }
 
@@ -204,32 +225,41 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     private void aggregateSelection(IResultSetSelection selection) {
         List<AggregateFunctionDescriptor> functions = enabledFunctions;
         ResultSetModel model = presentation.getController().getModel();
+        Map<IAggregateFunction, TreeItem> funcMap = new IdentityHashMap<>();
         for (AggregateFunctionDescriptor funcDesc : functions) {
+            TreeItem funcItem = new TreeItem(aggregateTable, SWT.NONE);
+            funcItem.setData(funcDesc);
+            funcItem.setText(0, funcDesc.getLabel());
+            funcItem.setImage(0, DBeaverIcons.getImage(funcDesc.getIcon()));
             try {
-                int valueCount = 0;
                 IAggregateFunction func = funcDesc.createFunction();
-                for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
-                    Object element = iter.next();
-                    DBDAttributeBinding attr = selection.getElementAttribute(element);
-                    ResultSetRow row = selection.getElementRow(element);
-                    Object cellValue = model.getCellValue(attr, row);
-                    if (cellValue instanceof Number) {
-                        func.accumulate((Number) cellValue);
-                        valueCount++;
-                    }
-                }
-                TreeItem funcItem = new TreeItem(aggregateTable, SWT.NONE);
-                funcItem.setData(funcDesc);
-                funcItem.setText(0, funcDesc.getLabel());
-                funcItem.setImage(0, DBeaverIcons.getImage(funcDesc.getIcon()));
-                if (valueCount > 0) {
-                    Number result = func.getResult(valueCount);
-                    if (result != null) {
-                        funcItem.setText(1, result.toString());
-                    }
-                }
-            } catch (Exception e) {
+                funcMap.put(func, funcItem);
+            } catch (DBException e) {
                 log.error(e);
+            }
+        }
+
+        IAggregateFunction[] funcs = funcMap.keySet().toArray(new IAggregateFunction[funcMap.size()]);
+        int valueCount = 0;
+        for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
+            Object element = iter.next();
+            DBDAttributeBinding attr = selection.getElementAttribute(element);
+            ResultSetRow row = selection.getElementRow(element);
+            Object cellValue = model.getCellValue(attr, row);
+            if (cellValue instanceof Number) {
+                for (IAggregateFunction func : funcs) {
+                    func.accumulate((Number) cellValue);
+                }
+                valueCount++;
+            }
+        }
+        if (valueCount > 0) {
+            for (IAggregateFunction func : funcs) {
+                Number result = func.getResult(valueCount);
+                if (result != null) {
+                    TreeItem treeItem = funcMap.get(func);
+                    treeItem.setText(1, result.toString());
+                }
             }
         }
     }
@@ -280,7 +310,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 }
             }
             if (!missingFunctions.isEmpty()) {
-                Point location = aggregateTable.getDisplay().map(aggregateTable, null, new Point(0, 0));
+                Point location = aggregateTable.getDisplay().map(aggregateTable, null, new Point(10, 10));
                 MenuManager menuManager = new MenuManager();
 
                 for (final AggregateFunctionDescriptor func : missingFunctions) {
@@ -339,6 +369,38 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             enabledFunctions.clear();
             loadDefaultFunctions();
             refresh();
+        }
+    }
+
+    private class CopyAction extends Action {
+        public CopyAction() {
+            super("Copy Value");
+        }
+
+        @Override
+        public void run() {
+            StringBuilder result = new StringBuilder();
+            for (TreeItem item : aggregateTable.getSelection()) {
+                if (result.length() > 0) result.append("\n");
+                result.append(item.getText(1));
+            }
+            UIUtils.setClipboardContents(aggregateTable.getDisplay(), TextTransfer.getInstance(), result.toString());
+        }
+    }
+
+    private class CopyAllAction extends Action {
+        public CopyAllAction() {
+            super("Copy All");
+        }
+
+        @Override
+        public void run() {
+            StringBuilder result = new StringBuilder();
+            for (TreeItem item : aggregateTable.getItems()) {
+                if (result.length() > 0) result.append("\n");
+                result.append(item.getText(0)).append("=").append(item.getText(1));
+            }
+            UIUtils.setClipboardContents(aggregateTable.getDisplay(), TextTransfer.getInstance(), result.toString());
         }
     }
 
