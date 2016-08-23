@@ -31,7 +31,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.aggregate.IAggregateFunction;
@@ -127,7 +126,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (panelToolbar != null) {
-                    panelToolbar.update(true);
+                    UIUtils.updateContributionItems(panelToolbar);
                 }
             }
         });
@@ -281,24 +280,21 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     private class GroupByColumnsAction extends Action {
         public GroupByColumnsAction() {
             super("Group by columns", IAction.AS_CHECK_BOX);
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_COLUMN));
-        }
-
-        @Override
-        public boolean isChecked() {
-            return groupByColumns;
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.GROUP_BY_ATTR));
+            setChecked(groupByColumns);
         }
 
         @Override
         public void run() {
             groupByColumns = !groupByColumns;
+            setChecked(groupByColumns);
             refresh();
         }
     }
 
     private class AddFunctionAction extends Action {
         public AddFunctionAction() {
-            super("Add function", DBeaverIcons.getImageDescriptor(UIIcon.ROW_ADD));
+            super("Add function", DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
         }
 
         @Override
@@ -341,7 +337,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class RemoveFunctionAction extends Action {
         public RemoveFunctionAction() {
-            super("Remove function", DBeaverIcons.getImageDescriptor(UIIcon.ROW_DELETE));
+            super("Remove function", DBeaverIcons.getImageDescriptor(UIIcon.OBJ_REMOVE));
         }
 
         @Override
@@ -361,7 +357,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class ResetFunctionsAction extends Action {
         public ResetFunctionsAction() {
-            super("Reset", DBeaverIcons.getImageDescriptor(UIIcon.RESET));
+            super("Reset", DBeaverIcons.getImageDescriptor(UIIcon.OBJ_REFRESH));
         }
 
         @Override
