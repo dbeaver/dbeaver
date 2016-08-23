@@ -195,16 +195,16 @@ public class ResultSetViewer extends Viewer
         this.presentationPanel = UIUtils.createPlaceholder(this.viewerSash, 1);
         this.presentationPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        this.panelFolder = new CTabFolder(this.viewerSash, SWT.TOP);
+        this.panelFolder = new CTabFolder(this.viewerSash, SWT.FLAT | SWT.TOP);
         this.panelFolder.marginWidth = 0;
         this.panelFolder.marginHeight = 0;
         this.panelFolder.setMinimizeVisible(true);
-        //this.panelFolder.setMaximizeVisible(true);
+        this.panelFolder.setMRUVisible(true);
         this.panelFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
         ToolBar panelToolbarControl = this.panelToolBar.createControl(panelFolder);
-        this.panelFolder.setTopRight(panelToolbarControl);
+        this.panelFolder.setTopRight(panelToolbarControl, SWT.RIGHT | SWT.WRAP);
         this.panelFolder.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -694,6 +694,7 @@ public class ResultSetViewer extends Viewer
         if (panel != null) {
             panelToolBar.removeAll();
             panel.activatePanel(panelToolBar);
+            addDefaultPanelActions();
             panelToolBar.update(true);
         }
     }
@@ -742,6 +743,7 @@ public class ResultSetViewer extends Viewer
             if (panel != null) {
                 panel.activatePanel(panelToolBar);
             }
+            addDefaultPanelActions();
             panelToolBar.update(true);
             activePresentation.updateValueView();
         }
@@ -782,6 +784,28 @@ public class ResultSetViewer extends Viewer
             items.add(new ActionContributionItem(panelAction));
         }
         return items;
+    }
+
+    private void addDefaultPanelActions() {
+        panelToolBar.add(new Action("View Menu", ImageDescriptor.createFromImageData(DBeaverIcons.getViewMenuImage().getImageData())) {
+            @Override
+            public void run() {
+                ToolBar tb = panelToolBar.getControl();
+                for (ToolItem item : tb.getItems()) {
+                    if (item.getData() instanceof ActionContributionItem && ((ActionContributionItem) item.getData()).getAction() == this) {
+
+                        Rectangle ib = item.getBounds();
+                        Point displayAt = item.getParent().toDisplay(ib.x, ib.y + ib.height);
+
+                        final Menu swtMenu = new Menu(panelToolBar.getControl());
+                        new MenuItem(swtMenu, SWT.NONE).setText("Show panel");
+                        swtMenu.setLocation(displayAt);
+                        swtMenu.setVisible(true);
+                        return;
+                    }
+                }
+            }
+        });
     }
 
     ////////////////////////////////////////
