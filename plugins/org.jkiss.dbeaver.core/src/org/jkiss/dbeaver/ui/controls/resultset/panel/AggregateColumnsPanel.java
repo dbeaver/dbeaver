@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.aggregate.IAggregateFunction;
 import org.jkiss.dbeaver.registry.functions.AggregateFunctionDescriptor;
@@ -210,23 +211,68 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     @Override
     public void refresh() {
-        aggregateTable.removeAll();
-        if (this.presentation instanceof ISelectionProvider) {
-            ISelection selection = ((ISelectionProvider) presentation).getSelection();
-            if (selection instanceof IResultSetSelection) {
-                aggregateSelection((IResultSetSelection)selection);
+        aggregateTable.setRedraw(false);
+        try {
+            aggregateTable.removeAll();
+            if (this.presentation instanceof ISelectionProvider) {
+                ISelection selection = ((ISelectionProvider) presentation).getSelection();
+                if (selection instanceof IResultSetSelection) {
+                    aggregateSelection((IResultSetSelection)selection);
+                }
             }
+            UIUtils.packColumns(aggregateTable, true, null);
+        } finally {
+            aggregateTable.setRedraw(true);
         }
-        UIUtils.packColumns(aggregateTable, true, null);
         saveSettings();
     }
 
     private void aggregateSelection(IResultSetSelection selection) {
-        List<AggregateFunctionDescriptor> functions = enabledFunctions;
         ResultSetModel model = presentation.getController().getModel();
+        if (groupByColumns) {
+            Map<DBDAttributeBinding, List<Number>> attrValues = new LinkedHashMap<>();
+            for (Object element : selection.toList()) {
+                DBDAttributeBinding attr = selection.getElementAttribute(element);
+                ResultSetRow row = selection.getElementRow(element);
+                Object cellValue = model.getCellValue(attr, row);
+                if (cellValue instanceof Number) {
+                    List<Number> numbers = attrValues.get(attr);
+                    if (numbers == null) {
+                        numbers = new ArrayList<>();
+                        attrValues.put(attr, numbers);
+                    }
+                    numbers.add((Number) cellValue);
+                }
+            }
+
+            for (Map.Entry<DBDAttributeBinding, List<Number>> entry : attrValues.entrySet()) {
+                TreeItem attrItem = new TreeItem(aggregateTable, SWT.NONE);
+                attrItem.setText(entry.getKey().getName());
+                attrItem.setImage(DBeaverIcons.getImage(DBUtils.getDataIcon(entry.getKey())));
+                aggregateValues(attrItem, entry.getValue());
+                attrItem.setExpanded(true);
+            }
+        } else {
+            List<Number> allValues = new ArrayList<>(selection.size());
+            for (Object element : selection.toList()) {
+                DBDAttributeBinding attr = selection.getElementAttribute(element);
+                ResultSetRow row = selection.getElementRow(element);
+                Object cellValue = model.getCellValue(attr, row);
+                if (cellValue instanceof Number) {
+                    allValues.add((Number) cellValue);
+                }
+            }
+            aggregateValues(null, allValues);
+        }
+    }
+
+    private void aggregateValues(TreeItem parentItem, Collection<Number> values) {
+        List<AggregateFunctionDescriptor> functions = enabledFunctions;
         Map<IAggregateFunction, TreeItem> funcMap = new IdentityHashMap<>();
         for (AggregateFunctionDescriptor funcDesc : functions) {
-            TreeItem funcItem = new TreeItem(aggregateTable, SWT.NONE);
+            TreeItem funcItem = (parentItem == null) ?
+                new TreeItem(aggregateTable, SWT.NONE) :
+                new TreeItem(parentItem, SWT.NONE);
             funcItem.setData(funcDesc);
             funcItem.setText(0, funcDesc.getLabel());
             funcItem.setImage(0, DBeaverIcons.getImage(funcDesc.getIcon()));
@@ -240,17 +286,11 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
         IAggregateFunction[] funcs = funcMap.keySet().toArray(new IAggregateFunction[funcMap.size()]);
         int valueCount = 0;
-        for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
-            Object element = iter.next();
-            DBDAttributeBinding attr = selection.getElementAttribute(element);
-            ResultSetRow row = selection.getElementRow(element);
-            Object cellValue = model.getCellValue(attr, row);
-            if (cellValue instanceof Number) {
-                for (IAggregateFunction func : funcs) {
-                    func.accumulate((Number) cellValue);
-                }
-                valueCount++;
+        for (Number element : values) {
+            for (IAggregateFunction func : funcs) {
+                func.accumulate(element);
             }
+            valueCount++;
         }
         if (valueCount > 0) {
             for (IAggregateFunction func : funcs) {
@@ -378,7 +418,11 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             StringBuilder result = new StringBuilder();
             for (TreeItem item : aggregateTable.getSelection()) {
                 if (result.length() > 0) result.append("\n");
-                result.append(item.getText(1));
+                if (item.getData() instanceof AggregateFunctionDescriptor) {
+                    result.append(item.getText(1));
+                } else {
+                    result.append(item.getText(0));
+                }
             }
             UIUtils.setClipboardContents(aggregateTable.getDisplay(), TextTransfer.getInstance(), result.toString());
         }
@@ -392,9 +436,20 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         @Override
         public void run() {
             StringBuilder result = new StringBuilder();
-            for (TreeItem item : aggregateTable.getItems()) {
-                if (result.length() > 0) result.append("\n");
-                result.append(item.getText(0)).append("=").append(item.getText(1));
+            if (!groupByColumns) {
+                for (TreeItem item : aggregateTable.getItems()) {
+                    if (result.length() > 0) result.append("\n");
+                    result.append(item.getText(0)).append("=").append(item.getText(1));
+                }
+            } else {
+                for (TreeItem item : aggregateTable.getItems()) {
+                    if (result.length() > 0) result.append("\n");
+                    result.append(item.getText(0));
+                    for (TreeItem funcItem : item.getItems()) {
+                        result.append("\n\t");
+                        result.append(funcItem.getText(0)).append("=").append(funcItem.getText(1));
+                    }
+                }
             }
             UIUtils.setClipboardContents(aggregateTable.getDisplay(), TextTransfer.getInstance(), result.toString());
         }
