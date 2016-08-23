@@ -128,6 +128,12 @@ public class UIIcon {
     public static final DBIcon EDIT_COLUMN = new DBIcon("edit_column", "misc/edit_column.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CONFIG_TABLE = new DBIcon("edit_table", "misc/config_table.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon OBJ_ADD = new DBIcon("object_add", "misc/object_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OBJ_REMOVE = new DBIcon("object_remove", "misc/object_remove.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OBJ_REFRESH = new DBIcon("object_refresh", "misc/object_refresh.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon GROUP_BY_ATTR = new DBIcon("group_attr", "misc/group_attributes.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
     public static final DBIcon TREE_EXPAND = new DBIcon("expand", "misc/expand.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_COLLAPSE = new DBIcon("collapse", "misc/collapse.png"); //$NON-NLS-1$ //$NON-NLS-2$
 

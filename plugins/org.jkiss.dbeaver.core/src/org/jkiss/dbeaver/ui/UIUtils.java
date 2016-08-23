@@ -638,6 +638,12 @@ public class UIUtils {
         return button;
     }
 
+    public static void updateContributionItems(IContributionManager manager) {
+        for (IContributionItem item : manager.getItems()) {
+            item.update();
+        }
+    }
+
     @Nullable
     public static Shell getActiveShell()
     {

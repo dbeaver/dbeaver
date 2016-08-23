@@ -913,16 +913,8 @@ public class ResultSetViewer extends Viewer
      */
     private void updateToolbar()
     {
-        if (!mainToolbar.isEmpty()) {
-            for (IContributionItem item : mainToolbar.getItems()) {
-                item.update();
-            }
-        }
-        if (!panelToolBar.isEmpty()) {
-            for (IContributionItem item : panelToolBar.getItems()) {
-                item.update();
-            }
-        }
+        UIUtils.updateContributionItems(mainToolbar);
+        UIUtils.updateContributionItems(panelToolBar);
     }
 
     public void redrawData(boolean rowsChanged)
