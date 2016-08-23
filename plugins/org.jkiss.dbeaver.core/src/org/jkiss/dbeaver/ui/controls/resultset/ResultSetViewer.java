@@ -793,12 +793,13 @@ public class ResultSetViewer extends Viewer
                 ToolBar tb = panelToolBar.getControl();
                 for (ToolItem item : tb.getItems()) {
                     if (item.getData() instanceof ActionContributionItem && ((ActionContributionItem) item.getData()).getAction() == this) {
-
+                        MenuManager panelMenu = new MenuManager();
+                        for (IContributionItem menuItem : fillPanelsMenu()) {
+                            panelMenu.add(menuItem);
+                        }
+                        final Menu swtMenu = panelMenu.createContextMenu(panelToolBar.getControl());
                         Rectangle ib = item.getBounds();
                         Point displayAt = item.getParent().toDisplay(ib.x, ib.y + ib.height);
-
-                        final Menu swtMenu = new Menu(panelToolBar.getControl());
-                        new MenuItem(swtMenu, SWT.NONE).setText("Show panel");
                         swtMenu.setLocation(displayAt);
                         swtMenu.setVisible(true);
                         return;
