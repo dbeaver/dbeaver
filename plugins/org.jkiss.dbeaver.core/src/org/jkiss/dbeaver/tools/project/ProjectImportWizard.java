@@ -343,7 +343,6 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             description.setComment(projectDescription);
         }
         ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-        projectRegistry.projectBusy(project, true);
         project.create(description, 0, RuntimeUtils.getNestedMonitor(monitor));
 
         try {
@@ -372,10 +371,10 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 log.error(e1);
             }
             throw new DBException("Error importing project resources", e);
-        } finally {
-            projectRegistry.projectBusy(project, false);
         }
-        projectRegistry.addProject(project);
+        if (projectRegistry.getDataSourceRegistry(project) == null) {
+            projectRegistry.addProject(project);
+        }
 
         return project;
     }

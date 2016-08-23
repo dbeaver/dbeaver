@@ -49,7 +49,6 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
     private final Map<String, ResourceHandlerDescriptor> rootMapping = new HashMap<>();
 
     private final Map<IProject, DataSourceRegistry> projectDatabases = new HashMap<>();
-    private final Set<IProject> busyProjects = new HashSet<>();
     private IProject activeProject;
     private IWorkspace workspace;
 
@@ -341,18 +340,6 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
     }
 
     /**
-     * Busy projects is a workaround to avoid to early project opening (e.g. by project import wizard)
-     * while project's contents are still creating
-     */
-    public void projectBusy(IProject project, boolean busy) {
-        if (busy) {
-            busyProjects.add(project);
-        } else {
-            busyProjects.remove(project);
-        }
-    }
-
-    /**
      * We do not use resource listener in project registry because project should be added/removedhere
      * only after all other event handlers were finished and project was actually created/deleted.
      * Otherwise set of workspace synchronize problems occur
@@ -361,10 +348,6 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
     @Override
     public void addProject(IProject project)
     {
-        if (busyProjects.contains(project)) {
-            // Just ignore busy projects
-            return;
-        }
         if (projectDatabases.containsKey(project)) {
             log.warn("Project [" + project + "] already added");
             return;
