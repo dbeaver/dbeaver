@@ -29,7 +29,7 @@
     <extension-point id="org.jkiss.dbeaver.dataManager" name="Data managers" schema="schema/org.jkiss.dbeaver.dataManager.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTransfer" name="Data Transfer Provider" schema="schema/org.jkiss.dbeaver.dataTransfer.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataFormatter" name="Data Formatters" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.aggregateFunction" name="Data Formatters" schema="schema/org.jkiss.dbeaver.aggregateFunction.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.aggregateFunction" name="Aggregate Functions" schema="schema/org.jkiss.dbeaver.aggregateFunction.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resourceHandler" name="Resource Handlers" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.networkHandler" name="Network Handlers" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resources" name="Resources" schema="schema/org.jkiss.dbeaver.resources.exsd"/>
@@ -2519,10 +2519,11 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.aggregateFunction">
+        <function id="count" class="org.jkiss.dbeaver.model.data.aggregate.FunctionCount" type="simple" label="Count" description="Value count" default="true"/>
         <function id="sum" class="org.jkiss.dbeaver.model.data.aggregate.FunctionSum" type="simple" label="Sum" description="Sum of numbers"/>
         <function id="avg" class="org.jkiss.dbeaver.model.data.aggregate.FunctionAvg" type="simple" label="Avg" description="Arithmetic mean"/>
-        <function id="avg" class="org.jkiss.dbeaver.model.data.aggregate.FunctionMin" type="simple" label="Min" description="Minimum value"/>
-        <function id="avg" class="org.jkiss.dbeaver.model.data.aggregate.FunctionMin" type="simple" label="Max" description="Maximum value"/>
+        <function id="min" class="org.jkiss.dbeaver.model.data.aggregate.FunctionMin" type="simple" label="Min" description="Minimum value"/>
+        <function id="max" class="org.jkiss.dbeaver.model.data.aggregate.FunctionMin" type="simple" label="Max" description="Maximum value"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">

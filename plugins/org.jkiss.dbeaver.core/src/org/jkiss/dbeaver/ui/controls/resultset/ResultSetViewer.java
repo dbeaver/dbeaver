@@ -665,7 +665,9 @@ public class ResultSetViewer extends Viewer
         }
 
         presentationSettings.enabledPanelIds.add(id);
-        setActivePanel(id);
+        if (setActive) {
+            setActivePanel(id);
+        }
     }
 
     private void activateDefaultPanels(PresentationSettings settings) {
@@ -685,6 +687,9 @@ public class ResultSetViewer extends Viewer
 
     private void setActivePanel(String panelId) {
         PresentationSettings settings = getPresentationSettings();
+        if (CommonUtils.equalObjects(settings.activePanelId, panelId)) {
+            return;
+        }
         settings.activePanelId = panelId;
         IResultSetPanel panel = activePanels.get(panelId);
         if (panel != null) {
@@ -825,7 +830,7 @@ public class ResultSetViewer extends Viewer
 
     private boolean checkDoubleLock(Control lockedBy) {
         if (actionsDisabled) {
-            log.error("Internal error: actions double-lock by [" + lockedBy + "]");
+            log.debug("Internal error: actions double-lock by [" + lockedBy + "]");
             return true;
         }
         return false;
