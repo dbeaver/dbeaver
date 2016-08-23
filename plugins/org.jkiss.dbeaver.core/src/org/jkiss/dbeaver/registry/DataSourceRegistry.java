@@ -435,7 +435,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     // Add nature
                     if (!ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
                         description.setNatureIds(ArrayUtils.add(String.class, natureIds, DBeaverNature.NATURE_ID));
-                        project.setDescription(description, new NullProgressMonitor());
+                        try {
+                            project.setDescription(description, new NullProgressMonitor());
+                        } catch (CoreException e) {
+                            log.debug("Can't set project nature", e);
+                        }
                     }
                 }
             }

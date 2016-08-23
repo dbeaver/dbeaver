@@ -18,6 +18,8 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Navigator model event
  */
@@ -41,16 +43,17 @@ public class DBNEvent {
     private Object source;
     private Action action;
     private NodeChange nodeChange;
+    @NotNull
     private DBNNode node;
 
-    public DBNEvent(Object source, Action action, DBNNode node)
+    public DBNEvent(Object source, Action action, @NotNull DBNNode node)
     {
         this(source, action, NodeChange.REFRESH, node);
         this.action = action;
         this.node = node;
     }
 
-    public DBNEvent(Object source, Action action, NodeChange nodeChange, DBNNode node)
+    public DBNEvent(Object source, Action action, NodeChange nodeChange, @NotNull DBNNode node)
     {
         this.source = source;
         this.action = action;
@@ -73,6 +76,7 @@ public class DBNEvent {
         return nodeChange;
     }
 
+    @NotNull
     public DBNNode getNode()
     {
         return node;
