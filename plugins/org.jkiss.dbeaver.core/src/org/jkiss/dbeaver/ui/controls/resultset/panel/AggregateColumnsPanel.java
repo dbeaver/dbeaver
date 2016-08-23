@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -25,6 +26,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -50,6 +52,9 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     public static final String PANEL_ID = "column-aggregate";
 
+    public static final String SETTINGS_SECTION_AGGREGATE = "panel-" + PANEL_ID;
+    public static final String PARAM_GROUP_BY_COLUMNS = "groupByColumns";
+
     private IResultSetPresentation presentation;
     private Tree aggregateTable;
 
@@ -57,6 +62,9 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     private boolean runServerQueries;
 
     private IContributionManager panelToolbar;
+    private IDialogSettings panelSettings;
+
+    private final List<AggregateFunctionDescriptor> enabledFunctions = new ArrayList<>();
 
     public AggregateColumnsPanel() {
     }
@@ -79,6 +87,9 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     @Override
     public Control createContents(IResultSetPresentation presentation, Composite parent) {
         this.presentation = presentation;
+        this.panelSettings = UIUtils.getSettingsSection(presentation.getController().getViewerSettings(), SETTINGS_SECTION_AGGREGATE);
+
+        loadSettings();
 
         this.aggregateTable = new Tree(parent, SWT.SINGLE | SWT.FULL_SELECTION);
         this.aggregateTable.setHeaderVisible(true);
@@ -119,6 +130,52 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         return this.aggregateTable;
     }
 
+    private void loadSettings() {
+        groupByColumns = panelSettings.getBoolean(PARAM_GROUP_BY_COLUMNS);
+        IDialogSettings functionsSection = panelSettings.getSection("functions");
+        if (functionsSection != null) {
+            for (IDialogSettings funcSection : functionsSection.getSections()) {
+                String funcId = funcSection.getName();
+                if (!funcSection.getBoolean("enabled")) {
+                    continue;
+                }
+                AggregateFunctionDescriptor func = FunctionsRegistry.getInstance().getFunction(funcId);
+                if (func == null) {
+                    log.debug("Function '" + funcId + "' not found");
+                } else {
+                    enabledFunctions.add(func);
+                }
+            }
+        }
+
+        if (enabledFunctions.isEmpty()) {
+            loadDefaultFunctions();
+        }
+    }
+
+    private void loadDefaultFunctions() {
+        for (AggregateFunctionDescriptor func : FunctionsRegistry.getInstance().getFunctions()) {
+            if (func.isDefault()) {
+                enabledFunctions.add(func);
+            }
+        }
+        Collections.sort(enabledFunctions, new Comparator<AggregateFunctionDescriptor>() {
+            @Override
+            public int compare(AggregateFunctionDescriptor o1, AggregateFunctionDescriptor o2) {
+                return o1.getLabel().compareTo(o2.getLabel());
+            }
+        });
+    }
+
+    private void saveSettings() {
+        panelSettings.put(PARAM_GROUP_BY_COLUMNS, groupByColumns);
+        IDialogSettings functionsSection = UIUtils.getSettingsSection(panelSettings, "functions");
+        for (AggregateFunctionDescriptor func : enabledFunctions) {
+            IDialogSettings funcSection = UIUtils.getSettingsSection(functionsSection, func.getId());
+            funcSection.put("enabled", true);
+        }
+    }
+
     @Override
     public void activatePanel(IContributionManager contributionManager) {
         this.panelToolbar = contributionManager;
@@ -141,16 +198,11 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             }
         }
         UIUtils.packColumns(aggregateTable, true, null);
+        saveSettings();
     }
 
     private void aggregateSelection(IResultSetSelection selection) {
-        List<AggregateFunctionDescriptor> functions = new ArrayList<>(FunctionsRegistry.getInstance().getFunctions());
-        Collections.sort(functions, new Comparator<AggregateFunctionDescriptor>() {
-            @Override
-            public int compare(AggregateFunctionDescriptor o1, AggregateFunctionDescriptor o2) {
-                return o1.getLabel().compareTo(o2.getLabel());
-            }
-        });
+        List<AggregateFunctionDescriptor> functions = enabledFunctions;
         ResultSetModel model = presentation.getController().getModel();
         for (AggregateFunctionDescriptor funcDesc : functions) {
             try {
@@ -167,6 +219,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                     }
                 }
                 TreeItem funcItem = new TreeItem(aggregateTable, SWT.NONE);
+                funcItem.setData(funcDesc);
                 funcItem.setText(0, funcDesc.getLabel());
                 funcItem.setImage(0, DBeaverIcons.getImage(funcDesc.getIcon()));
                 if (valueCount > 0) {
@@ -220,6 +273,38 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
         @Override
         public void run() {
+            List<AggregateFunctionDescriptor> missingFunctions = new ArrayList<>();
+            for (AggregateFunctionDescriptor func : FunctionsRegistry.getInstance().getFunctions()) {
+                if (!enabledFunctions.contains(func)) {
+                    missingFunctions.add(func);
+                }
+            }
+            if (!missingFunctions.isEmpty()) {
+                Point location = aggregateTable.getDisplay().map(aggregateTable, null, new Point(0, 0));
+                MenuManager menuManager = new MenuManager();
+
+                for (final AggregateFunctionDescriptor func : missingFunctions) {
+                    menuManager.add(new AddFunctionItemAction(func));
+                }
+
+                final Menu contextMenu = menuManager.createContextMenu(aggregateTable);
+                contextMenu.setLocation(location);
+                contextMenu.setVisible(true);
+            }
+        }
+    }
+
+    private class AddFunctionItemAction extends Action {
+        private final AggregateFunctionDescriptor func;
+
+        public AddFunctionItemAction(AggregateFunctionDescriptor func) {
+            super(func.getLabel(), DBeaverIcons.getImageDescriptor(func.getIcon()));
+            this.func = func;
+        }
+
+        @Override
+        public void run() {
+            enabledFunctions.add(func);
             refresh();
         }
     }
@@ -236,6 +321,10 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
         @Override
         public void run() {
+            for (TreeItem item : aggregateTable.getSelection()) {
+                AggregateFunctionDescriptor func = (AggregateFunctionDescriptor) item.getData();
+                enabledFunctions.remove(func);
+            }
             refresh();
         }
     }
@@ -247,6 +336,8 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
         @Override
         public void run() {
+            enabledFunctions.clear();
+            loadDefaultFunctions();
             refresh();
         }
     }

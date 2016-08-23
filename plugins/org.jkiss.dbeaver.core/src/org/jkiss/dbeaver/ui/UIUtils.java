@@ -995,12 +995,19 @@ public class UIUtils {
         }
     }
 
-    public static IDialogSettings getDialogSettings(String dialogId)
+    @NotNull
+    public static IDialogSettings getDialogSettings(@NotNull String dialogId)
     {
         IDialogSettings workbenchSettings = DBeaverActivator.getInstance().getDialogSettings();
-        IDialogSettings section = workbenchSettings.getSection(dialogId);
+        return getSettingsSection(workbenchSettings, dialogId);
+    }
+
+    @NotNull
+    public static IDialogSettings getSettingsSection(@NotNull IDialogSettings parent, @NotNull String sectionId)
+    {
+        IDialogSettings section = parent.getSection(sectionId);
         if (section == null) {
-            section = workbenchSettings.addNewSection(dialogId);
+            section = parent.addNewSection(sectionId);
         }
         return section;
     }

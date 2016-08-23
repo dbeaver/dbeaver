@@ -66,4 +66,14 @@ public class FunctionsRegistry
     public List<AggregateFunctionDescriptor> getFunctions() {
         return functions;
     }
+
+    public AggregateFunctionDescriptor getFunction(String id) {
+        for (AggregateFunctionDescriptor func : functions) {
+            if (func.getId().equals(id)) {
+                return func;
+            }
+        }
+        return null;
+    }
+
 }
