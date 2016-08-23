@@ -438,7 +438,10 @@ public class DBNModel implements IResourceChangeListener {
             listenersCopy = this.listenersCopy;
         }
         // Notify listeners in detached job
-        new Job("Notify DBN listeners") {
+        new Job("Notify node '" + event.getNode().getName() + "' changes") {
+            {
+                setSystem(true);
+            }
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 for (INavigatorListener listener :  listenersCopy) {
