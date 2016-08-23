@@ -337,6 +337,11 @@ public class ResultSetViewer extends Viewer
         return DBeaverCore.getGlobalPreferenceStore();
     }
 
+    @Override
+    public IDialogSettings getViewerSettings() {
+        return viewerSettings;
+    }
+
     @NotNull
     @Override
     public Color getDefaultBackground() {
@@ -583,20 +588,14 @@ public class ResultSetViewer extends Viewer
     }
 
     private void savePresentationSettings() {
-        IDialogSettings pSections = viewerSettings.getSection(SETTINGS_SECTION_PRESENTATIONS);
-        if (pSections == null) {
-            pSections = viewerSettings.addNewSection(SETTINGS_SECTION_PRESENTATIONS);
-        }
+        IDialogSettings pSections = UIUtils.getSettingsSection(viewerSettings, SETTINGS_SECTION_PRESENTATIONS);
         for (Map.Entry<ResultSetPresentationDescriptor, PresentationSettings> pEntry : presentationSettings.entrySet()) {
             if (pEntry.getKey() == null) {
                 continue;
             }
             String pId = pEntry.getKey().getId();
             PresentationSettings settings = pEntry.getValue();
-            IDialogSettings pSection = pSections.getSection(pId);
-            if (pSection == null) {
-                pSection = pSections.addNewSection(pId);
-            }
+            IDialogSettings pSection = UIUtils.getSettingsSection(pSections, pId);
 
             pSection.put("enabledPanelIds", CommonUtils.joinStrings(",", settings.enabledPanelIds));
             pSection.put("activePanelId", settings.activePanelId);

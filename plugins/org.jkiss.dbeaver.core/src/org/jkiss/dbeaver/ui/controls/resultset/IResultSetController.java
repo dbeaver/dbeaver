@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -70,6 +71,9 @@ public interface IResultSetController extends DBPContextProvider {
 
     @NotNull
     DBPPreferenceStore getPreferenceStore();
+
+    @NotNull
+    IDialogSettings getViewerSettings();
 
     @NotNull
     Color getDefaultBackground();
