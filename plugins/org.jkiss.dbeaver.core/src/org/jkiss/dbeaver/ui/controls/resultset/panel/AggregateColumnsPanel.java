@@ -17,15 +17,14 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -57,6 +56,8 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     private boolean groupByColumns;
     private boolean runServerQueries;
 
+    private IContributionManager panelToolbar;
+
     public AggregateColumnsPanel() {
     }
 
@@ -79,7 +80,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     public Control createContents(IResultSetPresentation presentation, Composite parent) {
         this.presentation = presentation;
 
-        this.aggregateTable = new Tree(parent, SWT.SINGLE);
+        this.aggregateTable = new Tree(parent, SWT.SINGLE | SWT.FULL_SELECTION);
         this.aggregateTable.setHeaderVisible(true);
         this.aggregateTable.setLinesVisible(true);
         new TreeColumn(this.aggregateTable, SWT.LEFT).setText("Function");
@@ -94,11 +95,33 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             });
         }
 
+        MenuManager menuMgr = new MenuManager();
+        menuMgr.addMenuListener(new IMenuListener() {
+            @Override
+            public void menuAboutToShow(IMenuManager manager)
+            {
+                fillToolBar(manager);
+            }
+        });
+
+        menuMgr.setRemoveAllWhenShown(true);
+        this.aggregateTable.setMenu(menuMgr.createContextMenu(this.aggregateTable));
+
+        aggregateTable.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (panelToolbar != null) {
+                    panelToolbar.update(true);
+                }
+            }
+        });
+
         return this.aggregateTable;
     }
 
     @Override
     public void activatePanel(IContributionManager contributionManager) {
+        this.panelToolbar = contributionManager;
         fillToolBar(contributionManager);
         refresh();
     }
@@ -165,24 +188,67 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private void fillToolBar(IContributionManager contributionManager)
     {
+        contributionManager.add(new AddFunctionAction());
+        contributionManager.add(new RemoveFunctionAction());
+        contributionManager.add(new ResetFunctionsAction());
         contributionManager.add(new Separator());
-        contributionManager.add(new Action("Group by columns", IAction.AS_CHECK_BOX) {
-            {
-                setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_COLUMN));
-            }
-
-            @Override
-            public boolean isChecked() {
-                return groupByColumns;
-            }
-
-            @Override
-            public void run() {
-                groupByColumns = !groupByColumns;
-                refresh();
-            }
-        });
+        contributionManager.add(new GroupByColumnsAction());
     }
 
+    private class GroupByColumnsAction extends Action {
+        public GroupByColumnsAction() {
+            super("Group by columns", IAction.AS_CHECK_BOX);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_COLUMN));
+        }
+
+        @Override
+        public boolean isChecked() {
+            return groupByColumns;
+        }
+
+        @Override
+        public void run() {
+            groupByColumns = !groupByColumns;
+            refresh();
+        }
+    }
+
+    private class AddFunctionAction extends Action {
+        public AddFunctionAction() {
+            super("Add function", DBeaverIcons.getImageDescriptor(UIIcon.ROW_ADD));
+        }
+
+        @Override
+        public void run() {
+            refresh();
+        }
+    }
+
+    private class RemoveFunctionAction extends Action {
+        public RemoveFunctionAction() {
+            super("Remove function", DBeaverIcons.getImageDescriptor(UIIcon.ROW_DELETE));
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return aggregateTable.getSelectionCount() > 0;
+        }
+
+        @Override
+        public void run() {
+            refresh();
+        }
+    }
+
+    private class ResetFunctionsAction extends Action {
+        public ResetFunctionsAction() {
+            super("Reset", DBeaverIcons.getImageDescriptor(UIIcon.RESET));
+        }
+
+        @Override
+        public void run() {
+            refresh();
+        }
+    }
 
 }
