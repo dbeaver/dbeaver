@@ -31,14 +31,15 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.aggregate.*;
+import org.jkiss.dbeaver.model.data.aggregate.IAggregateFunction;
+import org.jkiss.dbeaver.registry.functions.AggregateFunctionDescriptor;
+import org.jkiss.dbeaver.registry.functions.FunctionsRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -55,13 +56,8 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private boolean groupByColumns;
     private boolean runServerQueries;
-    private List<Class<? extends IAggregateFunction>> enabledFunctions = new ArrayList<>();
 
     public AggregateColumnsPanel() {
-        enabledFunctions.add(FunctionSum.class);
-        enabledFunctions.add(FunctionAvg.class);
-        enabledFunctions.add(FunctionMin.class);
-        enabledFunctions.add(FunctionMax.class);
     }
 
     @Override
@@ -125,11 +121,18 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     }
 
     private void aggregateSelection(IResultSetSelection selection) {
+        List<AggregateFunctionDescriptor> functions = new ArrayList<>(FunctionsRegistry.getInstance().getFunctions());
+        Collections.sort(functions, new Comparator<AggregateFunctionDescriptor>() {
+            @Override
+            public int compare(AggregateFunctionDescriptor o1, AggregateFunctionDescriptor o2) {
+                return o1.getLabel().compareTo(o2.getLabel());
+            }
+        });
         ResultSetModel model = presentation.getController().getModel();
-        for (Class<? extends IAggregateFunction> funcClass : enabledFunctions) {
+        for (AggregateFunctionDescriptor funcDesc : functions) {
             try {
                 int valueCount = 0;
-                IAggregateFunction func = funcClass.newInstance();
+                IAggregateFunction func = funcDesc.createFunction();
                 for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
                     Object element = iter.next();
                     DBDAttributeBinding attr = selection.getElementAttribute(element);
@@ -141,7 +144,8 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                     }
                 }
                 TreeItem funcItem = new TreeItem(aggregateTable, SWT.NONE);
-                funcItem.setText(0, funcClass.getSimpleName());
+                funcItem.setText(0, funcDesc.getLabel());
+                funcItem.setImage(0, DBeaverIcons.getImage(funcDesc.getIcon()));
                 if (valueCount > 0) {
                     Number result = func.getResult(valueCount);
                     if (result != null) {
