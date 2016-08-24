@@ -23,9 +23,9 @@ package org.jkiss.dbeaver.ui;
  */
 public interface ISearchExecutor
 {
-    public static final int SEARCH_CASE_SENSITIVE   = 1;
-    public static final int SEARCH_NEXT = 2;
-    public static final int SEARCH_PREVIOUS = 4;
+    int SEARCH_CASE_SENSITIVE   = 1;
+    int SEARCH_NEXT = 2;
+    int SEARCH_PREVIOUS = 4;
 
     boolean performSearch(String searchString, int options);
 

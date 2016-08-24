@@ -28,6 +28,7 @@ import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
@@ -41,13 +42,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * ItemListControl
  */
 public class ItemListControl extends NodeListControl
 {
-    private Searcher searcher;
+    private ISearchExecutor searcher;
     private Color searchHighlightColor;
     private Color disabledCellColor;
     private Font normalFont;
@@ -62,7 +65,7 @@ public class ItemListControl extends NodeListControl
     {
         super(parent, style, workbenchSite, node, metaNode);
 
-        this.searcher = new Searcher();
+        this.searcher = new SearcherFilter();
         this.searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
         this.disabledCellColor = parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
         this.normalFont = parent.getFont();
@@ -224,7 +227,45 @@ public class ItemListControl extends NodeListControl
 
     }
 
-    private class Searcher extends ObjectSearcher<DBNNode> {
+    private class SearcherFilter implements ISearchExecutor {
+
+        @Override
+        public boolean performSearch(String searchString, int options) {
+            try {
+                SearchFilter searchFilter = new SearchFilter(
+                    searchString,
+                    (options & SEARCH_CASE_SENSITIVE) != 0);
+                getItemsViewer().setFilters(new ViewerFilter[]{searchFilter});
+                return true;
+            } catch (PatternSyntaxException e) {
+                log.error(e.getMessage());
+                return false;
+            }
+        }
+
+        @Override
+        public void cancelSearch() {
+            getItemsViewer().setFilters(new ViewerFilter[]{});
+        }
+    }
+
+    private class SearchFilter extends ViewerFilter {
+        final Pattern pattern;
+
+        public SearchFilter(String searchString, boolean caseSensitiveSearch) throws PatternSyntaxException {
+            pattern = Pattern.compile(SQLUtils.makeLikePattern(searchString), caseSensitiveSearch ? 0 : Pattern.CASE_INSENSITIVE);
+        }
+
+        @Override
+        public boolean select(Viewer viewer, Object parentElement, Object element) {
+            if (element instanceof DBNNode) {
+                return pattern.matcher(((DBNNode) element).getName()).find();
+            }
+            return false;
+        }
+    }
+
+    private class SearcherHighligther extends ObjectSearcher<DBNNode> {
         @Override
         protected void setInfo(String message)
         {
@@ -283,7 +324,7 @@ public class ItemListControl extends NodeListControl
             if (node.isDisposed()) {
                 return null;
             }
-            if (searcher != null && searcher.hasObject(node)) {
+            if (searcher instanceof SearcherHighligther && ((SearcherHighligther) searcher).hasObject(node)) {
                 return searchHighlightColor;
             }
             final Object objectValue = getObjectValue(node);

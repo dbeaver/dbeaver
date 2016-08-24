@@ -154,7 +154,16 @@ public final class SQLUtils {
 
     public static String makeLikePattern(String like)
     {
-        return like.replace("%", ".*").replace("_", ".?");
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < like.length(); i++) {
+            char c = like.charAt(i);
+            if (c == '*') result.append(".*");
+            else if (c == '?') result.append(".");
+            else if (c == '%') result.append(".*");
+            else if (Character.isLetterOrDigit(c)) result.append(c);
+            else result.append("\\").append(c);
+        }
+        return result.toString();
     }
 
     public static boolean matchesLike(String string, String like)
