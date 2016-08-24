@@ -57,4 +57,9 @@ class MySQLDialect extends JDBCSQLDialect {
     public boolean supportsCommentQuery() {
         return true;
     }
+
+    @Override
+    public String[] getSingleLineComments() {
+        return new String[] { SQLConstants.SL_COMMENT, "#" };
+    }
 }
