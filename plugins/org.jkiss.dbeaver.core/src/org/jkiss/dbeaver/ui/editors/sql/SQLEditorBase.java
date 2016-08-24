@@ -673,6 +673,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                         continue;
                     }
                     String queryText = document.get(statementStart, tokenOffset - statementStart);
+                    queryText = SQLUtils.fixLineFeeds(queryText);
 
                     // FIXME: includes last delimiter in query (Oracle?)
                     if (isDelimiter && hasBlocks && dialect.isDelimiterAfterBlock()) {
