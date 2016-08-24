@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence>
-            <element ref="searchProvider" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="presentation" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,7 +47,7 @@
       </complexType>
    </element>
 
-   <element name="searchProvider">
+   <element name="presentation">
       <complexType>
          <attribute name="id" type="string" use="required">
             <annotation>
@@ -73,23 +73,13 @@
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="pageClass" type="string" use="required">
+         <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
                <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.search.IObjectSearchPage"/>
-               </appInfo>
-            </annotation>
-         </attribute>
-         <attribute name="resultsClass" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-               <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.search.IObjectSearchResultPage"/>
                </appInfo>
             </annotation>
          </attribute>
