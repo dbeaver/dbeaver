@@ -123,10 +123,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
         if (rootNode instanceof DBNDatabaseNode) {
-            DBPDataSource dataSource = ((DBNDatabaseNode) rootNode).getObject().getDataSource();
-            if (dataSource != null) {
-                return dataSource.getContainer();
-            }
+            return ((DBNDatabaseNode) rootNode).getDataSourceContainer();
         }
         return null;
     }
