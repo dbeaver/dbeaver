@@ -590,4 +590,22 @@ public final class SQLUtils {
         }
         return sql.toString();
     }
+
+    /**
+     * Replaces single \r linefeeds with \n (some databases don't like them)
+     */
+    public static String fixLineFeeds(String sql) {
+        if (sql.indexOf('\r') == -1) {
+            return sql;
+        }
+        boolean hasFixes = false;
+        char[] fixed = sql.toCharArray();
+        for (int i = 0; i < fixed.length; i++) {
+            if (fixed[i] == '\r' && (i == fixed.length - 1 || fixed[i + 1] != '\n')) {
+                fixed[i] = '\n';
+                hasFixes = true;
+            }
+        }
+        return hasFixes ? String.valueOf(fixed) : sql;
+    }
 }
