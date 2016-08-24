@@ -459,7 +459,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
         protected void appendAttributeValue(IResultSetController rsv, StringBuilder sql, DBDAttributeBinding binding, ResultSetRow row)
         {
-            DBPDataSource dataSource = rsv.getExecutionContext().getDataSource();
+            DBPDataSource dataSource = binding.getDataSource();
             Object value = rsv.getModel().getCellValue(binding, row);
             sql.append(
                 SQLUtils.convertValueToSQL(dataSource, binding.getAttribute(), value));
