@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.ISearchExecutor;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.utils.CommonUtils;
@@ -37,9 +38,9 @@ public abstract class ObjectSearcher<OBJECT_TYPE extends DBPNamedObject> impleme
     public boolean performSearch(String searchString, int options)
     {
         boolean caseSensitiveSearch = (options & SEARCH_CASE_SENSITIVE) != 0;
-        if (!CommonUtils.isEmpty(searchString) && curSearchPattern == null || !CommonUtils.equalObjects(curSearchPattern.pattern(), makeLikePattern(searchString))) {
+        if (!CommonUtils.isEmpty(searchString) && curSearchPattern == null || !CommonUtils.equalObjects(curSearchPattern.pattern(), SQLUtils.makeLikePattern(searchString))) {
             try {
-                curSearchPattern = Pattern.compile(makeLikePattern(searchString), caseSensitiveSearch ? 0 : Pattern.CASE_INSENSITIVE);
+                curSearchPattern = Pattern.compile(SQLUtils.makeLikePattern(searchString), caseSensitiveSearch ? 0 : Pattern.CASE_INSENSITIVE);
             } catch (PatternSyntaxException e) {
                 setInfo(e.getMessage());
                 return false;
@@ -125,20 +126,6 @@ public abstract class ObjectSearcher<OBJECT_TYPE extends DBPNamedObject> impleme
             return false;
         }
         return curSearchPattern.matcher(element.getName()).find();
-    }
-
-    private static String makeLikePattern(String like)
-    {
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < like.length(); i++) {
-            char c = like.charAt(i);
-            if (c == '*') result.append(".*");
-            else if (c == '?') result.append(".");
-            else if (Character.isLetterOrDigit(c)) result.append(c);
-            else result.append("\\").append(c);
-        }
-
-        return result.toString();
     }
 
     public boolean hasObject(OBJECT_TYPE object)
