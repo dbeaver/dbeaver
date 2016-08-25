@@ -60,6 +60,6 @@ class MySQLDialect extends JDBCSQLDialect {
 
     @Override
     public String[] getSingleLineComments() {
-        return new String[] { SQLConstants.SL_COMMENT, "#" };
+        return new String[] { "-- ", "#" };
     }
 }
