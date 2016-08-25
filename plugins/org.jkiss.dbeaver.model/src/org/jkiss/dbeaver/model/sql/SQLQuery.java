@@ -41,10 +41,7 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,7 +65,7 @@ public class SQLQuery {
     private Statement statement;
     private List<SQLQueryParameter> parameters;
     private SingleTableMeta singleTableMeta;
-    private Map<String, SQLSelectItem> selectItems;
+    private List<SQLSelectItem> selectItems;
     private String queryTitle;
 
     public SQLQuery(@NotNull String query)
@@ -108,10 +105,9 @@ public class SQLQuery {
                     // Extract select items info
                     final List<SelectItem> items = plainSelect.getSelectItems();
                     if (items != null && !items.isEmpty()) {
-                        selectItems = new LinkedHashMap<>();
+                        selectItems = new ArrayList<>();
                         for (SelectItem item : items) {
-                            SQLSelectItem si = new SQLSelectItem(item);
-                            selectItems.put(si.getName(), si);
+                            selectItems.add(new SQLSelectItem(item));
                         }
                     }
                 }
@@ -167,7 +163,19 @@ public class SQLQuery {
     }
 
     public SQLSelectItem getSelectItem(String name) {
-        return selectItems == null ? null : selectItems.get(name);
+        if (selectItems == null) {
+            return null;
+        }
+        for (SQLSelectItem item : selectItems) {
+            if (item.getName().equals(name)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public SQLSelectItem getSelectItem(int index) {
+        return selectItems == null || selectItems.size() <= index ? null : selectItems.get(index);
     }
 
     @NotNull

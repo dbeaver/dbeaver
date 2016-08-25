@@ -110,12 +110,19 @@ public class ResultSetUtils
                 }
                 if (attrEntity != null) {
                     if (sqlQuery != null) {
+                        // !! Do not try to use table column handlers for custom queries
+                        // Query may have expressions with the same alias as underlying table column
+                        // and this expression may return very different data type. It breaks fetch completely.
+                        // There should be a better solution but for now let's just disable this too smart feature.
+                        continue;
+/*
                         final SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getName());
                         if (selectItem != null && !selectItem.isPlainColumn()) {
                             // It is not a column.
                             // It maybe an expression, function or anything else
                             continue;
                         }
+*/
                     }
                     DBSEntityAttribute tableColumn;
                     if (attrMeta.getPseudoAttribute() != null) {
