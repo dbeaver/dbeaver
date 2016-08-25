@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 
@@ -56,6 +57,8 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     public static final String SETTINGS_SECTION_AGGREGATE = "panel-" + PANEL_ID;
     public static final String PARAM_GROUP_BY_COLUMNS = "groupByColumns";
+
+    private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("###,###,###,###,###,##0.000###");;
 
     private IResultSetPresentation presentation;
     private Tree aggregateTable;
@@ -297,7 +300,13 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 Number result = func.getResult(valueCount);
                 if (result != null) {
                     TreeItem treeItem = funcMap.get(func);
-                    treeItem.setText(1, result.toString());
+                    String strValue;
+                    if (result instanceof Double) {
+                        strValue = DOUBLE_FORMAT.format(result);
+                    } else {
+                        strValue = result.toString();
+                    }
+                    treeItem.setText(1, strValue);
                 }
             }
         }
