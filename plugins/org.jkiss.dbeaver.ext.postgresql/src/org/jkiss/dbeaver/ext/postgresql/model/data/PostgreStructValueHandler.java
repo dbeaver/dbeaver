@@ -91,7 +91,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
                 if (object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
                     value = PostgreUtils.extractValue(object);
                 } else {
-                    value = "";
+                    value = object.toString();
                 }
                 return convertStringToStruct(session, structType, (String) value);
             }
