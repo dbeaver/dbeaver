@@ -58,7 +58,7 @@ public class GlobalProxySelector extends ProxySelector {
 
         if (SocksConstants.SOCKET_SCHEME.equals(scheme)) {
             // 2. Check for connections' proxy config
-            DBCExecutionContext activeContext = DBExecUtils.getCurrentThreadContext();
+            DBCExecutionContext activeContext = DBExecUtils.findConnectionContext(uri.getHost(), uri.getPort(), uri.getPath());
             if (activeContext != null) {
                 List<Proxy> proxies = null;
                 DBPDataSourceContainer container = activeContext.getDataSource().getContainer();

@@ -17,6 +17,10 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.utils.CommonUtils;
+
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,5 +57,21 @@ public class DBExecUtils {
         synchronized (ACTIVE_CONTEXTS) {
             ACTIVE_CONTEXTS.remove(context);
         }
+    }
+
+    public static DBCExecutionContext findConnectionContext(String host, int port, String path) {
+        DBCExecutionContext curContext = getCurrentThreadContext();
+        if (curContext != null) {
+            return curContext;
+        }
+        synchronized (ACTIVE_CONTEXTS) {
+            for (DBCExecutionContext ctx : ACTIVE_CONTEXTS) {
+                DBPConnectionConfiguration cfg = ctx.getDataSource().getContainer().getConnectionConfiguration();
+                if (CommonUtils.equalObjects(cfg.getHostName(), host) && String.valueOf(port).equals(cfg.getHostPort())) {
+                    return ctx;
+                }
+            }
+        }
+        return null;
     }
 }
