@@ -109,12 +109,21 @@ public class ResultSetUtils
                     attrEntity = entity;
                 }
                 if (attrEntity != null) {
+                    DBSEntityAttribute tableColumn;
+                    if (attrMeta.getPseudoAttribute() != null) {
+                        tableColumn = attrMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
+                    } else {
+                        tableColumn = attrEntity.getAttribute(monitor, attrMeta.getName());
+                    }
                     if (sqlQuery != null) {
-                        // !! Do not try to use table column handlers for custom queries
-                        // Query may have expressions with the same alias as underlying table column
-                        // and this expression may return very different data type. It breaks fetch completely.
-                        // There should be a better solution but for now let's just disable this too smart feature.
-                        continue;
+                        if (tableColumn != null && tableColumn.getTypeID() != attrMeta.getTypeID()) {
+                            // !! Do not try to use table column handlers for custom queries if source data type
+                            // differs from table data type.
+                            // Query may have expressions with the same alias as underlying table column
+                            // and this expression may return very different data type. It breaks fetch completely.
+                            // There should be a better solution but for now let's just disable this too smart feature.
+                            continue;
+                        }
 /*
                         final SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getName());
                         if (selectItem != null && !selectItem.isPlainColumn()) {
@@ -124,12 +133,7 @@ public class ResultSetUtils
                         }
 */
                     }
-                    DBSEntityAttribute tableColumn;
-                    if (attrMeta.getPseudoAttribute() != null) {
-                        tableColumn = attrMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
-                    } else {
-                        tableColumn = attrEntity.getAttribute(monitor, attrMeta.getName());
-                    }
+
                     if (tableColumn != null && binding.setEntityAttribute(tableColumn)) {
                         // We have new type and new value handler.
                         // We have to fix already fetched values.
