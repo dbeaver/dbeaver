@@ -78,7 +78,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
             // 2. Check for connections' proxies
             String requestingProtocol = getRequestingProtocol();
             if (SocksConstants.PROTOCOL_SOCKS5.equals(requestingProtocol) || SocksConstants.PROTOCOL_SOCKS4.equals(requestingProtocol)) {
-                DBCExecutionContext activeContext = DBExecUtils.getCurrentThreadContext();
+                DBCExecutionContext activeContext = DBExecUtils.findConnectionContext(getRequestingHost(), getRequestingPort(), getRequestingScheme());
                 if (activeContext != null) {
                     DBPDataSourceContainer container = activeContext.getDataSource().getContainer();
                     for (DBWHandlerConfiguration networkHandler : container.getConnectionConfiguration().getDeclaredHandlers()) {
