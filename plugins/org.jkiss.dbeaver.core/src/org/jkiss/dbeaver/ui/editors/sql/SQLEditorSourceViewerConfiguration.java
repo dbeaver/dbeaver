@@ -49,12 +49,14 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLCommentAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLStringAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLAnnotationHover;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLInformationProvider;
+import org.jkiss.utils.ArrayUtils;
 
 
 /**
@@ -339,6 +341,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public String[] getDefaultPrefixes(ISourceViewer sourceViewer, String contentType)
     {
+        SQLDialect dialect = editor.getSQLDialect();
+        if (dialect != null) {
+            return ArrayUtils.add(String.class, dialect.getSingleLineComments(), "");
+        }
         return new String[] { SQLConstants.SL_COMMENT, "" };
     }
 
