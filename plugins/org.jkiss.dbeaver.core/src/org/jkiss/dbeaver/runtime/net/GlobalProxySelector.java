@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.runtime.net;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
@@ -57,7 +58,7 @@ public class GlobalProxySelector extends ProxySelector {
 
         if (SocksConstants.SOCKET_SCHEME.equals(scheme)) {
             // 2. Check for connections' proxy config
-            DBCExecutionContext activeContext = DBCExecutionContext.ACTIVE_CONTEXT.get();
+            DBCExecutionContext activeContext = DBExecUtils.getCurrentThreadContext();
             if (activeContext != null) {
                 List<Proxy> proxies = null;
                 DBPDataSourceContainer container = activeContext.getDataSource().getContainer();
@@ -75,11 +76,13 @@ public class GlobalProxySelector extends ProxySelector {
                                     log.warn("Bad proxy port number", e);
                                 }
                             }
-                            Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(proxyHost, portNumber));
+                            InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, portNumber);
+                            Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
                             if (proxies == null) {
                                 proxies = new ArrayList<>();
                             }
                             proxies.add(proxy);
+                            log.debug("Use SOCKS proxy [" + proxyAddr + "]");
                         }
                     }
                 }

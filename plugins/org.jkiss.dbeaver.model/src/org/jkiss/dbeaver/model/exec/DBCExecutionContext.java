@@ -31,11 +31,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
 {
-    /**
-     * Current execution context. Used by global authenticators and network handlers
-     */
-    ThreadLocal<DBCExecutionContext> ACTIVE_CONTEXT = new ThreadLocal<>();
-
     enum InvalidateResult {
         DISCONNECTED,
         CONNECTED,
