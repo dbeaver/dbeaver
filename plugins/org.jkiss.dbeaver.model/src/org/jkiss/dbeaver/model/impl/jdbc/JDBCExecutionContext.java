@@ -68,7 +68,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             close();
         }
         boolean connectionReadOnly = dataSource.getContainer().isConnectionReadOnly();
-        ACTIVE_CONTEXT.set(this);
+        DBExecUtils.startContextInitiation(this);
         try {
             this.connection = dataSource.openConnection(monitor, purpose);
             if (this.connection == null) {
@@ -125,7 +125,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             // Add self to context list
             this.dataSource.allContexts.add(this);
         } finally {
-            ACTIVE_CONTEXT.remove();
+            DBExecUtils.finishContextInitiation(this);
         }
     }
 

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
@@ -77,7 +78,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
             // 2. Check for connections' proxies
             String requestingProtocol = getRequestingProtocol();
             if (SocksConstants.PROTOCOL_SOCKS5.equals(requestingProtocol) || SocksConstants.PROTOCOL_SOCKS4.equals(requestingProtocol)) {
-                DBCExecutionContext activeContext = DBCExecutionContext.ACTIVE_CONTEXT.get();
+                DBCExecutionContext activeContext = DBExecUtils.getCurrentThreadContext();
                 if (activeContext != null) {
                     DBPDataSourceContainer container = activeContext.getDataSource().getContainer();
                     for (DBWHandlerConfiguration networkHandler : container.getConnectionConfiguration().getDeclaredHandlers()) {
