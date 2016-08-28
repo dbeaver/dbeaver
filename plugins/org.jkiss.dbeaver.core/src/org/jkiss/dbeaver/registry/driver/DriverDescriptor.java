@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -1170,7 +1171,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                                 if (!CommonUtils.isEmpty(file.version)) {
                                     xml.addAttribute(RegistryConstants.ATTR_VERSION, file.version);
                                 }
-                                xml.addAttribute(RegistryConstants.ATTR_PATH, file.file.getAbsolutePath());
+                                xml.addAttribute(RegistryConstants.ATTR_PATH, substitutePathVariables(file.file.getAbsolutePath()));
                             }
                         }
                     }
@@ -1354,8 +1355,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return metaURL;
     }
 
-    public static class DriversParser implements SAXListener
-    {
+    public static class DriversParser implements SAXListener {
         DataSourceProviderDescriptor curProvider;
         DriverDescriptor curDriver;
         DBPDriverLibrary curLibrary;
@@ -1459,6 +1459,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 case RegistryConstants.TAG_FILE: {
                     if (curDriver != null && curLibrary != null) {
                         String path = atts.getValue(RegistryConstants.ATTR_PATH);
+                        path = replacePathVariables(path);
                         if (CommonUtils.isEmpty(path)) {
                             log.warn("Empty path for library file");
                         } else {
@@ -1544,5 +1545,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-}
+    private static String replacePathVariables(String path) {
+        return GeneralUtils.replaceVariables(path, new SystemVariablesResolver());
+    }
 
+    private static String substitutePathVariables(String path) {
+        String workspacePath = SystemVariablesResolver.getWorkspacePath();
+        if (path.startsWith(workspacePath)) {
+            path = "${workspace}" + path.substring(workspacePath.length());
+        }
+        return path;
+    }
+
+}
