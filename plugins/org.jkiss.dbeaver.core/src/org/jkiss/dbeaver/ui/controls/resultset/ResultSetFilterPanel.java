@@ -111,6 +111,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
     private String prevQuery = null;
     private final List<String> filtersHistory = new ArrayList<>();
+    private Menu historyMenu;
 
     public ResultSetFilterPanel(ResultSetViewer rsv) {
         super(rsv.getControl(), SWT.NONE);
@@ -279,6 +280,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         this.addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e) {
+                if (historyMenu != null) {
+                    historyMenu.dispose();
+                    historyMenu = null;
+                }
                 UIUtils.dispose(sizingGC);
                 UIUtils.dispose(hintFont);
             }
@@ -909,11 +914,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 Rectangle rect = item.getBounds();
                 Point pt = item.getParent().toDisplay(new Point(rect.x, rect.y));
 
-                final Menu menu = new Menu(dropdown.getParent().getShell());
-                menu.setLocation(pt.x, pt.y + rect.height);
-                menu.setVisible(true);
+                if (historyMenu != null) {
+                    historyMenu.dispose();
+                }
+                historyMenu = new Menu(dropdown.getParent().getShell());
                 for (int i = historyPosition + (back ? -1 : 1); i >= 0 && i < stateHistory.size(); i += back ? -1 : 1) {
-                    MenuItem mi = new MenuItem(menu, SWT.NONE);
+                    MenuItem mi = new MenuItem(historyMenu, SWT.NONE);
                     ResultSetViewer.HistoryStateItem state = stateHistory.get(i);
                     mi.setText(state.describeState());
                     final int statePosition = i;
@@ -924,12 +930,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         }
                     });
                 }
-                menu.addMenuListener(new MenuAdapter() {
-                    @Override
-                    public void menuHidden(MenuEvent e) {
-                        menu.dispose();
-                    }
-                });
+                historyMenu.setLocation(pt.x, pt.y + rect.height);
+                historyMenu.setVisible(true);
             } else {
                 int newPosition = back ? historyPosition - 1 : historyPosition + 1;
                 viewer.navigateHistory(newPosition);
