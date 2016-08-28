@@ -22,6 +22,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MenuAdapter;
+import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -758,6 +760,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
         return breadcrumbsPanel;
     }
 
+    private static final int MAX_BREADCRUMBS_MENU_ITEM = 300;
+
     private void createPathRow(ToolBar infoGroup, final DBNDatabaseNode databaseNode)
     {
         final DBNDatabaseNode curNode = getEditorInput().getNavigatorNode();
@@ -775,7 +779,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 public void widgetSelected(SelectionEvent e)
                 {
                     if (e.detail == SWT.ARROW) {
-                        Menu menu = new Menu(item.getParent().getShell());
+                        int itemCount = 0;
+                        final Menu menu = new Menu(item.getParent().getShell());
                         try {
                             for (final DBNDatabaseNode folderItem : databaseNode.getChildren(VoidProgressMonitor.INSTANCE)) {
                                 MenuItem childItem = new MenuItem(menu, SWT.NONE);
@@ -790,8 +795,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
                                         NavigatorHandlerObjectOpen.openEntityEditor(folderItem, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                                     }
                                 });
+                                itemCount++;
+                                if (itemCount >= MAX_BREADCRUMBS_MENU_ITEM) {
+                                    break;
+                                }
                             }
-                        } catch (DBException e1) {
+                        } catch (Throwable e1) {
                             log.error(e1);
                         }
 
@@ -799,6 +808,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
                         Point pt = item.getParent().toDisplay(new Point(rect.x, rect.y));
                         menu.setLocation(pt.x, pt.y + rect.height);
                         menu.setVisible(true);
+                        menu.addMenuListener(new MenuAdapter() {
+                            @Override
+                            public void menuHidden(MenuEvent e) {
+                                menu.dispose();
+                            }
+                        });
                     } else {
                         NavigatorHandlerObjectOpen.openEntityEditor(databaseNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                     }

@@ -909,7 +909,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 Rectangle rect = item.getBounds();
                 Point pt = item.getParent().toDisplay(new Point(rect.x, rect.y));
 
-                Menu menu = new Menu(dropdown.getParent().getShell());
+                final Menu menu = new Menu(dropdown.getParent().getShell());
                 menu.setLocation(pt.x, pt.y + rect.height);
                 menu.setVisible(true);
                 for (int i = historyPosition + (back ? -1 : 1); i >= 0 && i < stateHistory.size(); i += back ? -1 : 1) {
@@ -924,6 +924,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         }
                     });
                 }
+                menu.addMenuListener(new MenuAdapter() {
+                    @Override
+                    public void menuHidden(MenuEvent e) {
+                        menu.dispose();
+                    }
+                });
             } else {
                 int newPosition = back ? historyPosition - 1 : historyPosition + 1;
                 viewer.navigateHistory(newPosition);
