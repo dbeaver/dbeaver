@@ -249,7 +249,7 @@ public class UIUtils {
                 column.pack();
                 totalWidth += column.getWidth();
             }
-            Rectangle clientArea = tree.getClientArea();
+            Rectangle clientArea = tree.getBounds();
             if (clientArea.isEmpty()) {
                 return;
             }
