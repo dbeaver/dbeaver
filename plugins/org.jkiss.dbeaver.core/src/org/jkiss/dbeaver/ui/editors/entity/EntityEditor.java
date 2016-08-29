@@ -99,6 +99,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     private boolean hasPropertiesEditor;
     private Map<IEditorPart, IEditorActionBarContributor> actionContributors = new HashMap<>();
     private volatile boolean saveInProgress = false;
+    private Menu breadcrumbsMenu;
 
     public EntityEditor()
     {
@@ -145,6 +146,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     public void dispose()
     {
+        if (breadcrumbsMenu != null) {
+            breadcrumbsMenu.dispose();
+            breadcrumbsMenu = null;
+        }
         for (Map.Entry<IEditorPart, IEditorActionBarContributor> entry : actionContributors.entrySet()) {
             GlobalContributorManager.getInstance().removeContributor(entry.getValue(), entry.getKey());
         }
@@ -758,6 +763,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
         return breadcrumbsPanel;
     }
 
+    private static final int MAX_BREADCRUMBS_MENU_ITEM = 300;
+
     private void createPathRow(ToolBar infoGroup, final DBNDatabaseNode databaseNode)
     {
         final DBNDatabaseNode curNode = getEditorInput().getNavigatorNode();
@@ -775,12 +782,16 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 public void widgetSelected(SelectionEvent e)
                 {
                     if (e.detail == SWT.ARROW) {
-                        Menu menu = new Menu(item.getParent().getShell());
+                        int itemCount = 0;
+                        if (breadcrumbsMenu != null) {
+                            breadcrumbsMenu.dispose();
+                        }
+                        breadcrumbsMenu = new Menu(item.getParent().getShell());
                         try {
                             for (final DBNDatabaseNode folderItem : databaseNode.getChildren(VoidProgressMonitor.INSTANCE)) {
-                                MenuItem childItem = new MenuItem(menu, SWT.NONE);
+                                MenuItem childItem = new MenuItem(breadcrumbsMenu, SWT.NONE);
                                 childItem.setText(folderItem.getName());
-                                childItem.setImage(DBeaverIcons.getImage(folderItem.getNodeIconDefault()));
+//                                childItem.setImage(DBeaverIcons.getImage(folderItem.getNodeIconDefault()));
                                 if (folderItem == curNode) {
                                     childItem.setEnabled(false);
                                 }
@@ -790,15 +801,19 @@ public class EntityEditor extends MultiPageDatabaseEditor
                                         NavigatorHandlerObjectOpen.openEntityEditor(folderItem, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                                     }
                                 });
+                                itemCount++;
+                                if (itemCount >= MAX_BREADCRUMBS_MENU_ITEM) {
+                                    break;
+                                }
                             }
-                        } catch (DBException e1) {
+                        } catch (Throwable e1) {
                             log.error(e1);
                         }
 
                         Rectangle rect = item.getBounds();
                         Point pt = item.getParent().toDisplay(new Point(rect.x, rect.y));
-                        menu.setLocation(pt.x, pt.y + rect.height);
-                        menu.setVisible(true);
+                        breadcrumbsMenu.setLocation(pt.x, pt.y + rect.height);
+                        breadcrumbsMenu.setVisible(true);
                     } else {
                         NavigatorHandlerObjectOpen.openEntityEditor(databaseNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                     }

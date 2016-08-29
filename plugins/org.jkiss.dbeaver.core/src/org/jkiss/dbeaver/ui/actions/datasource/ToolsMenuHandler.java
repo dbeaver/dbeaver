@@ -40,6 +40,8 @@ import org.jkiss.utils.CommonUtils;
 
 public class ToolsMenuHandler extends AbstractDataSourceHandler
 {
+    private MenuManager menuManager = new MenuManager();
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -54,7 +56,10 @@ public class ToolsMenuHandler extends AbstractDataSourceHandler
         }
         Point location = getLocationFromControl(activeShell, focusControl);
 
-        MenuManager menuManager = new MenuManager();
+        if (menuManager != null) {
+            menuManager.dispose();
+        }
+        menuManager = new MenuManager();
         menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_CONNECT));
         menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_DISCONNECT));
         menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_INVALIDATE));
