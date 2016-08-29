@@ -1687,7 +1687,9 @@ public class SQLEditor extends SQLEditorBase implements
             Throwable error = result.getError();
             if (error != null) {
                 setStatus(GeneralUtils.getFirstMessage(error), true);
-                scrollCursorToError(result, error);
+                if (!scrollCursorToError(result, error)) {
+                    getSelectionProvider().setSelection(originalSelection);
+                }
             } else if (!scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
                 getSelectionProvider().setSelection(originalSelection);
             }
@@ -1742,10 +1744,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void scrollCursorToError(@NotNull SQLQueryResult result, @NotNull Throwable error) {
+    private boolean scrollCursorToError(@NotNull SQLQueryResult result, @NotNull Throwable error) {
         DBCExecutionContext context = getExecutionContext();
         if (context == null) {
-            return;
+            return false;
         }
         try {
             boolean scrolled = false;
@@ -1781,12 +1783,14 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
             }
-            if (!scrolled) {
-                // Can't position on error - let's just select entire problem query
-                showStatementInEditor(result.getStatement(), true);
-            }
+            return scrolled;
+//            if (!scrolled) {
+//                // Can't position on error - let's just select entire problem query
+//                showStatementInEditor(result.getStatement(), true);
+//            }
         } catch (Exception e) {
             log.warn("Error positioning on query error", e);
+            return false;
         }
     }
 
