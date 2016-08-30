@@ -104,7 +104,16 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     @Override
     public String getFullQualifiedName()
     {
-        return DBUtils.getFullQualifiedName(getDataSource(), getCatalog(), getSchema(), this);
+        return getDataSource().getMetaModel().useCatalogInObjectNames() ?
+            DBUtils.getFullQualifiedName(
+                getDataSource(),
+                getCatalog(),
+                getSchema(),
+                this) :
+            DBUtils.getFullQualifiedName(
+                getDataSource(),
+                getSchema(),
+                this);
     }
 
     @Override

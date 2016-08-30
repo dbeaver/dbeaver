@@ -183,4 +183,9 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     public GenericTableIndex createIndexImpl(GenericTable table, boolean nonUnique, String qualifier, long cardinality, String indexName, DBSIndexType indexType, boolean persisted) {
         return new SQLServerIndex(table, nonUnique, qualifier, cardinality, indexName, indexType, persisted);
     }
+
+    @Override
+    public boolean useCatalogInObjectNames() {
+        return false;
+    }
 }
