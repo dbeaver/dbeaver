@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.utils;
 import org.eclipse.core.runtime.Platform;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -53,15 +54,12 @@ public class SystemVariablesResolver implements GeneralUtils.IVariableResolver {
     }
 
     private static String getPlainPath(URL url) {
-        String path = url.toString();
-        if (path.startsWith("file:/")) {
-            path = path.substring(6);
+        try {
+            File file = new File(url.toURI());
+            return file.getAbsolutePath();
+        } catch (URISyntaxException e) {
+            return url.toString();
         }
-        path = path.replace("/", File.separator);
-        if (path.endsWith(File.separator)) {
-            path = path.substring(0, path.length() - 1);
-        }
-        return path;
     }
 
 }
