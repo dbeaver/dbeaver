@@ -62,7 +62,7 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
             return null;
         }
 
-        final GenericTableIndex index = new GenericTableIndex(
+        final GenericTableIndex index = parent.getDataSource().getMetaModel().createIndexImpl(
             parent,
             !editDialog.isUnique(),
             null,

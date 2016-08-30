@@ -112,7 +112,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
             indexName = parent.getName().toUpperCase(Locale.ENGLISH) + "_INDEX";
         }
 
-        return new GenericTableIndex(
+        return owner.getDataSource().getMetaModel().createIndexImpl(
             parent,
             isNonUnique,
             indexQualifier,
