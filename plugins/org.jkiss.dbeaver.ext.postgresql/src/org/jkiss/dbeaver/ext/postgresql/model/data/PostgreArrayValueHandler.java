@@ -45,21 +45,24 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        if (object != null && object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
-            PostgreDataType itemType = null;
-            final PostgreDataType arrayType = PostgreUtils.findDataType((PostgreDataSource) session.getDataSource(), type);
-            if (arrayType != null) {
-                itemType = arrayType.getElementType();
-            }
-
-            final Object value = PostgreUtils.extractValue(object);
-            if (value == null) {
-                return null;
-            } else if (value instanceof String && itemType != null) {
-                return convertStringToArray(session, itemType, (String)value);
-            } else if (itemType != null) {
-                // Can't parse
-                return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), new Object[] { value } );
+        PostgreDataType itemType = null;
+        final PostgreDataType arrayType = PostgreUtils.findDataType((PostgreDataSource) session.getDataSource(), type);
+        if (arrayType != null) {
+            itemType = arrayType.getElementType();
+        }
+        if (itemType != null) {
+            if (object != null && object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
+                final Object value = PostgreUtils.extractValue(object);
+                if (value == null) {
+                    return null;
+                } else if (value instanceof String) {
+                    return convertStringToArray(session, itemType, (String) value);
+                } else {
+                    // Can't parse
+                    return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), new Object[]{value});
+                }
+            } else if (object instanceof String) {
+                return convertStringToArray(session, itemType, (String) object);
             }
         }
         return super.getValueFromObject(session, type, object, copy);
