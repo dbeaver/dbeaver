@@ -323,4 +323,7 @@ public class GenericMetaModel {
             persisted);
     }
 
+    public boolean useCatalogInObjectNames() {
+        return true;
+    }
 }
