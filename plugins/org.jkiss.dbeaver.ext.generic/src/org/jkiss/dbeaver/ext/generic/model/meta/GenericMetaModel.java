@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.ArrayUtils;
@@ -301,6 +302,25 @@ public class GenericMetaModel {
 
     public boolean supportsUpsertStatement() {
         return false;
+    }
+
+    public GenericTableIndex createIndexImpl(
+        GenericTable table,
+        boolean nonUnique,
+        String qualifier,
+        long cardinality,
+        String indexName,
+        DBSIndexType indexType,
+        boolean persisted)
+    {
+        return new GenericTableIndex(
+            table,
+            nonUnique,
+            qualifier,
+            cardinality,
+            indexName,
+            indexType,
+            persisted);
     }
 
 }
