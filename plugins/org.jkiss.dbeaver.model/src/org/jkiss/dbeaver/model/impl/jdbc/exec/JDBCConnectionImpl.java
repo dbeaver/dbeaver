@@ -119,27 +119,27 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 // (e.g. in Oracle it parses IN/OUT parameters)
                 JDBCStatement statement;
                 try {
+                    statement = createStatement(
+                        scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
+                        updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+                }
+                catch (Throwable e) {
                     try {
-                        statement = createStatement(
-                            scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
-                            updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
-                    }
-                    catch (UnsupportedOperationException | LinkageError | SQLFeatureNotSupportedException e) {
                         statement = createStatement();
+                    } catch (Throwable e1) {
+                        try {
+                            statement = prepareStatement(
+                                sqlQuery,
+                                scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
+                                updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+                        } catch (Throwable e2) {
+                            log.debug(e);
+                            statement = prepareStatement(sqlQuery);
+                        }
                     }
-                    if (statement instanceof JDBCStatementImpl) {
-                        ((JDBCStatementImpl)statement).setQueryString(sqlQuery);
-                    }
-                } catch (IllegalArgumentException | SQLFeatureNotSupportedException e) {
-                    log.warn(e);
-                    try {
-                        statement = prepareStatement(
-                            sqlQuery,
-                            scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
-                            updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
-                    } catch (SQLException e1) {
-                        statement = prepareStatement(sqlQuery);
-                    }
+                }
+                if (statement instanceof JDBCStatementImpl) {
+                    ((JDBCStatementImpl)statement).setQueryString(sqlQuery);
                 }
                 return statement;
             } else if (returnGeneratedKeys) {
