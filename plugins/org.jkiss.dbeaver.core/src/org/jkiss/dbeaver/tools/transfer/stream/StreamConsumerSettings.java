@@ -43,8 +43,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         BINARY
     }
 
-    private static final String PATTERN_TABLE = "{table}";
-    private static final String PATTERN_TIMESTAMP = "{timestamp}";
+    private static final String PATTERN_TABLE = "${table}";
+    private static final String PATTERN_TIMESTAMP = "${timestamp}";
 
     public static final String PROP_EXTRACT_IMAGES = "extractImages";
     public static final String PROP_FILE_EXTENSION = "extension";

@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tools;
 
+import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
@@ -104,6 +106,11 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
             }
         });
         outputFileText = UIUtils.createLabelText(outputGroup, "File name pattern", wizard.getOutputFilePattern());
+        outputFileText.setToolTipText("Output file name pattern. Allowed variables: ${host}, ${database}, ${table}, ${timestamp}.");
+        UIUtils.installContentProposal(
+            outputFileText,
+            new TextContentAdapter(),
+            new SimpleContentProposalProvider(new String[]{"${host}", "${database}", "${table}", "${timestamp}"}));
         outputFileText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {

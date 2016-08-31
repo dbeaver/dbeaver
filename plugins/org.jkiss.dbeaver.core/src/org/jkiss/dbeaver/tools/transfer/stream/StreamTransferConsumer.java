@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
 
@@ -59,6 +60,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private static final Log log = Log.getLog(StreamTransferConsumer.class);
 
     private static final String LOB_DIRECTORY_NAME = "files"; //$NON-NLS-1$
+
+    public static final String VARIABLE_TABLE = "table";
+    public static final String VARIABLE_TIMESTAMP = "timestamp";
 
     private IStreamDataExporter processor;
     private StreamConsumerSettings settings;
@@ -357,12 +361,27 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return new File(dir, fileName);
     }
 
-    private String processTemplate(String tableName)
+    private String processTemplate(final String tableName)
     {
-        String timeStamp = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
-        return settings.getOutputFilePattern()
-            .replaceAll("\\{table\\}", tableName)
-            .replaceAll("\\{timestamp\\}", timeStamp);
+        final String timeStamp = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
+        String fileName = settings.getOutputFilePattern();
+        fileName = GeneralUtils.replaceVariables(fileName, new GeneralUtils.IVariableResolver() {
+            @Override
+            public String get(String name) {
+                switch (name) {
+                    case VARIABLE_TABLE:
+                        return tableName;
+                    case VARIABLE_TIMESTAMP:
+                        return timeStamp;
+
+                }
+                return null;
+            }
+        });
+        // Replace legacy patterns (without dollar prefix)
+        return fileName
+            .replace("{table}", tableName)
+            .replace("{timestamp}", timeStamp);
     }
 
     private static String stripObjectName(String name)
