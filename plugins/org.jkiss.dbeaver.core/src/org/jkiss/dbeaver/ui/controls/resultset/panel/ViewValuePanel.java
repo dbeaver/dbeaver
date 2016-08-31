@@ -264,6 +264,7 @@ public class ViewValuePanel implements IResultSetPanel {
             valueSaving = true;
             Object newValue = valueViewer.extractEditorValue();
             previewController.updateValue(newValue);
+            presentation.refreshData(false, false);
         } catch (Exception e) {
             UIUtils.showErrorDialog(null, "Value save", "Can't save edited value", e);
         } finally {
