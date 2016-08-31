@@ -2757,7 +2757,7 @@ public abstract class LightGrid extends Canvas {
                 showItem(row);
                 redraw();
                 //return;
-            } else if (e.button == 1 || e.button == 2 || (e.button == 3 && col != null && !isSelectedCell)) {
+            } else if (e.button == 1 || (e.button == 3 && col != null && !isSelectedCell)) {
                 if (col != null) {
                     selectionEvent = updateCellSelection(new GridPos(col.getIndex(), row), e.stateMask, false, true, EventSource.MOUSE);
                     cellSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
@@ -2770,6 +2770,8 @@ public abstract class LightGrid extends Canvas {
                     showItem(row);
                     redraw();
                 }
+            } else {
+                return;
             }
         } else if (e.button == 1 && rowHeaderVisible && e.x <= rowHeaderWidth && e.y < headerHeight) {
             // Nothing to select

@@ -274,6 +274,9 @@ public class Spreadsheet extends LightGrid implements Listener {
                 }
                 break;
             case SWT.MouseDoubleClick:
+                if (event.button != 1) {
+                    return;
+                }
                 GridPos pos = super.getCell(new Point(event.x, event.y));
                 GridPos focusPos = super.getFocusPos();
                 if (pos != null && focusPos != null && pos.equals(super.getFocusPos())) {
@@ -294,7 +297,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                 break;
             case SWT.MouseDown:
                 if (event.button == 2) {
-                    presentation.openValueEditor(true);
+//                    presentation.openValueEditor(true);
                 }
                 break;
             case LightGrid.Event_ChangeSort:
