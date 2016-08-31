@@ -76,9 +76,9 @@ public class MySQLUtils {
         typeMap.put("longblob", java.sql.Types.LONGVARBINARY);
 
         typeMap.put("tinytext", java.sql.Types.VARCHAR);
-        typeMap.put("text", java.sql.Types.LONGVARCHAR);
-        typeMap.put("mediumtext", java.sql.Types.LONGVARCHAR);
-        typeMap.put("longtext", java.sql.Types.LONGVARCHAR);
+        typeMap.put("text", java.sql.Types.VARCHAR);
+        typeMap.put("mediumtext", java.sql.Types.VARCHAR);
+        typeMap.put("longtext", java.sql.Types.VARCHAR);
 
         typeMap.put(MySQLConstants.TYPE_NAME_ENUM, java.sql.Types.CHAR);
         typeMap.put(MySQLConstants.TYPE_NAME_SET, java.sql.Types.CHAR);
