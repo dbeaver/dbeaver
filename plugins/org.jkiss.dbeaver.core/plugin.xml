@@ -111,6 +111,12 @@
                 properties="active,hasData,hasMoreData,canCopy,canPaste,canCut,canMove,editable,changed,canToggle,canSwitchPresentation,canNavigateLink,canNavigateHistory"
                 type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
+                class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewPropertyTester"
+                id="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewPropertyTester"
+                namespace="org.jkiss.dbeaver.core.resultset.panel.valueView"
+                properties="active"
+                type="org.eclipse.ui.IWorkbenchPart"/>
+        <propertyTester
                 class="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
                 id="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
                 namespace="org.jkiss.dbeaver.core.navigator"
@@ -1230,6 +1236,21 @@
             </enabledWhen>
         </handler>
 
+        <handler commandId="org.jkiss.dbeaver.core.resultset.cell.save" class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewCommandHandler">
+            <activeWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.resultset.panel.valueView.active"/>
+                </with>
+            </activeWhen>
+<!--
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.resultset.editable" value="edit"/>
+                </with>
+            </enabledWhen>
+-->
+        </handler>
+
         <handler commandId="org.eclipse.ui.edit.text.smartEnter" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
             <!-- Smart enter works only if SS is active control. Otherwise we'll break traverse with Enter -->
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
@@ -1835,8 +1856,9 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.row.delete" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+DELETE"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.applyChanges" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+S"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+R"/>
-        <!--<key commandId="org.jkiss.dbeaver.core.resultset.cell.save" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ENTER"/>-->
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F7"/>
+
+        <key commandId="org.jkiss.dbeaver.core.resultset.cell.save" contextId="org.jkiss.dbeaver.ui.context.resultset.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+S"/>
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
         <key commandId="org.jkiss.dbeaver.core.edit.paste.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+V"/>
@@ -1886,6 +1908,11 @@
                 parentId="org.eclipse.ui.contexts.window"
                 name="Results viewer context"
                 description="Results viewer context"/>
+        <context
+                id="org.jkiss.dbeaver.ui.context.resultset.edit"
+                parentId="org.eclipse.ui.contexts.window"
+                name="Results edit context"
+                description="Results edit context"/>
         <context
               id="org.jkiss.dbeaver.ui.editors.sql"
               name="SQL Editor Context"

@@ -150,6 +150,8 @@ public interface IResultSetController extends DBPContextProvider {
     @NotNull
     IResultSetPresentation getActivePresentation();
 
+    IResultSetPanel getVisiblePanel();
+
     IResultSetPanel[] getActivePanels();
 
     void activatePanel(String id, boolean setActive, boolean showPanels);

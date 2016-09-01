@@ -20,11 +20,11 @@ package org.jkiss.dbeaver.ui.data.editors;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.contexts.IContextActivation;
+import org.eclipse.ui.contexts.IContextService;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -37,6 +37,8 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 * BaseValueEditor
 */
 public abstract class BaseValueEditor<T extends Control> implements IValueEditor {
+
+    private static final String RESULTS_EDIT_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset.edit";
 
     protected final IValueController valueController;
     protected T control;
@@ -79,6 +81,23 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 //                inlineControl.setBackground(valueController.getEditPlaceholder().getBackground());
 //            }
 
+        final IContextService contextService = valueController.getValueSite().getService(IContextService.class);
+        inlineControl.addFocusListener(new FocusListener() {
+            private IContextActivation activationEditor;
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (contextService != null) {
+                    activationEditor = contextService.activateContext(RESULTS_EDIT_CONTEXT_ID);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                contextService.deactivateContext(activationEditor);
+                activationEditor = null;
+            }
+        });
+
         if (isInline) {
             inlineControl.setFont(valueController.getEditPlaceholder().getFont());
             // There is a bug in windows. First time date control gain focus it renders cell editor incorrectly.
@@ -92,7 +111,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                 }
             });
 
-             if (valueController instanceof IMultiController) { // In dialog it also should handle all standard stuff because we have params dialog
+            if (valueController instanceof IMultiController) { // In dialog it also should handle all standard stuff because we have params dialog
                  inlineControl.addTraverseListener(new TraverseListener() {
                     @Override
                     public void keyTraversed(TraverseEvent e) {
@@ -114,7 +133,11 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                  });
                  if (!UIUtils.isInDialog(inlineControl)) {
                      // Do not use focus listener in dialogs (because dialog has controls like Ok/Cancel buttons)
-                     inlineControl.addFocusListener(new FocusAdapter() {
+                     inlineControl.addFocusListener(new FocusListener() {
+                         @Override
+                         public void focusGained(FocusEvent e) {
+                         }
+
                          @Override
                          public void focusLost(FocusEvent e) {
                              // Check new focus control in async mode
