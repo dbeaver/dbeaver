@@ -604,7 +604,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    IResultSetPanel getVisiblePanel() {
+    public IResultSetPanel getVisiblePanel() {
         return activePanels.get(getPresentationSettings().activePanelId);
     }
 
@@ -686,9 +686,6 @@ public class ResultSetViewer extends Viewer
 
     private void setActivePanel(String panelId) {
         PresentationSettings settings = getPresentationSettings();
-        if (CommonUtils.equalObjects(settings.activePanelId, panelId)) {
-            return;
-        }
         settings.activePanelId = panelId;
         IResultSetPanel panel = activePanels.get(panelId);
         if (panel != null) {

@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -59,8 +60,6 @@ public class ViewValuePanel implements IResultSetPanel {
 
     public static final String PANEL_ID = "value-view";
 
-    public static final String CMD_SAVE_VALUE = "org.jkiss.dbeaver.core.resultset.cell.save";
-
     private IResultSetPresentation presentation;
     private Composite viewPlaceholder;
 
@@ -69,7 +68,6 @@ public class ViewValuePanel implements IResultSetPanel {
     private ReferenceValueEditor referenceValueEditor;
 
     private volatile boolean valueSaving;
-    private Action saveCellAction;
 
     public ViewValuePanel() {
     }
@@ -122,11 +120,6 @@ public class ViewValuePanel implements IResultSetPanel {
         });
 */
 
-        saveCellAction = new SaveCellAction();
-        saveCellAction.setActionDefinitionId(CMD_SAVE_VALUE);
-        saveCellAction.setId(CMD_SAVE_VALUE);
-        saveCellAction.setAccelerator(SWT.CTRL | SWT.CR);
-
         if (presentation instanceof ISelectionProvider) {
             ((ISelectionProvider) presentation).addSelectionChangedListener(new ISelectionChangedListener() {
                 @Override
@@ -171,10 +164,6 @@ public class ViewValuePanel implements IResultSetPanel {
                 IValueController.EditType.PANEL,
                 viewPlaceholder);
         } else {
-            if (previewController.getCurRow() == row) {
-                // The same attr and row - just ignore
-                return;
-            }
             newController = previewController;
             previewController.setCurRow(row);
         }
@@ -292,7 +281,16 @@ public class ViewValuePanel implements IResultSetPanel {
     private void fillToolBar(IContributionManager contributionManager)
     {
         contributionManager.add(new Separator());
-        contributionManager.add(saveCellAction);
+        contributionManager.add(
+            ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
+        contributionManager.add(new Separator());
+        if (valueViewer != null) {
+            try {
+                valueViewer.contributeActions(contributionManager, previewController);
+            } catch (DBCException e) {
+                log.error("Can't contribute value manager actions", e);
+            }
+        }
     }
 
     private class SaveCellAction extends Action {
