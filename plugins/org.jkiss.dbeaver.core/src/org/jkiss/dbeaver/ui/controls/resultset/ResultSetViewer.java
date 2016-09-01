@@ -44,7 +44,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
-import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.part.MultiPageEditorPart;
@@ -744,12 +743,6 @@ public class ResultSetViewer extends Viewer
         }
 
         getPresentationSettings().panelsVisible = show;
-
-        // Refresh elements
-        ICommandService commandService = getSite().getService(ICommandService.class);
-        if (commandService != null) {
-            commandService.refreshElements(ResultSetCommandHandler.CMD_TOGGLE_PANELS, null);
-        }
     }
 
     private List<IContributionItem> fillPanelsMenu() {
@@ -995,7 +988,8 @@ public class ResultSetViewer extends Viewer
 //            UIIcon.FIND_TEXT));
 
         mainToolbar.add(new Separator());
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
+        //mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
+        mainToolbar.add(new ToggleModeAction());
 
         CommandContributionItem panelsAction = new CommandContributionItem(new CommandContributionItemParameter(
             site,
@@ -1560,7 +1554,7 @@ public class ResultSetViewer extends Viewer
                     "Layout",
                     null,
                     "layout"); //$NON-NLS-1$
-                layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE));
+                layoutMenu.add(new ToggleModeAction());
                 layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_PANELS));
                 layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_SWITCH_PRESENTATION));
                 {
@@ -2665,7 +2659,7 @@ public class ResultSetViewer extends Viewer
             menuManager.add(new VirtualKeyEditAction(false));
             menuManager.add(new DictionaryEditAction());
             menuManager.add(new Separator());
-            menuManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
+            menuManager.add(new ToggleModeAction());
             activePresentation.fillMenu(menuManager);
             if (!CommonUtils.isEmpty(availablePresentations) && availablePresentations.size() > 1) {
                 menuManager.add(new Separator());
@@ -3044,6 +3038,27 @@ public class ResultSetViewer extends Viewer
         {
             final DBSEntity singleSource = model.getSingleSource();
             return singleSource != null;
+        }
+    }
+
+    private class ToggleModeAction extends Action {
+        {
+            setActionDefinitionId(ResultSetCommandHandler.CMD_TOGGLE_MODE);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.RS_GRID));
+        }
+
+        public ToggleModeAction() {
+            super("Toggle mode", Action.AS_CHECK_BOX);
+        }
+
+        @Override
+        public boolean isChecked() {
+            return isRecordMode();
+        }
+
+        @Override
+        public void run() {
+            toggleMode();
         }
     }
 
