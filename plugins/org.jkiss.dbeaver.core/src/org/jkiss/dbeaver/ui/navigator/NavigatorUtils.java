@@ -37,17 +37,16 @@ import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
@@ -73,6 +72,8 @@ import java.util.*;
 public class NavigatorUtils {
 
     public static final String MB_NAVIGATOR_ADDITIONS = "navigator_additions";
+
+    private static final Log log = Log.getLog(NavigatorUtils.class);
 
     public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
     {
@@ -499,6 +500,26 @@ public class NavigatorUtils {
         }
         if (dsProvider.getDataSourceContainer() != ds) {
             dsProvider.setDataSourceContainer(ds);
+        }
+        // Now check if we can change default object
+        DBSObject dbObject = ((DBNDatabaseNode) selectedNode).getObject();
+        if (dbObject != null && dbObject.getParentObject() != null) {
+            DBPObject parentObject = DBUtils.getPublicObject(dbObject.getParentObject());
+            if (parentObject instanceof DBSObjectSelector) {
+                DBSObjectSelector selector = (DBSObjectSelector) parentObject;
+                DBSObject curDefaultObject = selector.getDefaultObject();
+                if (curDefaultObject != dbObject) {
+                    if (curDefaultObject != null && curDefaultObject.getClass() != dbObject.getClass()) {
+                        // Wrong object type
+                        return true;
+                    }
+                    try {
+                        selector.setDefaultObject(VoidProgressMonitor.INSTANCE, dbObject);
+                    } catch (Throwable e) {
+                        log.debug(e);
+                    }
+                }
+            }
         }
         return true;
     }
