@@ -178,7 +178,7 @@ public class ViewValuePanel implements IResultSetPanel {
                 @Override
                 public void updateValue(@Nullable Object value) {
                     super.updateValue(value);
-                    presentation.refreshData(false, false);
+                    presentation.updateValueView();
                 }
             };
             updateActions = true;
@@ -278,7 +278,7 @@ public class ViewValuePanel implements IResultSetPanel {
             valueSaving = true;
             Object newValue = valueEditor.extractEditorValue();
             previewController.updateValue(newValue);
-            presentation.refreshData(false, false);
+            presentation.updateValueView();
         } catch (Exception e) {
             UIUtils.showErrorDialog(null, "Value save", "Can't save edited value", e);
         } finally {
