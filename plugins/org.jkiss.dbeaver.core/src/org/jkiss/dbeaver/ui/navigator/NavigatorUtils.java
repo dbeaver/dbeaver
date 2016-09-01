@@ -40,8 +40,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -376,6 +378,7 @@ public class NavigatorUtils {
                     TreeItem treeItem = (TreeItem)event.item;
                     Object curObject = treeItem.getData();
                     if (curObject instanceof DBNNode) {
+                        @SuppressWarnings("unchecked")
                         Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
                         if (!CommonUtils.isEmpty(nodesToDrop)) {
                             for (DBNNode node : nodesToDrop) {
@@ -475,5 +478,28 @@ public class NavigatorUtils {
             // Refresh all folders
             NavigatorHandlerRefresh.refreshNavigator(folders.keySet());
         }
+    }
+
+    public static boolean syncEditorWithNavigator(INavigatorModelView navigatorView, IEditorPart activeEditor) {
+        if (!(activeEditor instanceof IDataSourceContainerProviderEx)) {
+            return false;
+        }
+        IDataSourceContainerProviderEx dsProvider = (IDataSourceContainerProviderEx) activeEditor;
+        Viewer navigatorViewer = navigatorView.getNavigatorViewer();
+        if (navigatorViewer == null) {
+            return false;
+        }
+        DBNNode selectedNode = getSelectedNode(navigatorViewer.getSelection());
+        if (!(selectedNode instanceof DBNDatabaseNode)) {
+            return false;
+        }
+        final DBPDataSourceContainer ds = ((DBNDatabaseNode) selectedNode).getDataSourceContainer();
+        if (ds == null) {
+            return false;
+        }
+        if (dsProvider.getDataSourceContainer() != ds) {
+            dsProvider.setDataSourceContainer(ds);
+        }
+        return true;
     }
 }

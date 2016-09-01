@@ -182,15 +182,9 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         }
 
         if (lastSelection instanceof DBNDatabaseNode && DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE)) {
-            final DBPDataSourceContainer ds = getDataSourceContainer();
-            if (ds != null) {
-                final IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-                if (activeEditor instanceof IDataSourceContainerProviderEx) {
-                    final DBPDataSourceContainer curDS = ((IDataSourceContainerProviderEx) activeEditor).getDataSourceContainer();
-                    if (curDS != ds) {
-                        ((IDataSourceContainerProviderEx) activeEditor).setDataSourceContainer(ds);
-                    }
-                }
+            IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+            if (activeEditor != null) {
+                NavigatorUtils.syncEditorWithNavigator(this, activeEditor);
             }
         }
     }

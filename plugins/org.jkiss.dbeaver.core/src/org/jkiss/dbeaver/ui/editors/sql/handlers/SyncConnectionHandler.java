@@ -22,8 +22,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 
@@ -40,13 +38,8 @@ public class SyncConnectionHandler extends AbstractHandler {
         if (navigatorView == null) {
             return null;
         }
-        final DBPDataSourceContainer ds = navigatorView.getDataSourceContainer();
-        if (ds == null) {
-            return null;
-        }
         IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
-        if (activeEditor instanceof IDataSourceContainerProviderEx) {
-            ((IDataSourceContainerProviderEx) activeEditor).setDataSourceContainer(ds);
+        if (NavigatorUtils.syncEditorWithNavigator(navigatorView, activeEditor)) {
             HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().activate(activeEditor);
         }
         return null;
