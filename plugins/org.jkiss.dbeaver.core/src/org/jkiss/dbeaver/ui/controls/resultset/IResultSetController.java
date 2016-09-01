@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.graphics.Color;
@@ -155,6 +156,8 @@ public interface IResultSetController extends DBPContextProvider {
     IResultSetPanel[] getActivePanels();
 
     void activatePanel(String id, boolean setActive, boolean showPanels);
+
+    void updatePanelActions();
 
     void updatePanelsContent();
 

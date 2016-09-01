@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -64,10 +65,11 @@ public class ViewValuePanel implements IResultSetPanel {
     private Composite viewPlaceholder;
 
     private ResultSetValueController previewController;
-    private IValueEditor valueViewer;
+    private IValueEditor valueEditor;
     private ReferenceValueEditor referenceValueEditor;
 
     private volatile boolean valueSaving;
+    private IValueManager valueManager;
 
     public ViewValuePanel() {
     }
@@ -133,8 +135,7 @@ public class ViewValuePanel implements IResultSetPanel {
     }
 
     @Override
-    public void activatePanel(IContributionManager contributionManager) {
-        fillToolBar(contributionManager);
+    public void activatePanel() {
         refreshValue();
     }
 
@@ -148,6 +149,11 @@ public class ViewValuePanel implements IResultSetPanel {
         refreshValue();
     }
 
+    @Override
+    public void contributeActions(ToolBarManager manager) {
+        fillToolBar(manager);
+    }
+
     private void refreshValue() {
         DBDAttributeBinding attr = presentation.getCurrentAttribute();
         ResultSetRow row = presentation.getController().getCurrentRow();
@@ -156,6 +162,7 @@ public class ViewValuePanel implements IResultSetPanel {
             return;
         }
         ResultSetValueController newController;
+        boolean updateActions = false;
         if (previewController == null || previewController.getBinding() != attr) {
             newController = new ResultSetValueController(
                 presentation.getController(),
@@ -163,11 +170,15 @@ public class ViewValuePanel implements IResultSetPanel {
                 row,
                 IValueController.EditType.PANEL,
                 viewPlaceholder);
+            updateActions = true;
         } else {
             newController = previewController;
             previewController.setCurRow(row);
         }
         viewValue(newController);
+        if (updateActions) {
+            presentation.getController().updatePanelActions();
+        }
     }
 
     private void viewValue(final ResultSetValueController valueController)
@@ -178,29 +189,29 @@ public class ViewValuePanel implements IResultSetPanel {
         if (previewController == null || valueController.getValueType() != previewController.getValueType()) {
             cleanupPanel();
             // Create a new one
-            IValueManager valueManager = valueController.getValueManager();
+            valueManager = valueController.getValueManager();
             try {
-                valueViewer = valueManager.createEditor(valueController);
+                valueEditor = valueManager.createEditor(valueController);
             } catch (DBException e) {
                 UIUtils.showErrorDialog(viewPlaceholder.getShell(), "Value preview", "Can't create value viewer", e);
                 return;
             }
-            if (valueViewer != null) {
+            if (valueEditor != null) {
                 try {
-                    valueViewer.createControl();
+                    valueEditor.createControl();
                 } catch (Exception e) {
                     log.error(e);
                 }
-                Control control = valueViewer.getControl();
+                Control control = valueEditor.getControl();
                 if (control != null) {
                     presentation.getController().lockActionsByFocus(control);
                 }
 
-                referenceValueEditor = new ReferenceValueEditor(valueController, valueViewer);
+                referenceValueEditor = new ReferenceValueEditor(valueController, valueEditor);
                 if (referenceValueEditor.isReferenceValue()) {
                     GridLayout gl = new GridLayout(1, false);
                     viewPlaceholder.setLayout(gl);
-                    valueViewer.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                    valueEditor.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                     referenceValueEditor.createEditorSelector(viewPlaceholder);
                 } else {
                     viewPlaceholder.setLayout(new FillLayout());
@@ -225,33 +236,33 @@ public class ViewValuePanel implements IResultSetPanel {
 
             viewPlaceholder.layout();
         }
-        if (valueViewer != null) {
+        if (valueEditor != null) {
             try {
                 Object newValue = previewController.getValue();
                 if (newValue instanceof DBDValue) {
                     // Do not check for difference
-                    valueViewer.primeEditorValue(newValue);
+                    valueEditor.primeEditorValue(newValue);
                 } else {
-                    Object oldValue = valueViewer.extractEditorValue();
+                    Object oldValue = valueEditor.extractEditorValue();
                     if (!CommonUtils.equalObjects(oldValue, newValue)) {
-                        valueViewer.primeEditorValue(newValue);
+                        valueEditor.primeEditorValue(newValue);
                     }
                 }
             } catch (DBException e) {
                 log.error(e);
             }
-            valueViewer.setDirty(false);
+            valueEditor.setDirty(false);
         }
     }
 
     public void saveValue()
     {
-        if (valueViewer == null) {
+        if (valueEditor == null) {
             return;
         }
         try {
             valueSaving = true;
-            Object newValue = valueViewer.extractEditorValue();
+            Object newValue = valueEditor.extractEditorValue();
             previewController.updateValue(newValue);
             presentation.refreshData(false, false);
         } catch (Exception e) {
@@ -283,28 +294,14 @@ public class ViewValuePanel implements IResultSetPanel {
         contributionManager.add(new Separator());
         contributionManager.add(
             ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
-        contributionManager.add(new Separator());
-        if (valueViewer != null) {
+        //contributionManager.add(new Separator());
+        if (valueManager != null) {
             try {
-                valueViewer.contributeActions(contributionManager, previewController);
+                valueManager.contributeActions(contributionManager, previewController, valueEditor);
             } catch (DBCException e) {
                 log.error("Can't contribute value manager actions", e);
             }
         }
     }
-
-    private class SaveCellAction extends Action {
-        public SaveCellAction() {
-            super("Save", AS_PUSH_BUTTON);
-            setToolTipText("Save cell value");
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.ACCEPT));
-        }
-
-        @Override
-        public void run() {
-            saveValue();
-        }
-    }
-
 
 }

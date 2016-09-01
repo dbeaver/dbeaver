@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -37,10 +38,11 @@ public interface IResultSetPanel {
 
     Control createContents(IResultSetPresentation presentation, Composite parent);
 
-    void activatePanel(IContributionManager contributionManager);
+    void activatePanel();
 
     void deactivatePanel();
 
     void refresh();
 
+    void contributeActions(ToolBarManager manager);
 }
