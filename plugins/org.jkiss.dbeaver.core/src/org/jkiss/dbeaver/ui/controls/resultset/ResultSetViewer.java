@@ -1029,11 +1029,7 @@ public class ResultSetViewer extends Viewer
     {
         changeMode(!recordMode);
 
-        // Refresh elements
-        ICommandService commandService = site.getService(ICommandService.class);
-        if (commandService != null) {
-            commandService.refreshElements(ResultSetCommandHandler.CMD_TOGGLE_MODE, null);
-        }
+        updateEditControls();
     }
 
     private void changeMode(boolean recordMode)
