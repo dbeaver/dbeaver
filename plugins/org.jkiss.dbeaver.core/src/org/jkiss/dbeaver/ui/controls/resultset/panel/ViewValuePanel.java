@@ -247,6 +247,9 @@ public class ViewValuePanel implements IResultSetPanel {
 
             viewPlaceholder.layout();
         }
+        if (valueEditor instanceof BaseValueEditor) {
+            ((BaseValueEditor) valueEditor).setAutoSaveEnabled(false);
+        }
         if (valueEditor != null) {
             try {
                 Object newValue = previewController.getValue();
