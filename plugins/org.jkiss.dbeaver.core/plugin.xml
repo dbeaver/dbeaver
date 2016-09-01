@@ -336,7 +336,7 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.generateScript" icon="icons/misc/sql.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="icons/sql/grid.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.navigateLink" icon="icons/misc/link.png"/>
-        <image commandId="org.jkiss.dbeaver.core.resultset.cell.save" icon="icons/misc/confirm.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.cell.save" icon="icons/file/save.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" icon="icons/sql/panel_customize.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="icons/misc/filter.png"/>

@@ -689,10 +689,8 @@ public class ResultSetViewer extends Viewer
         settings.activePanelId = panelId;
         IResultSetPanel panel = activePanels.get(panelId);
         if (panel != null) {
-            panelToolBar.removeAll();
-            panel.activatePanel(panelToolBar);
-            addDefaultPanelActions();
-            panelToolBar.update(true);
+            panel.activatePanel();
+            updatePanelActions();
         }
     }
 
@@ -738,7 +736,7 @@ public class ResultSetViewer extends Viewer
             panelToolBar.removeAll();
             IResultSetPanel panel = getVisiblePanel();
             if (panel != null) {
-                panel.activatePanel(panelToolBar);
+                panel.activatePanel();
             }
             addDefaultPanelActions();
             panelToolBar.update(true);
@@ -1891,6 +1889,17 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
+    public void updatePanelActions() {
+        IResultSetPanel visiblePanel = getVisiblePanel();
+        panelToolBar.removeAll();
+        if (visiblePanel != null) {
+            visiblePanel.contributeActions(panelToolBar);
+        }
+        addDefaultPanelActions();
+        panelToolBar.update(true);
+    }
+
+    @Override
     public Composite getControl()
     {
         return this.viewerPanel;
@@ -2177,6 +2186,7 @@ public class ResultSetViewer extends Viewer
                                 restorePresentationState(presentationState);
                             }
                             activePresentation.updateValueView();
+                            updatePanelsContent();
 
                             if (error == null) {
                                 setNewState(dataContainer, dataFilter != null ? dataFilter :

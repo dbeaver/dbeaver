@@ -66,7 +66,6 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     private boolean groupByColumns;
     private boolean runServerQueries;
 
-    private IContributionManager panelToolbar;
     private IDialogSettings panelSettings;
 
     private final List<AggregateFunctionDescriptor> enabledFunctions = new ArrayList<>();
@@ -90,7 +89,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     }
 
     @Override
-    public Control createContents(IResultSetPresentation presentation, Composite parent) {
+    public Control createContents(final IResultSetPresentation presentation, Composite parent) {
         this.presentation = presentation;
         this.panelSettings = UIUtils.getSettingsSection(presentation.getController().getViewerSettings(), SETTINGS_SECTION_AGGREGATE);
 
@@ -129,9 +128,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         aggregateTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (panelToolbar != null) {
-                    UIUtils.updateContributionItems(panelToolbar);
-                }
+                presentation.getController().updatePanelActions();
             }
         });
 
@@ -201,9 +198,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     }
 
     @Override
-    public void activatePanel(IContributionManager contributionManager) {
-        this.panelToolbar = contributionManager;
-        fillToolBar(contributionManager);
+    public void activatePanel() {
         refresh();
     }
 
@@ -228,6 +223,11 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             aggregateTable.setRedraw(true);
         }
         saveSettings();
+    }
+
+    @Override
+    public void contributeActions(ToolBarManager manager) {
+        fillToolBar(manager);
     }
 
     private void aggregateSelection(IResultSetSelection selection) {
