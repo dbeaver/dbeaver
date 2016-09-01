@@ -1078,6 +1078,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 for (Integer row : spreadsheet.getRowSelection()) {
                     rows.add(controller.getModel().getRow(row));
                 }
+                Collections.sort(rows, new Comparator<ResultSetRow>() {
+                    @Override
+                    public int compare(ResultSetRow o1, ResultSetRow o2) {
+                        return o1.getVisualNumber() - o2.getVisualNumber();
+                    }
+                });
                 return rows;
             }
         }
