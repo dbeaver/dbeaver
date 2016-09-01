@@ -34,8 +34,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -49,6 +52,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
+import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 import org.jkiss.utils.CommonUtils;
 
@@ -169,7 +173,14 @@ public class ViewValuePanel implements IResultSetPanel {
                 attr,
                 row,
                 IValueController.EditType.PANEL,
-                viewPlaceholder);
+                viewPlaceholder)
+            {
+                @Override
+                public void updateValue(@Nullable Object value) {
+                    super.updateValue(value);
+                    presentation.refreshData(false, false);
+                }
+            };
             updateActions = true;
         } else {
             newController = previewController;
@@ -253,6 +264,9 @@ public class ViewValuePanel implements IResultSetPanel {
             }
             valueEditor.setDirty(false);
         }
+        if (valueEditor instanceof BaseValueEditor) {
+            ((BaseValueEditor) valueEditor).setAutoSaveEnabled(true);
+        }
     }
 
     public void saveValue()
@@ -289,19 +303,38 @@ public class ViewValuePanel implements IResultSetPanel {
         previewController = null;
     }
 
-    private void fillToolBar(IContributionManager contributionManager)
+    private void fillToolBar(final IContributionManager contributionManager)
     {
         contributionManager.add(new Separator());
-        contributionManager.add(
-            ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
         //contributionManager.add(new Separator());
         if (valueManager != null) {
             try {
                 valueManager.contributeActions(contributionManager, previewController, valueEditor);
-            } catch (DBCException e) {
+            } catch (Exception e) {
                 log.error("Can't contribute value manager actions", e);
             }
         }
+
+        contributionManager.add(
+            ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
+
+        contributionManager.add(
+            new Action("Auto-save value", Action.AS_CHECK_BOX) {
+                {
+                    setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.LINK_TO_EDITOR));
+                }
+                @Override
+                public boolean isChecked() {
+                    return DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE);
+                }
+
+                @Override
+                public void run() {
+                    boolean newValue = !isChecked();
+                    DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE, newValue);
+                    presentation.getController().updatePanelActions();
+                }
+            });
     }
 
 }
