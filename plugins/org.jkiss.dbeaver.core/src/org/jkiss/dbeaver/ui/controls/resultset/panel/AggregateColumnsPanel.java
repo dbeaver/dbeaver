@@ -105,7 +105,9 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             ((ISelectionProvider) this.presentation).addSelectionChangedListener(new ISelectionChangedListener() {
                 @Override
                 public void selectionChanged(SelectionChangedEvent event) {
-                    refresh();
+                    if (presentation.getController().getVisiblePanel() == AggregateColumnsPanel.this) {
+                        refresh();
+                    }
                 }
             });
         }
