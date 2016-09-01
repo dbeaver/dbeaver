@@ -69,10 +69,10 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
             newQuery = query.getQuery();
         } else {
             if (supportsOffset) {
-                newQuery = query.getQuery() + " " + KEYWORD_LIMIT + " " + offset + ", " + length;
+                newQuery = query.getQuery() + "\n" + KEYWORD_LIMIT + " " + offset + ", " + length;
             } else {
                 // We can limit only total row number
-                newQuery = query.getQuery() + " " + KEYWORD_LIMIT + " " + (offset.longValue() + length.longValue());
+                newQuery = query.getQuery() + "\n" + KEYWORD_LIMIT + " " + (offset.longValue() + length.longValue());
             }
             limitSet = supportsOffset;
         }
