@@ -101,6 +101,7 @@ public final class DBeaverPreferences
     public static final String RS_EDIT_MAX_TEXT_SIZE = "resultset.edit.maxtextsize"; //$NON-NLS-1$
     public static final String RS_EDIT_LONG_AS_LOB = "resultset.edit.longaslob"; //$NON-NLS-1$
     public static final String RS_EDIT_USE_ALL_COLUMNS = "resultset.edit.key.use_all_columns";
+    public static final String RS_EDIT_AUTO_UPDATE_VALUE = "resultset.edit.value.autoupdate"; //$NON-NLS-1$
     public static final String RS_COMMIT_ON_EDIT_APPLY = "resultset.commit.oneditapply"; //$NON-NLS-1$
     public static final String RS_COMMIT_ON_CONTENT_APPLY = "resultset.commit.oncontentapply"; //$NON-NLS-1$
 

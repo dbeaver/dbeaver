@@ -732,13 +732,7 @@ public class ResultSetViewer extends Viewer
         } else {
             activateDefaultPanels(getPresentationSettings());
             viewerSash.setMaximizedControl(null);
-            panelToolBar.removeAll();
-            IResultSetPanel panel = getVisiblePanel();
-            if (panel != null) {
-                panel.activatePanel();
-            }
-            addDefaultPanelActions();
-            panelToolBar.update(true);
+            updatePanelActions();
             activePresentation.updateValueView();
         }
 

@@ -45,130 +45,131 @@ import java.util.Locale;
 
 public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer {
 
-  public DBeaverPreferencesInitializer() {
-  }
+    public DBeaverPreferencesInitializer() {
+    }
 
-  @Override
-  public void initializeDefaultPreferences() {
-      boolean isWindows = RuntimeUtils.isPlatformWindows();
+    @Override
+    public void initializeDefaultPreferences() {
+        boolean isWindows = RuntimeUtils.isPlatformWindows();
 
-      // Init default preferences
-      DBPPreferenceStore store = new BundlePreferenceStore(DBeaverActivator.getInstance().getBundle());
+        // Init default preferences
+        DBPPreferenceStore store = new BundlePreferenceStore(DBeaverActivator.getInstance().getBundle());
 
-      // Agent
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_ENABLED, true);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, isWindows);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, 30);
+        // Agent
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_ENABLED, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, isWindows);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, 30);
 
-      // Navigator
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK, NavigatorViewBase.DoubleClickBehavior.SQL_EDITOR.name());
+        // Navigator
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK, NavigatorViewBase.DoubleClickBehavior.SQL_EDITOR.name());
 
-      // Common
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.KEEP_STATEMENT_OPEN, false);
+        // Common
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.KEEP_STATEMENT_OPEN, false);
 
-      // SQL execution
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.NO_COMMIT.name());
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_COMMIT_LINES, 1000);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.STOP_ROLLBACK.name());
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, true);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_AUTO_FOLDERS, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_TITLE_PATTERN, SQLEditor.DEFAULT_PATTERN);
+        // SQL execution
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.NO_COMMIT.name());
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_COMMIT_LINES, 1000);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.STOP_ROLLBACK.name());
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_AUTO_FOLDERS, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_TITLE_PATTERN, SQLEditor.DEFAULT_PATTERN);
 
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_TIMEOUT, 10 * 1000);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.READ_EXPENSIVE_PROPERTIES, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.EDITOR_SEPARATE_CONNECTION, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.EDITOR_CONNECT_ON_ACTIVATE, true);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.EDITOR_CONNECT_ON_EXECUTE, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_TIMEOUT, 10 * 1000);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.READ_EXPENSIVE_PROPERTIES, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.EDITOR_SEPARATE_CONNECTION, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.EDITOR_CONNECT_ON_ACTIVATE, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.EDITOR_CONNECT_ON_EXECUTE, false);
 
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_LONG_AS_LOB, true);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_LONG_AS_LOB, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY, false);
 
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.TEXT_EDIT_UNDO_LEVEL, 200);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.TEXT_EDIT_UNDO_LEVEL, 200);
 
-      {
-          // SQL prefs
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE, false);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE, false);
+        {
+            // SQL prefs
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE, false);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE, false);
 
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, true);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, 500);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, true);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_INSERT_CASE, SQLPreferenceConstants.PROPOSAL_CASE_DEFAULT);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, false);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_SHORT_NAME, false);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, 500);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_INSERT_CASE, SQLPreferenceConstants.PROPOSAL_CASE_DEFAULT);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, false);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_SHORT_NAME, false);
 
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, true);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, true);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, true);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_COMMENTS, true);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_BEGIN_END, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_COMMENTS, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_BEGIN_END, true);
 
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO, true);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE, true);
-      }
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE, true);
+        }
 
-      PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, false);
-      PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.BEEP_ON_QUERY_END, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.BEEP_ON_QUERY_END, false);
 
-      // Text editor default preferences
-      PrefUtils.setDefaultPreferenceValue(store, AbstractTextEditor.PREFERENCE_TEXT_DRAG_AND_DROP_ENABLED, true);
+        // Text editor default preferences
+        PrefUtils.setDefaultPreferenceValue(store, AbstractTextEditor.PREFERENCE_TEXT_DRAG_AND_DROP_ENABLED, true);
 
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.HEX_FONT_NAME, HexEditControl.DEFAULT_FONT_NAME);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.HEX_FONT_SIZE, 10);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.HEX_FONT_NAME, HexEditControl.DEFAULT_FONT_NAME);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.HEX_FONT_SIZE, 10);
 
-      // General UI
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_AUTO_UPDATE_CHECK, true);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, true);
+        // General UI
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_AUTO_UPDATE_CHECK, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, true);
 
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_HOST, "");
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_PORT, 1080);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_USER, "");
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_PASSWORD, "");
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_DRIVERS_VERSION_UPDATE, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_DRIVERS_HOME, "");
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_DRIVERS_SOURCES, "http://dbeaver.jkiss.org/files/jdbc/");
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_HOST, "");
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_PORT, 1080);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_USER, "");
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_PASSWORD, "");
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_DRIVERS_VERSION_UPDATE, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_DRIVERS_HOME, "");
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_DRIVERS_SOURCES, "http://dbeaver.jkiss.org/files/jdbc/");
 
-      // ResultSet
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, true);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_MAX_ROWS, 200);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT, 5000);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE, IValueController.EditType.EDITOR);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, true);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS, true);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS, true);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_DOUBLE_CLICK, Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.name());
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, 255);
+        // ResultSet
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_MAX_ROWS, 200);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT, 5000);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE, IValueController.EditType.EDITOR);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_DOUBLE_CLICK, Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.name());
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, 255);
 
-      // QM
-      PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);
-      PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_ENTRIES_PER_PAGE, 200);
-      PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_OBJECT_TYPES,
-          QMObjectType.toString(Arrays.asList(QMObjectType.txn, QMObjectType.query)));
-      PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_QUERY_TYPES,
-          DBCExecutionPurpose.USER + "," + DBCExecutionPurpose.USER_FILTERED + "," + DBCExecutionPurpose.USER_SCRIPT);
-      PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_STORE_LOG_FILE, false);
-      PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_LOG_DIRECTORY, GeneralUtils.getMetadataFolder().getAbsolutePath());
+        // QM
+        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);
+        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_ENTRIES_PER_PAGE, 200);
+        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_OBJECT_TYPES,
+            QMObjectType.toString(Arrays.asList(QMObjectType.txn, QMObjectType.query)));
+        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_QUERY_TYPES,
+            DBCExecutionPurpose.USER + "," + DBCExecutionPurpose.USER_FILTERED + "," + DBCExecutionPurpose.USER_SCRIPT);
+        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_STORE_LOG_FILE, false);
+        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_LOG_DIRECTORY, GeneralUtils.getMetadataFolder().getAbsolutePath());
 
-      // Data formats
-      DataFormatterProfile.initDefaultPreferences(store, Locale.getDefault());
+        // Data formats
+        DataFormatterProfile.initDefaultPreferences(store, Locale.getDefault());
 
-      // SQL editor preferences
-      {
-          IPreferenceStore editorStore = EditorsPlugin.getDefault().getPreferenceStore();
-          editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS, true);
-          editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS_COLOR, "128,128,128");
-      }
+        // SQL editor preferences
+        {
+            IPreferenceStore editorStore = EditorsPlugin.getDefault().getPreferenceStore();
+            editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS, true);
+            editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS_COLOR, "128,128,128");
+        }
 
-  }
+    }
 
 }
