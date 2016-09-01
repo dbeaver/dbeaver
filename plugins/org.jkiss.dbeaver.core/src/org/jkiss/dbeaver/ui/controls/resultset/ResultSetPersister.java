@@ -277,6 +277,7 @@ class ResultSetPersister {
         viewer.redrawData(rowsChanged);
         viewer.fireResultSetChange();
         viewer.updateEditControls();
+        viewer.updatePanelsContent();
         viewer.getActivePresentation().updateValueView();
     }
 
