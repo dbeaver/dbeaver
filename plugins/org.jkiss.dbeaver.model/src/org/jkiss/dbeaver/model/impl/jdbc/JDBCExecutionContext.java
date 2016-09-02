@@ -123,7 +123,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             }
 
             // Add self to context list
-            this.dataSource.allContexts.add(this);
+            this.dataSource.addContext(this);
         } finally {
             DBExecUtils.finishContextInitiation(this);
         }
@@ -200,7 +200,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         }
 
         // Remove self from context list
-        this.dataSource.allContexts.remove(this);
+        this.dataSource.removeContext(this);
 
     }
 
