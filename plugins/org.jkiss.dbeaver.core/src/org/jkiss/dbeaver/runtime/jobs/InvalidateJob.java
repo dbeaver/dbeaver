@@ -67,7 +67,7 @@ public class InvalidateJob extends DataSourceJob
         DBPDataSource dataSource = getExecutionContext().getDataSource();
         // Invalidate datasource
         monitor.subTask("Invalidate datasource [" + dataSource.getContainer().getName() + "]");
-        List<DBCExecutionContext> allContexts = new ArrayList<>(dataSource.getAllContexts());
+        DBCExecutionContext[] allContexts = dataSource.getAllContexts();
         for (DBCExecutionContext context : allContexts) {
             long startTime = System.currentTimeMillis();
             try {

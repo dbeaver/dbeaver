@@ -270,8 +270,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         activeDatabaseName = object.getName();
         try {
             databaseSwitchInProgress = true;
-            final List<JDBCExecutionContext> allContexts = new ArrayList<>(getAllContexts());
-            for (JDBCExecutionContext context : allContexts) {
+            for (JDBCExecutionContext context : getAllContexts()) {
                 context.reconnect(monitor);
             }
             getDefaultInstance().cacheDataTypes(monitor);

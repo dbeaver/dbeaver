@@ -196,7 +196,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
 
     @NotNull
     @Override
-    public Collection<? extends DBCExecutionContext> getAllContexts() {
+    public DBCExecutionContext[] getAllContexts() {
         return dataSource.getAllContexts();
     }
 

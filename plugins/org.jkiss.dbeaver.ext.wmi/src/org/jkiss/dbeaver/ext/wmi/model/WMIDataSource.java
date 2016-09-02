@@ -77,8 +77,8 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
 
     @NotNull
     @Override
-    public Collection<DBCExecutionContext> getAllContexts() {
-        return Collections.<DBCExecutionContext>singleton(this);
+    public DBCExecutionContext[] getAllContexts() {
+        return new DBCExecutionContext[] { this };
     }
 
     @NotNull

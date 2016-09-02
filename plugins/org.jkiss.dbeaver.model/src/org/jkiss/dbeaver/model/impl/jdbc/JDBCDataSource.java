@@ -280,8 +280,8 @@ public abstract class JDBCDataSource
 
     @NotNull
     @Override
-    public Collection<JDBCExecutionContext> getAllContexts() {
-        return allContexts;
+    public JDBCExecutionContext[] getAllContexts() {
+        return allContexts.toArray(new JDBCExecutionContext[allContexts.size()]);
     }
 
     @Override
