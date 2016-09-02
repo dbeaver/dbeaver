@@ -47,7 +47,7 @@ public interface DBSInstance extends DBSObject, DBPCloseableObject
      * @return collection of contexts
      */
     @NotNull
-    Collection<? extends DBCExecutionContext> getAllContexts();
+    DBCExecutionContext[] getAllContexts();
 
     /**
      * Opens new isolated execution context.

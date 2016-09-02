@@ -46,16 +46,15 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
 
 public class DataSourceHandler
 {
@@ -259,7 +258,7 @@ public class DataSourceHandler
         return checkAndCloseActiveTransaction(container, dataSource.getAllContexts());
     }
 
-    public static boolean checkAndCloseActiveTransaction(DBPDataSourceContainer container, Collection<? extends DBCExecutionContext> contexts)
+    public static boolean checkAndCloseActiveTransaction(DBPDataSourceContainer container, DBCExecutionContext[] contexts)
     {
         if (container.getDataSource() == null) {
             return true;
