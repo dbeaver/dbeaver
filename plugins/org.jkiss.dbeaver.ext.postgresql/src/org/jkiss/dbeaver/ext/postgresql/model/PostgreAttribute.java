@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -119,10 +120,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return getTable().getDataSource();
     }
 
-    @Nullable
     @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = DataTypeListProvider.class)
+    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = DataTypeListProvider.class, valueTransformer = DataTypeValueTransformer.class)
     public PostgreDataType getDataType() {
         return dataType;
     }
@@ -234,6 +234,17 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 types.add(type);
             }
             return types.toArray(new PostgreDataType[types.size()]);
+        }
+    }
+
+    public static class DataTypeValueTransformer implements IPropertyValueTransformer<PostgreAttribute, Object> {
+        @Override
+        public PostgreDataType transform(PostgreAttribute object, Object value) {
+            if (value instanceof String) {
+                PostgreDataType dataType = object.getDataSource().getDefaultInstance().getDataType((String) value);
+                return dataType;
+            }
+            return null;
         }
     }
 }
