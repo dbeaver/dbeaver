@@ -41,4 +41,3 @@ Binaries are in `product/standalone/target/products`
 - Pull requests are welcome.
 - Visit http://dbeaver.jkiss.org for more information.
 - Thanks for using DBeaver! Star if you like it.
-- 
