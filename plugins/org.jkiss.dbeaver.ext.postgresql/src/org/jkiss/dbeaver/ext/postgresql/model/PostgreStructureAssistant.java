@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -107,7 +106,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                     nsList.add(schema);
                 }
             }
-            PostgreSchema pgCatalog = database.getSchema(session.getProgressMonitor(), PostgreConstants.CATALOG_SCHEMA_NAME);
+            PostgreSchema pgCatalog = database.getCatalogSchema(session.getProgressMonitor());
             if (pgCatalog != null) {
                 nsList.add(pgCatalog);
             }

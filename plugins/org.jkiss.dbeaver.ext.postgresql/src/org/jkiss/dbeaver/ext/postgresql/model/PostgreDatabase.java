@@ -45,9 +45,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.LongKeyMap;
 
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * PostgreDatabase
@@ -439,9 +437,13 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
             // In some cases ResultSetMetadata returns it as []
             typeName = "_" + typeName.substring(0, typeName.length() - 2);
         }
+        String alias = PostgreConstants.DATA_TYPE_ALIASES.get(typeName);
+        if (alias != null) {
+            typeName = alias;
+        }
         {
             // First check system catalog
-            final PostgreSchema schema = schemaCache.getCachedObject(PostgreConstants.CATALOG_SCHEMA_NAME);
+            final PostgreSchema schema = getCatalogSchema();
             if (schema != null) {
                 final PostgreDataType dataType = schema.dataTypeCache.getCachedObject(typeName);
                 if (dataType != null) {
