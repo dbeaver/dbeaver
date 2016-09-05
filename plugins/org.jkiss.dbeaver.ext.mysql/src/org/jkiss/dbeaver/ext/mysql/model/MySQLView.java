@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
@@ -167,11 +168,11 @@ public class MySQLView extends MySQLTableBase
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         additionalInfo.loaded = false;
         super.refreshObject(monitor);
-        return true;
+        return this;
     }
 
     @Nullable

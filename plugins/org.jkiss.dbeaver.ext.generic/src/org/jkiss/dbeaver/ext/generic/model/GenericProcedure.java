@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.DBPUniqueObject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
@@ -272,8 +273,8 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         source = null;
-        return true;
+        return this;
     }
 }

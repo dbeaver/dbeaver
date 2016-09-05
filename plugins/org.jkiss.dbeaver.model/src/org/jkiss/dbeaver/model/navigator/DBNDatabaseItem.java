@@ -58,9 +58,12 @@ public class DBNDatabaseItem extends DBNDatabaseNode
     }
 
     @Override
-    protected void reloadObject(DBRProgressMonitor monitor, DBSObject object) {
+    protected void reloadObject(DBRProgressMonitor monitor, DBSObject newObject) {
+        if (this.object == newObject) {
+            return;
+        }
         unregisterNode(false);
-        this.object = object;
+        this.object = newObject;
         registerNode();
     }
 

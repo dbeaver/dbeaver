@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -65,12 +66,12 @@ public class DB2MaterializedQueryTable extends DB2ViewBase implements DB2SourceO
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         super.refreshObject(monitor);
         
         getContainer().getMaterializedQueryTableCache().clearChildrenCache(this);
-        return true;
+        return this;
     }
 
     @Override

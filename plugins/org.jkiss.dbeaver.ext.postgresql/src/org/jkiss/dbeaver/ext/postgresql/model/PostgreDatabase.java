@@ -342,7 +342,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         authIdCache.clearCache();
         accessMethodCache.clearCache();
         languageCache.clearCache();
@@ -351,7 +351,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         schemaCache.clearCache();
 
         cacheDataTypes(monitor);
-        return true;
+        return this;
     }
 
     public Collection<PostgreAuthId> getUsers(DBRProgressMonitor monitor) throws DBException {

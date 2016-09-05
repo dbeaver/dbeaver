@@ -25,9 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
-import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
@@ -44,7 +42,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -306,7 +303,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor)
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         super.refreshObject(monitor);
 
@@ -320,7 +317,7 @@ public class OracleDataSource extends JDBCDataSource
 
         this.initialize(monitor);
 
-        return true;
+        return this;
     }
 
     @Override

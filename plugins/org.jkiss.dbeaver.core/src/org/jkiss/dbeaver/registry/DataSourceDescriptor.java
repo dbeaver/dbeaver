@@ -471,7 +471,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor)
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         this.reconnect(monitor, false);
@@ -480,7 +480,7 @@ public class DataSourceDescriptor
             DBPEvent.Action.OBJECT_UPDATE,
             DataSourceDescriptor.this));
 
-        return true;
+        return this;
     }
 
     public void setDescription(@Nullable String description)

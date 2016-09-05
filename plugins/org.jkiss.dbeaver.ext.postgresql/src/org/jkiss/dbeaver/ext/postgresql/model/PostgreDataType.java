@@ -37,10 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -410,7 +407,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (attributeCache != null) {
             attributeCache.clearCache();
         }
@@ -419,7 +416,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 readEnumValues(session);
             }
         }
-        return true;
+        return this;
     }
 
     public Object[] getEnumValues() {

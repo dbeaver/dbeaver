@@ -145,12 +145,12 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         this.proceduresCache.clearCache();
         this.sourceDeclaration = null;
         this.sourceDefinition = null;
-        return true;
+        return this;
     }
 
     @Override

@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -100,10 +101,10 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
     // Business contract
     // -----------------
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         xmlschemaDepCache.clearCache();
-        return true;
+        return this;
     }
 
     // -----------------

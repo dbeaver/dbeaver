@@ -57,7 +57,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * PostgreGenericDataSource
+ * PostgreDataSource
  */
 public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelector, DBSInstanceContainer, DBCQueryPlanner, IAdaptable
 {
@@ -196,7 +196,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor)
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         super.refreshObject(monitor);
@@ -206,7 +206,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         this.initialize(monitor);
 
-        return true;
+        return this;
     }
 
     @Override

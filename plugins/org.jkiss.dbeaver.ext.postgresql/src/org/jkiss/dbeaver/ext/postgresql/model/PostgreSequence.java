@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
@@ -139,8 +140,8 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     // Entity
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return false;
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return this;
     }
 
     @NotNull

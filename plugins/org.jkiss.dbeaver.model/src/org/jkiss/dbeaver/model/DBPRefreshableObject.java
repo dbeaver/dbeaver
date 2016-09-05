@@ -19,17 +19,24 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Refreshable object.
  * allows refresh of object's content
  */
-public interface DBPRefreshableObject
+public interface DBPRefreshableObject extends DBSObject
 {
-
-    boolean refreshObject(@NotNull DBRProgressMonitor monitor)
+    /**
+     * Refreshes object
+     * @return self or new object of the same class (with refreshed state).
+     * Null result means that object was deleted (moved, renamed)
+     */
+    @Nullable
+    DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException;
 
 }

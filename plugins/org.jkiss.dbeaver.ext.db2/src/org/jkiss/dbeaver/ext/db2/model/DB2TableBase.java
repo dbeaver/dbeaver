@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -106,14 +107,14 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         tableIndexCache.clearCache();
 
         // DF: Clear base index cache. Not cheap but didn't found another way..
         getContainer().getIndexCache().clearCache();
 
-        return true;
+        return this;
     }
 
     // -----------------

@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -178,7 +179,7 @@ public class DB2Table extends DB2TableBase
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         super.refreshObject(monitor);
 
@@ -200,7 +201,7 @@ public class DB2Table extends DB2TableBase
         getContainer().getIndexCache().clearCache();
         getContainer().getTriggerCache().clearCache();
 
-        return true;
+        return this;
     }
 
     @NotNull

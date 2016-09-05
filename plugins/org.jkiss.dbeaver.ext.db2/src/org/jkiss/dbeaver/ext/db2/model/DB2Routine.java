@@ -168,10 +168,10 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         parmsCache.clearCache();
-        return true;
+        return this;
     }
 
     @Override

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
@@ -200,7 +201,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     }
 
     @Override
-    public synchronized boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         tableCache.clearCache();
         viewCache.clearCache();
@@ -229,7 +230,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         referenceCache.clearCache();
         checkCache.clearCache();
 
-        return true;
+        return this;
     }
 
     // --------------------------

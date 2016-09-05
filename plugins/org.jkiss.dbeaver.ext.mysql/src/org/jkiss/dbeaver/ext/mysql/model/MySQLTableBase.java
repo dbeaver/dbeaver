@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.PreparedStatement;
@@ -86,10 +87,10 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         getContainer().tableCache.clearChildrenCache(this);
-        return true;
+        return this;
     }
 
     public String getDDL(DBRProgressMonitor monitor)
