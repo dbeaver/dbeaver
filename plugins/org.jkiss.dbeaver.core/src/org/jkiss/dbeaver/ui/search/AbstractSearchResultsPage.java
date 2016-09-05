@@ -20,30 +20,58 @@ package org.jkiss.dbeaver.ui.search;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.search.ui.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IMemento;
 import org.eclipse.ui.part.Page;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
+import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page implements IObjectSearchResultPage<OBJECT_TYPE>, INavigatorModelView {
+public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page implements ISearchResultPage,INavigatorModelView {
+
+    private String id;
+    private ISearchResult searchResult;
+    private Object uiState;
+    private ISearchResultViewPart viewPart;
+    private ISearchResultListener resultListener;
 
     private SearchResultsControl itemList;
+
+    public AbstractSearchResultsPage() {
+        this.resultListener = new ISearchResultListener() {
+            @Override
+            public void searchResultChanged(SearchResultEvent e)
+            {
+                if (e.getSearchResult() instanceof AbstractSearchResult) {
+                    final AbstractSearchResult result = (AbstractSearchResult) e.getSearchResult();
+                    UIUtils.runInUI(null, new Runnable() {
+                        @Override
+                        public void run() {
+                            populateObjects(VoidProgressMonitor.INSTANCE, result.getObjects());
+                        }
+                    });
+                }
+            }
+        };
+    }
 
     @Override
     public void createControl(Composite parent)
@@ -57,14 +85,13 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
         getSite().setSelectionProvider(itemList.getSelectionProvider());
     }
 
-    protected SearchResultsControl createResultControl(Composite parent) {
-        return new SearchResultsControl(parent);
+    @Override
+    public void dispose() {
+        super.dispose();
     }
 
-    @Override
-    public void dispose()
-    {
-
+    protected SearchResultsControl createResultControl(Composite parent) {
+        return new SearchResultsControl(parent);
     }
 
     @Override
@@ -81,7 +108,6 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
         }
     }
 
-    @Override
     public void populateObjects(DBRProgressMonitor monitor, Collection<OBJECT_TYPE> objects)
     {
         if (itemList != null && !itemList.isDisposed()) {
@@ -104,7 +130,6 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
 
     protected abstract DBNNode getNodeFromObject(OBJECT_TYPE object);
 
-    @Override
     public void clearObjects()
     {
         itemList.clearListData();
@@ -121,6 +146,64 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
     public Viewer getNavigatorViewer()
     {
         return itemList.getNavigatorViewer();
+    }
+
+    @Override
+    public Object getUIState()
+    {
+        return uiState;
+    }
+
+    @Override
+    public void setInput(ISearchResult search, Object uiState)
+    {
+        if (this.searchResult != null) {
+            this.searchResult.removeListener(this.resultListener);
+        }
+        this.searchResult = search;
+        this.uiState = uiState;
+        if (this.searchResult != null) {
+            this.searchResult.addListener(this.resultListener);
+        }
+        if (this.searchResult == null) {
+            clearObjects();
+        }
+    }
+
+    @Override
+    public void setViewPart(ISearchResultViewPart part)
+    {
+        this.viewPart = part;
+    }
+
+    @Override
+    public void restoreState(IMemento memento)
+    {
+
+    }
+
+    @Override
+    public void saveState(IMemento memento)
+    {
+
+    }
+
+    @Override
+    public void setID(String id)
+    {
+        this.id = id;
+    }
+
+    @Override
+    public String getID()
+    {
+        return this.id;
+    }
+
+    @Override
+    public String getLabel()
+    {
+        return searchResult == null ? "" : searchResult.getLabel();
     }
 
     protected class SearchResultsControl extends NodeListControl {

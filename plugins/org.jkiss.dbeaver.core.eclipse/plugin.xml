@@ -82,39 +82,5 @@
           <newWizardShortcut id="org.jkiss.dbeaver.core.wizard.new.project"/>
        </perspectiveExtension>
     </extension>
-    <extension
-          point="org.eclipse.search.searchPages">
-       <page
-            class="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataPageAdapter"
-            enabled="true"
-            icon="icons/metadata.png"
-            id="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataPageAdapter"
-            label="%search.page.label.db.metadata">
-       </page>
-        <page
-            class="org.jkiss.dbeaver.core.eclipse.search.impl.data.SearchDataPageAdapter"
-            enabled="true"
-            icon="icons/metadata.png"
-            id="org.jkiss.dbeaver.core.eclipse.search.impl.data.SearchDataPageAdapter"
-            label="%search.page.label.db.fulltext">
-        </page>
-    </extension>
-    <extension
-          point="org.eclipse.search.searchResultViewPages">
-        <viewPage
-            class="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataResultPageAdapter"
-            icon="icons/metadata.png"
-            id="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataResultPageAdapter"
-            label="Database Metadata Search Result"
-            searchResultClass="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataResultAdapter">
-        </viewPage>
-        <viewPage
-            class="org.jkiss.dbeaver.core.eclipse.search.impl.data.SearchDataResultPageAdapter"
-            icon="icons/metadata.png"
-            id="org.jkiss.dbeaver.core.eclipse.search.impl.data.SearchDataResultPageAdapter"
-            label="Database Full-Text Search Result"
-            searchResultClass="org.jkiss.dbeaver.core.eclipse.search.impl.data.SearchDataResultAdapter">
-        </viewPage>
-    </extension>
 
 </plugin>

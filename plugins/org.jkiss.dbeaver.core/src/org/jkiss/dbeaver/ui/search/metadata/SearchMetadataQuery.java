@@ -17,8 +17,14 @@
  */
 package org.jkiss.dbeaver.ui.search.metadata;
 
-import org.jkiss.dbeaver.Log;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.search.ui.ISearchQuery;
+import org.eclipse.search.ui.ISearchResult;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -29,19 +35,20 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
-import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
-public class SearchMetadataQuery implements IObjectSearchQuery {
+public class SearchMetadataQuery implements ISearchQuery {
 
     private static final Log log = Log.getLog(SearchMetadataQuery.class);
 
     private final DBSStructureAssistant structureAssistant;
     private final SearchMetadataParams params;
+    private SearchMetadataResult searchResult;
 
     private SearchMetadataQuery(
         DBSStructureAssistant structureAssistant,
@@ -58,10 +65,25 @@ public class SearchMetadataQuery implements IObjectSearchQuery {
     }
 
     @Override
-    public void runQuery(DBRProgressMonitor monitor, IObjectSearchListener listener)
-        throws DBException
-    {
-        listener.searchStarted();
+    public boolean canRerun() {
+        return true;
+    }
+
+    @Override
+    public boolean canRunInBackground() {
+        return true;
+    }
+
+    @Override
+    public ISearchResult getSearchResult() {
+        if (searchResult == null) {
+            searchResult = new SearchMetadataResult(this);
+        }
+        return searchResult;
+    }
+
+    @Override
+    public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
         try {
             List<DBSObjectType> objectTypes = params.getObjectTypes();
             String objectNameMask = params.getObjectNameMask();
@@ -80,36 +102,34 @@ public class SearchMetadataQuery implements IObjectSearchQuery {
             }
 
             DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+            DBRProgressMonitor localMonitor = RuntimeUtils.makeMonitor(monitor);
             Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(
-                monitor,
+                localMonitor,
                 params.getParentObject(),
                 objectTypes.toArray(new DBSObjectType[objectTypes.size()]),
                 objectNameMask,
                 params.isCaseSensitive(),
                 true,
                 params.getMaxResults());
-            List<DBNNode> nodes = new ArrayList<>();
             for (DBSObjectReference reference : objects) {
                 if (monitor.isCanceled()) {
                     break;
                 }
                 try {
-                    DBSObject object = reference.resolveObject(monitor);
+                    DBSObject object = reference.resolveObject(localMonitor);
                     if (object != null) {
-                        DBNNode node = navigatorModel.getNodeByObject(monitor, object, false);
+                        DBNNode node = navigatorModel.getNodeByObject(localMonitor, object, false);
                         if (node != null) {
-                            nodes.add(node);
+                            searchResult.addObjects(Collections.singletonList(node));
                         }
                     }
                 } catch (DBException e) {
                     log.error(e);
                 }
             }
-            if (!nodes.isEmpty()) {
-                listener.objectsFound(monitor, nodes);
-            }
-        } finally {
-            listener.searchFinished();
+            return Status.OK_STATUS;
+        } catch (DBException e) {
+            return GeneralUtils.makeExceptionStatus(e);
         }
     }
 

@@ -70,6 +70,7 @@ public class SearchDataPage extends AbstractSearchPage {
 
 	@Override
 	public void createControl(Composite parent) {
+        super.createControl(parent);
         initializeDialogUnits(parent);
 
         Composite searchGroup = new Composite(parent, SWT.NONE);
@@ -113,7 +114,9 @@ public class SearchDataPage extends AbstractSearchPage {
             final DBNProject projectNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
             DBNNode rootNode = projectNode == null ? core.getNavigatorModel().getRoot() : projectNode.getDatabases();
             dataSourceTree = new DatabaseNavigatorTree(databasesGroup, rootNode, SWT.SINGLE | SWT.CHECK);
-            dataSourceTree.setLayoutData(new GridData(GridData.FILL_BOTH));
+            gd = new GridData(GridData.FILL_BOTH);
+            //gd.heightHint = 300;
+            dataSourceTree.setLayoutData(gd);
             final CheckboxTreeViewer viewer = (CheckboxTreeViewer) dataSourceTree.getViewer();
             viewer.addFilter(new ViewerFilter() {
                 @Override
@@ -159,7 +162,7 @@ public class SearchDataPage extends AbstractSearchPage {
         }
         {
             //new Label(searchGroup, SWT.NONE);
-            Composite optionsGroup2 = UIUtils.createControlGroup(optionsGroup, "Settings", 2, GridData.FILL_BOTH, 0);
+            Composite optionsGroup2 = UIUtils.createControlGroup(optionsGroup, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
             optionsGroup2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
 
             if (params.maxResults <= 0) {
@@ -329,7 +332,7 @@ public class SearchDataPage extends AbstractSearchPage {
         if (!getCheckedSources().isEmpty()) {
             enabled = true;
         }
-        container.setSearchEnabled(enabled);
+        container.setPerformActionEnabled(enabled);
     }
 
 }
