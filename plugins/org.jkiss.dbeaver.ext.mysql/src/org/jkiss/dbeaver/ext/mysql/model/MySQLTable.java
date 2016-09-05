@@ -201,15 +201,7 @@ public class MySQLTable extends MySQLTableBase
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        super.refreshObject(monitor);
-        getContainer().indexCache.clearObjectCache(this);
-        getContainer().constraintCache.clearObjectCache(this);
-        foreignKeys.clearCache();
-        partitionCache.clearCache();
-        synchronized (additionalInfo) {
-            additionalInfo.loaded = false;
-        }
-        return this;
+        return getContainer().tableCache.refreshObject(monitor, getContainer(), this);
     }
 
     private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException

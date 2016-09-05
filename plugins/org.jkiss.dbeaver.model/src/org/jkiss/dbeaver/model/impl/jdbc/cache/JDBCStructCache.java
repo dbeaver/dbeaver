@@ -232,6 +232,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
             } else {
                 this.childrenCache.clear();
             }
+            childrenCached = false;
         }
     }
 

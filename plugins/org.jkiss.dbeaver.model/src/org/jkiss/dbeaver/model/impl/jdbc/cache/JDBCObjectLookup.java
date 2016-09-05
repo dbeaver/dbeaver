@@ -31,7 +31,7 @@ import java.sql.SQLException;
 public interface JDBCObjectLookup<OWNER extends DBSObject>
 {
 
-    JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OWNER owner, @Nullable String objectName)
+    JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OWNER owner, @Nullable String objectName)
         throws SQLException;
 
 }
