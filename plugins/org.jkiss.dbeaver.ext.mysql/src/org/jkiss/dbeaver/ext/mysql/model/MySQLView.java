@@ -167,14 +167,6 @@ public class MySQLView extends MySQLTableBase
         return null;
     }
 
-    @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
-        additionalInfo.loaded = false;
-        super.refreshObject(monitor);
-        return this;
-    }
-
     @Nullable
     @Override
     public String getDescription()

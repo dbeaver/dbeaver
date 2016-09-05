@@ -89,8 +89,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().tableCache.clearChildrenCache(this);
-        return this;
+        return getContainer().tableCache.refreshObject(monitor, getContainer(), this);
     }
 
     public String getDDL(DBRProgressMonitor monitor)

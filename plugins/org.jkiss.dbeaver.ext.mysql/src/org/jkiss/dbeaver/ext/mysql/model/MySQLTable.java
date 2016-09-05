@@ -198,12 +198,6 @@ public class MySQLTable extends MySQLTableBase
         return partitionCache.getAllObjects(monitor, this);
     }
 
-    @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
-        return getContainer().tableCache.refreshObject(monitor, getContainer(), this);
-    }
-
     private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
     {
         if (!isPersisted()) {
