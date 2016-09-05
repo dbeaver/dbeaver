@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -34,10 +33,12 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookup;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -58,7 +59,6 @@ import java.util.List;
  */
 public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer
 {
-    private static final Log log = Log.getLog(MySQLCatalog.class);
 
     final TableCache tableCache = new TableCache();
     final ProceduresCache proceduresCache = new ProceduresCache();
@@ -320,7 +320,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return name + " [" + dataSource.getContainer().getName() + "]";
     }
 
-    public class TableCache extends JDBCStructCache<MySQLCatalog, MySQLTableBase, MySQLTableColumn> {
+    public class TableCache extends JDBCStructCache<MySQLCatalog, MySQLTableBase, MySQLTableColumn> implements JDBCObjectLookup<MySQLCatalog> {
         
         protected TableCache()
         {
@@ -331,7 +331,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
             throws SQLException
         {
-            return session.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(MySQLCatalog.this));
+            return prepareLookupStatement(session, owner, null);
         }
 
         @Override
@@ -339,7 +339,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             throws SQLException, DBException
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_TYPE);
-            if (tableType.contains("VIEW")) {
+            if (tableType != null && tableType.contains("VIEW")) {
                 return new MySQLView(MySQLCatalog.this, dbResult);
             } else {
                 return new MySQLTable(MySQLCatalog.this, dbResult);
@@ -372,6 +372,13 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             throws SQLException, DBException
         {
             return new MySQLTableColumn(table, dbResult);
+        }
+
+        @Override
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog mySQLCatalog, @Nullable String objectName) throws SQLException {
+            return session.prepareStatement(
+                "SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(MySQLCatalog.this) +
+                    (CommonUtils.isEmpty(objectName) ? "" : " LIKE '" + SQLUtils.escapeString(objectName) + "'"));
         }
     }
 
