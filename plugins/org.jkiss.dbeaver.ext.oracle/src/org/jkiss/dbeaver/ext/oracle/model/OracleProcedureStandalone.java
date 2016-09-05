@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -34,7 +36,7 @@ import java.sql.ResultSet;
 /**
  * GenericProcedure
  */
-public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema> implements OracleSourceObject
+public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema> implements OracleSourceObject, DBPRefreshableObject
 {
 
     private boolean valid;
@@ -139,4 +141,9 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
                     OracleObjectType.PROCEDURE : OracleObjectType.FUNCTION);
     }
 
+    @Override
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        sourceDeclaration = null;
+        return true;
+    }
 }
