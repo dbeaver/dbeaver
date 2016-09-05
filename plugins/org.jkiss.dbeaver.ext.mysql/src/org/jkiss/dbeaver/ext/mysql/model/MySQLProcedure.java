@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -40,7 +41,7 @@ import java.util.Locale;
 /**
  * GenericProcedure
  */
-public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog> implements MySQLSourceObject
+public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog> implements MySQLSourceObject, DBPRefreshableObject
 {
     private DBSProcedureType procedureType;
     private String resultType;
@@ -244,5 +245,11 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     public void setObjectDefinitionText(String sourceText) throws DBException
     {
         setDeclaration(sourceText);
+    }
+
+    @Override
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        clientBody = null;
+        return true;
     }
 }

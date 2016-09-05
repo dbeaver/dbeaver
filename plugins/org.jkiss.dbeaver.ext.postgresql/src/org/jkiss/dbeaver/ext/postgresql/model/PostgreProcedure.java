@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPOverloadedObject;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -45,7 +46,7 @@ import java.util.List;
 /**
  * PostgreProcedure
  */
-public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject, DBPUniqueObject, DBPOverloadedObject
+public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject, DBPUniqueObject, DBPOverloadedObject, DBPRefreshableObject
 {
     private static final Log log = Log.getLog(PostgreProcedure.class);
     private static final String CAT_FLAGS = "Flags";
@@ -389,6 +390,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     public String getProcedureTypeName() {
         return isAggregate ? "AGGREGATE" : "FUNCTION";
+    }
+
+    @Override
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        body = null;
+        return true;
     }
 
     @Override
