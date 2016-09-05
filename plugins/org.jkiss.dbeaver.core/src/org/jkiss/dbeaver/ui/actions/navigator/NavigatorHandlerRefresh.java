@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 
 import java.util.*;
@@ -71,6 +73,13 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         DBNNode rootNode = navigatorView.getRootNode();
+        if (rootNode == null) {
+            if (workbenchPart instanceof IEditorPart) {
+                if (((IEditorPart) workbenchPart).getEditorInput() instanceof IDatabaseEditorInput) {
+                    rootNode = ((IDatabaseEditorInput) ((IEditorPart) workbenchPart).getEditorInput()).getNavigatorNode();
+                }
+            }
+        }
         if (rootNode != null && rootNode.getParentNode() instanceof DBNDatabaseNode) {
             refreshObjects.add(rootNode);
         } else if (selection instanceof IStructuredSelection) {
