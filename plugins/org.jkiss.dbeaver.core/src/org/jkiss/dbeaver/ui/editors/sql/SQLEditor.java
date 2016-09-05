@@ -137,6 +137,7 @@ public class SQLEditor extends SQLEditorBase implements
     private volatile boolean ownContext = false;
     private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<>();
+    private QueryResultsContainer curResultsProvider;
 
     public SQLEditor()
     {
@@ -438,9 +439,9 @@ public class SQLEditor extends SQLEditorBase implements
             public void widgetSelected(SelectionEvent e) {
                 Object data = e.item.getData();
                 if (data instanceof QueryResultsContainer) {
-                    QueryResultsContainer resultsProvider = (QueryResultsContainer) data;
-                    curQueryProcessor = resultsProvider.queryProcessor;
-                    ResultSetViewer rsv = resultsProvider.getResultSetController();
+                    curResultsProvider = (QueryResultsContainer) data;
+                    curQueryProcessor = curResultsProvider.queryProcessor;
+                    ResultSetViewer rsv = curResultsProvider.getResultSetController();
                     if (rsv != null) {
                         //rsv.getActivePresentation().getControl().setFocus();
                     }
@@ -1009,6 +1010,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         planView = null;
         queryProcessors.clear();
+        curResultsProvider = null;
         curQueryProcessor = null;
 
         super.dispose();
@@ -1153,15 +1155,10 @@ public class SQLEditor extends SQLEditorBase implements
     @Nullable
     public ResultSetViewer getActiveResultSetViewer()
     {
-        if (resultTabs == null || resultTabs.isDisposed()) {
-            return null;
+        if (curResultsProvider != null) {
+            return curResultsProvider.getResultSetController();
         }
-        CTabItem curTab = resultTabs.getSelection();
-        if (curTab != null && !curTab.isDisposed() && curTab.getData() instanceof QueryResultsContainer) {
-            return ((QueryResultsContainer)curTab.getData()).getResultSetController();
-        }
-
-        return curQueryProcessor == null ? null : curQueryProcessor.getCurrentResults().getResultSetController();
+        return null;
     }
 
     private void showScriptPositionRuler(boolean show)
@@ -1200,9 +1197,9 @@ public class SQLEditor extends SQLEditorBase implements
     {
         final QueryProcessor queryProcessor = new QueryProcessor();
         curQueryProcessor = queryProcessor;
-
+        curResultsProvider = queryProcessor.getFirstResults();
         if (setSelection) {
-            resultTabs.setSelection(queryProcessor.getFirstResults().tabItem);
+            resultTabs.setSelection(curResultsProvider.tabItem);
         }
 
         return queryProcessor;
@@ -1253,17 +1250,6 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
             return null;
-        }
-        @NotNull
-        QueryResultsContainer getCurrentResults()
-        {
-            if (!resultTabs.isDisposed()) {
-                CTabItem curTab = resultTabs.getSelection();
-                if (curTab != null && curTab.getData() instanceof QueryResultsContainer) {
-                    return (QueryResultsContainer)curTab.getData();
-                }
-            }
-            return getFirstResults();
         }
 
         List<QueryResultsContainer> getResultProviders() {
@@ -1367,8 +1353,10 @@ public class SQLEditor extends SQLEditorBase implements
                 if (curQueryProcessor == this) {
                     if (queryProcessors.isEmpty()) {
                         curQueryProcessor = null;
+                        curResultsProvider = null;
                     } else {
                         curQueryProcessor = queryProcessors.get(0);
+                        curResultsProvider = curQueryProcessor.getFirstResults();
                     }
                 }
             }
@@ -1464,6 +1452,7 @@ public class SQLEditor extends SQLEditorBase implements
                 @Override
                 public void widgetDisposed(DisposeEvent e) {
                     QueryResultsContainer.this.queryProcessor.removeResults(QueryResultsContainer.this);
+                    curResultsProvider = null;
                 }
             });
         }
