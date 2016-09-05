@@ -547,7 +547,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     /**
      * Procedures cache implementation
      */
-    class ProceduresCache extends JDBCStructCache<MySQLCatalog, MySQLProcedure, MySQLProcedureParameter> {
+    class ProceduresCache extends JDBCStructCache<MySQLCatalog, MySQLProcedure, MySQLProcedureParameter> implements JDBCObjectLookup<MySQLCatalog> {
 
         ProceduresCache()
         {
@@ -558,13 +558,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
             throws SQLException
         {
-            JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM " + MySQLConstants.META_TABLE_ROUTINES +
-                " WHERE " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?" +
-                " ORDER BY " + MySQLConstants.COL_ROUTINE_NAME
-            );
-            dbStat.setString(1, getName());
-            return dbStat;
+            return prepareLookupStatement(session, owner, null);
         }
 
         @Override
@@ -625,6 +619,21 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 columnSize,
                 scale, precision, notNull,
                     parameterType);
+        }
+
+        @Override
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog mySQLCatalog, @Nullable String objectName) throws SQLException {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM " + MySQLConstants.META_TABLE_ROUTINES +
+                    "\nWHERE " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?" +
+                    (CommonUtils.isEmpty(objectName) ? "" : " AND " + MySQLConstants.COL_ROUTINE_NAME + "=?") +
+                    "\nORDER BY " + MySQLConstants.COL_ROUTINE_NAME
+            );
+            dbStat.setString(1, getName());
+            if (!CommonUtils.isEmpty(objectName)) {
+                dbStat.setString(2, objectName);
+            }
+            return dbStat;
         }
     }
 
