@@ -86,45 +86,33 @@ public abstract class AbstractSearchPage extends DialogPage implements ISearchPa
         return true;
     }
 
-    protected static List<DBNNode> loadTreeState(DBPPreferenceStore store, String propName)
+    protected static List<DBNNode> loadTreeState(DBRProgressMonitor monitor, DBPPreferenceStore store, String propName)
     {
         final List<DBNNode> result = new ArrayList<>();
         final String sources = store.getString(propName);
         if (!CommonUtils.isEmpty(sources)) {
-            try {
-                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor)
-                    {
-                        // Keep broken datasources to make connect attempt only once
-                        Set<DBNDataSource> brokenDataSources = new HashSet<>();
+            // Keep broken datasources to make connect attempt only once
+            Set<DBNDataSource> brokenDataSources = new HashSet<>();
 
-                        // Find all nodes
-                        StringTokenizer st = new StringTokenizer(sources, "|"); //$NON-NLS-1$
-                        while (st.hasMoreTokens()) {
-                            String nodePath = st.nextToken();
-                            try {
-                                DBNDataSource dsNode = DBeaverCore.getInstance().getNavigatorModel().getDataSourceByPath(nodePath);
-                                if (brokenDataSources.contains(dsNode)) {
-                                    continue;
-                                }
-
-                                DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, nodePath);
-                                if (node != null) {
-                                    result.add(node);
-                                } else {
-                                    brokenDataSources.add(dsNode);
-                                }
-                            } catch (DBException e) {
-                                log.error(e);
-                            }
-                        }
+            // Find all nodes
+            StringTokenizer st = new StringTokenizer(sources, "|"); //$NON-NLS-1$
+            while (st.hasMoreTokens()) {
+                String nodePath = st.nextToken();
+                try {
+                    DBNDataSource dsNode = DBeaverCore.getInstance().getNavigatorModel().getDataSourceByPath(nodePath);
+                    if (brokenDataSources.contains(dsNode)) {
+                        continue;
                     }
-                });
-            } catch (InvocationTargetException e) {
-                log.error(e.getTargetException());
-            } catch (InterruptedException e) {
-                // ignore
+
+                    DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, nodePath);
+                    if (node != null) {
+                        result.add(node);
+                    } else {
+                        brokenDataSources.add(dsNode);
+                    }
+                } catch (DBException e) {
+                    log.error(e);
+                }
             }
         }
         return result;
