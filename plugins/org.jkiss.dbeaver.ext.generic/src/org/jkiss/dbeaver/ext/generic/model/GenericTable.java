@@ -215,7 +215,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public synchronized boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         this.getContainer().getTableCache().clearChildrenCache(this);
         this.getContainer().getIndexCache().clearObjectCache(this);
@@ -225,7 +225,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         rowCount = null;
         ddl = null;
 
-        return true;
+        return this;
     }
 
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason

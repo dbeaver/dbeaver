@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import org.jkiss.utils.CommonUtils;
 
@@ -269,11 +270,11 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         fileCache.clearCache();
         segmentCache.clearCache();
-        return true;
+        return this;
     }
 
     static class FileCache extends JDBCObjectCache<OracleTablespace, OracleDataFile> {

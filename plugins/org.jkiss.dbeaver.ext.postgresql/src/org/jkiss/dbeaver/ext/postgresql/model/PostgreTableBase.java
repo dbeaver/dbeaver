@@ -149,7 +149,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         getContainer().tableCache.clearChildrenCache(this);
         getContainer().constraintCache.clearObjectCache(this);
@@ -167,7 +167,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
         }
 
-        return true;
+        return this;
     }
 
 }

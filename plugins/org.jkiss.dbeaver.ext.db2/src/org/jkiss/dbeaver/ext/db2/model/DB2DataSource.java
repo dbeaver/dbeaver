@@ -300,7 +300,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         super.refreshObject(monitor);
 
@@ -324,7 +324,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
         this.initialize(monitor);
 
-        return true;
+        return this;
     }
 
     @Override

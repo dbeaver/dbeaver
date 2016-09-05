@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     public abstract DB2AuthIDType getType();
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         authCache.clearCache();
         roleCache.clearCache();
@@ -75,7 +76,7 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
 
         cachePerObject.clear();
 
-        return true;
+        return this;
     }
 
     // -----------------

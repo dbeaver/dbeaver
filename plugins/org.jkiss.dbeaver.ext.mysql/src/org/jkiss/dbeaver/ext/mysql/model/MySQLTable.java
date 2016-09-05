@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
 
@@ -198,7 +199,7 @@ public class MySQLTable extends MySQLTableBase
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         super.refreshObject(monitor);
         getContainer().indexCache.clearObjectCache(this);
@@ -208,7 +209,7 @@ public class MySQLTable extends MySQLTableBase
         synchronized (additionalInfo) {
             additionalInfo.loaded = false;
         }
-        return true;
+        return this;
     }
 
     private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException

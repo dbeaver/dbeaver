@@ -297,7 +297,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     }
 
     @Override
-    public synchronized boolean refreshObject(@NotNull DBRProgressMonitor monitor)
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         tableCache.clearCache();
@@ -305,7 +305,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         constraintCache.clearCache();
         proceduresCache.clearCache();
         triggerCache.clearCache();
-        return true;
+        return this;
     }
 
     @Override

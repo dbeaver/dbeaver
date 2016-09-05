@@ -392,9 +392,9 @@ public abstract class JDBCDataSource
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.dataSourceInfo = new JDBCDataSourceInfo(container);
-        return true;
+        return this;
     }
 
     @Nullable

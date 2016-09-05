@@ -133,10 +133,10 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
     }
 
     @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         procedures.clear();
-        return false;
+        return this;
     }
 
     public boolean isNameFromCatalog()
