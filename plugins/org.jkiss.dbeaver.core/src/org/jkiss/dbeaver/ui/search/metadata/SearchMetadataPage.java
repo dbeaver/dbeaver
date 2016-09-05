@@ -73,6 +73,8 @@ public class SearchMetadataPage extends AbstractSearchPage {
 
 	@Override
 	public void createControl(Composite parent) {
+        super.createControl(parent);
+
         initializeDialogUnits(parent);
 
         Composite searchGroup = new Composite(parent, SWT.NONE);
@@ -111,12 +113,14 @@ public class SearchMetadataPage extends AbstractSearchPage {
 
             Group sourceGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_search_objects_group_objects_source, 1, GridData.FILL_BOTH, 0);
             gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 300;
+            //gd.heightHint = 300;
             sourceGroup.setLayoutData(gd);
             final DBNProject projectNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
             DBNNode rootNode = projectNode == null ? core.getNavigatorModel().getRoot() : projectNode.getDatabases();
             dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode, SWT.SINGLE);
-            dataSourceTree.setLayoutData(new GridData(GridData.FILL_BOTH));
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 300;
+            dataSourceTree.setLayoutData(gd);
 
             dataSourceTree.getViewer().addFilter(new ViewerFilter() {
                 @Override
@@ -456,7 +460,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
             enabled = false;
         }
 
-        container.setSearchEnabled(enabled);
+        container.setPerformActionEnabled(enabled);
     }
 
     protected static void saveTreeState(DBPPreferenceStore store, String propName, DatabaseNavigatorTree tree)

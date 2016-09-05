@@ -17,6 +17,12 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.search.ui.ISearchQuery;
+import org.eclipse.search.ui.ISearchResult;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -27,26 +33,26 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
-import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
 
-public class SearchDataQuery implements IObjectSearchQuery {
+public class SearchDataQuery implements ISearchQuery {
 
     private static final Log log = Log.getLog(SearchDataQuery.class);
 
     private final SearchDataParams params;
+    private SearchDataResult searchResult;
 
     private SearchDataQuery(SearchDataParams params)
     {
@@ -60,10 +66,25 @@ public class SearchDataQuery implements IObjectSearchQuery {
     }
 
     @Override
-    public void runQuery(DBRProgressMonitor monitor, IObjectSearchListener listener)
-        throws DBException
-    {
-        listener.searchStarted();
+    public boolean canRerun() {
+        return true;
+    }
+
+    @Override
+    public boolean canRunInBackground() {
+        return true;
+    }
+
+    @Override
+    public ISearchResult getSearchResult() {
+        if (searchResult == null) {
+            searchResult = new SearchDataResult(this);
+        }
+        return searchResult;
+    }
+
+    @Override
+    public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
         try {
             String searchString = params.getSearchString();
 
@@ -103,19 +124,17 @@ public class SearchDataQuery implements IObjectSearchQuery {
 
                         if (dataReceiver.rowCount > 0) {
                             SearchDataObject object = new SearchDataObject(node, dataReceiver.rowCount, dataReceiver.filter);
-                            listener.objectsFound(monitor, Collections.singleton(object));
+                            searchResult.addObjects(Collections.singletonList(object));
                         }
-                    } catch (DBCException e) {
-                        log.error("Error searching string in '" + objectName + "'", e);
                     }
-
                     monitor.worked(1);
                 }
             } finally {
                 monitor.done();
             }
-        } finally {
-            listener.searchFinished();
+            return Status.OK_STATUS;
+        } catch (DBException e) {
+            return GeneralUtils.makeExceptionStatus(e);
         }
     }
 

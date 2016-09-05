@@ -18,33 +18,38 @@
 package org.jkiss.dbeaver.ui.search;
 
 import org.eclipse.jface.dialogs.DialogPage;
+import org.eclipse.search.ui.ISearchPage;
+import org.eclipse.search.ui.ISearchPageContainer;
+import org.eclipse.search.ui.ISearchQuery;
+import org.eclipse.search.ui.NewSearchUI;
+import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-public abstract class AbstractSearchPage extends DialogPage implements IObjectSearchPage {
+public abstract class AbstractSearchPage extends DialogPage implements ISearchPage {
 
     static final protected Log log = Log.getLog(AbstractSearchPage.class);
 
-    protected IObjectSearchContainer container;
+    protected ISearchPageContainer container;
 
     protected AbstractSearchPage(String title) {
         super(title);
     }
 
     @Override
-    public void setSearchContainer(IObjectSearchContainer container)
-    {
+    public void setContainer(ISearchPageContainer container) {
         this.container = container;
     }
 
@@ -58,6 +63,28 @@ public abstract class AbstractSearchPage extends DialogPage implements IObjectSe
     }
 
     protected abstract void updateEnablement();
+
+    protected abstract ISearchQuery createQuery() throws DBException;
+
+    protected abstract void loadState(DBPPreferenceStore store);
+    protected abstract void saveState(DBPPreferenceStore store);
+
+    @Override
+    public void createControl(Composite parent) {
+        loadState(DBeaverCore.getGlobalPreferenceStore());
+    }
+
+    @Override
+    public boolean performAction() {
+        try {
+            saveState(DBeaverCore.getGlobalPreferenceStore());
+            NewSearchUI.runQueryInBackground(createQuery());
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(getShell(), "Search error", "Can't perform search", e);
+            return false;
+        }
+        return true;
+    }
 
     protected static List<DBNNode> loadTreeState(DBPPreferenceStore store, String propName)
     {

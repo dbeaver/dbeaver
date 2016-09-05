@@ -51,11 +51,9 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <command id="org.jkiss.dbeaver.core.object.find" name="%command.org.jkiss.dbeaver.core.object.find.name" description="%command.org.jkiss.dbeaver.core.object.find.description" categoryId="org.jkiss.dbeaver.core.database"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.core.object.find" icon="platform:/plugin/org.jkiss.dbeaver.core/icons/misc/find.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.views">
@@ -76,23 +74,9 @@
             allowMultiple="false"
             icon="icons/help.png"
             name="Help"/-->
-        <view id="org.jkiss.dbeaver.ui.search.DatabaseSearchView"
-            name="%view.search.title"
-            icon="platform:/plugin/org.jkiss.dbeaver.core/icons/misc/find.png"
-            category="org.eclipse.ui"
-            class="org.jkiss.dbeaver.ui.search.DatabaseSearchView"/>
-        <stickyView id="org.jkiss.dbeaver.ui.search.DatabaseSearchView" location="BOTTOM"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-
-        <handler commandId="org.jkiss.dbeaver.core.object.find" class="org.jkiss.dbeaver.ui.search.DatabaseSearchHandler">
-            <enabledWhen>
-                <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.hasActiveProject"/>
-                </with>
-            </enabledWhen>
-        </handler>
 
     </extension>
 
@@ -154,7 +138,6 @@
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="navigate" label="%menu.navigate">
                 <command commandId="org.eclipse.ui.navigate.openResource"/>
-                <command commandId="org.jkiss.dbeaver.core.object.find"/>
                 <separator name="nav" visible="true"/>
                 <command commandId="org.eclipse.ui.navigate.backwardHistory"/>
                 <command commandId="org.eclipse.ui.navigate.forwardHistory"/>
@@ -182,11 +165,6 @@
             <command commandId="org.eclipse.ui.window.preferences"/>
         </menuContribution>
 
-        <menuContribution allPopups="false" locationURI="toolbar:dbeaver-transactions?after=additions">
-            <command commandId="org.jkiss.dbeaver.core.object.find">
-                <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
-            </command>
-        </menuContribution>
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
@@ -199,8 +177,6 @@
         <!-- Text editors -->
         <key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F3"/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.create" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+F3"/>
-
-        <key commandId="org.jkiss.dbeaver.core.object.find" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+F"/>
 
         <!-- Text editors -->
         <key commandId="org.eclipse.ui.edit.text.contentAssist.proposals" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SPACE"/>

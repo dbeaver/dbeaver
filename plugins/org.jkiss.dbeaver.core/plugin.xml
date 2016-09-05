@@ -33,7 +33,6 @@
     <extension-point id="org.jkiss.dbeaver.resourceHandler" name="Resource Handlers" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.networkHandler" name="Network Handlers" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resources" name="Resources" schema="schema/org.jkiss.dbeaver.resources.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.search" name="Search providers" schema="schema/org.jkiss.dbeaver.search.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="Result set presentations" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.panel" name="Result set panels" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
     <extension-point id="org.jkiss.dbeaver.tools" name="Tools" schema="schema/org.jkiss.dbeaver.tools.exsd"/>
@@ -2739,23 +2738,6 @@
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl"/>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.search">
-        <searchProvider
-                id="database_metadata"
-                label="Metadata"
-                description="Search database metadata objects (tables, columns, etc)"
-                icon="icons/table.png"
-                pageClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataPage"
-                resultsClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"/>
-        <searchProvider
-                id="database_data"
-                label="Full-text"
-                description="Search tables data for a string"
-                icon="icons/sql/sql_text.png"
-                pageClass="org.jkiss.dbeaver.ui.search.data.SearchDataPage"
-                resultsClass="org.jkiss.dbeaver.ui.search.data.SearchDataResultsPage"/>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.resultset.presentation">
         <presentation
                 id="spreadsheet"
@@ -2814,6 +2796,41 @@
 
     <extension point="org.jkiss.dbeaver.mavenRepository">
         <repository id="maven-central" name="Central Repository" url="http://central.maven.org/maven2/"/>
+    </extension>
+
+    <extension
+        point="org.eclipse.search.searchPages">
+        <page
+            class="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataPage"
+            enabled="true"
+            icon="icons/table.png"
+            id="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataPage"
+            label="%search.page.label.db.metadata">
+        </page>
+        <page
+            class="org.jkiss.dbeaver.ui.search.data.SearchDataPage"
+            enabled="true"
+            icon="icons/sql/sql_text.png"
+            id="org.jkiss.dbeaver.ui.search.data.SearchDataPage"
+            label="%search.page.label.db.fulltext">
+        </page>
+    </extension>
+    <extension
+        point="org.eclipse.search.searchResultViewPages">
+        <viewPage
+            class="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"
+            icon="icons/table.png"
+            id="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"
+            label="Database Metadata Search Result"
+            searchResultClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResult">
+        </viewPage>
+        <viewPage
+            class="org.jkiss.dbeaver.ui.search.data.SearchDataResultsPage"
+            icon="icons/sql/sql_text.png"
+            id="org.jkiss.dbeaver.ui.search.data.SearchDataResultsPage"
+            label="Database Full-Text Search Result"
+            searchResultClass="org.jkiss.dbeaver.ui.search.data.SearchDataResult">
+        </viewPage>
     </extension>
 
 </plugin>
