@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
@@ -58,7 +59,7 @@ public class QueryTransformerTop implements DBCQueryTransformer {
                         if (selectBody.getTop() == null && CommonUtils.isEmpty(selectBody.getIntoTables())) {
                             Top top = new Top();
                             top.setPercentage(false);
-                            top.setRowCount(offset.longValue() + length.longValue());
+                            top.setExpression(new LongValue(offset.longValue() + length.longValue()));
                             selectBody.setTop(top);
 
                             limitSet = true;
