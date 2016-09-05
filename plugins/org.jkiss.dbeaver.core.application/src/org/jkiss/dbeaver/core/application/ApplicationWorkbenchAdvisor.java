@@ -26,15 +26,11 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.ide.IDE;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
-
-import java.util.Calendar;
-import java.util.Random;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -98,27 +94,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     }
 
     private void startVersionChecker() {
-        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK)) {
-            if (new Random().nextInt(4) != 0) {
-                // check for update with 25% chance
-                // to avoid too high load on server in release days
-                return;
-            }
-            long lastVersionCheckTime = DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.UI_UPDATE_CHECK_TIME);
-            if (lastVersionCheckTime > 0) {
-                Calendar cal = Calendar.getInstance();
-                cal.setTimeInMillis(lastVersionCheckTime);
-                int checkDay = cal.get(Calendar.DAY_OF_MONTH);
-                cal.setTimeInMillis(System.currentTimeMillis());
-                int curDay = cal.get(Calendar.DAY_OF_MONTH);
-                if (curDay == checkDay) {
-                    return;
-                }
-            }
-            DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.UI_UPDATE_CHECK_TIME, System.currentTimeMillis());
-            DBeaverVersionChecker checker = new DBeaverVersionChecker(false);
-            checker.schedule(3000);
-        }
+        DBeaverVersionChecker checker = new DBeaverVersionChecker(false);
+        checker.schedule(3000);
     }
 
     @Override
