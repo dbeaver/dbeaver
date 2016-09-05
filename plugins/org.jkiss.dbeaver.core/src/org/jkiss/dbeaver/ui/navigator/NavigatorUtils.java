@@ -42,10 +42,7 @@ import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -522,5 +519,14 @@ public class NavigatorUtils {
             }
         }
         return true;
+    }
+
+    public static DBNDataSource getDataSourceNode(DBNNode node) {
+        for (DBNNode pn = node; pn != null; pn = pn.getParentNode()) {
+            if (pn instanceof DBNDataSource) {
+                return (DBNDataSource) pn;
+            }
+        }
+        return null;
     }
 }
