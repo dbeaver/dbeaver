@@ -23,6 +23,7 @@ import org.eclipse.jface.text.rules.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
@@ -31,11 +32,13 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -45,6 +48,8 @@ import java.util.*;
  * Support runtime change of datasource (reloads syntax information)
  */
 public class SQLRuleManager extends RuleBasedScanner {
+
+    private static final long MAX_FILE_LENGTH_FOR_RULES = 1000000;
 
     @NotNull
     private final IThemeManager themeManager;
@@ -110,8 +115,12 @@ public class SQLRuleManager extends RuleBasedScanner {
         return posList;
     }
 
-    public void refreshRules(DBPDataSource dataSource)
+    public void refreshRules(DBPDataSource dataSource, IEditorInput editorInput)
     {
+        File file = EditorUtils.getLocalFileFromInput(editorInput);
+        if (file != null && file.length() > MAX_FILE_LENGTH_FOR_RULES) {
+            return;
+        }
         /*final Color backgroundColor = null;unassigned || dataSource != null ?
             getColor(SQLConstants.CONFIG_COLOR_BACKGROUND, SWT.COLOR_WHITE) :
             getColor(SQLConstants.CONFIG_COLOR_DISABLED, SWT.COLOR_WIDGET_LIGHT_SHADOW);*/
