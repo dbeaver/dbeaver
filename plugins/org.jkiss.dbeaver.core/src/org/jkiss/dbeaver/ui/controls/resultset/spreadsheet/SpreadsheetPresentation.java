@@ -344,6 +344,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
         }
         if (changed) {
+            spreadsheet.cancelInlineEditor();
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_MOVE);
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
             spreadsheet.redrawGrid();
