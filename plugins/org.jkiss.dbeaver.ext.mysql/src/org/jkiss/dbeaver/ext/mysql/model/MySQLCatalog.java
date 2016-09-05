@@ -63,8 +63,8 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     final TableCache tableCache = new TableCache();
     final ProceduresCache proceduresCache = new ProceduresCache();
     final TriggerCache triggerCache = new TriggerCache();
-    final ConstraintCache constraintCache = new ConstraintCache();
-    final IndexCache indexCache = new IndexCache();
+    final ConstraintCache constraintCache = new ConstraintCache(tableCache);
+    final IndexCache indexCache = new IndexCache(tableCache);
     final EventCache eventCache = new EventCache();
 
     private MySQLDataSource dataSource;
@@ -320,7 +320,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return name + " [" + dataSource.getContainer().getName() + "]";
     }
 
-    public class TableCache extends JDBCStructCache<MySQLCatalog, MySQLTableBase, MySQLTableColumn> implements JDBCObjectLookup<MySQLCatalog> {
+    public static class TableCache extends JDBCStructCache<MySQLCatalog, MySQLTableBase, MySQLTableColumn> implements JDBCObjectLookup<MySQLCatalog> {
         
         protected TableCache()
         {
@@ -340,9 +340,9 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_TYPE);
             if (tableType != null && tableType.contains("VIEW")) {
-                return new MySQLView(MySQLCatalog.this, dbResult);
+                return new MySQLView(owner, dbResult);
             } else {
-                return new MySQLTable(MySQLCatalog.this, dbResult);
+                return new MySQLTable(owner, dbResult);
             }
         }
 
@@ -360,7 +360,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             sql.append(" ORDER BY ").append(MySQLConstants.COL_ORDINAL_POSITION);
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            dbStat.setString(1, MySQLCatalog.this.getName());
+            dbStat.setString(1, owner.getName());
             if (forTable != null) {
                 dbStat.setString(2, forTable.getName());
             }
@@ -375,9 +375,9 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog mySQLCatalog, @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable String objectName) throws SQLException {
             return session.prepareStatement(
-                "SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(MySQLCatalog.this) +
+                "SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(owner) +
                     (CommonUtils.isEmpty(objectName) ? "" : " LIKE '" + SQLUtils.escapeString(objectName) + "'"));
         }
     }
@@ -385,8 +385,8 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     /**
      * Index cache implementation
      */
-    class IndexCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableIndex, MySQLTableIndexColumn> {
-        protected IndexCache()
+    static class IndexCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableIndex, MySQLTableIndexColumn> {
+        protected IndexCache(TableCache tableCache)
         {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_INDEX_NAME);
         }
@@ -406,7 +406,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             sql.append(" ORDER BY ").append(MySQLConstants.COL_INDEX_NAME).append(",").append(MySQLConstants.COL_SEQ_IN_INDEX);
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            dbStat.setString(1, MySQLCatalog.this.getName());
+            dbStat.setString(1, owner.getName());
             if (forTable != null) {
                 dbStat.setString(2, forTable.getName());
             }
@@ -474,8 +474,8 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     /**
      * Constraint cache implementation
      */
-    class ConstraintCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableConstraint, MySQLTableConstraintColumn> {
-        protected ConstraintCache()
+    static class ConstraintCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableConstraint, MySQLTableConstraintColumn> {
+        protected ConstraintCache(TableCache tableCache)
         {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_CONSTRAINT_NAME);
         }
@@ -495,7 +495,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             sql.append("\nORDER BY kc.CONSTRAINT_NAME,kc.ORDINAL_POSITION");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            dbStat.setString(1, MySQLCatalog.this.getName());
+            dbStat.setString(1, owner.getName());
             if (forTable != null) {
                 dbStat.setString(2, forTable.getName());
             }
@@ -547,7 +547,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     /**
      * Procedures cache implementation
      */
-    class ProceduresCache extends JDBCStructCache<MySQLCatalog, MySQLProcedure, MySQLProcedureParameter> implements JDBCObjectLookup<MySQLCatalog> {
+    static class ProceduresCache extends JDBCStructCache<MySQLCatalog, MySQLProcedure, MySQLProcedureParameter> implements JDBCObjectLookup<MySQLCatalog> {
 
         ProceduresCache()
         {
@@ -565,7 +565,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         protected MySQLProcedure fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new MySQLProcedure(MySQLCatalog.this, dbResult);
+            return new MySQLProcedure(owner, dbResult);
         }
 
         @Override
@@ -577,9 +577,9 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             // it should be parsed from SHOW CREATE PROCEDURE/FUNCTION query
             // Lets driver do it instead of me
             return session.getMetaData().getProcedureColumns(
-                getName(),
+                owner.getName(),
                 null,
-                procedure.getName(),
+                procedure == null ? null : procedure.getName(),
                 null).getSourceStatement();
         }
 
@@ -622,14 +622,14 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog mySQLCatalog, @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.META_TABLE_ROUTINES +
                     "\nWHERE " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?" +
                     (CommonUtils.isEmpty(objectName) ? "" : " AND " + MySQLConstants.COL_ROUTINE_NAME + "=?") +
                     "\nORDER BY " + MySQLConstants.COL_ROUTINE_NAME
             );
-            dbStat.setString(1, getName());
+            dbStat.setString(1, owner.getName());
             if (!CommonUtils.isEmpty(objectName)) {
                 dbStat.setString(2, objectName);
             }
@@ -637,13 +637,13 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
     }
 
-    class TriggerCache extends JDBCObjectCache<MySQLCatalog, MySQLTrigger> {
+    static class TriggerCache extends JDBCObjectCache<MySQLCatalog, MySQLTrigger> {
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
             throws SQLException
         {
             return session.prepareStatement(
-                "SHOW FULL TRIGGERS FROM " + DBUtils.getQuotedIdentifier(MySQLCatalog.this));
+                "SHOW FULL TRIGGERS FROM " + DBUtils.getQuotedIdentifier(owner));
         }
 
         @Override
@@ -651,20 +651,20 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             throws SQLException, DBException
         {
             String tableName = JDBCUtils.safeGetString(dbResult, "TABLE");
-            MySQLTable triggerTable = CommonUtils.isEmpty(tableName) ? null : getTable(session.getProgressMonitor(), tableName);
-            return new MySQLTrigger(MySQLCatalog.this, triggerTable, dbResult);
+            MySQLTable triggerTable = CommonUtils.isEmpty(tableName) ? null : owner.getTable(session.getProgressMonitor(), tableName);
+            return new MySQLTrigger(owner, triggerTable, dbResult);
         }
 
     }
 
-    class EventCache extends JDBCObjectCache<MySQLCatalog, MySQLEvent> {
+    static class EventCache extends JDBCObjectCache<MySQLCatalog, MySQLEvent> {
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
             throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM information_schema.EVENTS WHERE EVENT_SCHEMA=?");
-            dbStat.setString(1, DBUtils.getQuotedIdentifier(MySQLCatalog.this));
+            dbStat.setString(1, DBUtils.getQuotedIdentifier(owner));
             return dbStat;
         }
 
