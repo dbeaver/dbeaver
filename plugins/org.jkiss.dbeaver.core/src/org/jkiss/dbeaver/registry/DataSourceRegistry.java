@@ -601,11 +601,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             if (!CommonUtils.isEmpty(filterMappings)) {
                 xml.startElement(RegistryConstants.TAG_FILTERS);
                 for (DataSourceDescriptor.FilterMapping filter : filterMappings) {
-                    if (filter.defaultFilter != null) {
+                    if (filter.defaultFilter != null && !filter.defaultFilter.isEmpty()) {
                         saveObjectFiler(xml, filter.typeName, null, filter.defaultFilter);
                     }
                     for (Map.Entry<String,DBSObjectFilter> cf : filter.customFilters.entrySet()) {
-                        saveObjectFiler(xml, filter.typeName, cf.getKey(), cf.getValue());
+                        if (!cf.getValue().isEmpty()) {
+                            saveObjectFiler(xml, filter.typeName, cf.getKey(), cf.getValue());
+                        }
                     }
                 }
                 xml.endElement();

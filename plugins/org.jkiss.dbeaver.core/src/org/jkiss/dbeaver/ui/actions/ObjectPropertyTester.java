@@ -180,7 +180,7 @@ public class ObjectPropertyTester extends PropertyTester
                 }
                 if (node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null) {
                     DBSObjectFilter filter = ((DBNDatabaseFolder) node).getNodeFilter(((DBNDatabaseFolder) node).getItemsMeta(), true);
-                    return filter != null && !filter.isEmpty() && filter.isEnabled();
+                    return filter != null && !filter.isNotApplicable();
                 }
                 break;
             }

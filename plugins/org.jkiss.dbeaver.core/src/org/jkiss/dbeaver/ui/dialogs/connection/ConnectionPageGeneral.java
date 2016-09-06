@@ -261,7 +261,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         if (enable) {
             filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
             filterInfo.link.setToolTipText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_tooltip, filterInfo.title));
-            if (filterInfo.filter != null && !filterInfo.filter.isEmpty()) {
+            if (filterInfo.filter != null && !filterInfo.filter.isNotApplicable()) {
                 filterInfo.link.setFont(boldFont);
             } else {
                 filterInfo.link.setFont(getFont());
@@ -449,7 +449,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                                 true);
                             if (dialog.open() == IDialogConstants.OK_ID) {
                                 filterInfo.filter = dialog.getFilter();
-                                if (filterInfo.filter != null && !filterInfo.filter.isEmpty()) {
+                                if (filterInfo.filter != null && !filterInfo.filter.isNotApplicable()) {
                                     filterInfo.link.setFont(boldFont);
                                 } else {
                                     filterInfo.link.setFont(getFont());

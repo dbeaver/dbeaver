@@ -135,11 +135,16 @@ public class DBSObjectFilter
         this.excludePatterns = null;
     }
 
+    public boolean isNotApplicable()
+    {
+        return !enabled || isEmpty();
+    }
+
     public boolean isEmpty()
     {
-        return !enabled || (CommonUtils.isEmpty(include) && CommonUtils.isEmpty(exclude));
+        return CommonUtils.isEmpty(include) && CommonUtils.isEmpty(exclude);
     }
-    
+
     public boolean hasSingleMask()
     {
         return include != null && include.size() == 1 && CommonUtils.isEmpty(exclude);
