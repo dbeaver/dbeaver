@@ -28,8 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookup;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,7 +42,7 @@ import java.util.Set;
 /**
  * Generic tables cache implementation
  */
-public class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, GenericTableColumn> implements JDBCObjectLookup<GenericStructContainer, GenericTable> {
+public class TableCache extends JDBCStructLookupCache<GenericStructContainer, GenericTable, GenericTableColumn> {
 
     private static final Log log = Log.getLog(TableCache.class);
 
@@ -81,11 +80,14 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
         return dataSource;
     }
 
+    @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner)
-        throws SQLException
-    {
-        return prepareLookupStatement(session, owner, null, null);
+    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTable object, @Nullable String objectName) throws SQLException {
+        return session.getMetaData().getTables(
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+            owner.getSchema() == null ? null : owner.getSchema().getName(),
+            object == null && objectName == null ? owner.getDataSource().getAllObjectsPattern() : (object != null ? object.getName() : objectName),
+            null).getSourceStatement();
     }
 
     @Nullable
@@ -202,13 +204,4 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
         );
     }
 
-    @NotNull
-    @Override
-    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTable object, @Nullable String objectName) throws SQLException {
-        return session.getMetaData().getTables(
-            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null ? null : owner.getSchema().getName(),
-            object == null && objectName == null ? owner.getDataSource().getAllObjectsPattern() : (object != null ? object.getName() : objectName),
-            null).getSourceStatement();
-    }
 }

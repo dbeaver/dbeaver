@@ -82,29 +82,6 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         return getCachedObject(name);
     }
 
-    public OBJECT refreshObject(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner, @NotNull OBJECT oldObject)
-        throws DBException
-    {
-        String objectName = oldObject.getName();
-        if (!isCached()) {
-            this.loadObjects(monitor, owner);
-        } else if (this instanceof JDBCObjectLookup) {
-            OBJECT newObject = this.reloadObject(monitor, owner, oldObject);
-            if (this instanceof JDBCStructCache) {
-                JDBCStructCache structCache = (JDBCStructCache) this;
-                if (structCache.isChildrenCached(oldObject)) {
-                    structCache.clearChildrenCache(oldObject);
-                }
-            }
-            removeObject(oldObject);
-            if (newObject != null) {
-                cacheObject(newObject);
-            }
-            return newObject;
-        }
-        return getCachedObject(objectName);
-    }
-
     protected void loadObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
@@ -167,36 +144,6 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             detectCaseSensitivity(owner);
             setCache(tmpObjectList);
             this.invalidateObjects(monitor, owner, new CacheIterator());
-        }
-    }
-
-    protected OBJECT reloadObject(DBRProgressMonitor monitor, OWNER owner, OBJECT object)
-        throws DBException
-    {
-        @SuppressWarnings("unchecked")
-        JDBCObjectLookup<OWNER, OBJECT> objectLookup = (JDBCObjectLookup<OWNER, OBJECT>) this;
-        DBPDataSource dataSource = owner.getDataSource();
-        if (dataSource == null) {
-            throw new DBException("Not connected to database");
-        }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Reload object '" + object.getName() + "' from " + owner.getName())) {
-            try (JDBCStatement dbStat = objectLookup.prepareLookupStatement(session, owner, object, null)) {
-                dbStat.setFetchSize(1);
-                dbStat.executeStatement();
-                JDBCResultSet dbResult = dbStat.getResultSet();
-                if (dbResult != null) {
-                    try {
-                        if (dbResult.next()) {
-                            return fetchObject(session, owner, dbResult);
-                        }
-                    } finally {
-                        dbResult.close();
-                    }
-                }
-                return null;
-            }
-        } catch (SQLException ex) {
-            throw new DBException(ex, dataSource);
         }
     }
 

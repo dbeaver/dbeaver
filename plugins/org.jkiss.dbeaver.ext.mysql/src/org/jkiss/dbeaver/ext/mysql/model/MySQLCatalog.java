@@ -31,10 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookup;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.*;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -320,18 +317,21 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return name + " [" + dataSource.getContainer().getName() + "]";
     }
 
-    public static class TableCache extends JDBCStructCache<MySQLCatalog, MySQLTableBase, MySQLTableColumn> implements JDBCObjectLookup<MySQLCatalog, MySQLTableBase> {
+    public static class TableCache extends JDBCStructLookupCache<MySQLCatalog, MySQLTableBase, MySQLTableColumn> {
         
         protected TableCache()
         {
             super(JDBCConstants.TABLE_NAME);
         }
 
+        @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
-            throws SQLException
-        {
-            return prepareLookupStatement(session, owner, null, null);
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTableBase object, @Nullable String objectName) throws SQLException {
+            return session.prepareStatement(
+                "SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(owner) +
+                    (object == null && objectName == null ?
+                        "" :
+                        " LIKE '" + SQLUtils.escapeString(object != null ? object.getName() : objectName) + "'"));
         }
 
         @Override
@@ -374,15 +374,6 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             return new MySQLTableColumn(table, dbResult);
         }
 
-        @NotNull
-        @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTableBase object, @Nullable String objectName) throws SQLException {
-            return session.prepareStatement(
-                "SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(owner) +
-                    (object == null && objectName == null ?
-                        "" :
-                        " LIKE '" + SQLUtils.escapeString(object != null ? object.getName() : objectName) + "'"));
-        }
     }
 
     /**
@@ -550,18 +541,11 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     /**
      * Procedures cache implementation
      */
-    static class ProceduresCache extends JDBCStructCache<MySQLCatalog, MySQLProcedure, MySQLProcedureParameter> implements JDBCObjectLookup<MySQLCatalog, MySQLProcedure> {
+    static class ProceduresCache extends JDBCStructLookupCache<MySQLCatalog, MySQLProcedure, MySQLProcedureParameter> {
 
         ProceduresCache()
         {
             super(JDBCConstants.PROCEDURE_NAME);
-        }
-
-        @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
-            throws SQLException
-        {
-            return prepareLookupStatement(session, owner, null, null);
         }
 
         @Override

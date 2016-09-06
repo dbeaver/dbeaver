@@ -29,10 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookup;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.*;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -351,7 +348,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         return tableColumn;
     }
 
-    public static class TableCache extends JDBCStructCache<OracleSchema, OracleTableBase, OracleTableColumn> implements JDBCObjectLookup<OracleSchema, OracleTableBase> {
+    public static class TableCache extends JDBCStructLookupCache<OracleSchema, OracleTableBase, OracleTableColumn> {
 
         private static final Comparator<? super OracleTableColumn> ORDER_COMPARATOR = new Comparator<OracleTableColumn>() {
             @Override
@@ -364,13 +361,6 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             super("TABLE_NAME");
             setListOrderComparator(DBUtils.<OracleTableBase>nameComparator());
-        }
-
-        @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner)
-            throws SQLException
-        {
-            return prepareLookupStatement(session, owner, null, null);
         }
 
         @NotNull
@@ -708,18 +698,18 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     /**
      * Procedures cache implementation
      */
-    static class ProceduresCache extends JDBCObjectCache<OracleSchema, OracleProcedureStandalone> {
+    static class ProceduresCache extends JDBCObjectLookupCache<OracleSchema, OracleProcedureStandalone> {
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner)
-            throws SQLException
-        {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleProcedureStandalone object, @Nullable String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM SYS.ALL_OBJECTS " +
-                "WHERE OBJECT_TYPE IN ('PROCEDURE','FUNCTION') " +
-                "AND OWNER=? " +
-                "ORDER BY OBJECT_NAME");
+                    "WHERE OBJECT_TYPE IN ('PROCEDURE','FUNCTION') " +
+                    "AND OWNER=? " +
+                    (object == null && objectName == null ? "" : "AND OBJECT_NAME=? ") +
+                    "ORDER BY OBJECT_NAME");
             dbStat.setString(1, owner.getName());
+            if (object != null || objectName != null) dbStat.setString(1, object != null ? object.getName() : objectName);
             return dbStat;
         }
 
@@ -729,6 +719,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             return new OracleProcedureStandalone(owner, dbResult);
         }
+
     }
 
     static class PackageCache extends JDBCObjectCache<OracleSchema, OraclePackage> {
