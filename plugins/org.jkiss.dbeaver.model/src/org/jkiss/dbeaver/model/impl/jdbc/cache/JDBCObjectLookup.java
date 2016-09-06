@@ -28,10 +28,15 @@ import java.sql.SQLException;
 /**
  * Extension of {@link JDBCObjectCache} - support object lookup by name
  */
-public interface JDBCObjectLookup<OWNER extends DBSObject>
+public interface JDBCObjectLookup<OWNER extends DBSObject, OBJECT extends DBSObject>
 {
-
-    JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OWNER owner, @Nullable String objectName)
+    /**
+     * Creates statement to read just one object.
+     * Parameter @object OR @objectName may be specified to find an object
+     * @throws SQLException
+     */
+    @NotNull
+    JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OWNER owner, @Nullable OBJECT object, @Nullable String objectName)
         throws SQLException;
 
 }

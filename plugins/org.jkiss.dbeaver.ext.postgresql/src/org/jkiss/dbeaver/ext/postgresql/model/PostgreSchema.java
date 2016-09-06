@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookup;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -710,7 +711,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     /**
      * Procedures cache implementation
      */
-    class ProceduresCache extends JDBCObjectCache<PostgreSchema, PostgreProcedure> {
+    static class ProceduresCache extends JDBCObjectCache<PostgreSchema, PostgreProcedure> implements JDBCObjectLookup<PostgreSchema, PostgreProcedure> {
 
         ProceduresCache()
         {
@@ -728,7 +729,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                 "WHERE p.pronamespace=?\n" +
                 "ORDER BY p.proname"
             );
-            dbStat.setLong(1, getObjectId());
+            dbStat.setLong(1, owner.getObjectId());
             return dbStat;
         }
 
@@ -736,7 +737,25 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         protected PostgreProcedure fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new PostgreProcedure(PostgreSchema.this, dbResult);
+            return new PostgreProcedure(owner, dbResult);
+        }
+
+        @NotNull
+        @Override
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @Nullable PostgreProcedure object, @Nullable String objectName) throws SQLException {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT p.oid,p.*,d.description\n" +
+                    "FROM pg_catalog.pg_proc p\n" +
+                    "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p.oid\n" +
+                    "WHERE p.pronamespace=?" +
+                    (object == null ? "" : " AND p.oid=?") +
+                    "\nORDER BY p.proname"
+            );
+            dbStat.setLong(1, owner.getObjectId());
+            if (object != null) {
+                dbStat.setLong(2, object.getObjectId());
+            }
+            return dbStat;
         }
     }
 

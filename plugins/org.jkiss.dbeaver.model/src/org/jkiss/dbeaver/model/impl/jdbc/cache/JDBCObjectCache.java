@@ -89,7 +89,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         if (!isCached()) {
             this.loadObjects(monitor, owner);
         } else if (this instanceof JDBCObjectLookup) {
-            OBJECT newObject = this.reloadObject(monitor, owner, (JDBCObjectLookup<OWNER>) this, objectName);
+            OBJECT newObject = this.reloadObject(monitor, owner, oldObject);
             if (this instanceof JDBCStructCache) {
                 JDBCStructCache structCache = (JDBCStructCache) this;
                 if (structCache.isChildrenCached(oldObject)) {
@@ -170,15 +170,17 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         }
     }
 
-    protected OBJECT reloadObject(DBRProgressMonitor monitor, OWNER owner, JDBCObjectLookup<OWNER> objectLookup, String objectName)
+    protected OBJECT reloadObject(DBRProgressMonitor monitor, OWNER owner, OBJECT object)
         throws DBException
     {
+        @SuppressWarnings("unchecked")
+        JDBCObjectLookup<OWNER, OBJECT> objectLookup = (JDBCObjectLookup<OWNER, OBJECT>) this;
         DBPDataSource dataSource = owner.getDataSource();
         if (dataSource == null) {
             throw new DBException("Not connected to database");
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Reload object '" + objectName + "' from " + owner.getName())) {
-            try (JDBCStatement dbStat = objectLookup.prepareLookupStatement(session, owner, objectName)) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Reload object '" + object.getName() + "' from " + owner.getName())) {
+            try (JDBCStatement dbStat = objectLookup.prepareLookupStatement(session, owner, object, null)) {
                 dbStat.setFetchSize(1);
                 dbStat.executeStatement();
                 JDBCResultSet dbResult = dbStat.getResultSet();
