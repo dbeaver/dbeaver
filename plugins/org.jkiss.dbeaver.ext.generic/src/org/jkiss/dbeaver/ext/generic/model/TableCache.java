@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookup;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.CommonUtils;
@@ -42,7 +43,7 @@ import java.util.Set;
 /**
  * Generic tables cache implementation
  */
-public class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, GenericTableColumn> {
+public class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, GenericTableColumn> implements JDBCObjectLookup<GenericStructContainer> {
 
     private static final Log log = Log.getLog(TableCache.class);
 
@@ -84,11 +85,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner)
         throws SQLException
     {
-        return session.getMetaData().getTables(
-            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null ? null : owner.getSchema().getName(),
-            owner.getDataSource().getAllObjectsPattern(),
-            null).getSourceStatement();
+        return prepareLookupStatement(session, owner, null);
     }
 
     @Nullable
@@ -205,4 +202,12 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
         );
     }
 
+    @Override
+    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable String objectName) throws SQLException {
+        return session.getMetaData().getTables(
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+            owner.getSchema() == null ? null : owner.getSchema().getName(),
+            objectName == null ? owner.getDataSource().getAllObjectsPattern() : objectName,
+            null).getSourceStatement();
+    }
 }
