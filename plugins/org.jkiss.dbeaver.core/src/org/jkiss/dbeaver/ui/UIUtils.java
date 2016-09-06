@@ -31,7 +31,6 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.IControlContentAdapter;
-import org.eclipse.jface.fieldassist.IControlContentAdapter2;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.StringConverter;
@@ -179,7 +178,7 @@ public class UIUtils {
                 column.pack();
                 totalWidth += column.getWidth();
             }
-            final Rectangle clientArea = table.getClientArea();
+            final Rectangle clientArea = table.getBounds();
             if (clientArea.width > 0 && totalWidth > clientArea.width) {
                 for (TableColumn column : columns) {
                     int colWidth = column.getWidth();
