@@ -23,12 +23,12 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
@@ -78,7 +78,7 @@ public class OpenNewSQLEditorHandler extends BaseSQLEditorHandler {
         return true;
     }
 
-    public static void openStringSQLEditor(
+    public static void openSQLConsole(
         IWorkbenchWindow workbenchWindow,
         DBPDataSourceContainer dataSourceContainer,
         String name,
@@ -86,8 +86,15 @@ public class OpenNewSQLEditorHandler extends BaseSQLEditorHandler {
     {
         StringEditorInput sqlInput = new StringEditorInput(name, sqlText, false, ContentUtils.DEFAULT_CHARSET);
         EditorUtils.setInputDataSource(sqlInput, dataSourceContainer, false);
+        openSQLEditor(workbenchWindow, sqlInput);
+    }
+
+    public static void openSQLEditor(
+        IWorkbenchWindow workbenchWindow,
+        IEditorInput sqlInput)
+    {
         try {
-            DBeaverUI.getActiveWorkbenchWindow().getActivePage().openEditor(
+            workbenchWindow.getActivePage().openEditor(
                 sqlInput,
                 SQLEditor.class.getName());
         } catch (PartInitException e) {
