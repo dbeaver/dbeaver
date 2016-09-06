@@ -144,7 +144,6 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        sourceDeclaration = null;
-        return this;
+        return getSchema().proceduresCache.refreshObject(monitor, getSchema(), this);
     }
 }
