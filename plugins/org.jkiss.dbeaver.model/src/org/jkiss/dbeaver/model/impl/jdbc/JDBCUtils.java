@@ -640,7 +640,7 @@ public class JDBCUtils {
 
     public static void appendFilterClause(StringBuilder sql, DBSObjectFilter filter, String columnAlias, boolean firstClause)
     {
-        if (filter.isEmpty()) {
+        if (filter.isNotApplicable()) {
             return;
         }
         if (filter.hasSingleMask()) {
@@ -678,7 +678,7 @@ public class JDBCUtils {
     public static void setFilterParameters(JDBCPreparedStatement statement, int paramIndex, DBSObjectFilter filter)
         throws SQLException
     {
-        if (filter.isEmpty()) {
+        if (filter.isNotApplicable()) {
             return;
         }
         for (String inc : CommonUtils.safeCollection(filter.getInclude())) {

@@ -469,7 +469,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         }
 
         DBSObjectFilter filter = getNodeFilter(meta, false);
-        this.filtered = filter != null && !filter.isEmpty();
+        this.filtered = filter != null && !filter.isNotApplicable();
 
         Collection<?> itemList = (Collection<?>) propertyValue;
         if (itemList.isEmpty()) {
