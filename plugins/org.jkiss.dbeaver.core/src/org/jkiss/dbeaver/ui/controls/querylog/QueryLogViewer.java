@@ -786,12 +786,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             }
         }
         if (sql.length() > 0) {
-            OpenNewSQLEditorHandler.openStringSQLEditor(
+            OpenNewSQLEditorHandler.openSQLConsole(
                 DBeaverUI.getActiveWorkbenchWindow(),
                 dsContainer,
                 "QueryManager",
                 sql.toString()
-                );
+            );
         }
     }
 

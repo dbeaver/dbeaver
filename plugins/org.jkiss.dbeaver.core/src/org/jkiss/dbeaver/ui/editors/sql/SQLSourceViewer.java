@@ -18,15 +18,35 @@
 
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.jface.action.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenNewSQLEditorHandler;
 
 /**
  * Display Source text (Read Only)
  */
 public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLEditorNested<T> {
+
+    private IAction OPEN_CONSOLE_ACTION = new Action("Open in SQL console", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
+        @Override
+        public void run()
+        {
+            final DBPDataSource dataSource = getDataSource();
+            OpenNewSQLEditorHandler.openSQLConsole(
+                DBeaverUI.getActiveWorkbenchWindow(),
+                dataSource == null ? null : dataSource.getContainer(),
+                "Source",
+                getDocument().get()
+            );
+        }
+    };
 
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException
@@ -45,4 +65,17 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
     {
     }
 
+    @Override
+    protected void contributeEditorCommands(IContributionManager toolBarManager) {
+        super.contributeEditorCommands(toolBarManager);
+        toolBarManager.add(new Separator());
+        toolBarManager.add(OPEN_CONSOLE_ACTION);
+    }
+
+    @Override
+    public void editorContextMenuAboutToShow(IMenuManager menu) {
+        super.editorContextMenuAboutToShow(menu);
+
+        menu.insertAfter(GROUP_SQL_ADDITIONS, OPEN_CONSOLE_ACTION);
+    }
 }

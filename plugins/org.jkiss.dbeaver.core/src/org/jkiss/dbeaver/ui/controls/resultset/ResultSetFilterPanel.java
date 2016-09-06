@@ -521,7 +521,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         } else {
             editorName = "Query";
         }
-        OpenNewSQLEditorHandler.openStringSQLEditor(
+        OpenNewSQLEditorHandler.openSQLConsole(
             DBeaverUI.getActiveWorkbenchWindow(),
             dataContainer == null ? null : dataContainer.getDataSource().getContainer(),
             editorName,
