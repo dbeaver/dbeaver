@@ -43,7 +43,7 @@ import java.util.Set;
 /**
  * Generic tables cache implementation
  */
-public class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, GenericTableColumn> implements JDBCObjectLookup<GenericStructContainer> {
+public class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, GenericTableColumn> implements JDBCObjectLookup<GenericStructContainer, GenericTable> {
 
     private static final Log log = Log.getLog(TableCache.class);
 
@@ -85,7 +85,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner)
         throws SQLException
     {
-        return prepareLookupStatement(session, owner, null);
+        return prepareLookupStatement(session, owner, null, null);
     }
 
     @Nullable
@@ -202,12 +202,13 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
         );
     }
 
+    @NotNull
     @Override
-    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable String objectName) throws SQLException {
+    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTable object, @Nullable String objectName) throws SQLException {
         return session.getMetaData().getTables(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
             owner.getSchema() == null ? null : owner.getSchema().getName(),
-            objectName == null ? owner.getDataSource().getAllObjectsPattern() : objectName,
+            object == null && objectName == null ? owner.getDataSource().getAllObjectsPattern() : (object != null ? object.getName() : objectName),
             null).getSourceStatement();
     }
 }

@@ -320,7 +320,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return name + " [" + dataSource.getContainer().getName() + "]";
     }
 
-    public static class TableCache extends JDBCStructCache<MySQLCatalog, MySQLTableBase, MySQLTableColumn> implements JDBCObjectLookup<MySQLCatalog> {
+    public static class TableCache extends JDBCStructCache<MySQLCatalog, MySQLTableBase, MySQLTableColumn> implements JDBCObjectLookup<MySQLCatalog, MySQLTableBase> {
         
         protected TableCache()
         {
@@ -331,7 +331,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
             throws SQLException
         {
-            return prepareLookupStatement(session, owner, null);
+            return prepareLookupStatement(session, owner, null, null);
         }
 
         @Override
@@ -374,11 +374,14 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             return new MySQLTableColumn(table, dbResult);
         }
 
+        @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTableBase object, @Nullable String objectName) throws SQLException {
             return session.prepareStatement(
                 "SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(owner) +
-                    (CommonUtils.isEmpty(objectName) ? "" : " LIKE '" + SQLUtils.escapeString(objectName) + "'"));
+                    (object == null && objectName == null ?
+                        "" :
+                        " LIKE '" + SQLUtils.escapeString(object != null ? object.getName() : objectName) + "'"));
         }
     }
 
@@ -547,7 +550,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     /**
      * Procedures cache implementation
      */
-    static class ProceduresCache extends JDBCStructCache<MySQLCatalog, MySQLProcedure, MySQLProcedureParameter> implements JDBCObjectLookup<MySQLCatalog> {
+    static class ProceduresCache extends JDBCStructCache<MySQLCatalog, MySQLProcedure, MySQLProcedureParameter> implements JDBCObjectLookup<MySQLCatalog, MySQLProcedure> {
 
         ProceduresCache()
         {
@@ -558,7 +561,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
             throws SQLException
         {
-            return prepareLookupStatement(session, owner, null);
+            return prepareLookupStatement(session, owner, null, null);
         }
 
         @Override
@@ -621,17 +624,18 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                     parameterType);
         }
 
+        @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLProcedure object, @Nullable String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.META_TABLE_ROUTINES +
                     "\nWHERE " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?" +
-                    (CommonUtils.isEmpty(objectName) ? "" : " AND " + MySQLConstants.COL_ROUTINE_NAME + "=?") +
+                    (object == null && objectName == null ? "" : " AND " + MySQLConstants.COL_ROUTINE_NAME + "=?") +
                     "\nORDER BY " + MySQLConstants.COL_ROUTINE_NAME
             );
             dbStat.setString(1, owner.getName());
-            if (!CommonUtils.isEmpty(objectName)) {
-                dbStat.setString(2, objectName);
+            if (object != null || objectName != null) {
+                dbStat.setString(2, object != null ? object.getName() : objectName);
             }
             return dbStat;
         }
