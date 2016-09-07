@@ -858,7 +858,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     public void changeSorting(Object columnElement, final int state)
     {
         if (columnElement == null) {
-            columnOrder = columnOrder == SWT.DEFAULT ? SWT.DOWN : (columnOrder == SWT.DOWN ? SWT.UP : SWT.DEFAULT);
+            columnOrder = columnOrder == SWT.DEFAULT ? SWT.UP : (columnOrder == SWT.UP ? SWT.DOWN : SWT.DEFAULT);
             spreadsheet.refreshData(false);
             spreadsheet.redrawGrid();
             return;
@@ -1130,7 +1130,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         Arrays.sort(columns, new Comparator<DBDAttributeBinding>() {
                             @Override
                             public int compare(DBDAttributeBinding o1, DBDAttributeBinding o2) {
-                                return o1.getName().compareTo(o2.getName()) * (columnOrder == SWT.DOWN ? 1 : -1);
+                                return o1.getName().compareTo(o2.getName()) * (columnOrder == SWT.UP ? 1 : -1);
                             }
                         });
                     }
@@ -1180,7 +1180,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (!binding.hasNestedBindings()) {
                     DBDAttributeConstraint co = controller.getModel().getDataFilter().getConstraint(binding);
                     if (co != null && co.getOrderPosition() > 0) {
-                        return co.isOrderDescending() ? SWT.UP : SWT.DOWN;
+                        return co.isOrderDescending() ? SWT.DOWN : SWT.UP;
                     }
                     return SWT.DEFAULT;
                 }
