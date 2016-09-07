@@ -32,19 +32,22 @@ public class MySQLTableIndexColumn extends AbstractTableIndexColumn
     private int ordinalPosition;
     private boolean ascending;
     private boolean nullable;
+    private String subPart;
 
     public MySQLTableIndexColumn(
         MySQLTableIndex index,
         MySQLTableColumn tableColumn,
         int ordinalPosition,
         boolean ascending,
-        boolean nullable)
+        boolean nullable,
+        String subPart)
     {
         this.index = index;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
         this.ascending = ascending;
         this.nullable = nullable;
+        this.subPart = subPart;
     }
 
     MySQLTableIndexColumn(MySQLTableIndex toIndex, MySQLTableIndexColumn source)
@@ -54,6 +57,7 @@ public class MySQLTableIndexColumn extends AbstractTableIndexColumn
         this.ordinalPosition = source.ordinalPosition;
         this.ascending = source.ascending;
         this.nullable = source.nullable;
+        this.subPart = source.subPart;
     }
 
     @NotNull
@@ -97,6 +101,11 @@ public class MySQLTableIndexColumn extends AbstractTableIndexColumn
     public boolean isNullable()
     {
         return nullable;
+    }
+
+    @Property(viewable = true, order = 5)
+    public String getSubPart() {
+        return subPart;
     }
 
     @Nullable

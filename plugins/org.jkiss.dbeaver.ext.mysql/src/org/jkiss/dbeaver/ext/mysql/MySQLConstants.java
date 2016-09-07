@@ -89,6 +89,7 @@ public class MySQLConstants {
     public static final String COL_COLLATION = "COLLATION";
     public static final String COL_COLLATION_NAME = "COLLATION_NAME";
     public static final String COL_NULLABLE = "NULLABLE";
+    public static final String COL_SUB_PART = "SUB_PART";
     public static final String COL_AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
     public static final String COL_DATA_LENGTH = "DATA_LENGTH";
     public static final String COL_INDEX_NAME = "INDEX_NAME";
