@@ -481,6 +481,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         addContributions(EntityEditorDescriptor.POSITION_END);
 
         String defPageId = editorInput.getDefaultPageId();
+        String defFolderId = editorInput.getDefaultFolderId();
         if (defPageId == null && editorDefaults != null) {
             defPageId = editorDefaults.pageId;
         }
@@ -492,7 +493,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
         this.activeEditor = getActiveEditor();
         if (activeEditor instanceof ITabbedFolderContainer) {
-            String defFolderId = editorInput.getDefaultFolderId();
             if (defFolderId == null && editorDefaults != null) {
                 defFolderId = editorDefaults.folderId;
             }
