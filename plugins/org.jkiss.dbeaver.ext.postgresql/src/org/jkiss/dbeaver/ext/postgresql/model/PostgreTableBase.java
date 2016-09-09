@@ -153,6 +153,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     {
         getContainer().tableCache.clearChildrenCache(this);
         getContainer().constraintCache.clearObjectCache(this);
+        getContainer().indexCache.clearObjectCache(this);
         if (oid == 0) {
             // New table - read OID
             try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure body")) {

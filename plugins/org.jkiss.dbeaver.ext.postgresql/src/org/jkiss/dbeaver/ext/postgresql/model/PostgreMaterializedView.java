@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 import java.sql.ResultSet;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * PostgreMaterializedView
@@ -37,9 +37,9 @@ public class PostgreMaterializedView extends PostgreViewBase
     }
 
     @Override
-    public List<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
-        return null;
+        return getSchema().indexCache.getObjects(monitor, getSchema(), this);
     }
 
     @Override
