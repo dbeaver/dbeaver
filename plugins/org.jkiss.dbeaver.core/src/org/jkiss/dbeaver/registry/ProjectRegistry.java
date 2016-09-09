@@ -309,10 +309,12 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
             @Override
             public void run()
             {
+                DBPProjectListener[] listeners;
                 synchronized (projectListeners) {
-                    for (DBPProjectListener listener : projectListeners) {
-                        listener.handleActiveProjectChange(oldValue, activeProject);
-                    }
+                    listeners = projectListeners.toArray(new DBPProjectListener[projectListeners.size()]);
+                }
+                for (DBPProjectListener listener : listeners) {
+                    listener.handleActiveProjectChange(oldValue, activeProject);
                 }
             }
         });
