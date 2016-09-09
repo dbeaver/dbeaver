@@ -38,8 +38,8 @@ class GridColumnRenderer extends AbstractRenderer
     public static final int IMAGE_SPACING = 3;
 
     public static final Image IMAGE_ASTERISK = DBeaverIcons.getImage(UIIcon.SORT_UNKNOWN);
-    public static final Image IMAGE_ARROW_UP = DBeaverIcons.getImage(UIIcon.SORT_DECREASE);
-    public static final Image IMAGE_ARROW_DOWN = DBeaverIcons.getImage(UIIcon.SORT_INCREASE);
+    public static final Image IMAGE_DESC = DBeaverIcons.getImage(UIIcon.SORT_DECREASE);
+    public static final Image IMAGE_ASC = DBeaverIcons.getImage(UIIcon.SORT_INCREASE);
     public static final int SORT_WIDTH = 16;
 
     public  GridColumnRenderer(LightGrid grid) {
@@ -47,7 +47,7 @@ class GridColumnRenderer extends AbstractRenderer
     }
 
     public static Rectangle getSortControlBounds() {
-        return IMAGE_ARROW_UP.getBounds();
+        return IMAGE_DESC.getBounds();
     }
 
     @Nullable
@@ -199,10 +199,10 @@ class GridColumnRenderer extends AbstractRenderer
                 gc.drawImage(IMAGE_ASTERISK, bounds.x, bounds.y);
                 break;
             case SWT.UP:
-                gc.drawImage(IMAGE_ARROW_UP, bounds.x, bounds.y);
+                gc.drawImage(IMAGE_ASC, bounds.x, bounds.y);
                 break;
             case SWT.DOWN:
-                gc.drawImage(IMAGE_ARROW_DOWN, bounds.x, bounds.y);
+                gc.drawImage(IMAGE_DESC, bounds.x, bounds.y);
                 break;
         }
 /*

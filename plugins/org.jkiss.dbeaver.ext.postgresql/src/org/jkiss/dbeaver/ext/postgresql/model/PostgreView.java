@@ -84,20 +84,6 @@ public class PostgreView extends PostgreViewBase
     }
 
     @Override
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
-    {
-        if (source == null) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read view definition")) {
-                source = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(?)", getObjectId());
-            } catch (SQLException e) {
-                throw new DBException("Error reading view definition", e);
-            }
-        }
-        return source;
-    }
-
-    @Override
     public void setObjectDefinitionText(String sourceText) throws DBException
     {
         throw new DBException("Not Implemented");
