@@ -24,11 +24,13 @@ import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.io.UnsupportedEncodingException;
@@ -48,6 +50,18 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     protected MySQLTableBase(MySQLCatalog catalog)
     {
         super(catalog, false);
+    }
+
+    // Copy constructor
+    protected MySQLTableBase(DBRProgressMonitor monitor, MySQLTableBase source) throws DBException {
+        super(source.getContainer(), false);
+
+        DBSObjectCache<MySQLTableBase, MySQLTableColumn> colCache = getContainer().getTableCache().getChildrenCache(this);
+        // Copy columns
+        for (MySQLTableColumn srcColumn : source.getAttributes(monitor)) {
+            MySQLTableColumn column = new MySQLTableColumn(this, srcColumn);
+            colCache.cacheObject(column);
+        }
     }
 
     protected MySQLTableBase(

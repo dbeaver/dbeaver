@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
 
@@ -97,6 +96,27 @@ public class MySQLTable extends MySQLTableBase
     public MySQLTable(MySQLCatalog catalog)
     {
         super(catalog);
+    }
+
+    // Copy constructor
+    public MySQLTable(DBRProgressMonitor monitor, MySQLTable source) throws DBException {
+        super(monitor, source);
+        additionalInfo.loaded = source.additionalInfo.loaded;
+        additionalInfo.description = source.additionalInfo.description;
+        additionalInfo.createTime = source.additionalInfo.createTime;
+        additionalInfo.charset = source.additionalInfo.charset;
+        additionalInfo.collation = source.additionalInfo.collation;
+        additionalInfo.engine = source.additionalInfo.engine;
+        // Copy partitions
+        for (MySQLPartition partition : source.partitionCache.getCachedObjects()) {
+            partitionCache.cacheObject(new MySQLPartition(monitor, this, partition));
+        }
+        // Copy indexes
+        // Copy constraints
+        // Copy FKs
+        for (MySQLTableForeignKey fk : foreignKeys.getCachedObjects()) {
+            foreignKeys.cacheObject(new MySQLTableForeignKey(monitor, this, fk));
+        }
     }
 
     public MySQLTable(

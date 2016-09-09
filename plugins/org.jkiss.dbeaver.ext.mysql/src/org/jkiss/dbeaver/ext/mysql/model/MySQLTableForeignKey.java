@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -43,6 +44,18 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
         boolean persisted)
     {
         super(table, name, remarks, referencedKey, deleteRule, updateRule, persisted);
+    }
+
+    // Copy constructor
+    public MySQLTableForeignKey(DBRProgressMonitor monitor, MySQLTable table, MySQLTableForeignKey source) throws DBException {
+        super(
+            table,
+            source.getName(),
+            source.getDescription(),
+            table.getConstraint(monitor, source.referencedKey.getName()),
+            source.deleteRule,
+            source.updateRule,
+            false);
     }
 
     @Override

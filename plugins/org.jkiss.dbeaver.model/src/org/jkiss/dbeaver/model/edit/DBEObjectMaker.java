@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -60,7 +61,7 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
     OBJECT_TYPE createNewObject(
         DBECommandContext commandContext,
         CONTAINER_TYPE parent,
-        Object copyFrom);
+        Object copyFrom) throws DBException;
 
     /**
      * Deletes specified object.
