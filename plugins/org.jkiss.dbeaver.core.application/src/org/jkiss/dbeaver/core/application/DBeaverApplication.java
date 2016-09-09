@@ -266,6 +266,8 @@ public class DBeaverApplication implements IApplication {
                         workbench.close();
                 }
             });
+        } catch (Throwable e) {
+            log.error(e);
         } finally {
             instance = null;
         }

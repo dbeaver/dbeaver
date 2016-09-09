@@ -78,7 +78,11 @@ public class DBeaverUI implements DBUICallback {
     static void disposeUI()
     {
         if (instance != null) {
-            instance.dispose();
+            try {
+                instance.dispose();
+            } catch (Throwable e) {
+                log.error(e);
+            }
         }
     }
 
@@ -106,7 +110,6 @@ public class DBeaverUI implements DBUICallback {
 
     private void dispose()
     {
-        //this.trayItem.dispose();
         this.sharedTextColors.dispose();
 
         if (trayItem != null) {

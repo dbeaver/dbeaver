@@ -100,7 +100,12 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
     @Override
     public boolean preShutdown() {
-        return saveAndCleanup() && super.preShutdown();
+        if (!saveAndCleanup()) {
+            // User rejected to exit
+            return false;
+        } else {
+            return super.preShutdown();
+        }
     }
 
     @Override
