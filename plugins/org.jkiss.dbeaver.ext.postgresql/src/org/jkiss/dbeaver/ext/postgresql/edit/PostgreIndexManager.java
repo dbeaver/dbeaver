@@ -88,7 +88,8 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     @Override
     protected String getDropIndexPattern(PostgreIndex index)
     {
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP INDEX " + PATTERN_ITEM_INDEX_SHORT; //$NON-NLS-1$ //$NON-NLS-2$
+        return /*"ALTER TABLE " + PATTERN_ITEM_TABLE + */
+            "DROP INDEX " + PATTERN_ITEM_INDEX_SHORT; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
 }
