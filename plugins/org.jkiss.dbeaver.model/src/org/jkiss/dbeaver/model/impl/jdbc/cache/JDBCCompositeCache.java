@@ -187,12 +187,28 @@ public abstract class JDBCCompositeCache<
         }
     }
 
+    public void setObjectCache(PARENT forParent, List<OBJECT> objects)
+    {
+    }
+
     @Override
     public void clearCache()
     {
         synchronized (objectCache) {
             this.objectCache.clear();
             super.clearCache();
+        }
+    }
+
+    @Override
+    public void setCache(List<OBJECT> objects) {
+        super.setCache(objects);
+        synchronized (objectCache) {
+            objectCache.clear();
+            for (OBJECT object : objects) {
+                List<OBJECT> parentObjects = objectCache.get(getParent(object));
+                parentObjects.add(object);
+            }
         }
     }
 

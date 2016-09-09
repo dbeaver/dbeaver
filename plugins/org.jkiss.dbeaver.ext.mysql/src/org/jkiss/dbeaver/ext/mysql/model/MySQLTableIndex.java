@@ -56,13 +56,10 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> im
         this.indexComment = comment;
     }
 
-    /**
-     * Copy constructor
-     * @param source source index
-     */
-    MySQLTableIndex(MySQLTableIndex source)
+    // Copy constructor
+    MySQLTableIndex(MySQLTable table, MySQLTableIndex source)
     {
-        super(source);
+        super(table.getContainer(), table, source, false);
         this.nonUnique = source.nonUnique;
         this.cardinality = source.cardinality;
         this.indexComment = source.indexComment;

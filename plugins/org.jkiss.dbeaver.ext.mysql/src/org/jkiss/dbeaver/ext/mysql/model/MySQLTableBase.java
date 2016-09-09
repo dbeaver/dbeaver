@@ -30,8 +30,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.PreparedStatement;
@@ -54,11 +54,11 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
 
     // Copy constructor
     protected MySQLTableBase(DBRProgressMonitor monitor, MySQLTableBase source) throws DBException {
-        super(source.getContainer(), false);
+        super(source.getContainer(), source, false);
 
         DBSObjectCache<MySQLTableBase, MySQLTableColumn> colCache = getContainer().getTableCache().getChildrenCache(this);
         // Copy columns
-        for (MySQLTableColumn srcColumn : source.getAttributes(monitor)) {
+        for (MySQLTableColumn srcColumn : CommonUtils.safeCollection(source.getAttributes(monitor))) {
             MySQLTableColumn column = new MySQLTableColumn(this, srcColumn);
             colCache.cacheObject(column);
         }

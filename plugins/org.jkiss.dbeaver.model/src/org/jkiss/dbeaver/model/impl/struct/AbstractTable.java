@@ -41,6 +41,13 @@ public abstract class AbstractTable<
         this.container = container;
     }
 
+    // Copy constructor
+    protected AbstractTable(CONTAINER container, AbstractTable source)
+    {
+        this(container);
+        this.tableName = source.tableName;
+    }
+
     protected AbstractTable(CONTAINER container, String tableName)
     {
         this(container);

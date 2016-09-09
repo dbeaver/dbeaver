@@ -112,6 +112,11 @@ public class MySQLTable extends MySQLTableBase
             partitionCache.cacheObject(new MySQLPartition(monitor, this, partition));
         }
         // Copy indexes
+        for (MySQLTableIndex srcIndex : CommonUtils.safeCollection(source.getIndexes(monitor))) {
+            MySQLTableIndex index = new MySQLTableIndex(this, srcIndex);
+            this.getContainer().indexCache.cacheObject(index);
+        }
+
         // Copy constraints
         // Copy FKs
         for (MySQLTableForeignKey fk : foreignKeys.getCachedObjects()) {

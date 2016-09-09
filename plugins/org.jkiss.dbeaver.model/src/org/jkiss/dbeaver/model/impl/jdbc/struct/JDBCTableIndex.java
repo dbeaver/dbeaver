@@ -47,6 +47,15 @@ public abstract class JDBCTableIndex<CONTAINER extends DBSObjectContainer, TABLE
         this.persisted = persisted;
     }
 
+    // Copy constructor
+    protected JDBCTableIndex(CONTAINER container, TABLE table, JDBCTableIndex source, boolean persisted) {
+        this.container = container;
+        this.table = table;
+        this.name = source.name;
+        this.indexType = source.indexType;
+        this.persisted = persisted;
+    }
+
     protected JDBCTableIndex(JDBCTableIndex<CONTAINER, TABLE> source)
     {
         this.container = source.container;
