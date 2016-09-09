@@ -389,6 +389,16 @@ public class DataSourceDescriptor
     @Override
     public DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch)
     {
+        FilterMapping filterMapping = getFilterMapping(type, parentObject, firstMatch);
+        if (filterMapping != null) {
+            return filterMapping.getFilter(parentObject, firstMatch);
+        }
+        return null;
+    }
+
+    @Nullable
+    private FilterMapping getFilterMapping(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch)
+    {
         if (filterMap.isEmpty()) {
             return null;
         }
@@ -402,13 +412,13 @@ public class DataSourceDescriptor
                     filterMapping = filterMap.get(it.getName());
                     if (filterMapping != null) {
                         filter = filterMapping.getFilter(parentObject, firstMatch);
-                        if (filter != null && (firstMatch || filter.isEnabled())) return filter;
+                        if (filter != null && (firstMatch || filter.isEnabled())) return filterMapping;
                     }
                 }
             }
             if (filterMapping != null) {
                 filter = filterMapping.getFilter(parentObject, firstMatch);
-                if (filter != null && (firstMatch || filter.isEnabled())) return filter;
+                if (filter != null && (firstMatch || filter.isEnabled())) return filterMapping;
             }
         }
 
@@ -418,6 +428,16 @@ public class DataSourceDescriptor
     @Override
     public void setObjectFilter(Class<?> type, DBSObject parentObject, DBSObjectFilter filter)
     {
+        FilterMapping filterMapping = getFilterMapping(type, parentObject, true);
+        if (filterMapping != null) {
+            // Update filter
+            if (parentObject == null) {
+                filterMapping.defaultFilter = filter;
+            } else {
+                filterMapping.customFilters.put(DBUtils.getObjectUniqueName(parentObject), filter);
+            }
+        }
+
         updateObjectFilter(type.getName(), parentObject == null ? null : DBUtils.getObjectUniqueName(parentObject), filter);
     }
 
@@ -804,8 +824,7 @@ public class DataSourceDescriptor
             }
 
             return true;
-        }
-        finally {
+        } finally {
             connecting = false;
         }
     }
