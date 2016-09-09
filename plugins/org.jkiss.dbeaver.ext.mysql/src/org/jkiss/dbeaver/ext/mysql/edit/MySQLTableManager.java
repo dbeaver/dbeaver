@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
@@ -55,18 +56,22 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
-    protected MySQLTable createDatabaseObject(DBECommandContext context, MySQLCatalog parent, Object copyFrom)
+    protected MySQLTable createDatabaseObject(DBECommandContext context, MySQLCatalog parent, Object copyFrom) throws DBException
     {
-        final MySQLTable table = new MySQLTable(parent);
-        try {
+        DBRProgressMonitor monitor = VoidProgressMonitor.INSTANCE;
+
+        final MySQLTable table;
+        if (copyFrom instanceof  MySQLTable) {
+            table = new MySQLTable(monitor, (MySQLTable)copyFrom);
+            table.setName(getTableName(parent, ((MySQLTable) copyFrom).getName()));
+        } else {
+            table = new MySQLTable(parent);
             setTableName(parent, table);
-            final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);
+
+            final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(monitor);
             additionalInfo.setEngine(parent.getDataSource().getDefaultEngine());
             additionalInfo.setCharset(parent.getDefaultCharset());
             additionalInfo.setCollation(parent.getDefaultCollation());
-        } catch (DBException e) {
-            // Never be here
-            log.error(e);
         }
 
         return table;
@@ -135,27 +140,5 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     {
         processObjectRename(commandContext, object, newName);
     }
-
-/*
-    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseEditor activeEditor, final MySQLTable object)
-    {
-        if (object.getContainer().isSystem()) {
-            return null;
-        }
-        return new ITabDescriptor[] {
-            new PropertyTabDescriptor(
-                PropertiesContributor.CATEGORY_INFO,
-                "table.ddl", //$NON-NLS-1$
-                "DDL", //$NON-NLS-1$
-                DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", "DDL") { //$NON-NLS-1$ //$NON-NLS-2$
-                    public ISection getSectionClass()
-                    {
-                        return new MySQLDDLViewEditor(activeEditor);
-                    }
-                })
-        };
-    }
-*/
 
 }

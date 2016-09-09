@@ -77,6 +77,17 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         this.persisted = persisted;
     }
 
+    protected JDBCTableColumn(
+        TABLE_TYPE table,
+        JDBCTableColumn source,
+        boolean persisted)
+    {
+        super(source);
+        this.table = table;
+        this.persisted = persisted;
+        this.defaultValue = source.defaultValue;
+    }
+
     public TABLE_TYPE getTable()
     {
         return table;

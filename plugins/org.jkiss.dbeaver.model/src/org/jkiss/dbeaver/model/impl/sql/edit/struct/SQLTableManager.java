@@ -126,8 +126,12 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
     }
 
     protected String getTableName(CONTAINER_TYPE container) throws DBException {
+        return getTableName(container, BASE_TABLE_NAME);
+    }
+
+    protected String getTableName(CONTAINER_TYPE container, String baseName) throws DBException {
         for (int i = 0; ; i++) {
-            String tableName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), i == 0 ? BASE_TABLE_NAME : (BASE_TABLE_NAME + "_" + i));
+            String tableName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), i == 0 ? baseName : (baseName + "_" + i));
             DBSObject child = container.getChild(VoidProgressMonitor.INSTANCE, tableName);
             if (child == null) {
                 return tableName;

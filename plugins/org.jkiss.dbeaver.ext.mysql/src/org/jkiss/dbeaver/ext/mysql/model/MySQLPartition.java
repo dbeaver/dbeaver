@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableObject;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -90,6 +91,18 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable>
     protected MySQLPartition(JDBCTableObject<MySQLTable> source)
     {
         super(source);
+    }
+
+    // Copy constructor
+    protected MySQLPartition(DBRProgressMonitor monitor, MySQLTable table, MySQLPartition source)
+    {
+        super(table, source.getName(), false);
+        this.position = source.position;
+        this.method = source.method;
+        this.expression = source.expression;
+        this.description = source.description;
+        this.comment = source.comment;
+        this.nodegroup = source.nodegroup;
     }
 
     private void addSubPartitions(MySQLPartition partition)

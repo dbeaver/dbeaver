@@ -38,6 +38,12 @@ public abstract class JDBCAttribute extends AbstractAttribute implements DBSObje
         super(name, typeName, valueType, ordinalPosition, maxLength, scale, precision, required, sequence);
     }
 
+    // Copy constructor
+    protected JDBCAttribute(JDBCAttribute source)
+    {
+        super(source);
+    }
+
     @Nullable
     @Override
     public DBPImage getObjectImage()

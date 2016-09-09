@@ -78,8 +78,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     // Commands
 
     @Override
-    public final OBJECT_TYPE createNewObject(DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
-    {
+    public final OBJECT_TYPE createNewObject(DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom) throws DBException {
         OBJECT_TYPE newObject;
         try {
             newObject = createDatabaseObject(commandContext, parent, copyFrom);
@@ -114,7 +113,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     protected abstract OBJECT_TYPE createDatabaseObject(
         DBECommandContext context,
         CONTAINER_TYPE parent,
-        Object copyFrom);
+        Object copyFrom) throws DBException;
 
     //////////////////////////////////////////////////
     // Actions
