@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
@@ -54,7 +55,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     }
 
     @Override
-    protected PostgreTable createDatabaseObject(DBECommandContext context, PostgreSchema parent, Object copyFrom)
+    protected PostgreTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreSchema parent, Object copyFrom)
     {
         final PostgreTableRegular table = new PostgreTableRegular(parent);
         try {

@@ -199,19 +199,5 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         return command.getPersistActions();
     }
 
-    protected  <T extends DBSObject> SQLObjectEditor<T, OBJECT_TYPE> getObjectEditor(DBERegistry editorsRegistry, Class<T> type) {
-        final Class<? extends T> childType = getChildType(type);
-        return childType == null ? null : editorsRegistry.getObjectManager(childType, SQLObjectEditor.class);
-    }
-
-    protected <T> Class<? extends T> getChildType(Class<T> type) {
-        for (Class<?> childType : getChildTypes()) {
-            if (type.isAssignableFrom(childType)) {
-                return (Class<? extends T>) childType;
-            }
-        }
-        return null;
-    }
-
 }
 

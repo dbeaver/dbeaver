@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
@@ -84,7 +85,7 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
     // Create
     // ------
     @Override
-    public DB2TableForeignKey createDatabaseObject(DBECommandContext context, DB2Table db2Table,
+    public DB2TableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, DB2Table db2Table,
                                                    Object from)
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(DBeaverUI.getActiveWorkbenchShell(),

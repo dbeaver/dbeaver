@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
@@ -50,7 +51,7 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
 
     @Override
     protected GenericTableIndex createDatabaseObject(
-        DBECommandContext context, GenericTable parent,
+        DBRProgressMonitor monitor, DBECommandContext context, GenericTable parent,
         Object from)
     {
         EditIndexDialog editDialog = new EditIndexDialog(

@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.model.impl.sql.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -26,10 +25,12 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.edit.prop.*;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.ProxyPropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.impl.ProxyPropertyDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -78,10 +79,10 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     // Commands
 
     @Override
-    public final OBJECT_TYPE createNewObject(DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom) throws DBException {
+    public final OBJECT_TYPE createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom) throws DBException {
         OBJECT_TYPE newObject;
         try {
-            newObject = createDatabaseObject(commandContext, parent, copyFrom);
+            newObject = createDatabaseObject(monitor, commandContext, parent, copyFrom);
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("Can't create object here.\nWrong container type: " + parent.getClass().getSimpleName());
         }
@@ -93,7 +94,13 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         commandContext.getUserParams().put(newObject, createCommand);
         commandContext.addCommand(createCommand, new CreateObjectReflector<>(this), true);
 
+        createObjectReferences(monitor, commandContext, createCommand);
+
         return newObject;
+    }
+
+    protected void createObjectReferences(DBRProgressMonitor monitor, DBECommandContext commandContext, ObjectCreateCommand createCommand) throws DBException {
+        // Do nothing. Derived implementations may add extra handling
     }
 
     @Override
@@ -111,6 +118,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
     protected abstract OBJECT_TYPE createDatabaseObject(
+        DBRProgressMonitor monitor,
         DBECommandContext context,
         CONTAINER_TYPE parent,
         Object copyFrom) throws DBException;

@@ -101,12 +101,12 @@ public class MySQLTable extends MySQLTableBase
     // Copy constructor
     public MySQLTable(DBRProgressMonitor monitor, MySQLTable source) throws DBException {
         super(monitor, source);
-        additionalInfo.loaded = source.additionalInfo.loaded;
-        additionalInfo.description = source.additionalInfo.description;
-        additionalInfo.createTime = source.additionalInfo.createTime;
-        additionalInfo.charset = source.additionalInfo.charset;
-        additionalInfo.collation = source.additionalInfo.collation;
-        additionalInfo.engine = source.additionalInfo.engine;
+        AdditionalInfo sourceAI = source.getAdditionalInfo(monitor);
+        additionalInfo.loaded = true;
+        additionalInfo.description = sourceAI.description;
+        additionalInfo.charset = sourceAI.charset;
+        additionalInfo.collation = sourceAI.collation;
+        additionalInfo.engine = sourceAI.engine;
         // Copy partitions
         for (MySQLPartition partition : source.partitionCache.getCachedObjects()) {
             partitionCache.cacheObject(new MySQLPartition(monitor, this, partition));

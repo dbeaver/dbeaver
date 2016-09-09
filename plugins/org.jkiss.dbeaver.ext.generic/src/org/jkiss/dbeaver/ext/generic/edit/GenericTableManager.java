@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -51,7 +52,7 @@ public class GenericTableManager extends SQLTableManager<GenericTable, GenericSt
     }
 
     @Override
-    protected GenericTable createDatabaseObject(DBECommandContext context, GenericStructContainer parent, Object copyFrom)
+    protected GenericTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, GenericStructContainer parent, Object copyFrom)
     {
         final GenericTable table = new GenericTable(parent);
         try {

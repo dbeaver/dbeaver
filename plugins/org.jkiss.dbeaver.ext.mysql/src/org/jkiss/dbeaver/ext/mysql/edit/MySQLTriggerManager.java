@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 
@@ -47,7 +48,7 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
     }
 
     @Override
-    protected MySQLTrigger createDatabaseObject(DBECommandContext context, MySQLTable parent, Object copyFrom)
+    protected MySQLTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLTable parent, Object copyFrom)
     {
         CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource(), "Create trigger");
         if (dialog.open() != IDialogConstants.OK_ID) {

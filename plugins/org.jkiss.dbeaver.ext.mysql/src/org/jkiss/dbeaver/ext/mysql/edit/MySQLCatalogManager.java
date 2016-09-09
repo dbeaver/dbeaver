@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 
@@ -53,7 +54,7 @@ public class MySQLCatalogManager extends SQLObjectEditor<MySQLCatalog, MySQLData
     }
 
     @Override
-    protected MySQLCatalog createDatabaseObject(DBECommandContext context, MySQLDataSource parent, Object copyFrom)
+    protected MySQLCatalog createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLDataSource parent, Object copyFrom)
     {
         MySQLCreateDatabaseDialog dialog = new MySQLCreateDatabaseDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
         if (dialog.open() != IDialogConstants.OK_ID) {
