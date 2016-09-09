@@ -65,6 +65,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         this.persisted = persisted;
     }
 
+    // Copy constructor
+    protected JDBCTable(CONTAINER container, JDBCTable source, boolean persisted)
+    {
+        super(container, source);
+        this.persisted = persisted;
+    }
+
     protected JDBCTable(CONTAINER container, @Nullable String tableName, boolean persisted)
     {
         super(container, tableName);
