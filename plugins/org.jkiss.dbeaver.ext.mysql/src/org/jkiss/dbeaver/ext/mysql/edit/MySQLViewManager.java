@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -65,7 +66,7 @@ public class MySQLViewManager extends SQLObjectEditor<MySQLTableBase, MySQLCatal
     }
 
     @Override
-    protected MySQLView createDatabaseObject(DBECommandContext context, MySQLCatalog parent, Object copyFrom)
+    protected MySQLView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom)
     {
         MySQLView newCatalog = new MySQLView(parent);
         newCatalog.setName("NewView"); //$NON-NLS-1$

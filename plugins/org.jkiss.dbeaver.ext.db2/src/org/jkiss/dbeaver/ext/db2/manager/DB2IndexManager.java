@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
@@ -76,7 +77,7 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2TableBase> {
     }
 
     @Override
-    protected DB2Index createDatabaseObject(DBECommandContext context, DB2TableBase db2Table, Object from)
+    protected DB2Index createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, DB2TableBase db2Table, Object from)
     {
         EditIndexDialog editDialog = new EditIndexDialog(DBeaverUI.getActiveWorkbenchShell(),
             DB2Messages.edit_db2_index_manager_dialog_title, db2Table, IX_TYPES);

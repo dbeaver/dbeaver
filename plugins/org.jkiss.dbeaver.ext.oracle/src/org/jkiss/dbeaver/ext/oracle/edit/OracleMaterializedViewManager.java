@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -64,7 +65,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     }
 
     @Override
-    protected OracleMaterializedView createDatabaseObject(DBECommandContext context, OracleSchema parent, Object copyFrom)
+    protected OracleMaterializedView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
         OracleMaterializedView newView = new OracleMaterializedView(parent, "NewView"); //$NON-NLS-1$
         return newView;

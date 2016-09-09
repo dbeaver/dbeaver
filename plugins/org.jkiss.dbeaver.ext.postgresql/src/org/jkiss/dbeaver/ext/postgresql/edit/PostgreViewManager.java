@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -64,7 +65,7 @@ public class PostgreViewManager extends SQLObjectEditor<PostgreTableBase, Postgr
     }
 
     @Override
-    protected PostgreView createDatabaseObject(DBECommandContext context, PostgreSchema parent, Object copyFrom)
+    protected PostgreView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreSchema parent, Object copyFrom)
     {
         PostgreView newCatalog = new PostgreView(parent);
         newCatalog.setName("NewView"); //$NON-NLS-1$

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -46,7 +47,7 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     }
 
     @Override
-    protected GenericTableColumn createDatabaseObject(DBECommandContext context, GenericTable parent, Object copyFrom)
+    protected GenericTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, GenericTable parent, Object copyFrom)
     {
         DBSDataType columnType = findBestDataType(parent.getDataSource(), DBConstants.DEFAULT_DATATYPE_NAMES);
 

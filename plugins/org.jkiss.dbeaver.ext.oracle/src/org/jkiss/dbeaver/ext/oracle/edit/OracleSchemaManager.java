@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -64,7 +65,7 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
     }
 
     @Override
-    protected OracleSchema createDatabaseObject(DBECommandContext context, OracleDataSource parent, Object copyFrom)
+    protected OracleSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleDataSource parent, Object copyFrom)
     {
         NewUserDialog dialog = new NewUserDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
         if (dialog.open() != IDialogConstants.OK_ID) {

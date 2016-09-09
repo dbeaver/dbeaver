@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 import java.util.List;
@@ -55,7 +56,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     }
 
     @Override
-    protected PostgreSchema createDatabaseObject(DBECommandContext context, PostgreDatabase parent, Object copyFrom)
+    protected PostgreSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreDatabase parent, Object copyFrom)
     {
         PostgreCreateSchemaDialog dialog = new PostgreCreateSchemaDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
         if (dialog.open() != IDialogConstants.OK_ID) {

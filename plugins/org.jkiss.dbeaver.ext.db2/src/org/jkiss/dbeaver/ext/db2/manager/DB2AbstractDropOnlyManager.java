@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;
@@ -63,7 +64,7 @@ public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject &
     }
 
     @Override
-    protected OBJECT_TYPE createDatabaseObject(DBECommandContext context, CONTAINER_TYPE owner,
+    protected OBJECT_TYPE createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, CONTAINER_TYPE owner,
                                                Object copyFrom)
     {
         return null;

@@ -17,13 +17,13 @@
  */
 package org.jkiss.dbeaver.model.impl.sql.edit;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.edit.DBECommandAggregator;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.edit.DBEStructEditor;
+import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -74,6 +74,43 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         });
 
         return nestedCommands;
+    }
+
+    protected void createObjectReferences(DBRProgressMonitor monitor, DBECommandContext commandContext, ObjectCreateCommand createCommand) throws DBException {
+        OBJECT_TYPE object = createCommand.getObject();
+        final DBERegistry editorsRegistry = object.getDataSource().getContainer().getApplication().getEditorsRegistry();
+        for (Class childType : getChildTypes()) {
+            Collection<? extends DBSObject> children = getChildObjects(monitor, object, childType);
+            if (!CommonUtils.isEmpty(children)) {
+                SQLObjectEditor<DBSObject, CONTAINER_TYPE> nestedEditor = getObjectEditor(editorsRegistry, childType);
+                if (nestedEditor != null) {
+                    for (DBSObject child : children) {
+                        ObjectCreateCommand childCreateCommand = (ObjectCreateCommand) nestedEditor.makeCreateCommand(child);
+                        //((StructCreateCommand)createCommand).aggregateCommand(childCreateCommand);
+                        commandContext.addCommand(childCreateCommand, null, false);
+                    }
+                }
+            }
+        }
+    }
+
+    protected  <T extends DBSObject> SQLObjectEditor<T, OBJECT_TYPE> getObjectEditor(DBERegistry editorsRegistry, Class<T> type) {
+        final Class<? extends T> childType = getChildType(type);
+        return childType == null ? null : editorsRegistry.getObjectManager(childType, SQLObjectEditor.class);
+    }
+
+    protected <T> Class<? extends T> getChildType(Class<T> type) {
+        for (Class<?> childType : getChildTypes()) {
+            if (type.isAssignableFrom(childType)) {
+                return (Class<? extends T>) childType;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, OBJECT_TYPE object, Class<? extends DBSObject> childType) throws DBException {
+        return null;
     }
 
     protected class StructCreateCommand extends ObjectCreateCommand

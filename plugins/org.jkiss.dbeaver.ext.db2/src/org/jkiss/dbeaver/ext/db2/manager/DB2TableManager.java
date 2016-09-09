@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -82,7 +83,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // ------
 
     @Override
-    public DB2Table createDatabaseObject(DBECommandContext context, DB2Schema db2Schema,
+    public DB2Table createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, DB2Schema db2Schema,
                                          Object copyFrom)
     {
         DB2Table table = new DB2Table(db2Schema, NEW_TABLE_NAME);

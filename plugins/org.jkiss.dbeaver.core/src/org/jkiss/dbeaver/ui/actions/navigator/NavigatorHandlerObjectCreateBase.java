@@ -23,6 +23,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
@@ -82,7 +83,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 openEditor);
 
             final Object parentObject = container.getValueObject();
-            DBSObject result = objectMaker.createNewObject(commandTarget.getContext(), parentObject, sourceObject);
+            DBSObject result = objectMaker.createNewObject(VoidProgressMonitor.INSTANCE, commandTarget.getContext(), parentObject, sourceObject);
             if (result == null) {
                 return true;
             }

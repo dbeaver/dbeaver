@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -56,7 +57,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     }
 
     @Override
-    protected OracleTableColumn createDatabaseObject(DBECommandContext context, OracleTableBase parent, Object copyFrom)
+    protected OracleTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleTableBase parent, Object copyFrom)
     {
         DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar2"); //$NON-NLS-1$
 

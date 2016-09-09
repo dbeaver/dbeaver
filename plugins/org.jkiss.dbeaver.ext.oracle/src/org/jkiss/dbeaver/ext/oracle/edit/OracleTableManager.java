@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -53,7 +54,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected OracleTable createDatabaseObject(DBECommandContext context, OracleSchema parent, Object copyFrom)
+    protected OracleTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
         OracleTable table = new OracleTable(parent, "");
         try {

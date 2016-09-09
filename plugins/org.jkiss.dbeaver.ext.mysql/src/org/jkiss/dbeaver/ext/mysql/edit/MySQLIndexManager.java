@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditIndexDialog;
@@ -48,7 +49,7 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
 
     @Override
     protected MySQLTableIndex createDatabaseObject(
-        DBECommandContext context, MySQLTable parent,
+        DBRProgressMonitor monitor, DBECommandContext context, MySQLTable parent,
         Object from)
     {
         EditIndexDialog editDialog = new EditIndexDialog(

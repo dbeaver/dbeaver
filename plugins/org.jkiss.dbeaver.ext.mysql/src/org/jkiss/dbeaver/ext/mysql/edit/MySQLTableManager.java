@@ -33,7 +33,9 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -56,10 +58,8 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
-    protected MySQLTable createDatabaseObject(DBECommandContext context, MySQLCatalog parent, Object copyFrom) throws DBException
+    protected MySQLTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom) throws DBException
     {
-        DBRProgressMonitor monitor = VoidProgressMonitor.INSTANCE;
-
         final MySQLTable table;
         if (copyFrom instanceof  MySQLTable) {
             table = new MySQLTable(monitor, (MySQLTable)copyFrom);
@@ -133,6 +133,20 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     public Class<?>[] getChildTypes()
     {
         return CHILD_TYPES;
+    }
+
+    @Override
+    public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, MySQLTableBase object, Class<? extends DBSObject> childType) throws DBException {
+        if (childType == MySQLTableColumn.class) {
+            return object.getAttributes(monitor);
+        } else if (childType == MySQLTableConstraint.class) {
+            return object.getConstraints(monitor);
+        } else if (childType == MySQLTableForeignKey.class) {
+            return object.getAssociations(monitor);
+        } else if (childType == MySQLTableIndex.class) {
+            return object.getIndexes(monitor);
+        }
+        return null;
     }
 
     @Override

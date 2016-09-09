@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
@@ -46,7 +47,7 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
 
     @Override
     protected MySQLTableConstraint createDatabaseObject(
-        DBECommandContext context, MySQLTable parent,
+        DBRProgressMonitor monitor, DBECommandContext context, MySQLTable parent,
         Object from)
     {
         EditConstraintDialog editDialog = new EditConstraintDialog(

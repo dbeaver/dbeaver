@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
@@ -51,7 +52,7 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     }
 
     @Override
-    protected OraclePackage createDatabaseObject(DBECommandContext context, OracleSchema parent, Object copyFrom)
+    protected OraclePackage createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
         CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource(), OracleMessages.edit_oracle_package_manager_dialog_title);
         if (dialog.open() != IDialogConstants.OK_ID) {

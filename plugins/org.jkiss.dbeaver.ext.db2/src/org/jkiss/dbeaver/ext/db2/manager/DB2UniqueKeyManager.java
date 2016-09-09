@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -78,7 +79,7 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
     // ------
 
     @Override
-    public DB2TableUniqueKey createDatabaseObject(DBECommandContext context, DB2Table db2Table,
+    public DB2TableUniqueKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, DB2Table db2Table,
                                                   Object from)
     {
         EditConstraintDialog editDialog = new EditConstraintDialog(DBeaverUI.getActiveWorkbenchShell(),

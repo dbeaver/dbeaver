@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
@@ -64,7 +65,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     }
 
     @Override
-    public DataSourceDescriptor createNewObject(DBECommandContext commandContext, DataSourceRegistry parent, Object copyFrom)
+    public DataSourceDescriptor createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, DataSourceRegistry parent, Object copyFrom)
     {
         if (copyFrom != null) {
             DataSourceDescriptor dsTpl = (DataSourceDescriptor)copyFrom;

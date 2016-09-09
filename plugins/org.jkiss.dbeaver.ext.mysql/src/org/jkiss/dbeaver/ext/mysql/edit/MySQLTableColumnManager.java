@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -89,7 +90,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected MySQLTableColumn createDatabaseObject(DBECommandContext context, MySQLTableBase parent, Object copyFrom)
+    protected MySQLTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLTableBase parent, Object copyFrom)
     {
         DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar"); //$NON-NLS-1$
 
