@@ -151,6 +151,8 @@ public class MySQLConstants {
     public static final String CONSTRAINT_PRIMARY_KEY = "PRIMARY KEY";
     public static final String CONSTRAINT_UNIQUE = "UNIQUE";
 
+    public static final String INDEX_PRIMARY = "PRIMARY";
+
     public static final String EXTRA_AUTO_INCREMENT = "auto_increment";
 
     public static final String TYPE_NAME_ENUM = "enum";

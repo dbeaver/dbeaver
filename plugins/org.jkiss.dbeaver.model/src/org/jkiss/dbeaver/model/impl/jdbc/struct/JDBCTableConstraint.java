@@ -59,6 +59,12 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         this.persisted = persisted;
     }
 
+    // Copy constructor
+    protected JDBCTableConstraint(TABLE table, JDBCTableConstraint source, boolean persisted) {
+        super(table, source);
+        this.persisted = persisted;
+    }
+
     @NotNull
     @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     @Override

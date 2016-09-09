@@ -113,15 +113,26 @@ public class MySQLTable extends MySQLTableBase
         }
         // Copy indexes
         for (MySQLTableIndex srcIndex : CommonUtils.safeCollection(source.getIndexes(monitor))) {
+            if (srcIndex.getName().equals(MySQLConstants.INDEX_PRIMARY)) {
+                // Skip primary key index (it will be created implicitly)
+                continue;
+            }
             MySQLTableIndex index = new MySQLTableIndex(this, srcIndex);
             this.getContainer().indexCache.cacheObject(index);
         }
 
         // Copy constraints
-        // Copy FKs
-        for (MySQLTableForeignKey fk : foreignKeys.getCachedObjects()) {
-            foreignKeys.cacheObject(new MySQLTableForeignKey(monitor, this, fk));
+        for (MySQLTableConstraint srcConstr : CommonUtils.safeCollection(source.getConstraints(monitor))) {
+            MySQLTableConstraint constr = new MySQLTableConstraint(monitor, this, srcConstr);
+            this.getContainer().constraintCache.cacheObject(constr);
         }
+
+        // Copy FKs
+        List<MySQLTableForeignKey> fkList = new ArrayList<>();
+        for (MySQLTableForeignKey fk : CommonUtils.safeCollection(source.getAssociations(monitor))) {
+            fkList.add(new MySQLTableForeignKey(monitor, this, fk));
+        }
+        this.foreignKeys.setCache(fkList);
     }
 
     public MySQLTable(

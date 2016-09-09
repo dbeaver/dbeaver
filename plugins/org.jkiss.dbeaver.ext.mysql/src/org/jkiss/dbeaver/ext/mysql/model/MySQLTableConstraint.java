@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -35,6 +36,18 @@ public class MySQLTableConstraint extends JDBCTableConstraint<MySQLTable> {
     public MySQLTableConstraint(MySQLTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
     {
         super(table, name, remarks, constraintType, persisted);
+    }
+
+    // Copy constructor
+    protected MySQLTableConstraint(DBRProgressMonitor monitor, MySQLTable table, MySQLTableConstraint source) throws DBException {
+        super(table, source, false);
+        if (source.columns != null) {
+            this.columns = new ArrayList<>(source.columns.size());
+            for (MySQLTableConstraintColumn col : source.columns) {
+                MySQLTableColumn ownCol = table.getAttribute(monitor, col.getName());
+                this.columns.add(new MySQLTableConstraintColumn(this, ownCol, col.getOrdinalPosition()));
+            }
+        }
     }
 
     @Override
