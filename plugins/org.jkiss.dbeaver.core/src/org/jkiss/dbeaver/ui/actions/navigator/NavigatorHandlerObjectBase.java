@@ -263,7 +263,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         }
 
         @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException
         {
             try {
                 commander.saveChanges(monitor);

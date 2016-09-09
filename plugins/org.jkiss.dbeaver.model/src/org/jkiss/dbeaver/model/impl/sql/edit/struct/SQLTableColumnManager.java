@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.CommonUtils;
@@ -184,13 +184,13 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
         );
     }
 
-    protected String getNewColumnName(DBECommandContext context, TABLE_TYPE table)
+    protected String getNewColumnName(DBRProgressMonitor monitor, DBECommandContext context, TABLE_TYPE table)
     {
         for (int i = 1; ; i++)  {
             final String name = DBObjectNameCaseTransformer.transformName(table.getDataSource(), "Column" + i);
             try {
                 // check for existing columns
-                boolean exists = table.getAttribute(VoidProgressMonitor.INSTANCE, name) != null;
+                boolean exists = table.getAttribute(monitor, name) != null;
                 if (!exists) {
                     // Check for new columns (they are present only within command context)
                     for (DBPObject contextObject : context.getEditedObjects()) {

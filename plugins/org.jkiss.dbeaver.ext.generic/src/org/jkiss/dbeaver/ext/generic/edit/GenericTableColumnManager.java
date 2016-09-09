@@ -52,7 +52,7 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
         DBSDataType columnType = findBestDataType(parent.getDataSource(), DBConstants.DEFAULT_DATATYPE_NAMES);
 
         final GenericTableColumn column = new GenericTableColumn(parent);
-        column.setName(getNewColumnName(context, parent));
+        column.setName(getNewColumnName(monitor, context, parent));
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());

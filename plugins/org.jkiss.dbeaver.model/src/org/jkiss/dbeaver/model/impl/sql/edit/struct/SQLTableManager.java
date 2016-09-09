@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -121,18 +120,18 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
 
     }
 
-    protected void setTableName(CONTAINER_TYPE container, OBJECT_TYPE table) throws DBException {
-        table.setName(getTableName(container));
+    protected void setTableName(DBRProgressMonitor monitor, CONTAINER_TYPE container, OBJECT_TYPE table) throws DBException {
+        table.setName(getTableName(monitor, container));
     }
 
-    protected String getTableName(CONTAINER_TYPE container) throws DBException {
-        return getTableName(container, BASE_TABLE_NAME);
+    protected String getTableName(DBRProgressMonitor monitor, CONTAINER_TYPE container) throws DBException {
+        return getTableName(monitor, container, BASE_TABLE_NAME);
     }
 
-    protected String getTableName(CONTAINER_TYPE container, String baseName) throws DBException {
+    protected String getTableName(DBRProgressMonitor monitor, CONTAINER_TYPE container, String baseName) throws DBException {
         for (int i = 0; ; i++) {
             String tableName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), i == 0 ? baseName : (baseName + "_" + i));
-            DBSObject child = container.getChild(VoidProgressMonitor.INSTANCE, tableName);
+            DBSObject child = container.getChild(monitor, tableName);
             if (child == null) {
                 return tableName;
             }

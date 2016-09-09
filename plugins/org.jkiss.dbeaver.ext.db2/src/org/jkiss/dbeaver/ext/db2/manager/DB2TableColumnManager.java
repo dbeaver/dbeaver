@@ -90,7 +90,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
                                                   Object copyFrom)
     {
         DB2TableColumn column = new DB2TableColumn(parent);
-        column.setName(getNewColumnName(context, parent));
+        column.setName(getNewColumnName(monitor, context, parent));
         return column;
     }
 
