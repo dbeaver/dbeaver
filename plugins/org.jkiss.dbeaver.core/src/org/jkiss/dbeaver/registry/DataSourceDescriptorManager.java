@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -88,16 +89,23 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
             dataSource.setName(newName);
             registry.addDataSource(dataSource);
         } else {
-            DataSourceRegistry registry;
+            final DataSourceRegistry registry;
             if (parent != null) {
                 registry = parent;
             } else {
                 registry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
             }
-            CreateConnectionDialog dialog = new CreateConnectionDialog(
-                DBeaverUI.getActiveWorkbenchWindow(),
-                new NewConnectionWizard(registry));
-            dialog.open();
+
+            final IWorkbenchWindow window = DBeaverUI.getActiveWorkbenchWindow();
+            window.getShell().getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    CreateConnectionDialog dialog = new CreateConnectionDialog(
+                        window,
+                        new NewConnectionWizard(registry));
+                    dialog.open();
+                }
+            });
         }
         return null;
     }
