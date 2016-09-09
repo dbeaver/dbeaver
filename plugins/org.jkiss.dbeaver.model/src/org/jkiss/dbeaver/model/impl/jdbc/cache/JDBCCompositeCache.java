@@ -164,10 +164,13 @@ public abstract class JDBCCompositeCache<
     {
         super.cacheObject(object);
         synchronized (objectCache) {
-            List<OBJECT> objects = objectCache.get(getParent(object));
-            if (!CommonUtils.isEmpty(objects)) {
-                objects.add(object);
+            PARENT parent = getParent(object);
+            List<OBJECT> objects = objectCache.get(parent);
+            if (objects == null) {
+                objects = new ArrayList<>();
+                objectCache.put(parent, objects);
             }
+            objects.add(object);
         }
     }
 

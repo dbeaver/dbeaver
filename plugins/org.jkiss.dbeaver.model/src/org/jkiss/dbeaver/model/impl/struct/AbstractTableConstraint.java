@@ -42,6 +42,15 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
         this.constraintType = constraintType;
     }
 
+    // Copy constructor
+    protected AbstractTableConstraint(TABLE table, AbstractTableConstraint source)
+    {
+        this.table = table;
+        this.name = source.name;
+        this.description = source.description;
+        this.constraintType = source.constraintType;
+    }
+
     @Property(id = "owner", viewable = true, order = 2)
     public TABLE getTable()
     {
