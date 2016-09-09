@@ -300,6 +300,13 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         reconciler.setDamager(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_STRING);
         reconciler.setRepairer(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_STRING);
 
+        // Add a "damager-repairer" for changes within quoted literals.
+        dr = new DefaultDamagerRepairer(
+            new SingleTokenScanner(
+                new TextAttribute(ruleManager.getColor(SQLConstants.CONFIG_COLOR_DATATYPE))));
+        reconciler.setDamager(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_QUOTED);
+        reconciler.setRepairer(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_QUOTED);
+
         return reconciler;
     }
 

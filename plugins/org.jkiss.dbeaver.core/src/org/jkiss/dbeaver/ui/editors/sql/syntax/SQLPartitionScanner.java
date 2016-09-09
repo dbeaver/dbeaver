@@ -42,12 +42,14 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
     public final static String CONTENT_TYPE_SQL_COMMENT = "sql_comment";
     public final static String CONTENT_TYPE_SQL_MULTILINE_COMMENT = "sql_multiline_comment";
     public final static String CONTENT_TYPE_SQL_STRING = "sql_character";
+    public final static String CONTENT_TYPE_SQL_QUOTED = "sql_quoted";
 
     public final static String[] SQL_CONTENT_TYPES = new String[]{
         IDocument.DEFAULT_CONTENT_TYPE,
         CONTENT_TYPE_SQL_COMMENT,
         CONTENT_TYPE_SQL_MULTILINE_COMMENT,
         CONTENT_TYPE_SQL_STRING,
+        CONTENT_TYPE_SQL_QUOTED,
     };
 
     // Syntax higlight
@@ -55,6 +57,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
     private final IToken commentToken = new Token(CONTENT_TYPE_SQL_COMMENT);
     private final IToken multilineCommentToken = new Token(CONTENT_TYPE_SQL_MULTILINE_COMMENT);
     private final IToken sqlStringToken = new Token(CONTENT_TYPE_SQL_STRING);
+    private final IToken sqlQuotedToken = new Token(CONTENT_TYPE_SQL_QUOTED);
 
     /**
      * Detector for empty comments.
@@ -117,6 +120,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
     private void initRules(SQLDialect dialect)
     {
         rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, sqlStringToken, '\\'));
+        rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlQuotedToken, '\\'));
 
         for (String lineComment : dialect.getSingleLineComments()) {
             rules.add(new EndOfLineRule(lineComment, commentToken));
