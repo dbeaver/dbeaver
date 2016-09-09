@@ -116,7 +116,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar"); //$NON-NLS-1$
 
         final PostgreTableColumn column = new PostgreTableColumn(parent);
-        column.setName(getNewColumnName(context, parent));
+        column.setName(getNewColumnName(monitor, context, parent));
         final PostgreDataType dataType = parent.getDatabase().getDataType(PostgreOid.VARCHAR);
         column.setDataType(dataType); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);

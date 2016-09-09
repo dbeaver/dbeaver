@@ -63,10 +63,10 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
         final MySQLTable table;
         if (copyFrom instanceof  MySQLTable) {
             table = new MySQLTable(monitor, (MySQLTable)copyFrom);
-            table.setName(getTableName(parent, ((MySQLTable) copyFrom).getName()));
+            table.setName(getTableName(monitor, parent, ((MySQLTable) copyFrom).getName()));
         } else {
             table = new MySQLTable(parent);
-            setTableName(parent, table);
+            setTableName(monitor, parent, table);
 
             final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(monitor);
             additionalInfo.setEngine(parent.getDataSource().getDefaultEngine());

@@ -59,7 +59,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     {
         final PostgreTableRegular table = new PostgreTableRegular(parent);
         try {
-            setTableName(parent, table);
+            setTableName(monitor, parent, table);
         } catch (DBException e) {
             // Never be here
             log.error(e);

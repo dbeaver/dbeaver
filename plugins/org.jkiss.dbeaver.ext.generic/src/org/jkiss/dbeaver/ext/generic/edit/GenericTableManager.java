@@ -56,7 +56,7 @@ public class GenericTableManager extends SQLTableManager<GenericTable, GenericSt
     {
         final GenericTable table = new GenericTable(parent);
         try {
-            setTableName(parent, table);
+            setTableName(monitor, parent, table);
         } catch (DBException e) {
             log.error(e);
         }

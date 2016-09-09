@@ -62,7 +62,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
         DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar2"); //$NON-NLS-1$
 
         final OracleTableColumn column = new OracleTableColumn(parent);
-        column.setName(getNewColumnName(context, parent));
+        column.setName(getNewColumnName(monitor, context, parent));
         column.setDataType((OracleDataType) columnType);
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName()); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);

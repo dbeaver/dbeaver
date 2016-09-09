@@ -18,26 +18,30 @@
 package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
-
-import java.lang.reflect.InvocationTargetException;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerObjectBase {
 
@@ -83,57 +87,102 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 openEditor);
 
             final Object parentObject = container.getValueObject();
-            DBSObject result = objectMaker.createNewObject(VoidProgressMonitor.INSTANCE, commandTarget.getContext(), parentObject, sourceObject);
-            if (result == null) {
-                return true;
-            }
-
-            if ((objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0) {
-                // Save object manager's content
-                ObjectSaver objectSaver = new ObjectSaver(commandTarget.getContext());
-                DBeaverUI.runInProgressService(objectSaver);
-            }
-
-            final DBNNode newChild = DBeaverCore.getInstance().getNavigatorModel().findNode(result);
-            if (newChild != null) {
-                Display.getDefault().asyncExec(new Runnable() {
-                    @Override
-                    public void run()
-                    {
-                        DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
-                        if (view != null) {
-                            view.showNode(newChild);
-                        }
-                    }
-                });
-                IDatabaseEditor editor = commandTarget.getEditor();
-                if (editor != null) {
-                    // Just activate existing editor
-                    workbenchWindow.getActivePage().activate(editor);
-                } else if (openEditor && newChild instanceof DBNDatabaseNode) {
-                    // Open new one with existing context
-                    EntityEditorInput editorInput = new EntityEditorInput(
-                        (DBNDatabaseNode) newChild,
-                        commandTarget.getContext());
-                    workbenchWindow.getActivePage().openEditor(
-                        editorInput,
-                        EntityEditor.class.getName());
-                }
-            } else {
-                throw new DBException("Can't find node corresponding to new object");
-            }
-        } catch (InterruptedException e) {
-            // do nothing
+            createDatabaseObject(commandTarget, objectMaker, parentObject, sourceObject);
         }
         catch (Throwable e) {
-            if (e instanceof InvocationTargetException) {
-                e = ((InvocationTargetException)e).getTargetException();
-            }
             UIUtils.showErrorDialog(workbenchWindow.getShell(), "Create object", null, e);
             return false;
         }
 
         return true;
+    }
+
+    private <OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> void createDatabaseObject(
+        CommandTarget commandTarget,
+        DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker,
+        CONTAINER_TYPE parentObject,
+        DBSObject sourceObject) throws DBException
+    {
+        final CreateJob<OBJECT_TYPE, CONTAINER_TYPE> job = new CreateJob<>(commandTarget, objectMaker, parentObject, sourceObject);
+        job.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                if (event.getResult().isOK() && job.newObject != null) {
+                    Display.getDefault().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            job.showNewObject();
+                        }
+                    });
+                }
+            }
+        });
+        job.schedule();
+    }
+
+    static class CreateJob<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> extends AbstractJob {
+        private final CommandTarget commandTarget;
+        private final DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker;
+        private final CONTAINER_TYPE parentObject;
+        private final DBSObject sourceObject;
+        private OBJECT_TYPE newObject;
+
+        public CreateJob(CommandTarget commandTarget, DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker, CONTAINER_TYPE parentObject, DBSObject sourceObject) {
+            super("Create new database object with " + objectMaker);
+            this.commandTarget = commandTarget;
+            this.objectMaker = objectMaker;
+            this.parentObject = parentObject;
+            this.sourceObject = sourceObject;
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            try {
+                newObject = objectMaker.createNewObject(monitor, commandTarget.getContext(), parentObject, sourceObject);
+                if (newObject != null) {
+                    if ((objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0) {
+                        // Save object manager's content
+                        commandTarget.getContext().saveChanges(monitor);
+                    }
+                }
+                return Status.OK_STATUS;
+            } catch (Exception e) {
+                return GeneralUtils.makeExceptionStatus(e);
+            }
+        }
+
+        // This function must be run in UI thread
+        private void showNewObject() {
+            IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
+            try {
+                final boolean openEditor = (objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_EDITOR_ON_CREATE) != 0;
+
+                final DBNDatabaseNode newChild = DBeaverCore.getInstance().getNavigatorModel().findNode(newObject);
+                if (newChild != null) {
+                    DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
+                    if (view != null) {
+                        view.showNode(newChild);
+                    }
+                    IDatabaseEditor editor = commandTarget.getEditor();
+                    if (editor != null) {
+                        // Just activate existing editor
+                        workbenchWindow.getActivePage().activate(editor);
+                    } else if (openEditor) {
+                        // Open new one with existing context
+                        EntityEditorInput editorInput = new EntityEditorInput(
+                            newChild,
+                            commandTarget.getContext());
+                        workbenchWindow.getActivePage().openEditor(
+                            editorInput,
+                            EntityEditor.class.getName());
+                    }
+                } else {
+                    throw new DBException("Can't find node corresponding to new object");
+                }
+            } catch (Throwable e) {
+                UIUtils.showErrorDialog(workbenchWindow.getShell(), "Create object", null, e);
+            }
+        }
     }
 
 }

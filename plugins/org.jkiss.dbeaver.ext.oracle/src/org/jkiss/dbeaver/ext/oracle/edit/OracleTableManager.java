@@ -58,7 +58,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     {
         OracleTable table = new OracleTable(parent, "");
         try {
-            setTableName(parent, table);
+            setTableName(monitor, parent, table);
         } catch (DBException e) {
             log.error(e);
         }
