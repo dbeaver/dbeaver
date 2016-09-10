@@ -1238,21 +1238,6 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.resultset.cell.save" class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewCommandHandler">
-            <activeWhen>
-                <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.resultset.panel.valueView.active"/>
-                </with>
-            </activeWhen>
-<!--
-            <enabledWhen>
-                <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.resultset.editable" value="edit"/>
-                </with>
-            </enabledWhen>
--->
-        </handler>
-
         <handler commandId="org.eclipse.ui.edit.text.smartEnter" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
             <!-- Smart enter works only if SS is active control. Otherwise we'll break traverse with Enter -->
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
@@ -1263,7 +1248,32 @@
             </enabledWhen>
         </handler>
 
-    <!-- Override text commands in RS viewer -->
+        <handler commandId="org.eclipse.ui.edit.text.smartEnter" class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewCommandHandler">
+            <activeWhen>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.ui.resultset.panel.valueView"/>
+                </with>
+            </activeWhen>
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.resultset.panel.valueView.active"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.resultset.cell.save" class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewCommandHandler">
+            <activeWhen>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.ui.resultset.panel.valueView"/>
+                </with>
+            </activeWhen>
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.resultset.panel.valueView.active"/>
+                </with>
+            </enabledWhen>
+        </handler>
+
+        <!-- Override text commands in RS viewer -->
         <handler commandId="org.eclipse.ui.edit.text.goto.wordPrevious" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
         </handler>
@@ -1860,7 +1870,7 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+R"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F7"/>
 
-        <key commandId="org.jkiss.dbeaver.core.resultset.cell.save" contextId="org.jkiss.dbeaver.ui.context.resultset.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+S"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.cell.save" contextId="org.jkiss.dbeaver.ui.context.resultset.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+ENTER"/>
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
         <key commandId="org.jkiss.dbeaver.core.edit.paste.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+V"/>
@@ -1911,7 +1921,7 @@
                 description="Results viewer context"/>
         <context
                 id="org.jkiss.dbeaver.ui.context.resultset.edit"
-                parentId="org.eclipse.ui.contexts.window"
+                parentId="org.jkiss.dbeaver.ui.context.resultset"
                 name="Results edit context"
                 description="Results edit context"/>
         <context

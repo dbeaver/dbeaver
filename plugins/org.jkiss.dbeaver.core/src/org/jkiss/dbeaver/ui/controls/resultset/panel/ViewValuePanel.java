@@ -25,6 +25,8 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Point;
@@ -34,6 +36,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -43,7 +46,6 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -64,6 +66,7 @@ public class ViewValuePanel implements IResultSetPanel {
     private static final Log log = Log.getLog(ViewValuePanel.class);
 
     public static final String PANEL_ID = "value-view";
+    private static final String VALUE_VIEW_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.panel.valueView";
 
     private IResultSetPresentation presentation;
     private Composite viewPlaceholder;
@@ -126,11 +129,19 @@ public class ViewValuePanel implements IResultSetPanel {
         });
 */
 
-        if (presentation instanceof ISelectionProvider) {
-            ((ISelectionProvider) presentation).addSelectionChangedListener(new ISelectionChangedListener() {
+        if (this.presentation instanceof ISelectionProvider) {
+            final ISelectionProvider selectionProvider = (ISelectionProvider) this.presentation;
+            final ISelectionChangedListener selectionListener = new ISelectionChangedListener() {
                 @Override
                 public void selectionChanged(SelectionChangedEvent event) {
                     refreshValue();
+                }
+            };
+            selectionProvider.addSelectionChangedListener(selectionListener);
+            viewPlaceholder.addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e) {
+                    selectionProvider.removeSelectionChangedListener(selectionListener);
                 }
             });
         }
@@ -145,7 +156,11 @@ public class ViewValuePanel implements IResultSetPanel {
 
     @Override
     public void deactivatePanel() {
-
+        // Dispose panel control
+        if (viewPlaceholder != null && !viewPlaceholder.isDisposed()) {
+            viewPlaceholder.dispose();
+            viewPlaceholder = null;
+        }
     }
 
     @Override
@@ -215,6 +230,7 @@ public class ViewValuePanel implements IResultSetPanel {
                 }
                 Control control = valueEditor.getControl();
                 if (control != null) {
+                    UIUtils.addFocusTracker(presentation.getController().getSite(), VALUE_VIEW_CONTROL_ID, control);
                     presentation.getController().lockActionsByFocus(control);
                 }
 
@@ -319,7 +335,7 @@ public class ViewValuePanel implements IResultSetPanel {
         }
 
         contributionManager.add(
-            ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
+            ActionUtils.makeCommandContribution(presentation.getController().getSite(), ITextEditorActionDefinitionIds.SMART_ENTER, "Save cell value", UIIcon.SAVE));
 
         contributionManager.add(
             new Action("Auto-save value", Action.AS_CHECK_BOX) {

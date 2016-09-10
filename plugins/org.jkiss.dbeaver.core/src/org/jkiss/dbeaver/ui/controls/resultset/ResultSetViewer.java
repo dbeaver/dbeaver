@@ -668,6 +668,13 @@ public class ResultSetViewer extends Viewer
     }
 
     private void activateDefaultPanels(PresentationSettings settings) {
+        // Cleanup unavailable panels
+        for (Iterator<String> iter = settings.enabledPanelIds.iterator(); iter.hasNext(); ) {
+            if (CommonUtils.isEmpty(iter.next())) {
+                iter.remove();
+            }
+        }
+        // Add default panels if needed
         if (settings.enabledPanelIds.isEmpty()) {
             for (ResultSetPanelDescriptor pd : availablePanels) {
                 if (pd.isShowByDefault()) {
@@ -677,7 +684,9 @@ public class ResultSetViewer extends Viewer
         }
         if (!settings.enabledPanelIds.isEmpty()) {
             for (String panelId : settings.enabledPanelIds) {
-                activatePanel(panelId, panelId.equals(settings.activePanelId), false);
+                if (!CommonUtils.isEmpty(panelId)) {
+                    activatePanel(panelId, panelId.equals(settings.activePanelId), false);
+                }
             }
         }
     }
@@ -3119,7 +3128,7 @@ public class ResultSetViewer extends Viewer
     }
 
     static class PresentationSettings {
-        Set<String> enabledPanelIds = new HashSet<>();
+        final Set<String> enabledPanelIds = new HashSet<>();
         String activePanelId;
         int panelRatio;
         boolean panelsVisible;
