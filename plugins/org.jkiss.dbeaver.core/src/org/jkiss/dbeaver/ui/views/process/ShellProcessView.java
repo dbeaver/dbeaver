@@ -68,10 +68,9 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
         if (processDescriptor != null) {
             if (processDescriptor.isRunning()) {
                 processDescriptor.terminate();
-                DBeaverUI.getActiveWorkbenchShell().getDisplay().asyncExec(new Runnable() {
+                DBeaverUI.asyncExec(new Runnable() {
                     @Override
-                    public void run()
-                    {
+                    public void run() {
                         setPartName(processDescriptor.getName() + " (destroyed: " + processDescriptor.getExitValue() + ")");
                     }
                 });
@@ -158,10 +157,9 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
             return;
         }
         final String logLine = line + GeneralUtils.getDefaultLineSeparator();
-        shell.getDisplay().asyncExec(new Runnable() {
+        DBeaverUI.asyncExec(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 if (processLogText == null || processLogText.isDisposed()) {
                     return;
                 }

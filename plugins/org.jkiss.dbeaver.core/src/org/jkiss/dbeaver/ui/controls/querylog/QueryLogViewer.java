@@ -578,7 +578,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     @Override
     public void metaInfoChanged(final java.util.List<QMMetaEvent> events) {
         // Run in UI thread
-        UIUtils.runInUI(null, new Runnable() {
+        DBeaverUI.syncExec(new Runnable() {
             @Override
             public void run() {
                 updateMetaInfo(events);

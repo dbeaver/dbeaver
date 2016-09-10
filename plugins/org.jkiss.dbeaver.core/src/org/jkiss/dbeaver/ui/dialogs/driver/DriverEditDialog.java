@@ -799,7 +799,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 new BadDriverConfigDialog(shell, title, message == null ? title : message, error).open();
             }
         };
-        UIUtils.runInUI(shell, runnable);
+        DBeaverUI.syncExec(runnable);
     }
 
     private static class BadDriverConfigDialog extends StandardErrorDialog {
@@ -829,7 +829,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         protected void buttonPressed(int id)
         {
             if (id == IDialogConstants.RETRY_ID) {
-                UIUtils.runInDetachedUI(getShell(), new Runnable() {
+                DBeaverUI.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         DriverEditDialog dialog = new DriverEditDialog(

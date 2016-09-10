@@ -29,6 +29,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
@@ -219,10 +220,9 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
         }
         if (delta.getKind() == IResourceDelta.REMOVED) {
             // Refresh editor
-            Display.getDefault().asyncExec(new Runnable() {
+            DBeaverUI.asyncExec(new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     getSite().getWorkbenchWindow().getActivePage().closeEditor(ERDEditorStandalone.this, false);
                 }
             });

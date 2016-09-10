@@ -36,6 +36,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -393,7 +394,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             final int curRow = paramTable.indexOf(item);
             final int maxRows = paramTable.getItemCount();
             if (curRow < maxRows - 1) {
-                paramTable.getDisplay().asyncExec(new Runnable() {
+                DBeaverUI.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         paramTable.select(curRow + 1);

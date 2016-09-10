@@ -36,6 +36,7 @@ import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
@@ -158,7 +159,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     @Override
     public void doSave(final IProgressMonitor progressMonitor) {
-        UIUtils.runInUI(null, new Runnable() {
+        DBeaverUI.syncExec(new Runnable() {
             @Override
             public void run() {
                 SQLEditorNested.super.doSave(progressMonitor);
@@ -238,7 +239,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
                             throw new InvocationTargetException(e);
                         } finally {
                             if (!isDisposed()) {
-                                UIUtils.runInUI(null, new Runnable() {
+                                DBeaverUI.syncExec(new Runnable() {
                                     @Override
                                     public void run() {
                                         resetDocumentContents(monitor);

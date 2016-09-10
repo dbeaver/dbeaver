@@ -36,6 +36,7 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
 import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
@@ -259,7 +260,7 @@ public class DBeaverApplication implements IApplication {
             DBeaverInstanceServer.stopInstanceServer();
 
             final Display display = workbench.getDisplay();
-            display.syncExec(new Runnable() {
+            DBeaverUI.syncExec(new Runnable() {
                 @Override
                 public void run() {
                     if (!display.isDisposed())

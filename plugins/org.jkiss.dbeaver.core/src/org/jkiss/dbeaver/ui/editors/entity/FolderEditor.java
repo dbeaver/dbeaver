@@ -20,13 +20,13 @@ package org.jkiss.dbeaver.ui.editors.entity;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
-import org.jkiss.dbeaver.ui.ISearchContextProvider;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
+import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 
 /**
  * FolderEditor
@@ -61,10 +61,9 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
     @Override
     public void refreshPart(Object source, boolean force)
     {
-        Display.getDefault().asyncExec(new Runnable() {
+        DBeaverUI.asyncExec(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
 
                 if (!itemControl.isDisposed()) {
                     itemControl.loadData(false);

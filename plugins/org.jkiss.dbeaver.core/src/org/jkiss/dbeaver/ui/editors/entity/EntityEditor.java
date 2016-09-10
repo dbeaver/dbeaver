@@ -378,10 +378,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 command.validateCommand();
             } catch (final DBException e) {
                 log.debug(e);
-                UIUtils.runInUI(null, new Runnable() {
+                DBeaverUI.syncExec(new Runnable() {
                     @Override
-                    public void run()
-                    {
+                    public void run() {
                         UIUtils.showErrorDialog(getSite().getShell(), "Validation", e.getMessage());
                     }
                 });
@@ -392,7 +391,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
 
         ChangesPreviewer changesPreviewer = new ChangesPreviewer(script, allowSave);
-        UIUtils.runInUI(getSite().getShell(), changesPreviewer);
+        DBeaverUI.syncExec(changesPreviewer);
         return changesPreviewer.getResult();
     }
 

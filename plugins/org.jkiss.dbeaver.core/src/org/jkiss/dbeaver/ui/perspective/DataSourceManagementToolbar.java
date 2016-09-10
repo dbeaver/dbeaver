@@ -386,7 +386,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 event.getObject().getDataSource() != null &&
                 event.getObject().getDataSource().getContainer() == getDataSourceContainer())
             ) {
-            Display.getDefault().asyncExec(
+            DBeaverUI.asyncExec(
                 new Runnable() {
                     @Override
                     public void run() {
@@ -401,7 +401,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null) {
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
-            Display.getDefault().asyncExec(
+            DBeaverUI.asyncExec(
                 new Runnable() {
                     @Override
                     public void run() {
@@ -491,7 +491,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                         databaseReader.addJobChangeListener(new JobChangeAdapter() {
                             @Override
                             public void done(final IJobChangeEvent event) {
-                                UIUtils.runInUI(null, new Runnable() {
+                                DBeaverUI.syncExec(new Runnable() {
                                     @Override
                                     public void run() {
                                         fillDatabaseList((DatabaseListReader) event.getJob(), dsContainer);
@@ -812,7 +812,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             }
         });
 
-        Display.getDefault().asyncExec(new Runnable() {
+        DBeaverUI.asyncExec(new Runnable() {
             @Override
             public void run() {
                 if (workbenchWindow != null && workbenchWindow.getActivePage() != null) {
@@ -842,7 +842,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
         final DBNNode node = event.getNode();
         if (node instanceof DBNResource && activeFile.equals(((DBNResource) node).getResource())) {
-            UIUtils.runInUI(workbenchWindow.getShell(), new Runnable() {
+            DBeaverUI.syncExec(new Runnable() {
                 @Override
                 public void run() {
                     final int selConnection = connectionCombo.getSelectionIndex();

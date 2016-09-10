@@ -17,13 +17,13 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.INavigatorListener;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh;
 
 /**
@@ -103,7 +103,7 @@ public class DatabaseEditorListener implements INavigatorListener
                 }};
             }
             if (runner != null) {
-                Display.getDefault().asyncExec(runner);
+                DBeaverUI.asyncExec(runner);
             }
         }
     }

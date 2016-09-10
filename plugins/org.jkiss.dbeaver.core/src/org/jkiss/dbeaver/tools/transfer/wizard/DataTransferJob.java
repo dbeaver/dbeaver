@@ -21,16 +21,15 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
  * Data transfer job
@@ -73,15 +72,13 @@ public class DataTransferJob extends AbstractJob {
 
     private void showResult(final long time, final boolean hasErrors)
     {
-        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
-        shell.getDisplay().asyncExec(new Runnable() {
+        DBeaverUI.asyncExec(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 UIUtils.showMessageBox(
-                    shell,
+                    DBeaverUI.getActiveWorkbenchShell(),
                     "Data transfer",
-                    "Data transfer completed " +  (hasErrors ? "with errors " : "") + "(" + RuntimeUtils.formatExecutionTime(time) + ")",
+                    "Data transfer completed " + (hasErrors ? "with errors " : "") + "(" + RuntimeUtils.formatExecutionTime(time) + ")",
                     hasErrors ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
             }
         });

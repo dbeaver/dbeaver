@@ -428,7 +428,7 @@ public class UIUtils {
                 messageBox.open();
             }
         };
-        runInUI(shell, runnable);
+        DBeaverUI.syncExec(runnable);
     }
 
     public static boolean confirmAction(final Shell shell, final String title, final String question)
@@ -444,7 +444,7 @@ public class UIUtils {
                 result = (response == SWT.YES);
             }
         };
-        runInUI(shell, confirmer);
+        DBeaverUI.syncExec(confirmer);
         return confirmer.getResult();
     }
 
@@ -842,30 +842,7 @@ public class UIUtils {
                 dialog.open();
             }
         };
-        runInUI(shell, runnable);
-    }
-
-    public static void runInUI(@Nullable Shell shell, @NotNull Runnable runnable)
-    {
-        final Display display = shell == null || shell.isDisposed() ? Display.getDefault() : shell.getDisplay();
-        if (display.getThread() != Thread.currentThread()) {
-            display.syncExec(runnable);
-        } else {
-            runnable.run();
-        }
-    }
-
-    public static void runInDetachedUI(@Nullable Shell shell, @NotNull Runnable runnable)
-    {
-        if (shell == null) {
-            Display.getDefault().asyncExec(runnable);
-        } else {
-            try {
-                shell.getDisplay().asyncExec(runnable);
-            } catch (SWTException e) {
-                // DF: Widget has been disposed, too late for some processing then..
-            }
-        }
+        DBeaverUI.syncExec(runnable);
     }
 
     @NotNull
@@ -1230,7 +1207,7 @@ public class UIUtils {
             return true;
         }
         SaveRunner saveRunner = new SaveRunner(monitor, saveable);
-        runInUI(null, saveRunner);
+        DBeaverUI.syncExec(saveRunner);
         return saveRunner.getResult();
     }
 
@@ -1327,7 +1304,7 @@ public class UIUtils {
 
     public static void postEvent(Control ownerControl, final Event event) {
         final Display display = ownerControl.getDisplay();
-        display.asyncExec(new Runnable() {
+        DBeaverUI.asyncExec(new Runnable() {
             @Override
             public void run() {
                 display.post(event);

@@ -308,7 +308,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         if (settings.isOutputClipboard()) {
             if (outputBuffer != null) {
-                UIUtils.runInUI(null, new Runnable() {
+                DBeaverUI.syncExec(new Runnable() {
                     @Override
                     public void run() {
                         TextTransfer textTransfer = TextTransfer.getInstance();
@@ -321,7 +321,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
         } else if (settings.isOpenFolderOnFinish()) {
             // Last one
-            DBeaverUI.getDisplay().asyncExec(new Runnable() {
+            DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     UIUtils.launchProgram(settings.getOutputFolder());

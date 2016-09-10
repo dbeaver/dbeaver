@@ -196,7 +196,7 @@ public class DBeaverUI implements DBUICallback {
     public static Display getDisplay()
     {
         Shell shell = getActiveWorkbenchShell();
-        if (shell != null)
+        if (shell != null && !shell.isDisposed())
             return shell.getDisplay();
         else
             return Display.getDefault();
@@ -304,6 +304,22 @@ public class DBeaverUI implements DBUICallback {
         }
     }
 
+    public static void asyncExec(Runnable runnable) {
+        try {
+            getDisplay().asyncExec(runnable);
+        } catch (Exception e) {
+            log.error(e);
+        }
+    }
+
+    public static void syncExec(Runnable runnable) {
+        try {
+            getDisplay().syncExec(runnable);
+        } catch (Exception e) {
+            log.error(e);
+        }
+    }
+
     public static void notifyAgent(String message, int status)
     {
         if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY)) {
@@ -344,7 +360,7 @@ public class DBeaverUI implements DBUICallback {
                 result = (authDialog.open() == IDialogConstants.OK_ID);
             }
         };
-        UIUtils.runInUI(shell, binder);
+        DBeaverUI.syncExec(binder);
         if (binder.getResult() != null && binder.getResult()) {
             return authDialog.getAuthInfo();
         } else {
@@ -372,10 +388,9 @@ public class DBeaverUI implements DBUICallback {
             showError("Execute process", processDescriptor.getName(), e);
         }
         if (processDescriptor.getCommand().isShowProcessPanel()) {
-            getActiveWorkbenchShell().getDisplay().asyncExec(new Runnable() {
+            asyncExec(new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     try {
                         final ShellProcessView processView =
                             (ShellProcessView) DBeaverUI.getActiveWorkbenchWindow().getActivePage().showView(

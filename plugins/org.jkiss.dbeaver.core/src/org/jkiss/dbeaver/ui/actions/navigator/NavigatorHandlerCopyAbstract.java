@@ -31,16 +31,16 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -60,10 +60,9 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
         if (selection instanceof IStructuredSelection) {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
 
-            UIUtils.runInUI(workbenchWindow.getShell(), new Runnable() {
+            DBeaverUI.syncExec(new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     List<DBNNode> selectedNodes = new ArrayList<>();
                     List<DBPNamedObject> selectedObjects = new ArrayList<>();
                     List<String> selectedFiles = new ArrayList<>();

@@ -391,7 +391,7 @@ public class ReferenceValueEditor {
                             return Status.CANCEL_STATUS;
                         }
                         final DBDValueHandler colHandler = DBUtils.findValueHandler(session, fkAttribute);
-                        UIUtils.runInUI(null, new Runnable() {
+                        DBeaverUI.syncExec(new Runnable() {
                             @Override
                             public void run() {
                                 updateDictionarySelector(keyValues, fkColumn, colHandler);

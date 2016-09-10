@@ -247,7 +247,7 @@ public class SQLEditor extends SQLEditorBase implements
                                 releaseExecutionContext();
                                 UIUtils.showErrorDialog(getSite().getShell(), "Open context", "Can't open editor connection", job.error);
                             } else {
-                                UIUtils.runInUI(null, new Runnable() {
+                                DBeaverUI.syncExec(new Runnable() {
                                     @Override
                                     public void run() {
                                         onDataSourceChange();
@@ -803,7 +803,7 @@ public class SQLEditor extends SQLEditorBase implements
                         } catch (InterruptedException e) {
                             // it's ok
                         }
-                        UIUtils.runInUI(null, new Runnable() {
+                        DBeaverUI.syncExec(new Runnable() {
                             @Override
                             public void run() {
                                 processQueries(queries, newTab, export, false);
@@ -1063,7 +1063,7 @@ public class SQLEditor extends SQLEditorBase implements
     public void handleDataSourceEvent(final DBPEvent event)
     {
         if (event.getObject() == getDataSourceContainer()) {
-            getSite().getShell().getDisplay().asyncExec(
+            DBeaverUI.asyncExec(
                 new Runnable() {
                     @Override
                     public void run() {
@@ -1380,7 +1380,7 @@ public class SQLEditor extends SQLEditorBase implements
 //            }
             if (resultSetNumber >= resultProviders.size() && !isDisposed()) {
                 // Open new results processor in UI thread
-                getSite().getShell().getDisplay().syncExec(new Runnable() {
+                DBeaverUI.syncExec(new Runnable() {
                     @Override
                     public void run() {
                         createResultsProvider(resultSetNumber);
@@ -1393,7 +1393,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             final QueryResultsContainer resultsProvider = resultProviders.get(resultSetNumber);
             // Open new results processor in UI thread
-            getSite().getShell().getDisplay().syncExec(new Runnable() {
+            DBeaverUI.syncExec(new Runnable() {
                 @Override
                 public void run() {
                     if (statement != null) {
@@ -1618,7 +1618,7 @@ public class SQLEditor extends SQLEditorBase implements
         public void onStartScript() {
             lastUIUpdateTime = -1;
             scriptMode = true;
-            UIUtils.runInUI(null, new Runnable() {
+            DBeaverUI.syncExec(new Runnable() {
                 @Override
                 public void run() {
                     sashForm.setMaximizedControl(editorControl);
@@ -1633,7 +1633,7 @@ public class SQLEditor extends SQLEditorBase implements
                 runningQueries.add(query);
             }
             if (lastUIUpdateTime < 0 || System.currentTimeMillis() - lastUIUpdateTime > SCRIPT_UI_UPDATE_PERIOD) {
-                UIUtils.runInUI(null, new Runnable() {
+                DBeaverUI.syncExec(new Runnable() {
                     @Override
                     public void run() {
                         topOffset = getTextViewer().getTopIndexStartOffset();
@@ -1715,7 +1715,7 @@ public class SQLEditor extends SQLEditorBase implements
                 return;
             }
             runPostExecuteActions(null);
-            UIUtils.runInUI(null, new Runnable() {
+            DBeaverUI.syncExec(new Runnable() {
                 @Override
                 public void run() {
                     sashForm.setMaximizedControl(null);
@@ -1867,7 +1867,7 @@ public class SQLEditor extends SQLEditorBase implements
                 final StringWriter dump = new StringWriter();
                 try {
                     outputReader.readServerOutput(monitor, executionContext, new PrintWriter(dump, true));
-                    UIUtils.runInDetachedUI(null, new Runnable() {
+                    DBeaverUI.asyncExec(new Runnable() {
                         @Override
                         public void run() {
                             if (outputViewer.isDisposed()) {

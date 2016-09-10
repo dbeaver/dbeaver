@@ -24,11 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider;
-import org.jkiss.dbeaver.ext.db2.DB2Messages;
-import org.jkiss.dbeaver.ext.db2.DB2SQLDialect;
-import org.jkiss.dbeaver.ext.db2.DB2Utils;
+import org.jkiss.dbeaver.ext.db2.*;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
 import org.jkiss.dbeaver.ext.db2.editors.DB2TablespaceChooser;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
@@ -69,11 +65,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DB2 DataSource
@@ -513,7 +505,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
                     result = tsChooserDialog.open();
                 }
             };
-            UIUtils.runInUI(DBeaverUI.getActiveWorkbenchShell(), confirmer);
+            DBeaverUI.syncExec(confirmer);
             if (confirmer.getResult() != IDialogConstants.OK_ID) {
                 return null;
             }

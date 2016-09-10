@@ -17,20 +17,18 @@
  */
 package org.jkiss.dbeaver.core.application.update;
 
-import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Random;
 
 /**
  * Version checker job
@@ -92,13 +90,11 @@ public class DBeaverVersionChecker extends AbstractJob {
 
     private void showUpdaterDialog(final VersionDescriptor versionDescriptor)
     {
-        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
-        shell.getDisplay().asyncExec(new Runnable() {
+        DBeaverUI.asyncExec(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 VersionUpdateDialog dialog = new VersionUpdateDialog(
-                    shell,
+                    DBeaverUI.getActiveWorkbenchShell(),
                     versionDescriptor);
                 dialog.open();
             }

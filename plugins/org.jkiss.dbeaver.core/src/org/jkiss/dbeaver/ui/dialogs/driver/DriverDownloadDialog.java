@@ -50,7 +50,7 @@ public class DriverDownloadDialog extends WizardDialog
         addPageChangedListener(new IPageChangedListener() {
             @Override
             public void pageChanged(final PageChangedEvent event) {
-                UIUtils.runInDetachedUI(getShell(), new Runnable() {
+                DBeaverUI.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         getWizard().pageActivated(event.getSelectedPage());
@@ -79,7 +79,7 @@ public class DriverDownloadDialog extends WizardDialog
     protected Control createDialogArea(Composite parent) {
         Control dialogArea = super.createDialogArea(parent);
         if (getWizard().isForceDownload()) {
-            UIUtils.runInDetachedUI(getShell(), new Runnable() {
+            DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     buttonPressed(IDialogConstants.FINISH_ID);
@@ -130,7 +130,7 @@ public class DriverDownloadDialog extends WizardDialog
     }
 
     void closeWizard() {
-        UIUtils.runInDetachedUI(getShell(), new Runnable() {
+        DBeaverUI.asyncExec(new Runnable() {
             @Override
             public void run() {
                 buttonPressed(IDialogConstants.CANCEL_ID);

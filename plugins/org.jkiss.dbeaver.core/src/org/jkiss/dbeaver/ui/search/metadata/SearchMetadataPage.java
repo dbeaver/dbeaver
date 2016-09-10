@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -169,10 +170,9 @@ public class SearchMetadataPage extends AbstractSearchPage {
                                         public void onTaskFinished(IStatus status)
                                         {
                                             if (status.isOK()) {
-                                                Display.getDefault().asyncExec(new Runnable() {
+                                                DBeaverUI.asyncExec(new Runnable() {
                                                     @Override
-                                                    public void run()
-                                                    {
+                                                    public void run() {
                                                         if (!dataSourceTree.isDisposed()) {
                                                             fillObjectTypes();
                                                         }

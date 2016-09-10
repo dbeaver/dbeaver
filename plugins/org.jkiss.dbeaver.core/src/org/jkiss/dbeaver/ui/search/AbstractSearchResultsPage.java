@@ -30,6 +30,7 @@ import org.eclipse.ui.part.Page;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -62,7 +63,7 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
             {
                 if (e.getSearchResult() instanceof AbstractSearchResult) {
                     final AbstractSearchResult result = (AbstractSearchResult) e.getSearchResult();
-                    UIUtils.runInUI(null, new Runnable() {
+                    DBeaverUI.syncExec(new Runnable() {
                         @Override
                         public void run() {
                             populateObjects(VoidProgressMonitor.INSTANCE, result.getObjects());

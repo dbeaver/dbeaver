@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
@@ -128,7 +129,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     {
         if (controller.getModel().updateCellValue(binding, curRow, value)) {
             // Update controls
-            controller.getSite().getShell().getDisplay().syncExec(new Runnable() {
+            DBeaverUI.syncExec(new Runnable() {
                 @Override
                 public void run() {
                     controller.updatePanelsContent();

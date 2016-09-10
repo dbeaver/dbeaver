@@ -21,7 +21,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
@@ -33,6 +32,7 @@ import org.eclipse.ui.part.MarkerTransfer;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
@@ -128,7 +128,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
 
         if (DataSourceDescriptor.getActiveDataSources().isEmpty()) {
             // Open New Connection wizard
-            Display.getCurrent().asyncExec(new Runnable() {
+            DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     IWorkbenchWindow window = getWindowConfigurer().getWindow();

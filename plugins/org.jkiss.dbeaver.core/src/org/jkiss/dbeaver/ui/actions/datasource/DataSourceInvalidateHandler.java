@@ -123,7 +123,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                 dialog.open();
             }
         };
-        UIUtils.runInUI(shell, runnable);
+        DBeaverUI.syncExec(runnable);
     }
 
     private static class ConnectionRecoverDialog extends StandardErrorDialog {

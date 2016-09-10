@@ -25,6 +25,7 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -77,10 +78,9 @@ public class DatabaseWizardPageLog extends WizardPage {
         if (getShell().isDisposed()) {
             return;
         }
-        UIUtils.runInUI(getShell(), new Runnable() {
+        DBeaverUI.syncExec(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 synchronized (DatabaseWizardPageLog.this) {
                     if (!dumpLogText.isDisposed()) {
                         dumpLogText.append(line);
@@ -98,10 +98,9 @@ public class DatabaseWizardPageLog extends WizardPage {
         if (getShell().isDisposed()) {
             return;
         }
-        UIUtils.runInUI(getShell(), new Runnable() {
+        DBeaverUI.syncExec(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 synchronized (DatabaseWizardPageLog.this) {
                     if (!dumpLogText.isDisposed()) {
                         dumpLogText.setText(""); //$NON-NLS-1$

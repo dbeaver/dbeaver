@@ -23,13 +23,13 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
 import org.eclipse.jface.text.source.IAnnotationModel;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IPersistentStorage;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
@@ -618,8 +618,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
             IWorkbench workbench = PlatformUI.getWorkbench();
             IWorkbenchWindow[] windows = workbench.getWorkbenchWindows();
             if (windows != null && windows.length > 0) {
-                Display display = windows[0].getShell().getDisplay();
-                display.asyncExec(runnable);
+                DBeaverUI.asyncExec(runnable);
             } else {
                 runnable.run();
             }

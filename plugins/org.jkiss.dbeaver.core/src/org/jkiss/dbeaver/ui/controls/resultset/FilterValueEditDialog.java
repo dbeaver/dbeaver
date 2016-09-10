@@ -35,6 +35,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -467,7 +468,7 @@ class FilterValueEditDialog extends BaseDialog {
         protected abstract Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException;
 
         protected void populateValues(@NotNull final Collection<DBDLabelValuePair> values) {
-            UIUtils.runInDetachedUI(null, new Runnable() {
+            DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     loadMultiValueList(values);

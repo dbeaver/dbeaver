@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.edit.MySQLCommandGrantPrivilege;
@@ -231,10 +232,9 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         {
             if (newUser && getDatabaseObject().isPersisted()) {
                 newUser = false;
-                Display.getDefault().asyncExec(new Runnable() {
+                DBeaverUI.asyncExec(new Runnable() {
                     @Override
-                    public void run()
-                    {
+                    public void run() {
                         userNameText.setEditable(false);
                         hostText.setEditable(false);
                     }

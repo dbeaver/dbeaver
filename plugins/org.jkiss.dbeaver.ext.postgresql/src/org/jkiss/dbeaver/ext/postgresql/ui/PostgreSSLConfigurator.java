@@ -25,6 +25,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.driver.DriverClassFindJob;
@@ -107,7 +108,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
                     "javax/net/ssl/SSLSocketFactory",
                     false);
                 finder.run(monitor);
-                UIUtils.runInUI(null, new Runnable() {
+                DBeaverUI.syncExec(new Runnable() {
                     @Override
                     public void run() {
                         for (String cn : finder.getDriverClassNames()) {

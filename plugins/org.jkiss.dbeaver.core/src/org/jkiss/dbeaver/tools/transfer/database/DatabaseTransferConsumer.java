@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorResponse;
@@ -424,10 +423,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     {
         if (!last && settings.isOpenTableOnFinish()) {
             if (containerMapping != null && containerMapping.getTarget() != null) {
-                UIUtils.runInUI(DBeaverUI.getActiveWorkbenchShell(), new Runnable() {
+                DBeaverUI.syncExec(new Runnable() {
                     @Override
-                    public void run()
-                    {
+                    public void run() {
                         NavigatorHandlerObjectOpen.openEntityEditor(containerMapping.getTarget());
                     }
                 });

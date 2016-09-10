@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverNature;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.DBPProjectManager;
@@ -305,7 +306,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
 
         GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_ACTIVE_PROJECT);
 
-        Display.getDefault().asyncExec(new Runnable() {
+        DBeaverUI.asyncExec(new Runnable() {
             @Override
             public void run()
             {

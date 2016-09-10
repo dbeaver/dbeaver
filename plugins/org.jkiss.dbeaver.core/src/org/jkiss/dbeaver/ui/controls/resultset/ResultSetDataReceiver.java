@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -136,7 +137,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         final List<Object[]> tmpRows = rows;
 
         final boolean nextSegmentRead = this.nextSegmentRead;
-        runInUI(new Runnable() {
+        DBeaverUI.asyncExec(new Runnable() {
             @Override
             public void run() {
                 // Push data into viewer
@@ -159,13 +160,6 @@ class ResultSetDataReceiver implements DBDDataReceiver {
 
         errors.clear();
         rows = new ArrayList<>();
-    }
-
-    private void runInUI(Runnable runnable) {
-        Control control = resultSetViewer.getControl();
-        if (!control.isDisposed()) {
-            control.getDisplay().asyncExec(runnable);
-        }
     }
 
 }

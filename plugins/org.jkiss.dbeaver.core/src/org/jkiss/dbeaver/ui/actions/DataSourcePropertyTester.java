@@ -18,14 +18,14 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
@@ -105,10 +105,9 @@ public class DataSourcePropertyTester extends PropertyTester
         // Update commands
         final ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
         if (commandService != null) {
-            Display.getDefault().asyncExec(new Runnable() {
+            DBeaverUI.asyncExec(new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     commandService.refreshElements(commandID, null);
                 }
             });

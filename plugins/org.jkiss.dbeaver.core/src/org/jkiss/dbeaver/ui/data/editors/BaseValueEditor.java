@@ -31,6 +31,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IMultiController;
@@ -107,7 +108,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
             inlineControl.setFont(valueController.getEditPlaceholder().getFont());
             // There is a bug in windows. First time date control gain focus it renders cell editor incorrectly.
             // Let's focus on it in async mode
-            inlineControl.getDisplay().asyncExec(new Runnable() {
+            DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     if (!inlineControl.isDisposed()) {
@@ -148,7 +149,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                          public void focusLost(FocusEvent e) {
                              // Check new focus control in async mode
                              // (because right now focus is still on edit control)
-                             inlineControl.getDisplay().asyncExec(new Runnable() {
+                             DBeaverUI.asyncExec(new Runnable() {
                                  @Override
                                  public void run() {
                                      if (inlineControl.isDisposed()) {

@@ -39,6 +39,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -257,7 +258,7 @@ public class ScriptSelectorPanel {
                 final TreeItem item = (TreeItem) event.item;
                 final ResourceInfo ri = (ResourceInfo) item.getData();
                 if (ri != null && !ri.isDirectory() && CommonUtils.isEmpty(item.getText(2))) {
-                    UIUtils.runInDetachedUI(popup, new Runnable() {
+                    DBeaverUI.asyncExec(new Runnable() {
                         @Override
                         public void run() {
                             if (!item.isDisposed()) {

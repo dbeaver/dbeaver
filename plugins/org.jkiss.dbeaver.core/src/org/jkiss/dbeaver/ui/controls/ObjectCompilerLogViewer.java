@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.internal.WorkbenchMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileError;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -66,10 +67,9 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
 
     public void layoutLog()
     {
-        UIUtils.runInUI(null, new Runnable() {
+        DBeaverUI.syncExec(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 if (!infoTable.isDisposed()) {
                     infoTable.getColumn(0).setWidth(infoTable.getBounds().width - 110);
                     infoTable.getColumn(1).setWidth(50);
@@ -83,10 +83,9 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
     protected void log(final int type, final Object message, final Throwable t)
     {
         super.log(type, message, t);
-        UIUtils.runInUI(null, new Runnable() {
+        DBeaverUI.syncExec(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 if (infoTable == null || infoTable.isDisposed()) {
                     return;
                 }
@@ -111,7 +110,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
                 String messageStr;
                 DBCCompileError error = null;
                 if (message instanceof DBCCompileError) {
-                    error = (DBCCompileError)message;
+                    error = (DBCCompileError) message;
                     messageStr = error.getMessage();
                 } else {
                     messageStr = CommonUtils.toString(message);
@@ -122,7 +121,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
                     item.setText(0, st.nextToken());
                     if (error != null && error.getLine() > 0) {
                         item.setText(1, String.valueOf(((DBCCompileError) message).getLine()));
-                        item.setText(2, String.valueOf(((DBCCompileError)message).getPosition()));
+                        item.setText(2, String.valueOf(((DBCCompileError) message).getPosition()));
                     }
                     if (color != -1) {
                         item.setForeground(infoTable.getDisplay().getSystemColor(color));
