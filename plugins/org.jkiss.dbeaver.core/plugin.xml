@@ -1261,11 +1261,6 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.cell.save" class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewCommandHandler">
-            <activeWhen>
-                <with variable="activeFocusControlId">
-                    <equals value="org.jkiss.dbeaver.ui.resultset.panel.valueView"/>
-                </with>
-            </activeWhen>
             <enabledWhen>
                 <with variable="activePart">
                     <test property="org.jkiss.dbeaver.core.resultset.panel.valueView.active"/>

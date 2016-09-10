@@ -335,7 +335,7 @@ public class ViewValuePanel implements IResultSetPanel {
         }
 
         contributionManager.add(
-            ActionUtils.makeCommandContribution(presentation.getController().getSite(), ITextEditorActionDefinitionIds.SMART_ENTER, "Save cell value", UIIcon.SAVE));
+            ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
 
         contributionManager.add(
             new Action("Auto-save value", Action.AS_CHECK_BOX) {
