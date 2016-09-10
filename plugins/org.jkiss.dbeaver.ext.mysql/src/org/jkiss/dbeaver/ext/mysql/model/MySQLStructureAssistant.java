@@ -90,6 +90,9 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
     protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
     {
         MySQLCatalog catalog = parentObject instanceof MySQLCatalog ? (MySQLCatalog) parentObject : null;
+        if (catalog == null && !globalSearch) {
+            catalog = dataSource.getDefaultObject();
+        }
         if (objectType == RelationalObjectType.TYPE_TABLE) {
             findTablesByMask(session, catalog, objectNameMask, maxResults, references);
         } else if (objectType == RelationalObjectType.TYPE_CONSTRAINT) {
