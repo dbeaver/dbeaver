@@ -498,19 +498,19 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             // Build a dialog with the list of usable tablespaces for the user to choose
             final DB2TablespaceChooser tsChooserDialog = new DB2TablespaceChooser(DBeaverUI.getActiveWorkbenchShell(),
                 listTablespaces);
-            RunnableWithResult<Integer> confirmer = new RunnableWithResult<Integer>() {
+            String tablespaceName = DBeaverUI.syncExec(new RunnableWithResult<String>() {
                 @Override
-                public void run()
-                {
-                    result = tsChooserDialog.open();
+                public String runWithResult() {
+                    if (tsChooserDialog.open() == IDialogConstants.OK_ID) {
+                        return tsChooserDialog.getSelectedTablespace();
+                    } else {
+                        return null;
+                    }
                 }
-            };
-            DBeaverUI.syncExec(confirmer);
-            if (confirmer.getResult() != IDialogConstants.OK_ID) {
+            });
+            if (tablespaceName == null) {
                 return null;
             }
-
-            String tablespaceName = tsChooserDialog.getSelectedTablespace();
 
             // Try to create explain tables within current authorizartionID in given tablespace
             DB2Utils.createExplainTables(session.getProgressMonitor(), this, sessionUserSchema, tablespaceName);

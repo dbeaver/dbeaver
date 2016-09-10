@@ -15,25 +15,21 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+package org.jkiss.dbeaver.ui;
 
-package org.jkiss.dbeaver.model.runtime;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 
-/**
- * Runnable which stores some result
- */
-public abstract class RunnableWithResult<RESULT_TYPE> implements Runnable {
-
-    private RESULT_TYPE result;
-
-    public final RESULT_TYPE getResult()
-    {
-        return result;
-    }
+public abstract class UITask<RESULT> extends RunnableWithResult<RESULT> {
 
     @Override
-    public final void run() {
-        result = runWithResult();
+    public final RESULT runWithResult() {
+        return runTask();
     }
 
-    public abstract RESULT_TYPE runWithResult();
+    protected abstract RESULT runTask();
+
+    public RESULT execute() {
+        return DBeaverUI.syncExec(this);
+    }
 }

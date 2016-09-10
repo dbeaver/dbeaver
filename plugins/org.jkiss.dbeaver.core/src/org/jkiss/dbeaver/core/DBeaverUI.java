@@ -36,17 +36,14 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.ui.DBUICallback;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
-import org.jkiss.dbeaver.ui.AbstractUIJob;
-import org.jkiss.dbeaver.ui.SharedTextColors;
-import org.jkiss.dbeaver.ui.TrayIconHandler;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
 import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -66,8 +63,7 @@ public class DBeaverUI implements DBUICallback {
     private TrayIconHandler trayItem;
     private final List<IDisposable> globalDisposables = new ArrayList<>();
 
-    public static DBeaverUI getInstance()
-    {
+    public static DBeaverUI getInstance() {
         if (instance == null) {
             instance = new DBeaverUI();
             instance.initialize();
@@ -75,8 +71,7 @@ public class DBeaverUI implements DBUICallback {
         return instance;
     }
 
-    static void disposeUI()
-    {
+    static void disposeUI() {
         if (instance != null) {
             try {
                 instance.dispose();
@@ -86,8 +81,7 @@ public class DBeaverUI implements DBUICallback {
         }
     }
 
-    public static SharedTextColors getSharedTextColors()
-    {
+    public static SharedTextColors getSharedTextColors() {
         return getInstance().sharedTextColors;
     }
 
@@ -96,20 +90,17 @@ public class DBeaverUI implements DBUICallback {
         boolean fork,
         boolean cancelable,
         final DBRRunnableWithProgress runnableWithProgress)
-        throws InvocationTargetException, InterruptedException
-    {
+        throws InvocationTargetException, InterruptedException {
         runnableContext.run(fork, cancelable, new IRunnableWithProgress() {
             @Override
             public void run(IProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException
-            {
+                throws InvocationTargetException, InterruptedException {
                 runnableWithProgress.run(RuntimeUtils.makeMonitor(monitor));
             }
         });
     }
 
-    private void dispose()
-    {
+    private void dispose() {
         this.sharedTextColors.dispose();
 
         if (trayItem != null) {
@@ -128,8 +119,7 @@ public class DBeaverUI implements DBUICallback {
         }
     }
 
-    private void initialize()
-    {
+    private void initialize() {
         this.sharedTextColors = new SharedTextColors();
         this.trayItem = new TrayIconHandler();
         DBUserInterface.setInstance(this);
@@ -147,17 +137,14 @@ public class DBeaverUI implements DBUICallback {
 */
     }
 
-    public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)
-    {
+    public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress) {
         return runUIJob(jobName, 0, runnableWithProgress);
     }
 
-    public static AbstractUIJob runUIJob(String jobName, int timeout, final DBRRunnableWithProgress runnableWithProgress)
-    {
+    public static AbstractUIJob runUIJob(String jobName, int timeout, final DBRRunnableWithProgress runnableWithProgress) {
         AbstractUIJob job = new AbstractUIJob(jobName) {
             @Override
-            public IStatus runInUIThread(DBRProgressMonitor monitor)
-            {
+            public IStatus runInUIThread(DBRProgressMonitor monitor) {
                 try {
                     runnableWithProgress.run(monitor);
                 } catch (InvocationTargetException e) {
@@ -174,8 +161,7 @@ public class DBeaverUI implements DBUICallback {
     }
 
     @NotNull
-    public static IWorkbenchWindow getActiveWorkbenchWindow()
-    {
+    public static IWorkbenchWindow getActiveWorkbenchWindow() {
         IWorkbench workbench = PlatformUI.getWorkbench();
         IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
         if (window != null) {
@@ -188,13 +174,11 @@ public class DBeaverUI implements DBUICallback {
         throw new IllegalStateException("No workbench window");
     }
 
-    public static Shell getActiveWorkbenchShell()
-    {
+    public static Shell getActiveWorkbenchShell() {
         return getActiveWorkbenchWindow().getShell();
     }
 
-    public static Display getDisplay()
-    {
+    public static Display getDisplay() {
         Shell shell = getActiveWorkbenchShell();
         if (shell != null && !shell.isDisposed())
             return shell.getDisplay();
@@ -225,16 +209,14 @@ public class DBeaverUI implements DBUICallback {
     }
 */
 
-    public static DBRRunnableContext getDefaultRunnableContext()
-    {
+    public static DBRRunnableContext getDefaultRunnableContext() {
         IWorkbench workbench = PlatformUI.getWorkbench();
         if (workbench != null && workbench.getActiveWorkbenchWindow() != null) {
             return new RunnableContextDelegate(workbench.getActiveWorkbenchWindow());
         } else {
             return new DBRRunnableContext() {
                 @Override
-                public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
-                {
+                public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
                     runnable.run(VoidProgressMonitor.INSTANCE);
                 }
             };
@@ -246,24 +228,21 @@ public class DBeaverUI implements DBUICallback {
      * NOTE: this call can't be canceled if it will block in IO
      */
     public static void runInProgressService(final DBRRunnableWithProgress runnable)
-        throws InvocationTargetException, InterruptedException
-    {
+        throws InvocationTargetException, InterruptedException {
         getDefaultRunnableContext().run(true, true, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    runnable.run(monitor);
-                }
-            });
+            @Override
+            public void run(DBRProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException {
+                runnable.run(monitor);
+            }
+        });
     }
 
     /**
      * Runs task in Eclipse progress dialog.
      * NOTE: this call can't be canceled if it will block in IO
      */
-    public static void runInProgressDialog(final DBRRunnableWithProgress runnable) throws InvocationTargetException
-    {
+    public static void runInProgressDialog(final DBRRunnableWithProgress runnable) throws InvocationTargetException {
         try {
             IRunnableContext runnableContext;
             IWorkbench workbench = PlatformUI.getWorkbench();
@@ -276,8 +255,7 @@ public class DBeaverUI implements DBUICallback {
             runnableContext.run(true, true, new IRunnableWithProgress() {
                 @Override
                 public void run(IProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
+                    throws InvocationTargetException, InterruptedException {
                     runnable.run(RuntimeUtils.makeMonitor(monitor));
                 }
             });
@@ -286,14 +264,12 @@ public class DBeaverUI implements DBUICallback {
         }
     }
 
-    public static void runInUI(IRunnableContext context, final DBRRunnableWithProgress runnable)
-    {
+    public static void runInUI(IRunnableContext context, final DBRRunnableWithProgress runnable) {
         try {
             PlatformUI.getWorkbench().getProgressService().runInUI(context, new IRunnableWithProgress() {
                 @Override
                 public void run(IProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
+                    throws InvocationTargetException, InterruptedException {
                     runnable.run(RuntimeUtils.makeMonitor(monitor));
                 }
             }, DBeaverActivator.getWorkspace().getRoot());
@@ -320,8 +296,17 @@ public class DBeaverUI implements DBUICallback {
         }
     }
 
-    public static void notifyAgent(String message, int status)
-    {
+    public static <T> T syncExec(RunnableWithResult<T> runnable) {
+        try {
+            getDisplay().syncExec(runnable);
+            return runnable.getResult();
+        } catch (Exception e) {
+            log.error(e);
+            return null;
+        }
+    }
+
+    public static void notifyAgent(String message, int status) {
         if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY)) {
             // Notifications disabled
             return;
@@ -353,19 +338,15 @@ public class DBeaverUI implements DBUICallback {
             authDialog.setUserName(userName);
         }
         authDialog.setUserPassword(userPassword);
-        final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
+        if (new UIConfirmation() {
             @Override
-            public void run()
-            {
-                result = (authDialog.open() == IDialogConstants.OK_ID);
+            public Boolean runTask() {
+                return (authDialog.open() == IDialogConstants.OK_ID);
             }
-        };
-        DBeaverUI.syncExec(binder);
-        if (binder.getResult() != null && binder.getResult()) {
+        }.execute()) {
             return authDialog.getAuthInfo();
-        } else {
-            return null;
         }
+        return null;
     }
 
     @Override

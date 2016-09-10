@@ -177,6 +177,10 @@ public class CommonUtils {
         return value == null ? "" : value;
     }
 
+    public static boolean isTrue(Boolean value) {
+        return value != null && value;
+    }
+
     public static boolean getBoolean(String value) {
         return Boolean.parseBoolean(value);
     }
