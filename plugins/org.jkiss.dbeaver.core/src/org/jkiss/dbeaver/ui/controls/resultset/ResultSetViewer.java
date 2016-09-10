@@ -65,7 +65,6 @@ import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
@@ -2438,15 +2437,12 @@ public class ResultSetViewer extends Viewer
         if (identifier != null) {
             if (CommonUtils.isEmpty(identifier.getAttributes())) {
                 // Empty identifier. We have to define it
-                RunnableWithResult<Boolean> confirmer = new RunnableWithResult<Boolean>() {
+                return new UIConfirmation() {
                     @Override
-                    public void run()
-                    {
-                        result = ValidateUniqueKeyUsageDialog.validateUniqueKey(ResultSetViewer.this, executionContext);
+                    public Boolean runTask() {
+                        return ValidateUniqueKeyUsageDialog.validateUniqueKey(ResultSetViewer.this, executionContext);
                     }
-                };
-                DBeaverUI.syncExec(confirmer);
-                return confirmer.getResult();
+                }.confirm();
             }
         }
         {

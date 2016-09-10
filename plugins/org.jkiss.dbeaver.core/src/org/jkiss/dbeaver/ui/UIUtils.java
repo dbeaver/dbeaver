@@ -38,7 +38,6 @@ import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -433,19 +432,16 @@ public class UIUtils {
 
     public static boolean confirmAction(final Shell shell, final String title, final String question)
     {
-        RunnableWithResult<Boolean> confirmer = new RunnableWithResult<Boolean>() {
+        return new UIConfirmation() {
             @Override
-            public void run()
-            {
+            public Boolean runTask() {
                 MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
                 messageBox.setMessage(question);
                 messageBox.setText(title);
                 int response = messageBox.open();
-                result = (response == SWT.YES);
+                return (response == SWT.YES);
             }
-        };
-        DBeaverUI.syncExec(confirmer);
-        return confirmer.getResult();
+        }.confirm();
     }
 
     public static Font makeBoldFont(Font normalFont)

@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
@@ -39,7 +38,6 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
@@ -47,6 +45,7 @@ import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorResponse;
@@ -508,20 +507,16 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
 
     private boolean fillStatementParameters(final List<SQLQueryParameter> parameters)
     {
-        final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
+        return new UIConfirmation() {
             @Override
-            public void run()
-            {
+            public Boolean runTask() {
                 SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
                     partSite,
                     getExecutionContext(),
                     parameters);
-                result = (dialog.open() == IDialogConstants.OK_ID);
+                return (dialog.open() == IDialogConstants.OK_ID);
             }
-        };
-        DBeaverUI.syncExec(binder);
-        Boolean result = binder.getResult();
-        return result != null && result;
+        }.execute();
     }
 
     private void bindStatementParameters(DBCSession session, SQLQuery sqlStatement) throws DBCException {
