@@ -46,17 +46,19 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common"; //$NON-NLS-1$
 
     private Button automaticUpdateCheck;
-    private Button keepEditorsOnRestart;
 
     private Button longOperationsCheck;
     private Spinner longOperationsTimeout;
 
     private Button expandOnConnectCheck;
     private Button sortCaseInsensitiveCheck;
-    private Button syncEditorDataSourceWithNavigator;
     private Button groupByDriverCheck;
     private Button editorFullName;
     private Combo doubleClickBehavior;
+
+    private Button keepEditorsOnRestart;
+    private Button refreshEditorOnOpen;
+    private Button syncEditorDataSourceWithNavigator;
 
     public PrefPageDatabaseGeneral()
     {
@@ -79,8 +81,6 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
             Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 300);
             automaticUpdateCheck = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_checkbox_automatic_updates, false);
             automaticUpdateCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
-
-            keepEditorsOnRestart = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_keep_database_editors, false);
         }
 
         // Agent settings
@@ -89,11 +89,28 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
 
             longOperationsCheck = UIUtils.createCheckbox(agentGroup, "Enable long-time operations notification", false);
             longOperationsCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
+            longOperationsCheck.setToolTipText("Shows special notification in system taskbar after long-time operation (e.g. SQL query) finish.");
+
             longOperationsTimeout = UIUtils.createLabelSpinner(agentGroup, "Long-time operation timeout", 0, 0, Integer.MAX_VALUE);
 
             if (RuntimeUtils.isPlatformMacOS()) {
                 ControlEnableState.disable(agentGroup);
             }
+        }
+
+        // Editors settings
+        {
+            Group groupEditors = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_editors, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+
+            keepEditorsOnRestart = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_keep_database_editors, false);
+            keepEditorsOnRestart.setToolTipText("Remembers open editors (e.g. table editors) and reopens them after DBeaver restart.");
+
+            refreshEditorOnOpen = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_refresh_editor_on_open, false);
+            refreshEditorOnOpen.setToolTipText("Refreshes object from database every time you open this object's editor.\nYou may need this option if your database structure changes frequently (e.g. by SQL scripts).");
+
+            syncEditorDataSourceWithNavigator = UIUtils.createCheckbox(groupEditors, "Auto-sync editor connection with navigator selection", false);
+            syncEditorDataSourceWithNavigator.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
+            syncEditorDataSourceWithNavigator.setToolTipText("Automatically sets editor (e.g. SQL editor) connection from selected navigator node.\nMakes sense if you need to change active connection/schema frequently.");
         }
 
         {
@@ -104,9 +121,6 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
 
             sortCaseInsensitiveCheck = UIUtils.createCheckbox(navigatorGroup, "Order elements alphabetically", false);
             sortCaseInsensitiveCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
-
-            syncEditorDataSourceWithNavigator = UIUtils.createCheckbox(navigatorGroup, "Auto-sync editor connection with navigator selection", false);
-            syncEditorDataSourceWithNavigator.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
 
             groupByDriverCheck = UIUtils.createCheckbox(navigatorGroup, "Group databases by driver", false);
             groupByDriverCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
@@ -133,12 +147,15 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
-        keepEditorsOnRestart.setSelection(store.getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS));
         longOperationsCheck.setSelection(store.getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
         longOperationsTimeout.setSelection(store.getInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT));
+
+        keepEditorsOnRestart.setSelection(store.getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS));
+        refreshEditorOnOpen.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN));
+        syncEditorDataSourceWithNavigator.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
+
         expandOnConnectCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT));
         sortCaseInsensitiveCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY));
-        syncEditorDataSourceWithNavigator.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
         groupByDriverCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER));
         editorFullName.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
         doubleClickBehavior.select(
@@ -151,13 +168,16 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
-        store.setValue(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, keepEditorsOnRestart.getSelection());
         //store.setValue(DBeaverPreferences.AGENT_ENABLED, agentEnabledCheck.getSelection());
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, longOperationsCheck.getSelection());
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
+
+        store.setValue(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, keepEditorsOnRestart.getSelection());
+        store.setValue(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, refreshEditorOnOpen.getSelection());
+        store.setValue(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, syncEditorDataSourceWithNavigator.getSelection());
+
         store.setValue(DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT, expandOnConnectCheck.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY, sortCaseInsensitiveCheck.getSelection());
-        store.setValue(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, syncEditorDataSourceWithNavigator.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK,

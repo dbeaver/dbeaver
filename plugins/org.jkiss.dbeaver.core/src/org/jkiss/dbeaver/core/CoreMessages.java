@@ -1283,9 +1283,10 @@ public class CoreMessages extends NLS {
 
 	public static String pref_page_ui_general_checkbox_automatic_updates;
 	public static String pref_page_ui_general_keep_database_editors;
+	public static String pref_page_ui_general_refresh_editor_on_open;
 
 	public static String pref_page_ui_general_group_general;
-
+	public static String pref_page_ui_general_group_editors;
 	public static String pref_page_ui_general_group_http_proxy;
 
 	public static String pref_page_ui_general_label_proxy_host;
