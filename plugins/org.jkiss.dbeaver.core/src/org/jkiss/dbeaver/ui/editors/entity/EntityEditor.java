@@ -325,7 +325,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
             {
                 return;
             }
-            getCommandContext().resetChanges();
+            DBECommandContext commandContext = getCommandContext();
+            if (commandContext != null) {
+                commandContext.resetChanges();
+            }
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
@@ -391,15 +394,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
         ChangesPreviewer changesPreviewer = new ChangesPreviewer(script, allowSave);
         UIUtils.runInUI(getSite().getShell(), changesPreviewer);
         return changesPreviewer.getResult();
-/*
-
-        Shell shell = getSite().getShell();
-        EditTextDialog dialog = new EditTextDialog(shell, "Script", script.toString());
-        dialog.setTextWidth(0);
-        dialog.setTextHeight(0);
-        dialog.setImage(DBIcon.SQL_PREVIEW.getImage());
-        dialog.open();
-*/
     }
 
     @Override
@@ -715,13 +709,13 @@ public class EntityEditor extends MultiPageDatabaseEditor
     }
 
     @Override
-    public Object getAdapter(Class adapter) {
-        Object activeAdapter = getNestedAdapter(adapter);
+    public <T> T getAdapter(Class<T> adapter) {
+        T activeAdapter = getNestedAdapter(adapter);
         if (activeAdapter != null) {
             return activeAdapter;
         }
         if (adapter == IPropertySheetPage.class) {
-            return new PropertyPageStandard();
+            return adapter.cast(new PropertyPageStandard());
         }
         return super.getAdapter(adapter);
     }

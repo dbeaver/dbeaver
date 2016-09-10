@@ -209,7 +209,12 @@ public abstract class JDBCCompositeCache<
         synchronized (objectCache) {
             objectCache.clear();
             for (OBJECT object : objects) {
-                List<OBJECT> parentObjects = objectCache.get(getParent(object));
+                PARENT parent = getParent(object);
+                List<OBJECT> parentObjects = objectCache.get(parent);
+                if (parentObjects == null) {
+                    parentObjects = new ArrayList<>();
+                    objectCache.put(parent, objects);
+                }
                 parentObjects.add(object);
             }
         }
@@ -359,7 +364,7 @@ public abstract class JDBCCompositeCache<
                             globalCache.addAll(objects);
                         }
                         // Add precached objects to global cache too
-                        this.setCache(globalCache);
+                        super.setCache(globalCache);
                         this.invalidateObjects(monitor, owner, new CacheIterator());
                     }
                 }

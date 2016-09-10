@@ -31,37 +31,45 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.resources.ResourceUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.resources.ResourceUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.Map;
 
 public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase implements IElementUpdater {
+
+    private static final Log log = Log.getLog(NavigatorHandlerObjectOpen.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -169,44 +177,54 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 DatabaseEditorInputFactory.setLookupEditor(false);
             }
 
-            IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
-            try {
-                if (selectedNode instanceof DBNDatabaseFolder) {
-                    FolderEditorInput folderInput = new FolderEditorInput((DBNDatabaseFolder)selectedNode);
-                    folderInput.setDefaultPageId(defaultPageId);
-                    setInputAttributes(folderInput, defaultPageId, defaultFolderId, attributes);
-                    return workbenchWindow.getActivePage().openEditor(
-                        folderInput,
-                        FolderEditor.class.getName());
-                } else if (selectedNode instanceof DBNDatabaseObject) {
-                    DBNDatabaseObject objectNode = (DBNDatabaseObject) selectedNode;
-                    ObjectEditorInput objectInput = new ObjectEditorInput(objectNode);
-                    setInputAttributes(objectInput, defaultPageId, defaultFolderId, attributes);
-                    return workbenchWindow.getActivePage().openEditor(
-                        objectInput,
-                        objectNode.getMeta().getEditorId());
-                } else if (selectedNode.getObject() != null) {
-                    EntityEditorInput editorInput = new EntityEditorInput(selectedNode);
-                    setInputAttributes(editorInput, defaultPageId, defaultFolderId, attributes);
-                    return workbenchWindow.getActivePage().openEditor(
-                        editorInput,
-                        EntityEditor.class.getName());
-                } else {
-                    throw new DBException("Don't know how to open object '" + selectedNode.getNodeName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+            if (selectedNode instanceof DBNDatabaseFolder) {
+                FolderEditorInput folderInput = new FolderEditorInput((DBNDatabaseFolder)selectedNode);
+                folderInput.setDefaultPageId(defaultPageId);
+                setInputAttributes(folderInput, defaultPageId, defaultFolderId, attributes);
+                return workbenchWindow.getActivePage().openEditor(
+                    folderInput,
+                    FolderEditor.class.getName());
+            } else if (selectedNode instanceof DBNDatabaseObject) {
+                DBNDatabaseObject objectNode = (DBNDatabaseObject) selectedNode;
+                ObjectEditorInput objectInput = new ObjectEditorInput(objectNode);
+                setInputAttributes(objectInput, defaultPageId, defaultFolderId, attributes);
+                return workbenchWindow.getActivePage().openEditor(
+                    objectInput,
+                    objectNode.getMeta().getEditorId());
+            } else if (selectedNode.getObject() != null) {
+                EntityEditorInput editorInput = new EntityEditorInput(selectedNode);
+                if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN)) {
+                    if (selectedNode.getObject() instanceof DBSObjectContainer) {
+                        // do not auto-refresh object containers (too expensive)
+                    } else {
+                        refreshDatabaseNode(selectedNode);
+                    }
                 }
-            }
-            finally {
-                // Reactivate navigator
-                // Actually it still focused but we need to use it's selection
-                // I think it is an eclipse bug
-                if (!(oldActivePart instanceof IEditorPart)) {
-                    //workbenchWindow.getActivePage().activate(oldActivePart);
-                }
+                setInputAttributes(editorInput, defaultPageId, defaultFolderId, attributes);
+                return workbenchWindow.getActivePage().openEditor(
+                    editorInput,
+                    EntityEditor.class.getName());
+            } else {
+                throw new DBException("Don't know how to open object '" + selectedNode.getNodeName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
             }
         } catch (Exception ex) {
             UIUtils.showErrorDialog(workbenchWindow.getShell(), CoreMessages.actions_navigator_error_dialog_open_entity_title, "Can't open entity '" + selectedNode.getNodeName() + "'", ex);
             return null;
         }
+    }
+
+    private static void refreshDatabaseNode(@NotNull DBNDatabaseNode selectedNode) throws InvocationTargetException, InterruptedException {
+        final DBNDatabaseNode nodeToRefresh = selectedNode;
+        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                try {
+                    nodeToRefresh.refreshNode(monitor, nodeToRefresh);
+                } catch (DBException e) {
+                    log.error("Error refreshing database object", e);
+                }
+            }
+        });
     }
 
     private static void openConnectionEditor(IWorkbenchWindow workbenchWindow, DataSourceDescriptor dataSourceContainer) {
