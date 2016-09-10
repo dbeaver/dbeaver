@@ -20,13 +20,10 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
@@ -48,6 +45,7 @@ public class ValueViewCommandHandler extends AbstractHandler {
         IResultSetPanel visiblePanel = rsv.getVisiblePanel();
         if (visiblePanel instanceof ViewValuePanel) {
             switch (actionId) {
+                case ITextEditorActionDefinitionIds.SMART_ENTER:
                 case CMD_SAVE_VALUE:
                     ((ViewValuePanel) visiblePanel).saveValue();
                     break;
