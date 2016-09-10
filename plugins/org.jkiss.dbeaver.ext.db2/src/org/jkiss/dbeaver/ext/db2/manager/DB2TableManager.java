@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.*;
@@ -65,6 +66,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // Business Contract
     // -----------------
 
+    @NotNull
     @Override
     public Class<?>[] getChildTypes()
     {

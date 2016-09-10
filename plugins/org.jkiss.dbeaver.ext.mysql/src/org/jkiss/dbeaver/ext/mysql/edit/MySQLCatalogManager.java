@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.UITask;
 
 import java.util.List;
 
@@ -54,18 +55,23 @@ public class MySQLCatalogManager extends SQLObjectEditor<MySQLCatalog, MySQLData
     }
 
     @Override
-    protected MySQLCatalog createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLDataSource parent, Object copyFrom)
+    protected MySQLCatalog createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final MySQLDataSource parent, Object copyFrom)
     {
-        MySQLCreateDatabaseDialog dialog = new MySQLCreateDatabaseDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
-        String schemaName = dialog.getName();
-        MySQLCatalog newCatalog = new MySQLCatalog(parent, null);
-        newCatalog.setName(schemaName);
-        newCatalog.setDefaultCharset(dialog.getCharset());
-        newCatalog.setDefaultCollation(dialog.getCollation());
-        return newCatalog;
+        return new UITask<MySQLCatalog>() {
+            @Override
+            protected MySQLCatalog runTask() {
+                MySQLCreateDatabaseDialog dialog = new MySQLCreateDatabaseDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
+                if (dialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
+                String schemaName = dialog.getName();
+                MySQLCatalog newCatalog = new MySQLCatalog(parent, null);
+                newCatalog.setName(schemaName);
+                newCatalog.setDefaultCharset(dialog.getCharset());
+                newCatalog.setDefaultCollation(dialog.getCollation());
+                return newCatalog;
+            }
+        }.execute();
     }
 
     @Override

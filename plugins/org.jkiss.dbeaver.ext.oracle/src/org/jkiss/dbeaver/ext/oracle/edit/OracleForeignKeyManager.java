@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,39 +48,44 @@ public class OracleForeignKeyManager extends SQLForeignKeyManager<OracleTableFor
     }
 
     @Override
-    protected OracleTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleTableBase table, Object from)
+    protected OracleTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleTableBase table, Object from)
     {
-        EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
-            DBeaverUI.getActiveWorkbenchShell(),
-            OracleMessages.edit_oracle_foreign_key_manager_dialog_title,
-            table,
-            new DBSForeignKeyModifyRule[] {
-                DBSForeignKeyModifyRule.NO_ACTION,
-                DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
-                DBSForeignKeyModifyRule.SET_NULL,
-                DBSForeignKeyModifyRule.SET_DEFAULT });
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<OracleTableForeignKey>() {
+            @Override
+            protected OracleTableForeignKey runTask() {
+                EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
+                    DBeaverUI.getActiveWorkbenchShell(),
+                    OracleMessages.edit_oracle_foreign_key_manager_dialog_title,
+                    table,
+                    new DBSForeignKeyModifyRule[] {
+                        DBSForeignKeyModifyRule.NO_ACTION,
+                        DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
+                        DBSForeignKeyModifyRule.SET_NULL,
+                        DBSForeignKeyModifyRule.SET_DEFAULT });
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        final OracleTableForeignKey foreignKey = new OracleTableForeignKey(
-            table,
-            null,
-            null,
-            (OracleTableConstraint) editDialog.getUniqueConstraint(),
-            editDialog.getOnDeleteRule());
-        foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
-            CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
-                CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
-        int colIndex = 1;
-        for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
-            foreignKey.addColumn(
-                new OracleTableForeignKeyColumn(
-                    foreignKey,
-                    (OracleTableColumn) tableColumn.getOwnColumn(),
-                    colIndex++));
-        }
-        return foreignKey;
+                final OracleTableForeignKey foreignKey = new OracleTableForeignKey(
+                    table,
+                    null,
+                    null,
+                    (OracleTableConstraint) editDialog.getUniqueConstraint(),
+                    editDialog.getOnDeleteRule());
+                foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
+                    CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
+                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
+                int colIndex = 1;
+                for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
+                    foreignKey.addColumn(
+                        new OracleTableForeignKeyColumn(
+                            foreignKey,
+                            (OracleTableColumn) tableColumn.getOwnColumn(),
+                            colIndex++));
+                }
+                return foreignKey;
+            }
+        }.execute();
     }
 
 /*

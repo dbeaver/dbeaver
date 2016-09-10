@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditIndexDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -53,38 +54,43 @@ public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, Oracle
 
     @Override
     protected OracleTableIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, OracleTablePhysical parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final OracleTablePhysical parent,
         Object from)
     {
-        EditIndexDialog editDialog = new EditIndexDialog(
-            DBeaverUI.getActiveWorkbenchShell(),
-            OracleMessages.edit_oracle_index_manager_dialog_title,
-            parent,
-            Collections.singletonList(DBSIndexType.OTHER));
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<OracleTableIndex>() {
+            @Override
+            protected OracleTableIndex runTask() {
+                EditIndexDialog editDialog = new EditIndexDialog(
+                    DBeaverUI.getActiveWorkbenchShell(),
+                    OracleMessages.edit_oracle_index_manager_dialog_title,
+                    parent,
+                    Collections.singletonList(DBSIndexType.OTHER));
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        StringBuilder idxName = new StringBuilder(64);
-        idxName.append(CommonUtils.escapeIdentifier(parent.getName())).append("_") //$NON-NLS-1$
-            .append(CommonUtils.escapeIdentifier(editDialog.getSelectedAttributes().iterator().next().getName()))
-            .append("_IDX"); //$NON-NLS-1$
-        final OracleTableIndex index = new OracleTableIndex(
-            parent.getSchema(),
-            parent,
-            DBObjectNameCaseTransformer.transformName(parent.getDataSource(), idxName.toString()),
-            editDialog.isUnique(),
-            editDialog.getIndexType());
-        int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
-            index.addColumn(
-                new OracleTableIndexColumn(
-                    index,
-                    (OracleTableColumn) tableColumn,
-                    colIndex++,
-                    true));
-        }
-        return index;
+                StringBuilder idxName = new StringBuilder(64);
+                idxName.append(CommonUtils.escapeIdentifier(parent.getName())).append("_") //$NON-NLS-1$
+                    .append(CommonUtils.escapeIdentifier(editDialog.getSelectedAttributes().iterator().next().getName()))
+                    .append("_IDX"); //$NON-NLS-1$
+                final OracleTableIndex index = new OracleTableIndex(
+                    parent.getSchema(),
+                    parent,
+                    DBObjectNameCaseTransformer.transformName(parent.getDataSource(), idxName.toString()),
+                    editDialog.isUnique(),
+                    editDialog.getIndexType());
+                int colIndex = 1;
+                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                    index.addColumn(
+                        new OracleTableIndexColumn(
+                            index,
+                            (OracleTableColumn) tableColumn,
+                            colIndex++,
+                            true));
+                }
+                return index;
+            }
+        }.execute();
     }
 
     @Override

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -63,15 +64,20 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     }
 
     @Override
-    protected PostgreProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreSchema parent, Object copyFrom)
+    protected PostgreProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final PostgreSchema parent, Object copyFrom)
     {
-        CreateProcedureDialog dialog = new CreateProcedureDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource());
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
-        PostgreProcedure newProcedure = new PostgreProcedure(parent);
-        newProcedure.setName(dialog.getProcedureName());
-        return newProcedure;
+        return new UITask<PostgreProcedure>() {
+            @Override
+            protected PostgreProcedure runTask() {
+                CreateProcedureDialog dialog = new CreateProcedureDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource());
+                if (dialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
+                PostgreProcedure newProcedure = new PostgreProcedure(parent);
+                newProcedure.setName(dialog.getProcedureName());
+                return newProcedure;
+            }
+        }.execute();
     }
 
     @Override

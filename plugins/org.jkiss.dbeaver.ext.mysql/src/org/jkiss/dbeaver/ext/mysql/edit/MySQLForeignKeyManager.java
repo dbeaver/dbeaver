@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -46,42 +47,47 @@ public class MySQLForeignKeyManager extends SQLForeignKeyManager<MySQLTableForei
     }
 
     @Override
-    protected MySQLTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLTable table, Object from)
+    protected MySQLTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final MySQLTable table, Object from)
     {
-        EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
-            DBeaverUI.getActiveWorkbenchShell(),
-            MySQLMessages.edit_foreign_key_manager_title,
-            table,
-            new DBSForeignKeyModifyRule[] {
-                DBSForeignKeyModifyRule.NO_ACTION,
-                DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
-                DBSForeignKeyModifyRule.SET_NULL,
-                DBSForeignKeyModifyRule.SET_DEFAULT });
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<MySQLTableForeignKey>() {
+            @Override
+            protected MySQLTableForeignKey runTask() {
+                EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
+                    DBeaverUI.getActiveWorkbenchShell(),
+                    MySQLMessages.edit_foreign_key_manager_title,
+                    table,
+                    new DBSForeignKeyModifyRule[] {
+                        DBSForeignKeyModifyRule.NO_ACTION,
+                        DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
+                        DBSForeignKeyModifyRule.SET_NULL,
+                        DBSForeignKeyModifyRule.SET_DEFAULT });
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        final MySQLTableForeignKey foreignKey = new MySQLTableForeignKey(
-            table,
-            null,
-            null,
-            (MySQLTableConstraint) editDialog.getUniqueConstraint(),
-            editDialog.getOnDeleteRule(),
-            editDialog.getOnUpdateRule(),
-            false);
-        foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
-            CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
-                CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
-        int colIndex = 1;
-        for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
-            foreignKey.addColumn(
-                new MySQLTableForeignKeyColumn(
-                    foreignKey,
-                    (MySQLTableColumn) tableColumn.getOwnColumn(),
-                    colIndex++,
-                    (MySQLTableColumn) tableColumn.getRefColumn()));
-        }
-        return foreignKey;
+                final MySQLTableForeignKey foreignKey = new MySQLTableForeignKey(
+                    table,
+                    null,
+                    null,
+                    (MySQLTableConstraint) editDialog.getUniqueConstraint(),
+                    editDialog.getOnDeleteRule(),
+                    editDialog.getOnUpdateRule(),
+                    false);
+                foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
+                    CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
+                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
+                int colIndex = 1;
+                for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
+                    foreignKey.addColumn(
+                        new MySQLTableForeignKeyColumn(
+                            foreignKey,
+                            (MySQLTableColumn) tableColumn.getOwnColumn(),
+                            colIndex++,
+                            (MySQLTableColumn) tableColumn.getRefColumn()));
+                }
+                return foreignKey;
+            }
+        }.execute();
     }
 
     @Override

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -52,15 +53,20 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     }
 
     @Override
-    protected OraclePackage createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleSchema parent, Object copyFrom)
+    protected OraclePackage createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleSchema parent, Object copyFrom)
     {
-        CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource(), OracleMessages.edit_oracle_package_manager_dialog_title);
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
-        return new OraclePackage(
-            parent,
-            dialog.getEntityName());
+        return new UITask<OraclePackage>() {
+            @Override
+            protected OraclePackage runTask() {
+                CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource(), OracleMessages.edit_oracle_package_manager_dialog_title);
+                if (dialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
+                return new OraclePackage(
+                    parent,
+                    dialog.getEntityName());
+            }
+        }.execute();
     }
 
     @Override

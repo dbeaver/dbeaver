@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,33 +48,38 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
 
     @Override
     protected PostgreTableConstraintBase createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, PostgreTableBase parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final PostgreTableBase parent,
         Object from)
     {
-        EditConstraintDialog editDialog = new EditConstraintDialog(
-            DBeaverUI.getActiveWorkbenchShell(),
-            "Add constraint",
-            parent,
-            new DBSEntityConstraintType[] {
-                DBSEntityConstraintType.PRIMARY_KEY,
-                DBSEntityConstraintType.UNIQUE_KEY });
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<PostgreTableConstraintBase>() {
+            @Override
+            protected PostgreTableConstraintBase runTask() {
+                EditConstraintDialog editDialog = new EditConstraintDialog(
+                    DBeaverUI.getActiveWorkbenchShell(),
+                    "Add constraint",
+                    parent,
+                    new DBSEntityConstraintType[] {
+                        DBSEntityConstraintType.PRIMARY_KEY,
+                        DBSEntityConstraintType.UNIQUE_KEY });
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        final PostgreTableConstraint constraint = new PostgreTableConstraint(
-            parent,
-            editDialog.getConstraintType());
-        constraint.setName(DBObjectNameCaseTransformer.transformObjectName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
-        int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
-            constraint.addColumn(
-                new PostgreTableConstraintColumn(
-                    constraint,
-                    (PostgreAttribute) tableColumn,
-                    colIndex++));
-        }
-        return constraint;
+                final PostgreTableConstraint constraint = new PostgreTableConstraint(
+                    parent,
+                    editDialog.getConstraintType());
+                constraint.setName(DBObjectNameCaseTransformer.transformObjectName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
+                int colIndex = 1;
+                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                    constraint.addColumn(
+                        new PostgreTableConstraintColumn(
+                            constraint,
+                            (PostgreAttribute) tableColumn,
+                            colIndex++));
+                }
+                return constraint;
+            }
+        }.execute();
     }
 
     @NotNull

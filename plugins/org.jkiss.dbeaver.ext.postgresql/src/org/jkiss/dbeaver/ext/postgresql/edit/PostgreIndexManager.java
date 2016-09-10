@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditIndexDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,42 +48,47 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
 
     @Override
     protected PostgreIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, PostgreTableBase parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final PostgreTableBase parent,
         Object from)
     {
-        EditIndexDialog editDialog = new EditIndexDialog(
-            DBeaverUI.getActiveWorkbenchShell(),
-            "Edit index",
-            parent,
-            Collections.singletonList(DBSIndexType.OTHER));
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<PostgreIndex>() {
+            @Override
+            protected PostgreIndex runTask() {
+                EditIndexDialog editDialog = new EditIndexDialog(
+                    DBeaverUI.getActiveWorkbenchShell(),
+                    "Edit index",
+                    parent,
+                    Collections.singletonList(DBSIndexType.OTHER));
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        StringBuilder idxName = new StringBuilder(64);
-        idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
-        final PostgreIndex index = new PostgreIndex(
-            parent,
-            idxName.toString(),
-            editDialog.getIndexType(),
-            editDialog.isUnique());
-        int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
-            if (colIndex == 1) {
-                idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
+                StringBuilder idxName = new StringBuilder(64);
+                idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
+                final PostgreIndex index = new PostgreIndex(
+                    parent,
+                    idxName.toString(),
+                    editDialog.getIndexType(),
+                    editDialog.isUnique());
+                int colIndex = 1;
+                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                    if (colIndex == 1) {
+                        idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
+                    }
+                    index.addColumn(
+                        new PostgreIndexColumn(
+                            index,
+                            (PostgreAttribute) tableColumn,
+                            null,
+                            colIndex++,
+                            true,
+                            false));
+                }
+                idxName.append("_IDX"); //$NON-NLS-1$
+                index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
+                return index;
             }
-            index.addColumn(
-                new PostgreIndexColumn(
-                    index,
-                    (PostgreAttribute) tableColumn,
-                    null,
-                    colIndex++,
-                    true,
-                    false));
-        }
-        idxName.append("_IDX"); //$NON-NLS-1$
-        index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
-        return index;
+        }.execute();
     }
 
     @Override

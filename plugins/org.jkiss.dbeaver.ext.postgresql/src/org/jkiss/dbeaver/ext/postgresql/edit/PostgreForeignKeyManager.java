@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -48,39 +49,44 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     }
 
     @Override
-    protected PostgreTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreTableBase table, Object from)
+    protected PostgreTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final PostgreTableBase table, Object from)
     {
-        EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
-            DBeaverUI.getActiveWorkbenchShell(),
-            "Edit foreign key",
-            table,
-            new DBSForeignKeyModifyRule[] {
-                DBSForeignKeyModifyRule.NO_ACTION,
-                DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
-                DBSForeignKeyModifyRule.SET_NULL,
-                DBSForeignKeyModifyRule.SET_DEFAULT });
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<PostgreTableForeignKey>() {
+            @Override
+            protected PostgreTableForeignKey runTask() {
+                EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
+                    DBeaverUI.getActiveWorkbenchShell(),
+                    "Edit foreign key",
+                    table,
+                    new DBSForeignKeyModifyRule[] {
+                        DBSForeignKeyModifyRule.NO_ACTION,
+                        DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
+                        DBSForeignKeyModifyRule.SET_NULL,
+                        DBSForeignKeyModifyRule.SET_DEFAULT });
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        final PostgreTableForeignKey foreignKey = new PostgreTableForeignKey(
-            table,
-            editDialog.getUniqueConstraint(),
-            editDialog.getOnDeleteRule(),
-            editDialog.getOnUpdateRule());
-        foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
-            CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
-                CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
-        int colIndex = 1;
-        for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
-            foreignKey.addColumn(
-                new PostgreTableForeignKeyColumn(
-                    foreignKey,
-                    (PostgreTableColumn) tableColumn.getOwnColumn(),
-                    colIndex++,
-                    (PostgreTableColumn) tableColumn.getRefColumn()));
-        }
-        return foreignKey;
+                final PostgreTableForeignKey foreignKey = new PostgreTableForeignKey(
+                    table,
+                    editDialog.getUniqueConstraint(),
+                    editDialog.getOnDeleteRule(),
+                    editDialog.getOnUpdateRule());
+                foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
+                    CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
+                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
+                int colIndex = 1;
+                for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
+                    foreignKey.addColumn(
+                        new PostgreTableForeignKeyColumn(
+                            foreignKey,
+                            (PostgreTableColumn) tableColumn.getOwnColumn(),
+                            colIndex++,
+                            (PostgreTableColumn) tableColumn.getRefColumn()));
+                }
+                return foreignKey;
+            }
+        }.execute();
     }
 
     @Override

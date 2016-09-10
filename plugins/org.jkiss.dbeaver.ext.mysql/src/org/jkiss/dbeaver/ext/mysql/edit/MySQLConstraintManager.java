@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,36 +48,41 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
 
     @Override
     protected MySQLTableConstraint createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, MySQLTable parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final MySQLTable parent,
         Object from)
     {
-        EditConstraintDialog editDialog = new EditConstraintDialog(
-            DBeaverUI.getActiveWorkbenchShell(),
-            MySQLMessages.edit_constraint_manager_title,
-            parent,
-            new DBSEntityConstraintType[] {
-                DBSEntityConstraintType.PRIMARY_KEY,
-                DBSEntityConstraintType.UNIQUE_KEY });
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<MySQLTableConstraint>() {
+            @Override
+            protected MySQLTableConstraint runTask() {
+                EditConstraintDialog editDialog = new EditConstraintDialog(
+                    DBeaverUI.getActiveWorkbenchShell(),
+                    MySQLMessages.edit_constraint_manager_title,
+                    parent,
+                    new DBSEntityConstraintType[] {
+                        DBSEntityConstraintType.PRIMARY_KEY,
+                        DBSEntityConstraintType.UNIQUE_KEY });
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        final MySQLTableConstraint constraint = new MySQLTableConstraint(
-            parent,
-            null,
-            null,
-            editDialog.getConstraintType(),
-            false);
-        constraint.setName(DBObjectNameCaseTransformer.transformObjectName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
-        int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
-            constraint.addColumn(
-                new MySQLTableConstraintColumn(
-                    constraint,
-                    (MySQLTableColumn) tableColumn,
-                    colIndex++));
-        }
-        return constraint;
+                final MySQLTableConstraint constraint = new MySQLTableConstraint(
+                    parent,
+                    null,
+                    null,
+                    editDialog.getConstraintType(),
+                    false);
+                constraint.setName(DBObjectNameCaseTransformer.transformObjectName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
+                int colIndex = 1;
+                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                    constraint.addColumn(
+                        new MySQLTableConstraintColumn(
+                            constraint,
+                            (MySQLTableColumn) tableColumn,
+                            colIndex++));
+                }
+                return constraint;
+            }
+        }.execute();
     }
 
     @Override

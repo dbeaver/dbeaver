@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditIndexDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -77,31 +78,36 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2TableBase> {
     }
 
     @Override
-    protected DB2Index createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, DB2TableBase db2Table, Object from)
+    protected DB2Index createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final DB2TableBase table, Object from)
     {
-        EditIndexDialog editDialog = new EditIndexDialog(DBeaverUI.getActiveWorkbenchShell(),
-            DB2Messages.edit_db2_index_manager_dialog_title, db2Table, IX_TYPES);
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<DB2Index>() {
+            @Override
+            protected DB2Index runTask() {
+                EditIndexDialog editDialog = new EditIndexDialog(DBeaverUI.getActiveWorkbenchShell(),
+                    DB2Messages.edit_db2_index_manager_dialog_title, table, IX_TYPES);
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        String tableName = CommonUtils.escapeIdentifier(db2Table.getName());
-        String colName = CommonUtils.escapeIdentifier(editDialog.getSelectedAttributes().iterator().next().getName());
+                String tableName = CommonUtils.escapeIdentifier(table.getName());
+                String colName = CommonUtils.escapeIdentifier(editDialog.getSelectedAttributes().iterator().next().getName());
 
-        String indexBaseName = String.format(CONS_IX_NAME, tableName, colName);
-        String indexName = DBObjectNameCaseTransformer.transformName(db2Table.getDataSource(), indexBaseName);
+                String indexBaseName = String.format(CONS_IX_NAME, tableName, colName);
+                String indexName = DBObjectNameCaseTransformer.transformName(table.getDataSource(), indexBaseName);
 
-        DB2Index index = new DB2Index(
-            db2Table,
-            indexName,
-            editDialog.getIndexType(),
-            editDialog.isUnique() ? DB2UniqueRule.U : DB2UniqueRule.D);
+                DB2Index index = new DB2Index(
+                    table,
+                    indexName,
+                    editDialog.getIndexType(),
+                    editDialog.isUnique() ? DB2UniqueRule.U : DB2UniqueRule.D);
 
-        int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
-            index.addColumn(new DB2IndexColumn(index, (DB2TableColumn) tableColumn, colIndex++));
-        }
-        return index;
+                int colIndex = 1;
+                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                    index.addColumn(new DB2IndexColumn(index, (DB2TableColumn) tableColumn, colIndex++));
+                }
+                return index;
+            }
+        }.execute();
     }
 
 }

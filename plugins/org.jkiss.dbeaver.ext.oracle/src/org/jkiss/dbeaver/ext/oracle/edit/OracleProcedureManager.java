@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
 
 import java.util.List;
@@ -48,16 +49,21 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
     }
 
     @Override
-    protected OracleProcedureStandalone createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleSchema parent, Object copyFrom)
+    protected OracleProcedureStandalone createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleSchema parent, Object copyFrom)
     {
-        CreateProcedureDialog dialog = new CreateProcedureDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource());
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
-        return new OracleProcedureStandalone(
-            parent,
-            dialog.getProcedureName(),
-            dialog.getProcedureType());
+        return new UITask<OracleProcedureStandalone>() {
+            @Override
+            protected OracleProcedureStandalone runTask() {
+                CreateProcedureDialog dialog = new CreateProcedureDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource());
+                if (dialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
+                return new OracleProcedureStandalone(
+                    parent,
+                    dialog.getProcedureName(),
+                    dialog.getProcedureType());
+            }
+        }.execute();
     }
 
     @Override

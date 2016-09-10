@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditIndexDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -51,43 +52,48 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
 
     @Override
     protected GenericTableIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, GenericTable parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final GenericTable parent,
         Object from)
     {
-        EditIndexDialog editDialog = new EditIndexDialog(
-            DBeaverUI.getActiveWorkbenchShell(),
-            "Create index",
-            parent,
-            Collections.singletonList(DBSIndexType.OTHER));
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<GenericTableIndex>() {
+            @Override
+            protected GenericTableIndex runTask() {
+                EditIndexDialog editDialog = new EditIndexDialog(
+                    DBeaverUI.getActiveWorkbenchShell(),
+                    "Create index",
+                    parent,
+                    Collections.singletonList(DBSIndexType.OTHER));
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        final GenericTableIndex index = parent.getDataSource().getMetaModel().createIndexImpl(
-            parent,
-            !editDialog.isUnique(),
-            null,
-            0,
-            null,
-            editDialog.getIndexType(),
-            false);
-        StringBuilder idxName = new StringBuilder(64);
-        idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
-        int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
-            if (colIndex == 1) {
-                idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName()));
+                final GenericTableIndex index = parent.getDataSource().getMetaModel().createIndexImpl(
+                    parent,
+                    !editDialog.isUnique(),
+                    null,
+                    0,
+                    null,
+                    editDialog.getIndexType(),
+                    false);
+                StringBuilder idxName = new StringBuilder(64);
+                idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
+                int colIndex = 1;
+                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                    if (colIndex == 1) {
+                        idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName()));
+                    }
+                    index.addColumn(
+                        new GenericTableIndexColumn(
+                            index,
+                            (GenericTableColumn) tableColumn,
+                            colIndex++,
+                            true));
+                }
+                idxName.append("_IDX");
+                index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
+                return index;
             }
-            index.addColumn(
-                new GenericTableIndexColumn(
-                    index,
-                    (GenericTableColumn) tableColumn,
-                    colIndex++,
-                    true));
-        }
-        idxName.append("_IDX");
-        index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
-        return index;
+        }.execute();
     }
 
 }

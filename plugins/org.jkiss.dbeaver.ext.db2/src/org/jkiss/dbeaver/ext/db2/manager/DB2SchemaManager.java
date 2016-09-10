@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.List;
@@ -65,20 +66,23 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
     }
 
     @Override
-    protected DB2Schema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, DB2DataSource parent,
+    protected DB2Schema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final DB2DataSource parent,
                                              Object copyFrom)
     {
-        NewSchemaDialog dialog = new NewSchemaDialog(DBeaverUI.getActiveWorkbenchShell());
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
-        String schemaName = dialog.getSchemaName();
-        if (schemaName.length() == 0) {
-            return null;
-        }
-        DB2Schema newSchema = new DB2Schema(parent, schemaName);
-
-        return newSchema;
+        return new UITask<DB2Schema>() {
+            @Override
+            protected DB2Schema runTask() {
+                NewSchemaDialog dialog = new NewSchemaDialog(DBeaverUI.getActiveWorkbenchShell());
+                if (dialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
+                String schemaName = dialog.getSchemaName();
+                if (schemaName.length() == 0) {
+                    return null;
+                }
+                return new DB2Schema(parent, schemaName);
+            }
+        }.execute();
     }
 
     @Override

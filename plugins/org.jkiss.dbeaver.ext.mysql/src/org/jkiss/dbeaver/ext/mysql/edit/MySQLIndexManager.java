@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditIndexDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -49,44 +50,49 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
 
     @Override
     protected MySQLTableIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, MySQLTable parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final MySQLTable parent,
         Object from)
     {
-        EditIndexDialog editDialog = new EditIndexDialog(
-            DBeaverUI.getActiveWorkbenchShell(),
-            MySQLMessages.edit_index_manager_title,
-            parent,
-            Collections.singletonList(DBSIndexType.OTHER));
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<MySQLTableIndex>() {
+            @Override
+            protected MySQLTableIndex runTask() {
+                EditIndexDialog editDialog = new EditIndexDialog(
+                    DBeaverUI.getActiveWorkbenchShell(),
+                    MySQLMessages.edit_index_manager_title,
+                    parent,
+                    Collections.singletonList(DBSIndexType.OTHER));
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        final MySQLTableIndex index = new MySQLTableIndex(
-            parent,
-            !editDialog.isUnique(),
-            null,
-            editDialog.getIndexType(),
-            null,
-            false);
-        StringBuilder idxName = new StringBuilder(64);
-        idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
-        int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
-            if (colIndex == 1) {
-                idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
+                final MySQLTableIndex index = new MySQLTableIndex(
+                    parent,
+                    !editDialog.isUnique(),
+                    null,
+                    editDialog.getIndexType(),
+                    null,
+                    false);
+                StringBuilder idxName = new StringBuilder(64);
+                idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
+                int colIndex = 1;
+                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                    if (colIndex == 1) {
+                        idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
+                    }
+                    index.addColumn(
+                        new MySQLTableIndexColumn(
+                            index,
+                            (MySQLTableColumn) tableColumn,
+                            colIndex++,
+                            true,
+                            false,
+                            null));
+                }
+                idxName.append("_IDX"); //$NON-NLS-1$
+                index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
+                return index;
             }
-            index.addColumn(
-                new MySQLTableIndexColumn(
-                    index,
-                    (MySQLTableColumn) tableColumn,
-                    colIndex++,
-                    true,
-                    false,
-                    null));
-        }
-        idxName.append("_IDX"); //$NON-NLS-1$
-        index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
-        return index;
+        }.execute();
     }
 
     @Override

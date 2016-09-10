@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 
 import java.util.List;
@@ -49,17 +50,22 @@ public class OracleTriggerManager extends SQLTriggerManager<OracleTrigger, Oracl
     }
 
     @Override
-    protected OracleTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleTableBase parent, Object copyFrom)
+    protected OracleTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleTableBase parent, Object copyFrom)
     {
-        CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource(), OracleMessages.edit_oracle_trigger_manager_dialog_title);
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
-        OracleTrigger newTrigger = new OracleTrigger(parent.getContainer(), parent, dialog.getEntityName());
-        newTrigger.setObjectDefinitionText("TRIGGER " + dialog.getEntityName() + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
-            "BEGIN\n" + //$NON-NLS-1$
-            "END;"); //$NON-NLS-1$
-        return newTrigger;
+        return new UITask<OracleTrigger>() {
+            @Override
+            protected OracleTrigger runTask() {
+                CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource(), OracleMessages.edit_oracle_trigger_manager_dialog_title);
+                if (dialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
+                OracleTrigger newTrigger = new OracleTrigger(parent.getContainer(), parent, dialog.getEntityName());
+                newTrigger.setObjectDefinitionText("TRIGGER " + dialog.getEntityName() + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                    "BEGIN\n" + //$NON-NLS-1$
+                    "END;"); //$NON-NLS-1$
+                return newTrigger;
+            }
+        }.execute();
     }
 
     @Override
