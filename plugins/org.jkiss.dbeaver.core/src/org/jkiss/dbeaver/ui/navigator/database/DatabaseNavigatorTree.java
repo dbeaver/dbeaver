@@ -181,10 +181,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             case REMOVE:
                 final DBNNode parentNode = event.getNode().getParentNode();
                 if (parentNode != null) {
-                    UIUtils.runInUI(null, new Runnable() {
+                    DBeaverUI.syncExec(new Runnable() {
                         @Override
-                        public void run()
-                        {
+                        public void run() {
                             if (!treeViewer.getControl().isDisposed()) {
                                 if (!parentNode.isDisposed()) {
                                     treeViewer.refresh(getViewerObject(parentNode));
@@ -195,10 +194,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 }
                 break;
             case UPDATE:
-                UIUtils.runInUI(null, new Runnable() {
+                DBeaverUI.syncExec(new Runnable() {
                     @Override
-                    public void run()
-                    {
+                    public void run() {
                         if (!treeViewer.getControl().isDisposed() && !treeViewer.isBusy()) {
                             if (event.getNode() != null) {
                                 switch (event.getNodeChange()) {
@@ -359,10 +357,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 try {
                     if (!treeViewer.getTree().isDisposed() && treeViewer.getTree().isFocusControl() && curSelection == selection && !canceled) {
                         final TreeItem itemToRename = selection;
-                        getDisplay().asyncExec(new Runnable() {
+                        DBeaverUI.asyncExec(new Runnable() {
                             @Override
-                            public void run()
-                            {
+                            public void run() {
                                 renameItem(itemToRename);
                             }
                         });

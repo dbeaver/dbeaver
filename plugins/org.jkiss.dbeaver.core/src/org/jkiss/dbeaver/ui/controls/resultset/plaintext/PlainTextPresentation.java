@@ -40,6 +40,7 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.TextUtils;
@@ -168,7 +169,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                         horOffsetEnd - horOffsetBegin - 1,
                         null,
                         curLineColor);
-                    text.getDisplay().asyncExec(new Runnable() {
+                    DBeaverUI.asyncExec(new Runnable() {
                         @Override
                         public void run() {
                             text.setStyleRanges(new StyleRange[]{curLineRange});

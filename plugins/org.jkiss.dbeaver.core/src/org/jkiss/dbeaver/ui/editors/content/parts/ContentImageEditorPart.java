@@ -30,6 +30,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageEditor;
@@ -192,10 +193,9 @@ public class ContentImageEditorPart extends EditorPart implements ContentEditorP
         }
         if (delta.getKind() == IResourceDelta.CHANGED) {
             // Refresh editor
-            getSite().getShell().getDisplay().asyncExec(new Runnable() {
+            DBeaverUI.asyncExec(new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     loadImage();
                 }
             });

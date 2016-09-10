@@ -25,6 +25,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -232,7 +233,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                         result = IDialogConstants.OK_ID;
                     } else {
                         DownloadRetry retryConfirm = new DownloadRetry(lib, e);
-                        UIUtils.runInUI(null, retryConfirm);
+                        DBeaverUI.syncExec(retryConfirm);
                         result = retryConfirm.result;
                     }
                 }

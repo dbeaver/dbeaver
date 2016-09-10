@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -573,7 +574,7 @@ public class HexEditControl extends Composite {
                 lastFocusedTextArea = 1;
                 if (e.widget == previewText)
                     lastFocusedTextArea = 2;
-                getDisplay().asyncExec(new Runnable() {
+                DBeaverUI.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         drawUnfocusedCaret(true);
@@ -1581,10 +1582,9 @@ public class HexEditControl extends Composite {
             }
             hexText.getCaret().setVisible(true);
             previewText.getCaret().setVisible(true);
-            getDisplay().asyncExec(new Runnable() {
+            DBeaverUI.asyncExec(new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     drawUnfocusedCaret(true);
                 }
             });
@@ -1711,7 +1711,7 @@ public class HexEditControl extends Composite {
             delayedWaiting = delayed;
         } else {
             delayedInQueue = true;
-            Display.getCurrent().asyncExec(delayed);
+            DBeaverUI.asyncExec(delayed);
         }
     }
 
@@ -1719,7 +1719,7 @@ public class HexEditControl extends Composite {
     void runnableEnd()
     {
         if (delayedWaiting != null) {
-            Display.getCurrent().asyncExec(delayedWaiting);
+            DBeaverUI.asyncExec(delayedWaiting);
             delayedWaiting = null;
         } else {
             delayedInQueue = false;

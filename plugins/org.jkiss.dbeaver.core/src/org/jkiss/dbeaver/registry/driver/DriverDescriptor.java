@@ -935,7 +935,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         boolean downloaded = false;
         if (!downloadCandidates.isEmpty() || (!localLibsExists && !fileSources.isEmpty())) {
             final DriverDependencies dependencies = new DriverDependencies(downloadCandidates);
-            UIUtils.runInUI(null, new Runnable() {
+            DBeaverUI.syncExec(new Runnable() {
                 @Override
                 public void run() {
                     DriverDownloadDialog.downloadDriverFiles(null, DriverDescriptor.this, dependencies);
@@ -1070,7 +1070,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
 
         LicenceAcceptor licenceAcceptor = new LicenceAcceptor(licenseText);
-        UIUtils.runInUI(null, licenceAcceptor);
+        DBeaverUI.syncExec(licenceAcceptor);
         if (licenceAcceptor.result) {
             // Save in registry
             prefs.setValue(LICENSE_ACCEPT_KEY + getId(), true + ":" + System.currentTimeMillis() + ":" + System.getProperty("user.name"));

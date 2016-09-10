@@ -25,6 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -383,7 +384,7 @@ class ResultSetPersister {
 
             if (!generateScript) {
                 // Reflect changes
-                UIUtils.runInUI(viewer.getSite().getShell(), new Runnable() {
+                DBeaverUI.syncExec(new Runnable() {
                     @Override
                     public void run() {
                         boolean rowsChanged = false;

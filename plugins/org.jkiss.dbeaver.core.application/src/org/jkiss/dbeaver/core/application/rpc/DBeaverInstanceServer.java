@@ -55,7 +55,7 @@ public class DBeaverInstanceServer implements IInstanceController {
     public void openExternalFiles(final String[] fileNames) {
         final IWorkbenchWindow window = DBeaverUI.getActiveWorkbenchWindow();
         final Shell shell = window.getShell();
-        UIUtils.runInUI(shell, new Runnable() {
+        DBeaverUI.syncExec(new Runnable() {
             @Override
             public void run() {
                 for (String filePath : fileNames) {

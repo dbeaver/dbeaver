@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.ISaveablePart2;
 import org.jkiss.code.NotNull;
@@ -151,7 +150,7 @@ public class DataSourceHandler
                 // Schedule in UI because connect may be initiated during application startup
                 // and UI is still not initiated. In this case no progress dialog will appear
                 // to be sure run in UI async
-                Display.getDefault().asyncExec(new Runnable() {
+                DBeaverUI.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         connectJob.schedule();
@@ -272,7 +271,7 @@ public class DataSourceHandler
                     if (commitTxn == null) {
                         // Ask for confirmation
                         TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(container.getName());
-                        UIUtils.runInUI(null, closeConfirmer);
+                        DBeaverUI.syncExec(closeConfirmer);
                         switch (closeConfirmer.result) {
                             case IDialogConstants.YES_ID:
                                 commitTxn = true;
@@ -305,7 +304,7 @@ public class DataSourceHandler
         if (isContextTransactionAffected(context)) {
             // Ask for confirmation
             TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(context.getDataSource().getContainer().getName());
-            UIUtils.runInUI(null, closeConfirmer);
+            DBeaverUI.syncExec(closeConfirmer);
             switch (closeConfirmer.result) {
                 case IDialogConstants.YES_ID:
                     return ISaveablePart2.YES;

@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
@@ -154,7 +155,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             protected IStatus run(final DBRProgressMonitor monitor)
             {
                 final DataSourceJob curJob = this;
-                UIUtils.runInDetachedUI(getShell(), new Runnable() {
+                DBeaverUI.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         scriptListener.beginScriptProcessing(curJob, objects);
@@ -170,7 +171,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                         final T object = objects.get(i);
                         monitor.subTask("Process " + DBUtils.getObjectFullName(object));
                         objectProcessingError = null;
-                        UIUtils.runInDetachedUI(getShell(), new Runnable() {
+                        DBeaverUI.asyncExec(new Runnable() {
                             @Override
                             public void run() {
                                 scriptListener.beginObjectProcessing(object, objectNumber);
@@ -179,13 +180,11 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                         try {
                             final List<String> lines = objectsSQL.get(object);
                             for (String line : lines) {
-                                DBCStatement statement = DBUtils.prepareStatement(session, line, false);
-                                try {
+                                try (DBCStatement statement = DBUtils.prepareStatement(session, line, false)) {
                                     if (statement.executeStatement()) {
-                                        final DBCResultSet resultSet = statement.openResultSet();
-                                        try {
+                                        try (DBCResultSet resultSet = statement.openResultSet()) {
                                             // Run in sync because we need result set
-                                            UIUtils.runInUI(getShell(), new Runnable() {
+                                            DBeaverUI.syncExec(new Runnable() {
                                                 @Override
                                                 public void run() {
                                                     try {
@@ -195,21 +194,17 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                                                     }
                                                 }
                                             });
-                                        } finally {
-                                            resultSet.close();
                                         }
                                         if (objectProcessingError != null) {
                                             break;
                                         }
                                     }
-                                } finally {
-                                    statement.close();
                                 }
                             }
                         } catch (Exception e) {
                             objectProcessingError = e;
                         } finally {
-                            UIUtils.runInDetachedUI(getShell(), new Runnable() {
+                            DBeaverUI.asyncExec(new Runnable() {
                                 @Override
                                 public void run() {
                                     scriptListener.endObjectProcessing(object, objectProcessingError);
@@ -220,7 +215,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                     }
                 } finally {
                     monitor.done();
-                    UIUtils.runInDetachedUI(getShell(), new Runnable() {
+                    DBeaverUI.asyncExec(new Runnable() {
                         @Override
                         public void run() {
                             scriptListener.endScriptProcessing();

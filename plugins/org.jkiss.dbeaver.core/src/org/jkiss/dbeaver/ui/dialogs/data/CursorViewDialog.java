@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDCursor;
@@ -84,11 +85,9 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
                         }
                     }
                 }
-                dialogGroup.getDisplay().asyncExec(new Runnable()
-                {
+                DBeaverUI.asyncExec(new Runnable() {
                     @Override
-                    public void run()
-                    {
+                    public void run() {
                         close();
                     }
                 });

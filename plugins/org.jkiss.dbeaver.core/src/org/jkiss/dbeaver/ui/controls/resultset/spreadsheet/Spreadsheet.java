@@ -35,6 +35,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 
@@ -306,7 +307,7 @@ public class Spreadsheet extends LightGrid implements Listener {
             case LightGrid.Event_NavigateLink:
                 // Perform navigation async because it may change grid content and
                 // we don't want to mess current grid state
-                getDisplay().asyncExec(new Runnable() {
+                DBeaverUI.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         presentation.navigateLink((GridCell) event.data, event.stateMask);

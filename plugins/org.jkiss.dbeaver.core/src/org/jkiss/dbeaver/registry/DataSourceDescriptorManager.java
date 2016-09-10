@@ -96,12 +96,11 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
                 registry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
             }
 
-            final IWorkbenchWindow window = DBeaverUI.getActiveWorkbenchWindow();
-            window.getShell().getDisplay().asyncExec(new Runnable() {
+            DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     CreateConnectionDialog dialog = new CreateConnectionDialog(
-                        window,
+                        DBeaverUI.getActiveWorkbenchWindow(),
                         new NewConnectionWizard(registry));
                     dialog.open();
                 }

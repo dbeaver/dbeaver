@@ -166,10 +166,9 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             return;
         }
         // Execute save in UI thread
-        UIUtils.runInUI(getSite().getShell(), new Runnable() {
+        DBeaverUI.syncExec(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 try {
                     // Check for dirty parts
                     final List<ContentEditorPart> dirtyParts = new ArrayList<>();
@@ -194,8 +193,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                         saveInProgress = true;
                         try {
                             dirtyPart.doSave(monitor);
-                        }
-                        finally {
+                        } finally {
                             saveInProgress = false;
                         }
                     }
@@ -209,8 +207,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
 
                     // Close editor
                     closeValueEditor();
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     UIUtils.showErrorDialog(
                         getSite().getShell(),
                         "Can't save content",
@@ -528,10 +525,9 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         {
             // Content was changed somehow so mark editor as dirty
             dirty = true;
-            getSite().getShell().getDisplay().asyncExec(new Runnable() {
+            DBeaverUI.asyncExec(new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     firePropertyChange(PROP_DIRTY);
                 }
             });

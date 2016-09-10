@@ -509,7 +509,7 @@ public class ResultSetViewer extends Viewer
         // Use async exec to avoid focus switch after user UI interaction (e.g. combo)
         Display display = getControl().getDisplay();
         if (UIUtils.isParent(viewerPanel, display.getFocusControl())) {
-            display.asyncExec(new Runnable() {
+            DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     activePresentation.getControl().setFocus();
@@ -1830,7 +1830,7 @@ public class ResultSetViewer extends Viewer
             UIUtils.showMessageBox(null, "Open link", "Can't navigate to '" + DBUtils.getObjectFullName(targetEntity) + "' - navigator node not found", SWT.ICON_ERROR);
             return;
         }
-        UIUtils.runInDetachedUI(null, new Runnable() {
+        DBeaverUI.asyncExec(new Runnable() {
             @Override
             public void run() {
                 openNewDataEditor(targetNode, newFilter);
@@ -1964,7 +1964,7 @@ public class ResultSetViewer extends Viewer
                         @Override
                         public void onUpdate(boolean success) {
                             if (success) {
-                                getControl().getDisplay().asyncExec(new Runnable() {
+                                DBeaverUI.asyncExec(new Runnable() {
                                     @Override
                                     public void run() {
                                         refresh();
@@ -2122,7 +2122,7 @@ public class ResultSetViewer extends Viewer
             @Override
             public void aboutToRun(IJobChangeEvent event) {
                 model.setUpdateInProgress(true);
-                getControl().getDisplay().asyncExec(new Runnable() {
+                DBeaverUI.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         filtersPanel.enableFilters(false);
@@ -2141,10 +2141,9 @@ public class ResultSetViewer extends Viewer
                 if (control.isDisposed()) {
                     return;
                 }
-                control.getDisplay().asyncExec(new Runnable() {
+                DBeaverUI.asyncExec(new Runnable() {
                     @Override
-                    public void run()
-                    {
+                    public void run() {
                         try {
                             if (control.isDisposed()) {
                                 return;
@@ -2446,7 +2445,7 @@ public class ResultSetViewer extends Viewer
                         result = ValidateUniqueKeyUsageDialog.validateUniqueKey(ResultSetViewer.this, executionContext);
                     }
                 };
-                UIUtils.runInUI(null, confirmer);
+                DBeaverUI.syncExec(confirmer);
                 return confirmer.getResult();
             }
         }

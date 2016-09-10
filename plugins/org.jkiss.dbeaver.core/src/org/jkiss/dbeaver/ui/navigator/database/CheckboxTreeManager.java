@@ -105,7 +105,7 @@ public class CheckboxTreeManager implements ICheckStateListener {
         collectChildren(monitor, element, targetChildren, targetContainers, !change);
 
         // Run ui
-        viewer.getControl().getDisplay().syncExec(new Runnable() {
+        DBeaverUI.syncExec(new Runnable() {
             @Override
             public void run() {
                 if (change) {

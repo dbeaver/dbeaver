@@ -24,6 +24,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -68,7 +69,7 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
         final TableItem item = table.getItem(new Point(e.x, e.y));
         if (item != null) {
             columnIndex = UIUtils.getColumnAtPos(item, e.x, e.y);
-            item.getDisplay().asyncExec(new Runnable() {
+            DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     showEditor(item);

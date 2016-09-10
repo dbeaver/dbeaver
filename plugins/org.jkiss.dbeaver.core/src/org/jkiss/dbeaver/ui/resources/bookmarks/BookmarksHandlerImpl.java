@@ -127,11 +127,10 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                 public void onTaskFinished(IStatus status)
                 {
                     if (status.isOK()) {
-                        UIUtils.runInUI(null, new Runnable() {
+                        DBeaverUI.syncExec(new Runnable() {
                             @Override
-                            public void run()
-                            {
-                            openNodeByPath(dsNode, (IFile) resource, storage);
+                            public void run() {
+                                openNodeByPath(dsNode, (IFile) resource, storage);
                             }
                         });
                     } else {
@@ -181,10 +180,9 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
                             // Open entity editor
                             final DBNDatabaseNode databaseNode = (DBNDatabaseNode) currentNode;
-                            UIUtils.runInUI(null, new Runnable() {
+                            DBeaverUI.syncExec(new Runnable() {
                                 @Override
-                                public void run()
-                                {
+                                public void run() {
                                     NavigatorHandlerObjectOpen.openEntityEditor(databaseNode, null, DBeaverUI.getActiveWorkbenchWindow());
                                 }
                             });

@@ -789,7 +789,7 @@ public class TabbedFolderList extends Composite {
     @Override
     public void setBackground(Color color) {
         super.setBackground(color);
-        getDisplay().asyncExec(new Runnable() {
+        DBeaverUI.asyncExec(new Runnable() {
             @Override
             public void run() {
                 initColours();

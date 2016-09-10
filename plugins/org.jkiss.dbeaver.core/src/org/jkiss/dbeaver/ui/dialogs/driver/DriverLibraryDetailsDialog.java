@@ -110,7 +110,7 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
             libList,
             false);
         depsTree.resolveLibraries();
-        UIUtils.runInDetachedUI(getShell(), new Runnable() {
+        DBeaverUI.asyncExec(new Runnable() {
             @Override
             public void run() {
                 depsTree.resizeTree();

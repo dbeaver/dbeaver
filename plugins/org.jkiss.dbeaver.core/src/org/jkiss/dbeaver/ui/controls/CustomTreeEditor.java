@@ -24,6 +24,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -68,7 +69,7 @@ public abstract class CustomTreeEditor implements MouseListener, TraverseListene
         final TreeItem item = tree.getItem(new Point(e.x, e.y));
         if (item != null) {
             columnIndex = UIUtils.getColumnAtPos(item, e.x, e.y);
-            item.getDisplay().asyncExec(new Runnable() {
+            DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     showEditor(item);
