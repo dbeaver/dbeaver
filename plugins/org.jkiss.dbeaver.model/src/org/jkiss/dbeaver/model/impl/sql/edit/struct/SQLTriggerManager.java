@@ -53,9 +53,6 @@ public abstract class SQLTriggerManager<OBJECT_TYPE extends DBSTrigger, CONTAINE
     }
 
     @Override
-    protected abstract OBJECT_TYPE createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, CONTAINER_TYPE parent, Object copyFrom);
-
-    @Override
     protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
         createOrReplaceTriggerQuery(actions, command.getObject());

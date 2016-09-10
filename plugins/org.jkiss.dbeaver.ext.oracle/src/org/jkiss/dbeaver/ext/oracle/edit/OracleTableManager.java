@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.*;
@@ -102,6 +103,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         );
     }
 
+    @NotNull
     @Override
     public Class<?>[] getChildTypes()
     {

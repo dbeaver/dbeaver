@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -85,40 +86,44 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
     // Create
     // ------
     @Override
-    public DB2TableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, DB2Table db2Table,
-                                                   Object from)
+    public DB2TableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final DB2Table table, Object from)
     {
-        EditForeignKeyDialog editDialog = new EditForeignKeyDialog(DBeaverUI.getActiveWorkbenchShell(),
-            DB2Messages.edit_db2_foreign_key_manager_dialog_title, db2Table, FK_RULES);
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<DB2TableForeignKey>() {
+            @Override
+            protected DB2TableForeignKey runTask() {
+                EditForeignKeyDialog editDialog = new EditForeignKeyDialog(DBeaverUI.getActiveWorkbenchShell(),
+                    DB2Messages.edit_db2_foreign_key_manager_dialog_title, table, FK_RULES);
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        DBSForeignKeyModifyRule deleteRule = editDialog.getOnDeleteRule();
-        DBSForeignKeyModifyRule updateRule = editDialog.getOnUpdateRule();
-        DB2TableUniqueKey ukConstraint = (DB2TableUniqueKey) editDialog.getUniqueConstraint();
+                DBSForeignKeyModifyRule deleteRule = editDialog.getOnDeleteRule();
+                DBSForeignKeyModifyRule updateRule = editDialog.getOnUpdateRule();
+                DB2TableUniqueKey ukConstraint = (DB2TableUniqueKey) editDialog.getUniqueConstraint();
 
-        String tableName = CommonUtils.escapeIdentifier(db2Table.getName());
-        String targetTableName = CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName());
+                String tableName = CommonUtils.escapeIdentifier(table.getName());
+                String targetTableName = CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName());
 
-        DB2TableForeignKey foreignKey = new DB2TableForeignKey(db2Table, ukConstraint, deleteRule, updateRule);
+                DB2TableForeignKey foreignKey = new DB2TableForeignKey(table, ukConstraint, deleteRule, updateRule);
 
-        String fkBaseName = String.format(CONS_FK_NAME, tableName, targetTableName);
-        String fkName = DBObjectNameCaseTransformer.transformObjectName(foreignKey, fkBaseName);
+                String fkBaseName = String.format(CONS_FK_NAME, tableName, targetTableName);
+                String fkName = DBObjectNameCaseTransformer.transformObjectName(foreignKey, fkBaseName);
 
-        foreignKey.setName(fkName);
+                foreignKey.setName(fkName);
 
-        List<DB2TableKeyColumn> columns = new ArrayList<>(editDialog.getColumns().size());
-        DB2TableKeyColumn column;
-        int colIndex = 1;
-        for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
-            column = new DB2TableKeyColumn(foreignKey, (DB2TableColumn) tableColumn.getOwnColumn(), colIndex++);
-            columns.add(column);
-        }
+                List<DB2TableKeyColumn> columns = new ArrayList<>(editDialog.getColumns().size());
+                DB2TableKeyColumn column;
+                int colIndex = 1;
+                for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
+                    column = new DB2TableKeyColumn(foreignKey, (DB2TableColumn) tableColumn.getOwnColumn(), colIndex++);
+                    columns.add(column);
+                }
 
-        foreignKey.setColumns(columns);
+                foreignKey.setColumns(columns);
 
-        return foreignKey;
+                return foreignKey;
+            }
+        }.execute();
     }
 
     // ------

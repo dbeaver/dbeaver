@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -45,6 +46,7 @@ public class GenericTableManager extends SQLTableManager<GenericTable, GenericSt
         return object.getContainer().getTableCache();
     }
 
+    @NotNull
     @Override
     public Class<?>[] getChildTypes()
     {

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -45,43 +46,48 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
     }
 
     @Override
-    protected GenericTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, GenericTable table, Object from)
+    protected GenericTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final GenericTable table, Object from)
     {
-        EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
-            DBeaverUI.getActiveWorkbenchShell(),
-            "Create foreign key",
-            table,
-            new DBSForeignKeyModifyRule[] {
-                DBSForeignKeyModifyRule.NO_ACTION,
-                DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
-                DBSForeignKeyModifyRule.SET_NULL,
-                DBSForeignKeyModifyRule.SET_DEFAULT });
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<GenericTableForeignKey>() {
+            @Override
+            protected GenericTableForeignKey runTask() {
+                EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
+                    DBeaverUI.getActiveWorkbenchShell(),
+                    "Create foreign key",
+                    table,
+                    new DBSForeignKeyModifyRule[] {
+                        DBSForeignKeyModifyRule.NO_ACTION,
+                        DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
+                        DBSForeignKeyModifyRule.SET_NULL,
+                        DBSForeignKeyModifyRule.SET_DEFAULT });
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        final GenericTableForeignKey foreignKey = new GenericTableForeignKey(
-            table,
-            null,
-            null,
-            (GenericPrimaryKey) editDialog.getUniqueConstraint(),
-            editDialog.getOnDeleteRule(),
-            editDialog.getOnUpdateRule(),
-            DBSForeignKeyDefferability.NOT_DEFERRABLE,
-            false);
-        foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
-            CommonUtils.escapeIdentifier(table.getName()) + "_" +
-                CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK"));
-        int colIndex = 1;
-        for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
-            foreignKey.addColumn(
-                new GenericTableForeignKeyColumnTable(
-                    foreignKey,
-                    (GenericTableColumn) tableColumn.getOwnColumn(),
-                    colIndex++,
-                    (GenericTableColumn) tableColumn.getRefColumn()));
-        }
-        return foreignKey;
+                final GenericTableForeignKey foreignKey = new GenericTableForeignKey(
+                    table,
+                    null,
+                    null,
+                    (GenericPrimaryKey) editDialog.getUniqueConstraint(),
+                    editDialog.getOnDeleteRule(),
+                    editDialog.getOnUpdateRule(),
+                    DBSForeignKeyDefferability.NOT_DEFERRABLE,
+                    false);
+                foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
+                    CommonUtils.escapeIdentifier(table.getName()) + "_" +
+                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK"));
+                int colIndex = 1;
+                for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
+                    foreignKey.addColumn(
+                        new GenericTableForeignKeyColumnTable(
+                            foreignKey,
+                            (GenericTableColumn) tableColumn.getOwnColumn(),
+                            colIndex++,
+                            (GenericTableColumn) tableColumn.getRefColumn()));
+                }
+                return foreignKey;
+            }
+        }.execute();
     }
 
     @Override

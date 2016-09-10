@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -50,20 +51,25 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     }
 
     @Override
-    protected OracleDataType createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleSchema parent, Object copyFrom)
+    protected OracleDataType createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleSchema parent, Object copyFrom)
     {
-        CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource(), OracleMessages.edit_oracle_data_type_manager_dialog_title);
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
-        OracleDataType dataType = new OracleDataType(
-            parent,
-            dialog.getEntityName(),
-            false);
-        dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
-            "(\n" + //$NON-NLS-1$
-            ")"); //$NON-NLS-1$
-        return dataType;
+        return new UITask<OracleDataType>() {
+            @Override
+            protected OracleDataType runTask() {
+                CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource(), OracleMessages.edit_oracle_data_type_manager_dialog_title);
+                if (dialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
+                OracleDataType dataType = new OracleDataType(
+                    parent,
+                    dialog.getEntityName(),
+                    false);
+                dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                    "(\n" + //$NON-NLS-1$
+                    ")"); //$NON-NLS-1$
+                return dataType;
+            }
+        }.execute();
     }
 
     @Override

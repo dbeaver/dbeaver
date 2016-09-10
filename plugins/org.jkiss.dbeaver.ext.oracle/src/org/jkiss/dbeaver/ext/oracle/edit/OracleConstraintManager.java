@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -49,36 +50,41 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
 
     @Override
     protected OracleTableConstraint createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, OracleTableBase parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final OracleTableBase parent,
         Object from)
     {
-        EditConstraintDialog editDialog = new EditConstraintDialog(
-            DBeaverUI.getActiveWorkbenchShell(),
-            OracleMessages.edit_oracle_constraint_manager_dialog_title,
-            parent,
-            new DBSEntityConstraintType[] {
-                DBSEntityConstraintType.PRIMARY_KEY,
-                DBSEntityConstraintType.UNIQUE_KEY });
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<OracleTableConstraint>() {
+            @Override
+            protected OracleTableConstraint runTask() {
+                EditConstraintDialog editDialog = new EditConstraintDialog(
+                    DBeaverUI.getActiveWorkbenchShell(),
+                    OracleMessages.edit_oracle_constraint_manager_dialog_title,
+                    parent,
+                    new DBSEntityConstraintType[] {
+                        DBSEntityConstraintType.PRIMARY_KEY,
+                        DBSEntityConstraintType.UNIQUE_KEY });
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        final OracleTableConstraint constraint = new OracleTableConstraint(
-            parent,
-            null,
-            editDialog.getConstraintType(),
-            null,
-            OracleObjectStatus.ENABLED);
-        constraint.setName(DBObjectNameCaseTransformer.transformObjectName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
-        int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
-            constraint.addColumn(
-                new OracleTableConstraintColumn(
-                    constraint,
-                    (OracleTableColumn) tableColumn,
-                    colIndex++));
-        }
-        return constraint;
+                final OracleTableConstraint constraint = new OracleTableConstraint(
+                    parent,
+                    null,
+                    editDialog.getConstraintType(),
+                    null,
+                    OracleObjectStatus.ENABLED);
+                constraint.setName(DBObjectNameCaseTransformer.transformObjectName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
+                int colIndex = 1;
+                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                    constraint.addColumn(
+                        new OracleTableConstraintColumn(
+                            constraint,
+                            (OracleTableColumn) tableColumn,
+                            colIndex++));
+                }
+                return constraint;
+            }
+        }.execute();
     }
 
     @Override

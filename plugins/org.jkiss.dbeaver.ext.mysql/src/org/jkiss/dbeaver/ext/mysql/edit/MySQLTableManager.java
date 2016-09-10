@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -129,6 +130,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
         );
     }
 
+    @NotNull
     @Override
     public Class<?>[] getChildTypes()
     {

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -46,34 +47,39 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
 
     @Override
     protected GenericPrimaryKey createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, GenericTable parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final GenericTable parent,
         Object from)
     {
-        EditConstraintDialog editDialog = new EditConstraintDialog(
-            DBeaverUI.getActiveWorkbenchShell(),
-            "Create constraint",
-            parent,
-            new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY} );
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<GenericPrimaryKey>() {
+            @Override
+            protected GenericPrimaryKey runTask() {
+                EditConstraintDialog editDialog = new EditConstraintDialog(
+                    DBeaverUI.getActiveWorkbenchShell(),
+                    "Create constraint",
+                    parent,
+                    new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY} );
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        final GenericPrimaryKey primaryKey = new GenericPrimaryKey(
-            parent,
-            null,
-            null,
-            editDialog.getConstraintType(),
-            false);
-        primaryKey.setName(DBObjectNameCaseTransformer.transformObjectName(primaryKey, CommonUtils.escapeIdentifier(parent.getName()) + "_PK"));
-        int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
-            primaryKey.addColumn(
-                new GenericTableConstraintColumn(
-                    primaryKey,
-                    (GenericTableColumn) tableColumn,
-                    colIndex++));
-        }
-        return primaryKey;
+                final GenericPrimaryKey primaryKey = new GenericPrimaryKey(
+                    parent,
+                    null,
+                    null,
+                    editDialog.getConstraintType(),
+                    false);
+                primaryKey.setName(DBObjectNameCaseTransformer.transformObjectName(primaryKey, CommonUtils.escapeIdentifier(parent.getName()) + "_PK"));
+                int colIndex = 1;
+                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                    primaryKey.addColumn(
+                        new GenericTableConstraintColumn(
+                            primaryKey,
+                            (GenericTableColumn) tableColumn,
+                            colIndex++));
+                }
+                return primaryKey;
+            }
+        }.execute();
     }
 
     @Override

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -125,6 +126,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
         );
     }
 
+    @NotNull
     @Override
     public Class<?>[] getChildTypes()
     {

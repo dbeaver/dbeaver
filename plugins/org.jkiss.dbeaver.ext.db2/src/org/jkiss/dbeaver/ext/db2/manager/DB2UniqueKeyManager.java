@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -79,39 +80,43 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
     // ------
 
     @Override
-    public DB2TableUniqueKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, DB2Table db2Table,
-                                                  Object from)
+    public DB2TableUniqueKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final DB2Table table, Object from)
     {
-        EditConstraintDialog editDialog = new EditConstraintDialog(DBeaverUI.getActiveWorkbenchShell(),
-            DB2Messages.edit_db2_constraint_manager_dialog_title, db2Table, CONS_TYPES);
-        if (editDialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
+        return new UITask<DB2TableUniqueKey>() {
+            @Override
+            protected DB2TableUniqueKey runTask() {
+                EditConstraintDialog editDialog = new EditConstraintDialog(DBeaverUI.getActiveWorkbenchShell(),
+                    DB2Messages.edit_db2_constraint_manager_dialog_title, table, CONS_TYPES);
+                if (editDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
 
-        String suffix;
-        DBSEntityConstraintType type = editDialog.getConstraintType();
-        if (type.equals(DBSEntityConstraintType.PRIMARY_KEY)) {
-            suffix = CONS_PK_SUF;
-        } else {
-            suffix = CONS_UK_SUF;
-        }
+                String suffix;
+                DBSEntityConstraintType type = editDialog.getConstraintType();
+                if (type.equals(DBSEntityConstraintType.PRIMARY_KEY)) {
+                    suffix = CONS_PK_SUF;
+                } else {
+                    suffix = CONS_UK_SUF;
+                }
 
-        DB2TableUniqueKey constraint = new DB2TableUniqueKey(db2Table, editDialog.getConstraintType());
+                DB2TableUniqueKey constraint = new DB2TableUniqueKey(table, editDialog.getConstraintType());
 
-        String constraintName = DBObjectNameCaseTransformer.transformObjectName(constraint,
-            CommonUtils.escapeIdentifier(db2Table.getName()) + suffix);
-        constraint.setName(constraintName);
+                String constraintName = DBObjectNameCaseTransformer.transformObjectName(constraint,
+                    CommonUtils.escapeIdentifier(table.getName()) + suffix);
+                constraint.setName(constraintName);
 
-        List<DB2TableKeyColumn> columns = new ArrayList<>(editDialog.getSelectedAttributes().size());
-        DB2TableKeyColumn column;
-        int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
-            column = new DB2TableKeyColumn(constraint, (DB2TableColumn) tableColumn, colIndex++);
-            columns.add(column);
-        }
-        constraint.setColumns(columns);
+                List<DB2TableKeyColumn> columns = new ArrayList<>(editDialog.getSelectedAttributes().size());
+                DB2TableKeyColumn column;
+                int colIndex = 1;
+                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                    column = new DB2TableKeyColumn(constraint, (DB2TableColumn) tableColumn, colIndex++);
+                    columns.add(column);
+                }
+                constraint.setColumns(columns);
 
-        return constraint;
+                return constraint;
+            }
+        }.execute();
     }
 
     // ------

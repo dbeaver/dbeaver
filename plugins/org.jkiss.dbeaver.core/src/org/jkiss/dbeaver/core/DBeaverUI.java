@@ -284,7 +284,7 @@ public class DBeaverUI implements DBUICallback {
         try {
             getDisplay().asyncExec(runnable);
         } catch (Exception e) {
-            log.error(e);
+            log.debug(e);
         }
     }
 
@@ -292,7 +292,7 @@ public class DBeaverUI implements DBUICallback {
         try {
             getDisplay().syncExec(runnable);
         } catch (Exception e) {
-            log.error(e);
+            log.debug(e);
         }
     }
 
@@ -301,7 +301,7 @@ public class DBeaverUI implements DBUICallback {
             getDisplay().syncExec(runnable);
             return runnable.getResult();
         } catch (Exception e) {
-            log.error(e);
+            log.debug(e);
             return null;
         }
     }

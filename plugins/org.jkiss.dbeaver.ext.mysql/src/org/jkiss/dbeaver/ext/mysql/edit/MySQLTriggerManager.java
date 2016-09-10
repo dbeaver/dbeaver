@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 
 import java.util.List;
@@ -48,15 +49,20 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
     }
 
     @Override
-    protected MySQLTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLTable parent, Object copyFrom)
+    protected MySQLTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final MySQLTable parent, Object copyFrom)
     {
-        CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource(), "Create trigger");
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
-        MySQLTrigger newTrigger = new MySQLTrigger(parent.getContainer(), parent, dialog.getEntityName());
-        newTrigger.setObjectDefinitionText(""); //$NON-NLS-1$
-        return newTrigger;
+        return new UITask<MySQLTrigger>() {
+            @Override
+            protected MySQLTrigger runTask() {
+                CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource(), "Create trigger");
+                if (dialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
+                MySQLTrigger newTrigger = new MySQLTrigger(parent.getContainer(), parent, dialog.getEntityName());
+                newTrigger.setObjectDefinitionText(""); //$NON-NLS-1$
+                return newTrigger;
+            }
+        }.execute();
     }
 
     protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, MySQLTrigger trigger) {

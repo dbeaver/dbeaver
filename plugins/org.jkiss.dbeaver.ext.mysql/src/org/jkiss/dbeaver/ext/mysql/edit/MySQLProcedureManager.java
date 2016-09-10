@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -66,16 +67,21 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
     }
 
     @Override
-    protected MySQLProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom)
+    protected MySQLProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final MySQLCatalog parent, Object copyFrom)
     {
-        CreateProcedureDialog dialog = new CreateProcedureDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource());
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
-        MySQLProcedure newProcedure = new MySQLProcedure(parent);
-        newProcedure.setProcedureType(dialog.getProcedureType());
-        newProcedure.setName(dialog.getProcedureName());
-        return newProcedure;
+        return new UITask<MySQLProcedure>() {
+            @Override
+            protected MySQLProcedure runTask() {
+                CreateProcedureDialog dialog = new CreateProcedureDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource());
+                if (dialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
+                MySQLProcedure newProcedure = new MySQLProcedure(parent);
+                newProcedure.setProcedureType(dialog.getProcedureType());
+                newProcedure.setName(dialog.getProcedureName());
+                return newProcedure;
+            }
+        }.execute();
     }
 
     @Override
