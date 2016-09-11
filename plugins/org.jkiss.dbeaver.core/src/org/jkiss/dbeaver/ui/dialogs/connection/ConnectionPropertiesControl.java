@@ -129,6 +129,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         if (includeCustom && customProperties != null) {
             propertyDescriptors.addAll(customProperties);
         }
+        Collections.sort(propertyDescriptors, PROPERTIES_COMPARATOR);
         return propertyDescriptors;
     }
 
@@ -175,6 +176,14 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
                     true));
             }
         }
+        Collections.sort(customProperties, PROPERTIES_COMPARATOR);
     }
+
+    private static Comparator<DBPPropertyDescriptor> PROPERTIES_COMPARATOR = new Comparator<DBPPropertyDescriptor>() {
+        @Override
+        public int compare(DBPPropertyDescriptor o1, DBPPropertyDescriptor o2) {
+            return o1.getDisplayName().compareTo(o2.getDisplayName());
+        }
+    };
 
 }
