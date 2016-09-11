@@ -91,7 +91,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_LONG_AS_LOB, true);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY, false);
 
