@@ -1248,7 +1248,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.eclipse.ui.edit.text.smartEnter" class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewCommandHandler">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewCommandHandler">
             <activeWhen>
                 <with variable="activeFocusControlId">
                     <equals value="org.jkiss.dbeaver.ui.resultset.panel.valueView"/>
