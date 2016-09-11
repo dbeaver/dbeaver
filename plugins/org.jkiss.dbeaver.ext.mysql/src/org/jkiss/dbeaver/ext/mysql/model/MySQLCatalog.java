@@ -570,7 +570,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 owner.getName(),
                 null,
                 procedure == null ? null : procedure.getName(),
-                null).getSourceStatement();
+                "%").getSourceStatement();
         }
 
         @Override
