@@ -1684,16 +1684,19 @@ public class SQLEditor extends SQLEditorBase implements
             }
             // Get results window (it is possible that it was closed till that moment
             SQLQuery query = result.getStatement();
-            /*if (false) */{
-                // FIXME: sets tab name to result table name. Disabled because now we have object info panel in RSV
-                QueryResultsContainer results = queryProcessor.getResults(query);
-                if (results != null) {
-                    CTabItem tabItem = results.tabItem;
-                    if (!tabItem.isDisposed()) {
-                        int queryIndex = queryProcessors.indexOf(queryProcessor);
-                        String resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, result.getResultSetName());
-                        if (!CommonUtils.isEmpty(resultSetName)) {
-                            tabItem.setText(resultSetName);
+            {
+                // Set tab name only if we have just one resultset
+                // If query produced multiple results - leave their names as is
+                if (queryProcessor.getResultProviders().size() == 1) {
+                    QueryResultsContainer results = queryProcessor.getResults(query);
+                    if (results != null) {
+                        CTabItem tabItem = results.tabItem;
+                        if (!tabItem.isDisposed()) {
+                            int queryIndex = queryProcessors.indexOf(queryProcessor);
+                            String resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, result.getResultSetName());
+                            if (!CommonUtils.isEmpty(resultSetName)) {
+                                tabItem.setText(resultSetName);
+                            }
                         }
                     }
                 }
