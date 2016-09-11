@@ -23,8 +23,12 @@
          point="org.eclipse.ui.intro">
       <introProductBinding
             introId="org.eclipse.ui.intro.universal"
-            productId="org.jkiss.dbeaver.core.product">
+            productId="org.jkiss.dbeaver.core.application.product">
       </introProductBinding>
+       <introProductBinding
+               introId="org.eclipse.ui.intro.universal"
+               productId="com.jkiss.dbeaver.ent.application.enterprise">
+       </introProductBinding>
    </extension>
    <extension
          point="org.eclipse.ui.intro.configExtension">
