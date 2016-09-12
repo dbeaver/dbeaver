@@ -282,15 +282,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         }
         SQLQuery originalQuery = sqlQuery;
         long startTime = System.currentTimeMillis();
-
-        if (fireEvents && listener != null) {
-            // Notify query start
-            try {
-                listener.onStartQuery(sqlQuery);
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
+        boolean startQueryAlerted = false;
 
         try {
             // Prepare statement
@@ -322,6 +314,17 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             }
 
             statistics.setQueryText(originalQueryText);
+
+            // Notify query start
+            if (fireEvents && listener != null) {
+                // Notify query start
+                try {
+                    listener.onStartQuery(sqlQuery);
+                } catch (Exception e) {
+                    log.error(e);
+                }
+                startQueryAlerted = true;
+            }
 
             startTime = System.currentTimeMillis();
             DBCExecutionSource source = new AbstractExecutionSource(dataContainer, executionContext, partSite.getPart(), sqlQuery);
@@ -411,7 +414,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         finally {
             curResult.setQueryTime(System.currentTimeMillis() - startTime);
 
-            if (fireEvents && listener != null) {
+            if (fireEvents && listener != null && startQueryAlerted) {
                 // Notify query end
                 try {
                     listener.onEndQuery(curResult);
