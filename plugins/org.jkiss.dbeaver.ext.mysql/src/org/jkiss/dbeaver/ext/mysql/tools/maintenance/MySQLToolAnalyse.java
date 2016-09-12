@@ -24,6 +24,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.utils.CommonUtils;
@@ -55,7 +56,7 @@ public class MySQLToolAnalyse implements IExternalTool
 
         @Override
         protected void generateObjectCommand(List<String> lines, MySQLTable object) {
-            lines.add("ANALYZE TABLE " + object.getFullQualifiedName());
+            lines.add("ANALYZE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL));
         }
 
         @Override

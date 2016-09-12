@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Collection;
@@ -95,7 +96,7 @@ public class DB2TruncateDialog extends DB2BaseTableToolDialog {
     protected void generateObjectCommand(List<String> lines, DB2Table db2Table)
     {
         StringBuilder sb = new StringBuilder(256);
-        sb.append("TRUNCATE TABLE ").append(db2Table.getFullQualifiedName());
+        sb.append("TRUNCATE TABLE ").append(db2Table.getFullyQualifiedName(DBPEvaluationContext.DML));
 
         if (dlgStorageDrop.getSelection()) {
             sb.append(" DROP STORAGE");

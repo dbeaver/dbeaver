@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -71,7 +72,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     {
         if (command.getProperties().size() > 1 || command.getProperty("comment") == null) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
-            query.append(command.getObject().getFullQualifiedName()).append(" "); //$NON-NLS-1$
+            query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
             appendTableModifiers(command.getObject(), command, query);
             actionList.add(new SQLDatabasePersistAction(query.toString()));
         }
@@ -82,7 +83,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         if (command.getProperty("comment") != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
-                "COMMENT ON TABLE " + command.getObject().getFullQualifiedName() +
+                "COMMENT ON TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     " IS '" + SQLUtils.escapeString(command.getObject().getDescription()) + "'"));
         }
     }
@@ -98,7 +99,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",
-                "ALTER TABLE " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
+                "ALTER TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
                     " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
         );
     }

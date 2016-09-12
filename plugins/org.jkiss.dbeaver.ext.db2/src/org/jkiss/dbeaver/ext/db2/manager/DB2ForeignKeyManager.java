@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
@@ -144,7 +145,7 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
     @Override
     public String getDropForeignKeyPattern(DB2TableForeignKey foreignKey)
     {
-        String tableName = foreignKey.getTable().getFullQualifiedName();
+        String tableName = foreignKey.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
         return String.format(SQL_DROP_FK, tableName, foreignKey.getName());
     }
 

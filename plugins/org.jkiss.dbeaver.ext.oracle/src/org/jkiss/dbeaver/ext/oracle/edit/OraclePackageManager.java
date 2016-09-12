@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -81,7 +82,7 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
         final OraclePackage object = objectDeleteCommand.getObject();
         actions.add(
             new SQLDatabasePersistAction("Drop package",
-                "DROP PACKAGE " + object.getFullQualifiedName()) //$NON-NLS-1$
+                "DROP PACKAGE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-1$
         );
     }
 
@@ -117,7 +118,7 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
                 actionList.add(
                     new SQLDatabasePersistAction(
                         "Drop package header",
-                        "DROP PACKAGE BODY " + pack.getFullQualifiedName(), DBEPersistAction.ActionType.OPTIONAL) //$NON-NLS-1$
+                        "DROP PACKAGE BODY " + pack.getFullyQualifiedName(DBPEvaluationContext.DDL), DBEPersistAction.ActionType.OPTIONAL) //$NON-NLS-1$
                     );
             }
         } catch (DBException e) {

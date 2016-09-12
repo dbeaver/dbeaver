@@ -23,6 +23,7 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -71,7 +72,7 @@ public class EntityHyperlink implements IHyperlink
     public String getHyperlinkText()
     {
         if (reference != null) {
-            return DBUtils.getObjectFullName(reference);
+            return DBUtils.getObjectFullName(reference, DBPEvaluationContext.UI);
         } else {
             return node.getNodeFullName();
         }

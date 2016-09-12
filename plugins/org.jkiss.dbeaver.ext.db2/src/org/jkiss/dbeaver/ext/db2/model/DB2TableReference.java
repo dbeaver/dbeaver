@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DeleteUpdateRule;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
@@ -87,7 +88,7 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
 
     @NotNull
     @Override
-    public String getFullQualifiedName()
+    public String getFullyQualifiedName(DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(), getTable().getContainer(), getTable(), this);
     }

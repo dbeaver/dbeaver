@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -123,7 +124,7 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
         DB2TableColumn tableColumn = db2Table.getAttribute(session.getProgressMonitor(), colName);
         if (tableColumn == null) {
-            log.debug("DB2TableForeignKeyCache : Column '" + colName + "' not found in table '" + db2Table.getFullQualifiedName()
+            log.debug("DB2TableForeignKeyCache : Column '" + colName + "' not found in table '" + db2Table.getFullyQualifiedName(DBPEvaluationContext.UI)
                 + "' ??");
             return null;
         } else {

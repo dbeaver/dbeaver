@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBPSystemObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -102,7 +99,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
     @NotNull
     @Override
-    public String getFullQualifiedName()
+    public String getFullyQualifiedName(DBPEvaluationContext context)
     {
         return getDataSource().getMetaModel().useCatalogInObjectNames() ?
             DBUtils.getFullQualifiedName(
@@ -359,7 +356,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                     log.debug("Null FK table name");
                     continue;
                 }
-                //String fkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), info.fkTableCatalog, info.fkTableSchema, info.fkTableName);
+                //String fkTableFullName = DBUtils.getFullyQualifiedName(getDataSource(), info.fkTableCatalog, info.fkTableSchema, info.fkTableName);
                 GenericTable fkTable = getDataSource().findTable(monitor, info.fkTableCatalog, info.fkTableSchema, info.fkTableName);
                 if (fkTable == null) {
                     log.warn("Can't find FK table " + info.fkTableName);
@@ -372,7 +369,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                 }
                 GenericTableColumn fkColumn = fkTable.getAttribute(monitor, info.fkColumnName);
                 if (fkColumn == null) {
-                    log.warn("Can't find FK table " + fkTable.getFullQualifiedName() + " column " + info.fkColumnName);
+                    log.warn("Can't find FK table " + fkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + " column " + info.fkColumnName);
                     continue;
                 }
 
@@ -381,7 +378,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                 if (!CommonUtils.isEmpty(info.pkName)) {
                     pk = DBUtils.findObject(this.getConstraints(monitor), info.pkName);
                     if (pk == null) {
-                        log.debug("Unique key '" + info.pkName + "' not found in table " + this.getFullQualifiedName());
+                        log.debug("Unique key '" + info.pkName + "' not found in table " + this.getFullyQualifiedName(DBPEvaluationContext.DDL));
                     }
                 }
                 if (pk == null) {
@@ -396,9 +393,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                     }
                 }
                 if (pk == null) {
-                    log.warn("Can't find unique key for table " + this.getFullQualifiedName() + " column " + pkColumn.getName());
+                    log.warn("Can't find unique key for table " + this.getFullyQualifiedName(DBPEvaluationContext.DDL) + " column " + pkColumn.getName());
                     // Too bad. But we have to create new fake PK for this FK
-                    //String pkFullName = getFullQualifiedName() + "." + info.pkName;
+                    //String pkFullName = getFullyQualifiedName() + "." + info.pkName;
                     pk = new GenericPrimaryKey(this, info.pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
                     pk.addColumn(new GenericTableConstraintColumn(pk, pkColumn, info.keySeq));
                     // Add this fake constraint to it's owner
@@ -414,7 +411,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                 } else {
                     fk = DBUtils.findObject(fkTable.getAssociations(monitor), info.fkName);
                     if (fk == null) {
-                        log.warn("Can't find foreign key '" + info.fkName + "' for table " + fkTable.getFullQualifiedName());
+                        log.warn("Can't find foreign key '" + info.fkName + "' for table " + fkTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
                         // No choice, we have to create fake foreign key :(
                     }
                 }

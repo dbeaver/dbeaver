@@ -25,8 +25,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -68,7 +68,7 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
         for (T object : objects) {
             TreeItem item = new TreeItem(objectTree, SWT.NONE);
             item.setData(object);
-            item.setText(0, DBUtils.getObjectFullName(object));
+            item.setText(0, DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
         }
         UIUtils.packColumns(objectTree, true, null);
 

@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -91,7 +92,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         switch (indexTypeNum) {
             case DatabaseMetaData.tableIndexStatistic:
                 // Table index statistic. Not a real index.
-                log.debug("Skip statistics index '" + indexName + "' in '" + DBUtils.getObjectFullName(parent) + "'");
+                log.debug("Skip statistics index '" + indexName + "' in '" + DBUtils.getObjectFullName(parent, DBPEvaluationContext.DDL) + "'");
                 return null;
             // indexType = DBSIndexType.STATISTIC; break;
             case DatabaseMetaData.tableIndexClustered:

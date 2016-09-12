@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraintColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableCheckConstraintColUsage;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -126,7 +127,7 @@ public final class DB2TableCheckConstraintCache extends
         DB2TableCheckConstraintColUsage usage = CommonUtils.valueOf(DB2TableCheckConstraintColUsage.class,
             JDBCUtils.safeGetString(dbResult, "USAGE"));
         if (tableColumn == null) {
-            log.debug("Column '" + colName + "' not found in table '" + db2Table.getFullQualifiedName() + "' ??");
+            log.debug("Column '" + colName + "' not found in table '" + db2Table.getFullyQualifiedName(DBPEvaluationContext.UI) + "' ??");
             return null;
         } else {
             return new DB2TableCheckConstraintColumn[] { new DB2TableCheckConstraintColumn(object, tableColumn, usage) };

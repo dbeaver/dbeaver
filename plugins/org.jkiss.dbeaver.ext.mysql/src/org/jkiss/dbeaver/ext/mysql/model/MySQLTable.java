@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
@@ -353,7 +354,7 @@ public class MySQLTable extends MySQLTableBase
                     if (pkTable != null && pkName != null) {
                         pk = DBUtils.findObject(pkTable.getConstraints(monitor), pkName);
                         if (pk == null) {
-                            log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
+                            log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
                         }
                     }
                     if (pk == null && pkTable != null) {
@@ -368,9 +369,9 @@ public class MySQLTable extends MySQLTableBase
                         }
                     }
                     if (pk == null && pkTable != null) {
-                        log.warn("Can't find primary key for table " + pkTable.getFullQualifiedName());
+                        log.warn("Can't find primary key for table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
                         // Too bad. But we have to create new fake PK for this FK
-                        String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
+                        String pkFullName = pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + pkName;
                         pk = pkMap.get(pkFullName);
                         if (pk == null) {
                             pk = new MySQLTableConstraint(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
@@ -384,7 +385,7 @@ public class MySQLTable extends MySQLTableBase
                     if (references && fkTable != null) {
                         fk = DBUtils.findObject(fkTable.getAssociations(monitor), fkName);
                         if (fk == null) {
-                            log.warn("Can't find foreign key '" + fkName + "' for table " + fkTable.getFullQualifiedName());
+                            log.warn("Can't find foreign key '" + fkName + "' for table " + fkTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
                             // No choice, we have to create fake foreign key :(
                         } else {
                             if (!fkList.contains(fk)) {

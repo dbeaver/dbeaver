@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
@@ -34,7 +35,7 @@ public class SQLServerIndex extends GenericTableIndex {
 
     @NotNull
     @Override
-    public String getFullQualifiedName() {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getSchema(),
             getTable(),

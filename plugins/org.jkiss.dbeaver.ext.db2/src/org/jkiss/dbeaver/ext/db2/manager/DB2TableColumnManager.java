@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -107,7 +108,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
             final String deltaSQL = computeDeltaSQL(command);
             if (!deltaSQL.isEmpty()) {
                 hasColumnChanges = true;
-                String sqlAlterColumn = String.format(SQL_ALTER, db2Column.getTable().getFullQualifiedName(), deltaSQL);
+                String sqlAlterColumn = String.format(SQL_ALTER, db2Column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL), deltaSQL);
                 actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sqlAlterColumn));
             }
         }
@@ -170,7 +171,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     private DBEPersistAction buildCommentAction(DB2TableColumn db2Column)
     {
         if (CommonUtils.isNotEmpty(db2Column.getDescription())) {
-            String tableName = db2Column.getTable().getFullQualifiedName();
+            String tableName = db2Column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
             String columnName = db2Column.getName();
             String comment = db2Column.getDescription();
             String commentSQL = String.format(SQL_COMMENT, tableName, columnName, comment);
@@ -182,7 +183,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
 
     private DBEPersistAction buildReorgAction(DB2TableColumn db2Column)
     {
-        String tableName = db2Column.getTable().getFullQualifiedName();
+        String tableName = db2Column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
         String reorgSQL = String.format(SQL_REORG, tableName);
         return new SQLDatabasePersistAction(CMD_REORG, reorgSQL);
     }
@@ -200,7 +201,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename column",
-                "ALTER TABLE " + column.getTable().getFullQualifiedName() + " RENAME COLUMN " +
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " RENAME COLUMN " +
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO " + command.getNewName())
         );
     }

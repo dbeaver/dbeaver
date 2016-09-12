@@ -21,10 +21,7 @@ import org.eclipse.core.resources.IFile;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -328,7 +325,7 @@ public final class SQLUtils {
             if (conditionTable != null) {
                 query.append(conditionTable).append('.');
             }
-            query.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute()));
+            query.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML));
             query.append(' ').append(condition);
         }
 
@@ -347,7 +344,7 @@ public final class SQLUtils {
             if (conditionTable != null) {
                 query.append(conditionTable).append('.');
             }
-            query.append(DBUtils.getObjectFullName(co.getAttribute()));
+            query.append(DBUtils.getObjectFullName(co.getAttribute(), DBPEvaluationContext.DML));
             if (co.isOrderDescending()) {
                 query.append(" DESC"); //$NON-NLS-1$
             }
@@ -416,7 +413,7 @@ public final class SQLUtils {
                     return "IS NULL";
                 }
                 if (hasNull) {
-                    conString.append("IS NULL OR ").append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute())).append(" ");
+                    conString.append("IS NULL OR ").append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML)).append(" ");
                 }
 
                 conString.append(operator.getStringValue());

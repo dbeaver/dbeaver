@@ -34,10 +34,7 @@ import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.ext.erd.part.NotePart;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -442,7 +439,7 @@ public class DiagramLoader
                     xml.addAttribute(ATTR_ID, info.objectId);
                     xml.addAttribute(ATTR_NAME, table.getName());
                     if (table instanceof DBPQualifiedObject) {
-                        xml.addAttribute(ATTR_FQ_NAME, ((DBPQualifiedObject)table).getFullQualifiedName());
+                        xml.addAttribute(ATTR_FQ_NAME, ((DBPQualifiedObject)table).getFullyQualifiedName(DBPEvaluationContext.UI));
                     }
                     Rectangle tableBounds;
                     if (tablePart != null) {
@@ -474,17 +471,17 @@ public class DiagramLoader
                     DBSEntityAssociation association = rel.getObject();
                     xml.addAttribute(ATTR_NAME, association.getName());
                     if (association instanceof DBPQualifiedObject) {
-                        xml.addAttribute(ATTR_FQ_NAME, ((DBPQualifiedObject) association).getFullQualifiedName());
+                        xml.addAttribute(ATTR_FQ_NAME, ((DBPQualifiedObject) association).getFullyQualifiedName(DBPEvaluationContext.UI));
                     }
                     xml.addAttribute(ATTR_TYPE, association.getConstraintType().getId());
                     TableSaveInfo pkInfo = infoMap.get(rel.getPrimaryKeyEntity());
                     if (pkInfo == null) {
-                        log.error("Cannot find PK table '" + DBUtils.getObjectFullName(rel.getPrimaryKeyEntity().getObject()) + "' in info map");
+                        log.error("Cannot find PK table '" + DBUtils.getObjectFullName(rel.getPrimaryKeyEntity().getObject(), DBPEvaluationContext.UI) + "' in info map");
                         continue;
                     }
                     TableSaveInfo fkInfo = infoMap.get(rel.getForeignKeyEntity());
                     if (fkInfo == null) {
-                        log.error("Cannot find FK table '" + DBUtils.getObjectFullName(rel.getForeignKeyEntity().getObject()) + "' in info map");
+                        log.error("Cannot find FK table '" + DBUtils.getObjectFullName(rel.getForeignKeyEntity().getObject(), DBPEvaluationContext.UI) + "' in info map");
                         continue;
                     }
                     xml.addAttribute(ATTR_PK_REF, pkInfo.objectId);

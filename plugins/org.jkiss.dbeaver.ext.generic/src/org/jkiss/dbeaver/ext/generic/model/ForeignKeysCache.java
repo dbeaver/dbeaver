@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -105,7 +106,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             log.debug("Null PK table name");
             return null;
         }
-        //String pkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
+        //String pkTableFullName = DBUtils.getFullyQualifiedName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
         GenericTable pkTable = parent.getDataSource().findTable(session.getProgressMonitor(), pkTableCatalog, pkTableSchema, pkTableName);
         if (pkTable == null) {
             log.warn("Can't find PK table " + pkTableName);
@@ -117,14 +118,14 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         if (!CommonUtils.isEmpty(pkName)) {
             pk = DBUtils.findObject(pkTable.getConstraints(session.getProgressMonitor()), pkName);
             if (pk == null) {
-                log.debug("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
+                log.debug("Unique key '" + pkName + "' not found in table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
             }
         }
         if (pk == null) {
             String pkColumnName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME);
             GenericTableColumn pkColumn = pkTable.getAttribute(session.getProgressMonitor(), pkColumnName);
             if (pkColumn == null) {
-                log.warn("Can't find PK table " + pkTable.getFullQualifiedName() + " column " + pkColumnName);
+                log.warn("Can't find PK table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + " column " + pkColumnName);
                 return null;
             }
 
@@ -138,9 +139,9 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
                 }
             }
             if (pk == null) {
-                log.warn("Can't find unique key for table " + pkTable.getFullQualifiedName() + " column " + pkColumn.getName());
+                log.warn("Can't find unique key for table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + " column " + pkColumn.getName());
                 // Too bad. But we have to create new fake PK for this FK
-                String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
+                String pkFullName = pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + pkName;
                 pk = pkMap.get(pkFullName);
                 if (pk == null) {
                     pk = new GenericPrimaryKey(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
@@ -168,7 +169,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         String pkColumnName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME);
         GenericPrimaryKey referencedConstraint = foreignKey.getReferencedConstraint();
         if (referencedConstraint == null) {
-            log.warn("Null reference constraint in FK '" + foreignKey.getFullQualifiedName() + "'");
+            log.warn("Null reference constraint in FK '" + foreignKey.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
             return null;
         }
         GenericTableConstraintColumn pkColumn = (GenericTableConstraintColumn)DBUtils.getConstraintAttribute(
@@ -176,19 +177,19 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             referencedConstraint,
             pkColumnName);
         if (pkColumn == null) {
-            log.warn("Can't find PK table " + referencedConstraint.getTable().getFullQualifiedName() + " column " + pkColumnName);
+            log.warn("Can't find PK table " + referencedConstraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " column " + pkColumnName);
             return null;
         }
         int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);
 
         String fkColumnName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.FKCOLUMN_NAME);
         if (CommonUtils.isEmpty(fkColumnName)) {
-            log.warn("Empty FK column for table " + foreignKey.getTable().getFullQualifiedName() + " PK column " + pkColumnName);
+            log.warn("Empty FK column for table " + foreignKey.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " PK column " + pkColumnName);
             return null;
         }
         GenericTableColumn fkColumn = foreignKey.getTable().getAttribute(session.getProgressMonitor(), fkColumnName);
         if (fkColumn == null) {
-            log.warn("Can't find FK table " + foreignKey.getTable().getFullQualifiedName() + " column " + fkColumnName);
+            log.warn("Can't find FK table " + foreignKey.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " column " + fkColumnName);
             return null;
         }
 

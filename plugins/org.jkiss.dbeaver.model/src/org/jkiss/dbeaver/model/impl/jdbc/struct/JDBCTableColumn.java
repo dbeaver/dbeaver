@@ -176,7 +176,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
 //        if (descColumns != null) {
 //            query.append(", ").append(descColumns);
 //        }
-        query.append("\nFROM ").append(DBUtils.getObjectFullName(getTable()));
+        query.append("\nFROM ").append(DBUtils.getObjectFullName(getTable(), DBPEvaluationContext.DML));
         if (valuePattern instanceof String) {
             query.append("\nWHERE ").append(DBUtils.getQuotedIdentifier(this)).append(" LIKE ?");
         }

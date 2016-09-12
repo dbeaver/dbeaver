@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexPageSplit;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2UniqueRule;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -140,7 +141,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2TableBase> {
 
     @NotNull
     @Override
-    public String getFullQualifiedName()
+    public String getFullyQualifiedName(DBPEvaluationContext context)
     {
         return getContainer().getName() + "." + getName();
     }

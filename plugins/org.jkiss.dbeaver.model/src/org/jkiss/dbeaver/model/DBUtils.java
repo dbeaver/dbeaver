@@ -1171,22 +1171,22 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getObjectFullName(@NotNull DBPNamedObject object)
+    public static String getObjectFullName(@NotNull DBPNamedObject object, DBPEvaluationContext context)
     {
         if (object instanceof DBPQualifiedObject) {
-            return ((DBPQualifiedObject) object).getFullQualifiedName();
+            return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
         } else if (object instanceof DBSObject) {
-            return getObjectFullName(((DBSObject) object).getDataSource(), object);
+            return getObjectFullName(((DBSObject) object).getDataSource(), object, context);
         } else {
             return object.getName();
         }
     }
 
     @NotNull
-    public static String getObjectFullName(@NotNull DBPDataSource dataSource, @NotNull DBPNamedObject object)
+    public static String getObjectFullName(@NotNull DBPDataSource dataSource, @NotNull DBPNamedObject object, DBPEvaluationContext context)
     {
         if (object instanceof DBPQualifiedObject) {
-            return ((DBPQualifiedObject) object).getFullQualifiedName();
+            return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
         } else {
             return getQuotedIdentifier(dataSource, object.getName());
         }
@@ -1544,13 +1544,13 @@ public final class DBUtils {
     @SuppressWarnings("unchecked")
     @NotNull
     public static <T extends DBCSession> T openMetaSession(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull String task) {
-        return (T) dataSource.getDefaultContext(true).openSession(monitor, DBPEvaluationContext.META, task);
+        return (T) dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, task);
     }
 
     @SuppressWarnings("unchecked")
     @NotNull
     public static <T extends DBCSession> T openUtilSession(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull String task) {
-        return (T) dataSource.getDefaultContext(false).openSession(monitor, DBPEvaluationContext.UTIL, task);
+        return (T) dataSource.getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.META, task);
     }
 
     @Nullable

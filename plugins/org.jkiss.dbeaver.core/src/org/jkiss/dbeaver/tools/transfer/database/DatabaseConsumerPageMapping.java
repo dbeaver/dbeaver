@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -309,7 +310,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             public void update(ViewerCell cell)
             {
                 DatabaseMappingObject mapping = (DatabaseMappingObject) cell.getElement();
-                cell.setText(DBUtils.getObjectFullName(mapping.getSource()));
+                cell.setText(DBUtils.getObjectFullName(mapping.getSource(), DBPEvaluationContext.UI));
                 if (mapping.getIcon() != null) {
                     cell.setImage(DBeaverIcons.getImage(mapping.getIcon()));
                 }

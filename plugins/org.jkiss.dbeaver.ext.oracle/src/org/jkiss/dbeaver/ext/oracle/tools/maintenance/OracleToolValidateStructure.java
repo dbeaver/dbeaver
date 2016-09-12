@@ -27,6 +27,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -61,7 +62,7 @@ public class OracleToolValidateStructure implements IExternalTool
 
         @Override
         protected void generateObjectCommand(List<String> lines, OracleTable object) {
-            String sql = "ANALYZE TABLE " + object.getFullQualifiedName() + " VALIDATE STRUCTURE";
+            String sql = "ANALYZE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + " VALIDATE STRUCTURE";
             if (cascadeCheck.getSelection()) {
                 sql += " CASCADE";
             }

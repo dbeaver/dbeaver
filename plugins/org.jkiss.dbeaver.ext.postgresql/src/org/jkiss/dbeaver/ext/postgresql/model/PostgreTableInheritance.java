@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
@@ -43,7 +44,7 @@ public class PostgreTableInheritance extends PostgreTableConstraintBase implemen
         boolean persisted)
     {
         super(table, DBSEntityConstraintType.INHERITANCE);
-        this.setName(table.getFullQualifiedName() + "->" + superTable.getFullQualifiedName());
+        this.setName(table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "->" + superTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
         this.setPersisted(persisted);
         this.superTable = superTable;
         this.sequenceNum = sequenceNum;

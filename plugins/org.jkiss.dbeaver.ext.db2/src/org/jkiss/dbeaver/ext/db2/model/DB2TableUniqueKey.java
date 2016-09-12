@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2ConstraintCheckData;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
@@ -94,7 +95,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
 
     @NotNull
     @Override
-    public String getFullQualifiedName()
+    public String getFullyQualifiedName(DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(), getTable().getContainer(), getTable(), this);
     }

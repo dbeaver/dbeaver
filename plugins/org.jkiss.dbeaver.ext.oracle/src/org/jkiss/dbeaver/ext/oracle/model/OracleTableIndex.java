@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
@@ -138,7 +139,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
 
     @NotNull
     @Override
-    public String getFullQualifiedName()
+    public String getFullyQualifiedName(DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getContainer(),
@@ -148,6 +149,6 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
     @Override
     public String toString()
     {
-        return getFullQualifiedName();
+        return getFullyQualifiedName(DBPEvaluationContext.UI);
     }
 }

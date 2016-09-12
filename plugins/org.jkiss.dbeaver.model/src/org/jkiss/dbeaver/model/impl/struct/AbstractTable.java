@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -101,7 +102,7 @@ public abstract class AbstractTable<
 
     public String toString()
     {
-        return getFullQualifiedName();
+        return getFullyQualifiedName(DBPEvaluationContext.UI);
     }
 
 }

@@ -29,10 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -110,24 +107,24 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         continue;
                     }
                     if (hasAttr) sql.append(", ");
-                    sql.append(DBUtils.getObjectFullName(attr));
+                    sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
                     hasAttr = true;
                 }
-                sql.append("\nFROM ").append(DBUtils.getObjectFullName(object));
+                sql.append("\nFROM ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML));
                 sql.append(";\n");
             }
         }));
         menu.add(makeAction("INSERT ", new TableAnalysisRunner(entities) {
             @Override
             public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
-                sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(object)).append("\n(");
+                sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML)).append("\n(");
                 boolean hasAttr = false;
                 for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
                     if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
                         continue;
                     }
                     if (hasAttr) sql.append(", ");
-                    sql.append(DBUtils.getObjectFullName(attr));
+                    sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
                     hasAttr = true;
                 }
                 sql.append(")\nVALUES(");
@@ -148,7 +145,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             @Override
             public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
                 Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
-                sql.append("UPDATE ").append(DBUtils.getObjectFullName(object))
+                sql.append("UPDATE ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML))
                     .append("\nSET ");
                 boolean hasAttr = false;
                 for (DBSAttributeBase attr : getValueAttributes(monitor, object, keyAttributes)) {
@@ -156,7 +153,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         continue;
                     }
                     if (hasAttr) sql.append(", ");
-                    sql.append(DBUtils.getObjectFullName(attr)).append("=");
+                    sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
                     appendDefaultValue(sql, attr);
                     hasAttr = true;
                 }
@@ -165,7 +162,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     hasAttr = false;
                     for (DBSEntityAttribute attr : keyAttributes) {
                         if (hasAttr) sql.append(" AND ");
-                        sql.append(DBUtils.getObjectFullName(attr)).append("=");
+                        sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
                         appendDefaultValue(sql, attr);
                         hasAttr = true;
                     }
@@ -176,7 +173,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         menu.add(makeAction("DELETE ", new TableAnalysisRunner(entities) {
             @Override
             public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
-                sql.append("DELETE FROM  ").append(DBUtils.getObjectFullName(object))
+                sql.append("DELETE FROM  ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML))
                     .append("\nWHERE ");
                 Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
                 if (CommonUtils.isEmpty(keyAttributes)) {
@@ -185,7 +182,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 boolean hasAttr = false;
                 for (DBSEntityAttribute attr : keyAttributes) {
                     if (hasAttr) sql.append(" AND ");
-                    sql.append(DBUtils.getObjectFullName(attr)).append("=");
+                    sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
                     appendDefaultValue(sql, attr);
                     hasAttr = true;
                 }
@@ -197,7 +194,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
                 boolean hasAttr = false;
 
-                sql.append("MERGE INTO ").append(DBUtils.getObjectFullName(object)).append(" AS tgt\n");
+                sql.append("MERGE INTO ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML)).append(" AS tgt\n");
                 sql.append("USING SOURCE_TABLE AS src\n");
                 Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
                 if (!CommonUtils.isEmpty(keyAttributes)) {
@@ -279,16 +276,16 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             boolean hasAttr = false;
                             for (DBSAttributeBase attr : getValueAttributes(monitor, object, keyAttributes)) {
                                 if (hasAttr) sql.append(", ");
-                                sql.append(DBUtils.getObjectFullName(attr));
+                                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
                                 hasAttr = true;
                             }
-                            sql.append("\nFROM ").append(DBUtils.getObjectFullName(entity));
+                            sql.append("\nFROM ").append(DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML));
                             sql.append("\nWHERE ");
                             hasAttr = false;
                             for (DBSEntityAttribute attr : keyAttributes) {
                                 if (hasAttr) sql.append(" AND ");
                                 DBDAttributeBinding binding = rsv.getModel().getAttributeBinding(attr);
-                                sql.append(DBUtils.getObjectFullName(attr)).append("=");
+                                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
                                 if (binding == null) {
                                     appendDefaultValue(sql, attr);
                                 } else {
@@ -306,7 +303,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         for (ResultSetRow firstRow : selectedRows) {
 
                             Collection<? extends DBSAttributeBase> allAttributes = getAllAttributes(monitor, object);
-                            sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(entity));
+                            sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML));
                             sql.append("\n(");
                             boolean hasAttr = false;
                             for (DBSAttributeBase attr : allAttributes) {
@@ -314,7 +311,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                                     continue;
                                 }
                                 if (hasAttr) sql.append(", ");
-                                sql.append(DBUtils.getObjectFullName(attr));
+                                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
                                 hasAttr = true;
                             }
                             sql.append(")\nVALUES(");
@@ -344,13 +341,13 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         for (ResultSetRow firstRow : selectedRows) {
 
                             Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
-                            sql.append("DELETE FROM ").append(DBUtils.getObjectFullName(entity));
+                            sql.append("DELETE FROM ").append(DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML));
                             sql.append("\nWHERE ");
                             boolean hasAttr = false;
                             for (DBSEntityAttribute attr : keyAttributes) {
                                 if (hasAttr) sql.append(" AND ");
                                 DBDAttributeBinding binding = rsv.getModel().getAttributeBinding(attr);
-                                sql.append(DBUtils.getObjectFullName(attr)).append("=");
+                                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
                                 if (binding == null) {
                                     appendDefaultValue(sql, attr);
                                 } else {

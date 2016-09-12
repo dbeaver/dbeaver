@@ -1611,7 +1611,7 @@ public class ResultSetViewer extends Viewer
         DBVTransformSettings getTransformSettings() {
             final DBVTransformSettings settings = DBVUtils.getTransformSettings(attrribute, true);
             if (settings == null) {
-                throw new IllegalStateException("Can't get/create transformer settings for '" + attrribute.getFullQualifiedName() + "'");
+                throw new IllegalStateException("Can't get/create transformer settings for '" + attrribute.getFullyQualifiedName(DBPEvaluationContext.UI) + "'");
             }
             return settings;
         }
@@ -1794,7 +1794,7 @@ public class ResultSetViewer extends Viewer
             throw new DBException("Null constraint parent");
         }
         if (!(targetEntity instanceof DBSDataContainer)) {
-            throw new DBException("Entity [" + DBUtils.getObjectFullName(targetEntity) + "] is not a data container");
+            throw new DBException("Entity [" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "] is not a data container");
         }
 
         // make constraints
@@ -1805,7 +1805,7 @@ public class ResultSetViewer extends Viewer
         List<? extends DBSEntityAttributeRef> refAttrs = CommonUtils.safeList(((DBSEntityReferrer) refConstraint).getAttributeReferences(monitor));
         if (ownAttrs.size() != refAttrs.size()) {
             throw new DBException(
-                "Entity [" + DBUtils.getObjectFullName(targetEntity) + "] association [" + association.getName() +
+                "Entity [" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "] association [" + association.getName() +
                     "] columns differs from referenced constraint [" + refConstraint.getName() + "] (" + ownAttrs.size() + "<>" + refAttrs.size() + ")");
         }
         // Add association constraints
@@ -1835,7 +1835,7 @@ public class ResultSetViewer extends Viewer
     private void openResultsInNewWindow(DBRProgressMonitor monitor, DBSEntity targetEntity, final DBDDataFilter newFilter) {
         final DBNDatabaseNode targetNode = getExecutionContext().getDataSource().getContainer().getApplication().getNavigatorModel().getNodeByObject(monitor, targetEntity, false);
         if (targetNode == null) {
-            UIUtils.showMessageBox(null, "Open link", "Can't navigate to '" + DBUtils.getObjectFullName(targetEntity) + "' - navigator node not found", SWT.ICON_ERROR);
+            UIUtils.showMessageBox(null, "Open link", "Can't navigate to '" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "' - navigator node not found", SWT.ICON_ERROR);
             return;
         }
         DBeaverUI.asyncExec(new Runnable() {
@@ -2469,7 +2469,7 @@ public class ResultSetViewer extends Viewer
                 UIUtils.showErrorDialog(
                     null,
                     "No entity identifier",
-                    "Attributes of '" + DBUtils.getObjectFullName(rowIdentifier.getUniqueKey()) + "' are missing in result set");
+                    "Attributes of '" + DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set");
                 return false;
             }
         }

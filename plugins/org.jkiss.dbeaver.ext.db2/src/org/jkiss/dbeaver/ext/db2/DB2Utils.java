@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablespaceDataType;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
@@ -142,7 +143,7 @@ public class DB2Utils {
     public static String generateDDLforTable(DBRProgressMonitor monitor, String statementDelimiter, DB2DataSource dataSource,
         DB2Table db2Table) throws DBException
     {
-        LOG.debug("Generate DDL for " + db2Table.getFullQualifiedName());
+        LOG.debug("Generate DDL for " + db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
 
         // The DB2LK_GENERATE_DDL SP does not generate DDL for System Tables for some reason...
         // As a workaround, display a message to the end-user
@@ -157,7 +158,7 @@ public class DB2Utils {
         // to prevent the pairing from being evaluated word-by-word by the command line processor (CLP).
         // If you use only one set of double quotation marks (for example, "My Table"), all words are converted into uppercase,
         // and the db2look command looks for an uppercase table name (for example, MY TABLE).
-        if (db2Table.getFullQualifiedName().contains(" ")) {
+        if (db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL).contains(" ")) {
             return DB2Messages.no_ddl_for_spaces_in_name;
         }
 
@@ -165,7 +166,7 @@ public class DB2Utils {
 
         int token;
         StringBuilder sb = new StringBuilder(2048);
-        String command = String.format(DB2LK_COMMAND, statementDelimiter, db2Table.getFullQualifiedName());
+        String command = String.format(DB2LK_COMMAND, statementDelimiter, db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Generate DDL")) {
             LOG.debug("Calling DB2LK_GENERATE_DDL with command : " + command);

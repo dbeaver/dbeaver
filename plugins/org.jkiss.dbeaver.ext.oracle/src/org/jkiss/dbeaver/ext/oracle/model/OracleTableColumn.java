@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -79,7 +80,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
             this.typeName);
         this.typeMod = OracleDataTypeModifier.resolveTypeModifier(JDBCUtils.safeGetString(dbResult, "DATA_TYPE_MOD"));
         if (this.type != null) {
-            this.typeName = type.getFullQualifiedName();
+            this.typeName = type.getFullyQualifiedName(DBPEvaluationContext.DDL);
             this.valueType = type.getTypeID();
         }
         if (typeMod == OracleDataTypeModifier.REF) {
@@ -111,7 +112,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     public void setDataType(OracleDataType type)
     {
         this.type = type;
-        this.typeName = type == null ? "" : type.getFullQualifiedName();
+        this.typeName = type == null ? "" : type.getFullyQualifiedName(DBPEvaluationContext.DDL);
     }
 
     @Property(viewable = true, order = 30)

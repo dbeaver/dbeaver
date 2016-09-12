@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -153,7 +154,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         StringBuilder query = new StringBuilder(100);
         query.append("SELECT ");
         appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
-        query.append(" FROM ").append(getFullQualifiedName());
+        query.append(" FROM ").append(getFullyQualifiedName(DBPEvaluationContext.DML));
         if (tableAlias != null) {
             query.append(" ").append(tableAlias); //$NON-NLS-1$
         }
@@ -272,7 +273,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         StringBuilder query = new StringBuilder("SELECT COUNT(*) FROM "); //$NON-NLS-1$
-        query.append(getFullQualifiedName());
+        query.append(getFullyQualifiedName(DBPEvaluationContext.DML));
         appendQueryConditions(query, null, dataFilter);
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_row_count);
         try (DBCStatement dbStat = session.prepareStatement(
@@ -323,7 +324,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 StringBuilder query = new StringBuilder(200);
                 query
                     .append(useUpsert(session) ? "UPSERT" : "INSERT")
-                    .append(" INTO ").append(getFullQualifiedName()).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
+                    .append(" INTO ").append(getFullyQualifiedName(DBPEvaluationContext.DML)).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
 
                 boolean hasKey = false;
                 for (int i = 0; i < attributes.length; i++) {
@@ -399,7 +400,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 }
                 // Make query
                 StringBuilder query = new StringBuilder();
-                query.append("UPDATE ").append(getFullQualifiedName());
+                query.append("UPDATE ").append(getFullyQualifiedName(DBPEvaluationContext.DML));
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }
@@ -464,7 +465,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
                 // Make query
                 StringBuilder query = new StringBuilder();
-                query.append("DELETE FROM ").append(getFullQualifiedName());
+                query.append("DELETE FROM ").append(getFullyQualifiedName(DBPEvaluationContext.DML));
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }
@@ -514,7 +515,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 //            }
 //        }
         // Do not quote pseudo attribute name
-        return attribute.isPseudoAttribute() ? attribute.getName() : DBUtils.getObjectFullName(getDataSource(), attribute);
+        return attribute.isPseudoAttribute() ? attribute.getName() : DBUtils.getObjectFullName(getDataSource(), attribute, DBPEvaluationContext.DML);
     }
 
     private void appendQueryConditions(@NotNull StringBuilder query, @Nullable String tableAlias, @Nullable DBDDataFilter dataFilter)
@@ -549,7 +550,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
         if (pseudoAttribute != null) {
             if (tableAlias == null) {
-                tableAlias = this.getFullQualifiedName();
+                tableAlias = this.getFullyQualifiedName(DBPEvaluationContext.DML);
             }
             String criteria = pseudoAttribute.translateExpression(tableAlias);
             query.append(criteria);

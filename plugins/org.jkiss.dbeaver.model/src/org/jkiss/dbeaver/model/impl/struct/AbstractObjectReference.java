@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
@@ -75,7 +76,7 @@ public abstract class AbstractObjectReference implements DBSObjectReference {
 
     @NotNull
     @Override
-    public String getFullQualifiedName()
+    public String getFullyQualifiedName(DBPEvaluationContext context)
     {
         DBPDataSource dataSource = container.getDataSource();
         if (container == dataSource) {
@@ -89,6 +90,6 @@ public abstract class AbstractObjectReference implements DBSObjectReference {
 
     @Override
     public String toString() {
-        return getFullQualifiedName();
+        return getFullyQualifiedName(DBPEvaluationContext.UI);
     }
 }

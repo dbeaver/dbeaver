@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 
 /**
@@ -37,7 +38,7 @@ public class DB2RoutineManager extends DB2AbstractDropOnlyManager<DB2Routine, DB
     @Override
     public String buildDropStatement(DB2Routine db2Routine)
     {
-        String fullyQualifiedName = db2Routine.getFullQualifiedName();
+        String fullyQualifiedName = db2Routine.getFullyQualifiedName(DBPEvaluationContext.DDL);
         switch (db2Routine.getType()) {
         case F:
             return String.format(SQL_DROP_FUNCTION, fullyQualifiedName);

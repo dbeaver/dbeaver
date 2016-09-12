@@ -606,7 +606,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
     private SQLCompletionProposal makeProposalsFromObject(DBRProgressMonitor monitor, DBPNamedObject object, @Nullable DBPImage objectIcon)
     {
-        String objectName = DBUtils.getObjectFullName(object);
+        String objectName = DBUtils.getObjectFullName(object, DBPEvaluationContext.DML);
 
         boolean isSingleObject = true;
         String replaceString = null;

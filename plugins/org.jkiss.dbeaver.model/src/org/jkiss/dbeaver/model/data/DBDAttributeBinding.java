@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
@@ -190,7 +191,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     @NotNull
     @Override
-    public String getFullQualifiedName() {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         final DBPDataSource dataSource = getDataSource();
         if (getParentObject() == null) {
             return DBUtils.getQuotedIdentifier(dataSource, getName());

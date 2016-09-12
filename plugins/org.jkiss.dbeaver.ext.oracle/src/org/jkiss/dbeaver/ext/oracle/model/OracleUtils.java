@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -57,7 +58,7 @@ public class OracleUtils {
         DBSEntity object,
         OracleDDLFormat ddlFormat) throws DBException
     {
-        String objectFullName = DBUtils.getObjectFullName(object);
+        String objectFullName = DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
         OracleSchema schema = null;
         if (object instanceof OracleSchemaObject) {
             schema = ((OracleSchemaObject)object).getSchema();

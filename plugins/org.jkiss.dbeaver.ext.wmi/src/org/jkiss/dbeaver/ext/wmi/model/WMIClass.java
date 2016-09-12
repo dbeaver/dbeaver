@@ -174,7 +174,7 @@ public class WMIClass extends WMIContainer
 
     @NotNull
     @Override
-    public String getFullQualifiedName()
+    public String getFullyQualifiedName(DBPEvaluationContext context)
     {
         //if (classObject == null) {
             return getName();

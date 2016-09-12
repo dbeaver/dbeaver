@@ -27,6 +27,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -63,7 +64,7 @@ public class MySQLToolRepair implements IExternalTool
 
         @Override
         protected void generateObjectCommand(List<String> lines, MySQLTable object) {
-            String sql = "REPAIR TABLE " + object.getFullQualifiedName();
+            String sql = "REPAIR TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL);
             if (quickCheck.getSelection()) sql += " QUICK";
             if (extendedCheck.getSelection()) sql += " EXTENDED";
             if (frmCheck.getSelection()) sql += " USE_FRM";

@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -112,13 +113,13 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         if (clientBody == null) {
             if (!persisted) {
                 this.clientBody =
-                    "CREATE " + getProcedureType().name() + " " + getFullQualifiedName() + "()" + GeneralUtils.getDefaultLineSeparator() +
+                    "CREATE " + getProcedureType().name() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + "()" + GeneralUtils.getDefaultLineSeparator() +
                         (procedureType == DBSProcedureType.FUNCTION ? "RETURNS INT" + GeneralUtils.getDefaultLineSeparator() : "") +
                     "BEGIN" + GeneralUtils.getDefaultLineSeparator() +
                     "END";
             } else {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure declaration")) {
-                    try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE " + getProcedureType().name() + " " + getFullQualifiedName())) {
+                    try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE " + getProcedureType().name() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL))) {
                         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                             if (dbResult.next()) {
                                 clientBody = JDBCUtils.safeGetString(dbResult, (getProcedureType() == DBSProcedureType.PROCEDURE ? "Create Procedure" : "Create Function"));
@@ -139,7 +140,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
             }
 /*
             StringBuilder cb = new StringBuilder(getBody().length() + 100);
-            cb.append("CREATE ").append(procedureType).append(' ').append(getFullQualifiedName()).append(" (");
+            cb.append("CREATE ").append(procedureType).append(' ').append(getFullyQualifiedName()).append(" (");
 
             int colIndex = 0;
             for (MySQLProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
@@ -229,7 +230,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
 
     @NotNull
     @Override
-    public String getFullQualifiedName()
+    public String getFullyQualifiedName(DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer(),

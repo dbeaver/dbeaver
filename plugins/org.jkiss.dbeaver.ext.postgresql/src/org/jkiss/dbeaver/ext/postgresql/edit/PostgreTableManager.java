@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -75,7 +76,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
         final PostgreTableBase table = command.getObject();
         if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
-            query.append(table.getFullQualifiedName()).append(" "); //$NON-NLS-1$
+            query.append(table.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
             appendTableModifiers(table, command, query);
 
             actionList.add(new SQLDatabasePersistAction(query.toString()));
@@ -87,7 +88,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
         if (command.getProperty("description") != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
-                "COMMENT ON TABLE " + command.getObject().getFullQualifiedName() +
+                "COMMENT ON TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     " IS '" + SQLUtils.escapeString(command.getObject().getDescription()) + "'"));
         }
     }
@@ -104,7 +105,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
                     ddl.append("\nINHERITS (");
                     for (int i = 0; i < superTables.size(); i++) {
                         if (i > 0) ddl.append(",");
-                        ddl.append(superTables.get(i).getAssociatedEntity().getFullQualifiedName());
+                        ddl.append(superTables.get(i).getAssociatedEntity().getFullyQualifiedName(DBPEvaluationContext.DDL));
                     }
                     ddl.append(")");
                 }
@@ -121,7 +122,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",
-                "ALTER TABLE " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
+                "ALTER TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
                     " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
         );
     }
@@ -146,7 +147,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
                 "DROP " + (command.getObject() instanceof PostgreTableForeign ? "FOREIGN TABLE" : "TABLE") +
-                    " " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+                    " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
     }
 

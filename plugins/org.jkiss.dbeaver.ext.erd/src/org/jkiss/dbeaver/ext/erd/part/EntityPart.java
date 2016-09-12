@@ -22,7 +22,6 @@ package org.jkiss.dbeaver.ext.erd.part;
 
 import org.eclipse.draw2d.ChopboxAnchor;
 import org.eclipse.draw2d.ConnectionAnchor;
-import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
@@ -42,6 +41,7 @@ import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.EntityContainerEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.EntityEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.EntityNodeEditPolicy;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -179,7 +179,7 @@ public class EntityPart extends NodePart
 
 	public String toString()
 	{
-        return DBUtils.getObjectFullName(getTable().getObject());
+        return DBUtils.getObjectFullName(getTable().getObject(), DBPEvaluationContext.UI);
 	}
 
 	//******************* Listener related methods *********************/

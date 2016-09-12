@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableColumnCompression;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableColumnGenerated;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
@@ -157,7 +158,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
         } else {
             this.dataTypeSchema = dataType.getSchema();
         }
-        setTypeName(dataType.getFullQualifiedName());
+        setTypeName(dataType.getFullyQualifiedName(DBPEvaluationContext.DML));
         setValueType(dataType.getTypeID());
     }
 
@@ -169,7 +170,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
         setOrdinalPosition(-1);
         this.dataType = tableBase.getDataSource().getDataTypeCache().getCachedObject("VARCHAR");
         this.dataTypeSchema = dataType.getSchema();
-        setTypeName(dataType.getFullQualifiedName());
+        setTypeName(dataType.getFullyQualifiedName(DBPEvaluationContext.DML));
         setValueType(dataType.getTypeID());
         setRequired(true);
     }

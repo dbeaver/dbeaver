@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
@@ -58,7 +59,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_foreign_key,
-                "ALTER TABLE " + table.getFullQualifiedName() + " ADD " + getNestedDeclaration(table, command)) //$NON-NLS-1$ //$NON-NLS-2$
+                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(table, command)) //$NON-NLS-1$ //$NON-NLS-2$
         );
     }
 
@@ -69,7 +70,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_foreign_key,
                 getDropForeignKeyPattern(command.getObject())
-                    .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullQualifiedName())
+                    .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
                     .replace(PATTERN_ITEM_CONSTRAINT, command.getObject().getName()))
         );
     }
@@ -108,7 +109,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
             log.error("Can't obtain reference attributes", e);
         }
         final DBSEntityConstraint refConstraint = foreignKey.getReferencedConstraint();
-        decl.append(") REFERENCES ").append(refConstraint == null ? "<?>" : DBUtils.getObjectFullName(refConstraint.getParentObject())).append("("); //$NON-NLS-1$ //$NON-NLS-2$
+        decl.append(") REFERENCES ").append(refConstraint == null ? "<?>" : DBUtils.getObjectFullName(refConstraint.getParentObject(), DBPEvaluationContext.DDL)).append("("); //$NON-NLS-1$ //$NON-NLS-2$
         if (refConstraint instanceof DBSEntityReferrer) {
             try {
                 boolean firstColumn = true;

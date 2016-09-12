@@ -83,7 +83,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
     public String getTargetName()
     {
         switch (mappingType) {
-            case existing: return DBUtils.getObjectFullName(target);
+            case existing: return DBUtils.getObjectFullName(target, DBPEvaluationContext.UI);
             case create: return targetName;
             case skip: return TARGET_NAME_SKIP;
             default: return "?";

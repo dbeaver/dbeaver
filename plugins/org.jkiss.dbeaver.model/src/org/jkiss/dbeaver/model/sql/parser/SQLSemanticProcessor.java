@@ -32,6 +32,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -117,12 +118,12 @@ public class SQLSemanticProcessor {
             Table orderTable = tableAlias == null ? null : new Table(tableAlias);
             for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
                 Expression orderExpr;
-                String attrName = DBUtils.getObjectFullName(co.getAttribute());
+                String attrName = DBUtils.getObjectFullName(co.getAttribute(), DBPEvaluationContext.DML);
                 if (CommonUtils.isEmpty(attrName)) {
                     // Use column position
                     orderExpr = new LongValue(co.getOrderPosition() + 1);
                 } else {
-                    orderExpr = new Column(orderTable, DBUtils.getObjectFullName(co.getAttribute()));
+                    orderExpr = new Column(orderTable, DBUtils.getObjectFullName(co.getAttribute(), DBPEvaluationContext.DML));
                 }
 
                 OrderByElement element = new OrderByElement();

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -120,7 +121,7 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
     @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
-        String sql = String.format(SQL_DROP, command.getObject().getFullQualifiedName());
+        String sql = String.format(SQL_DROP, command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL));
         DBEPersistAction action = new SQLDatabasePersistAction("Drop Sequence", sql);
         actions.add(action);
     }
@@ -137,7 +138,7 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
         } else {
             sb.append(SQL_CREATE);
         }
-        sb.append(sequence.getFullQualifiedName()).append(SPACE);
+        sb.append(sequence.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(SPACE);
         if (!(forUpdate)) {
             sb.append("AS ");
             sb.append(sequence.getPrecision().getSqlKeyword()).append(SPACE);
@@ -182,7 +183,7 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
     private String buildComment(DB2Sequence sequence)
     {
         if ((sequence.getDescription() != null) && (sequence.getDescription().length() > 0)) {
-            return String.format(SQL_COMMENT, sequence.getFullQualifiedName(), sequence.getDescription());
+            return String.format(SQL_COMMENT, sequence.getFullyQualifiedName(DBPEvaluationContext.DDL), sequence.getDescription());
         } else {
             return null;
         }

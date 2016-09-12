@@ -290,7 +290,7 @@ public class NavigatorUtils {
                             if (object == null) {
                                 continue;
                             }
-                            nodeName = DBUtils.getObjectFullName(object);
+                            nodeName = DBUtils.getObjectFullName(object, DBPEvaluationContext.UI);
                             objects.add(object);
                         } else {
                             nodeName = ((DBNNode)nextSelected).getNodeName();

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -55,7 +56,7 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_constraint,
-                "ALTER TABLE " + table.getFullQualifiedName() + " ADD " + getNestedDeclaration(table, command)));
+                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(table, command)));
     }
 
     @Override
@@ -65,7 +66,7 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_constraint,
                 getDropConstraintPattern(command.getObject())
-                    .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullQualifiedName())
+                    .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
                     .replace(PATTERN_ITEM_CONSTRAINT, command.getObject().getName()))
         );
     }

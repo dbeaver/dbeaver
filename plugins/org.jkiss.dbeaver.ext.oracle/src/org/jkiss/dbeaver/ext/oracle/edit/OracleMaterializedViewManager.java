@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
@@ -87,7 +88,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
         actions.add(
-            new SQLDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+            new SQLDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
     }
 
@@ -95,10 +96,10 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     {
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
-        decl.append("CREATE MATERIALIZED VIEW ").append(view.getFullQualifiedName()).append(lineSeparator) //$NON-NLS-1$
+        decl.append("CREATE MATERIALIZED VIEW ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(lineSeparator) //$NON-NLS-1$
             .append("AS ").append(view.getObjectDefinitionText(null)); //$NON-NLS-1$
         actions.add(
-            new SQLDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + view.getFullQualifiedName())); //$NON-NLS-2$
+            new SQLDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL))); //$NON-NLS-2$
         actions.add(
             new SQLDatabasePersistAction("Create view", decl.toString()));
     }

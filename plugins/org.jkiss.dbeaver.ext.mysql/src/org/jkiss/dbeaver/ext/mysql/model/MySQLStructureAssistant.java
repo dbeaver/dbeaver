@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -232,7 +233,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                                 constraint = table.getConstraint(monitor, constrName);
                             }
                             if (constraint == null) {
-                                throw new DBException("Constraint '" + constrName + "' not found in table '" + table.getFullQualifiedName() + "'");
+                                throw new DBException("Constraint '" + constrName + "' not found in table '" + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
                             }
                             return constraint;
                         }
@@ -269,7 +270,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     objects.add(new AbstractObjectReference(columnName, dataSource.getCatalog(catalogName), null, MySQLTableColumn.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
                         @NotNull
                         @Override
-                        public String getFullQualifiedName() {
+                        public String getFullyQualifiedName(DBPEvaluationContext context) {
                             return DBUtils.getQuotedIdentifier(dataSource, catalogName) +
                                 '.' +
                                 DBUtils.getQuotedIdentifier(dataSource, tableName) +
@@ -290,7 +291,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                             }
                             MySQLTableColumn column = table.getAttribute(monitor, columnName);
                             if (column == null) {
-                                throw new DBException("Column '" + columnName + "' not found in table '" + table.getFullQualifiedName() + "'");
+                                throw new DBException("Column '" + columnName + "' not found in table '" + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
                             }
                             return column;
                         }

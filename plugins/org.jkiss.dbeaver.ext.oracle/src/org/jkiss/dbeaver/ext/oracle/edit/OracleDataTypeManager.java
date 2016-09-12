@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -84,7 +85,7 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
         final OracleDataType object = objectDeleteCommand.getObject();
         actions.add(
             new SQLDatabasePersistAction("Drop type",
-                "DROP TYPE " + object.getFullQualifiedName()) //$NON-NLS-1$
+                "DROP TYPE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-1$
         );
     }
 

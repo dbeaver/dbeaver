@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Collection;
@@ -104,7 +105,7 @@ public class DB2ReorgIndexDialog extends DB2BaseTableToolDialog {
         StringBuilder sb = new StringBuilder(256);
         sb.append("CALL SYSPROC.ADMIN_CMD('");
 
-        sb.append("REORG INDEXES ALL FOR TABLE ").append(db2Table.getFullQualifiedName());
+        sb.append("REORG INDEXES ALL FOR TABLE ").append(db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
 
         if (dlgAccessNo.getSelection()) {
             sb.append(" ALLOW NO ACCESS");

@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -159,7 +160,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
         if (command.getProperties().size() > 1) {
             StringBuilder sb = new StringBuilder(128);
             sb.append(SQL_ALTER);
-            sb.append(db2Table.getFullQualifiedName());
+            sb.append(db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
             sb.append(" ");
 
             appendTableModifiers(command.getObject(), command, sb);
@@ -179,7 +180,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     @Override
     public void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command)
     {
-        String sql = String.format(SQL_RENAME_TABLE, command.getObject().getFullQualifiedName(), command.getNewName());
+        String sql = String.format(SQL_RENAME_TABLE, command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL), command.getNewName());
         actions.add(
             new SQLDatabasePersistAction(CMD_RENAME, sql)
         );
@@ -197,7 +198,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     private DBEPersistAction buildCommentAction(DB2Table db2Table)
     {
         if (CommonUtils.isNotEmpty(db2Table.getDescription())) {
-            String commentSQL = String.format(SQL_COMMENT, db2Table.getFullQualifiedName(), db2Table.getDescription());
+            String commentSQL = String.format(SQL_COMMENT, db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL), db2Table.getDescription());
             return new SQLDatabasePersistAction(CMD_COMMENT, commentSQL);
         } else {
             return null;

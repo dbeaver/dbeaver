@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablespaceDataType;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -97,7 +98,7 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
                         monitor.worked(1);
 
                         for (DB2Index db2Index : db2Table.getIndexes(monitor)) {
-                            listIndexNames.add(db2Index.getFullQualifiedName());
+                            listIndexNames.add(db2Index.getFullyQualifiedName(DBPEvaluationContext.DDL));
                         }
 
                         monitor.worked(1);
@@ -348,7 +349,7 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
 
         sb.append("CALL SYSPROC.ADMIN_CMD('");
 
-        sb.append("REORG TABLE ").append(db2Table.getFullQualifiedName());
+        sb.append("REORG TABLE ").append(db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
 
         if (dlgUseIndex.getSelection() && indexName != null) {
             sb.append(" INDEX ").append(indexName);

@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 
 import java.util.Collection;
 import java.util.List;
@@ -56,7 +57,7 @@ public class DB2ReorgCheckTableDialog extends DB2BaseTableToolDialog {
     {
         StringBuilder sb = new StringBuilder(128);
         sb.append("CALL SYSPROC.REORGCHK_TB_STATS('T','");
-        sb.append(db2Table.getFullQualifiedName());
+        sb.append(db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
         sb.append("')");
 
         lines.add(sb.toString());

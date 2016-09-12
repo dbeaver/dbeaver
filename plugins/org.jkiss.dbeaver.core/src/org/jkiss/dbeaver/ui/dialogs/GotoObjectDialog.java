@@ -33,6 +33,7 @@ import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.eclipse.ui.dialogs.SearchPattern;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -104,8 +105,8 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             public int compare(Object o1, Object o2)
             {
                 if (o1 instanceof DBPNamedObject && o2 instanceof DBPNamedObject) {
-                    return DBUtils.getObjectFullName((DBPNamedObject) o1).compareToIgnoreCase(
-                        DBUtils.getObjectFullName((DBPNamedObject) o2));
+                    return DBUtils.getObjectFullName((DBPNamedObject) o1, DBPEvaluationContext.UI).compareToIgnoreCase(
+                        DBUtils.getObjectFullName((DBPNamedObject) o2, DBPEvaluationContext.UI));
                 }
                 return 0;
             }
@@ -161,7 +162,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     public String getElementName(Object item)
     {
         if (item instanceof DBPNamedObject) {
-            return DBUtils.getObjectFullName((DBPNamedObject) item);
+            return DBUtils.getObjectFullName((DBPNamedObject) item, DBPEvaluationContext.UI);
         }
         return item.toString();
     }
@@ -172,7 +173,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             if (element instanceof DBPNamedObject) {
                 DBPNamedObject namedObject = (DBPNamedObject) element;
                 StyledString str = new StyledString(namedObject.getName());
-                String fullName = DBUtils.getObjectFullName(namedObject);
+                String fullName = DBUtils.getObjectFullName(namedObject, DBPEvaluationContext.UI);
                 if (!CommonUtils.equalObjects(fullName, namedObject.getName())) {
                     str.append(" - ", StyledString.QUALIFIER_STYLER); //$NON-NLS-1$
                     str.append(fullName, StyledString.QUALIFIER_STYLER);
@@ -209,7 +210,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         public String getText(Object element)
         {
             if (element instanceof DBPNamedObject) {
-                return DBUtils.getObjectFullName((DBPNamedObject) element);
+                return DBUtils.getObjectFullName((DBPNamedObject) element, DBPEvaluationContext.UI);
             }
             return super.getText(element);
         }

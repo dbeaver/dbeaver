@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Collection;
@@ -132,7 +133,7 @@ public class DB2RunstatsDialog extends DB2BaseTableToolDialog {
         StringBuilder sb = new StringBuilder(256);
         sb.append("CALL SYSPROC.ADMIN_CMD('");
 
-        sb.append("RUNSTATS ON TABLE ").append(db2Table.getFullQualifiedName());
+        sb.append("RUNSTATS ON TABLE ").append(db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
 
         if (dlgColsAllAndDistribution.getSelection()) {
             sb.append(" ON ALL COLUMNS WITH DISTRIBUTION ON ALL COLUMNS");
