@@ -146,7 +146,7 @@ public final class SQLUtils {
 
     public static boolean isLikePattern(String like)
     {
-        return like.indexOf('%') != -1;// || like.indexOf('_') != -1;
+        return like.indexOf('%') != -1 || like.indexOf('*') != -1 || like.indexOf('?') != -1;// || like.indexOf('_') != -1;
     }
 
     public static String makeLikePattern(String like)
