@@ -22,15 +22,25 @@ package org.jkiss.dbeaver.model.data.aggregate;
  */
 public class FunctionAvg implements IAggregateFunction {
 
-    double result = 0.0;
+    double result = Double.NaN;
 
     @Override
-    public void accumulate(Number value) {
-        result += value.doubleValue();
+    public boolean accumulate(Object value) {
+        if (value instanceof Number) {
+            if (Double.isNaN(result)) {
+                result = 0.0;
+            }
+            result += ((Number)value).doubleValue();
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public Number getResult(int valueCount) {
+    public Object getResult(int valueCount) {
+        if (Double.isNaN(result)) {
+            return null;
+        }
         return result / valueCount;
     }
 }
