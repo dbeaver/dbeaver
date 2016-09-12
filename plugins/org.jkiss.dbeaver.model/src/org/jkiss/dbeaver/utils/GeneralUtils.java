@@ -244,6 +244,14 @@ public class GeneralUtils {
         }
     }
 
+    public static IStatus makeInfoStatus(String message) {
+        return new Status(
+            IStatus.INFO,
+            ModelPreferences.PLUGIN_ID,
+            message,
+            null);
+    }
+
     public interface IVariableResolver {
         String get(String name);
     }

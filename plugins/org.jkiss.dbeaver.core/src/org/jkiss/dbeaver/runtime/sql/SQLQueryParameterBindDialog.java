@@ -45,6 +45,8 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.registry.DataManagerRegistry;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -187,6 +189,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             paramTable.select(0);
             showEditor(paramTable.getItem(0));
         }
+
+        updateStatus(GeneralUtils.makeInfoStatus("Use Tab key to switch parameters"));
         return composite;
     }
 
