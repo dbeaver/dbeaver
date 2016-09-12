@@ -24,10 +24,7 @@ import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.TableEditor;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -207,7 +204,12 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     private void disposeOldEditor()
     {
         Control oldEditor = tableEditor.getEditor();
-        if (oldEditor != null) oldEditor.dispose();
+        if (oldEditor != null) {
+            if (!oldEditor.isDisposed()) {
+                oldEditor.dispose();
+            }
+            tableEditor.setEditor(null);
+        }
     }
 
     private void showEditor(final TableItem item) {
@@ -215,16 +217,28 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         if (!param.isResolved()) {
             return;
         }
-        final DBDValueHandler valueHandler = param.getValueHandler();
         Composite placeholder = new Composite(paramTable, SWT.NONE);
         placeholder.setLayout(new FillLayout());
-        //placeholder.setLayout(new FillLayout(SWT.HORIZONTAL));
-        ParameterValueController valueController = new ParameterValueController(param, placeholder, item);
+        final ParameterValueController valueController = new ParameterValueController(param, placeholder, item);
         try {
-            IValueEditor editor = valueController.getValueManager().createEditor(valueController);
+            final IValueEditor editor = valueController.getValueManager().createEditor(valueController);
             if (editor != null) {
                 editor.createControl();
                 editor.primeEditorValue(param.getValue());
+                editor.getControl().addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent event) {
+                        try {
+                            Object newValue = editor.extractEditorValue();
+                            valueController.updateValue(newValue);
+                        } catch (DBException e) {
+                            UIUtils.showErrorDialog(null, "Value save", "Can't save edited value", e);
+                        } finally {
+                            disposeOldEditor();
+                        }
+                    }
+                });
+
                 tableEditor.minimumHeight = placeholder.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
                 tableEditor.setEditor(placeholder, item, 3);
             } else {
@@ -390,19 +404,6 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             }
 
             updateStatus(Status.OK_STATUS);
-
-            final int curRow = paramTable.indexOf(item);
-            final int maxRows = paramTable.getItemCount();
-            if (curRow < maxRows - 1) {
-                DBeaverUI.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        paramTable.select(curRow + 1);
-                        TableItem newItem = paramTable.getItem(curRow + 1);
-                        showEditor(newItem);
-                    }
-                });
-            }
         }
 
         @Override
@@ -459,6 +460,26 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         @Override
         public void nextInlineEditor(boolean next)
         {
+            disposeOldEditor();
+            final int itemCount = paramTable.getItemCount();
+            if (itemCount < 2) {
+                return;
+            }
+            int curRow = paramTable.indexOf(item);
+            if (curRow >= itemCount - 1) {
+                curRow = 0;
+            } else {
+                curRow++;
+            }
+            final int selectRow = curRow;
+            DBeaverUI.asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    paramTable.select(selectRow);
+                    TableItem newItem = paramTable.getItem(selectRow);
+                    showEditor(newItem);
+                }
+            });
         }
 
         @Override
