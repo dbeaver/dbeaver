@@ -288,7 +288,7 @@ public class HexEditControl extends Composite {
                 refreshCaretsPosition();
                 setFocus();
                 refreshSelections();
-                notifyListeners(SWT.Modify, null);
+                //notifyListeners(SWT.Modify, null);
                 notifyLongSelectionListeners();
             }
         }
@@ -1763,8 +1763,6 @@ public class HexEditControl extends Composite {
         }
 
         notifyLongSelectionListeners();
-        if (selection != (startPosition != endPosition))
-            notifyListeners(SWT.Modify, null);
     }
 
     void setAddressesGridDataWidthHint()
