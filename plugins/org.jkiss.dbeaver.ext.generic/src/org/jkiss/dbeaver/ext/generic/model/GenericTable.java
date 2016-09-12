@@ -101,16 +101,17 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)
     {
-        return getDataSource().getMetaModel().useCatalogInObjectNames() ?
-            DBUtils.getFullQualifiedName(
-                getDataSource(),
-                getCatalog(),
-                getSchema(),
-                this) :
-            DBUtils.getFullQualifiedName(
+        if (context == DBPEvaluationContext.DDL && !getDataSource().getMetaModel().useCatalogInObjectNames()) {
+            return DBUtils.getFullQualifiedName(
                 getDataSource(),
                 getSchema(),
                 this);
+        }
+        return DBUtils.getFullQualifiedName(
+            getDataSource(),
+            getCatalog(),
+            getSchema(),
+            this);
     }
 
     @Override
