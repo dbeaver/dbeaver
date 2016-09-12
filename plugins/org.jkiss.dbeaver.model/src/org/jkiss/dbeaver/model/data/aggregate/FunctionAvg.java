@@ -23,6 +23,7 @@ package org.jkiss.dbeaver.model.data.aggregate;
 public class FunctionAvg implements IAggregateFunction {
 
     double result = Double.NaN;
+//    long dateResult = 0;
 
     @Override
     public boolean accumulate(Object value) {
@@ -32,13 +33,19 @@ public class FunctionAvg implements IAggregateFunction {
             }
             result += ((Number)value).doubleValue();
             return true;
-        }
+        }/* else if (value instanceof Date) {
+            dateResult += ((Date)value).getTime();
+            return true;
+        }*/
         return false;
     }
 
     @Override
     public Object getResult(int valueCount) {
         if (Double.isNaN(result)) {
+//            if (dateResult > 0) {
+//                return new Date(dateResult / valueCount);
+//            }
             return null;
         }
         return result / valueCount;
