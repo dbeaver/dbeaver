@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -425,7 +426,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
     @NotNull
     @Override
-    public String getFullQualifiedName() {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         final PostgreSchema owner = getParentObject();
         if (owner == null) {
             return getName();

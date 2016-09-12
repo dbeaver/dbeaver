@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -146,7 +147,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
             log.error("Error finding reference constraint", e);
         }
         if (refConstraint == null) {
-            log.warn("Can't find reference constraint for foreign key '" + getFullQualifiedName() + "'");
+            log.warn("Can't find reference constraint for foreign key '" + getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
         }
     }
 

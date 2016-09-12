@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
@@ -93,7 +94,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
 
     @NotNull
     @Override
-    public String getFullQualifiedName()
+    public String getFullyQualifiedName(DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getSchema(),
@@ -123,7 +124,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
                 getProcedureType() == DBSProcedureType.PROCEDURE ?
                     OracleObjectType.PROCEDURE : OracleObjectType.FUNCTION,
                 "Compile procedure",
-                "ALTER " + getSourceType().name() + " " + getFullQualifiedName() + " COMPILE"
+                "ALTER " + getSourceType().name() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE"
             )};
     }
 

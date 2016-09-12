@@ -122,7 +122,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     public String getNodeFullName()
     {
         if (getObject() instanceof DBPQualifiedObject) {
-            return ((DBPQualifiedObject)getObject()).getFullQualifiedName();
+            return ((DBPQualifiedObject)getObject()).getFullyQualifiedName(DBPEvaluationContext.UI);
         } else {
             return super.getNodeFullName();
         }

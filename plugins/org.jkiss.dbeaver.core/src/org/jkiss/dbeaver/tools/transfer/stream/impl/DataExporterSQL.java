@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream.impl;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -93,7 +94,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
         if (source instanceof DBSObject) {
             tableName = omitSchema ?
                 DBUtils.getQuotedIdentifier((DBSObject) source) :
-                DBUtils.getObjectFullName(source);
+                DBUtils.getObjectFullName(source, DBPEvaluationContext.UI);
         } else {
             throw new DBException("SQL export may be done only from table object");
         }

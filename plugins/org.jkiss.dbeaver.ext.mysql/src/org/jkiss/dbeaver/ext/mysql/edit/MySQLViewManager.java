@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
@@ -89,7 +90,7 @@ public class MySQLViewManager extends SQLObjectEditor<MySQLTableBase, MySQLCatal
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
         actions.add(
-            new SQLDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+            new SQLDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
     }
 
@@ -97,7 +98,7 @@ public class MySQLViewManager extends SQLObjectEditor<MySQLTableBase, MySQLCatal
     {
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
-        decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(lineSeparator) //$NON-NLS-1$
+        decl.append("CREATE OR REPLACE VIEW ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(lineSeparator) //$NON-NLS-1$
             .append("AS ").append(view.getAdditionalInfo().getDefinition()); //$NON-NLS-1$
         final MySQLView.CheckOption checkOption = view.getAdditionalInfo().getCheckOption();
         if (checkOption != null && checkOption != MySQLView.CheckOption.NONE) {

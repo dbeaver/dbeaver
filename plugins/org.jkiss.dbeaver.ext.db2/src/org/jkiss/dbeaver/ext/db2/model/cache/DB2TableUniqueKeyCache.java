@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ConstraintType;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -128,7 +129,7 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
         DB2TableColumn tableColumn = db2Table.getAttribute(session.getProgressMonitor(), colName);
         if (tableColumn == null) {
-            log.debug("Column '" + colName + "' not found in table '" + db2Table.getFullQualifiedName() + "' ??");
+            log.debug("Column '" + colName + "' not found in table '" + db2Table.getFullyQualifiedName(DBPEvaluationContext.UI) + "' ??");
             return null;
         } else {
             return new DB2TableKeyColumn[] {

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -122,7 +123,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
                     objectIter.remove();
                     OracleProcedureArgument parentArgument = argStack.get(curDataLevel - 1);
                     if (parentArgument == null) {
-                        log.error("Broken arguments structure for '" + argument.getParentObject().getFullQualifiedName() + "' - no parent argument for argument " + argument.getSequence());
+                        log.error("Broken arguments structure for '" + argument.getParentObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + "' - no parent argument for argument " + argument.getSequence());
                     } else {
                         parentArgument.addAttribute(argument);
                     }

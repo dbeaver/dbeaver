@@ -26,6 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -214,8 +215,8 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         DBSObjectContainer container = getContainer();
         return container == null ? "" :
             container instanceof DBPDataSource ?
-                DBUtils.getObjectFullName(container) :
-                DBUtils.getObjectFullName(container) + " [" + container.getDataSource().getContainer().getName() + "]";
+                DBUtils.getObjectFullName(container, DBPEvaluationContext.UI) :
+                DBUtils.getObjectFullName(container, DBPEvaluationContext.UI) + " [" + container.getDataSource().getContainer().getName() + "]";
     }
 
     public void loadNode() {

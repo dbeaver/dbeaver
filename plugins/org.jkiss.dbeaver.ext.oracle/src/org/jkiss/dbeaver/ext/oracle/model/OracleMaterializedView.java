@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -172,7 +173,7 @@ public class OracleMaterializedView extends OracleSchemaObject implements Oracle
             new OracleObjectPersistAction(
                 OracleObjectType.MATERIALIZED_VIEW,
                 "Compile materialized view",
-                "ALTER MATERIALIZED VIEW " + getFullQualifiedName() + " COMPILE"
+                "ALTER MATERIALIZED VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE"
             )};
     }
 

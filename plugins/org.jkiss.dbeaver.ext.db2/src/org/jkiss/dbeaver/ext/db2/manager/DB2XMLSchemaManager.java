@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 
 /**
@@ -35,7 +36,7 @@ public class DB2XMLSchemaManager extends DB2AbstractDropOnlyManager<DB2XMLSchema
     @Override
     public String buildDropStatement(DB2XMLSchema db2XMLSchema)
     {
-        String fullyQualifiedName = db2XMLSchema.getFullQualifiedName();
+        String fullyQualifiedName = db2XMLSchema.getFullyQualifiedName(DBPEvaluationContext.DDL);
         return String.format(SQL_DROP, fullyQualifiedName);
     }
 

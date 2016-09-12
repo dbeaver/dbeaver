@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
@@ -84,7 +85,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         } else {
             referencedKey = refTable.getConstraint(monitor, refName);
             if (referencedKey == null) {
-                log.warn("Referenced constraint '" + refName + "' not found in table '" + refTable.getFullQualifiedName() + "'");
+                log.warn("Referenced constraint '" + refName + "' not found in table '" + refTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
                 referencedKey = new OracleTableConstraint(refTable, "refName", DBSEntityConstraintType.UNIQUE_KEY, null, OracleObjectStatus.ERROR);
             }
         }
@@ -131,7 +132,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
 
     @NotNull
     @Override
-    public String getFullQualifiedName()
+    public String getFullyQualifiedName(DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getContainer(),

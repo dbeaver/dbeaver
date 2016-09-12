@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -61,7 +62,7 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
             decl.append("UNIQUE ");
         }
         decl.append("INDEX ").append(indexName) //$NON-NLS-1$
-            .append(" ON ").append(table.getFullQualifiedName()) //$NON-NLS-1$
+            .append(" ON ").append(table.getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-1$
             .append(" ("); //$NON-NLS-1$
         try {
             // Get columns using void monitor
@@ -91,8 +92,8 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_index,
                 getDropIndexPattern(command.getObject())
-                    .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullQualifiedName())
-                    .replace(PATTERN_ITEM_INDEX, command.getObject().getFullQualifiedName())
+                    .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
+                    .replace(PATTERN_ITEM_INDEX, command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL))
                     .replace(PATTERN_ITEM_INDEX_SHORT, command.getObject().getName()))
         );
     }

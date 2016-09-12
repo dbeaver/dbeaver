@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
@@ -52,7 +53,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
             viewer.getControl().getShell(),
             "Possible multiple rows modification",
             null,
-            "There is no physical unique key defined for  '" + DBUtils.getObjectFullName(viewer.getVirtualEntityIdentifier().getUniqueKey().getParentObject()) +
+            "There is no physical unique key defined for  '" + DBUtils.getObjectFullName(viewer.getVirtualEntityIdentifier().getUniqueKey().getParentObject(), DBPEvaluationContext.UI) +
                 "'.\nDBeaver will use all columns as unique key. Possible multiple rows modification. \nAre you sure you want to proceed?",
             WARNING,
             new String[]{"Use All Columns", "Custom Unique Key", IDialogConstants.CANCEL_LABEL},

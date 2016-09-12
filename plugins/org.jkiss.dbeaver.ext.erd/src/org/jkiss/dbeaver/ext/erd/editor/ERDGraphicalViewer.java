@@ -340,7 +340,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         {
             super(table.getName(), table.getDescription(), DBeaverIcons.getImageDescriptor(DBIcon.TREE_TABLE), null);
             this.setUserModificationPermission(PERMISSION_NO_MODIFICATION);
-            setDescription(DBUtils.getObjectFullName(table));
+            setDescription(DBUtils.getObjectFullName(table, DBPEvaluationContext.UI));
             this.table = table;
         }
         @Override

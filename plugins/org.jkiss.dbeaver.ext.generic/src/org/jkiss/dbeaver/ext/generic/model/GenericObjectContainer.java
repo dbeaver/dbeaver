@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -179,7 +180,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
                             if (monitor.isCanceled()) {
                                 return;
                             }
-                            monitor.subTask("Read indexes for '" + table.getFullQualifiedName() + "'");
+                            monitor.subTask("Read indexes for '" + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
                             Collection<GenericTableIndex> tableIndexes = table.getIndexes(monitor);
                             tmpIndexMap.addAll(tableIndexes);
                             monitor.worked(1);

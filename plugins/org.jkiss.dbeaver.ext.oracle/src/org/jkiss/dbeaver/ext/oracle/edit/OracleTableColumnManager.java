@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -79,13 +80,13 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
         if (!hasComment || command.getProperties().size() > 1) {
             actionList.add(new SQLDatabasePersistAction(
                 "Modify column",
-                "ALTER TABLE " + column.getTable().getFullQualifiedName() + //$NON-NLS-1$
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
                 " MODIFY " + getNestedDeclaration(column.getTable(), command))); //$NON-NLS-1$
         }
         if (hasComment) {
             actionList.add(new SQLDatabasePersistAction(
                 "Comment column",
-                "COMMENT ON COLUMN " + column.getTable().getFullQualifiedName() + "." + DBUtils.getQuotedIdentifier(column) +
+                "COMMENT ON COLUMN " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
                     " IS '" + column.getComment(VoidProgressMonitor.INSTANCE) + "'"));
         }
     }
@@ -103,7 +104,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename column",
-                "ALTER TABLE " + column.getTable().getFullQualifiedName() + " RENAME COLUMN " +
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " RENAME COLUMN " +
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO " + command.getNewName())
         );
     }

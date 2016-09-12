@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleView;
@@ -88,7 +89,7 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
         actions.add(
-            new SQLDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+            new SQLDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
     }
 
@@ -99,14 +100,14 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
         if (!hasComment || command.getProperties().size() > 1) {
             StringBuilder decl = new StringBuilder(200);
             final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
-            decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(lineSeparator) //$NON-NLS-1$
+            decl.append("CREATE OR REPLACE VIEW ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(lineSeparator) //$NON-NLS-1$
                 .append("AS ").append(view.getAdditionalInfo().getText()); //$NON-NLS-1$
             actions.add(new SQLDatabasePersistAction("Create view", decl.toString()));
         }
         if (hasComment) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
-                "COMMENT ON TABLE " + view.getFullQualifiedName() +
+                "COMMENT ON TABLE " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     " IS '" + view.getComment() + "'"));
         }
     }

@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
@@ -150,7 +151,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     log.error("Error inserting row", e);
                     if (!ignoreErrors) {
                         ExecutionQueueErrorResponse response = ExecutionQueueErrorJob.showError(
-                            DBUtils.getObjectFullName(containerMapping.getTarget()) + " data load",
+                            DBUtils.getObjectFullName(containerMapping.getTarget(), DBPEvaluationContext.UI) + " data load",
                             e,
                             true);
                         switch (response) {
@@ -205,7 +206,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     {
         containerMapping = settings.getDataMapping(sourceObject);
         if (containerMapping == null) {
-            throw new DBCException("Can't find container mapping for " + DBUtils.getObjectFullName(sourceObject));
+            throw new DBCException("Can't find container mapping for " + DBUtils.getObjectFullName(sourceObject, DBPEvaluationContext.UI));
         }
         DBPDataSource dataSource = containerMapping.getTarget().getDataSource();
         assert (dataSource != null);
@@ -287,9 +288,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                         case create:
                             DBSObject newTarget = container.getChild(monitor, containerMapping.getTargetName());
                             if (newTarget == null) {
-                                throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container));
+                                throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
                             } else if (!(newTarget instanceof DBSDataManipulator)) {
-                                throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget) + " doesn't support data manipulation");
+                                throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI) + " doesn't support data manipulation");
                             }
                             containerMapping.setTarget((DBSDataManipulator) newTarget);
                             containerMapping.setMappingType(DatabaseMappingType.existing);
@@ -390,9 +391,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     private void createTargetAttribute(DBCSession session, DatabaseMappingAttribute attribute) throws DBCException
     {
-        session.getProgressMonitor().subTask("Create column " + DBUtils.getObjectFullName(attribute.getParent().getTarget()) + "." + attribute.getTargetName());
+        session.getProgressMonitor().subTask("Create column " + DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL) + "." + attribute.getTargetName());
         StringBuilder sql = new StringBuilder(500);
-        sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(attribute.getParent().getTarget()))
+        sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL))
             .append(" ADD ");
         appendAttributeClause(session.getDataSource(), sql, attribute);
         try {
@@ -442,7 +443,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public String getTargetName()
     {
         if (targetObject != null) {
-            return DBUtils.getObjectFullName(targetObject);
+            return DBUtils.getObjectFullName(targetObject, DBPEvaluationContext.UI);
         }
         DatabaseMappingContainer dataMapping = settings.getDataMapping(sourceObject);
         if (dataMapping == null) {

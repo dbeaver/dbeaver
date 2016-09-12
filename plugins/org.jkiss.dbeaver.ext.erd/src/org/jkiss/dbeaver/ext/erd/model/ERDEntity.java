@@ -308,7 +308,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
                     }
                     ERDEntity entity2 = tableMap.get(fk.getAssociatedEntity());
                     if (entity2 == null) {
-                        //log.debug("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
+                        //log.debug("Table '" + fk.getReferencedKey().getTable().getFullyQualifiedName() + "' not found in ERD");
                         if (unresolvedKeys == null) {
                             unresolvedKeys = new ArrayList<>();
                         }

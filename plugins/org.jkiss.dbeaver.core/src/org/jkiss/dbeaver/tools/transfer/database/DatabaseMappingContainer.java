@@ -20,9 +20,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
@@ -30,7 +28,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -124,7 +121,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     public String getTargetName()
     {
         switch (mappingType) {
-            case existing: return DBUtils.getObjectFullName(target);
+            case existing: return DBUtils.getObjectFullName(target, DBPEvaluationContext.UI);
             case create: return targetName;
             case skip: return DatabaseMappingAttribute.TARGET_NAME_SKIP;
             default: return "?";
@@ -161,7 +158,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
                     }
                 });
             } catch (InvocationTargetException e) {
-                UIUtils.showErrorDialog(null, "Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source), e.getTargetException());
+                UIUtils.showErrorDialog(null, "Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source, DBPEvaluationContext.UI), e.getTargetException());
             } catch (InterruptedException e) {
                 // Skip it
             }
@@ -175,7 +172,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
             try {
                 readAttributes(monitor);
             } catch (DBException e) {
-                UIUtils.showErrorDialog(null, "Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source), e);
+                UIUtils.showErrorDialog(null, "Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source, DBPEvaluationContext.UI), e);
             }
         }
         return attributeMappings;

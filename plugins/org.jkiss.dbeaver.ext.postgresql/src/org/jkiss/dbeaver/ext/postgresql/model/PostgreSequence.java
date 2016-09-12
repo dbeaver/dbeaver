@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -100,7 +101,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     private void loadAdditionalInfo(DBRProgressMonitor monitor) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load sequence additional info")) {
             try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(
-                "SELECT last_value,min_value,max_value,increment_by from " + getFullQualifiedName())) {
+                "SELECT last_value,min_value,max_value,increment_by from " + getFullyQualifiedName(DBPEvaluationContext.DML))) {
                 try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
                     if (seqResults.next()) {
                         additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, 1);

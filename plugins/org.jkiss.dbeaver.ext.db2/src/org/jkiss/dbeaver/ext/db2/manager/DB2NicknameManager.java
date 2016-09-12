@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 
 /**
@@ -35,7 +36,7 @@ public class DB2NicknameManager extends DB2AbstractDropOnlyManager<DB2Nickname, 
     @Override
     public String buildDropStatement(DB2Nickname db2Nickname)
     {
-        String fullyQualifiedName = db2Nickname.getFullQualifiedName();
+        String fullyQualifiedName = db2Nickname.getFullyQualifiedName(DBPEvaluationContext.DDL);
         return String.format(SQL_DROP, fullyQualifiedName);
     }
 

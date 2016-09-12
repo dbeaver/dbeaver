@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
@@ -71,7 +72,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
             log.warn("Object change command not found"); //$NON-NLS-1$
             return;
         }
-        final String tableName = table.getFullQualifiedName();
+        final String tableName = table.getFullyQualifiedName(DBPEvaluationContext.DDL);
 
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
@@ -111,7 +112,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
                 "DROP " + (command.getObject().isView() ? "VIEW" : "TABLE") +
-                " " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+                " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
     }
 

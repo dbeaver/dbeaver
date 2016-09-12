@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -126,7 +127,7 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
     @Override
     public String getDropConstraintPattern(DB2TableUniqueKey constraint)
     {
-        String tablename = constraint.getTable().getFullQualifiedName();
+        String tablename = constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
         if (constraint.getConstraintType().equals(DBSEntityConstraintType.PRIMARY_KEY)) {
             return String.format(SQL_DROP_PK, tablename);
         } else {

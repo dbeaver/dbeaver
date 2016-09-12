@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -168,7 +169,7 @@ public class OraclePackage extends OracleSchemaObject
                 new OracleObjectPersistAction(
                     OracleObjectType.PACKAGE,
                     "Compile package",
-                    "ALTER PACKAGE " + getFullQualifiedName() + " COMPILE"
+                    "ALTER PACKAGE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE"
                 ));
         }
         if (!CommonUtils.isEmpty(sourceDefinition)) {
@@ -176,7 +177,7 @@ public class OraclePackage extends OracleSchemaObject
                 new OracleObjectPersistAction(
                     OracleObjectType.PACKAGE_BODY,
                     "Compile package body",
-                    "ALTER PACKAGE " + getFullQualifiedName() + " COMPILE BODY"
+                    "ALTER PACKAGE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE BODY"
                 ));
         }
         return actions.toArray(new DBEPersistAction[actions.size()]);

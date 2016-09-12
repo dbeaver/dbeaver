@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -90,7 +91,7 @@ public class ColumnsMappingDialog extends StatusDialog {
         composite.setLayout(new GridLayout(1, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        new Label(composite, SWT.NONE).setText("Source entity: " + DBUtils.getObjectFullName(mapping.getSource()) +
+        new Label(composite, SWT.NONE).setText("Source entity: " + DBUtils.getObjectFullName(mapping.getSource(), DBPEvaluationContext.UI) +
             " [" + mapping.getSource().getDataSource().getContainer().getName() + "]");
         new Label(composite, SWT.NONE).setText("Target entity: " + mapping.getTargetName() +
             " [" + (targetDataSource == null ? "?" : targetDataSource.getContainer().getName()) + "]");
@@ -134,7 +135,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                 public void update(ViewerCell cell)
                 {
                     DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) cell.getElement();
-                    cell.setText(DBUtils.getObjectFullName(attrMapping.getSource()));
+                    cell.setText(DBUtils.getObjectFullName(attrMapping.getSource(), DBPEvaluationContext.UI));
                     if (attrMapping.getIcon() != null) {
                         cell.setImage(DBeaverIcons.getImage(attrMapping.getIcon()));
                     }

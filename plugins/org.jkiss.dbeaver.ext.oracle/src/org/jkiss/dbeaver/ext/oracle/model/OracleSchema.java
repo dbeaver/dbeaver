@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -886,7 +887,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 final String columnName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
                 OracleTableColumn tableColumn = refTable.getAttribute(session.getProgressMonitor(), columnName);
                 if (tableColumn == null) {
-                    log.debug("Column '" + columnName + "' not found in table '" + refTable.getFullQualifiedName() + "' for trigger '" + parent.getName() + "'");
+                    log.debug("Column '" + columnName + "' not found in table '" + refTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "' for trigger '" + parent.getName() + "'");
                 }
                 return new OracleTriggerColumn(session.getProgressMonitor(), parent, tableColumn, dbResult);
             }

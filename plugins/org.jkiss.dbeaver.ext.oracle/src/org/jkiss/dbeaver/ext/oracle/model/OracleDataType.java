@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -274,7 +275,7 @@ public class OracleDataType extends OracleObject<DBSObject>
             new OracleObjectPersistAction(
                 OracleObjectType.VIEW,
                 "Compile type",
-                "ALTER TYPE " + getFullQualifiedName() + " COMPILE"
+                "ALTER TYPE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE"
             )};
     }
 
@@ -297,7 +298,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     @Override
     public String getTypeName()
     {
-        return getFullQualifiedName();
+        return getFullyQualifiedName(DBPEvaluationContext.DDL);
     }
 
     @Override
@@ -518,7 +519,7 @@ public class OracleDataType extends OracleObject<DBSObject>
 
     @NotNull
     @Override
-    public String getFullQualifiedName()
+    public String getFullyQualifiedName(DBPEvaluationContext context)
     {
         return parent instanceof OracleSchema ?
             DBUtils.getFullQualifiedName(getDataSource(), parent, this) :
@@ -528,7 +529,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     @Override
     public String toString()
     {
-        return getFullQualifiedName();
+        return getFullyQualifiedName(DBPEvaluationContext.UI);
     }
 
     public static OracleDataType resolveDataType(DBRProgressMonitor monitor, OracleDataSource dataSource, String typeOwner, String typeName)

@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
@@ -103,7 +104,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                     null :
                     settings.getProcessorProperties());
             TableItem item = new TableItem(resultTable, SWT.NONE);
-            item.setText(0, DBUtils.getObjectFullName(pipe.getProducer().getSourceObject()));
+            item.setText(0, DBUtils.getObjectFullName(pipe.getProducer().getSourceObject(), DBPEvaluationContext.UI));
             if (settings.getProducer() != null && settings.getProducer().getIcon() != null) {
                 item.setImage(0, DBeaverIcons.getImage(settings.getProducer().getIcon()));
             }

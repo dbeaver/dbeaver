@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -105,7 +106,7 @@ public class SearchDataQuery implements ISearchQuery {
                     if (monitor.isCanceled()) {
                         break;
                     }
-                    String objectName = DBUtils.getObjectFullName(dataContainer);
+                    String objectName = DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
                     DBNDatabaseNode node = dbnModel.findNode(dataContainer);
                     if (node == null) {
                         log.warn("Can't find tree node for object \"" + objectName + "\"");

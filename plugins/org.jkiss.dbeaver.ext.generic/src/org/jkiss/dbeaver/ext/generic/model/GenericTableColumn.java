@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
@@ -160,7 +161,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
     @Override
     public String toString()
     {
-        return getTable().getFullQualifiedName() + "." + getName();
+        return getTable().getFullyQualifiedName(DBPEvaluationContext.UI) + "." + getName();
     }
 
 }

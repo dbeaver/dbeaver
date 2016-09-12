@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -137,7 +138,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 //        ALTER [ COLUMN ] column SET ( attribute_option = value [, ... ] )
 //        ALTER [ COLUMN ] column RESET ( attribute_option [, ... ] )
 //        ALTER [ COLUMN ] column SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
-        String prefix = "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable()) + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
+        String prefix = "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
         String typeClause = column.getFullQualifiedTypeName();
         if (column.getDataType() != null) {
             typeClause += " USING " + DBUtils.getQuotedIdentifier(column) + "::" + column.getDataType().getName();
@@ -165,7 +166,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename column",
-                "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable()) + " RENAME COLUMN " +
+                "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + " RENAME COLUMN " +
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO " +
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName())));
     }

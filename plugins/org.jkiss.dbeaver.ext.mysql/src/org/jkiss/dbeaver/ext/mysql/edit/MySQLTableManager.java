@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -82,7 +83,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
         StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
-        query.append(command.getObject().getFullQualifiedName()).append(" "); //$NON-NLS-1$
+        query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
         appendTableModifiers(command.getObject(), command, query);
 
         actionList.add(
@@ -125,7 +126,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",
-                "RENAME TABLE " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
+                "RENAME TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
                     " TO " + DBUtils.getQuotedIdentifier(command.getObject().getContainer()) + "." + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())) //$NON-NLS-1$
         );
     }

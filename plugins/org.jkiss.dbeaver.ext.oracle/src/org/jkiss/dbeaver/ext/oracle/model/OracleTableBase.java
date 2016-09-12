@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -128,7 +129,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     @NotNull
     @Override
-    public String getFullQualifiedName()
+    public String getFullyQualifiedName(DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer(),
@@ -170,7 +171,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
                             String colComment = resultSet.getString(2);
                             OracleTableColumn col = getAttribute(monitor, colName);
                             if (col == null) {
-                                log.warn("Column '" + colName + "' not found in table '" + getFullQualifiedName() + "'");
+                                log.warn("Column '" + colName + "' not found in table '" + getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
                             } else {
                                 col.setComment(CommonUtils.notEmpty(colComment));
                             }

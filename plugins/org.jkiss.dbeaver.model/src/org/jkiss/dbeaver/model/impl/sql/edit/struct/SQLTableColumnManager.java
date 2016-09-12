@@ -171,7 +171,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_table_column,
-                "ALTER TABLE " + table.getFullQualifiedName() + " ADD "  + getNestedDeclaration(table, command)) );
+                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD "  + getNestedDeclaration(table, command)) );
     }
 
     @Override
@@ -179,7 +179,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     {
         actions.add(
             new SQLDatabasePersistAction(
-                ModelMessages.model_jdbc_drop_table_column, "ALTER TABLE " + command.getObject().getTable().getFullQualifiedName() + //$NON-NLS-2$
+                ModelMessages.model_jdbc_drop_table_column, "ALTER TABLE " + command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-2$
                     " DROP " + (hasDDLFeature(command.getObject(), DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP) ? "" : "COLUMN ") + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         );
     }

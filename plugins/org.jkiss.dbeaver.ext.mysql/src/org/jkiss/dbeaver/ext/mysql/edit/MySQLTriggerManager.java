@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -67,9 +68,9 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
 
     protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, MySQLTrigger trigger) {
         String ddl =
-            "CREATE TRIGGER " + trigger.getFullQualifiedName() + "\n" +
+            "CREATE TRIGGER " + trigger.getFullyQualifiedName(DBPEvaluationContext.DDL) + "\n" +
                 trigger.getActionTiming() + " " + trigger.getManipulationType() + "\n" +
-            "ON " + trigger.getTable().getFullQualifiedName() + " FOR EACH ROW\n" +
+            "ON " + trigger.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " FOR EACH ROW\n" +
             "BEGIN\n" +
             trigger.getBody() + "\n" +
             "END";

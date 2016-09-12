@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
@@ -175,7 +176,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             descAttributes = DBVEntity.getDescriptionColumns(session.getProgressMonitor(), table, descColumns);
             query.append(", ").append(descColumns);
         }
-        query.append(" FROM ").append(DBUtils.getObjectFullName(table));
+        query.append(" FROM ").append(DBUtils.getObjectFullName(table, DBPEvaluationContext.DML));
         if (!CommonUtils.isEmpty(preceedingKeys) || keyPattern != null) {
             query.append(" WHERE ");
         }

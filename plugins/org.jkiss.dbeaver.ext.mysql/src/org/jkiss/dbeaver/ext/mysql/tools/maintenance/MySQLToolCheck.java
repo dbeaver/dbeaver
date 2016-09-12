@@ -28,6 +28,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -62,7 +63,7 @@ public class MySQLToolCheck implements IExternalTool
 
         @Override
         protected void generateObjectCommand(List<String> lines, MySQLTable object) {
-            String sql = "CHECK TABLE " + object.getFullQualifiedName();
+            String sql = "CHECK TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL);
             String option = optionCombo.getText();
             if (!CommonUtils.isEmpty(option)) sql += " " + option;
             lines.add(sql);

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -79,7 +80,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
 
     @NotNull
     @Override
-    public String getFullQualifiedName()
+    public String getFullyQualifiedName(DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer(),
@@ -114,7 +115,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Retrieve table DDL")) {
             try (PreparedStatement dbStat = session.prepareStatement(
-                "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName())) {
+                "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullyQualifiedName(DBPEvaluationContext.DDL))) {
                 try (ResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         byte[] ddl;

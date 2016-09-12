@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -235,7 +236,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
             new OracleObjectPersistAction(
                 OracleObjectType.TRIGGER,
                 "Compile trigger",
-                "ALTER TRIGGER " + getFullQualifiedName() + " COMPILE"
+                "ALTER TRIGGER " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE"
             )};
     }
 

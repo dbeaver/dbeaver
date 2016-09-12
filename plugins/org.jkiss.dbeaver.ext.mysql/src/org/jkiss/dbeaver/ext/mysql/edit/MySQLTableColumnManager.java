@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -113,7 +114,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         actionList.add(
             new SQLDatabasePersistAction(
                 "Modify column",
-                "ALTER TABLE " + column.getTable().getFullQualifiedName() + " MODIFY COLUMN " + getNestedDeclaration(column.getTable(), command))); //$NON-NLS-1$ //$NON-NLS-2$
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " MODIFY COLUMN " + getNestedDeclaration(column.getTable(), command))); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
@@ -129,7 +130,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename column",
-                "ALTER TABLE " + column.getTable().getFullQualifiedName() + " CHANGE " +
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " CHANGE " +
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " " +
                     getNestedDeclaration(column.getTable(), command)));
     }

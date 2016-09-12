@@ -33,6 +33,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -121,7 +122,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
         objectsTable.setLayoutData(gd);
         for (T table : selectedObjects) {
             TableItem item = new TableItem(objectsTable, SWT.NONE);
-            item.setText(DBUtils.getObjectFullName(table));
+            item.setText(DBUtils.getObjectFullName(table, DBPEvaluationContext.UI));
             item.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
             item.setChecked(true);
             item.setData(table);
@@ -169,7 +170,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                         }
                         final int objectNumber = i;
                         final T object = objects.get(i);
-                        monitor.subTask("Process " + DBUtils.getObjectFullName(object));
+                        monitor.subTask("Process " + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
                         objectProcessingError = null;
                         DBeaverUI.asyncExec(new Runnable() {
                             @Override

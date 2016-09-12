@@ -29,8 +29,9 @@ public interface DBPQualifiedObject extends DBPObject
      * Entity full qualified name.
      * Should include all parent objects' names and thus uniquely identify this entity within database.
      * @return full qualified name, never returns null.
+     * @param context evaluation context
      */
     @NotNull
-    String getFullQualifiedName();
+    String getFullyQualifiedName(DBPEvaluationContext context);
 
 }
