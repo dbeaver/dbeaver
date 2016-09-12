@@ -3128,7 +3128,7 @@ public class ResultSetViewer extends Viewer
     }
 
     static class PresentationSettings {
-        final Set<String> enabledPanelIds = new HashSet<>();
+        final Set<String> enabledPanelIds = new LinkedHashSet<>();
         String activePanelId;
         int panelRatio;
         boolean panelsVisible;
