@@ -17,19 +17,22 @@
  */
 package org.jkiss.dbeaver.model.data.aggregate;
 
-/**
- * FunctionSum
- */
-public class FunctionMax implements IAggregateFunction {
+import java.util.HashSet;
+import java.util.Set;
 
-    Comparable result = null;
+/**
+ * FunctionCountDistinct
+ */
+public class FunctionCountDistinct implements IAggregateFunction {
+
+    private int count = 0;
+    private Set<Object> cache = new HashSet<>();
 
     @Override
     public boolean accumulate(Object value) {
-        if (value instanceof Comparable) {
-            if (result == null || AggregateUtils.compareValues((Comparable) value, result) > 0) {
-                result = (Comparable) value;
-            }
+        if (!cache.contains(value)) {
+            count++;
+            cache.add(value);
             return true;
         }
         return false;
@@ -37,7 +40,6 @@ public class FunctionMax implements IAggregateFunction {
 
     @Override
     public Object getResult(int valueCount) {
-        return result;
+        return count;
     }
-
 }
