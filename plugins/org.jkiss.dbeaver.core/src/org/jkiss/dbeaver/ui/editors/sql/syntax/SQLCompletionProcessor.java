@@ -296,7 +296,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
         DBSObjectContainer selectedContainer = null;
         {
-            DBSObject selectedObject = DBUtils.getSelectedObject(dataSource, false);
+            DBSObject selectedObject = DBUtils.getSelectedObject(dataSource, true);
             if (selectedObject != null) {
                 selectedContainer = DBUtils.getAdapter(DBSObjectContainer.class, selectedObject);
             }
