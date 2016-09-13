@@ -42,12 +42,6 @@ public class PostgreMaterializedView extends PostgreViewBase
         return getSchema().indexCache.getObjects(monitor, getSchema(), this);
     }
 
-    @Override
-    public void setObjectDefinitionText(String sourceText) throws DBException
-    {
-        throw new DBException("Not Implemented");
-    }
-
     public String getViewType() {
         return "MATERIALIZED VIEW";
     }
