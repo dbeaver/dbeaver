@@ -105,7 +105,7 @@ public class MetaDataPanel implements IResultSetPanel {
     public Control createContents(final IResultSetPresentation presentation, Composite parent) {
         this.presentation = presentation;
 
-        this.attributeList = new TreeViewer(parent, SWT.NONE);
+        this.attributeList = new TreeViewer(parent, SWT.FULL_SELECTION);
         this.attributeList.getTree().setHeaderVisible(true);
         this.attributeList.getTree().setLinesVisible(true);
         this.attrController = new ViewerColumnController(PANEL_ID, this.attributeList);
