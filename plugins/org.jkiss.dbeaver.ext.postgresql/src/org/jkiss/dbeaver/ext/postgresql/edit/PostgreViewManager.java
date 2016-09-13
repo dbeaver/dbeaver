@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -67,7 +66,7 @@ public class PostgreViewManager extends SQLObjectEditor<PostgreTableBase, Postgr
     }
 
     @Override
-    protected PostgreView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreSchema parent, Object copyFrom)
+    protected PostgreViewBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreSchema parent, Object copyFrom)
     {
         PostgreView newCatalog = new PostgreView(parent);
         newCatalog.setName("new_view"); //$NON-NLS-1$
@@ -77,7 +76,7 @@ public class PostgreViewManager extends SQLObjectEditor<PostgreTableBase, Postgr
     @Override
     protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
-        createOrReplaceViewQuery(actions, (PostgreView) command.getObject());
+        createOrReplaceViewQuery(actions, (PostgreViewBase) command.getObject());
     }
 
     @Override
@@ -95,14 +94,11 @@ public class PostgreViewManager extends SQLObjectEditor<PostgreTableBase, Postgr
         );
     }
 
-    private void createOrReplaceViewQuery(List<DBEPersistAction> actions, PostgreViewBase view)
+    protected void createOrReplaceViewQuery(List<DBEPersistAction> actions, PostgreViewBase view)
     {
-        String ddl;
-        try {
-            ddl = view.getObjectDefinitionText(VoidProgressMonitor.INSTANCE);
-        } catch (DBException e) {
-            ddl = e.getMessage();
-        }
+        String createSQL = (view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
+        String ddl = createSQL + view.getViewType() + " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" + view.getSource();
+
         actions.add(
             new SQLDatabasePersistAction("Create view", ddl));
     }
