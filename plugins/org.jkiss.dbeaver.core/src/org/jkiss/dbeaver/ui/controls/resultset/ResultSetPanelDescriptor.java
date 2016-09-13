@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -34,8 +33,6 @@ import java.util.Locale;
  * ResultSetPresentationDescriptor
  */
 public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
-
-    private static final Log log = Log.getLog(ResultSetPanelDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resultset.panel"; //NON-NLS-1 //$NON-NLS-1$
 
@@ -93,6 +90,9 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
     }
 
     public boolean supportedBy(ResultSetPresentationDescriptor presentation) {
+        if (supportedPresentations.isEmpty() && supportedPresentationTypes.isEmpty()) {
+            return true;
+        }
         return
             supportedPresentations.contains(presentation.getId()) ||
             supportedPresentationTypes.contains(presentation.getPresentationType());

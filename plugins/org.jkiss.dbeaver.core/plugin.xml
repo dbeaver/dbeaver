@@ -2553,7 +2553,6 @@
 
     <extension point="org.jkiss.dbeaver.aggregateFunction">
         <function id="count" class="org.jkiss.dbeaver.model.data.aggregate.FunctionCount" type="simple" label="Count" description="Value count" default="true"/>
-        <function id="countDistinct" class="org.jkiss.dbeaver.model.data.aggregate.FunctionCountDistinct" type="simple" label="Count Distinct" description="Value count" default="true"/>
         <function id="sum" class="org.jkiss.dbeaver.model.data.aggregate.FunctionSum" type="simple" label="Sum" description="Sum of numbers"/>
         <function id="avg" class="org.jkiss.dbeaver.model.data.aggregate.FunctionAvg" type="simple" label="Avg" description="Arithmetic mean"/>
         <function id="min" class="org.jkiss.dbeaver.model.data.aggregate.FunctionMin" type="simple" label="Min" description="Minimum value"/>
@@ -2788,6 +2787,14 @@
                 default="false"
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.AggregateColumnsPanel">
             <supports type="columns"/>
+        </panel>
+        <panel
+                id="results-metadata"
+                label="Metadata"
+                description="Resultset metadata"
+                icon="icons/sql/panel_metadata.png"
+                default="false"
+                class="org.jkiss.dbeaver.ui.controls.resultset.panel.MetaDataPanel">
         </panel>
     </extension>
 

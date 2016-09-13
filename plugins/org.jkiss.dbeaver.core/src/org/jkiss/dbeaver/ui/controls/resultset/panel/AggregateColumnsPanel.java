@@ -80,7 +80,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     @Override
     public DBPImage getPanelImage() {
-        return UIIcon.APACHE;
+        return UIIcon.PANEL_AGGREGATE;
     }
 
     @Override
