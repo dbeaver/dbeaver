@@ -17,29 +17,29 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
-import ch.qos.logback.core.db.dialect.DBUtil;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ViewerColumnController;
-import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
 
 /**
  * RSV value view panel
@@ -51,7 +51,7 @@ public class MetaDataPanel implements IResultSetPanel {
     public static final String PANEL_ID = "results-metadata";
 
     private IResultSetPresentation presentation;
-    private TableViewer attributeList;
+    private TreeViewer attributeList;
     private ViewerColumnController attrController;
 
     private enum AttributeProperty {
@@ -105,9 +105,9 @@ public class MetaDataPanel implements IResultSetPanel {
     public Control createContents(final IResultSetPresentation presentation, Composite parent) {
         this.presentation = presentation;
 
-        this.attributeList = new TableViewer(parent, SWT.NONE);
-        this.attributeList.getTable().setHeaderVisible(true);
-        this.attributeList.getTable().setLinesVisible(true);
+        this.attributeList = new TreeViewer(parent, SWT.NONE);
+        this.attributeList.getTree().setHeaderVisible(true);
+        this.attributeList.getTree().setLinesVisible(true);
         this.attrController = new ViewerColumnController(PANEL_ID, this.attributeList);
         for (AttributeProperty prop : AttributeProperty.values()) {
             attrController.addColumn(
@@ -119,9 +119,20 @@ public class MetaDataPanel implements IResultSetPanel {
                 new PropertyLabelProvider(prop));
         }
         attrController.createColumns();
-        this.attributeList.setContentProvider(new ListContentProvider());
+        this.attributeList.setContentProvider(new TreeContentProvider() {
+            @Override
+            public Object[] getChildren(Object parentElement) {
+                List<DBDAttributeBinding> nested = ((DBDAttributeBinding) parentElement).getNestedBindings();
+                return nested == null ? new Object[0] : nested.toArray(new Object[nested.size()]);
+            }
 
-        return this.attributeList.getTable();
+            @Override
+            public boolean hasChildren(Object element) {
+                return !CommonUtils.isEmpty(((DBDAttributeBinding) element).getNestedBindings());
+            }
+        });
+
+        return this.attributeList.getTree();
     }
 
 
@@ -137,11 +148,12 @@ public class MetaDataPanel implements IResultSetPanel {
 
     @Override
     public void refresh() {
-        Table table = attributeList.getTable();
+        Tree table = attributeList.getTree();
         table.setRedraw(false);
         try {
             attributeList.setInput(presentation.getController().getModel().getVisibleAttributes());
-            for (TableColumn column : attributeList.getTable().getColumns()) {
+            attributeList.expandAll();
+            for (TreeColumn column : table.getColumns()) {
                 column.pack();
             }
             //UIUtils.packColumns(table, false);
