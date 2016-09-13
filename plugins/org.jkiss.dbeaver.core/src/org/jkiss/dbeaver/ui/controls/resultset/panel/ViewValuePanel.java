@@ -132,7 +132,9 @@ public class ViewValuePanel implements IResultSetPanel {
             final ISelectionChangedListener selectionListener = new ISelectionChangedListener() {
                 @Override
                 public void selectionChanged(SelectionChangedEvent event) {
-                    refreshValue();
+                    if (ViewValuePanel.this.presentation.getController().getVisiblePanel() == ViewValuePanel.this) {
+                        refreshValue();
+                    }
                 }
             };
             selectionProvider.addSelectionChangedListener(selectionListener);
