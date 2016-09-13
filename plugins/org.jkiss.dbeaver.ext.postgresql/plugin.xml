@@ -224,6 +224,9 @@
             class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager"
             objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreView"/>
         <manager
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
+        <manager
             class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTriggerManager"
             objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
         <manager

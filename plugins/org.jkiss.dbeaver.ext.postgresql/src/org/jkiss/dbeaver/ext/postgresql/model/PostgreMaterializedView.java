@@ -48,4 +48,8 @@ public class PostgreMaterializedView extends PostgreViewBase
         throw new DBException("Not Implemented");
     }
 
+    public String getViewType() {
+        return "MATERIALIZED VIEW";
+    }
+
 }

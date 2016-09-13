@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -89,11 +90,17 @@ public abstract class PostgreViewBase extends PostgreTableReal
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         if (source == null) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read view definition")) {
-                source = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(?, true)", getObjectId());
-            } catch (SQLException e) {
-                throw new DBException("Error reading view definition", e);
+            String body;
+            if (isPersisted()) {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read view definition")) {
+                    body = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(?, true)", getObjectId());
+                } catch (SQLException e) {
+                    throw new DBException("Error reading view definition", e);
+                }
+            } else {
+                body = "";
             }
+            source = "CREATE OR REPLACE " + getViewType() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" + body;
         }
         return source;
     }
@@ -101,7 +108,9 @@ public abstract class PostgreViewBase extends PostgreTableReal
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException
     {
-        throw new DBException("Not Implemented");
+        this.source = sourceText;
     }
+
+    public abstract String getViewType();
 
 }
