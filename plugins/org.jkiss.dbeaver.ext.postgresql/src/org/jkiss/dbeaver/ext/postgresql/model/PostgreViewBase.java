@@ -90,18 +90,15 @@ public abstract class PostgreViewBase extends PostgreTableReal
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         if (source == null) {
-            String body;
             if (isPersisted()) {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read view definition")) {
-                    body = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(?, true)", getObjectId());
+                    source = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(?, true)", getObjectId());
                 } catch (SQLException e) {
                     throw new DBException("Error reading view definition", e);
                 }
             } else {
-                body = "";
+                source = "";
             }
-            String createSQL = (this instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
-            source = createSQL + getViewType() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" + body;
         }
         return source;
     }

@@ -29,6 +29,10 @@ import java.util.Collection;
  */
 public class PostgreMaterializedView extends PostgreViewBase
 {
+    public PostgreMaterializedView(PostgreSchema catalog) {
+        super(catalog);
+    }
+
     public PostgreMaterializedView(
         PostgreSchema catalog,
         ResultSet dbResult)
