@@ -61,7 +61,7 @@ public class PostgreViewManager extends SQLObjectEditor<PostgreTableBase, Postgr
         if (CommonUtils.isEmpty(object.getName())) {
             throw new DBException("View name cannot be empty");
         }
-        if (CommonUtils.isEmpty(((PostgreView) object).getSource())) {
+        if (CommonUtils.isEmpty(((PostgreViewBase) object).getSource())) {
             throw new DBException("View definition cannot be empty");
         }
     }
@@ -89,8 +89,9 @@ public class PostgreViewManager extends SQLObjectEditor<PostgreTableBase, Postgr
     @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
+        PostgreViewBase view = (PostgreViewBase)command.getObject();
         actions.add(
-            new SQLDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
+            new SQLDatabasePersistAction("Drop view", "DROP " + view.getViewType() + " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
     }
 

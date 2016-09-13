@@ -100,7 +100,8 @@ public abstract class PostgreViewBase extends PostgreTableReal
             } else {
                 body = "";
             }
-            source = "CREATE OR REPLACE " + getViewType() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" + body;
+            String createSQL = (this instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
+            source = createSQL + getViewType() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" + body;
         }
         return source;
     }
