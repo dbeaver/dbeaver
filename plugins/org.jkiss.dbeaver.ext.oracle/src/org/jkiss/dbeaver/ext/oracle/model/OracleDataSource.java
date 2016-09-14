@@ -88,7 +88,8 @@ public class OracleDataSource extends JDBCDataSource
                 try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Check view existence")) {
                     available = JDBCUtils.executeQuery(
                         session,
-                        "SELECT 1 FROM SYS.ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=? AND ROWNUM<2", schemaName, viewName) != null;
+                        "SELECT 1 FROM " + DBUtils.getQuotedIdentifier(this, schemaName)+ "." +
+                            DBUtils.getQuotedIdentifier(this, viewName) + " WHERE ROWNUM<2") != null;
                 }
             } catch (SQLException e) {
                 available = false;
