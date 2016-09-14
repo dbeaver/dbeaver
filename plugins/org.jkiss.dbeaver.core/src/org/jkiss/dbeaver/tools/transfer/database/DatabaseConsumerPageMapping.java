@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWizard> {
@@ -204,7 +205,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    mapColumns((DatabaseMappingContainer) getSelectedMapping());
+                    DatabaseMappingObject selectedMapping = getSelectedMapping();
+                    mapColumns(selectedMapping instanceof DatabaseMappingContainer ?
+                        (DatabaseMappingContainer) selectedMapping :
+                        ((DatabaseMappingAttribute)selectedMapping).getParent());
                 }
             });
 
@@ -216,7 +220,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    showDDL((DatabaseMappingContainer) getSelectedMapping());
+                    DatabaseMappingObject selectedMapping = getSelectedMapping();
+                    showDDL(selectedMapping instanceof DatabaseMappingContainer ?
+                        (DatabaseMappingContainer) selectedMapping :
+                        ((DatabaseMappingAttribute)selectedMapping).getParent());
                 }
             });
 
@@ -261,7 +268,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     DatabaseMappingObject mapping = getSelectedMapping();
                     mapTableButton.setEnabled(mapping instanceof DatabaseMappingContainer);
                     createNewButton.setEnabled(mapping instanceof DatabaseMappingContainer && settings.getContainerNode() != null);
-                    final boolean hasMappings = mapping instanceof DatabaseMappingContainer && mapping.getMappingType() != DatabaseMappingType.unspecified;
+                    final boolean hasMappings =
+                        (mapping instanceof DatabaseMappingContainer && mapping.getMappingType() != DatabaseMappingType.unspecified) ||
+                        (mapping instanceof DatabaseMappingAttribute && ((DatabaseMappingAttribute) mapping).getParent().getMappingType() != DatabaseMappingType.unspecified);
                     columnsButton.setEnabled(hasMappings);
                     ddlButton.setEnabled(hasMappings);
                 }
@@ -403,26 +412,54 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             public void update(ViewerCell cell)
             {
                 DatabaseMappingObject mapping = (DatabaseMappingObject) cell.getElement();
-                String text = "";
-                switch (mapping.getMappingType()) {
-                    case unspecified:
-                        text = "?";
-                        break;
-                    case existing:
-                        text = "existing";
-                        break;
-                    case create:
-                        text = "new";
-                        break;
-                    case skip:
-                        text = "skip";
-                        break;
-                }
-                cell.setText(text);
+                cell.setText(mapping.getMappingType().name());
                 super.update(cell);
             }
         });
         columnMapping.getColumn().setText("Mapping");
+        columnMapping.setEditingSupport(new EditingSupport(mappingViewer) {
+            @Override
+            protected CellEditor getCellEditor(Object element) {
+                List<String> mappingTypes = new ArrayList<>();
+                mappingTypes.add(DatabaseMappingType.skip.name());
+                DatabaseMappingObject mapping = (DatabaseMappingObject) element;
+                if (mapping instanceof DatabaseMappingAttribute) {
+                    mappingTypes.add(((DatabaseMappingAttribute) mapping).getParent().getMappingType().name());
+                } else {
+                    mappingTypes.add(mapping.getMappingType().name());
+                }
+                return new CustomComboBoxCellEditor(
+                    mappingViewer.getTree(),
+                    mappingTypes.toArray(new String[mappingTypes.size()]),
+                    SWT.DROP_DOWN | SWT.READ_ONLY);
+            }
+            @Override
+            protected boolean canEdit(Object element) {
+                return true;
+            }
+            @Override
+            protected Object getValue(Object element) {
+                DatabaseMappingObject mapping = (DatabaseMappingObject) element;
+                return mapping.getMappingType().name();
+            }
+
+            @Override
+            protected void setValue(Object element, Object value) {
+                try {
+                    DatabaseMappingObject mapping = (DatabaseMappingObject) element;
+                    DatabaseMappingType mappingType = DatabaseMappingType.valueOf(value.toString());
+                    if (mapping instanceof DatabaseMappingAttribute) {
+                        ((DatabaseMappingAttribute)mapping).setMappingType(mappingType);
+                    } else {
+                        ((DatabaseMappingContainer)mapping).refreshMappingType(getWizard().getContainer(), mappingType);
+                    }
+                    mappingViewer.refresh();
+                    setErrorMessage(null);
+                } catch (DBException e) {
+                    setErrorMessage(e.getMessage());
+                }
+            }
+        });
 
         mappingViewer.setContentProvider(new TreeContentProvider() {
             @Override
@@ -446,7 +483,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     {
         final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
         boolean allowsCreate = true;
-        java.util.List<String> items = new ArrayList<>();
+        List<String> items = new ArrayList<>();
         if (element instanceof DatabaseMappingContainer) {
             if (settings.getContainerNode() == null) {
                 allowsCreate = false;
