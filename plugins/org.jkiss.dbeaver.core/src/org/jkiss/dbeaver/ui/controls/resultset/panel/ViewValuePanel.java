@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
@@ -87,7 +86,7 @@ public class ViewValuePanel implements IResultSetPanel {
 
     @Override
     public DBPImage getPanelImage() {
-        return DBIcon.TYPE_OBJECT;
+        return UIIcon.PANEL_VALUE;
     }
 
     @Override
@@ -133,7 +132,9 @@ public class ViewValuePanel implements IResultSetPanel {
             final ISelectionChangedListener selectionListener = new ISelectionChangedListener() {
                 @Override
                 public void selectionChanged(SelectionChangedEvent event) {
-                    refreshValue();
+                    if (ViewValuePanel.this.presentation.getController().getVisiblePanel() == ViewValuePanel.this) {
+                        refreshValue();
+                    }
                 }
             };
             selectionProvider.addSelectionChangedListener(selectionListener);

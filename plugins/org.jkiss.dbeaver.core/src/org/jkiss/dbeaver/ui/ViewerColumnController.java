@@ -151,6 +151,13 @@ public class ViewerColumnController {
         }
         if (needRefresh) {
             viewer.refresh();
+            for (ColumnInfo columnInfo : getVisibleColumns()) {
+                if (columnInfo.column instanceof TreeColumn) {
+                    ((TreeColumn) columnInfo.column).pack();
+                } else {
+                    ((TableColumn) columnInfo.column).pack();
+                }
+            }
         }
     }
 
@@ -273,25 +280,17 @@ public class ViewerColumnController {
     private void readColumnsConfiguration()
     {
         IDialogSettings settings = UIUtils.getDialogSettings(configId);
-        for (int i = 0;; i++) {
-            String columnDesc = settings.get(String.valueOf(i));
-            if (columnDesc == null) {
-                break;
-            }
-            StringTokenizer st = new StringTokenizer(columnDesc, ":");
-            boolean visible = Boolean.valueOf(st.nextToken());
-            int order = Integer.parseInt(st.nextToken());
-            int width = Integer.parseInt(st.nextToken());
-            String name = st.nextToken();
+        for (IDialogSettings subSect : settings.getSections()) {
+            String name = subSect.getName();
+            int order = subSect.getInt("order");
+            boolean visible = subSect.getBoolean("visible");
+            int width = subSect.getInt("width");
             for (ColumnInfo columnInfo : columns) {
                 if (columnInfo.name.equals(name)) {
                     columnInfo.visible = visible;
                     columnInfo.order = order;
                     columnInfo.width = width;
                     break;
-                } else if (columnInfo.order == order) {
-                    // Order conflict
-                    columnInfo.order = columns.size() - 1;
                 }
             }
         }
@@ -310,7 +309,13 @@ public class ViewerColumnController {
     {
         IDialogSettings settings = UIUtils.getDialogSettings(configId);
         for (ColumnInfo columnInfo : columns) {
-            settings.put(String.valueOf(columnInfo.order), columnInfo.visible + ":" + columnInfo.order + ":" + columnInfo.width + ":" + columnInfo.name);
+            IDialogSettings subSect = settings.getSection(columnInfo.name);
+            if (subSect == null) {
+                subSect = settings.addNewSection(columnInfo.name);
+            }
+            subSect.put("order", columnInfo.order);
+            subSect.put("visible", columnInfo.visible);
+            subSect.put("width", columnInfo.width);
         }
     }
 

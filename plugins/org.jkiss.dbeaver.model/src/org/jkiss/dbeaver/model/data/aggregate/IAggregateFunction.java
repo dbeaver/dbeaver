@@ -22,8 +22,8 @@ package org.jkiss.dbeaver.model.data.aggregate;
  */
 public interface IAggregateFunction {
 
-    void accumulate(Number value);
+    boolean accumulate(Object value);
 
-    Number getResult(int valueCount);
+    Object getResult(int valueCount);
 
 }

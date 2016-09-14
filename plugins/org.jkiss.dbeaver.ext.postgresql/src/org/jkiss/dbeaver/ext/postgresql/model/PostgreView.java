@@ -19,17 +19,12 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -37,8 +32,6 @@ import java.util.List;
  */
 public class PostgreView extends PostgreViewBase
 {
-    private String source;
-
     public PostgreView(PostgreSchema catalog)
     {
         super(catalog);
@@ -71,22 +64,8 @@ public class PostgreView extends PostgreViewBase
         return null;
     }
 
-    @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
-        source = null;
-        super.refreshObject(monitor);
-        return this;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    @Override
-    public void setObjectDefinitionText(String sourceText) throws DBException
-    {
-        throw new DBException("Not Implemented");
+    public String getViewType() {
+        return "VIEW";
     }
 
 }

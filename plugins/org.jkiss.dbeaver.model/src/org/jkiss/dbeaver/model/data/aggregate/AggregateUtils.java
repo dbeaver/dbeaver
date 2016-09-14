@@ -18,26 +18,17 @@
 package org.jkiss.dbeaver.model.data.aggregate;
 
 /**
- * FunctionSum
+ * AggregateUtils
  */
-public class FunctionMax implements IAggregateFunction {
+public class AggregateUtils {
 
-    Comparable result = null;
-
-    @Override
-    public boolean accumulate(Object value) {
-        if (value instanceof Comparable) {
-            if (result == null || AggregateUtils.compareValues((Comparable) value, result) > 0) {
-                result = (Comparable) value;
-            }
-            return true;
+    public static int compareValues(Comparable val1, Comparable val2) {
+        if (val1 instanceof Number && val2 instanceof Number) {
+            return (int)(((Number) val1).doubleValue() - ((Number) val2).doubleValue());
+        } else if (val1.getClass() == val2.getClass()) {
+            return val1.compareTo(val2);
+        } else {
+            return 0;
         }
-        return false;
     }
-
-    @Override
-    public Object getResult(int valueCount) {
-        return result;
-    }
-
 }
