@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreView;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreViewBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -29,7 +30,6 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -60,49 +60,47 @@ public class PostgreViewManager extends SQLObjectEditor<PostgreTableBase, Postgr
         if (CommonUtils.isEmpty(object.getName())) {
             throw new DBException("View name cannot be empty");
         }
-        if (CommonUtils.isEmpty(((PostgreView) object).getSource())) {
+        if (CommonUtils.isEmpty(((PostgreViewBase) object).getSource())) {
             throw new DBException("View definition cannot be empty");
         }
     }
 
     @Override
-    protected PostgreView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreSchema parent, Object copyFrom)
+    protected PostgreViewBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreSchema parent, Object copyFrom)
     {
         PostgreView newCatalog = new PostgreView(parent);
-        newCatalog.setName("NewView"); //$NON-NLS-1$
+        newCatalog.setName("new_view"); //$NON-NLS-1$
         return newCatalog;
     }
 
     @Override
     protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
-        createOrReplaceViewQuery(actions, (PostgreView) command.getObject());
+        createOrReplaceViewQuery(actions, (PostgreViewBase) command.getObject());
     }
 
     @Override
     protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
-        createOrReplaceViewQuery(actionList, (PostgreView) command.getObject());
+        createOrReplaceViewQuery(actionList, (PostgreViewBase) command.getObject());
     }
 
     @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
+        PostgreViewBase view = (PostgreViewBase)command.getObject();
         actions.add(
-            new SQLDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
+            new SQLDatabasePersistAction("Drop view", "DROP " + view.getViewType() + " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
     }
 
-    private void createOrReplaceViewQuery(List<DBEPersistAction> actions, PostgreView view)
+    protected void createOrReplaceViewQuery(List<DBEPersistAction> actions, PostgreViewBase view)
     {
-        StringBuilder decl = new StringBuilder(200);
-        final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
-        decl.append("CREATE OR REPLACE VIEW ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(lineSeparator) //$NON-NLS-1$
-            .append("AS ").append(view.getSource()); //$NON-NLS-1$
+        String createSQL = (view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
+        String ddl = createSQL + view.getViewType() + " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" + view.getSource();
 
         actions.add(
-            new SQLDatabasePersistAction("Create view", decl.toString())
-        );
+            new SQLDatabasePersistAction("Create view", ddl));
     }
 
 }

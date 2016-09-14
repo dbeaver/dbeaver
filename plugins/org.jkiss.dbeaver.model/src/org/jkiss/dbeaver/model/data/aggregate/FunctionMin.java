@@ -22,15 +22,21 @@ package org.jkiss.dbeaver.model.data.aggregate;
  */
 public class FunctionMin implements IAggregateFunction {
 
-    double result = Double.POSITIVE_INFINITY;
+    Comparable result = null;
 
     @Override
-    public void accumulate(Number value) {
-        result = Math.min(result, value.doubleValue());
+    public boolean accumulate(Object value) {
+        if (value instanceof Comparable) {
+            if (result == null || AggregateUtils.compareValues((Comparable) value, result) < 0) {
+                result = (Comparable) value;
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public Number getResult(int valueCount) {
+    public Object getResult(int valueCount) {
         return result;
     }
 }

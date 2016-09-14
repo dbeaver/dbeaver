@@ -1396,7 +1396,7 @@ public class SQLEditor extends SQLEditorBase implements
             DBeaverUI.syncExec(new Runnable() {
                 @Override
                 public void run() {
-                    if (statement != null) {
+                    if (statement != null && !resultTabs.isDisposed()) {
                         resultsProvider.query = statement;
                         resultsProvider.lastGoodQuery = statement;
                         resultsProvider.tabItem.setToolTipText(CommonUtils.truncateString(statement.getQuery(), 1000));

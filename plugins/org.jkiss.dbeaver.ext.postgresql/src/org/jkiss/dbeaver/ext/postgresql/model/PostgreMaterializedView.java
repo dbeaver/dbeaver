@@ -29,6 +29,10 @@ import java.util.Collection;
  */
 public class PostgreMaterializedView extends PostgreViewBase
 {
+    public PostgreMaterializedView(PostgreSchema catalog) {
+        super(catalog);
+    }
+
     public PostgreMaterializedView(
         PostgreSchema catalog,
         ResultSet dbResult)
@@ -42,10 +46,8 @@ public class PostgreMaterializedView extends PostgreViewBase
         return getSchema().indexCache.getObjects(monitor, getSchema(), this);
     }
 
-    @Override
-    public void setObjectDefinitionText(String sourceText) throws DBException
-    {
-        throw new DBException("Not Implemented");
+    public String getViewType() {
+        return "MATERIALIZED VIEW";
     }
 
 }

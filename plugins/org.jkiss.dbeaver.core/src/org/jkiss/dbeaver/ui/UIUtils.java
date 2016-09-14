@@ -33,6 +33,7 @@ import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.IControlContentAdapter;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -494,6 +495,14 @@ public class UIUtils {
         imageLabel.setImage(DBeaverIcons.getImage(image));
 
         return imageLabel;
+    }
+
+
+    public static CLabel createInfoLabel(Composite parent, String text) {
+        CLabel tipLabel = new CLabel(parent, SWT.NONE);
+        tipLabel.setImage(JFaceResources.getImage(org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_INFO));
+        tipLabel.setText(text);
+        return tipLabel;
     }
 
     public static Text createLabelText(Composite parent, String label, String value)

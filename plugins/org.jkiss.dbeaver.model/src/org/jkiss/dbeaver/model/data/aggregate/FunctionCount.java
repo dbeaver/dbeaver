@@ -25,12 +25,13 @@ public class FunctionCount implements IAggregateFunction {
     private int count = 0;
 
     @Override
-    public void accumulate(Number value) {
+    public boolean accumulate(Object value) {
         count++;
+        return true;
     }
 
     @Override
-    public Number getResult(int valueCount) {
+    public Object getResult(int valueCount) {
         return count;
     }
 }

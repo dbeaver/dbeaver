@@ -80,7 +80,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     @Override
     public DBPImage getPanelImage() {
-        return UIIcon.APACHE;
+        return UIIcon.PANEL_AGGREGATE;
     }
 
     @Override
@@ -235,22 +235,20 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     private void aggregateSelection(IResultSetSelection selection) {
         ResultSetModel model = presentation.getController().getModel();
         if (groupByColumns) {
-            Map<DBDAttributeBinding, List<Number>> attrValues = new LinkedHashMap<>();
+            Map<DBDAttributeBinding, List<Object>> attrValues = new LinkedHashMap<>();
             for (Object element : selection.toList()) {
                 DBDAttributeBinding attr = selection.getElementAttribute(element);
                 ResultSetRow row = selection.getElementRow(element);
                 Object cellValue = model.getCellValue(attr, row);
-                if (cellValue instanceof Number) {
-                    List<Number> numbers = attrValues.get(attr);
-                    if (numbers == null) {
-                        numbers = new ArrayList<>();
-                        attrValues.put(attr, numbers);
-                    }
-                    numbers.add((Number) cellValue);
+                List<Object> values = attrValues.get(attr);
+                if (values == null) {
+                    values = new ArrayList<>();
+                    attrValues.put(attr, values);
                 }
+                values.add(cellValue);
             }
 
-            for (Map.Entry<DBDAttributeBinding, List<Number>> entry : attrValues.entrySet()) {
+            for (Map.Entry<DBDAttributeBinding, List<Object>> entry : attrValues.entrySet()) {
                 TreeItem attrItem = new TreeItem(aggregateTable, SWT.NONE);
                 attrItem.setText(entry.getKey().getName());
                 attrItem.setImage(DBeaverIcons.getImage(DBUtils.getDataIcon(entry.getKey())));
@@ -258,20 +256,18 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 attrItem.setExpanded(true);
             }
         } else {
-            List<Number> allValues = new ArrayList<>(selection.size());
+            List<Object> allValues = new ArrayList<>(selection.size());
             for (Object element : selection.toList()) {
                 DBDAttributeBinding attr = selection.getElementAttribute(element);
                 ResultSetRow row = selection.getElementRow(element);
                 Object cellValue = model.getCellValue(attr, row);
-                if (cellValue instanceof Number) {
-                    allValues.add((Number) cellValue);
-                }
+                allValues.add(cellValue);
             }
             aggregateValues(null, allValues);
         }
     }
 
-    private void aggregateValues(TreeItem parentItem, Collection<Number> values) {
+    private void aggregateValues(TreeItem parentItem, Collection<Object> values) {
         List<AggregateFunctionDescriptor> functions = enabledFunctions;
         Map<IAggregateFunction, TreeItem> funcMap = new IdentityHashMap<>();
         for (AggregateFunctionDescriptor funcDesc : functions) {
@@ -290,26 +286,29 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         }
 
         IAggregateFunction[] funcs = funcMap.keySet().toArray(new IAggregateFunction[funcMap.size()]);
-        int valueCount = 0;
-        for (Number element : values) {
-            for (IAggregateFunction func : funcs) {
-                func.accumulate(element);
-            }
-            valueCount++;
-        }
-        if (valueCount > 0) {
-            for (IAggregateFunction func : funcs) {
-                Number result = func.getResult(valueCount);
-                if (result != null) {
-                    TreeItem treeItem = funcMap.get(func);
-                    String strValue;
-                    if (result instanceof Double) {
-                        strValue = DOUBLE_FORMAT.format(result);
-                    } else {
-                        strValue = result.toString();
-                    }
-                    treeItem.setText(1, strValue);
+        int[] funcCount = new int[funcs.length];
+        for (Object element : values) {
+            for (int i = 0; i < funcs.length; i++) {
+                if (funcs[i].accumulate(element)) {
+                    funcCount[i]++;
                 }
+            }
+        }
+        for (int i = 0; i < funcs.length; i++) {
+            if (funcCount[i] <= 0) {
+                continue;
+            }
+            IAggregateFunction func = funcs[i];
+            Object result = func.getResult(funcCount[i]);
+            if (result != null) {
+                TreeItem treeItem = funcMap.get(func);
+                String strValue;
+                if (result instanceof Double) {
+                    strValue = DOUBLE_FORMAT.format(result);
+                } else {
+                    strValue = result.toString();
+                }
+                treeItem.setText(1, strValue);
             }
         }
     }
