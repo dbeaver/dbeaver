@@ -423,12 +423,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 }
             });
 
-            tableColumn.addListener(SWT.Move, new Listener() {
-                @Override
-                public void handleEvent(Event event) {
-                    System.out.println(1);
-                }
-            });
+//            tableColumn.addListener(SWT.Move, new Listener() {
+//                @Override
+//                public void handleEvent(Event event) {
+//
+//                }
+//            });
         }
 
 /*
