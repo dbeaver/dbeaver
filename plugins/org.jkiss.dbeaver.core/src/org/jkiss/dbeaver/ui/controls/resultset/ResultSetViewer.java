@@ -1427,14 +1427,7 @@ public class ResultSetViewer extends Viewer
                 manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
                 manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT_INLINE));
                 if (!valueController.isReadOnly() && !DBUtils.isNullValue(value)/* && !attr.isRequired()*/) {
-                    manager.add(new Action(CoreMessages.controls_resultset_viewer_action_set_to_null) {
-                        @Override
-                        public void run()
-                        {
-                            valueController.updateValue(
-                                BaseValueManager.makeNullValue(valueController), true);
-                        }
-                    });
+                    manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_CELL_SET_NULL));
                 }
                 manager.add(new GroupMarker(MENU_GROUP_EDIT));
             }
@@ -1448,16 +1441,8 @@ public class ResultSetViewer extends Viewer
                 log.error(e);
             }
 
-            if (row.isChanged()) {
-                Action resetValueAction = new Action(CoreMessages.controls_resultset_viewer_action_reset_value) {
-                    @Override
-                    public void run() {
-                        model.resetCellValue(attr, row);
-                        updatePanelsContent();
-                    }
-                };
-                resetValueAction.setAccelerator(SWT.ESC);
-                manager.insertAfter(IResultSetController.MENU_GROUP_EDIT, resetValueAction);
+            if (row.isChanged() && row.changes.containsKey(attr)) {
+                manager.insertAfter(IResultSetController.MENU_GROUP_EDIT, ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_CELL_RESET));
             }
         } else {
             valueController = null;

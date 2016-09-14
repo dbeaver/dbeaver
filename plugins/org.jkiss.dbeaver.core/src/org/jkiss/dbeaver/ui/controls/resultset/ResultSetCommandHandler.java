@@ -51,6 +51,8 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -78,6 +80,8 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_ROW_ADD = "org.jkiss.dbeaver.core.resultset.row.add";
     public static final String CMD_ROW_COPY = "org.jkiss.dbeaver.core.resultset.row.copy";
     public static final String CMD_ROW_DELETE = "org.jkiss.dbeaver.core.resultset.row.delete";
+    public static final String CMD_CELL_SET_NULL = "org.jkiss.dbeaver.core.resultset.cell.setNull";
+    public static final String CMD_CELL_RESET = "org.jkiss.dbeaver.core.resultset.cell.reset";
     public static final String CMD_APPLY_CHANGES = "org.jkiss.dbeaver.core.resultset.applyChanges";
     public static final String CMD_REJECT_CHANGES = "org.jkiss.dbeaver.core.resultset.rejectChanges";
     public static final String CMD_GENERATE_SCRIPT = "org.jkiss.dbeaver.core.resultset.generateScript";
@@ -161,6 +165,31 @@ public class ResultSetCommandHandler extends AbstractHandler {
             case IWorkbenchCommandConstants.EDIT_DELETE:
                 rsv.deleteSelectedRows();
                 break;
+            case CMD_CELL_SET_NULL:
+            case CMD_CELL_RESET: {
+                IResultSetSelection selection = rsv.getSelection();
+                for (Object cell : selection.toArray()) {
+                    DBDAttributeBinding attr = selection.getElementAttribute(cell);
+                    ResultSetRow row = selection.getElementRow(cell);
+                    if (row != null && attr != null) {
+                        ResultSetValueController valueController = new ResultSetValueController(
+                            rsv,
+                            attr,
+                            row,
+                            IValueController.EditType.NONE,
+                            null);
+                        if (actionId.equals(CMD_CELL_SET_NULL)) {
+                            valueController.updateValue(
+                                BaseValueManager.makeNullValue(valueController), false);
+                        } else {
+                            rsv.getModel().resetCellValue(attr, row);
+                        }
+                    }
+                }
+                rsv.redrawData(false);
+                rsv.updatePanelsContent();
+                break;
+            }
             case CMD_APPLY_CHANGES:
                 rsv.applyChanges(null);
                 break;
