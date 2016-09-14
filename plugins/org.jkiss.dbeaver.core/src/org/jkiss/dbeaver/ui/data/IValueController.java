@@ -71,8 +71,9 @@ public interface IValueController
     /**
      * Updates value
      * @param value value
+     * @param updatePresentation    refresh UI
      */
-    void updateValue(@Nullable Object value);
+    void updateValue(@Nullable Object value, boolean updatePresentation);
 
     /**
      * Associated value handler

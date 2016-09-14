@@ -203,7 +203,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
 
                     ContentEditorInput editorInput = getEditorInput();
                     editorInput.updateContentFromFile(monitor);
-                    editorInput.getValueController().updateValue(editorInput.getContent());
+                    editorInput.getValueController().updateValue(editorInput.getContent(), true);
 
                     // Close editor
                     closeValueEditor();

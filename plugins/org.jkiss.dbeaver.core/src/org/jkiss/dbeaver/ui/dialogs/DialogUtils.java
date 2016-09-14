@@ -157,7 +157,7 @@ public class DialogUtils {
                         storage = new ExternalContentStorage(DBeaverCore.getInstance(), openFile);
                     }
                     value.updateContents(monitor, storage);
-                    controller.updateValue(value);
+                    controller.updateValue(value, true);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }

@@ -49,7 +49,7 @@ public class DateTimeValueManager extends BaseValueManager {
         manager.add(new Action(CoreMessages.model_jdbc_set_to_current_time, DBeaverIcons.getImageDescriptor(DBIcon.TYPE_DATETIME)) {
             @Override
             public void run() {
-                controller.updateValue(new Date());
+                controller.updateValue(new Date(), true);
             }
         });
     }

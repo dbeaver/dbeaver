@@ -115,9 +115,9 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
             }
 
             @Override
-            public void updateValue(Object value)
+            public void updateValue(Object value, boolean updatePresentation)
             {
-                valueController.updateValue(value);
+                valueController.updateValue(value, updatePresentation);
             }
 
             @Override
@@ -297,7 +297,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
             opened = true;
             int result = super.open();
             if (result == IDialogConstants.OK_ID) {
-                getValueController().updateValue(editedValue);
+                getValueController().updateValue(editedValue, true);
             }
             return result;
         } finally {

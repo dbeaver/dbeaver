@@ -125,9 +125,10 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     }
 
     @Override
-    public void updateValue(@Nullable Object value)
+    public void updateValue(@Nullable Object value, boolean updatePresentation)
     {
-        if (controller.getModel().updateCellValue(binding, curRow, value)) {
+        boolean updated = controller.getModel().updateCellValue(binding, curRow, value);
+        if (updated && updatePresentation) {
             // Update controls
             DBeaverUI.syncExec(new Runnable() {
                 @Override
@@ -135,8 +136,8 @@ public class ResultSetValueController implements IAttributeController, IRowContr
                     controller.updatePanelsContent();
                 }
             });
+            controller.fireResultSetChange();
         }
-        controller.fireResultSetChange();
     }
 
     @Nullable

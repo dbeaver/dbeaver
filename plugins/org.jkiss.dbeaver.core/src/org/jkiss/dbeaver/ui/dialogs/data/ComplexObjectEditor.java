@@ -431,7 +431,7 @@ public class ComplexObjectEditor extends TreeViewer {
         }
 
         @Override
-        public void updateValue(Object value)
+        public void updateValue(Object value, boolean updatePresentation)
         {
             if (CommonUtils.equalObjects(this.item.value, value)) {
                 return;

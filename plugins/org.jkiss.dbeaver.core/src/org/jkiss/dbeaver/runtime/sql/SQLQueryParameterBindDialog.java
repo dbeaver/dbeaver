@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.registry.DataManagerRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -234,7 +233,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     public void focusLost(FocusEvent event) {
                         try {
                             Object newValue = editor.extractEditorValue();
-                            valueController.updateValue(newValue);
+                            valueController.updateValue(newValue, true);
                         } catch (DBException e) {
                             UIUtils.showErrorDialog(null, "Value save", "Can't save edited value", e);
                         } finally {
@@ -376,7 +375,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
 
         @Override
-        public void updateValue(Object value)
+        public void updateValue(Object value, boolean updatePresentation)
         {
             if (parameter.isNamed()) {
                 for (SQLQueryParameter param : parameters) {

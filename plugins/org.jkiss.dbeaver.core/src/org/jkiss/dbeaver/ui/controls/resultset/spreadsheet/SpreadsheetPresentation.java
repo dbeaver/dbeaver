@@ -421,11 +421,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 IValueController valueController = new SpreadsheetValueController(
                     controller, column, row, IValueController.EditType.NONE, null);
                 if (!valueController.isReadOnly()) {
-                    valueController.updateValue(BaseValueManager.makeNullValue(valueController));
+                    valueController.updateValue(BaseValueManager.makeNullValue(valueController), false);
                 }
             }
 
             prevCell = cell;
+        }
+        if (settings.isCut()) {
+            controller.redrawData(false);
+            controller.updatePanelsContent();
         }
 
         return tdt.toString();
@@ -473,7 +477,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                                 attr,
                                 row,
                                 IValueController.EditType.NONE,
-                                null).updateValue(newValue);
+                                null).updateValue(newValue, true);
 
                             colNum++;
                         }
@@ -504,7 +508,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     attr,
                     row,
                     IValueController.EditType.NONE,
-                    null).updateValue(newValue);
+                    null).updateValue(newValue, true);
             }
         }
         catch (Exception e) {

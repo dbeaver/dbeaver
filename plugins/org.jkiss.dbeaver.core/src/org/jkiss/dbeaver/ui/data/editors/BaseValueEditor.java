@@ -189,7 +189,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
             Object newValue = extractEditorValue();
             if (dirty || control instanceof Combo || control instanceof CCombo || control instanceof List) {
                 // Combos are always dirty (because drop-down menu sets a selection)
-                valueController.updateValue(newValue);
+                valueController.updateValue(newValue, true);
             }
         } catch (DBException e) {
             ((IMultiController) valueController).closeInlineEditor();
