@@ -82,7 +82,10 @@ public class OracleDataSource extends JDBCDataSource
 
     public boolean isViewAvailable(@NotNull DBRProgressMonitor monitor, @NotNull String schemaName, @NotNull String viewName) {
         viewName = viewName.toUpperCase();
-        Boolean available = availableViews.get(viewName);
+        Boolean available;
+        synchronized (availableViews) {
+            available = availableViews.get(viewName);
+        }
         if (available == null) {
             try {
                 try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Check view existence")) {
@@ -94,7 +97,9 @@ public class OracleDataSource extends JDBCDataSource
             } catch (SQLException e) {
                 available = false;
             }
-            availableViews.put(viewName, available);
+            synchronized (availableViews) {
+                availableViews.put(viewName, available);
+            }
         }
         return available;
     }
