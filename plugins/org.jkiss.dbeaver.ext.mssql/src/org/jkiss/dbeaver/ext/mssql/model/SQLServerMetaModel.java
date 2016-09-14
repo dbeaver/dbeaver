@@ -72,7 +72,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         assert table != null;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
             String schema = getSystemSchema(getServerType(monitor, container.getDataSource()));
-            String catalog = table.getCatalog().getName();
+            String catalog = DBUtils.getQuotedIdentifier(table.getCatalog());
             String query =
                 "SELECT triggers.name FROM " + catalog + "." + schema + ".sysobjects tables, " + catalog + "." + schema + ".sysobjects triggers\n" +
                 "WHERE triggers.type = 'TR'\n" +
@@ -126,6 +126,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, String catalog, String schema, String name) throws DBException {
         ServerType serverType = getServerType(monitor, dataSource);
         String systemSchema = getSystemSchema(serverType);
+        catalog = DBUtils.getQuotedIdentifier(dataSource, catalog);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String mdQuery = serverType == ServerType.SQL_SERVER ?
                 catalog + "." + systemSchema + ".sp_helptext '" + schema + "." + name + "'"
