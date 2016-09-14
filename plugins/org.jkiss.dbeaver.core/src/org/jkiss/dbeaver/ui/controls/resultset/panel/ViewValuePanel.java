@@ -36,7 +36,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -191,8 +190,8 @@ public class ViewValuePanel implements IResultSetPanel {
                 viewPlaceholder)
             {
                 @Override
-                public void updateValue(@Nullable Object value) {
-                    super.updateValue(value);
+                public void updateValue(@Nullable Object value, boolean updatePresentation) {
+                    super.updateValue(value, updatePresentation);
                     presentation.updateValueView();
                 }
             };
@@ -296,7 +295,7 @@ public class ViewValuePanel implements IResultSetPanel {
         try {
             valueSaving = true;
             Object newValue = valueEditor.extractEditorValue();
-            previewController.updateValue(newValue);
+            previewController.updateValue(newValue, true);
             presentation.updateValueView();
         } catch (Exception e) {
             UIUtils.showErrorDialog(null, "Value save", "Can't save edited value", e);

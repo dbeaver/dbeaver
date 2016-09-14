@@ -1432,7 +1432,7 @@ public class ResultSetViewer extends Viewer
                         public void run()
                         {
                             valueController.updateValue(
-                                BaseValueManager.makeNullValue(valueController));
+                                BaseValueManager.makeNullValue(valueController), true);
                         }
                     });
                 }
