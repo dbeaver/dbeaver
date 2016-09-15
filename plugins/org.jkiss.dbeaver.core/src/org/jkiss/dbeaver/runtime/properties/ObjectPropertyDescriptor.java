@@ -109,7 +109,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     public boolean isViewable()
     {
-        return propInfo.viewable() || propInfo.hidden();
+        return propInfo.viewable() && !propInfo.hidden();
     }
 
     public boolean isHidden()

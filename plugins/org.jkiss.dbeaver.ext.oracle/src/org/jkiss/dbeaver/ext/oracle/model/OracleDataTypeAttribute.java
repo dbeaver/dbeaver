@@ -137,6 +137,7 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
         return false;
     }
 
+    @Property(viewable = true, order = 2)
     @Override
     public int getOrdinalPosition()
     {
