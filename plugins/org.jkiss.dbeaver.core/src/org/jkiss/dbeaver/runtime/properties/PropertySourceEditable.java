@@ -86,6 +86,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     @Override
     @SuppressWarnings("unchecked")
     public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object editableValue, ObjectPropertyDescriptor prop, Object newValue)
+        throws IllegalArgumentException
     {
         if (prop.getValueTransformer() != null) {
             newValue = prop.getValueTransformer().transform(editableValue, newValue);
@@ -133,6 +134,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     }
 
     private boolean updatePropertyValue(@Nullable DBRProgressMonitor monitor, Object editableValue, ObjectPropertyDescriptor prop, Object value, boolean force)
+        throws IllegalArgumentException
     {
         // Write property value
         try {
