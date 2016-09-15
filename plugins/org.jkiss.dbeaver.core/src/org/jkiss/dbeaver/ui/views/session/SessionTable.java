@@ -47,6 +47,10 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
         //setFitWidth(true);
     }
 
+    public DBAServerSessionManager<DBAServerSession> getSessionManager() {
+        return sessionManager;
+    }
+
     @Override
     protected LoadingJob<Collection<DBAServerSession>> createLoadService()
     {

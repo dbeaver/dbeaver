@@ -279,7 +279,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     private void createProgressControls()
     {
-        if (progressBar != null) {
+        if (progressBar != null || customControlsComposite == null) {
             return;
         }
         hideControls(false);
@@ -596,12 +596,15 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 getProgressControl().createProgressControls();
                 synchronized (tasksRunning) {
                     TaskInfo taskInfo = getCurTaskInfo();
-                    if (taskInfo != null) {
-                        getProgressControl().progressBar.setMaximum(taskInfo.totalWork);
-                        getProgressControl().progressBar.setSelection(taskInfo.progress);
-                    } else {
-                        getProgressControl().progressBar.setMaximum(PROGRESS_MAX);
-                        getProgressControl().progressBar.setSelection(loadCount);
+                    ProgressBar progressBar = getProgressControl().progressBar;
+                    if (progressBar != null) {
+                        if (taskInfo != null) {
+                            progressBar.setMaximum(taskInfo.totalWork);
+                            progressBar.setSelection(taskInfo.progress);
+                        } else {
+                            progressBar.setMaximum(PROGRESS_MAX);
+                            progressBar.setSelection(loadCount);
+                        }
                     }
                 }
                 if (curStatus != null) {
@@ -624,8 +627,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             }
             visualizeLoading();
             loadCount = 0;
-            if (!getProgressControl().progressBar.isDisposed()) {
-                getProgressControl().progressBar.setState(SWT.PAUSED);
+            ProgressBar progressBar = getProgressControl().progressBar;
+            if (progressBar != null && !progressBar.isDisposed()) {
+                progressBar.setState(SWT.PAUSED);
                 getProgressControl().hideControls(true);
             }
         }

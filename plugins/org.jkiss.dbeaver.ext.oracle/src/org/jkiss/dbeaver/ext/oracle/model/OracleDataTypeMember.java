@@ -95,7 +95,6 @@ public abstract class OracleDataTypeMember implements DBSEntityElement
         return name;
     }
 
-    @Property(viewable = true, order = 2)
     public int getNumber()
     {
         return number;

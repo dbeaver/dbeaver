@@ -183,17 +183,15 @@ public class SessionManagerViewer
     }
 
     private class SessionListControl extends SessionTable {
-        private final DBAServerSessionManager sessionManager;
 
         public SessionListControl(SashForm sash, DBAServerSessionManager sessionManager)
         {
             super(sash, SWT.SHEET, sessionManager);
-            this.sessionManager = sessionManager;
         }
 
         @Override
         protected void fillCustomActions(IContributionManager contributionManager) {
-            contributeToToolbar(sessionManager, contributionManager);
+            contributeToToolbar(getSessionManager(), contributionManager);
             contributionManager.add(new Action("Refresh sessions", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
                 @Override
                 public void run()
