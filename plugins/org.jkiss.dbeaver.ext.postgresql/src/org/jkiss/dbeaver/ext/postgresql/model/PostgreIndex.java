@@ -52,7 +52,9 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     private List<PostgreIndexColumn> columns = new ArrayList<>();
     private long amId;
 
-    public PostgreIndex(PostgreTableBase parent, String indexName, ResultSet dbResult) {
+    private transient boolean isHidden;
+
+    public PostgreIndex(DBRProgressMonitor monitor, PostgreTableBase parent, String indexName, ResultSet dbResult) throws DBException {
         super(
             parent.getContainer(),
             parent,
@@ -71,6 +73,14 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
 
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.amId = JDBCUtils.safeGetLong(dbResult, "relam");
+
+        // Unique key indexes (including PK) are implicit. We don't want to show them separately
+        if (this.isUnique) {
+            PostgreTableConstraintBase ownerConstraint = parent.getConstraint(monitor, getName());
+            if (ownerConstraint != null && ownerConstraint.getConstraintType().isUnique()) {
+                this.isHidden = true;
+            }
+        }
     }
 
     public PostgreIndex(PostgreTableBase parent, String name, DBSIndexType indexType, boolean unique) {
@@ -188,7 +198,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
 
     @Override
     public boolean isHidden() {
-        return isPrimary;
+        return isHidden;
     }
 
     @Override
