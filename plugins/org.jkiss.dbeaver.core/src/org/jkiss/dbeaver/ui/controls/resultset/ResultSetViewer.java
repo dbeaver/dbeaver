@@ -2385,8 +2385,10 @@ public class ResultSetViewer extends Viewer
         }
         redrawData(rowsRemoved > 0);
         // Move one row down (if we are in grid mode)
-        if (!recordMode && lastRowNum < model.getRowCount() - 1) {
+        if (!recordMode && lastRowNum < model.getRowCount() - 1 && rowsRemoved == 0) {
             activePresentation.scrollToRow(IResultSetPresentation.RowPosition.NEXT);
+        } else {
+            activePresentation.scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
         }
 
         updateEditControls();
