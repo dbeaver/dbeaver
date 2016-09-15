@@ -654,6 +654,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
             throws SQLException, DBException
         {
             return new PostgreIndex(
+                session.getProgressMonitor(),
                 parent,
                 indexName,
                 dbResult);
