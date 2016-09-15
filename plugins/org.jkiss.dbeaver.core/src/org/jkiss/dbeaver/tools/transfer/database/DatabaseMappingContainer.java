@@ -121,7 +121,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     public String getTargetName()
     {
         switch (mappingType) {
-            case existing: return DBUtils.getObjectFullName(target, DBPEvaluationContext.UI);
+            case existing: return target.getName();
             case create: return targetName;
             case skip: return DatabaseMappingAttribute.TARGET_NAME_SKIP;
             default: return "?";
