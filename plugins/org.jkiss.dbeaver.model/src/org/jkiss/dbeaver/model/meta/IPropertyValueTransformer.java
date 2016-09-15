@@ -23,6 +23,7 @@ package org.jkiss.dbeaver.model.meta;
  */
 public interface IPropertyValueTransformer<OBJECT_TYPE, PROP_TYPE> {
 
-    PROP_TYPE transform(OBJECT_TYPE object, PROP_TYPE value);
+    PROP_TYPE transform(OBJECT_TYPE object, PROP_TYPE value)
+        throws IllegalArgumentException;
 
 }

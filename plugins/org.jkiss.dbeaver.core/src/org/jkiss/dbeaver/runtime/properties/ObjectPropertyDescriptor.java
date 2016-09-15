@@ -27,11 +27,13 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
@@ -244,6 +246,15 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         if (setter != null) {
+            // Check for null
+            if (value == null) {
+                Annotation[] valueAnnotations = setter.getParameterAnnotations()[0];
+                for (Annotation va : valueAnnotations) {
+                    if (va.annotationType() == NotNull.class) {
+                        throw new IllegalArgumentException("Property '" + getId()  + "' can't be set into NULL");
+                    }
+                }
+            }
             if (getParent() != null) {
                 // Use void monitor because this object already read by readValue
                 object = getParent().getGroupObject(object, VoidProgressMonitor.INSTANCE);
