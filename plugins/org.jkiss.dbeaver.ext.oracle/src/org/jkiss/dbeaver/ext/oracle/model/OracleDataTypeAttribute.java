@@ -22,8 +22,8 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 
 import java.sql.ResultSet;
 import java.sql.Types;
@@ -31,7 +31,7 @@ import java.sql.Types;
 /**
  * Oracle data type attribute
  */
-public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBSEntityAttribute
+public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBSEntityAttribute, DBSTypedObjectEx
 {
 
     private OracleDataType attrType;
@@ -57,7 +57,7 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     }
 
     @Property(viewable = true, editable = true, order = 3)
-    public DBSDataType getAttrType()
+    public OracleDataType getDataType()
     {
         return attrType;
     }

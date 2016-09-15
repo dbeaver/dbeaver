@@ -136,7 +136,7 @@ public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEnt
                 "SELECT PARAM_NAME,PARAM_NO,PARAM_MODE,PARAM_TYPE_OWNER,PARAM_TYPE_NAME,PARAM_TYPE_MOD " +
                 "FROM ALL_METHOD_PARAMS " +
                 "WHERE OWNER=? AND TYPE_NAME=? AND METHOD_NAME=? AND METHOD_NO=?");
-            OracleDataType dataType = getDataType();
+            OracleDataType dataType = getOwnerType();
             if (dataType.getSchema() == null) {
                 dbStat.setNull(1, Types.VARCHAR);
             } else {

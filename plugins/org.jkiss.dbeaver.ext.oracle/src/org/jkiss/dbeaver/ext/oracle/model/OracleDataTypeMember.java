@@ -35,29 +35,29 @@ public abstract class OracleDataTypeMember implements DBSEntityElement
 
     private static final Log log = Log.getLog(OracleDataTypeMember.class);
 
-    private OracleDataType dataType;
+    private OracleDataType ownerType;
     protected String name;
     protected int number;
     private boolean inherited;
     private boolean persisted;
 
-    protected OracleDataTypeMember(OracleDataType dataType)
+    protected OracleDataTypeMember(OracleDataType ownerType)
     {
-        this.dataType = dataType;
+        this.ownerType = ownerType;
         this.persisted = false;
     }
 
-    protected OracleDataTypeMember(OracleDataType dataType, ResultSet dbResult)
+    protected OracleDataTypeMember(OracleDataType ownerType, ResultSet dbResult)
     {
-        this.dataType = dataType;
+        this.ownerType = ownerType;
         this.inherited = JDBCUtils.safeGetBoolean(dbResult, "INHERITED", OracleConstants.YES);
         this.persisted = true;
     }
 
     @NotNull
-    public OracleDataType getDataType()
+    public OracleDataType getOwnerType()
     {
-        return dataType;
+        return ownerType;
     }
 
     @Nullable
@@ -71,14 +71,14 @@ public abstract class OracleDataTypeMember implements DBSEntityElement
     @Override
     public OracleDataType getParentObject()
     {
-        return dataType;
+        return ownerType;
     }
 
     @NotNull
     @Override
     public OracleDataSource getDataSource()
     {
-        return dataType.getDataSource();
+        return ownerType.getDataSource();
     }
 
     @Override
