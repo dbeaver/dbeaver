@@ -99,6 +99,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         super.addListener(SWT.MouseDoubleClick, this);
         super.addListener(SWT.MouseDown, this);
         super.addListener(SWT.KeyDown, this);
+        super.addListener(SWT.KeyUp, this);
         super.addListener(LightGrid.Event_ChangeSort, this);
         super.addListener(LightGrid.Event_NavigateLink, this);
 
@@ -232,6 +233,7 @@ public class Spreadsheet extends LightGrid implements Listener {
     public void handleEvent(final Event event)
     {
         switch (event.type) {
+            case SWT.KeyUp:
             case SWT.KeyDown:
                 boolean ctrlPressed = ((event.stateMask & SWT.MOD1) != 0);
 
@@ -253,24 +255,11 @@ public class Spreadsheet extends LightGrid implements Listener {
                         if (!editorControl.isDisposed()) {
                             // Forward the same key event to just created control
                             final Event kdEvent = new Event();
-                            kdEvent.type = SWT.KeyDown;
+                            kdEvent.type = event.type;
                             kdEvent.character = event.character;
                             kdEvent.keyCode = event.keyCode;
                             UIUtils.postEvent(editorControl, kdEvent);
-
-                            final Event kuEvent = new Event();
-                            kuEvent.type = SWT.KeyUp;
-                            kuEvent.character = event.character;
-                            kuEvent.keyCode = event.keyCode;
-                            UIUtils.postEvent(editorControl, kuEvent);
                         }
-                    }
-                } else if (event.keyCode == SWT.ESC) {
-                    // Reset cell value
-                    Object col = getFocusColumnElement();
-                    Object row = getFocusRowElement();
-                    if (col != null && row != null) {
-                        presentation.resetCellValue(col, row, false);
                     }
                 }
                 break;
