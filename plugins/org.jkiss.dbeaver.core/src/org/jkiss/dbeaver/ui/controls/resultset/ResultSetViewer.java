@@ -1441,7 +1441,7 @@ public class ResultSetViewer extends Viewer
                 log.error(e);
             }
 
-            if (row.isChanged() && row.changes.containsKey(attr)) {
+            if (row.getState() == ResultSetRow.STATE_REMOVED || (row.changes != null && row.changes.containsKey(attr))) {
                 manager.insertAfter(IResultSetController.MENU_GROUP_EDIT, ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_CELL_RESET));
             }
         } else {
