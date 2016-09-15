@@ -35,6 +35,7 @@ public interface IPropertySourceMulti extends DBPPropertySource {
 
     void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object object, ObjectPropertyDescriptor prop);
 
-    void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object object, ObjectPropertyDescriptor prop, Object value);
+    void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object object, ObjectPropertyDescriptor prop, Object value)
+        throws IllegalArgumentException;
 
 }

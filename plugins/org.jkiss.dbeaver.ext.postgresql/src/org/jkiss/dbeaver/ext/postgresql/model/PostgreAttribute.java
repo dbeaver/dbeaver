@@ -152,14 +152,14 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    @Property(viewable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 22)
+    @Property(viewable = true, editable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 22)
     public int getPrecision()
     {
         return super.getPrecision();
     }
 
     @Override
-    @Property(viewable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 23)
+    @Property(viewable = true, editable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 23)
     public int getScale()
     {
         return super.getScale();
@@ -242,9 +242,15 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         public PostgreDataType transform(PostgreAttribute object, Object value) {
             if (value instanceof String) {
                 PostgreDataType dataType = object.getDataSource().getDefaultInstance().getDataType((String) value);
+                if (dataType == null) {
+                    throw new IllegalArgumentException("Bad data type name specified: " + value);
+                }
                 return dataType;
+            } else if (value instanceof PostgreDataType) {
+                return (PostgreDataType) value;
+            } else {
+                throw new IllegalArgumentException("Invalid type value: " + value);
             }
-            return null;
         }
     }
 }

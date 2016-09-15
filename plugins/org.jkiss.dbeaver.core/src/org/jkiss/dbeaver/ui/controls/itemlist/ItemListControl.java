@@ -216,12 +216,16 @@ public class ItemListControl extends NodeListControl
         {
             DBNNode object = (DBNNode) element;
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
-            if (property != null) {
-                getListPropertySource().setPropertyValue(null, getObjectValue(object), property, value);
-                if (value instanceof Boolean) {
-                    // Redraw control to let it repaint checkbox
-                    getItemsViewer().getControl().redraw();
+            try {
+                if (property != null) {
+                    getListPropertySource().setPropertyValue(null, getObjectValue(object), property, value);
+                    if (value instanceof Boolean) {
+                        // Redraw control to let it repaint checkbox
+                        getItemsViewer().getControl().redraw();
+                    }
                 }
+            } catch (Exception e) {
+                UIUtils.showErrorDialog(null, "Error setting property value", "Error setting property '" + property.getId() + "' value", e);
             }
         }
 
