@@ -1502,6 +1502,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             openValueEditor(true);
         }
 
+        @Override
+        public void updateValue(@Nullable Object value, boolean updatePresentation) {
+            super.updateValue(value, updatePresentation);
+            if (updatePresentation) {
+                spreadsheet.redrawGrid();
+            }
+        }
+
         public void registerEditor(IValueEditorStandalone editor) {
             openEditors.put(this, editor);
         }
