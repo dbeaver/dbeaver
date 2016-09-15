@@ -701,7 +701,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     {
         ObjectColumn objectColumn = null;
         for (ObjectColumn col : columns) {
-            if (col.id.equals(prop.getId())) {
+            if (CommonUtils.equalObjects(col.id, prop.getId()) || CommonUtils.equalObjects(col.displayName, prop.getDisplayName())) {
                 objectColumn = col;
                 break;
             }
@@ -733,7 +733,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (editingSupport != null) {
                 newColumn.setEditingSupport(editingSupport);
             }
-            objectColumn = new ObjectColumn(newColumn, columnItem, CommonUtils.toString(prop.getId()));
+            objectColumn = new ObjectColumn(newColumn, columnItem, prop.getId(), prop.getDisplayName());
             objectColumn.addProperty(propClass, prop);
             this.columns.add(objectColumn);
             columnItem.setData(DATA_OBJECT_COLUMN, objectColumn);
@@ -846,12 +846,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     protected static class ObjectColumn {
         String id;
+        String displayName;
         Item item;
         ViewerColumn column;
         Map<Class<?>, ObjectPropertyDescriptor> propMap = new IdentityHashMap<>();
 
-        private ObjectColumn(ViewerColumn column, Item item, String id) {
+        private ObjectColumn(ViewerColumn column, Item item, String id, String displayName) {
             this.id = id;
+            this.displayName = displayName;
             this.column = column;
             this.item = item;
         }
