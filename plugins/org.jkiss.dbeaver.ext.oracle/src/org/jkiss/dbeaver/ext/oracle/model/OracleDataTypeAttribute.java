@@ -68,12 +68,6 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
         return attrTypeMod;
     }
 
-    @Property(viewable = true, editable = true, order = 5)
-    public Integer getLength()
-    {
-        return length;
-    }
-
     @Override
     @Property(viewable = true, editable = true, order = 6)
     public int getPrecision()
@@ -81,6 +75,7 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
         return precision == null ? 0 : precision;
     }
 
+    @Property(viewable = true, editable = true, order = 5)
     @Override
     public long getMaxLength()
     {
