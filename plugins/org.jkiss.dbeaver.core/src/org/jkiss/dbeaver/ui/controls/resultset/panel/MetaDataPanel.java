@@ -99,6 +99,7 @@ public class MetaDataPanel implements IResultSetPanel {
         Control table = attributeList.getControl();
         table.setRedraw(false);
         try {
+            attributeList.clearListData();
             attributeList.loadData();
         } finally {
             table.setRedraw(true);
