@@ -59,7 +59,7 @@ public abstract class BaseSQLEditorHandler extends AbstractDataSourceHandler {
                 dataSourceContainer = dataSourceRegistry.getDataSources().get(0);
             } else if (!dataSourceRegistry.getDataSources().isEmpty()) {
                 dataSourceContainer = SelectDataSourceDialog.selectDataSource(
-                    HandlerUtil.getActiveShell(event));
+                    HandlerUtil.getActiveShell(event), project);
             }
         }
         return dataSourceContainer;

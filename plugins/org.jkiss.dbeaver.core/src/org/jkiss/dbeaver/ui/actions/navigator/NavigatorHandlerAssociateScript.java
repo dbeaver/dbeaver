@@ -55,7 +55,7 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
             }
         }
         if (!scripts.isEmpty()) {
-            DBPDataSourceContainer dataSourceDescriptor = SelectDataSourceDialog.selectDataSource(activeShell);
+            DBPDataSourceContainer dataSourceDescriptor = SelectDataSourceDialog.selectDataSource(activeShell, scripts.get(0).getProject());
             if (dataSourceDescriptor != null) {
                 for (IFile script : scripts) {
                     EditorUtils.setFileDataSource(script, dataSourceDescriptor, true);

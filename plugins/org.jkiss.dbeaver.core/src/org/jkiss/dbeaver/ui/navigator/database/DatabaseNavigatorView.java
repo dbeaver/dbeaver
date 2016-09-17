@@ -36,15 +36,10 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
         DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
     }
 
-    private DBNProject getActiveProjectNode()
-    {
-        return getModel().getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
-    }
-
     @Override
     public DBNNode getRootNode()
     {
-        DBNProject projectNode = getActiveProjectNode();
+        DBNProject projectNode = getModel().getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
         return projectNode == null ? new DBNEmptyNode() : projectNode.getDatabases();
     }
 

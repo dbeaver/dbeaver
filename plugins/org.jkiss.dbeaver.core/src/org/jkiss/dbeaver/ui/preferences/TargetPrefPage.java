@@ -287,7 +287,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
                 null);
         } else if (supportsDataSourceSpecificOptions()) {
             // Select datasource
-            DBPDataSourceContainer dataSource = SelectDataSourceDialog.selectDataSource(getShell());
+            DBPDataSourceContainer dataSource = SelectDataSourceDialog.selectDataSource(getShell(), null);
             if (dataSource != null) {
                 DBNNode dsNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSource);
                 if (dsNode instanceof DBNDataSource) {
