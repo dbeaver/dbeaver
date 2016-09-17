@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -26,12 +27,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
@@ -45,13 +46,16 @@ import java.util.List;
  */
 public class SelectDataSourceDialog extends Dialog {
 
+    @Nullable
+    private final IProject project;
     private DBPDataSourceContainer dataSource = null;
 
     private static final String DIALOG_ID = "DBeaver.SelectDataSourceDialog";//$NON-NLS-1$
 
-    private SelectDataSourceDialog(Shell parentShell)
+    private SelectDataSourceDialog(@NotNull Shell parentShell, @Nullable IProject project)
     {
         super(parentShell);
+        this.project = project;
     }
 
     @Override
@@ -76,15 +80,24 @@ public class SelectDataSourceDialog extends Dialog {
         group.setLayoutData(gd);
 
         DBeaverCore core = DBeaverCore.getInstance();
-        DBNProject rootNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
+        DBNNode rootNode = null;
+        if (project != null) {
+            DBNProject projectNode = core.getNavigatorModel().getRoot().getProject(project);
+            if (projectNode != null) {
+                rootNode = projectNode.getDatabases();
+            }
+        }
+        if (rootNode == null) {
+            rootNode = core.getNavigatorModel().getRoot();
+        }
 
-        DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, rootNode.getDatabases(), SWT.SINGLE | SWT.BORDER, false);
+        DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, rootNode, SWT.SINGLE | SWT.BORDER, false);
         dataSourceTree.setLayoutData(new GridData(GridData.FILL_BOTH));
         dataSourceTree.getViewer().addFilter(new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element)
             {
-                return element instanceof DBNLocalFolder || element instanceof DBNDataSource;
+                return element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder || element instanceof DBNDataSource;
             }
         });
         dataSourceTree.getViewer().addSelectionChangedListener(
@@ -130,16 +143,13 @@ public class SelectDataSourceDialog extends Dialog {
         return dataSource;
     }
 
-    public static DBPDataSourceContainer selectDataSource(Shell parentShell)
+    public static DBPDataSourceContainer selectDataSource(@NotNull Shell parentShell, @Nullable IProject project)
     {
-        List<DataSourceDescriptor> datasources = DataSourceDescriptor.getActiveDataSources();
-        if (datasources.isEmpty()) {
-            UIUtils.showMessageBox(parentShell, CoreMessages.dialog_select_datasource_error_title, CoreMessages.dialog_select_datasource_error_message, SWT.ICON_ERROR);
-            return null;
-        } else if (datasources.size() == 1) {
+        List<DataSourceDescriptor> datasources = DataSourceDescriptor.getAllDataSources();
+        if (datasources.size() == 1) {
             return datasources.get(0);
         } else {
-            SelectDataSourceDialog scDialog = new SelectDataSourceDialog(parentShell);
+            SelectDataSourceDialog scDialog = new SelectDataSourceDialog(parentShell, project);
             if (scDialog.open() == IDialogConstants.OK_ID) {
                 return scDialog.getDataSource();
             } else {
