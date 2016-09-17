@@ -1600,7 +1600,7 @@
                     <with variable="selection">
                         <count value="+"/>
                         <iterate operator="and">
-                            <adapt type="org.eclipse.core.resources.IProject"/>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
                         </iterate>
                     </with>
                 </visibleWhen>
