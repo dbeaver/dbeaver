@@ -47,10 +47,10 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -1075,15 +1075,6 @@ public class DataSourceDescriptor
         setShowUtilityObjects(descriptor.isShowUtilityObjects());
         setConnectionReadOnly(descriptor.isConnectionReadOnly());
         folderPath = descriptor.folderPath;
-    }
-
-    public static List<DataSourceDescriptor> getActiveDataSources() {
-        final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-        DataSourceRegistry activeRegistry = projectRegistry.getActiveDataSourceRegistry();
-        if (activeRegistry == null) {
-            return Collections.emptyList();
-        }
-        return activeRegistry.getDataSources();
     }
 
     public static List<DataSourceDescriptor> getAllDataSources() {

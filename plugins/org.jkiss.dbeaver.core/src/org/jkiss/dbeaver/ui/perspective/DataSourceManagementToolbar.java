@@ -251,7 +251,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (dataSourceContainer != null) {
             return dataSourceContainer.getRegistry().getDataSources();
         } else {
-            return DataSourceDescriptor.getActiveDataSources();
+            return DataSourceDescriptor.getAllDataSources();
         }
     }
 

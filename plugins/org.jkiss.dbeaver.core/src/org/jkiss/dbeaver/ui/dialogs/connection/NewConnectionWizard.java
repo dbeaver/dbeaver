@@ -23,7 +23,11 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.model.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.IActionConstants;
 
@@ -47,16 +51,13 @@ public class NewConnectionWizard extends ConnectionWizard
 
     public NewConnectionWizard()
     {
-        super(DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry());
+        setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
     }
 
-    /**
-     * Constructor for SampleNewWizard.
-     */
-    public NewConnectionWizard(DataSourceRegistry registry)
-    {
-        super(registry);
-        setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
+    @Override
+    public DBPDataSourceRegistry getDataSourceRegistry() {
+        return DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(
+            pageDrivers.getConnectionProject());
     }
 
     List<DataSourceProviderDescriptor> getAvailableProvides()
@@ -148,6 +149,8 @@ public class NewConnectionWizard extends ConnectionWizard
         DriverDescriptor driver = getSelectedDriver();
         ConnectionPageSettings pageSettings = getPageSettings();
         DataSourceDescriptor dataSourceTpl = pageSettings == null ? getActiveDataSource() : pageSettings.getActiveDataSource();
+        DBPDataSourceRegistry dataSourceRegistry = getDataSourceRegistry();
+
         DataSourceDescriptor dataSourceNew = new DataSourceDescriptor(
             dataSourceRegistry, dataSourceTpl.getId(), driver, dataSourceTpl.getConnectionConfiguration());
         dataSourceNew.copyFrom(dataSourceTpl);

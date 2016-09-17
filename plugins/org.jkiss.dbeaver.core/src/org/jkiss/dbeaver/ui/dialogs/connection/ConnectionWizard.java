@@ -63,14 +63,12 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
     private static final Log log = Log.getLog(ConnectionWizard.class);
 
     // protected final IProject project;
-    protected final DBPDataSourceRegistry dataSourceRegistry;
     private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<>();
     private boolean resized = false;
 
-    protected ConnectionWizard(DBPDataSourceRegistry dataSourceRegistry)
+    protected ConnectionWizard()
     {
         setNeedsProgressMonitor(true);
-        this.dataSourceRegistry = dataSourceRegistry;
     }
 
     @Override
@@ -82,9 +80,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         super.dispose();
     }
 
-    public DBPDataSourceRegistry getDataSourceRegistry() {
-        return dataSourceRegistry;
-    }
+    abstract public DBPDataSourceRegistry getDataSourceRegistry();
 
     abstract DriverDescriptor getSelectedDriver();
 
@@ -114,7 +110,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
     {
         DataSourceDescriptor dataSource = getPageSettings().getActiveDataSource();
         DataSourceDescriptor testDataSource = new DataSourceDescriptor(
-            dataSourceRegistry,
+            getDataSourceRegistry(),
             dataSource.getId(),
             getSelectedDriver(),
             new DBPConnectionConfiguration(dataSource.getConnectionConfiguration()));

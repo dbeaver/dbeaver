@@ -132,8 +132,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
                 @Override
                 public void run() {
                     IWorkbenchWindow window = getWindowConfigurer().getWindow();
-                    CreateConnectionDialog dialog = new CreateConnectionDialog(window
-                        , new NewConnectionWizard(DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry()));
+                    CreateConnectionDialog dialog = new CreateConnectionDialog(window, new NewConnectionWizard());
                     dialog.open();
                 }
             });
