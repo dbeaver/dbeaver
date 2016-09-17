@@ -17,12 +17,11 @@
  */
 package org.jkiss.dbeaver.tools.scripts;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.viewers.CheckStateChangedEvent;
-import org.eclipse.jface.viewers.CheckboxTreeViewer;
-import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -107,7 +106,7 @@ class ScriptsExportWizardPage extends WizardPage {
         placeholder.setLayout(new GridLayout(1, false));
 
         // Project list
-        scriptsNavigator = new DatabaseNavigatorTree(placeholder, ScriptsExportUtils.getScriptsNode(), SWT.BORDER | SWT.CHECK);
+        scriptsNavigator = new DatabaseNavigatorTree(placeholder, DBeaverCore.getInstance().getNavigatorModel().getRoot(), SWT.BORDER | SWT.CHECK);
         GridData gd = new GridData(GridData.FILL_BOTH);
         scriptsNavigator.setLayoutData(gd);
         CheckboxTreeViewer viewer = (CheckboxTreeViewer) scriptsNavigator.getViewer();
@@ -116,6 +115,14 @@ class ScriptsExportWizardPage extends WizardPage {
             public void checkStateChanged(CheckStateChangedEvent event)
             {
                 updateState();
+            }
+        });
+
+        scriptsNavigator.getViewer().addFilter(new ViewerFilter() {
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object element)
+            {
+                return element instanceof DBNResource && ((DBNResource) element).getResource() instanceof IContainer;
             }
         });
 

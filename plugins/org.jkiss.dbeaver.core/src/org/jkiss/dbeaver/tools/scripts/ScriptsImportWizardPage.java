@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.tools.scripts;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.WizardPage;
@@ -35,7 +36,9 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
@@ -71,7 +74,7 @@ class ScriptsImportWizardPage extends WizardPage {
         return
             !CommonUtils.isEmpty(directoryText.getText()) &&
             !CommonUtils.isEmpty(extensionsText.getText()) &&
-            importRoot instanceof DBNResource;
+            importRoot instanceof DBNResource && ((DBNResource) importRoot).getResource() instanceof IFolder;
     }
 
     @Override
@@ -144,8 +147,8 @@ class ScriptsImportWizardPage extends WizardPage {
         }
 
         UIUtils.createControlLabel(placeholder, CoreMessages.dialog_scripts_import_wizard_label_root_folder);
-        importRoot = ScriptsExportUtils.getScriptsNode();
-        final DatabaseNavigatorTree scriptsNavigator = new DatabaseNavigatorTree(placeholder, importRoot, SWT.BORDER | SWT.SINGLE, true);
+        importRoot = DBeaverCore.getInstance().getNavigatorModel().getRoot();
+        final DatabaseNavigatorTree scriptsNavigator = new DatabaseNavigatorTree(placeholder, importRoot, SWT.BORDER | SWT.SINGLE, false);
         scriptsNavigator.setLayoutData(new GridData(GridData.FILL_BOTH));
         scriptsNavigator.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
@@ -164,7 +167,7 @@ class ScriptsImportWizardPage extends WizardPage {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element)
             {
-                return element instanceof DBNResource && ((DBNResource) element).getResource() instanceof IFolder;
+                return element instanceof DBNResource && ((DBNResource) element).getResource() instanceof IContainer;
             }
         });
         scriptsNavigator.getViewer().expandToLevel(2);
