@@ -131,8 +131,7 @@ class ScriptsImportWizardPage extends WizardPage {
 
             UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_scripts_import_wizard_label_default_connection);
             scriptsDataSources = new CImageCombo(generalSettings, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-            for (DataSourceDescriptor dataSourceDescriptor : DataSourceDescriptor.getActiveDataSources()) {
+            for (DataSourceDescriptor dataSourceDescriptor : DataSourceDescriptor.getAllDataSources()) {
                 scriptsDataSources.add(DBeaverIcons.getImage(dataSourceDescriptor.getObjectImage()), dataSourceDescriptor.getName(), null, dataSourceDescriptor);
             }
 

@@ -22,7 +22,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 
@@ -34,7 +33,7 @@ public class NavigatorHandlerConnectionCreate extends AbstractHandler {
         IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
         CreateConnectionDialog dialog = new CreateConnectionDialog(
             window,
-            new NewConnectionWizard(DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry()));
+            new NewConnectionWizard());
         dialog.open();
 
         return null;

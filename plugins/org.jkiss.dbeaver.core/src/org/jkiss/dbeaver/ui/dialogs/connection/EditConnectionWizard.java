@@ -28,6 +28,7 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
@@ -66,7 +67,6 @@ public class EditConnectionWizard extends ConnectionWizard
      */
     public EditConnectionWizard(@NotNull DataSourceDescriptor dataSource)
     {
-        super(dataSource.getRegistry());
         this.dataSource = dataSource;
         this.oldData = new DBPConnectionConfiguration(this.dataSource.getConnectionConfiguration());
         setWindowTitle(CoreMessages.dialog_connection_wizard_title);
@@ -76,6 +76,11 @@ public class EditConnectionWizard extends ConnectionWizard
     @Override
     public DataSourceDescriptor getActiveDataSource() {
         return dataSource;
+    }
+
+    @Override
+    public DBPDataSourceRegistry getDataSourceRegistry() {
+        return dataSource.getRegistry();
     }
 
     @Override

@@ -17,10 +17,17 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -30,12 +37,15 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeControl;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeViewer;
 
+import java.util.List;
+
 /**
  * Driver selection page
  */
 class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChangedListener, IDoubleClickListener {
     private NewConnectionWizard wizard;
     private DriverDescriptor selectedDriver;
+    private IProject connectionProject;
 
     ConnectionPageDriver(NewConnectionWizard wizard)
     {
@@ -55,6 +65,39 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         driverTreeControl.setLayoutData(gd);
         setControl(placeholder);
 
+        Group projectGroup = UIUtils.createControlGroup(placeholder, "Project", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        final Combo projectCombo = new Combo(projectGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+        projectCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        final List<IProject> projects = DBeaverCore.getInstance().getLiveProjects();
+        if (!projects.isEmpty()) {
+
+            final IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+            for (IProject project : projects) {
+                projectCombo.add(project.getName());
+            }
+
+            if (activeProject == null) {
+                projectCombo.select(0);
+                connectionProject = projects.get(0);
+            } else {
+                connectionProject = activeProject;
+                projectCombo.setText(activeProject.getName());
+            }
+            projectCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    connectionProject = projects.get(projectCombo.getSelectionIndex());
+                }
+            });
+
+            if (projects.size() < 2) {
+                projectCombo.setEnabled(false);
+            }
+        } else {
+            setErrorMessage("You need to create a project first");
+        }
+
         UIUtils.setHelp(placeholder, IHelpContextIds.CTX_CON_WIZARD_DRIVER);
     }
 
@@ -63,10 +106,14 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         return selectedDriver;
     }
 
+    public IProject getConnectionProject() {
+        return connectionProject;
+    }
+
     @Override
     public boolean canFlipToNextPage()
     {
-        return this.selectedDriver != null;
+        return this.connectionProject != null && this.selectedDriver != null;
     }
 
     @Override
