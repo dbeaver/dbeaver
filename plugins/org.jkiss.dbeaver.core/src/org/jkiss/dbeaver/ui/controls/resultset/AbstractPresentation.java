@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
@@ -104,6 +105,11 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         }
         controller.updateStatusMessage();
         controller.updateEditControls();
+    }
+
+    @Override
+    public void setCurrentAttribute(@NotNull DBDAttributeBinding attribute) {
+
     }
 
     @Override

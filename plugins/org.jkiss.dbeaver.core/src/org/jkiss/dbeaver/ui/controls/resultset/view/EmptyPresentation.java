@@ -143,6 +143,11 @@ public class EmptyPresentation implements IResultSetPresentation {
     }
 
     @Override
+    public void setCurrentAttribute(@NotNull DBDAttributeBinding attribute) {
+
+    }
+
+    @Override
     public Point getCursorLocation() {
         return null;
     }
