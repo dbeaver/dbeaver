@@ -126,18 +126,19 @@ public class DBNProject extends DBNResource
     @Override
     protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException
     {
-        if (!getProject().isOpen()) {
+        IProject project = getProject();
+        if (!project.isOpen()) {
             try {
-                getProject().open(monitor.getNestedMonitor());
-                getProject().refreshLocal(IFile.DEPTH_ONE, monitor.getNestedMonitor());
+                project.open(monitor.getNestedMonitor());
+                project.refreshLocal(IFile.DEPTH_ONE, monitor.getNestedMonitor());
             } catch (CoreException e) {
-                throw new DBException("Can't open project '" + getProject().getName() + "'", e);
+                throw new DBException("Can't open project '" + project.getName() + "'", e);
             }
         }
-        DBPDataSourceRegistry dataSourceRegistry = getModel().getApplication().getProjectManager().getDataSourceRegistry(getProject());
+        DBPDataSourceRegistry dataSourceRegistry = getModel().getApplication().getProjectManager().getDataSourceRegistry(project);
         DBNNode[] children = super.readChildNodes(monitor);
         if (dataSourceRegistry != null) {
-            children = ArrayUtils.add(DBNNode.class, children, new DBNProjectDatabases(this, dataSourceRegistry));
+            children = ArrayUtils.insertArea(DBNNode.class, children, 0, new Object[] {new DBNProjectDatabases(this, dataSourceRegistry)});
         }
         return children;
     }
