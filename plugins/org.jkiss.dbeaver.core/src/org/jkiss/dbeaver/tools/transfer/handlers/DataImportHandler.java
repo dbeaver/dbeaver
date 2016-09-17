@@ -53,22 +53,20 @@ public class DataImportHandler extends DataTransferHandler {
     @Override
     protected IDataTransferProducer chooseProducer(ExecutionEvent event, IDataTransferConsumer consumer)
     {
-        IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
-        if (activeProject != null) {
-            final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
-            final DBNProject rootNode = navigatorModel.getRoot().getProject(activeProject);
-            DBNNode node = BrowseObjectDialog.selectObject(
-                HandlerUtil.getActiveShell(event),
-                "Select source container for '" + consumer.getTargetName() + "'",
-                rootNode.getDatabases(),
-                null,
-                new Class[] {DBSObjectContainer.class, DBSDataContainer.class},
-                new Class[] {DBSDataContainer.class});
-            if (node instanceof DBNDatabaseNode) {
-                DBSObject object = ((DBNDatabaseNode) node).getObject();
-                if (object instanceof DBSDataContainer) {
-                    return new DatabaseTransferProducer((DBSDataContainer) object);
-                }
+        final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+        final DBNNode rootNode = DBeaverCore.getInstance().getLiveProjects().size() == 1 ?
+            navigatorModel.getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject()) : navigatorModel.getRoot();
+        DBNNode node = BrowseObjectDialog.selectObject(
+            HandlerUtil.getActiveShell(event),
+            "Select source container for '" + consumer.getTargetName() + "'",
+            rootNode,
+            null,
+            new Class[] {DBSObjectContainer.class, DBSDataContainer.class},
+            new Class[] {DBSDataContainer.class});
+        if (node instanceof DBNDatabaseNode) {
+            DBSObject object = ((DBNDatabaseNode) node).getObject();
+            if (object instanceof DBSDataContainer) {
+                return new DatabaseTransferProducer((DBSDataContainer) object);
             }
         }
         return null;

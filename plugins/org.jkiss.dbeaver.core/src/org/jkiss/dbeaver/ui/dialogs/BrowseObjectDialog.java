@@ -104,7 +104,7 @@ public class BrowseObjectDialog extends Dialog {
                         Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
                         return folderItemsClass != null && matchesType(folderItemsClass, false);
                     }
-                    if (element instanceof DBNProjectDatabases ||
+                    if (element instanceof DBNProject || element instanceof DBNProjectDatabases ||
                         element instanceof DBNDataSource ||
                         (element instanceof DBSWrapper && matchesType(((DBSWrapper) element).getObject().getClass(), false)))
                     {
