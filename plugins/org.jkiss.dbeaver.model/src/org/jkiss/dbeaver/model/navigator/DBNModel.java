@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -186,24 +187,38 @@ public class DBNModel implements IResourceChangeListener {
     @Nullable
     public DBNDataSource getDataSourceByPath(String path) throws DBException
     {
-        DBNProject project = getRoot().getProject(application.getProjectManager().getActiveProject());
-        if (project == null) {
-            log.debug("Project node not found");
-            return null;
+        String dsId = CommonUtils.splitString(path, '/').get(0);
+        for (DBNProject projectNode : getRoot().getProjects()) {
+            DBNDataSource dataSource = projectNode.getDatabases().getDataSource(dsId);
+            if (dataSource != null) {
+                return dataSource;
+            }
         }
-        return project.getDatabases().getDataSource(CommonUtils.splitString(path, '/').get(0));
+        return null;
     }
 
     @Nullable
-    public DBNNode getNodeByPath(DBRProgressMonitor monitor, String path) throws DBException
+    public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
+        List<String> items = CommonUtils.splitString(path, '/');
+        for (DBNProject projectNode : getRoot().getProjects()) {
+            DBNDataSource curNode = projectNode.getDatabases().getDataSource(items.get(0));
+            if (curNode != null) {
+                return findNodeByPath(monitor, items, curNode, 1);
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull IProject project, @NotNull String path) throws DBException
     {
-        DBNProject project = getRoot().getProject(application.getProjectManager().getActiveProject());
-        if (project == null) {
+        DBNProject projectNode = getRoot().getProject(project);
+        if (projectNode == null) {
             log.debug("Project node not found");
             return null;
         }
         List<String> items = CommonUtils.splitString(path, '/');
-        DBNNode curNode = project.getDatabases().getDataSource(items.get(0));
+        DBNNode curNode = projectNode.getDatabases().getDataSource(items.get(0));
         if (curNode == null) {
             return null;
         }
@@ -529,4 +544,10 @@ public class DBNModel implements IResourceChangeListener {
         }
     }
 
+    public void ensureProjectLoaded(IProject project) {
+        DBNProject projectNode = getRoot().getProject(project);
+        if (projectNode != null) {
+            projectNode.getDatabases();
+        }
+    }
 }

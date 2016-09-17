@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -30,9 +31,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -91,6 +90,9 @@ public class DatabaseEditorInputFactory implements IElementFactory
             //. for some object. Connection must be instantiated.
             return null;
         }
+        final IProject project = dsObject.getRegistry().getProject();
+        final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+        navigatorModel.ensureProjectLoaded(project);
 
         DBRRunnableWithResult<IEditorInput> opener = new DBRRunnableWithResult<IEditorInput>() {
             private IStatus errorStatus;
@@ -99,7 +101,10 @@ public class DatabaseEditorInputFactory implements IElementFactory
             {
                 DBNDataSource dsNode = null;
                 try {
-                    dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dsObject);
+                    if (!dsObject.isConnected()) {
+                        dsObject.connect(monitor, true, true);
+                    }
+                    dsNode = (DBNDataSource) navigatorModel.getNodeByObject(monitor, dsObject, true);
                     if (dsNode != null) {
                         dsNode.initializeNode(monitor, new DBRProgressListener() {
                             @Override
@@ -110,7 +115,8 @@ public class DatabaseEditorInputFactory implements IElementFactory
                                     return;
                                 }
                                 try {
-                                    DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, nodePath);
+                                    DBNNode node = navigatorModel.getNodeByPath(
+                                        monitor, project, nodePath);
                                     if (node == null) {
                                         throw new DBException("Node '" + nodePath + "' not found");
                                     }

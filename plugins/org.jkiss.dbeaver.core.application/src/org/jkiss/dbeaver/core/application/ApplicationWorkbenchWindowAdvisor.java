@@ -126,7 +126,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         log.debug("Finish initialization");
         super.postWindowOpen();
 
-        if (DataSourceDescriptor.getActiveDataSources().isEmpty()) {
+        if (DataSourceDescriptor.getAllDataSources().isEmpty()) {
             // Open New Connection wizard
             DBeaverUI.asyncExec(new Runnable() {
                 @Override

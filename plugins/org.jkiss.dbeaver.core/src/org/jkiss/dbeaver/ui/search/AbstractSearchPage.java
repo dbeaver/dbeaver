@@ -100,11 +100,11 @@ public abstract class AbstractSearchPage extends DialogPage implements ISearchPa
                 String nodePath = st.nextToken();
                 try {
                     DBNDataSource dsNode = DBeaverCore.getInstance().getNavigatorModel().getDataSourceByPath(nodePath);
-                    if (brokenDataSources.contains(dsNode)) {
+                    if (dsNode == null || brokenDataSources.contains(dsNode)) {
                         continue;
                     }
 
-                    DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, nodePath);
+                    DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, dsNode.getOwnerProject(), nodePath);
                     if (node != null) {
                         result.add(node);
                     } else {
