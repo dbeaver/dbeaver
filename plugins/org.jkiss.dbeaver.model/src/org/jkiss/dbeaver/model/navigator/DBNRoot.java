@@ -111,8 +111,12 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
     }
 
     @Override
-    public DBNNode[] getChildren(DBRProgressMonitor monitor)
+    public DBNProject[] getChildren(DBRProgressMonitor monitor)
     {
+        return projects;
+    }
+
+    public DBNProject[] getProjects() {
         return projects;
     }
 

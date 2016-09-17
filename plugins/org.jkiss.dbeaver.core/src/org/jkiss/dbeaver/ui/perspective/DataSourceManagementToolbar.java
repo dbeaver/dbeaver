@@ -133,8 +133,6 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                                 DBNDatabaseNode node = navigatorModel.getNodeByObject(monitor, child, false);
                                 if (node != null) {
                                     nodeList.add(node);
-                                } else {
-                                    log.debug("Can't find node for object " + child);
                                 }
                             }
                         }
