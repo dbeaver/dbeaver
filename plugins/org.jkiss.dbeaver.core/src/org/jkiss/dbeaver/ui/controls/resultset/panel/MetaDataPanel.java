@@ -18,6 +18,9 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -77,6 +80,18 @@ public class MetaDataPanel implements IResultSetPanel {
 
         this.attributeList = new MetaDataTable(parent);
         this.attributeList.setFitWidth(false);
+        this.attributeList.getItemsViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                IStructuredSelection selection = attributeList.getItemsViewer().getStructuredSelection();
+                if (!selection.isEmpty()) {
+                    DBDAttributeBinding attr = (DBDAttributeBinding) selection.getFirstElement();
+                    if (attr != null) {
+                        presentation.setCurrentAttribute(attr);
+                    }
+                }
+            }
+        });
 
         return this.attributeList;
     }

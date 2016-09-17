@@ -84,6 +84,8 @@ public interface IResultSetPresentation {
     @Nullable
     DBDAttributeBinding getCurrentAttribute();
 
+    void setCurrentAttribute(@NotNull DBDAttributeBinding attribute);
+
     @Nullable
     Point getCursorLocation();
 

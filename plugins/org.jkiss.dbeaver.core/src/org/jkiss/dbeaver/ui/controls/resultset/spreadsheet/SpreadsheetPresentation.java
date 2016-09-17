@@ -296,6 +296,21 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     @Override
+    public void setCurrentAttribute(@NotNull DBDAttributeBinding attribute) {
+        this.curAttribute = attribute;
+
+        ResultSetRow curRow = controller.getCurrentRow();
+        if (curRow == null) {
+            return;
+        }
+        GridCell cell = controller.isRecordMode() ?
+            new GridCell(curRow, this.curAttribute) :
+            new GridCell(this.curAttribute, curRow);
+        this.spreadsheet.setCursor(cell, false);
+        //this.spreadsheet.showColumn(this.curAttribute);
+    }
+
+    @Override
     public Point getCursorLocation() {
         GridPos focusPos = spreadsheet.getFocusPos();
         Rectangle columnBounds = spreadsheet.getColumnBounds(focusPos.col);
