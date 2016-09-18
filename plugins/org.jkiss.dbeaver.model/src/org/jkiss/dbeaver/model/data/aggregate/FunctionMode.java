@@ -54,7 +54,9 @@ public class FunctionMode implements IAggregateFunction {
                 maxValue = cache.get(i);
             }
         }
-
+//        if (maxCount <= 1) {
+//            return null;
+//        }
         return maxValue;
     }
 }
