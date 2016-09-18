@@ -114,7 +114,8 @@ class DriverDependenciesTree {
         return libraries;
     }
 
-    public void resolveLibraries() {
+    public boolean resolveLibraries() {
+        boolean resolved = false;
         try {
             runnableContext.run(true, true, new DBRRunnableWithProgress() {
                 @Override
@@ -129,6 +130,7 @@ class DriverDependenciesTree {
                     }
                 }
             });
+            resolved = true;
         } catch (InterruptedException e) {
             // User just canceled download
         } catch (InvocationTargetException e) {
@@ -168,6 +170,7 @@ class DriverDependenciesTree {
 //            UIUtils.showMessageBox(getShell(), "Driver Download", "All driver files are present", SWT.ICON_INFORMATION);
 //            ((DriverDownloadDialog)getWizard().getContainer()).closeWizard();
         }
+        return resolved;
     }
 
     public void resizeTree() {

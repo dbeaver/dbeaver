@@ -119,7 +119,9 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
     @Override
     void resolveLibraries() {
-        depsTree.resolveLibraries();
+        if (!depsTree.resolveLibraries()) {
+            setErrorMessage("Can't resolve libraries. Check your network settings");
+        }
         depsTree.resizeTree();
     }
 
