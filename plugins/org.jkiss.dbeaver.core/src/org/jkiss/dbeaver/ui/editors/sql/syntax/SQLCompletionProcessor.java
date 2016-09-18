@@ -709,21 +709,21 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         // If we have quoted string then ignore pref settings
         boolean quotedString = wordDetector.isQuoted(replaceString);
-        final int proposalCase = quotedString ?
-            SQLPreferenceConstants.PROPOSAL_CASE_DEFAULT :
-            store.getInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
-        switch (proposalCase) {
-            case SQLPreferenceConstants.PROPOSAL_CASE_UPPER:
-                replaceString = replaceString.toUpperCase();
-                break;
-            case SQLPreferenceConstants.PROPOSAL_CASE_LOWER:
-                replaceString = replaceString.toLowerCase();
-                break;
-            default:
-                DBPIdentifierCase convertCase = quotedString && dataSource instanceof SQLDataSource ?
-                    ((SQLDataSource) dataSource).getSQLDialect().storesQuotedCase() : DBPIdentifierCase.MIXED;
-                replaceString = convertCase.transform(replaceString);
-                break;
+        if (!quotedString) {
+            final int proposalCase = store.getInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
+            switch (proposalCase) {
+                case SQLPreferenceConstants.PROPOSAL_CASE_UPPER:
+                    replaceString = replaceString.toUpperCase();
+                    break;
+                case SQLPreferenceConstants.PROPOSAL_CASE_LOWER:
+                    replaceString = replaceString.toLowerCase();
+                    break;
+                default:
+                    DBPIdentifierCase convertCase = dataSource instanceof SQLDataSource ?
+                        ((SQLDataSource) dataSource).getSQLDialect().storesQuotedCase() : DBPIdentifierCase.MIXED;
+                    replaceString = convertCase.transform(replaceString);
+                    break;
+            }
         }
 
         Image img = image == null ? null : DBeaverIcons.getImage(image);
