@@ -2577,6 +2577,7 @@
         <function id="avg" class="org.jkiss.dbeaver.model.data.aggregate.FunctionAvg" type="simple" label="Avg" description="Arithmetic mean"/>
         <function id="min" class="org.jkiss.dbeaver.model.data.aggregate.FunctionMin" type="simple" label="Min" description="Minimum value"/>
         <function id="max" class="org.jkiss.dbeaver.model.data.aggregate.FunctionMax" type="simple" label="Max" description="Maximum value"/>
+        <function id="median" class="org.jkiss.dbeaver.model.data.aggregate.FunctionMedian" type="simple" label="Median" description="Median value"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">
