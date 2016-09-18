@@ -39,7 +39,7 @@ public class MavenRegistry
     public static final String MAVEN_LOCAL_REPO_FOLDER = "maven-local";
 
     private static MavenRegistry instance = null;
-    private final Set<String> ignoredArtifactVersions = new HashSet<>();
+    private final List<String> ignoredArtifactVersions = new ArrayList<>();
 
     public synchronized static MavenRegistry getInstance()
     {
@@ -60,7 +60,12 @@ public class MavenRegistry
     }
 
     boolean isVersionIgnored(String ref) {
-        return ignoredArtifactVersions.contains(ref);
+        for (String ver : ignoredArtifactVersions) {
+            if (ref.startsWith(ver)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void init() {
