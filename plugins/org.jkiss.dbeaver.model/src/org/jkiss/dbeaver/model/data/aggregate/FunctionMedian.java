@@ -17,12 +17,16 @@
  */
 package org.jkiss.dbeaver.model.data.aggregate;
 
+import org.jkiss.dbeaver.Log;
+
 import java.util.*;
 
 /**
  * Median
  */
 public class FunctionMedian implements IAggregateFunction {
+
+    private static final Log log = Log.getLog(FunctionMedian.class);
 
     private List<Comparable> cache = new ArrayList<>();
 
@@ -37,7 +41,12 @@ public class FunctionMedian implements IAggregateFunction {
 
     @Override
     public Object getResult(int valueCount) {
-        Collections.sort(cache);
+        try {
+            Collections.sort(cache);
+        } catch (Exception e) {
+            log.debug("Can't sort value collection", e);
+            return null;
+        }
 
         int size = cache.size();
         int middle = size / 2;
