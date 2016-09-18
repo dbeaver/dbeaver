@@ -17,20 +17,21 @@
  */
 package org.jkiss.dbeaver.model.data.aggregate;
 
-/**
- * FunctionSum
- */
-public class FunctionSum implements IAggregateFunction {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-    double result = Double.NaN;
+/**
+ * Mode
+ */
+public class FunctionMode implements IAggregateFunction {
+
+    private List<Object> cache = new ArrayList<>();
 
     @Override
     public boolean accumulate(Object value) {
-        if (value instanceof Number) {
-            if (Double.isNaN(result)) {
-                result = 0.0;
-            }
-            result += ((Number)value).doubleValue();
+        if (value != null) {
+            cache.add(value);
             return true;
         }
         return false;
@@ -38,9 +39,22 @@ public class FunctionSum implements IAggregateFunction {
 
     @Override
     public Object getResult(int valueCount) {
-        if (Double.isNaN(result)) {
-            return null;
+        Object maxValue = null;
+        int maxCount = 0;
+
+        for (int i = 0; i < cache.size(); ++i) {
+            int count = 0;
+            for (int j = 0; j < cache.size(); ++j) {
+                if (cache.get(j).equals(cache.get(i))) {
+                    count++;
+                }
+            }
+            if (count > maxCount) {
+                maxCount = count;
+                maxValue = cache.get(i);
+            }
         }
-        return result;
+
+        return maxValue;
     }
 }
