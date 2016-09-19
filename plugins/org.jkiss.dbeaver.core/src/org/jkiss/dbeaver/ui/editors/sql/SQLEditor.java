@@ -137,7 +137,7 @@ public class SQLEditor extends SQLEditorBase implements
     private volatile boolean ownContext = false;
     private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<>();
-    private QueryResultsContainer curResultsProvider;
+    private QueryResultsContainer curResultsContainer;
 
     public SQLEditor()
     {
@@ -439,9 +439,9 @@ public class SQLEditor extends SQLEditorBase implements
             public void widgetSelected(SelectionEvent e) {
                 Object data = e.item.getData();
                 if (data instanceof QueryResultsContainer) {
-                    curResultsProvider = (QueryResultsContainer) data;
-                    curQueryProcessor = curResultsProvider.queryProcessor;
-                    ResultSetViewer rsv = curResultsProvider.getResultSetController();
+                    curResultsContainer = (QueryResultsContainer) data;
+                    curQueryProcessor = curResultsContainer.queryProcessor;
+                    ResultSetViewer rsv = curResultsContainer.getResultSetController();
                     if (rsv != null) {
                         //rsv.getActivePresentation().getControl().setFocus();
                     }
@@ -913,7 +913,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (queryProcessor != null && queryProcessor != resultsProvider.queryProcessor) {
                     continue;
                 }
-                if (queryProcessor != null && queryProcessor.resultProviders.size() < 2) {
+                if (queryProcessor != null && queryProcessor.resultContainers.size() < 2) {
                     // Do not remove first tab for this processor
                     continue;
                 }
@@ -952,7 +952,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         DBCExecutionContext executionContext = getExecutionContext();
         for (QueryProcessor queryProcessor : queryProcessors) {
-            for (QueryResultsContainer resultsProvider : queryProcessor.getResultProviders()) {
+            for (QueryResultsContainer resultsProvider : queryProcessor.getResultContainers()) {
                 ResultSetViewer rsv = resultsProvider.getResultSetController();
                 if (rsv != null) {
                     if (executionContext == null) {
@@ -1010,7 +1010,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         planView = null;
         queryProcessors.clear();
-        curResultsProvider = null;
+        curResultsContainer = null;
         curQueryProcessor = null;
 
         super.dispose();
@@ -1135,7 +1135,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         for (QueryProcessor queryProcessor : queryProcessors) {
-            for (QueryResultsContainer resultsProvider : queryProcessor.getResultProviders()) {
+            for (QueryResultsContainer resultsProvider : queryProcessor.getResultContainers()) {
                 ResultSetViewer rsv = resultsProvider.getResultSetController();
                 if (rsv != null && rsv.isDirty()) {
                     return rsv.promptToSaveOnClose();
@@ -1155,8 +1155,8 @@ public class SQLEditor extends SQLEditorBase implements
     @Nullable
     public ResultSetViewer getActiveResultSetViewer()
     {
-        if (curResultsProvider != null) {
-            return curResultsProvider.getResultSetController();
+        if (curResultsContainer != null) {
+            return curResultsContainer.getResultSetController();
         }
         return null;
     }
@@ -1197,9 +1197,9 @@ public class SQLEditor extends SQLEditorBase implements
     {
         final QueryProcessor queryProcessor = new QueryProcessor();
         curQueryProcessor = queryProcessor;
-        curResultsProvider = queryProcessor.getFirstResults();
+        curResultsContainer = queryProcessor.getFirstResults();
         if (setSelection) {
-            resultTabs.setSelection(curResultsProvider.tabItem);
+            resultTabs.setSelection(curResultsContainer.tabItem);
         }
 
         return queryProcessor;
@@ -1223,7 +1223,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         private SQLQueryJob curJob;
         private AtomicInteger curJobRunning = new AtomicInteger(0);
-        private final List<QueryResultsContainer> resultProviders = new ArrayList<>();
+        private final List<QueryResultsContainer> resultContainers = new ArrayList<>();
         private DBDDataReceiver curDataReceiver = null;
 
         public QueryProcessor() {
@@ -1234,17 +1234,17 @@ public class SQLEditor extends SQLEditorBase implements
 
         private QueryResultsContainer createResultsProvider(int resultSetNumber) {
             QueryResultsContainer resultsProvider = new QueryResultsContainer(this, resultSetNumber);
-            resultProviders.add(resultsProvider);
+            resultContainers.add(resultsProvider);
             return resultsProvider;
         }
         @NotNull
         QueryResultsContainer getFirstResults()
         {
-            return resultProviders.get(0);
+            return resultContainers.get(0);
         }
         @Nullable
         QueryResultsContainer getResults(SQLQuery query) {
-            for (QueryResultsContainer provider : resultProviders) {
+            for (QueryResultsContainer provider : resultContainers) {
                 if (provider.query == query) {
                     return provider;
                 }
@@ -1252,8 +1252,8 @@ public class SQLEditor extends SQLEditorBase implements
             return null;
         }
 
-        List<QueryResultsContainer> getResultProviders() {
-            return resultProviders;
+        List<QueryResultsContainer> getResultContainers() {
+            return resultContainers;
         }
 
         private void closeJob()
@@ -1336,7 +1336,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         public boolean isDirty() {
-            for (QueryResultsContainer resultsProvider : resultProviders) {
+            for (QueryResultsContainer resultsProvider : resultContainers) {
                 ResultSetViewer rsv = resultsProvider.getResultSetController();
                 if (rsv != null && rsv.isDirty()) {
                     return true;
@@ -1345,18 +1345,18 @@ public class SQLEditor extends SQLEditorBase implements
             return false;
         }
 
-        void removeResults(QueryResultsContainer resultsProvider) {
-            if (resultProviders.size() > 1) {
-                resultProviders.remove(resultsProvider);
+        void removeResults(QueryResultsContainer resultsContainer) {
+            if (resultContainers.size() > 1) {
+                resultContainers.remove(resultsContainer);
             } else {
                 queryProcessors.remove(this);
                 if (curQueryProcessor == this) {
                     if (queryProcessors.isEmpty()) {
                         curQueryProcessor = null;
-                        curResultsProvider = null;
+                        curResultsContainer = null;
                     } else {
                         curQueryProcessor = queryProcessors.get(0);
-                        curResultsProvider = curQueryProcessor.getFirstResults();
+                        curResultsContainer = curQueryProcessor.getFirstResults();
                     }
                 }
             }
@@ -1371,14 +1371,14 @@ public class SQLEditor extends SQLEditorBase implements
             final boolean isStatsResult = (statement != null && statement.getData() == SQLQueryJob.STATS_RESULTS);
 //            if (isStatsResult) {
 //                // Maybe it was already open
-//                for (QueryResultsProvider provider : resultProviders) {
+//                for (QueryResultsProvider provider : resultContainers) {
 //                    if (provider.query != null && provider.query.getData() == SQLQueryJob.STATS_RESULTS) {
 //                        resultSetNumber = provider.resultSetNumber;
 //                        break;
 //                    }
 //                }
 //            }
-            if (resultSetNumber >= resultProviders.size() && !isDisposed()) {
+            if (resultSetNumber >= resultContainers.size() && !isDisposed()) {
                 // Open new results processor in UI thread
                 DBeaverUI.syncExec(new Runnable() {
                     @Override
@@ -1387,11 +1387,11 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 });
             }
-            if (resultSetNumber >= resultProviders.size()) {
+            if (resultSetNumber >= resultContainers.size()) {
                 // Editor seems to be disposed - no data receiver
                 return null;
             }
-            final QueryResultsContainer resultsProvider = resultProviders.get(resultSetNumber);
+            final QueryResultsContainer resultsProvider = resultContainers.get(resultSetNumber);
             // Open new results processor in UI thread
             DBeaverUI.syncExec(new Runnable() {
                 @Override
@@ -1452,7 +1452,9 @@ public class SQLEditor extends SQLEditorBase implements
                 @Override
                 public void widgetDisposed(DisposeEvent e) {
                     QueryResultsContainer.this.queryProcessor.removeResults(QueryResultsContainer.this);
-                    curResultsProvider = null;
+                    if (QueryResultsContainer.this == curResultsContainer) {
+                        curResultsContainer = null;
+                    }
                 }
             });
         }
@@ -1687,7 +1689,7 @@ public class SQLEditor extends SQLEditorBase implements
             {
                 // Set tab name only if we have just one resultset
                 // If query produced multiple results - leave their names as is
-                if (queryProcessor.getResultProviders().size() == 1) {
+                if (queryProcessor.getResultContainers().size() == 1) {
                     QueryResultsContainer results = queryProcessor.getResults(query);
                     if (results != null) {
                         CTabItem tabItem = results.tabItem;
@@ -1910,7 +1912,7 @@ public class SQLEditor extends SQLEditorBase implements
         protected IStatus run(DBRProgressMonitor monitor) {
             try {
                 for (QueryProcessor queryProcessor : queryProcessors) {
-                    for (QueryResultsContainer resultsProvider : queryProcessor.getResultProviders()) {
+                    for (QueryResultsContainer resultsProvider : queryProcessor.getResultContainers()) {
                         ResultSetViewer rsv = resultsProvider.getResultSetController();
                         if (rsv != null && rsv.isDirty()) {
                             rsv.doSave(monitor);
