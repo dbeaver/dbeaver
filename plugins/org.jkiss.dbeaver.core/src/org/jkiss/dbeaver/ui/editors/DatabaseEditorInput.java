@@ -104,6 +104,8 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     public IPersistableElement getPersistable()
     {
         if (getExecutionContext() == null ||
+            getDatabaseObject() == null ||
+            !getDatabaseObject().isPersisted() ||
             !DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS))
         {
             return null;
