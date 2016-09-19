@@ -171,7 +171,6 @@ public class DBNModel implements IResourceChangeListener {
             DBSObject nextItem = path[i + 1];
             node = getNodeByObject(item);
             if (node == null) {
-                log.warn("Can't find tree node for object " + item.getName() + " (" + item.getClass().getName() + ")");
                 return null;
             }
             try {
