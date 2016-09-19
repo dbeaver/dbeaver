@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -207,5 +208,21 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
             referrers = DBUtils.getAttributeReferrers(session.getProgressMonitor(), entityAttribute);
         }
         super.lateBinding(session, rows);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof DBDAttributeBindingMeta) {
+            DBCAttributeMetaData cmpMeta = ((DBDAttributeBindingMeta) obj).metaAttribute;
+            return
+                CommonUtils.equalObjects(metaAttribute.getName(), cmpMeta.getName()) &&
+                CommonUtils.equalObjects(metaAttribute.getLabel(), cmpMeta.getLabel()) &&
+                CommonUtils.equalObjects(metaAttribute.getEntityName(), cmpMeta.getEntityName()) &&
+                metaAttribute.getOrdinalPosition() == cmpMeta.getOrdinalPosition() &&
+                metaAttribute.getTypeID() == cmpMeta.getTypeID() &&
+                CommonUtils.equalObjects(metaAttribute.getTypeName(), cmpMeta.getTypeName())
+                ;
+        }
+        return false;
     }
 }
