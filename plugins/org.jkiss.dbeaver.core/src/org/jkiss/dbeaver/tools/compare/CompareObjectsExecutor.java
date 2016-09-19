@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -242,6 +243,10 @@ public class CompareObjectsExecutor {
             for (ObjectPropertyDescriptor prop : properties) {
                 Object propertyValue = propertySource.getPropertyValue(monitor, databaseObject, prop);
                 synchronized (PROPS_LOCK) {
+                    if (propertyValue instanceof DBPNamedObject) {
+                        // Compare just object names
+                        propertyValue = ((DBPNamedObject) propertyValue).getName();
+                    }
                     nodeProperties.put(prop, propertyValue);
                 }
             }
