@@ -720,7 +720,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     break;
                 default:
                     DBPIdentifierCase convertCase = dataSource instanceof SQLDataSource ?
-                        ((SQLDataSource) dataSource).getSQLDialect().storesQuotedCase() : DBPIdentifierCase.MIXED;
+                        ((SQLDataSource) dataSource).getSQLDialect().storesUnquotedCase() : DBPIdentifierCase.MIXED;
                     replaceString = convertCase.transform(replaceString);
                     break;
             }
