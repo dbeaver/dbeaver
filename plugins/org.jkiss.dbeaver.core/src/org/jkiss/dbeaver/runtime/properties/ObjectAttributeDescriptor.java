@@ -183,7 +183,12 @@ public abstract class ObjectAttributeDescriptor {
     static void extractAnnotations(DBPPropertySource source, ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps, IPropertyFilter filter)
     {
         Method[] methods = theClass.getMethods();
+        Set<String> passedNames = new HashSet<>();
         for (Method method : methods) {
+            if (passedNames.contains(method.getName())) {
+                continue;
+            }
+            passedNames.add(method.getName());
             final PropertyGroup propGroupInfo = method.getAnnotation(PropertyGroup.class);
             if (propGroupInfo != null && method.getReturnType() != null) {
                 // Property group
