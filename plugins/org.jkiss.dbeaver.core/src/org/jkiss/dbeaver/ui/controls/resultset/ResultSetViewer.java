@@ -603,7 +603,7 @@ public class ResultSetViewer extends Viewer
     }
 
     public IResultSetPanel getVisiblePanel() {
-        return activePanels.get(getPresentationSettings().activePanelId);
+        return isPanelsVisible() ? activePanels.get(getPresentationSettings().activePanelId) : null;
     }
 
     @Override
