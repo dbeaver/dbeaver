@@ -119,7 +119,9 @@ public abstract class LightGrid extends Canvas {
 
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
-            LightGrid.this.setToolTipText(toolTip);
+            if (!monitor.isCanceled()) {
+                LightGrid.this.setToolTipText(toolTip);
+            }
             toolTipHandler = null;
             return Status.OK_STATUS;
         }
