@@ -1882,9 +1882,9 @@ public class ResultSetViewer extends Viewer
         addDefaultPanelActions();
         panelToolBar.update(true);
 
-//        ToolBar toolBar = panelToolBar.getControl();
-//        Point toolBarSize = toolBar.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-//        this.panelFolder.setTabHeight(toolBarSize.y);
+        ToolBar toolBar = panelToolBar.getControl();
+        Point toolBarSize = toolBar.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        this.panelFolder.setTabHeight(toolBarSize.y);
     }
 
     @Override
