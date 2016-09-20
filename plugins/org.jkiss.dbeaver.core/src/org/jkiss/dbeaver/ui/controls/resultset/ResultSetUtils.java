@@ -61,6 +61,8 @@ public class ResultSetUtils
         List<Object[]> rows)
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
+        Map<DBCEntityMetaData, DBSEntity> entityBindingMap = new IdentityHashMap<>();
+
         monitor.beginTask("Discover resultset metadata", 3);
         try {
             SQLQuery sqlQuery = null;
@@ -84,6 +86,9 @@ public class ResultSetUtils
                     }
                     if (entityMeta != null) {
                         entity = getEntityFromMetaData(session, entityMeta);
+                        if (entity != null) {
+                            entityBindingMap.put(entityMeta, entity);
+                        }
                     }
                 }
             }
@@ -98,13 +103,20 @@ public class ResultSetUtils
                 // To be editable we need this resultset contain set of columns from the same table
                 // which construct any unique key
                 DBSEntity attrEntity = null;
-                if (attrMeta.getEntityMetaData() != null) {
-                    if (entity != null && entity instanceof DBSTable && ((DBSTable) entity).isView()) {
-                        // If this is a view then don't try to detect entity for each attribute
-                        // MySQL returns rouce table name instead of view name. That's crazy.
-                        attrEntity = entity;
-                    } else {
-                        attrEntity = getEntityFromMetaData(session, attrMeta.getEntityMetaData());
+                final DBCEntityMetaData attrEntityMeta = attrMeta.getEntityMetaData();
+                if (attrEntityMeta != null) {
+                    attrEntity = entityBindingMap.get(attrEntityMeta);
+                    if (attrEntity == null) {
+                        if (entity != null && entity instanceof DBSTable && ((DBSTable) entity).isView()) {
+                            // If this is a view then don't try to detect entity for each attribute
+                            // MySQL returns rouce table name instead of view name. That's crazy.
+                            attrEntity = entity;
+                        } else {
+                            attrEntity = getEntityFromMetaData(session, attrEntityMeta);
+                        }
+                    }
+                    if (attrEntity != null) {
+                        entityBindingMap.put(attrEntityMeta, attrEntity);
                     }
                 }
                 if (attrEntity == null) {

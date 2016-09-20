@@ -142,7 +142,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
 
         synchronized (this) {
             detectCaseSensitivity(owner);
-            setCache(tmpObjectList);
+            mergeCache(tmpObjectList);
             this.invalidateObjects(monitor, owner, new CacheIterator());
         }
     }

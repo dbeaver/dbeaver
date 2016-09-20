@@ -95,13 +95,14 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     {
         synchronized (this) {
             if (this.objectList == null) {
-                detectCaseSensitivity(object);
-                this.objectList.add(object);
-                if (this.objectMap != null) {
-                    String name = getObjectName(object);
-                    checkDuplicateName(name, object);
-                    this.objectMap.put(name, object);
-                }
+                this.objectList = new ArrayList<>();
+            }
+            detectCaseSensitivity(object);
+            this.objectList.add(object);
+            if (this.objectMap != null) {
+                String name = getObjectName(object);
+                checkDuplicateName(name, object);
+                this.objectMap.put(name, object);
             }
         }
     }
@@ -150,6 +151,34 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
             this.objectMap = null;
             this.fullCache = true;
         }
+    }
+
+    /**
+     * Merges new cache with existing.
+     * If objects with the same name were already cached - leave them in cache
+     * (because they might be referenced somewhere).
+     */
+    protected void mergeCache(List<OBJECT> objects)
+    {
+        synchronized (this) {
+            if (this.objectList != null) {
+                // Merge lists
+                objects = new ArrayList<>(objects);
+                for (int i = 0; i < objects.size(); i++) {
+                    OBJECT newObject = objects.get(i);
+                    String newObjectName = getObjectName(newObject);
+                    for (int k = 0; k < objectList.size(); k++) {
+                        OBJECT oldObject = objectList.get(k);
+                        String oldObjectName = getObjectName(oldObject);
+                        if (newObjectName.equals(oldObjectName)) {
+                            objects.set(i, oldObject);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        setCache(objects);
     }
 
     private synchronized Map<String, OBJECT> getObjectMap()
