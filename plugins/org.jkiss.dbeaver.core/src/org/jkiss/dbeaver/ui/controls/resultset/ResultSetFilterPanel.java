@@ -61,7 +61,7 @@ import org.jkiss.dbeaver.ui.controls.StyledTextContentAdapter;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenNewSQLEditorHandler;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordPartDetector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -521,7 +521,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         } else {
             editorName = "Query";
         }
-        OpenNewSQLEditorHandler.openSQLConsole(
+        OpenHandler.openSQLConsole(
             DBeaverUI.getActiveWorkbenchWindow(),
             dataContainer == null ? null : dataContainer.getDataSource().getContainer(),
             editorName,
