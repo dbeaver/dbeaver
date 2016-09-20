@@ -41,6 +41,8 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -112,7 +114,7 @@ public class MetaDataPanel implements IResultSetPanel {
         if (attributeList.isLoading()) {
             return;
         }
-        List<DBDAttributeBinding> newAttributes = presentation.getController().getModel().getVisibleAttributes();
+        List<DBDAttributeBinding> newAttributes = Arrays.asList(presentation.getController().getModel().getAttributes());
         if (CommonUtils.equalObjects(curAttributes, newAttributes)) {
             // No changes
             return;
