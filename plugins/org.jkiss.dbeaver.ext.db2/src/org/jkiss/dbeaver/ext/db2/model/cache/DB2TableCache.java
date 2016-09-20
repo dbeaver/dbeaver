@@ -56,7 +56,7 @@ public final class DB2TableCache extends JDBCStructLookupCache<DB2Schema, DB2Tab
             "WHERE TABSCHEMA = ? AND TYPE IN (" +
             "'" + DB2TableType.H.name() + "','" + DB2TableType.L.name() + "','" + DB2TableType.T.name() + "','" + DB2TableType.U.name() + "','" + DB2TableType.G.name() + "')\n" +
             (object == null && objectName == null ? "" : "AND TABNAME=?\n") +
-            "ORDER BY TABNAME" + " WITH UR";
+            "ORDER BY TABNAME\nWITH UR";
         final JDBCPreparedStatement dbStat = session.prepareStatement(query);
         dbStat.setString(1, schema.getName());
         if (object != null || objectName != null) dbStat.setString(2, object != null ? object.getName() : objectName);
