@@ -105,7 +105,7 @@ public class PropertyTreeViewer extends TreeViewer {
             {
                 if (!packing) {
                     packing = true;
-                    UIUtils.packColumns(treeControl, true, new float[]{0.2f, 0.8f});
+                    UIUtils.packColumns(treeControl, true, new float[]{0.1f, 0.9f});
                     //packing = false;
                     //treeControl.removeControlListener(this);
                 }
@@ -209,7 +209,7 @@ public class PropertyTreeViewer extends TreeViewer {
         super.expandAll();
 
         disposeOldEditor();
-        UIUtils.packColumns(getTree(), true, new float[]{0.5f, 0.5f});
+        UIUtils.packColumns(getTree(), true, new float[]{0.1f, 0.9f});
     }
 
     private Map<String, TreeNode> loadTreeNodes(@Nullable DBRProgressMonitor monitor, TreeNode parent, DBPPropertySource propertySource)
