@@ -701,6 +701,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
      */
     static class ProceduresCache extends JDBCObjectLookupCache<OracleSchema, OracleProcedureStandalone> {
 
+        @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleProcedureStandalone object, @Nullable String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(

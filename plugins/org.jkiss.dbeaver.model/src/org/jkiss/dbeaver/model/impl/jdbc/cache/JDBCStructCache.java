@@ -223,7 +223,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         loadChildren(monitor, owner, forObject);
         synchronized (childrenCache) {
             SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(forObject);
-            return nestedCache == null ? null : nestedCache.getObject(monitor, null, objectName);
+            return nestedCache == null ? null : nestedCache.getObject(monitor, forObject, objectName);
         }
     }
 
