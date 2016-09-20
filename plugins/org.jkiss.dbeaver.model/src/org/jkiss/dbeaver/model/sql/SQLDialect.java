@@ -72,7 +72,7 @@ public interface SQLDialect {
      * @return the list of execute keywords.
      */
     @NotNull
-    Collection<String> getExecuteKeywords();
+    String[] getExecuteKeywords();
 
     /**
      * Retrieves a list of all of this database's SQL keywords

@@ -204,8 +204,8 @@ public class JDBCSQLDialect extends BasicSQLDialect {
 
     @NotNull
     @Override
-    public Collection<String> getExecuteKeywords() {
-        return Collections.emptyList();
+    public String[] getExecuteKeywords() {
+        return new String[0];
     }
 
     @NotNull

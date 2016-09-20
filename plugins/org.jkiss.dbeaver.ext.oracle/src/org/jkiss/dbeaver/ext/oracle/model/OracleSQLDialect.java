@@ -22,13 +22,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Oracle SQL dialect
  */
 class OracleSQLDialect extends JDBCSQLDialect {
+
+    public static final String[] EXEC_KEYWORDS = new String[]{ "call" };
 
     public OracleSQLDialect(JDBCDatabaseMetaData metaData) {
         super("Oracle", metaData);
@@ -256,8 +256,8 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    public Collection<String> getExecuteKeywords() {
-        return Collections.singleton("call");
+    public String[] getExecuteKeywords() {
+        return EXEC_KEYWORDS;
     }
 
     @NotNull
