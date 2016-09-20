@@ -17,11 +17,15 @@
  */
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.progress.UIJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -103,6 +107,26 @@ public abstract class LightGrid extends Canvas {
             return false;
         }
     }
+
+    // Tooltips
+
+    private class ToolTipHandler extends UIJob {
+        private String toolTip;
+        public ToolTipHandler() {
+            super("ToolTip handler");
+            setSystem(true);
+        }
+
+        @Override
+        public IStatus runInUIThread(IProgressMonitor monitor) {
+            LightGrid.this.setToolTipText(toolTip);
+            toolTipHandler = null;
+            return Status.OK_STATUS;
+        }
+    }
+
+    private volatile String prevToolTip;
+    private volatile ToolTipHandler toolTipHandler;
 
     /**
      * Tracks whether the scroll values are correct. If not they will be
@@ -3558,7 +3582,18 @@ public abstract class LightGrid extends Canvas {
      */
     protected void updateToolTipText(@Nullable String text)
     {
-        super.setToolTipText(text);
+        ToolTipHandler curHandler = this.toolTipHandler;
+        if (!CommonUtils.equalObjects(prevToolTip, text)) {
+            // New tooltip
+            if (curHandler != null) {
+                curHandler.cancel();
+            }
+            prevToolTip = text;
+            this.setToolTipText("");
+            this.toolTipHandler = new ToolTipHandler();
+            this.toolTipHandler.toolTip = text;
+            this.toolTipHandler.schedule(500);
+        }
     }
 
     /**
