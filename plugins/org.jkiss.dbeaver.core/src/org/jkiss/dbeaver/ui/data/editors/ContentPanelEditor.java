@@ -195,7 +195,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
     {
         DBDContent content = (DBDContent) valueController.getValue();
         if (ContentUtils.isTextContent(content)) {
-            Text text = new Text(editPlaceholder, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
+            Text text = new Text(editPlaceholder, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
             text.setEditable(!valueController.isReadOnly());
             text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
             return text;
@@ -252,7 +252,9 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
         private Menu menu;
 
         public ContentTypeSwitchAction() {
-            super("Text", Action.AS_DROP_DOWN_MENU);
+            super(null, Action.AS_DROP_DOWN_MENU);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SEARCH));
+            setToolTipText("Choose content type");
         }
 
         @Override
