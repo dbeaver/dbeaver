@@ -262,7 +262,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
                 ToolItem toolItem = (ToolItem) event.widget;
                 Menu menu = createMenu(toolItem);
                 Rectangle bounds = toolItem.getBounds();
-                Point point = toolItem.getControl().toDisplay(bounds.x, bounds.y + bounds.height);
+                Point point = toolItem.getParent().toDisplay(bounds.x, bounds.y + bounds.height);
                 menu.setLocation(point.x, point.y);
                 menu.setVisible(true);
             }
