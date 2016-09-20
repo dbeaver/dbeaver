@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -31,12 +32,12 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLEditorHandler;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
@@ -94,7 +95,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     protected DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode)
     {
         // Create tree
-        DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(parent, rootNode, getTreeStyle());
+        final DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(parent, rootNode, getTreeStyle());
 
         navigatorTree.getViewer().addSelectionChangedListener(
             new ISelectionChangedListener()
@@ -145,7 +146,11 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                                 }
                                 break;
                             case SQL_EDITOR:
-                                OpenSQLEditorHandler.openRecentScript(getSite().getWorkbenchWindow(), dataSource, null);
+                                try {
+                                    OpenHandler.openRecentScript(getSite().getWorkbenchWindow(), dataSource, null);
+                                } catch (CoreException e) {
+                                    UIUtils.showErrorDialog(navigatorTree.getShell(), "Open SQL editor", "Can't open SQL editor", e);
+                                }
                                 break;
                         }
                     } else if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode)node).allowsOpen()) {

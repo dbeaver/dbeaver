@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenNewSQLEditorHandler;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 
 /**
  * Display Source text (Read Only)
@@ -39,7 +39,7 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
         public void run()
         {
             final DBPDataSource dataSource = getDataSource();
-            OpenNewSQLEditorHandler.openSQLConsole(
+            OpenHandler.openSQLConsole(
                 DBeaverUI.getActiveWorkbenchWindow(),
                 dataSource == null ? null : dataSource.getContainer(),
                 "Source",

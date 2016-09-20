@@ -51,6 +51,9 @@ public interface CoreCommands
     String CMD_ROLLBACK = "org.jkiss.dbeaver.core.rollback";
 
     String CMD_SQL_EDITOR_OPEN = "org.jkiss.dbeaver.core.sql.editor.open";
+    String CMD_SQL_EDITOR_NEW = "org.jkiss.dbeaver.core.sql.editor.create";
+    String CMD_SQL_EDITOR_RECENT = "org.jkiss.dbeaver.core.sql.editor.recent";
+
     String CMD_LINK_EDITOR = "org.jkiss.dbeaver.core.navigator.linkeditor";
     String CMD_SYNC_CONNECTION = "org.jkiss.dbeaver.ui.editors.sql.sync.connection";
 

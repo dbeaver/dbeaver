@@ -66,7 +66,7 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
         return null;
     }
 
-    protected DBPDataSourceContainer getDataSourceContainer(ExecutionEvent event, boolean useEditor)
+    protected static DBPDataSourceContainer getDataSourceContainer(ExecutionEvent event, boolean useEditor)
     {
         if (useEditor) {
             IEditorPart editor = HandlerUtil.getActiveEditor(event);

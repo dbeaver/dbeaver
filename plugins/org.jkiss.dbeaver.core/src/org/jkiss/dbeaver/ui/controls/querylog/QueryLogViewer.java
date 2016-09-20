@@ -63,7 +63,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenNewSQLEditorHandler;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
@@ -786,7 +786,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             }
         }
         if (sql.length() > 0) {
-            OpenNewSQLEditorHandler.openSQLConsole(
+            OpenHandler.openSQLConsole(
                 DBeaverUI.getActiveWorkbenchWindow(),
                 dsContainer,
                 "QueryManager",
