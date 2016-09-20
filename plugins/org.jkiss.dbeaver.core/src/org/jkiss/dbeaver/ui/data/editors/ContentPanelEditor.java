@@ -23,9 +23,9 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.ImageLoader;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -56,7 +55,7 @@ import java.nio.ByteBuffer;
 /**
 * ControlPanelEditor
 */
-public class ContentPanelEditor extends BaseValueEditor<Control> implements IValueEditorStandalone {
+public class ContentPanelEditor extends BaseValueEditor<Control> {
 
     private static final Log log = Log.getLog(ContentPanelEditor.class);
 
@@ -65,17 +64,8 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IVal
     }
 
     @Override
-    public void showValueEditor()
-    {
-    }
-
-    @Override
-    public void closeValueEditor()
-    {
-    }
-
-    @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
+        manager.add(new ContentTypeSwitchAction());
         if (control instanceof ImageViewer) {
             ((ImageViewer)control).fillToolBar(manager);
             manager.add(new Separator());
@@ -242,24 +232,51 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IVal
         {
             if (!content.isNull()) {
                 try {
-                    try (InputStream contentStream = content.getContents(monitor).getContentStream()) {
-
-/*
-                        FileFormat.load(contentStream, new ImageLoader() {
-                                public ImageData[] load(InputStream stream) {
-                                    return null;
-                                }
-                        });
-*/
-                        new ImageLoader().load(contentStream);
+                    DBDContentStorage contents = content.getContents(monitor);
+                    if (contents != null) {
+                        try (InputStream contentStream = contents.getContentStream()) {
+                            new ImageLoader().load(contentStream);
+                        }
+                        isImage = true;
                     }
-                    isImage = true;
                 }
                 catch (Exception e) {
                     // this is not an image
-                    log.debug(e.getMessage());
+                    log.debug("Can't detect image type: " + e.getMessage());
                 }
             }
         }
+    }
+
+    private class ContentTypeSwitchAction extends Action {
+        private Menu menu;
+
+        public ContentTypeSwitchAction() {
+            super("Text", Action.AS_DROP_DOWN_MENU);
+        }
+
+        @Override
+        public void runWithEvent(Event event)
+        {
+            if (event.widget instanceof ToolItem) {
+                ToolItem toolItem = (ToolItem) event.widget;
+                Menu menu = createMenu(toolItem);
+                Rectangle bounds = toolItem.getBounds();
+                Point point = toolItem.getControl().toDisplay(bounds.x, bounds.y + bounds.height);
+                menu.setLocation(point.x, point.y);
+                menu.setVisible(true);
+            }
+        }
+
+        private Menu createMenu(ToolItem toolItem) {
+            if (menu == null) {
+                menu = new Menu(toolItem.getParent());
+                new MenuItem(menu, SWT.NONE).setText("Text");
+                new MenuItem(menu, SWT.NONE).setText("Image");
+                new MenuItem(menu, SWT.NONE).setText("Hex");
+            }
+            return menu;
+        }
+
     }
 }
