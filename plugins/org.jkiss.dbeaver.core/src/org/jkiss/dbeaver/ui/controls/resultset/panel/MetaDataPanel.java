@@ -55,6 +55,7 @@ public class MetaDataPanel implements IResultSetPanel {
 
     private IResultSetPresentation presentation;
     private MetaDataTable attributeList;
+    private List<DBDAttributeBinding> curAttributes;
 
     public MetaDataPanel() {
     }
@@ -111,6 +112,12 @@ public class MetaDataPanel implements IResultSetPanel {
         if (attributeList.isLoading()) {
             return;
         }
+        List<DBDAttributeBinding> newAttributes = presentation.getController().getModel().getVisibleAttributes();
+        if (CommonUtils.equalObjects(curAttributes, newAttributes)) {
+            // No changes
+            return;
+        }
+        curAttributes = newAttributes;
         Control table = attributeList.getControl();
         table.setRedraw(false);
         try {
@@ -182,7 +189,7 @@ public class MetaDataPanel implements IResultSetPanel {
         public Collection<DBDAttributeBinding> evaluate()
             throws InvocationTargetException, InterruptedException
         {
-            return presentation.getController().getModel().getVisibleAttributes();
+            return curAttributes;
         }
     }
 }

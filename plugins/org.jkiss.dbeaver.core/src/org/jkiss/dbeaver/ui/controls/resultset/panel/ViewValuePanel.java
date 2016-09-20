@@ -197,9 +197,12 @@ public class ViewValuePanel implements IResultSetPanel {
                 }
             };
             updateActions = true;
-        } else {
+        } else if (previewController.getCurRow() != row) {
             newController = previewController;
             previewController.setCurRow(row);
+        } else {
+            // The same value
+            return;
         }
         viewValue(newController);
         if (updateActions) {
