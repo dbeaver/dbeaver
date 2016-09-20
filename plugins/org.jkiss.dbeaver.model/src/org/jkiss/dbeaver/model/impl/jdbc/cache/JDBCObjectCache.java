@@ -42,7 +42,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
 {
     public static final int DEFAULT_MAX_CACHE_SIZE = 1000000;
 
-    private static final Log log = Log.getLog(AbstractObjectCache.class);
+    private static final Log log = Log.getLog(JDBCObjectCache.class);
 
     // Maximum number of objects in cache
     private int maximumCacheSize = DEFAULT_MAX_CACHE_SIZE;

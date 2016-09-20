@@ -38,10 +38,13 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * JDBC structured objects cache. Stores objects themselves and their child objects.
+ * JDBC structured objects cache.
+ * Stores objects themselves and their child objects.
  */
-public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DBSObject, CHILD extends DBSObject> extends
-    JDBCObjectCache<OWNER, OBJECT> implements DBSStructCache<OWNER, OBJECT, CHILD> {
+public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DBSObject, CHILD extends DBSObject>
+    extends JDBCObjectCache<OWNER, OBJECT>
+    implements DBSStructCache<OWNER, OBJECT, CHILD>
+{
     private static final Log log = Log.getLog(JDBCStructCache.class);
 
     private final Object objectNameColumn;

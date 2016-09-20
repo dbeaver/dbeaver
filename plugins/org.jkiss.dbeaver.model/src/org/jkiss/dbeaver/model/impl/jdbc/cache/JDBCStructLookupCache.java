@@ -31,10 +31,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import java.sql.SQLException;
 
 /**
- * Various objects cache.
- * Simple cache which may read objects from database and keep them.
+ * Struct cache with ability to load/search single object by name.
  */
-public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT extends DBSObject, CHILD extends DBSObject> extends JDBCStructCache<OWNER, OBJECT, CHILD> implements JDBCObjectLookup<OWNER, OBJECT>
+public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT extends DBSObject, CHILD extends DBSObject>
+    extends JDBCStructCache<OWNER, OBJECT, CHILD>
+    implements JDBCObjectLookup<OWNER, OBJECT>
 {
 
     public JDBCStructLookupCache(Object objectNameColumn) {
