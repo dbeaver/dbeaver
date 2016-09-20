@@ -17,10 +17,6 @@
  */
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterBase64;
-import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
-import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterString;
-
 /**
  * Binary content presentation
  */
