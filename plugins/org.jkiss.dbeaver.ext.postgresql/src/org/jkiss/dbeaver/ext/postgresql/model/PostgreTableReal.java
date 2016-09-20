@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -46,6 +47,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
 
     private long rowCountEstimate;
     private Long rowCount;
+    private Long diskSpace;
     final TriggerCache triggerCache = new TriggerCache();
 
     protected PostgreTableReal(PostgreSchema catalog)
@@ -92,6 +94,37 @@ public abstract class PostgreTableReal extends PostgreTableBase
         return rowCount;
     }
 
+    @Property(viewable = false, expensive = true, order = 24)
+    public synchronized Long getDiskSpace(DBRProgressMonitor monitor)
+    {
+        if (diskSpace != null) {
+            return diskSpace;
+        }
+        if (!isPersisted() || this instanceof PostgreView) {
+            // Do not count rows for views
+            return null;
+        }
+
+        // Query row count
+        try (DBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Calculate relation size on disk")) {
+            try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement("select pg_total_relation_size(?)")) {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        diskSpace = dbResult.getLong(1);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Can't fetch disk space", e);
+        }
+        if (diskSpace == null) {
+            diskSpace = -1L;
+        }
+
+        return diskSpace;
+    }
+
     @Override
     public Collection<PostgreTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableConstraint.class);
@@ -107,6 +140,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         rowCount = null;
+        diskSpace = null;
         triggerCache.clearCache();
         super.refreshObject(monitor);
 
