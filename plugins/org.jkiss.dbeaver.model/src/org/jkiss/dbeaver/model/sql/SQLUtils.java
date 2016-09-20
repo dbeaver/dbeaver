@@ -512,8 +512,8 @@ public final class SQLUtils {
 
     public static boolean isExecQuery(@NotNull SQLDialect dialect, String query) {
         // Check for EXEC query
-        final Collection<String> executeKeywords = dialect.getExecuteKeywords();
-        if (!CommonUtils.isEmpty(executeKeywords)) {
+        final String[] executeKeywords = dialect.getExecuteKeywords();
+        if (executeKeywords.length > 0) {
             final String queryStart = getFirstKeyword(query);
             for (String keyword : executeKeywords) {
                 if (keyword.equalsIgnoreCase(queryStart)) {

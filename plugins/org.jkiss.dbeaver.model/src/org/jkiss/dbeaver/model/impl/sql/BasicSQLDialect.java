@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
@@ -40,9 +42,8 @@ import java.util.*;
  */
 public class BasicSQLDialect implements SQLDialect {
 
-    public static final BasicSQLDialect INSTANCE = new BasicSQLDialect();
-
     private static final String[] DEFAULT_LINE_COMMENTS = {SQLConstants.SL_COMMENT};
+    private static final String[] EXEC_KEYWORDS = new String[0];
 
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
@@ -54,6 +55,8 @@ public class BasicSQLDialect implements SQLDialect {
     protected final TreeSet<String> columnQueryWords = new TreeSet<>();
     // Comments
     protected Pair<String, String> multiLineComments = new Pair<>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
+
+    public static final BasicSQLDialect INSTANCE = new BasicSQLDialect();
 
     protected BasicSQLDialect()
     {
@@ -75,8 +78,8 @@ public class BasicSQLDialect implements SQLDialect {
 
     @NotNull
     @Override
-    public Collection<String> getExecuteKeywords() {
-        return Collections.emptyList();
+    public String[] getExecuteKeywords() {
+        return EXEC_KEYWORDS;
     }
 
     public void addSQLKeyword(String keyword)
@@ -371,8 +374,9 @@ public class BasicSQLDialect implements SQLDialect {
             Collections.addAll(columnQueryWords, SQLConstants.COLUMN_KEYWORDS);
         }
 
-        final Collection<String> executeKeywords = getExecuteKeywords();
-        addKeywords(executeKeywords, DBPKeywordType.KEYWORD);
+        for (String executeKeyword : ArrayUtils.safeArray(getExecuteKeywords())) {
+            addSQLKeyword(executeKeyword);
+        }
 
         if (isStandardSQL()) {
             // Add default types

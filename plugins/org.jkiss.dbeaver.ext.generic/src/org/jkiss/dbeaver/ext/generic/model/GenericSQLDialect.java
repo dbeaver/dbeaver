@@ -24,24 +24,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 /**
  * Generic data source info
  */
 public class GenericSQLDialect extends JDBCSQLDialect {
 
-    private static List<String> EXEC_KEYWORDS = new ArrayList<>();
-
-    static {
-        EXEC_KEYWORDS.add("EXEC");
-        //EXEC_KEYWORDS.add("EXECUTE");
-        EXEC_KEYWORDS.add("CALL");
-        //EXEC_KEYWORDS.add("BEGIN");
-        //EXEC_KEYWORDS.add("DECLARE");
-    }
+    private static String[] EXEC_KEYWORDS =  { "EXEC", "CALL" };
 
     private final String scriptDelimiter;
     private final boolean legacySQLDialect;
@@ -69,7 +57,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    public Collection<String> getExecuteKeywords()
+    public String[] getExecuteKeywords()
     {
         return EXEC_KEYWORDS;
     }

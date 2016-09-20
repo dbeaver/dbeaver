@@ -22,9 +22,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 
-import java.util.Collection;
-import java.util.Collections;
-
 /**
  * DB2 SQL dialect
  * 
@@ -32,6 +29,8 @@ import java.util.Collections;
  * 
  */
 public class DB2SQLDialect extends JDBCSQLDialect {
+
+    public static final String[] EXEC_KEYWORDS = new String[]{"call"};
 
     public DB2SQLDialect(JDBCDatabaseMetaData metaData)
     {
@@ -55,9 +54,9 @@ public class DB2SQLDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    public Collection<String> getExecuteKeywords()
+    public String[] getExecuteKeywords()
     {
-        return Collections.singleton("call");
+        return EXEC_KEYWORDS;
     }
 
 }
