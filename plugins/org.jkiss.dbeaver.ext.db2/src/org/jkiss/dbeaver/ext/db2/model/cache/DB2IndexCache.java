@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2IndexColumn;
@@ -41,6 +42,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
  * @author Denis Forveille
  */
 public final class DB2IndexCache extends JDBCStructCache<DB2Schema, DB2Index, DB2IndexColumn> {
+
+    private static final Log log = Log.getLog(DB2IndexCache.class);
 
     private static final String SQL_INDS_ALL = "SELECT * FROM SYSCAT.INDEXES WHERE INDSCHEMA = ? ORDER BY INDNAME WITH UR";
     private static final String SQL_COLS_IND = "SELECT * FROM SYSCAT.INDEXCOLUSE WHERE INDSCHEMA = ? AND INDNAME = ? ORDER BY COLSEQ WITH UR";
@@ -66,8 +69,16 @@ public final class DB2IndexCache extends JDBCStructCache<DB2Schema, DB2Index, DB
         // Look for related table...or nickname...or MQT
         String tableOrNicknameSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
         String tableOrNicknameName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABNAME");
-        DB2TableBase db2Table = DB2Utils.findTableBySchemaNameAndName(session.getProgressMonitor(), db2Schema.getDataSource(),
-            tableOrNicknameSchemaName, tableOrNicknameName);
+
+        DB2Schema objectSchema = db2Schema.getDataSource().getSchema(session.getProgressMonitor(), tableOrNicknameSchemaName);
+        if (objectSchema == null) {
+            log.error("Schema '" + tableOrNicknameSchemaName + "' not found");
+            return null;
+        }
+        // FIXME: here we cache all tables to avoid spam in table lookup
+        // FIXME: because we always read all indexes. Make index cache lookup cache
+        objectSchema.getTables(session.getProgressMonitor());
+        DB2TableBase db2Table = objectSchema.getTable(session.getProgressMonitor(), tableOrNicknameName);
         if (db2Table == null) {
             db2Table = DB2Utils.findNicknameBySchemaNameAndName(session.getProgressMonitor(), db2Schema.getDataSource(),
                 tableOrNicknameSchemaName, tableOrNicknameName);
@@ -76,7 +87,10 @@ public final class DB2IndexCache extends JDBCStructCache<DB2Schema, DB2Index, DB
             db2Table = DB2Utils.findMaterializedQueryTableBySchemaNameAndName(session.getProgressMonitor(),
                 db2Schema.getDataSource(), tableOrNicknameSchemaName, tableOrNicknameName);
         }
-
+        if (db2Table == null) {
+            log.error("Object '" + tableOrNicknameName + "' not found in schema '" + tableOrNicknameSchemaName + "'");
+            return null;
+        }
         return new DB2Index(session.getProgressMonitor(), db2Schema, db2Table, dbResult);
     }
 
