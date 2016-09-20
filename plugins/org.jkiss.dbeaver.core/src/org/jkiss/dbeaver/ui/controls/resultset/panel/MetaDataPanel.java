@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
