@@ -377,7 +377,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         }
     }
 
-    public class TableCache extends JDBCStructCache<PostgreSchema, PostgreTableBase, PostgreTableColumn> {
+    public class TableCache extends JDBCStructLookupCache<PostgreSchema, PostgreTableBase, PostgreTableColumn> {
 
         protected TableCache()
         {
@@ -385,15 +385,17 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
             setListOrderComparator(DBUtils.<PostgreTableBase>nameComparator());
         }
 
+        @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
-            throws SQLException
-        {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema postgreSchema, @Nullable PostgreTableBase object, @Nullable String objectName) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT c.oid,c.*,d.description FROM pg_catalog.pg_class c\n" +
                 "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0\n" +
-                "WHERE c.relnamespace=? AND c.relkind not in ('i','c')");
+                "WHERE c.relnamespace=? AND c.relkind not in ('i','c')" +
+                (object == null && objectName == null ? "" : " AND relname=?")
+            );
             dbStat.setLong(1, getObjectId());
+            if (object != null || objectName != null) dbStat.setString(2, object != null ? object.getName() : objectName);
             return dbStat;
         }
 
@@ -466,6 +468,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                 return null;
             }
         }
+
     }
 
     /**
