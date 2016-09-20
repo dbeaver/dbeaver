@@ -29,6 +29,8 @@ import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.PropertiesContributor;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
+import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -38,7 +40,7 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 /**
  * TabbedFolderPageProperties
  */
-public class TabbedFolderPageProperties extends TabbedFolderPage implements ILazyPropertyLoadListener, DBPEventListener {
+public class TabbedFolderPageProperties extends TabbedFolderPage implements ILazyPropertyLoadListener, IRefreshablePart, DBPEventListener {
 
     protected IDatabaseEditorInput input;
 	protected PropertyTreeViewer propertyTree;
@@ -60,9 +62,9 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements ILaz
         PropertiesContributor.getInstance().addLazyListener(this);
 
         curPropertySource = input.getPropertySource();
-
         propertyTree.loadProperties(curPropertySource);
-        if (curPropertySource.getEditableValue() instanceof DBSObject) {
+
+        if (input.getDatabaseObject() != null) {
             DBUtils.getRegistry((DBSObject) curPropertySource.getEditableValue()).addDataSourceListener(this);
         }
 	}
@@ -103,7 +105,16 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements ILaz
     @Override
     public void handleDataSourceEvent(DBPEvent event)
     {
-        if (curPropertySource.getEditableValue() == event.getObject() && !Boolean.FALSE.equals(event.getEnabled()) && !propertyTree.getControl().isDisposed()) {
+        if (input.getDatabaseObject() == event.getObject() && !Boolean.FALSE.equals(event.getEnabled()) && !propertyTree.getControl().isDisposed()) {
+            refreshProperties();
+        }
+    }
+
+    @Override
+    public void refreshPart(Object source, boolean force) {
+        if (force) {
+            curPropertySource = input.getPropertySource();
+            propertyTree.loadProperties(curPropertySource);
             refreshProperties();
         }
     }

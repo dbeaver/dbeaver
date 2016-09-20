@@ -54,7 +54,6 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     private String defaultPageId;
     private String defaultFolderId;
     private Map<String, Object> attributes = new LinkedHashMap<>();
-    private PropertySourceEditable propertySource;
 
     protected DatabaseEditorInput(NODE node)
     {
@@ -223,13 +222,12 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public DBPPropertySource getPropertySource()
     {
-        if (propertySource == null) {
-            propertySource = new PropertySourceEditable(
-                getCommandContext(),
-                getNavigatorNode(),
-                getDatabaseObject());
-            propertySource.collectProperties();
-        }
+        PropertySourceEditable propertySource = new PropertySourceEditable(
+            getCommandContext(),
+            getNavigatorNode(),
+            getDatabaseObject());
+        propertySource.collectProperties();
+
         return propertySource;
     }
 
