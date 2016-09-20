@@ -59,7 +59,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
 	{
 		super(container);
 		if (name == null)
-			throw new NullPointerException("Name cannot be null");
+			throw new IllegalArgumentException("Name cannot be null");
 		this.name = name;
         IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
         this.attributeVisibility = ERDAttributeVisibility.getDefaultVisibility(store);

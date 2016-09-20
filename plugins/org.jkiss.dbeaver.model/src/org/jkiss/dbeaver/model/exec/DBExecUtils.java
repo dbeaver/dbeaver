@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.exec;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.utils.CommonUtils;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
