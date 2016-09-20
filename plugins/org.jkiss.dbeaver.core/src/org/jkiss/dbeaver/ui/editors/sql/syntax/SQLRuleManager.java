@@ -283,12 +283,12 @@ public class SQLRuleManager extends RuleBasedScanner {
         private final IToken token;
         private char[][] delimiters, origDelimiters;
         private char[] buffer, origBuffer;
-        public DelimiterRule(Collection<String> delimiters, IToken token) {
+        public DelimiterRule(String[] delimiters, IToken token) {
             this.token = token;
-            this.origDelimiters = this.delimiters = new char[delimiters.size()][];
+            this.origDelimiters = this.delimiters = new char[delimiters.length][];
             int index = 0, maxLength = 0;
-            for (Iterator<String> iter = delimiters.iterator(); iter.hasNext(); ) {
-                this.delimiters[index] = iter.next().toCharArray();
+            for (String delim : delimiters) {
+                this.delimiters[index] = delim.toCharArray();
                 for (int i = 0; i < this.delimiters[index].length; i++) {
                     this.delimiters[index][i] = Character.toUpperCase(this.delimiters[index][i]);
                 }
