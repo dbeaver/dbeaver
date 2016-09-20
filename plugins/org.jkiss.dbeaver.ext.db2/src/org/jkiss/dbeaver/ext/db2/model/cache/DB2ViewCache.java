@@ -25,11 +25,11 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 
 import java.sql.SQLException;
 
@@ -38,40 +38,28 @@ import java.sql.SQLException;
  * 
  * @author Denis Forveille
  */
-public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2TableColumn> {
+public final class DB2ViewCache extends JDBCStructLookupCache<DB2Schema, DB2View, DB2TableColumn> {
 
-    private static final String SQL_VIEWS;
     private static final String SQL_COLS_TAB = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA=? AND TABNAME = ? ORDER BY COLNO WITH UR";
     private static final String SQL_COLS_ALL = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA=? ORDER BY TABNAME, COLNO WITH UR";
-
-    static {
-        StringBuilder sb = new StringBuilder(512);
-        sb.append("SELECT *");
-        sb.append(" FROM SYSCAT.TABLES T");
-        sb.append("    , SYSCAT.VIEWS V");
-        sb.append(" WHERE V.VIEWSCHEMA = ?");
-        sb.append("   AND T.TABSCHEMA = V.VIEWSCHEMA");
-        sb.append("   AND T.TABNAME = V.VIEWNAME");
-        sb.append("   AND T.TYPE IN (");
-        sb.append("                  '" + DB2TableType.V.name() + "'");
-        sb.append("                 ,'" + DB2TableType.W.name() + "'");
-        sb.append("                 )");
-        sb.append(" ORDER BY T.TABNAME");
-        sb.append(" WITH UR");
-
-        SQL_VIEWS = sb.toString();
-    }
 
     public DB2ViewCache()
     {
         super("TABNAME");
     }
 
+    @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException
-    {
-        final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_VIEWS);
-        dbStat.setString(1, db2Schema.getName());
+    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema schema, @Nullable DB2View object, @Nullable String objectName) throws SQLException {
+        final JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT * FROM SYSCAT.TABLES T, SYSCAT.VIEWS V\n" +
+            "WHERE V.VIEWSCHEMA = ? AND T.TABSCHEMA = V.VIEWSCHEMA AND T.TABNAME = V.VIEWNAME " +
+            "AND T.TYPE IN ('" + DB2TableType.V.name() + "','" + DB2TableType.W.name() + "')\n" +
+            (object == null && objectName == null ? "" : "AND T.TABNAME=?\n") +
+            "ORDER BY T.TABNAME\nWITH UR"
+        );
+        dbStat.setString(1, schema.getName());
+        if (object != null || objectName != null) dbStat.setString(2, object != null ? object.getName() : objectName);
         return dbStat;
     }
 
