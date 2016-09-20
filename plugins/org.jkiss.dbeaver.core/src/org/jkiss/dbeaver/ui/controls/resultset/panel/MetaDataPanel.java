@@ -90,7 +90,9 @@ public class MetaDataPanel implements IResultSetPanel {
                 if (!selection.isEmpty()) {
                     DBDAttributeBinding attr = (DBDAttributeBinding) selection.getFirstElement();
                     if (attr != null) {
-                        presentation.setCurrentAttribute(attr);
+                        if (presentation.getController().getModel().getVisibleAttributes().contains(attr)) {
+                            presentation.setCurrentAttribute(attr);
+                        }
                     }
                 }
             }
