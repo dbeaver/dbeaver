@@ -29,6 +29,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Object lookup cache
@@ -36,6 +39,8 @@ import java.sql.SQLException;
 public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT extends DBSObject>
     extends JDBCObjectCache<OWNER, OBJECT> implements JDBCObjectLookup<OWNER, OBJECT>
 {
+    private final Set<String> missingNames = new HashSet<>();
+
     protected JDBCObjectLookupCache() {
     }
 
@@ -47,7 +52,7 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
         if (cachedObject != null) {
             return cachedObject;
         }
-        if (isFullyCached()) {
+        if (isFullyCached() || missingNames.contains(name)) {
             return null;
         }
         // Now cache just one object
@@ -56,7 +61,7 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
             cacheObject(object);
         } else {
             // Not found!
-            // Maybe we need to mark this somehow in cache
+            missingNames.add(name);
         }
         return object;
     }
@@ -111,6 +116,18 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
         throws SQLException
     {
         return prepareLookupStatement(session, owner, null, null);
+    }
+
+    @Override
+    public void setCache(List<OBJECT> objects) {
+        super.setCache(objects);
+        this.missingNames.clear();
+    }
+
+    @Override
+    public void clearCache() {
+        super.clearCache();
+        this.missingNames.clear();
     }
 
 }
