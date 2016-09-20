@@ -334,6 +334,7 @@ public class ResultSetViewer extends Viewer
         return DBeaverCore.getGlobalPreferenceStore();
     }
 
+    @NotNull
     @Override
     public IDialogSettings getViewerSettings() {
         return viewerSettings;
@@ -1357,6 +1358,9 @@ public class ResultSetViewer extends Viewer
         }
         Control control = getActivePresentation().getControl();
         Point cursorLocation = getActivePresentation().getCursorLocation();
+        if (cursorLocation == null) {
+            return;
+        }
         Point location = control.getDisplay().map(control, null, cursorLocation);
 
         MenuManager menuManager = new MenuManager();
@@ -1585,22 +1589,22 @@ public class ResultSetViewer extends Viewer
     }
 
     private class TransformerAction extends Action {
-        private final DBDAttributeBinding attrribute;
+        private final DBDAttributeBinding attribute;
         public TransformerAction(DBDAttributeBinding attr, String text, int style, boolean checked) {
             super(text, style);
-            this.attrribute = attr;
+            this.attribute = attr;
             setChecked(checked);
         }
         @NotNull
         DBVTransformSettings getTransformSettings() {
-            final DBVTransformSettings settings = DBVUtils.getTransformSettings(attrribute, true);
+            final DBVTransformSettings settings = DBVUtils.getTransformSettings(attribute, true);
             if (settings == null) {
-                throw new IllegalStateException("Can't get/create transformer settings for '" + attrribute.getFullyQualifiedName(DBPEvaluationContext.UI) + "'");
+                throw new IllegalStateException("Can't get/create transformer settings for '" + attribute.getFullyQualifiedName(DBPEvaluationContext.UI) + "'");
             }
             return settings;
         }
         protected void saveTransformerSettings() {
-            attrribute.getDataSource().getContainer().persistConfiguration();
+            attribute.getDataSource().getContainer().persistConfiguration();
             refreshData(null);
         }
     }
@@ -1817,7 +1821,11 @@ public class ResultSetViewer extends Viewer
     }
 
     private void openResultsInNewWindow(DBRProgressMonitor monitor, DBSEntity targetEntity, final DBDDataFilter newFilter) {
-        final DBNDatabaseNode targetNode = getExecutionContext().getDataSource().getContainer().getApplication().getNavigatorModel().getNodeByObject(monitor, targetEntity, false);
+        final DBPDataSource dataSource = getExecutionContext().getDataSource();
+        if (dataSource == null) {
+            return;
+        }
+        final DBNDatabaseNode targetNode = dataSource.getContainer().getApplication().getNavigatorModel().getNodeByObject(monitor, targetEntity, false);
         if (targetNode == null) {
             UIUtils.showMessageBox(null, "Open link", "Can't navigate to '" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "' - navigator node not found", SWT.ICON_ERROR);
             return;
@@ -1873,6 +1881,10 @@ public class ResultSetViewer extends Viewer
         }
         addDefaultPanelActions();
         panelToolBar.update(true);
+
+//        ToolBar toolBar = panelToolBar.getControl();
+//        Point toolBarSize = toolBar.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+//        this.panelFolder.setTabHeight(toolBarSize.y);
     }
 
     @Override
