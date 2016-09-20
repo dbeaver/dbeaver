@@ -42,14 +42,36 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
         super(objectNameColumn);
     }
 
-    public OBJECT refreshObject(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner, @NotNull OBJECT oldObject)
+    @Override
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
+        throws DBException
+    {
+        OBJECT cachedObject = getCachedObject(name);
+        if (cachedObject != null) {
+            return cachedObject;
+        }
+        if (isFullyCached()) {
+            return null;
+        }
+        // Now cache just one object
+        OBJECT object = reloadObject(monitor, owner, null, name);
+        if (object != null) {
+            cacheObject(object);
+        } else {
+            // Not found!
+            // Maybe we need to mark this somehow in cache
+        }
+        return object;
+    }
+
+    public OBJECT refreshObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull OBJECT oldObject)
         throws DBException
     {
         String objectName = oldObject.getName();
         if (!isFullyCached()) {
             this.loadObjects(monitor, owner);
         } else {
-            OBJECT newObject = this.reloadObject(monitor, owner, oldObject);
+            OBJECT newObject = this.reloadObject(monitor, owner, oldObject, null);
             if (isChildrenCached(oldObject)) {
                 clearChildrenCache(oldObject);
             }
@@ -63,15 +85,15 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
     }
 
 
-    protected OBJECT reloadObject(DBRProgressMonitor monitor, OWNER owner, OBJECT object)
+    protected OBJECT reloadObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @Nullable OBJECT object, @Nullable String objectName)
         throws DBException
     {
         DBPDataSource dataSource = owner.getDataSource();
         if (dataSource == null) {
             throw new DBException("Not connected to database");
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Reload object '" + object.getName() + "' from " + owner.getName())) {
-            try (JDBCStatement dbStat = prepareLookupStatement(session, owner, object, null)) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Reload object '" + object + "' from " + owner.getName())) {
+            try (JDBCStatement dbStat = prepareLookupStatement(session, owner, object, objectName)) {
                 dbStat.setFetchSize(1);
                 dbStat.executeStatement();
                 JDBCResultSet dbResult = dbStat.getResultSet();
