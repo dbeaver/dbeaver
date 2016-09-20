@@ -33,7 +33,9 @@ import java.sql.SQLException;
 /**
  * Simple objects cache.
  */
-public final class JDBCObjectSimpleCache<OWNER extends DBSObject, OBJECT extends DBSObject> extends JDBCObjectCache<OWNER, OBJECT> {
+public final class JDBCObjectSimpleCache<OWNER extends DBSObject, OBJECT extends DBSObject>
+    extends JDBCObjectCache<OWNER, OBJECT>
+{
     private final String query;
     private final Class<OBJECT> objectType;
     private final Object[] queryParameters;

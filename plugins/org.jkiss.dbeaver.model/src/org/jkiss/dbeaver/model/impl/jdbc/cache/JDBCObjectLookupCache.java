@@ -33,7 +33,8 @@ import java.sql.SQLException;
 /**
  * Object lookup cache
  */
-public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT extends DBSObject> extends JDBCObjectCache<OWNER, OBJECT> implements JDBCObjectLookup<OWNER, OBJECT>
+public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT extends DBSObject>
+    extends JDBCObjectCache<OWNER, OBJECT> implements JDBCObjectLookup<OWNER, OBJECT>
 {
     protected JDBCObjectLookupCache() {
     }
