@@ -43,7 +43,7 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
         throws DBException
     {
         String objectName = oldObject.getName();
-        if (!isCached()) {
+        if (!isFullyCached()) {
             this.loadObjects(monitor, owner);
         } else {
             OBJECT newObject = this.reloadObject(monitor, owner, oldObject);

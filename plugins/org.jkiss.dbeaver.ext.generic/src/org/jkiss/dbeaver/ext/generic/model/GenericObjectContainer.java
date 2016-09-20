@@ -156,7 +156,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         // allows index query only by certain table name
         //cacheIndexes(monitor, null);
         synchronized (indexCache) {
-            if (!indexCache.isCached()) {
+            if (!indexCache.isFullyCached()) {
 
                 try {
                     // Try to load all indexes with one query
@@ -170,7 +170,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
                 }
 
                 // Failed
-                if (!indexCache.isCached() && readFromTables) {
+                if (!indexCache.isFullyCached() && readFromTables) {
                     // Load indexes for all tables and return copy of them
                     Collection<GenericTable> tables = getTables(monitor);
                     monitor.beginTask("Cache indexes from tables", tables.size());

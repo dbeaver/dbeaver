@@ -46,7 +46,10 @@ public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObjec
     @Nullable
     OBJECT getCachedObject(@NotNull String name);
 
-    boolean isCached();
+    /**
+     * True if all available objects were cached
+     */
+    boolean isFullyCached();
 
     /**
      * Adds specified object to cache
@@ -55,7 +58,8 @@ public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObjec
     void cacheObject(@NotNull OBJECT object);
 
     /**
-     * Sets new cache contents. setCache(getCachedObjects()) will reset named cache
+     * Sets new cache contents. setCache(getCachedObjects()) will reset named cache.
+     * Set fullyCache flag to true.
      * @param objects new cache contents
      */
     void setCache(List<OBJECT> objects);
@@ -66,6 +70,9 @@ public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObjec
      */
     void removeObject(@NotNull OBJECT object);
 
+    /**
+     * Clears all cache
+     */
     void clearCache();
 
 }
