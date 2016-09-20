@@ -213,8 +213,8 @@ public class HexEditControl extends Composite {
                     };
                     runnableAdd(delayed);
                     notifyLongSelectionListeners();
-                    if (selection != (startPosition != endPosition))
-                        notifyListeners(SWT.Modify, null);
+//                    if (selection != (startPosition != endPosition))
+//                        notifyListeners(SWT.Modify, null);
                     e.doit = false;
                     break;
                 case SWT.INSERT:
@@ -355,8 +355,8 @@ public class HexEditControl extends Composite {
             }
 
             select(textAreasStart + lower, textAreasStart + higher);
-            if (selection != (startPosition != endPosition))
-                notifyListeners(SWT.Modify, null);
+//            if (selection != (startPosition != endPosition))
+//                notifyListeners(SWT.Modify, null);
 
             redrawTextAreas(false);
         }
@@ -531,7 +531,7 @@ public class HexEditControl extends Composite {
         } else {
             drawUnfocusedCaret(true);
         }
-        if (focus) notifyListeners(SWT.Modify, null);
+//        if (focus) notifyListeners(SWT.Modify, null);
     }
 
     /**
