@@ -192,7 +192,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
             return
                 object.getLazyReference(propertyId) instanceof OracleUserProfile ||
                 object.getLazyReference(propertyId) == null ||
-                object.getDataSource().profileCache.isCached();
+                object.getDataSource().profileCache.isFullyCached();
         }
     }
 

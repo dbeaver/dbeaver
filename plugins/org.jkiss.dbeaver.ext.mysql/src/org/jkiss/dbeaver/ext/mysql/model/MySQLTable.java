@@ -197,7 +197,7 @@ public class MySQLTable extends MySQLTableBase
     public synchronized Collection<MySQLTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!foreignKeys.isCached()) {
+        if (!foreignKeys.isFullyCached()) {
             List<MySQLTableForeignKey> fkList = loadForeignKeys(monitor, false);
             foreignKeys.setCache(fkList);
         }

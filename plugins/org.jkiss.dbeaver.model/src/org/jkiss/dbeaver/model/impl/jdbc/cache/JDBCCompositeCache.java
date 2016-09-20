@@ -236,7 +236,7 @@ public abstract class JDBCCompositeCache<
         throws DBException
     {
         synchronized (objectCache) {
-            if ((forParent == null && isCached()) ||
+            if ((forParent == null && isFullyCached()) ||
                 (forParent != null && (!forParent.isPersisted() || objectCache.containsKey(forParent))))
             {
                 return;

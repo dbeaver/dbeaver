@@ -331,7 +331,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
             return
                 object.getLazyReference(propertyId) instanceof OracleTablespace ||
                 object.getLazyReference(propertyId) == null ||
-                object.getDataSource().tablespaceCache.isCached() ||
+                object.getDataSource().tablespaceCache.isFullyCached() ||
                 !object.getDataSource().isAdmin();
         }
     }

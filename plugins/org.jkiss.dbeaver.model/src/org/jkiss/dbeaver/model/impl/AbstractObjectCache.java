@@ -38,7 +38,8 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
 
     private List<OBJECT> objectList;
     private Map<String, OBJECT> objectMap;
-    protected boolean caseSensitive = true;
+    protected volatile boolean fullCache = false;
+    protected volatile boolean caseSensitive = true;
     protected Comparator<OBJECT> listOrderComparator;
 
     protected AbstractObjectCache() {
@@ -93,7 +94,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     public void cacheObject(@NotNull OBJECT object)
     {
         synchronized (this) {
-            if (this.objectList != null) {
+            if (this.objectList == null) {
                 detectCaseSensitivity(object);
                 this.objectList.add(object);
                 if (this.objectMap != null) {
@@ -127,11 +128,9 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         return type.isInstance(object) ? type.cast(object) : null;
     }
 
-    public boolean isCached()
+    public boolean isFullyCached()
     {
-        synchronized (this) {
-            return objectList != null;
-        }
+        return this.fullCache;
     }
 
     @Override
@@ -140,20 +139,22 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         synchronized (this) {
             this.objectList = null;
             this.objectMap = null;
+            this.fullCache = false;
         }
     }
 
     public void setCache(List<OBJECT> objects)
     {
         synchronized (this) {
-            objectList = objects;
-            objectMap = null;
+            this.objectList = objects;
+            this.objectMap = null;
+            this.fullCache = true;
         }
     }
 
     private synchronized Map<String, OBJECT> getObjectMap()
     {
-        if (objectMap == null) {
+        if (this.objectMap == null) {
             this.objectMap = new HashMap<>();
             for (OBJECT object : objectList) {
                 String name = getObjectName(object);
@@ -161,7 +162,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                 this.objectMap.put(name, object);
             }
         }
-        return objectMap;
+        return this.objectMap;
     }
 
     private void checkDuplicateName(String name, OBJECT object) {
