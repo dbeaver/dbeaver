@@ -29,6 +29,14 @@ public interface CoreCommands
     String CMD_OBJECT_CREATE = "org.jkiss.dbeaver.core.object.create"; //$NON-NLS-1$
     String CMD_OBJECT_DELETE = "org.jkiss.dbeaver.core.object.delete"; //$NON-NLS-1$
 
+    String GROUP_TOOLS = "tools";
+
+    String CMD_CONNECT = "org.jkiss.dbeaver.core.connect";
+    String CMD_DISCONNECT = "org.jkiss.dbeaver.core.disconnect";
+    String CMD_INVALIDATE = "org.jkiss.dbeaver.core.invalidate";
+    String CMD_COMMIT = "org.jkiss.dbeaver.core.commit";
+    String CMD_ROLLBACK = "org.jkiss.dbeaver.core.rollback";
+
     String CMD_EXECUTE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.statement"; //$NON-NLS-1$
     String CMD_EXECUTE_STATEMENT_NEW = "org.jkiss.dbeaver.ui.editors.sql.run.statementNew"; //$NON-NLS-1$
     String CMD_EXECUTE_SCRIPT = "org.jkiss.dbeaver.ui.editors.sql.run.script"; //$NON-NLS-1$
@@ -42,17 +50,12 @@ public interface CoreCommands
 
     String CMD_CONTENT_FORMAT = "org.jkiss.dbeaver.ui.editors.text.content.format"; //$NON-NLS-1$
 
-    String GROUP_TOOLS = "tools";
-
-    String CMD_CONNECT = "org.jkiss.dbeaver.core.connect";
-    String CMD_DISCONNECT = "org.jkiss.dbeaver.core.disconnect";
-    String CMD_INVALIDATE = "org.jkiss.dbeaver.core.invalidate";
-    String CMD_COMMIT = "org.jkiss.dbeaver.core.commit";
-    String CMD_ROLLBACK = "org.jkiss.dbeaver.core.rollback";
-
     String CMD_SQL_EDITOR_OPEN = "org.jkiss.dbeaver.core.sql.editor.open";
     String CMD_SQL_EDITOR_NEW = "org.jkiss.dbeaver.core.sql.editor.create";
     String CMD_SQL_EDITOR_RECENT = "org.jkiss.dbeaver.core.sql.editor.recent";
+
+    String CMD_SQL_QUERY_NEXT = "org.jkiss.dbeaver.ui.editors.sql.query.next";
+    String CMD_SQL_QUERY_PREV = "org.jkiss.dbeaver.ui.editors.sql.query.prev";
 
     String CMD_LINK_EDITOR = "org.jkiss.dbeaver.core.navigator.linkeditor";
     String CMD_SYNC_CONNECTION = "org.jkiss.dbeaver.ui.editors.sql.sync.connection";

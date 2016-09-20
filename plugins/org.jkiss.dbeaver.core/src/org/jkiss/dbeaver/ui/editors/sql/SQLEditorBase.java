@@ -41,6 +41,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -50,7 +51,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
@@ -65,7 +65,6 @@ import org.jkiss.utils.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 /**
  * SQL Executor
@@ -489,7 +488,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         if (document == null || document.getLength() == 0) {
             return null;
         }
-        int docLength = document.getLength();
+        final int docLength = document.getLength();
         IDocumentPartitioner partitioner = document.getDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING);
         if (partitioner != null) {
             // Move to default partition. We don't want to be in the middle of multi-line comment or string
@@ -500,9 +499,9 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         //document.get
         // Extract part of document between empty lines
         int startPos = 0;
-        int endPos = document.getLength();
+        int endPos = docLength;
         boolean useBlankLines = syntaxManager.isBlankLineDelimiter();
-        final Set<String> statementDelimiters = syntaxManager.getStatementDelimiters();
+        final String[] statementDelimiters = syntaxManager.getStatementDelimiters();
 
         try {
             int currentLine = document.getLineOfOffset(currentPos);
@@ -553,6 +552,59 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             log.warn(e);
         }
         return parseQuery(document, startPos, endPos, currentPos);
+    }
+
+    public SQLQuery extractNextQuery(boolean next) {
+        ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
+        int offset = selection.getOffset();
+        SQLQuery curQuery = extractQueryAtPos(offset);
+        if (curQuery == null) {
+            return null;
+        }
+
+        Document document = getDocument();
+        if (document == null) {
+            return null;
+        }
+        try {
+            int docLength = document.getLength();
+            int curPos;
+            if (next) {
+                final String[] statementDelimiters = syntaxManager.getStatementDelimiters();
+                curPos = curQuery.getOffset() + curQuery.getLength();
+                while (curPos < docLength) {
+                    char c = document.getChar(curPos);
+                    if (!Character.isWhitespace(c)) {
+                        boolean isDelimiter = false;
+                        for (String delim : statementDelimiters) {
+                            if (delim.indexOf(c) != -1) {
+                                isDelimiter = true;
+                            }
+                        }
+                        if (!isDelimiter) {
+                            break;
+                        }
+                    }
+                    curPos++;
+                }
+            } else {
+                curPos = curQuery.getOffset() - 1;
+                while (curPos >= 0) {
+                    char c = document.getChar(curPos);
+                    if (!Character.isWhitespace(c)) {
+                        break;
+                    }
+                    curPos--;
+                }
+            }
+            if (curPos <= 0 || curPos >= docLength) {
+                return null;
+            }
+            return extractQueryAtPos(curPos);
+        } catch (BadLocationException e) {
+            log.warn(e);
+            return null;
+        }
     }
 
     private static boolean isDefaultPartition(IDocumentPartitioner partitioner, int currentPos) {

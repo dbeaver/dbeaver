@@ -21,6 +21,7 @@ import org.eclipse.jface.action.*;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
@@ -123,15 +124,24 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
             super.contributeToMenu(manager);
         }
 
-        IMenuManager editMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
-        if (editMenu != null && !isNestedEditor()) {
-            editMenu.insertAfter(IWorkbenchActionConstants.MB_ADDITIONS, ActionUtils.makeCommandContribution(DBeaverUI.getActiveWorkbenchWindow(), ITextEditorActionDefinitionIds.BLOCK_SELECTION_MODE));
-            editMenu.add(contentAssistProposal);
-            editMenu.add(contentAssistTip);
-            MenuManager formatMenu = new MenuManager(CoreMessages.actions_menu_edit_ContentFormat);
-            editMenu.add(formatMenu);
-            formatMenu.add(contentFormatProposal);
-            formatMenu.add(copyUnformattedTextAction);
+        if (!isNestedEditor()) {
+            IWorkbenchWindow window = DBeaverUI.getActiveWorkbenchWindow();
+            IMenuManager editMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
+            if (editMenu != null) {
+                editMenu.insertAfter(IWorkbenchActionConstants.MB_ADDITIONS, ActionUtils.makeCommandContribution(window, ITextEditorActionDefinitionIds.BLOCK_SELECTION_MODE));
+                editMenu.add(contentAssistProposal);
+                editMenu.add(contentAssistTip);
+                MenuManager formatMenu = new MenuManager(CoreMessages.actions_menu_edit_ContentFormat);
+                editMenu.add(formatMenu);
+                formatMenu.add(contentFormatProposal);
+                formatMenu.add(copyUnformattedTextAction);
+            }
+            IMenuManager navMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_NAVIGATE);
+            if (navMenu != null) {
+                navMenu.add(new Separator());
+                navMenu.add(ActionUtils.makeCommandContribution(window, CoreCommands.CMD_SQL_QUERY_NEXT));
+                navMenu.add(ActionUtils.makeCommandContribution(window, CoreCommands.CMD_SQL_QUERY_PREV));
+            }
         }
     }
 

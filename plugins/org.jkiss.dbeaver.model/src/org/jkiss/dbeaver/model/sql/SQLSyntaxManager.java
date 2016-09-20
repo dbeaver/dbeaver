@@ -24,10 +24,9 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -52,7 +51,7 @@ public class SQLSyntaxManager {
     @NotNull
     private String catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
     @NotNull
-    private Set<String> statementDelimiters = new LinkedHashSet<>();//SQLConstants.DEFAULT_STATEMENT_DELIMITER;
+    private String[] statementDelimiters = new String[0];
 
     private char escapeChar;
     private boolean blankLineDelimiter;
@@ -83,7 +82,7 @@ public class SQLSyntaxManager {
     }
 
     @NotNull
-    public Set<String> getStatementDelimiters()
+    public String[] getStatementDelimiters()
     {
         return statementDelimiters;
     }
@@ -124,7 +123,7 @@ public class SQLSyntaxManager {
 
     public void init(@NotNull SQLDialect dialect, @NotNull DBPPreferenceStore preferenceStore)
     {
-        this.statementDelimiters.clear();
+        this.statementDelimiters = new String[0];
         this.sqlDialect = dialect;
         this.preferenceStore = preferenceStore;
         this.quoteSymbol = sqlDialect.getIdentifierQuoteString();
@@ -133,13 +132,13 @@ public class SQLSyntaxManager {
         this.sqlDialect.getSearchStringEscape();
         this.escapeChar = '\\';
         if (!preferenceStore.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)) {
-            this.statementDelimiters.add(sqlDialect.getScriptDelimiter().toLowerCase());
+            this.statementDelimiters = new String[] { sqlDialect.getScriptDelimiter().toLowerCase() };
         }
 
         String extraDelimiters = preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
         StringTokenizer st = new StringTokenizer(extraDelimiters, " \t,");
         while (st.hasMoreTokens()) {
-            this.statementDelimiters.add(st.nextToken());
+            this.statementDelimiters = ArrayUtils.add(String.class, this.statementDelimiters, st.nextToken());
         }
         blankLineDelimiter = preferenceStore.getBoolean(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK);
 
