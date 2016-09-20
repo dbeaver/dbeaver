@@ -78,6 +78,7 @@ public class CImageCombo extends Composite {
     private boolean hasFocus;
     private Listener listener, filter;
     private Font font;
+    private Point sizeHint;
 
     /**
      * Constructs a new instance of this class given its parent
@@ -884,6 +885,14 @@ public class CImageCombo extends Composite {
         this.visibleItemCount = count;
     }
 
+    public Point getSizeHint() {
+        return sizeHint;
+    }
+
+    public void setSizeHint(Point sizeHint) {
+        this.sizeHint = sizeHint;
+    }
+
     void handleFocus(int type)
     {
         if (isDisposed()) {
@@ -993,6 +1002,7 @@ public class CImageCombo extends Composite {
         }
         if (!drop) {
             this.popup.setVisible(false);
+            this.sizeHint = this.popup.getSize();
             if (!isDisposed() && this.arrow.isFocusControl()) {
                 this.comboComposite.setFocus();
             }
@@ -1029,6 +1039,10 @@ public class CImageCombo extends Composite {
         Rectangle displayRect = getMonitor().getClientArea();
         int width = comboSize.x;
         int height = listRect.height;
+        if (sizeHint != null) {
+            width = sizeHint.x;
+            height = sizeHint.y;
+        }
         int x = parentRect.x;
         int y = parentRect.y + comboSize.y;
         if (y + height > displayRect.y + displayRect.height) {
