@@ -3040,7 +3040,7 @@ public class ResultSetViewer extends Viewer
     private class ToggleModeAction extends Action {
         {
             setActionDefinitionId(ResultSetCommandHandler.CMD_TOGGLE_MODE);
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.RS_GRID));
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.RS_DETAILS));
         }
 
         public ToggleModeAction() {
