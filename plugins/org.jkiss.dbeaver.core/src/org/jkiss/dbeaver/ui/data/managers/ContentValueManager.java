@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.data.managers;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -77,6 +78,7 @@ public class ContentValueManager extends BaseValueManager {
                 DialogUtils.loadFromFile(controller);
             }
         });
+        manager.add(new Separator());
     }
 
     public static IValueEditor openContentEditor(@NotNull IValueController controller)

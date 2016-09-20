@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -32,6 +34,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -69,6 +72,21 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IVal
     @Override
     public void closeValueEditor()
     {
+    }
+
+    @Override
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
+        if (control instanceof ImageViewer) {
+            ((ImageViewer)control).fillToolBar(manager);
+            manager.add(new Separator());
+        } else if (control instanceof HexEditControl) {
+            manager.add(new Action("Switch Insert/Overwrite mode", DBeaverIcons.getImageDescriptor(UIIcon.CURSOR)) {
+                    @Override
+                    public void run() {
+                        ((HexEditControl)control).redrawCaret(true);
+                    }
+                });
+        }
     }
 
     @Override
@@ -197,24 +215,10 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IVal
                 DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), imageDetector);
             }
 
-            IContributionManager editBar = valueController.getEditBar();
             if (imageDetector.isImage()) {
-                ImageViewer imageViewer = new ImageViewer(editPlaceholder, SWT.NONE);
-                if (editBar != null) {
-                    imageViewer.fillToolBar(editBar);
-                }
-                return imageViewer;
+                return new ImageViewer(editPlaceholder, SWT.NONE);
             } else {
-                final HexEditControl hexEditor = new HexEditControl(editPlaceholder, SWT.BORDER);
-                if (editBar != null) {
-                    editBar.add(new Action("Switch Insert/Overwrite mode", DBeaverIcons.getImageDescriptor(UIIcon.CURSOR)) {
-                        @Override
-                        public void run() {
-                            hexEditor.redrawCaret(true);
-                        }
-                    });
-                }
-                return hexEditor;
+                return new HexEditControl(editPlaceholder, SWT.BORDER);
             }
         }
     }
