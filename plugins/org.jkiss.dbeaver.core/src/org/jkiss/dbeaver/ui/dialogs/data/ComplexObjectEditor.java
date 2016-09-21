@@ -481,9 +481,8 @@ public class ComplexObjectEditor extends TreeViewer {
         }
 
         @Override
-        public IContributionManager getEditBar()
-        {
-            return null;
+        public void refreshEditor() {
+            parentController.refreshEditor();
         }
 
         @Override

@@ -32,10 +32,17 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -46,6 +53,7 @@ import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -54,6 +62,8 @@ import java.util.Map;
 public class ContentPanelEditor extends BaseValueEditor<Control> {
 
     private static final Log log = Log.getLog(ContentPanelEditor.class);
+
+    private static Map<String, String> valueToManagerMap = new HashMap<>();
 
     private Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers;
     private StreamValueManagerDescriptor curStreamManager;
@@ -76,11 +86,11 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
     {
         final DBDContent content = (DBDContent) valueController.getValue();
         if (content == null) {
-            log.warn("NULL content value. Must be DBDContent.");
+            valueController.showMessage("NULL content value. Must be DBDContent.", true);
             return;
         }
         if (streamEditor == null) {
-            log.warn("NULL content editor.");
+            valueController.showMessage("NULL content editor.", true);
             return;
         }
         DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), new DBRRunnableWithProgress() {
@@ -89,7 +99,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
                 try {
                     streamEditor.primeEditorValue(monitor, control, content);
                 } catch (DBException e) {
-                    throw new InvocationTargetException(e);
+                    valueController.showMessage(e.getMessage(), true);
                 }
             }
         });
@@ -110,7 +120,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
                     try {
                         streamEditor.extractEditorValue(monitor, control, content);
                     } catch (Exception e) {
-                        throw new InvocationTargetException(e);
+                        valueController.showMessage(e.getMessage(), true);
                     }
                 }
             });
@@ -147,18 +157,24 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
                 monitor.beginTask("Detect appropriate editor", 1);
                 try {
                     streamManagers = ValueManagerRegistry.getInstance().getApplicableStreamManagers(monitor, valueController.getValueType(), content);
-                    curStreamManager = findManager(IStreamValueManager.MatchType.EXCLUSIVE);
-                    if (curStreamManager == null)
-                        curStreamManager = findManager(IStreamValueManager.MatchType.PRIMARY);
-                    if (curStreamManager == null)
-                        curStreamManager = findManager(IStreamValueManager.MatchType.DEFAULT);
-                    if (curStreamManager == null)
-                        curStreamManager = findManager(IStreamValueManager.MatchType.APPLIES);
+                    String savedManagerId = valueToManagerMap.get(makeValueId());
+                    if (savedManagerId != null) {
+                        curStreamManager = findManager(savedManagerId);
+                    }
                     if (curStreamManager == null) {
-                        throw new DBException("Can't find appropriate stream manager");
+                        curStreamManager = findManager(IStreamValueManager.MatchType.EXCLUSIVE);
+                        if (curStreamManager == null)
+                            curStreamManager = findManager(IStreamValueManager.MatchType.PRIMARY);
+                        if (curStreamManager == null)
+                            curStreamManager = findManager(IStreamValueManager.MatchType.DEFAULT);
+                        if (curStreamManager == null)
+                            curStreamManager = findManager(IStreamValueManager.MatchType.APPLIES);
+                        if (curStreamManager == null) {
+                            throw new DBException("Can't find appropriate stream manager");
+                        }
                     }
                 } catch (Exception e) {
-                    throw new InvocationTargetException(e);
+                    valueController.showMessage(e.getMessage(), true);
                 } finally {
                     monitor.done();
                 }
@@ -172,12 +188,46 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
                 }
                 return null;
             }
+            private StreamValueManagerDescriptor findManager(String id) {
+                for (Map.Entry<StreamValueManagerDescriptor, IStreamValueManager.MatchType> entry : streamManagers.entrySet()) {
+                    if (entry.getKey().getId().equals(id)) {
+                        return entry.getKey();
+                    }
+                }
+                return null;
+            }
         });
     }
 
     private void setStreamManager(StreamValueManagerDescriptor newManager) {
         curStreamManager = newManager;
-        //valueController.getValueManager().
+
+        if (curStreamManager != null) {
+            // Save manager setting for current attribute
+            String valueId = makeValueId();
+            valueToManagerMap.put(valueId, curStreamManager.getId());
+
+            valueController.refreshEditor();
+        }
+    }
+
+    private String makeValueId() {
+        String valueId;
+        DBSTypedObject valueType = valueController.getValueType();
+        if (valueType instanceof DBDAttributeBinding) {
+            valueType = ((DBDAttributeBinding) valueType).getAttribute();
+        }
+        if (valueType instanceof DBSObject) {
+            DBSObject object = (DBSObject) valueType;
+            valueId = DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
+            if (object.getParentObject() != null) {
+                valueId = DBUtils.getObjectFullName(object.getParentObject(), DBPEvaluationContext.DDL) + ":" + valueId;
+            }
+
+        } else {
+            valueId = valueController.getValueName();
+        }
+        return valueController.getExecutionContext().getDataSource().getContainer().getId() + ":" + valueId;
     }
 
     private class ContentTypeSwitchAction extends Action implements SelectionListener {

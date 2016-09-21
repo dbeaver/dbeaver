@@ -1865,10 +1865,10 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void updatePanelsContent() {
+    public void updatePanelsContent(boolean forceRefresh) {
         updateEditControls();
         for (IResultSetPanel panel : getActivePanels()) {
-            panel.refresh();
+            panel.refresh(forceRefresh);
         }
     }
 
@@ -2173,7 +2173,7 @@ public class ResultSetViewer extends Viewer
                                 restorePresentationState(presentationState);
                             }
                             activePresentation.updateValueView();
-                            updatePanelsContent();
+                            updatePanelsContent(false);
 
                             if (error == null) {
                                 setNewState(dataContainer, dataFilter != null ? dataFilter :

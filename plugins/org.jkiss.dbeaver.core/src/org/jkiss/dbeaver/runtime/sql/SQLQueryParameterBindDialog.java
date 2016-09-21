@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.runtime.sql;
 
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
@@ -449,9 +448,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
 
         @Override
-        public IContributionManager getEditBar()
-        {
-            return null;
+        public void refreshEditor() {
+            // do nothing
         }
 
         @Override

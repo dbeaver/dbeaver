@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
@@ -133,7 +132,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
             DBeaverUI.syncExec(new Runnable() {
                 @Override
                 public void run() {
-                    controller.updatePanelsContent();
+                    controller.updatePanelsContent(false);
                 }
             });
             controller.fireResultSetChange();
@@ -197,11 +196,9 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         return inlinePlaceholder;
     }
 
-    @Nullable
     @Override
-    public IContributionManager getEditBar()
-    {
-        return null;
+    public void refreshEditor() {
+        controller.updatePanelsContent(true);
     }
 
     @Override

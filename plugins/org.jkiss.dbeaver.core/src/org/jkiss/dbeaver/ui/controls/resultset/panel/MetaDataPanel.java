@@ -107,7 +107,7 @@ public class MetaDataPanel implements IResultSetPanel {
 
     @Override
     public void activatePanel() {
-        refresh();
+        refresh(false);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class MetaDataPanel implements IResultSetPanel {
     }
 
     @Override
-    public void refresh() {
+    public void refresh(boolean force) {
         if (attributeList.isLoading()) {
             return;
         }

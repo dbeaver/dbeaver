@@ -444,7 +444,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
         if (settings.isCut()) {
             controller.redrawData(false);
-            controller.updatePanelsContent();
+            controller.updatePanelsContent(false);
         }
 
         return tdt.toString();
@@ -799,7 +799,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         final ResultSetRow row = (ResultSetRow)(recordMode ? colElement : rowElement);
         controller.getModel().resetCellValue(attr, row);
         updateValueView();
-        controller.updatePanelsContent();
+        controller.updatePanelsContent(false);
     }
 
     ///////////////////////////////////////////////
@@ -1483,13 +1483,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Object getValue()
         {
             return spreadsheet.getContentProvider().getCellValue(curRow, binding, false);
-        }
-
-        @Nullable
-        @Override
-        public org.eclipse.jface.action.IContributionManager getEditBar()
-        {
-            return null;
         }
 
         @Override
