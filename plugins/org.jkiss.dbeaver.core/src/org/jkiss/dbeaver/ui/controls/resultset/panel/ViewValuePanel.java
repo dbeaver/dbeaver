@@ -133,7 +133,7 @@ public class ViewValuePanel implements IResultSetPanel {
                 @Override
                 public void selectionChanged(SelectionChangedEvent event) {
                     if (ViewValuePanel.this.presentation.getController().getVisiblePanel() == ViewValuePanel.this) {
-                        refreshValue();
+                        refreshValue(false);
                     }
                 }
             };
@@ -151,7 +151,7 @@ public class ViewValuePanel implements IResultSetPanel {
 
     @Override
     public void activatePanel() {
-        refreshValue();
+        refreshValue(false);
     }
 
     @Override
@@ -164,8 +164,8 @@ public class ViewValuePanel implements IResultSetPanel {
     }
 
     @Override
-    public void refresh() {
-        refreshValue();
+    public void refresh(boolean force) {
+        refreshValue(force);
     }
 
     @Override
@@ -173,7 +173,7 @@ public class ViewValuePanel implements IResultSetPanel {
         fillToolBar(manager);
     }
 
-    private void refreshValue() {
+    private void refreshValue(boolean force) {
         DBDAttributeBinding attr = presentation.getCurrentAttribute();
         ResultSetRow row = presentation.getController().getCurrentRow();
         if (attr == null || row == null) {
@@ -182,7 +182,7 @@ public class ViewValuePanel implements IResultSetPanel {
         }
         ResultSetValueController newController;
         boolean updateActions = false;
-        if (previewController == null || previewController.getBinding() != attr) {
+        if (force || previewController == null || previewController.getBinding() != attr) {
             newController = new ResultSetValueController(
                 presentation.getController(),
                 attr,
@@ -204,18 +204,18 @@ public class ViewValuePanel implements IResultSetPanel {
             // The same value
             return;
         }
-        viewValue(newController);
+        viewValue(newController, force);
         if (updateActions) {
             presentation.getController().updatePanelActions();
         }
     }
 
-    private void viewValue(final ResultSetValueController valueController)
+    private void viewValue(final ResultSetValueController valueController, boolean forceRefresh)
     {
         if (valueSaving) {
             return;
         }
-        if (previewController == null || valueController.getValueType() != previewController.getValueType()) {
+        if (forceRefresh || previewController == null || valueController.getValueType() != previewController.getValueType()) {
             cleanupPanel();
             // Create a new one
             valueManager = valueController.getValueManager();

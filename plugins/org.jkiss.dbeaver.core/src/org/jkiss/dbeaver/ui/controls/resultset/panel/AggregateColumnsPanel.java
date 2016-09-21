@@ -108,7 +108,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 @Override
                 public void selectionChanged(SelectionChangedEvent event) {
                     if (presentation.getController().getVisiblePanel() == AggregateColumnsPanel.this) {
-                        refresh();
+                        refresh(false);
                     }
                 }
             });
@@ -203,7 +203,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     @Override
     public void activatePanel() {
-        refresh();
+        refresh(false);
     }
 
     @Override
@@ -212,7 +212,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     }
 
     @Override
-    public void refresh() {
+    public void refresh(boolean force) {
         aggregateTable.setRedraw(false);
         try {
             aggregateTable.removeAll();
@@ -342,7 +342,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         public void run() {
             groupByColumns = !groupByColumns;
             setChecked(groupByColumns);
-            refresh();
+            refresh(false);
         }
     }
 
@@ -385,7 +385,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         @Override
         public void run() {
             enabledFunctions.add(func);
-            refresh();
+            refresh(false);
         }
     }
 
@@ -405,7 +405,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 AggregateFunctionDescriptor func = (AggregateFunctionDescriptor) item.getData();
                 enabledFunctions.remove(func);
             }
-            refresh();
+            refresh(false);
         }
     }
 
@@ -418,7 +418,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         public void run() {
             enabledFunctions.clear();
             loadDefaultFunctions();
-            refresh();
+            refresh(false);
         }
     }
 

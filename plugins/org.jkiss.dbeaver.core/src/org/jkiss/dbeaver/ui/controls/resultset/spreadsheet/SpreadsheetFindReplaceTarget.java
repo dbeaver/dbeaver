@@ -256,7 +256,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
         final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col : cell.row);
         owner.getController().getModel().updateCellValue(attr, row, newValue);
-        owner.getController().updatePanelsContent();
+        owner.getController().updatePanelsContent(false);
     }
 
     @Override

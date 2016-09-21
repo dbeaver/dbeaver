@@ -156,9 +156,8 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
             }
 
             @Override
-            public IContributionManager getEditBar()
-            {
-                return null;
+            public void refreshEditor() {
+                valueController.refreshEditor();
             }
 
             @Override

@@ -109,11 +109,9 @@ public interface IValueController
     Composite getEditPlaceholder();
 
     /**
-     * Editor toolbar. Used with PANEL editors
-     * @return toolbar or null if toolbar is not active
+     * Refreshes (recreates) editor.
      */
-    @Nullable
-    IContributionManager getEditBar();
+    void refreshEditor();
 
     /**
      * Show error/warning message in grid control.

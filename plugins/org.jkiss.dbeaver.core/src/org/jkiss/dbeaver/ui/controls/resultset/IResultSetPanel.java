@@ -42,7 +42,7 @@ public interface IResultSetPanel {
 
     void deactivatePanel();
 
-    void refresh();
+    void refresh(boolean force);
 
     void contributeActions(ToolBarManager manager);
 }
