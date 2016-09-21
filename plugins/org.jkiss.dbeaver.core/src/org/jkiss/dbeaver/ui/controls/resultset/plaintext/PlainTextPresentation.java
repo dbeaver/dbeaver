@@ -494,19 +494,23 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         @Override
         public int size()
         {
-            return 1;
+            return curSelection == null ? 0 : 1;
         }
 
         @Override
         public Object[] toArray()
         {
-            return new Object[] { curSelection };
+            return curSelection == null ?
+                new Object[0] :
+                new Object[] { curSelection };
         }
 
         @Override
         public List<String> toList()
         {
-            return Collections.singletonList(curSelection);
+            return curSelection == null ?
+                Collections.<String>emptyList() :
+                Collections.singletonList(curSelection);
         }
 
         @Override
