@@ -19,10 +19,11 @@ package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.ImageLoader;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
@@ -31,26 +32,21 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.BytesContentStorage;
-import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
+import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
-import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
-import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
+import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 
-import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.ByteBuffer;
+import java.util.Map;
 
 /**
 * ControlPanelEditor
@@ -59,6 +55,10 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
 
     private static final Log log = Log.getLog(ContentPanelEditor.class);
 
+    private Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers;
+    private StreamValueManagerDescriptor curStreamManager;
+    private IStreamValueEditor streamEditor;
+
     public ContentPanelEditor(IValueController controller) {
         super(controller);
     }
@@ -66,82 +66,30 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
         manager.add(new ContentTypeSwitchAction());
-        if (control instanceof ImageViewer) {
-            ((ImageViewer)control).fillToolBar(manager);
-            manager.add(new Separator());
-        } else if (control instanceof HexEditControl) {
-            manager.add(new Action("Switch Insert/Overwrite mode", DBeaverIcons.getImageDescriptor(UIIcon.CURSOR)) {
-                    @Override
-                    public void run() {
-                        ((HexEditControl)control).redrawCaret(true);
-                    }
-                });
+        if (streamEditor != null) {
+            streamEditor.contributeActions(manager, control);
         }
     }
 
     @Override
     public void primeEditorValue(@Nullable final Object value) throws DBException
     {
-        if (value == null) {
+        final DBDContent content = (DBDContent) valueController.getValue();
+        if (content == null) {
             log.warn("NULL content value. Must be DBDContent.");
+            return;
+        }
+        if (streamEditor == null) {
+            log.warn("NULL content editor.");
             return;
         }
         DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), new DBRRunnableWithProgress() {
             @Override
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                monitor.beginTask("Prime content value", 1);
                 try {
-                    DBDContent content = (DBDContent) value;
-                    DBDContentStorage data = content.getContents(monitor);
-                    if (control instanceof Text) {
-                        monitor.subTask("Read text value");
-                        Text text = (Text) control;
-                        StringWriter buffer = new StringWriter();
-                        if (data != null) {
-                            try (Reader contentReader = data.getContentReader()) {
-                                ContentUtils.copyStreams(contentReader, -1, buffer, monitor);
-                            }
-                        }
-                        text.setText(buffer.toString());
-                    } else if (control instanceof HexEditControl) {
-                        monitor.subTask("Read binary value");
-                        HexEditControl hexEditControl = (HexEditControl) control;
-                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                        if (data != null) {
-                            try (InputStream contentStream = data.getContentStream()){
-                                ContentUtils.copyStreams(contentStream, -1, buffer, monitor);
-                            }
-                        }
-                        hexEditControl.setContent(buffer.toByteArray());
-                    } else if (control instanceof ImageViewer) {
-                        monitor.subTask("Read image value");
-                        ImageViewer imageViewControl = (ImageViewer) control;
-                        if (data != null) {
-                            try (InputStream contentStream = data.getContentStream()) {
-                                if (!imageViewControl.loadImage(contentStream)) {
-                                    valueController.showMessage("Can't load image: " + imageViewControl.getLastError().getMessage(), true);
-                                } else {
-                                    valueController.showMessage("Image: " + imageViewControl.getImageDescription(), false);
-                                }
-                            }
-                        } else {
-                            imageViewControl.clearImage();
-                        }
-                    }
-                } catch (Exception e) {
-                    log.error(e);
-                    // Clear contents
-                    if (control instanceof Text) {
-                        ((Text) control).setText("");
-                    } else if (control instanceof HexEditControl) {
-                        ((HexEditControl) control).setContent(new byte[0]);
-                    } else if (control instanceof ImageViewer) {
-                        ((ImageViewer) control).clearImage();
-                    }
-                    // Show error
-                    valueController.showMessage(e.getMessage(), true);
-                } finally {
-                    monitor.done();
+                    streamEditor.primeEditorValue(monitor, control, content);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
                 }
             }
         });
@@ -153,36 +101,16 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
         final DBDContent content = (DBDContent) valueController.getValue();
         if (content == null) {
             log.warn("NULL content value. Must be DBDContent.");
+        } else if (streamEditor == null) {
+            log.warn("NULL content editor.");
         } else {
             DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    monitor.beginTask("Read content value", 1);
                     try {
-                        if (control instanceof Text) {
-                            monitor.subTask("Read text value");
-                            Text styledText = (Text) control;
-                            content.updateContents(
-                                monitor,
-                                new StringContentStorage(styledText.getText()));
-                        } else if (control instanceof HexEditControl) {
-                            monitor.subTask("Read binary value");
-                            HexEditControl hexEditControl = (HexEditControl) control;
-                            BinaryContent binaryContent = hexEditControl.getContent();
-                            ByteBuffer buffer = ByteBuffer.allocate((int) binaryContent.length());
-                            try {
-                                binaryContent.get(buffer, 0);
-                            } catch (IOException e) {
-                                log.error(e);
-                            }
-                            content.updateContents(
-                                monitor,
-                                new BytesContentStorage(buffer.array(), GeneralUtils.getDefaultFileEncoding()));
-                        }
+                        streamEditor.extractEditorValue(monitor, control, content);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
-                    } finally {
-                        monitor.done();
                     }
                 }
             });
@@ -193,62 +121,66 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
     @Override
     protected Control createControl(Composite editPlaceholder)
     {
-        DBDContent content = (DBDContent) valueController.getValue();
-        if (ContentUtils.isTextContent(content)) {
-            Text text = new Text(editPlaceholder, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
-            text.setEditable(!valueController.isReadOnly());
-            text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-            return text;
-        } else {
-            ImageDetector imageDetector = new ImageDetector(content);
-            if (!DBUtils.isNullValue(content)) {
-                DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), imageDetector);
-            }
+        final DBDContent content = (DBDContent) valueController.getValue();
 
-            if (imageDetector.isImage()) {
-                return new ImageViewer(editPlaceholder, SWT.NONE);
-            } else {
-                return new HexEditControl(editPlaceholder, SWT.BORDER);
+        if (curStreamManager == null) {
+            detectStreamManager(content);
+        }
+        if (curStreamManager != null) {
+            try {
+                streamEditor = curStreamManager.getInstance().createPanelEditor(valueController);
+            } catch (Throwable e) {
+                UIUtils.showErrorDialog(editPlaceholder.getShell(), "No stream editor", "Can't create stream editor", e);
             }
         }
+        if (streamEditor == null) {
+            return UIUtils.createInfoLabel(editPlaceholder, "No Editor");
+        }
+
+        return streamEditor.createControl(valueController);
     }
 
-    private static class ImageDetector implements DBRRunnableWithProgress {
-        private final DBDContent content;
-        private boolean isImage;
-
-        private ImageDetector(DBDContent content)
-        {
-            this.content = content;
-        }
-
-        public boolean isImage()
-        {
-            return isImage;
-        }
-
-        @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-        {
-            if (!content.isNull()) {
+    private void detectStreamManager(final DBDContent content) {
+        DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                monitor.beginTask("Detect appropriate editor", 1);
                 try {
-                    DBDContentStorage contents = content.getContents(monitor);
-                    if (contents != null) {
-                        try (InputStream contentStream = contents.getContentStream()) {
-                            new ImageLoader().load(contentStream);
-                        }
-                        isImage = true;
+                    streamManagers = ValueManagerRegistry.getInstance().getApplicableStreamManagers(monitor, valueController.getValueType(), content);
+                    curStreamManager = findManager(IStreamValueManager.MatchType.EXCLUSIVE);
+                    if (curStreamManager == null)
+                        curStreamManager = findManager(IStreamValueManager.MatchType.PRIMARY);
+                    if (curStreamManager == null)
+                        curStreamManager = findManager(IStreamValueManager.MatchType.DEFAULT);
+                    if (curStreamManager == null)
+                        curStreamManager = findManager(IStreamValueManager.MatchType.APPLIES);
+                    if (curStreamManager == null) {
+                        throw new DBException("Can't find appropriate stream manager");
+                    }
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                } finally {
+                    monitor.done();
+                }
+            }
+
+            private StreamValueManagerDescriptor findManager(IStreamValueManager.MatchType matchType) {
+                for (Map.Entry<StreamValueManagerDescriptor, IStreamValueManager.MatchType> entry : streamManagers.entrySet()) {
+                    if (entry.getValue() == matchType) {
+                        return entry.getKey();
                     }
                 }
-                catch (Exception e) {
-                    // this is not an image
-                    log.debug("Can't detect image type: " + e.getMessage());
-                }
+                return null;
             }
-        }
+        });
     }
 
-    private class ContentTypeSwitchAction extends Action {
+    private void setStreamManager(StreamValueManagerDescriptor newManager) {
+        curStreamManager = newManager;
+        //valueController.getValueManager().
+    }
+
+    private class ContentTypeSwitchAction extends Action implements SelectionListener {
         private Menu menu;
 
         public ContentTypeSwitchAction() {
@@ -272,13 +204,42 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
 
         private Menu createMenu(ToolItem toolItem) {
             if (menu == null) {
-                menu = new Menu(toolItem.getParent());
-                new MenuItem(menu, SWT.NONE).setText("Text");
-                new MenuItem(menu, SWT.NONE).setText("Image");
-                new MenuItem(menu, SWT.NONE).setText("Hex");
+                ToolBar toolBar = toolItem.getParent();
+                menu = new Menu(toolBar);
+                for (StreamValueManagerDescriptor manager : streamManagers.keySet()) {
+                    MenuItem item = new MenuItem(menu, SWT.RADIO);
+                    item.setText(manager.getLabel());
+                    item.setData(manager);
+                    item.addSelectionListener(this);
+                }
+                toolBar.addDisposeListener(new DisposeListener() {
+                    @Override
+                    public void widgetDisposed(DisposeEvent e) {
+                        menu.dispose();
+                    }
+                });
+            }
+            for (MenuItem item : menu.getItems()) {
+                item.setSelection(item.getData() == curStreamManager);
             }
             return menu;
         }
 
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            for (MenuItem item : menu.getItems()) {
+                if (item.getSelection()) {
+                    StreamValueManagerDescriptor newManager = (StreamValueManagerDescriptor) item.getData();
+                    if (newManager != curStreamManager) {
+                        setStreamManager(newManager);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void widgetDefaultSelected(SelectionEvent e) {
+
+        }
     }
 }

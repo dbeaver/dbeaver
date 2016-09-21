@@ -97,4 +97,8 @@ public class StreamValueManagerDescriptor extends AbstractDescriptor
         return instance;
     }
 
+    @Override
+    public String toString() {
+        return id + " (" + label + ")";
+    }
 }
