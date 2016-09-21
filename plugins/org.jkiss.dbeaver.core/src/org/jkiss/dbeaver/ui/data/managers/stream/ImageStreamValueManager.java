@@ -29,12 +29,10 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
-import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
 
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -47,7 +45,7 @@ public class ImageStreamValueManager implements IStreamValueManager {
     private static final Log log = Log.getLog(ImageStreamValueManager.class);
 
     @Override
-    public MatchType matchesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSAttributeBase attribute, @Nullable DBDContent value) {
+    public MatchType matchesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSTypedObject attribute, @Nullable DBDContent value) {
         // Applies to image values
         ImageDetector imageDetector = new ImageDetector(value);
         if (!DBUtils.isNullValue(value)) {
@@ -65,7 +63,7 @@ public class ImageStreamValueManager implements IStreamValueManager {
 
     @Override
     public IEditorPart createEditorPart(@NotNull IValueController controller) {
-        return new ContentImageEditorPart();
+        return new ImageEditorPart();
     }
 
     private static class ImageDetector implements DBRRunnableWithProgress {

@@ -20,34 +20,36 @@ package org.jkiss.dbeaver.ui.data.managers;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPPropertyManager;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.data.editors.XMLPanelEditor;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentPanelEditor;
+import org.jkiss.dbeaver.ui.data.editors.XMLPanelEditor;
+import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
+import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
-import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
-import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
-import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
-import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
-import org.jkiss.dbeaver.ui.editors.content.parts.ContentXMLEditorPart;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * JDBC Content value handler.
@@ -91,21 +93,59 @@ public class ContentValueManager extends BaseValueManager {
             return new TextViewDialog(controller);
         } else if (value instanceof DBDContent) {
             DBDContent content = (DBDContent)value;
-            boolean isText = ContentUtils.isTextContent(content);
-            List<ContentEditorPart> parts = new ArrayList<>();
+            Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers =
+                ValueManagerRegistry.getInstance().getApplicableStreamManagers(VoidProgressMonitor.INSTANCE, controller.getValueType(), content);
+            //boolean isText = ContentUtils.isTextContent(content);
+            List<IEditorPart> parts = new ArrayList<>();
+            IEditorPart defaultPart = null;
+            IStreamValueManager.MatchType defaultMatch = null;
+            for (Map.Entry<StreamValueManagerDescriptor, IStreamValueManager.MatchType> entry : streamManagers.entrySet()) {
+                IStreamValueManager streamValueManager = entry.getKey().getInstance();
+                try {
+                    IEditorPart editorPart = streamValueManager.createEditorPart(controller);
+                    IStreamValueManager.MatchType matchType = entry.getValue();
+                    if (defaultPart == null) {
+                        defaultPart = editorPart;
+                        defaultMatch = matchType;
+                    } else {
+                        boolean setDefault = false;
+                        switch (matchType) {
+                            case EXCLUSIVE:
+                            case PRIMARY:
+                                setDefault = true;
+                                break;
+                            case DEFAULT:
+                                setDefault = (defaultMatch == IStreamValueManager.MatchType.APPLIES);
+                                break;
+                            default:
+                                break;
+                        }
+                        if (setDefault) {
+                            defaultPart = editorPart;
+                            defaultMatch = matchType;
+                        }
+                    }
+                    parts.add(editorPart);
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
+/*
             if (isText) {
-                parts.add(new ContentTextEditorPart());
+                parts.add(new TextEditorPart());
                 if (ContentUtils.isXML(content)) {
                     parts.add(new ContentXMLEditorPart());
                 }
             } else {
-                parts.add(new ContentBinaryEditorPart());
-                parts.add(new ContentTextEditorPart());
-                parts.add(new ContentImageEditorPart());
+                parts.add(new BinaryEditorPart());
+                parts.add(new TextEditorPart());
+                parts.add(new ImageEditorPart());
             }
+*/
             return ContentEditor.openEditor(
                 controller,
-                parts.toArray(new ContentEditorPart[parts.size()]));
+                parts.toArray(new IEditorPart[parts.size()]),
+                defaultPart);
         } else {
             controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, true);
             return null;

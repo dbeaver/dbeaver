@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.Nullable;
@@ -32,19 +33,22 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDContentStorageLocal;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.BytesContentStorage;
+import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.LocalFileStorage;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.*;
 
@@ -56,19 +60,22 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
     private static final Log log = Log.getLog(ContentEditorInput.class);
 
     private IValueController valueController;
-    private ContentEditorPart[] editorParts;
+    private IEditorPart[] editorParts;
+    private IEditorPart defaultPart;
     private File contentFile;
     private boolean contentDetached = false;
     private String fileCharset = ContentUtils.DEFAULT_CHARSET;
 
     public ContentEditorInput(
         IValueController valueController,
-        ContentEditorPart[] editorParts,
+        IEditorPart[] editorParts,
+        IEditorPart defaultPart,
         DBRProgressMonitor monitor)
         throws DBException
     {
         this.valueController = valueController;
         this.editorParts = editorParts;
+        this.defaultPart = defaultPart;
         this.prepareContent(monitor);
     }
 
@@ -87,9 +94,13 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
         this.prepareContent(monitor);
     }
 
-    ContentEditorPart[] getEditors()
+    IEditorPart[] getEditors()
     {
         return editorParts;
+    }
+
+    public IEditorPart getDefaultEditor() {
+        return defaultPart;
     }
 
     @Override
@@ -296,6 +307,21 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
         if (storage instanceof DBDContentStorageLocal) {
             // Nothing to update - we user content's storage
             contentDetached = true;
+        } else if (storage instanceof DBDContentCached) {
+            // Create new storage and pass it to content
+            try (FileInputStream is = new FileInputStream(contentFile)) {
+                if (storage instanceof StringContentStorage) {
+                    try (Reader reader = new InputStreamReader(is, GeneralUtils.getDefaultFileEncoding())) {
+                        storage = StringContentStorage.createFromReader(reader);
+                    }
+                } else {
+                    storage = BytesContentStorage.createFromStream(is, contentFile.length(), GeneralUtils.getDefaultFileEncoding());
+                }
+                //StringContentStorage.
+                contentDetached = content.updateContents(localMonitor, storage);
+            } catch (IOException e) {
+                throw new DBException("Error reading content from file", e);
+            }
         } else {
             // Create new storage and pass it to content
             storage = new TemporaryContentStorage(DBeaverCore.getInstance(), contentFile);
