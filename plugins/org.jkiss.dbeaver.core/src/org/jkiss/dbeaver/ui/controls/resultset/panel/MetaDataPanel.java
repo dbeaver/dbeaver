@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
@@ -89,7 +90,7 @@ public class MetaDataPanel implements IResultSetPanel {
                 if (!selection.isEmpty()) {
                     DBDAttributeBinding attr = (DBDAttributeBinding) selection.getFirstElement();
                     if (attr != null) {
-                        if (presentation.getController().getModel().getVisibleAttributes().contains(attr)) {
+                        if (isAttributeVisible(attr)) {
                             presentation.setCurrentAttribute(attr);
                         }
                     }
@@ -98,6 +99,10 @@ public class MetaDataPanel implements IResultSetPanel {
         });
 
         return this.attributeList;
+    }
+
+    private boolean isAttributeVisible(DBDAttributeBinding attr) {
+        return presentation.getController().getModel().getVisibleAttributes().contains(attr);
     }
 
     @Override
@@ -164,6 +169,14 @@ public class MetaDataPanel implements IResultSetPanel {
         @Override
         protected DBPImage getObjectImage(DBDAttributeBinding item) {
             return DBUtils.getTypeImage(item.getMetaAttribute());
+        }
+
+        @Override
+        protected Color getObjectForeground(DBDAttributeBinding item) {
+            if (!isAttributeVisible(item)) {
+                return presentation.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
+            }
+            return super.getObjectForeground(item);
         }
 
         @Override

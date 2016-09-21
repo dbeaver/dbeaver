@@ -30,6 +30,7 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -677,8 +678,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
      * @return image or null
      */
     @Nullable
-    protected DBPImage getObjectImage(OBJECT_TYPE item)
-    {
+    protected DBPImage getObjectImage(OBJECT_TYPE item) {
+        return null;
+    }
+
+    protected Color getObjectBackground(OBJECT_TYPE item) {
+        return null;
+    }
+
+    protected Color getObjectForeground(OBJECT_TYPE item) {
         return null;
     }
 
@@ -905,6 +913,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return ObjectViewerRenderer.getCellString(cellValue, columnIndex == 0);
         }
 
+        @Override
+        public Color getBackground(Object element) {
+            return getObjectBackground((OBJECT_TYPE) element);
+        }
+
+        @Override
+        public Color getForeground(Object element) {
+            return getObjectForeground((OBJECT_TYPE) element);
+        }
     }
 
     public class ObjectsLoadVisualizer extends ProgressVisualizer<Collection<OBJECT_TYPE>> {
