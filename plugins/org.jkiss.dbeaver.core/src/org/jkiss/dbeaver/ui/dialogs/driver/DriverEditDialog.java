@@ -237,7 +237,8 @@ public class DriverEditDialog extends HelpEnabledDialog
             });
 
             gd = new GridData(GridData.FILL_HORIZONTAL);
-            embeddedDriverCheck = UIUtils.createLabelCheckbox(propsGroup, "Embedded", "Embedded driver", driver.isEmbedded());
+            gd.horizontalSpan = 2;
+            embeddedDriverCheck = UIUtils.createCheckbox(propsGroup, "Embedded", driver.isEmbedded());
             embeddedDriverCheck.setLayoutData(gd);
         }
 
