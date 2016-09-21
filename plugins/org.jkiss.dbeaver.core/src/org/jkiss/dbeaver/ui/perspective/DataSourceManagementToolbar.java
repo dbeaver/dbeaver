@@ -595,38 +595,28 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         final String newName = databaseCombo.getItemText(databaseCombo.getSelectionIndex());
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
-            try {
-                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException {
-                        try {
-                            DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
-                            DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
-                            if (oc != null && os != null && os.supportsDefaultChange()) {
-                                DBSObject newChild = oc.getChild(monitor, newName);
-                                if (newChild != null) {
-                                    os.setDefaultObject(monitor, newChild);
-                                } else {
-                                    throw new DBException(MessageFormat.format(CoreMessages.toolbar_datasource_selector_error_database_not_found, newName));
-                                }
+            DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException {
+                    try {
+                        DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+                        DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+                        if (oc != null && os != null && os.supportsDefaultChange()) {
+                            DBSObject newChild = oc.getChild(monitor, newName);
+                            if (newChild != null) {
+                                os.setDefaultObject(monitor, newChild);
                             } else {
-                                throw new DBException(CoreMessages.toolbar_datasource_selector_error_database_change_not_supported);
+                                throw new DBException(MessageFormat.format(CoreMessages.toolbar_datasource_selector_error_database_not_found, newName));
                             }
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
+                        } else {
+                            throw new DBException(CoreMessages.toolbar_datasource_selector_error_database_change_not_supported);
                         }
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
                     }
-                });
-            } catch (InvocationTargetException e) {
-                UIUtils.showErrorDialog(
-                    workbenchWindow.getShell(),
-                    CoreMessages.toolbar_datasource_selector_error_change_database_title,
-                    CoreMessages.toolbar_datasource_selector_error_change_database_message,
-                    e.getTargetException());
-            } catch (InterruptedException e) {
-                // skip
-            }
+                }
+            });
         }
     }
 
