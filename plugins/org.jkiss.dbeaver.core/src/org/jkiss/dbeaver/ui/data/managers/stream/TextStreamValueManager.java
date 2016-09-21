@@ -39,9 +39,9 @@ public class TextStreamValueManager implements IStreamValueManager {
     private static final Log log = Log.getLog(TextStreamValueManager.class);
 
     @Override
-    public boolean appliesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSAttributeBase attribute, @Nullable DBDContent value) {
+    public MatchType matchesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSAttributeBase attribute, @Nullable DBDContent value) {
         // Applies to text values
-        return ContentUtils.isTextContent(value);
+        return ContentUtils.isTextContent(value) ? MatchType.DEFAULT : MatchType.APPLIES;
     }
 
     @Override
