@@ -173,7 +173,7 @@ public class MetaDataPanel implements IResultSetPanel {
 
         @Override
         protected Color getObjectForeground(DBDAttributeBinding item) {
-            if (!isAttributeVisible(item)) {
+            if (item.getParentObject() == null && !isAttributeVisible(item)) {
                 return presentation.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
             }
             return super.getObjectForeground(item);
