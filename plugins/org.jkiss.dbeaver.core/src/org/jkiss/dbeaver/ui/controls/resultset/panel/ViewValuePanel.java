@@ -180,10 +180,9 @@ public class ViewValuePanel implements IResultSetPanel {
             clearValue();
             return;
         }
-        ResultSetValueController newController;
-        boolean updateActions = false;
-        if (force || previewController == null || previewController.getBinding() != attr) {
-            newController = new ResultSetValueController(
+        boolean updateActions;
+        if (previewController == null) {
+            previewController = new ResultSetValueController(
                 presentation.getController(),
                 attr,
                 row,
@@ -197,30 +196,32 @@ public class ViewValuePanel implements IResultSetPanel {
                 }
             };
             updateActions = true;
-        } else if (previewController.getCurRow() != row) {
-            newController = previewController;
-            previewController.setCurRow(row);
-        } else {
+            force = true;
+        } else if (!force && previewController.getCurRow() == row && previewController.getBinding() == attr) {
             // The same value
             return;
+        } else {
+            updateActions = force = previewController.getBinding() != attr;
+            previewController.setCurRow(row);
+            previewController.setBinding(attr);
         }
-        viewValue(newController, force);
+        viewValue(force);
         if (updateActions) {
             presentation.getController().updatePanelActions();
         }
     }
 
-    private void viewValue(final ResultSetValueController valueController, boolean forceRefresh)
+    private void viewValue(boolean forceRefresh)
     {
         if (valueSaving) {
             return;
         }
-        if (forceRefresh || previewController == null || valueController.getValueType() != previewController.getValueType()) {
+        if (forceRefresh) {
             cleanupPanel();
             // Create a new one
-            valueManager = valueController.getValueManager();
+            valueManager = previewController.getValueManager();
             try {
-                valueEditor = valueManager.createEditor(valueController);
+                valueEditor = valueManager.createEditor(previewController);
             } catch (DBException e) {
                 UIUtils.showErrorDialog(viewPlaceholder.getShell(), "Value preview", "Can't create value viewer", e);
                 return;
@@ -237,7 +238,7 @@ public class ViewValuePanel implements IResultSetPanel {
                     presentation.getController().lockActionsByFocus(control);
                 }
 
-                referenceValueEditor = new ReferenceValueEditor(valueController, valueEditor);
+                referenceValueEditor = new ReferenceValueEditor(previewController, valueEditor);
                 if (referenceValueEditor.isReferenceValue()) {
                     GridLayout gl = new GridLayout(1, false);
                     viewPlaceholder.setLayout(gl);
@@ -255,14 +256,13 @@ public class ViewValuePanel implements IResultSetPanel {
                     public void paintControl(PaintEvent e)
                     {
                         Rectangle bounds = placeholder.getBounds();
-                        String message = "No editor for [" + valueController.getValueType().getTypeName() + "]";
+                        String message = "No editor for [" + previewController.getValueType().getTypeName() + "]";
                         Point ext = e.gc.textExtent(message);
                         e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + 20);
                     }
                 });
                 referenceValueEditor = null;
             }
-            previewController = valueController;
 
             viewPlaceholder.layout();
         }
@@ -322,7 +322,6 @@ public class ViewValuePanel implements IResultSetPanel {
         for (Control child : viewPlaceholder.getChildren()) {
             child.dispose();
         }
-        previewController = null;
     }
 
     private void fillToolBar(final IContributionManager contributionManager)
