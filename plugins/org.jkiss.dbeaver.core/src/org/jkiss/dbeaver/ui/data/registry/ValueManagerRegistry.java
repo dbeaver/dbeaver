@@ -28,11 +28,14 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * EntityEditorsRegistry
@@ -96,13 +99,23 @@ public class ValueManagerRegistry {
         return getInstance().getManager(dataSource, typedObject, valueType);
     }
 
-    public StreamValueManagerDescriptor[] getApplicableStreamManagers(@NotNull DBRProgressMonitor monitor, @NotNull DBSAttributeBase attribute, @Nullable DBDContent value) {
-        List<StreamValueManagerDescriptor> result = new ArrayList<>();
+    public Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> getApplicableStreamManagers(@NotNull DBRProgressMonitor monitor, @NotNull DBSAttributeBase attribute, @Nullable DBDContent value) {
+        Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> result = new LinkedHashMap<>();
         for (StreamValueManagerDescriptor contentManager : streamManagers) {
-            if (contentManager.getInstance().appliesTo(monitor, attribute, value)) {
-                result.add(contentManager);
+            IStreamValueManager.MatchType matchType = contentManager.getInstance().matchesTo(monitor, attribute, value);
+            switch (matchType) {
+                case NONE:
+                    continue;
+                case EXCLUSIVE:
+                    result.clear();
+                    result.put(contentManager, matchType);
+                    return result;
+                default:
+                    result.put(contentManager, matchType);
+                    break;
             }
         }
-        return result.toArray(new StreamValueManagerDescriptor[result.size()]);
+        return result;
     }
+
 }

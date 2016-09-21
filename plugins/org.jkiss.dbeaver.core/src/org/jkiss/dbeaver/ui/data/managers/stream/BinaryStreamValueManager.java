@@ -38,9 +38,9 @@ public class BinaryStreamValueManager implements IStreamValueManager {
     private static final Log log = Log.getLog(BinaryStreamValueManager.class);
 
     @Override
-    public boolean appliesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSAttributeBase attribute, @Nullable DBDContent value) {
+    public MatchType matchesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSAttributeBase attribute, @Nullable DBDContent value) {
         // Applies to any values
-        return true;
+        return MatchType.APPLIES;
     }
 
     @Override

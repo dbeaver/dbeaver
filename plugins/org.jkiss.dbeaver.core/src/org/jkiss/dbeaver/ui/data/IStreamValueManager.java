@@ -31,7 +31,15 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
  */
 public interface IStreamValueManager {
 
-    boolean appliesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSAttributeBase attribute, @Nullable DBDContent value);
+    enum MatchType {
+        EXCLUSIVE,      // Should be the only editor for this value
+        PRIMARY,        // Should be primary editor for this value
+        DEFAULT,        // Should be default editor for this value
+        APPLIES,        // Supports value edit
+        NONE,           // Doesn't support
+    }
+
+    MatchType matchesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSAttributeBase attribute, @Nullable DBDContent value);
 
     IStreamValueEditor createPanelEditor(@NotNull IValueController controller)
         throws DBException;

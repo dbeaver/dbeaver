@@ -2646,6 +2646,9 @@
             <supports kind="ROWID"/>
         </manager>
 -->
+        <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.BinaryStreamValueManager" id="binary" label="Binary" description="Hex editor"/>
+        <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.ImageStreamValueManager" id="image" label="Image" description="Image viewer"/>
+        <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.TextStreamValueManager" id="plaintext" label="Text" description="Plain text"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTransfer">

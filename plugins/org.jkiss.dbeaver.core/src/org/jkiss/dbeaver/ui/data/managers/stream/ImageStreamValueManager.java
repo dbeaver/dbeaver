@@ -47,13 +47,13 @@ public class ImageStreamValueManager implements IStreamValueManager {
     private static final Log log = Log.getLog(ImageStreamValueManager.class);
 
     @Override
-    public boolean appliesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSAttributeBase attribute, @Nullable DBDContent value) {
+    public MatchType matchesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSAttributeBase attribute, @Nullable DBDContent value) {
         // Applies to image values
         ImageDetector imageDetector = new ImageDetector(value);
         if (!DBUtils.isNullValue(value)) {
             DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), imageDetector);
         }
-        return imageDetector.isImage();
+        return imageDetector.isImage() ? MatchType.EXCLUSIVE : MatchType.NONE;
     }
 
     @Override

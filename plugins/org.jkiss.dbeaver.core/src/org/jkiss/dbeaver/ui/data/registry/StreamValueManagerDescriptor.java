@@ -33,16 +33,12 @@ public class StreamValueManagerDescriptor extends AbstractDescriptor
     public static final String TAG_STREAM_MANAGER = "streamManager"; //$NON-NLS-1$
     private static final String ATTR_PRIMARY_MIME = "primaryMime";
     private static final String ATTR_SUPPORTED_MIME = "supportedMime";
-    private static final String ATTR_PREFERRED = "preferred";
-    private static final String ATTR_OPTIONAL = "optional";
 
     private String id;
     private ObjectType implType;
     private final String label;
     private final String description;
     private final DBPImage icon;
-    private final boolean preferred;
-    private final boolean optional;
     private final String primaryMime;
     private final String[] supportedMime;
 
@@ -57,8 +53,6 @@ public class StreamValueManagerDescriptor extends AbstractDescriptor
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_DESCRIPTION));
-        this.preferred = CommonUtils.toBoolean(config.getAttribute(ATTR_PREFERRED));
-        this.optional = CommonUtils.toBoolean(config.getAttribute(ATTR_OPTIONAL));
 
         this.primaryMime = config.getAttribute(ATTR_PRIMARY_MIME);
         this.supportedMime = CommonUtils.notEmpty(config.getAttribute(ATTR_SUPPORTED_MIME)).split(",");
@@ -87,14 +81,6 @@ public class StreamValueManagerDescriptor extends AbstractDescriptor
 
     public String getPrimaryMime() {
         return primaryMime;
-    }
-
-    public boolean isOptional() {
-        return optional;
-    }
-
-    public boolean isPreferred() {
-        return preferred;
     }
 
     @NotNull
