@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -58,7 +59,7 @@ public class ImageStreamValueManager implements IStreamValueManager {
     public IStreamValueEditor createPanelEditor(@NotNull final IValueController controller)
         throws DBException
     {
-        return new BinaryPanelEditor();
+        return new ImagePanelEditor();
     }
 
     @Override

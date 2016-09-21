@@ -47,7 +47,7 @@ public class TextStreamValueManager implements IStreamValueManager {
     public IStreamValueEditor createPanelEditor(@NotNull final IValueController controller)
         throws DBException
     {
-        return new BinaryPanelEditor();
+        return new TextPanelEditor();
     }
 
     @Override
