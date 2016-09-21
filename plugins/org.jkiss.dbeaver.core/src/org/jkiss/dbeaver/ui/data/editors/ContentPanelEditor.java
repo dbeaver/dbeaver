@@ -32,10 +32,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -235,8 +232,8 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
 
         public ContentTypeSwitchAction() {
             super(null, Action.AS_DROP_DOWN_MENU);
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SEARCH));
-            setToolTipText("Choose content type");
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PAGES));
+            setToolTipText("Choose content viewer");
         }
 
         @Override

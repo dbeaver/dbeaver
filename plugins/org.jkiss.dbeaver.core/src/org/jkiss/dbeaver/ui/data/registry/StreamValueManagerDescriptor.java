@@ -52,7 +52,7 @@ public class StreamValueManagerDescriptor extends AbstractDescriptor
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_DESCRIPTION));
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
 
         this.primaryMime = config.getAttribute(ATTR_PRIMARY_MIME);
         this.supportedMime = CommonUtils.notEmpty(config.getAttribute(ATTR_SUPPORTED_MIME)).split(",");
