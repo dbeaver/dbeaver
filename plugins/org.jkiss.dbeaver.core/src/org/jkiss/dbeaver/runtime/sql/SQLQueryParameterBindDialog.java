@@ -44,7 +44,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.*;
-import org.jkiss.dbeaver.ui.data.registry.DataManagerRegistry;
+import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -83,7 +83,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     continue;
                 }
 
-                IValueManager manager = DataManagerRegistry.findValueManager(
+                IValueManager manager = ValueManagerRegistry.findValueManager(
                     dataSource.getContainer(),
                     dataType,
                     Object.class);
@@ -418,7 +418,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         @Override
         public IValueManager getValueManager() {
             DBSTypedObject valueType = getValueType();
-            return DataManagerRegistry.findValueManager(
+            return ValueManagerRegistry.findValueManager(
                 getExecutionContext().getDataSource().getContainer(),
                 valueType,
                 getValueHandler().getValueObjectType(valueType));

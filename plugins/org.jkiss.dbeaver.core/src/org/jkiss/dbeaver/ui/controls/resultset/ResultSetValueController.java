@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IRowController;
 import org.jkiss.dbeaver.ui.data.IValueManager;
-import org.jkiss.dbeaver.ui.data.registry.DataManagerRegistry;
+import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 
 import java.util.Arrays;
 import java.util.List;
@@ -166,7 +166,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     @Override
     public IValueManager getValueManager() {
         DBSAttributeBase valueType = binding.getPresentationAttribute();
-        return DataManagerRegistry.findValueManager(
+        return ValueManagerRegistry.findValueManager(
             getDataSourceContainer(),
             valueType,
             getValueHandler().getValueObjectType(valueType));

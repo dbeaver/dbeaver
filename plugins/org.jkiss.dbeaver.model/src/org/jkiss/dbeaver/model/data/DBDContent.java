@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * DBC CONTENT
+ * Content value (LOB).
  *
  * @author Serge Rider
  */
