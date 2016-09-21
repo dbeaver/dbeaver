@@ -99,7 +99,7 @@ public class ValueManagerRegistry {
         return getInstance().getManager(dataSource, typedObject, valueType);
     }
 
-    public Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> getApplicableStreamManagers(@NotNull DBRProgressMonitor monitor, @NotNull DBSAttributeBase attribute, @Nullable DBDContent value) {
+    public Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> getApplicableStreamManagers(@NotNull DBRProgressMonitor monitor, @NotNull DBSTypedObject attribute, @Nullable DBDContent value) {
         Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> result = new LinkedHashMap<>();
         for (StreamValueManagerDescriptor contentManager : streamManagers) {
             IStreamValueManager.MatchType matchType = contentManager.getInstance().matchesTo(monitor, attribute, value);

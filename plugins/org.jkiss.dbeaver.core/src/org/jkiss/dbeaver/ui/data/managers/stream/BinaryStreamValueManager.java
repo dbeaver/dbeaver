@@ -24,11 +24,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
 
 /**
  * Hex editor manager
@@ -38,7 +37,7 @@ public class BinaryStreamValueManager implements IStreamValueManager {
     private static final Log log = Log.getLog(BinaryStreamValueManager.class);
 
     @Override
-    public MatchType matchesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSAttributeBase attribute, @Nullable DBDContent value) {
+    public MatchType matchesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSTypedObject attribute, @Nullable DBDContent value) {
         // Applies to any values
         return MatchType.APPLIES;
     }
@@ -52,7 +51,7 @@ public class BinaryStreamValueManager implements IStreamValueManager {
 
     @Override
     public IEditorPart createEditorPart(@NotNull IValueController controller) {
-        return new ContentBinaryEditorPart();
+        return new BinaryEditorPart();
     }
 
 }

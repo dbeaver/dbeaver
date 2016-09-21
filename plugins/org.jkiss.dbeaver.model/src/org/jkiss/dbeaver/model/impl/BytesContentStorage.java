@@ -18,9 +18,9 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
@@ -28,7 +28,7 @@ import java.io.*;
 /**
  * Memory content storage
  */
-public class BytesContentStorage implements DBDContentStorage {
+public class BytesContentStorage implements DBDContentStorage, DBDContentCached {
 
     private static final Log log = Log.getLog(BytesContentStorage.class);
 
@@ -66,7 +66,7 @@ public class BytesContentStorage implements DBDContentStorage {
     @Override
     public String getCharset()
     {
-        return GeneralUtils.getDefaultFileEncoding();
+        return encoding;
     }
 
     @Override
@@ -98,5 +98,10 @@ public class BytesContentStorage implements DBDContentStorage {
             log.warn("Actual content length (" + result.length + ") is less than declared: " + contentLength);
         }
         return new BytesContentStorage(result, encoding);
+    }
+
+    @Override
+    public Object getCachedValue() {
+        return data;
     }
 }

@@ -24,11 +24,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 /**
@@ -39,7 +38,7 @@ public class TextStreamValueManager implements IStreamValueManager {
     private static final Log log = Log.getLog(TextStreamValueManager.class);
 
     @Override
-    public MatchType matchesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSAttributeBase attribute, @Nullable DBDContent value) {
+    public MatchType matchesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSTypedObject attribute, @Nullable DBDContent value) {
         // Applies to text values
         return ContentUtils.isTextContent(value) ? MatchType.DEFAULT : MatchType.APPLIES;
     }
@@ -53,7 +52,7 @@ public class TextStreamValueManager implements IStreamValueManager {
 
     @Override
     public IEditorPart createEditorPart(@NotNull IValueController controller) {
-        return new ContentTextEditorPart();
+        return new TextEditorPart();
     }
 
 }

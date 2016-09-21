@@ -66,7 +66,7 @@ public class XMLPanelEditor extends ContentPanelEditor {
                 try {
                     monitor.subTask("Prime XML value");
 
-                    IEditorInput sqlInput = new ContentEditorInput(valueController, null, monitor);
+                    IEditorInput sqlInput = new ContentEditorInput(valueController, null, null, monitor);
                     editor.init(subSite, sqlInput);
                 } catch (Exception e) {
                     log.error(e);

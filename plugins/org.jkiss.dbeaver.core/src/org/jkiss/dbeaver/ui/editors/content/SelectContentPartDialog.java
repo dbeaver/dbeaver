@@ -24,6 +24,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IEditorPart;
 
 import java.util.List;
 
@@ -34,10 +35,10 @@ import java.util.List;
  */
 class SelectContentPartDialog extends Dialog {
 
-    private List<ContentEditorPart> dirtyParts;
-    private ContentEditorPart selectedPart;
+    private List<IEditorPart> dirtyParts;
+    private IEditorPart selectedPart;
 
-    private SelectContentPartDialog(Shell parentShell, List<ContentEditorPart> dirtyParts)
+    private SelectContentPartDialog(Shell parentShell, List<IEditorPart> dirtyParts)
     {
         super(parentShell);
         this.dirtyParts = dirtyParts;
@@ -67,8 +68,8 @@ class SelectContentPartDialog extends Dialog {
         gd = new GridData(GridData.FILL_HORIZONTAL);
         combo.setLayoutData(gd);
         combo.add("");
-        for (ContentEditorPart part : dirtyParts) {
-            combo.add(part.getContentTypeTitle());
+        for (IEditorPart part : dirtyParts) {
+            combo.add(part.getTitle());
         }
         combo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -82,39 +83,6 @@ class SelectContentPartDialog extends Dialog {
                 getButton(IDialogConstants.OK_ID).setEnabled(selectedPart != null);
             }
         });
-/*
-        final Table table = new Table(group, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
-        table.setLinesVisible (true);
-        table.setHeaderVisible(true);
-        gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 150;
-        gd.widthHint = 200;
-        table.setLayoutData(gd);
-
-        TableColumn tableColumn = new TableColumn(table, SWT.NONE);
-        tableColumn.setText("Editor");
-        for (ContentEditorPart part : dirtyParts) {
-            TableItem item = new TableItem(table, SWT.NONE);
-            item.setText(part.getContentTypeTitle());
-            Image image = part.getContentTypeImage();
-            if (image != null) {
-                item.setImage(image);
-            }
-            item.setData(part);
-        }
-        tableColumn.pack();
-        table.pack();
-
-        table.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                TableItem item = (TableItem) e.item;
-                selectedPart = (ContentEditorPart) item.getData();
-                getButton(IDialogConstants.OK_ID).setEnabled(true);
-            }
-        });
-*/
 
         return group;
     }
@@ -127,12 +95,12 @@ class SelectContentPartDialog extends Dialog {
         return ctl;
     }
 
-    public ContentEditorPart getSelectedPart()
+    public IEditorPart getSelectedPart()
     {
         return selectedPart;
     }
 
-    public static ContentEditorPart selectContentPart(Shell parentShell, List<ContentEditorPart> dirtyParts)
+    public static IEditorPart selectContentPart(Shell parentShell, List<IEditorPart> dirtyParts)
     {
         SelectContentPartDialog scDialog = new SelectContentPartDialog(parentShell, dirtyParts);
         if (scDialog.open() == IDialogConstants.OK_ID) {

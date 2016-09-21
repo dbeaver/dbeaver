@@ -32,23 +32,21 @@ import org.eclipse.ui.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.ui.dialogs.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import javax.activation.MimeType;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,12 +63,12 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     }
 
     @Nullable
-    public static ContentEditor openEditor(IValueController valueController, ContentEditorPart[] editorParts)
+    public static ContentEditor openEditor(IValueController valueController, IEditorPart[] editorParts, IEditorPart defaultPart)
     {
         ContentEditorInput editorInput;
         // Save data to file
         try {
-            LOBInitializer initializer = new LOBInitializer(valueController, editorParts, null);
+            LOBInitializer initializer = new LOBInitializer(valueController, editorParts, defaultPart, null);
             //valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
             DBeaverUI.runInProgressService(initializer);
             editorInput = initializer.editorInput;
@@ -98,24 +96,28 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     private static final Log log = Log.getLog(ContentEditor.class);
 
     static class ContentPartInfo {
-        ContentEditorPart editorPart;
+        IEditorPart editorPart;
+        boolean isDefault;
         boolean activated;
         public int index = -1;
 
-        private ContentPartInfo(ContentEditorPart editorPart) {
+        private ContentPartInfo(IEditorPart editorPart, boolean isDefault) {
             this.editorPart = editorPart;
+            this.isDefault = isDefault;
         }
     }
 
     private static class LOBInitializer implements DBRRunnableWithProgress {
         IValueController valueController;
-        ContentEditorPart[] editorParts;
+        IEditorPart[] editorParts;
+        IEditorPart defaultPart;
         ContentEditorInput editorInput;
 
-        private LOBInitializer(IValueController valueController, ContentEditorPart[] editorParts, @Nullable ContentEditorInput editorInput)
+        private LOBInitializer(IValueController valueController, IEditorPart[] editorParts, IEditorPart defaultPart, @Nullable ContentEditorInput editorInput)
         {
             this.valueController = valueController;
             this.editorParts = editorParts;
+            this.defaultPart = defaultPart;
             this.editorInput = editorInput;
         }
 
@@ -127,6 +129,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                     editorInput = new ContentEditorInput(
                         valueController,
                         editorParts,
+                        defaultPart,
                         monitor);
                 } else {
                     editorInput.refreshContent(monitor, valueController);
@@ -171,14 +174,14 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             public void run() {
                 try {
                     // Check for dirty parts
-                    final List<ContentEditorPart> dirtyParts = new ArrayList<>();
+                    final List<IEditorPart> dirtyParts = new ArrayList<>();
                     for (ContentPartInfo partInfo : contentParts) {
                         if (partInfo.activated && partInfo.editorPart.isDirty()) {
                             dirtyParts.add(partInfo.editorPart);
                         }
                     }
 
-                    ContentEditorPart dirtyPart = null;
+                    IEditorPart dirtyPart = null;
                     if (dirtyParts.isEmpty()) {
                         // No modified parts - no additional save required
                     } else if (dirtyParts.size() == 1) {
@@ -236,13 +239,11 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             return;
         }
 
-        MimeType mimeType = ContentUtils.getMimeType(content.getContentType());
-
         // Fill nested editorParts info
-        ContentEditorPart[] editorParts = getEditorInput().getEditors();
-        for (ContentEditorPart editorPart : editorParts) {
-            contentParts.add(new ContentPartInfo(editorPart));
-            editorPart.initPart(this, mimeType);
+        IEditorPart[] editorParts = getEditorInput().getEditors();
+        for (IEditorPart editorPart : editorParts) {
+            contentParts.add(new ContentPartInfo(editorPart, editorPart == getEditorInput().getDefaultEditor()));
+            //editorPart.init(site, input);
         }
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
@@ -303,60 +304,24 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         if (content == null) {
             return;
         }
-        String contentType = null;
-        try {
-            contentType = content.getContentType();
-        } catch (Exception e) {
-            log.error("Can't determine value content type", e);
-        }
-        long contentLength;
-        try {
-            contentLength = content.getContentLength();
-        } catch (Exception e) {
-            log.warn("Can't determine value content length", e);
-            // Get file length
-            contentLength = getEditorInput().getContentFile().length();
-        }
-        MimeType mimeType = ContentUtils.getMimeType(contentType);
-        IEditorPart defaultPage = null, preferredPage = null;
+        ContentPartInfo defaultPage = null;
         for (ContentPartInfo contentPart : contentParts) {
-            ContentEditorPart editorPart = contentPart.editorPart;
-            if (contentLength > editorPart.getMaxContentLength()) {
-                continue;
+            if (contentPart.isDefault) {
+                defaultPage = contentPart;
             }
-            if (preferredPage != null && editorPart.isOptionalContent()) {
-                // Do not add optional parts if we already have prefered one
-                continue;
-            }
+            IEditorPart editorPart = contentPart.editorPart;
             try {
                 int index = addPage(editorPart, getEditorInput());
-                setPageText(index, editorPart.getContentTypeTitle());
-                setPageImage(index, DBeaverIcons.getImage(editorPart.getContentTypeImage()));
+                setPageText(index, editorPart.getTitle());
+                setPageImage(index, editorPart.getTitleImage());
                 contentPart.activated = true;
                 contentPart.index = index;
-                // Check MIME type
-                if (mimeType != null && mimeType.getPrimaryType().equals(editorPart.getPreferredMimeType())) {
-                    defaultPage = editorPart;
-                }
-                if (editorPart.isPreferredContent()) {
-                    preferredPage = editorPart;
-                }
             } catch (PartInitException e) {
                 log.error(e);
             }
         }
-        if (preferredPage != null) {
-            // Remove all optional pages
-            for (ContentPartInfo contentPart : contentParts) {
-                if (contentPart.activated && contentPart.editorPart != preferredPage && contentPart.editorPart.isOptionalContent()) {
-                    removePage(contentPart.index);
-                }
-            }
-
-            // Set default page
-            setActiveEditor(preferredPage);
-        } else if (defaultPage != null) {
-            setActiveEditor(defaultPage);
+        if (defaultPage != null) {
+            setActiveEditor(defaultPage.editorPart);
         }
 
         this.partsLoaded = true;
@@ -473,8 +438,9 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        IValueController valueController = getEditorInput().getValueController();
-        LOBInitializer initializer = new LOBInitializer(valueController, getEditorInput().getEditors(), getEditorInput());
+        ContentEditorInput input = getEditorInput();
+        IValueController valueController = input.getValueController();
+        LOBInitializer initializer = new LOBInitializer(valueController, input.getEditors(), input.getDefaultEditor(), input);
         try {
             //valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
             DBeaverUI.runInProgressService(initializer);
