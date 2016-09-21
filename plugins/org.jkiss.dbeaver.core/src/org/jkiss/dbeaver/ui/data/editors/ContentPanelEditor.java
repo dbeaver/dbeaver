@@ -72,7 +72,9 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
 
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
-        manager.add(new ContentTypeSwitchAction());
+        if (streamManagers != null) {
+            manager.add(new ContentTypeSwitchAction());
+        }
         if (streamEditor != null) {
             streamEditor.contributeActions(manager, control);
         }
