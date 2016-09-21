@@ -40,8 +40,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
+import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
+import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.ui.dialogs.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -50,6 +53,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * LOBEditor
@@ -63,12 +67,14 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     }
 
     @Nullable
-    public static ContentEditor openEditor(IValueController valueController, IEditorPart[] editorParts, IEditorPart defaultPart)
+    public static ContentEditor openEditor(IValueController valueController, DBDContent content)
     {
         ContentEditorInput editorInput;
         // Save data to file
         try {
-            LOBInitializer initializer = new LOBInitializer(valueController, editorParts, defaultPart, null);
+            LOBInitializer initializer = new LOBInitializer(
+                valueController,
+                content);
             //valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
             DBeaverUI.runInProgressService(initializer);
             editorInput = initializer.editorInput;
@@ -109,9 +115,15 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
 
     private static class LOBInitializer implements DBRRunnableWithProgress {
         IValueController valueController;
+        DBDContent content;
         IEditorPart[] editorParts;
         IEditorPart defaultPart;
         ContentEditorInput editorInput;
+
+        public LOBInitializer(IValueController valueController, DBDContent content) {
+            this.valueController = valueController;
+            this.content = content;
+        }
 
         private LOBInitializer(IValueController valueController, IEditorPart[] editorParts, IEditorPart defaultPart, @Nullable ContentEditorInput editorInput)
         {
@@ -125,6 +137,45 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {
+                if (content != null && editorParts == null) {
+                    Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers =
+                        ValueManagerRegistry.getInstance().getApplicableStreamManagers(monitor, valueController.getValueType(), content);
+                    List<IEditorPart> parts = new ArrayList<>();
+                    IStreamValueManager.MatchType defaultMatch = null;
+                    for (Map.Entry<StreamValueManagerDescriptor, IStreamValueManager.MatchType> entry : streamManagers.entrySet()) {
+                        IStreamValueManager streamValueManager = entry.getKey().getInstance();
+                        try {
+                            IEditorPart editorPart = streamValueManager.createEditorPart(valueController);
+                            IStreamValueManager.MatchType matchType = entry.getValue();
+                            if (defaultPart == null) {
+                                defaultPart = editorPart;
+                                defaultMatch = matchType;
+                            } else {
+                                boolean setDefault = false;
+                                switch (matchType) {
+                                    case EXCLUSIVE:
+                                    case PRIMARY:
+                                        setDefault = true;
+                                        break;
+                                    case DEFAULT:
+                                        setDefault = (defaultMatch == IStreamValueManager.MatchType.APPLIES);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                if (setDefault) {
+                                    defaultPart = editorPart;
+                                    defaultMatch = matchType;
+                                }
+                            }
+                            parts.add(editorPart);
+                        } catch (DBException e) {
+                            log.error(e);
+                        }
+                    }
+                    editorParts = parts.toArray(new IEditorPart[parts.size()]);
+                }
+
                 if (editorInput == null) {
                     editorInput = new ContentEditorInput(
                         valueController,
@@ -149,16 +200,6 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
 
     public ContentEditor()
     {
-    }
-
-    @Nullable
-    public ContentPartInfo getContentEditor(IEditorPart editor) {
-        for (ContentPartInfo contentPart : contentParts) {
-            if (contentPart.editorPart == editor) {
-                return contentPart;
-            }
-        }
-        return null;
     }
 
     @Override
