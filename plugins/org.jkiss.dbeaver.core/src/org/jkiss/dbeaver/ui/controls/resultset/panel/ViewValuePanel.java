@@ -201,7 +201,7 @@ public class ViewValuePanel implements IResultSetPanel {
             // The same value
             return;
         } else {
-            updateActions = force = previewController.getBinding() != attr;
+            updateActions = force = (force || previewController.getBinding() != attr);
             previewController.setCurRow(row);
             previewController.setBinding(attr);
         }

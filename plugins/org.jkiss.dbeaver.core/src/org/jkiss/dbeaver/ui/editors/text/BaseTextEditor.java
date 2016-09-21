@@ -29,6 +29,8 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
@@ -48,6 +50,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
+import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
@@ -123,6 +126,14 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         //setPreferenceStore(new PreferenceStoreDelegate(DBeaverCore.getGlobalPreferenceStore()));
 
         super.createPartControl(parent);
+
+        // TODO: investigate!!!
+        // SWT.DEL shortcut is disabled in AbstractTextEditor.createNavigationActions
+        // Dunno why (there is a weird explanations about bug closed in 2004)
+        // but it blocks DEL button in nested editors
+        if (getSite() instanceof SubEditorSite) {
+            getTextViewer().getTextWidget().setKeyBinding(SWT.DEL, ST.DELETE_NEXT);
+        }
     }
 
     @Override

@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -113,16 +114,11 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
         } else if (streamEditor == null) {
             log.warn("NULL content editor.");
         } else {
-            DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        streamEditor.extractEditorValue(monitor, control, content);
-                    } catch (Exception e) {
-                        valueController.showMessage(e.getMessage(), true);
-                    }
-                }
-            });
+            try {
+                streamEditor.extractEditorValue(VoidProgressMonitor.INSTANCE, control, content);
+            } catch (Exception e) {
+                valueController.showMessage(e.getMessage(), true);
+            }
         }
         return content;
     }
