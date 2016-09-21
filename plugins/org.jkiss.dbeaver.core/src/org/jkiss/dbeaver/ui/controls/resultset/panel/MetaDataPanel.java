@@ -58,6 +58,7 @@ public class MetaDataPanel implements IResultSetPanel {
     private IResultSetPresentation presentation;
     private MetaDataTable attributeList;
     private List<DBDAttributeBinding> curAttributes;
+    private Color colorDisabled;
 
     public MetaDataPanel() {
     }
@@ -80,6 +81,7 @@ public class MetaDataPanel implements IResultSetPanel {
     @Override
     public Control createContents(final IResultSetPresentation presentation, Composite parent) {
         this.presentation = presentation;
+        this.colorDisabled = presentation.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
 
         this.attributeList = new MetaDataTable(parent);
         this.attributeList.setFitWidth(false);
@@ -174,7 +176,7 @@ public class MetaDataPanel implements IResultSetPanel {
         @Override
         protected Color getObjectForeground(DBDAttributeBinding item) {
             if (item.getParentObject() == null && !isAttributeVisible(item)) {
-                return presentation.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
+                return colorDisabled;
             }
             return super.getObjectForeground(item);
         }
