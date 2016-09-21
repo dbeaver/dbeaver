@@ -171,6 +171,8 @@ public class UIIcon {
     public static final DBIcon PANEL_AGGREGATE = new DBIcon("panel_aggregate", "sql/panel_aggregate.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PANEL_METADATA = new DBIcon("panel_metadata", "sql/panel_metadata.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon PAGES = new DBIcon("pages", "misc/pages.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
     static  {
         DBIcon.loadIcons(UIIcon.class);
     }
