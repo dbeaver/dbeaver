@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentPanelEditor;
-import org.jkiss.dbeaver.ui.data.editors.XMLPanelEditor;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
@@ -149,12 +148,7 @@ public class ContentValueManager extends BaseValueManager {
             case EDITOR:
                 return openContentEditor(controller);
             case PANEL:
-                Object value = controller.getValue();
-                if (value instanceof DBDContent && ContentUtils.isXML((DBDContent) value)) {
-                    return new XMLPanelEditor(controller);
-                } else {
-                    return new ContentPanelEditor(controller);
-                }
+                return new ContentPanelEditor(controller);
             default:
                 return null;
         }

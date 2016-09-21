@@ -49,7 +49,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     protected final EditType editType;
     protected final Composite inlinePlaceholder;
     protected ResultSetRow curRow;
-    protected final DBDAttributeBinding binding;
+    protected DBDAttributeBinding binding;
 
     public ResultSetValueController(
         @NotNull IResultSetController controller,
@@ -104,6 +104,10 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     public DBDAttributeBinding getBinding()
     {
         return binding;
+    }
+
+    public void setBinding(DBDAttributeBinding binding) {
+        this.binding = binding;
     }
 
     @NotNull
