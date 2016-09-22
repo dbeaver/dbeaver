@@ -296,7 +296,7 @@ public class DBeaverApplication implements IApplication {
         try {
             debugWriter = new FileOutputStream(debugLogFile);
             oldSystemOut = System.out;
-            oldSystemErr = System.out;
+            oldSystemErr = System.err;
             System.setOut(new PrintStream(new ProxyPrintStream(debugWriter, oldSystemOut)));
             System.setErr(new PrintStream(new ProxyPrintStream(debugWriter, oldSystemErr)));
         } catch (IOException e) {
