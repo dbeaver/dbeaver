@@ -72,8 +72,7 @@ public class SQLSemanticProcessor {
             Statement statement = CCJSqlParserUtil.parse(sqlQuery);
             if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
                 PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
-                if (!supportSubqueries || CommonUtils.isEmpty(select.getJoins())) {
-                    patchSelectQuery(dataSource, select, dataFilter);
+                if (patchSelectQuery(dataSource, select, dataFilter)) {
                     return statement.toString();
                 }
             }
@@ -100,7 +99,7 @@ public class SQLSemanticProcessor {
         return modifiedQuery.toString();
     }
 
-    private static void patchSelectQuery(DBPDataSource dataSource, PlainSelect select, DBDDataFilter filter) throws JSQLParserException {
+    private static boolean patchSelectQuery(DBPDataSource dataSource, PlainSelect select, DBDDataFilter filter) throws JSQLParserException {
         // WHERE
         FromItem fromItem = select.getFromItem();
         String tableAlias = fromItem.getAlias() == null ? null : fromItem.getAlias().getName();
@@ -138,7 +137,7 @@ public class SQLSemanticProcessor {
             }
 
         }
-
+        return true;
     }
 
     public static void addWhereToSelect(PlainSelect select, String condString) throws JSQLParserException {
