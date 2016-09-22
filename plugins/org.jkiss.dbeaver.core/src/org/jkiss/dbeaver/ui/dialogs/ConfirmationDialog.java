@@ -131,6 +131,11 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         return showConfirmDialogEx(shell, id, type, type, args);
     }
 
+    public static String getSavedPreference(String id) {
+        DBPPreferenceStore prefStore = DBeaverCore.getGlobalPreferenceStore();
+        return prefStore.getString(PREF_KEY_PREFIX + id);
+    }
+
     public static int showConfirmDialogEx(Shell shell, String id, int type, int imageType, Object... args)
     {
         ResourceBundle bundle = DBeaverActivator.getCoreResourceBundle();

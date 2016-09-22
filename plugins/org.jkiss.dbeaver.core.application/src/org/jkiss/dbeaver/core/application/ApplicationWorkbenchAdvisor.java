@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.core.application;
 
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.ui.*;
@@ -117,8 +118,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         try {
             IWorkbenchWindow window = getWorkbenchConfigurer().getWorkbench().getActiveWorkbenchWindow();
             if (window != null) {
-                if (!ConfirmationDialog.confirmAction(window.getShell(), DBeaverPreferences.CONFIRM_EXIT)) {
-                    return false;
+                if (!MessageDialogWithToggle.NEVER.equals(ConfirmationDialog.getSavedPreference(DBeaverPreferences.CONFIRM_EXIT))) {
+                    // Workaround of #703 bug. NEVER doesn't make sense for Exit confirmation. It is the same as ALWAYS.
+                    if (!ConfirmationDialog.confirmAction(window.getShell(), DBeaverPreferences.CONFIRM_EXIT)) {
+                        return false;
+                    }
                 }
                 // Close al content editors
                 // They are locks resources which are shared between other editors
