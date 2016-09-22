@@ -233,7 +233,7 @@ public interface SQLDialect {
     @NotNull
     MultiValueInsertMode getMultiValueInsertMode();
 
-    String addFiltersToQuery(DBPDataSource dataSource, String query, DBDDataFilter filter) throws DBException;
+    String addFiltersToQuery(DBPDataSource dataSource, String query, DBDDataFilter filter);
 
     /**
      * Two-item array containing begin and end of multi-line comments.

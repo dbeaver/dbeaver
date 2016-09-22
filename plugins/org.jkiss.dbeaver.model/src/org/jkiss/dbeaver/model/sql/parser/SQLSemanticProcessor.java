@@ -30,7 +30,7 @@ import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -48,6 +48,8 @@ import java.util.List;
  */
 public class SQLSemanticProcessor {
 
+    private static final Log log = Log.getLog(SQLSemanticProcessor.class);
+
     private static final String NESTED_QUERY_AlIAS = "z_q";
 
     public static boolean isSelectQuery(String query)
@@ -64,7 +66,7 @@ public class SQLSemanticProcessor {
         }
     }
 
-    public static String addFiltersToQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) throws DBException {
+    public static String addFiltersToQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
         boolean supportSubqueries = dataSource instanceof SQLDataSource && ((SQLDataSource) dataSource).getSQLDialect().supportsSubqueries();
         try {
             Statement statement = CCJSqlParserUtil.parse(sqlQuery);
@@ -75,13 +77,13 @@ public class SQLSemanticProcessor {
                     return statement.toString();
                 }
             }
-            return wrapQuery(dataSource, sqlQuery, dataFilter);
         } catch (Throwable e) {
-            throw new DBException("SQL parse error", e);
+            log.debug("SQL parse error", e);
         }
+        return wrapQuery(dataSource, sqlQuery, dataFilter);
     }
 
-    public static String wrapQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) throws DBException {
+    public static String wrapQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
         // Append filter conditions to query
         StringBuilder modifiedQuery = new StringBuilder(sqlQuery.length() + 100);
         modifiedQuery.append("SELECT * FROM (\n");
