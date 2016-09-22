@@ -862,6 +862,14 @@
                 </with>
             </enabledWhen>
         </handler>
+        <handler commandId="org.eclipse.ui.edit.text.showInformation" class="org.jkiss.dbeaver.ui.editors.sql.handlers.RenameHandler">
+            <!-- Handle showInformation - just because it has the same shortcut as rename -->
+            <enabledWhen>
+                <with variable="activePart">
+                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                </with>
+            </enabledWhen>
+        </handler>
 
         <!-- SQL editor handlers -->
 
