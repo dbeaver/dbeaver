@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui.data.managers.stream;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.custom.StyledText;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -39,19 +39,19 @@ import java.io.StringWriter;
 /**
 * TextPanelEditor
 */
-public class TextPanelEditor implements IStreamValueEditor<Text> {
+public class TextPanelEditor implements IStreamValueEditor<StyledText> {
 
     @Override
-    public Text createControl(IValueController valueController)
+    public StyledText createControl(IValueController valueController)
     {
-        Text text = new Text(valueController.getEditPlaceholder(), SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+        StyledText text = new StyledText(valueController.getEditPlaceholder(), SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
         text.setEditable(!valueController.isReadOnly());
         text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         return text;
     }
 
     @Override
-    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull Text control, @NotNull DBDContent value) throws DBException
+    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @NotNull DBDContent value) throws DBException
     {
         monitor.subTask("Read text value");
         DBDContentStorage data = value.getContents(monitor);
@@ -67,7 +67,7 @@ public class TextPanelEditor implements IStreamValueEditor<Text> {
     }
 
     @Override
-    public void extractEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull Text control, @NotNull DBDContent value) throws DBException
+    public void extractEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @NotNull DBDContent value) throws DBException
     {
         monitor.subTask("Read text value");
         value.updateContents(
@@ -76,7 +76,7 @@ public class TextPanelEditor implements IStreamValueEditor<Text> {
     }
 
     @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final Text control) throws DBCException {
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull final StyledText control) throws DBCException {
     }
 
 }

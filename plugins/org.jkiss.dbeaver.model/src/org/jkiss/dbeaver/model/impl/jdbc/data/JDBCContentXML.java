@@ -95,7 +95,7 @@ public class JDBCContentXML extends JDBCContentLOB {
             try {
                 xml.free();
             } catch (Exception e) {
-                log.warn(e);
+                log.debug(e);
             }
             xml = null;
         }
