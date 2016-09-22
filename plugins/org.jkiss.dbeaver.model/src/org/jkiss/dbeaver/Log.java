@@ -109,9 +109,9 @@ public class Log
     {
         ModelActivator activator = ModelActivator.getInstance();
         debugMessage(message, t, System.err);
-        if (activator != null) {
-            debugMessage(message, t, activator.getDebugWriter());
-        }
+//        if (activator != null) {
+//            debugMessage(message, t, activator.getDebugWriter());
+//        }
     }
 
     private static void debugMessage(Object message, Throwable t, PrintStream debugWriter) {

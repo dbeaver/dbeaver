@@ -19,11 +19,10 @@ package org.jkiss.dbeaver.bundle;
 
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.IOUtils;
 import org.osgi.framework.BundleContext;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
+import java.io.*;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -33,7 +32,6 @@ public class ModelActivator extends Plugin
 
     // The shared instance
     private static ModelActivator instance;
-    private PrintStream debugWriter;
 
     /**
      * The constructor
@@ -52,7 +50,6 @@ public class ModelActivator extends Plugin
         throws Exception
     {
         super.start(context);
-
         instance = this;
     }
 
@@ -60,15 +57,12 @@ public class ModelActivator extends Plugin
     public void stop(BundleContext context)
         throws Exception
     {
-        if (debugWriter != null) {
-            debugWriter.close();
-            debugWriter = null;
-        }
         instance = null;
 
         super.stop(context);
     }
 
+/*
     public synchronized PrintStream getDebugWriter()
     {
         if (debugWriter == null) {
@@ -87,5 +81,6 @@ public class ModelActivator extends Plugin
         }
         return debugWriter;
     }
+*/
 
 }
