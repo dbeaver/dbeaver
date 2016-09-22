@@ -270,42 +270,40 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         }
     }
 
-    private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLQuery sqlQuery, boolean fireEvents)
+    private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLQuery sqlQuery, final boolean fireEvents)
     {
         lastError = null;
 
-        final String originalQueryText = sqlQuery.getQuery();
-        DBCExecutionContext executionContext = getExecutionContext();
-        SQLQueryResult curResult = new SQLQueryResult(sqlQuery);
+        final DBCExecutionContext executionContext = getExecutionContext();
+        final DBPDataSource dataSource = executionContext.getDataSource();
+
+        final SQLQuery originalQuery = sqlQuery;
+        long startTime = System.currentTimeMillis();
+        boolean startQueryAlerted = false;
+
+        // Modify query (filters + parameters)
+        if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
+            String filteredQueryText = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(
+                dataSource, originalQuery.getQuery(), dataFilter);
+            sqlQuery = new SQLQuery(
+                filteredQueryText,
+                sqlQuery.getOffset(),
+                sqlQuery.getLength());
+        }
+
+        final SQLQueryResult curResult = new SQLQueryResult(sqlQuery);
         if (rsOffset > 0) {
             curResult.setRowOffset(rsOffset);
         }
-        SQLQuery originalQuery = sqlQuery;
-        long startTime = System.currentTimeMillis();
-        boolean startQueryAlerted = false;
 
         try {
             // Prepare statement
             closeStatement();
 
             // Check and invalidate connection
-            DBPDataSource dataSource = executionContext.getDataSource();
             if (!connectionInvalidated && dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
                 executionContext.invalidateContext(session.getProgressMonitor());
                 connectionInvalidated = true;
-            }
-
-            try {
-                // Modify query (filters + parameters)
-                if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
-                    String filteredQueryText = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(dataSource, originalQueryText, dataFilter);
-                    sqlQuery = new SQLQuery(
-                        filteredQueryText,
-                        sqlQuery.getOffset(),
-                        sqlQuery.getLength());
-                }
-            } catch (DBException e) {
-                throw new DBCException("Can't apply query filter", e);
             }
 
             Boolean hasParameters = prepareStatementParameters(sqlQuery);
@@ -313,7 +311,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                 return false;
             }
 
-            statistics.setQueryText(originalQueryText);
+            statistics.setQueryText(originalQuery.getQuery());
 
             // Notify query start
             if (fireEvents && listener != null) {

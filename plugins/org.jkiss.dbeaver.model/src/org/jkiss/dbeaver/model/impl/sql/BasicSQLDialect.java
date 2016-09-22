@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.impl.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
@@ -32,7 +31,6 @@ import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
@@ -305,7 +303,7 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public String addFiltersToQuery(DBPDataSource dataSource, String query, DBDDataFilter filter) throws DBException {
+    public String addFiltersToQuery(DBPDataSource dataSource, String query, DBDDataFilter filter) {
         return SQLSemanticProcessor.addFiltersToQuery(dataSource, query, filter);
     }
 
