@@ -40,15 +40,17 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
 import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 
-import java.io.File;
+import java.io.*;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -68,6 +70,10 @@ public class DBeaverApplication implements IApplication {
 
     private static DBeaverApplication instance;
     private IInstanceController instanceServer;
+
+    private OutputStream debugWriter;
+    private PrintStream oldSystemOut;
+    private PrintStream oldSystemErr;
 
     static {
         // Explicitly set UTF-8 as default file encoding
@@ -169,6 +175,9 @@ public class DBeaverApplication implements IApplication {
 
         // Init Core plugin and mark it as standalone version
         DBeaverCore.setStandalone(true);
+
+        initDebugWriter();
+
         log.debug(DBeaverCore.getProductTitle() + " is starting"); //$NON-NLS-1$
         log.debug("Install path: '" + SystemVariablesResolver.getInstallPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -267,10 +276,41 @@ public class DBeaverApplication implements IApplication {
                         workbench.close();
                 }
             });
+
         } catch (Throwable e) {
             log.error(e);
         } finally {
             instance = null;
+            stopDebugWriter();
+        }
+    }
+
+    private void initDebugWriter() {
+        File logPath = GeneralUtils.getMetadataFolder();
+        File debugLogFile = new File(logPath, "dbeaver-debug.log"); //$NON-NLS-1$
+        if (debugLogFile.exists()) {
+            if (!debugLogFile.delete()) {
+                System.err.println("Can't delete debug log file"); //$NON-NLS-1$
+            }
+        }
+        try {
+            debugWriter = new FileOutputStream(debugLogFile);
+            oldSystemOut = System.out;
+            oldSystemErr = System.out;
+            System.setOut(new PrintStream(new ProxyPrintStream(debugWriter, oldSystemOut)));
+            System.setErr(new PrintStream(new ProxyPrintStream(debugWriter, oldSystemErr)));
+        } catch (IOException e) {
+            e.printStackTrace(System.err);
+        }
+    }
+
+    private void stopDebugWriter() {
+        if (oldSystemOut != null) System.setOut(oldSystemOut);
+        if (oldSystemErr != null) System.setErr(oldSystemErr);
+
+        if (debugWriter != null) {
+            IOUtils.close(debugWriter);
+            debugWriter = null;
         }
     }
 
@@ -319,6 +359,22 @@ public class DBeaverApplication implements IApplication {
         } catch (Exception e) {
             log.error("Error parsing command line", e);
             return null;
+        }
+    }
+
+    private class ProxyPrintStream extends OutputStream {
+        private final OutputStream debugWriter;
+        private final OutputStream stdOut;
+
+        public ProxyPrintStream(OutputStream debugWriter, OutputStream stdOut) {
+            this.debugWriter = debugWriter;
+            this.stdOut = stdOut;
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            debugWriter.write(b);
+            stdOut.write(b);
         }
     }
 
