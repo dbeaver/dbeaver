@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -27,6 +29,8 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -606,7 +610,6 @@ public class ResultSetModel {
     void clearData() {
         // Refresh all rows
         this.releaseAll();
-        this.curRows = new ArrayList<>();
 
         hasData = false;
     }
@@ -705,9 +708,23 @@ public class ResultSetModel {
     }
 
     private void releaseAll() {
-        for (ResultSetRow row : curRows) {
-            row.release();
-        }
+        final List<ResultSetRow> oldRows = curRows;
+        this.curRows = new ArrayList<>();
+        // Cleanup in separate job.
+        // Sometimes model cleanup takes much time (e.g. freeing LOB values)
+        // So let's do it in separate job to avoid UI locking
+        new AbstractJob("Cleanup model") {
+            {
+                setSystem(true);
+            }
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                for (ResultSetRow row : oldRows) {
+                    row.release();
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     public DBDDataFilter getDataFilter() {

@@ -134,12 +134,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 clob.free();
             } catch (Throwable e) {
                 // Log as warning only if it is an exception.
-                // Errors just spam log
-                if (e instanceof Exception) {
-                    log.warn(e);
-                } else {
-                    log.debug(e);
-                }
+                log.debug(e);
             }
             clob = null;
         }
