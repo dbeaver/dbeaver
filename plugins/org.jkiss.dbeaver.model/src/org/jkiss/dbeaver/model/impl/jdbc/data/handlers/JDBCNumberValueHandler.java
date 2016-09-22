@@ -193,7 +193,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     break;
                 case java.sql.Types.NUMERIC:
                     if (number instanceof Long) {
-                        statement.setLong(paramIndex, number.intValue());
+                        statement.setLong(paramIndex, number.longValue());
                     } else if (number instanceof Integer) {
                         statement.setInt(paramIndex, number.intValue());
                     } else if (number instanceof Short) {
