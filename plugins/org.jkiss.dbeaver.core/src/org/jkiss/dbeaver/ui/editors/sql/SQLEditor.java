@@ -40,6 +40,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
+import org.eclipse.ui.texteditor.ITextEditorActionConstants;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
@@ -421,6 +423,9 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Update controls
         onDataSourceChange();
+
+        setAction(ITextEditorActionConstants.SHOW_INFORMATION, null);
+        //toolTipAction.setEnabled(false);
 
         CoreFeatures.SQL_EDITOR_OPEN.use();
     }
