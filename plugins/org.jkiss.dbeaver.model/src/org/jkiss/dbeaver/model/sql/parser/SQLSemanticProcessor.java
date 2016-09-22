@@ -103,6 +103,11 @@ public class SQLSemanticProcessor {
         // WHERE
         FromItem fromItem = select.getFromItem();
         String tableAlias = fromItem.getAlias() == null ? null : fromItem.getAlias().getName();
+        if (tableAlias == null) {
+            if (fromItem instanceof Table) {
+                tableAlias = ((Table) fromItem).getName();
+            }
+        }
         if (filter.hasConditions()) {
             StringBuilder whereString = new StringBuilder();
             SQLUtils.appendConditionString(filter, dataSource, tableAlias, whereString, true);
