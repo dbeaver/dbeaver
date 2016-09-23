@@ -1302,7 +1302,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             Object cellValue = getCellValue(colElement, rowElement, false);
             if (cellValue instanceof DBDContent || cellValue instanceof DBDReference) {
                 DBDAttributeBinding attr = (DBDAttributeBinding)(controller.isRecordMode() ? rowElement : colElement);
-                return DBUtils.getTypeImage(attr.getMetaAttribute());
+                return DBUtils.getObjectImage(attr.getMetaAttribute());
             } else {
                 return null;
             }
@@ -1381,7 +1381,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Image getImage(Object element)
         {
             if (element instanceof DBDAttributeBinding/* && (!isRecordMode() || !model.isDynamicMetadata())*/) {
-                return DBeaverIcons.getImage(DBUtils.getTypeImage(((DBDAttributeBinding) element).getMetaAttribute()));
+                return DBeaverIcons.getImage(DBUtils.getObjectImage(((DBDAttributeBinding) element).getMetaAttribute()));
             }
             return null;
         }

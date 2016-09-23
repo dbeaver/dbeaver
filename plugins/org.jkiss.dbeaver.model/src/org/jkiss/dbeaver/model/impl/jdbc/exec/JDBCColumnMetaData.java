@@ -304,7 +304,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvide
     @Nullable
     @Override
     public DBPImage getObjectImage() {
-        return DBUtils.getDataIcon(this);
+        return DBUtils.getTypeImage(this);
     }
 
     @Override

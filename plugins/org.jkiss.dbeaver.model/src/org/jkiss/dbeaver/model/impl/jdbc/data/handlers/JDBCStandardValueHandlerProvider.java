@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
@@ -35,7 +34,7 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
     @Override
     public DBPImage getTypeImage(DBSTypedObject type)
     {
-        return DBUtils.getDataIcon(type);
+        return DBUtils.getTypeImage(type);
     }
 
     @Override

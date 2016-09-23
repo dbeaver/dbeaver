@@ -154,6 +154,6 @@ public class DBDAttributeBindingElement extends DBDAttributeBindingNested implem
         if (collection.getComponentType() instanceof DBPImageProvider) {
             return ((DBPImageProvider) collection.getComponentType()).getObjectImage();
         }
-        return DBUtils.getDataIcon(collection.getComponentType());
+        return DBUtils.getTypeImage(collection.getComponentType());
     }
 }

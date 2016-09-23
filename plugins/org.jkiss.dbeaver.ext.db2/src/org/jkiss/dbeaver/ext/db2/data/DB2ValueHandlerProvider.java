@@ -37,7 +37,7 @@ public class DB2ValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
     public DBPImage getTypeImage(DBSTypedObject type)
     {
-        return DBUtils.getDataIcon(type);
+        return DBUtils.getTypeImage(type);
     }
 
     @Override

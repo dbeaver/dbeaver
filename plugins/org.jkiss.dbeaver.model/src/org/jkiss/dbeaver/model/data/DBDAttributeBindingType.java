@@ -145,7 +145,7 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         if (attribute instanceof DBPImageProvider) {
             return ((DBPImageProvider) attribute).getObjectImage();
         }
-        return DBUtils.getDataIcon(this);
+        return DBUtils.getTypeImage(this);
     }
 
     @Override
