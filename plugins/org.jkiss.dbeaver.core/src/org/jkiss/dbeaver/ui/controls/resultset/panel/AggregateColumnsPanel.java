@@ -253,7 +253,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             for (Map.Entry<DBDAttributeBinding, List<Object>> entry : attrValues.entrySet()) {
                 TreeItem attrItem = new TreeItem(aggregateTable, SWT.NONE);
                 attrItem.setText(entry.getKey().getName());
-                attrItem.setImage(DBeaverIcons.getImage(DBUtils.getTypeImage(entry.getKey())));
+                attrItem.setImage(DBeaverIcons.getImage(DBUtils.getObjectImage(entry.getKey())));
                 aggregateValues(attrItem, entry.getValue());
                 attrItem.setExpanded(true);
             }

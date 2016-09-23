@@ -22,9 +22,8 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeStyle;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPImageProvider;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
@@ -61,11 +60,7 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
         if (!diagram.hasAttributeStyle(ERDAttributeStyle.ICONS)) {
             return null;
         }
-        if (object instanceof DBPImageProvider) {
-            return ((DBPImageProvider)object).getObjectImage();
-        } else {
-            return DBIcon.TYPE_UNKNOWN;
-        }
+        return DBUtils.getObjectImage(object);
     }
 
     public boolean isInPrimaryKey() {

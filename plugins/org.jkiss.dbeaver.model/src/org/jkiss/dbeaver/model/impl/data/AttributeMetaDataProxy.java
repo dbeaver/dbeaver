@@ -125,10 +125,7 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
     @Nullable
     @Override
     public DBPImage getObjectImage() {
-        if (attribute instanceof DBPImageProvider) {
-            return ((DBPImageProvider) attribute).getObjectImage();
-        }
-        return DBUtils.getTypeImage(this);
+        return DBUtils.getObjectImage(attribute);
     }
 
     @Override

@@ -1258,9 +1258,17 @@ public final class DBUtils {
         if (typedObject instanceof DBSTypedObjectEx) {
             DBSDataType dataType = ((DBSTypedObjectEx) typedObject).getDataType();
             if (dataType instanceof DBPImageProvider) {
-                return ((DBPImageProvider) dataType).getObjectImage();
+                DBPImage image = ((DBPImageProvider) dataType).getObjectImage();
+                if (image != null) {
+                    return image;
+                }
             }
         }
+        return getDefaultTypeImage(typedObject);
+    }
+
+    @NotNull
+    public static DBPImage getDefaultTypeImage(DBSTypedObject typedObject) {
         String typeName = typedObject.getTypeName();
         switch (typedObject.getDataKind()) {
             case BOOLEAN:
@@ -1305,6 +1313,12 @@ public final class DBUtils {
     @NotNull
     public static DBPImage getObjectImage(DBPObject object)
     {
+        return getObjectImage(object, true);
+    }
+
+    @Nullable
+    public static DBPImage getObjectImage(DBPObject object, boolean useDefault)
+    {
         DBPImage image = null;
         if (object instanceof DBPImageProvider) {
             image = ((DBPImageProvider)object).getObjectImage();
@@ -1313,7 +1327,7 @@ public final class DBUtils {
             if (object instanceof DBSTypedObject) {
                 image = getTypeImage((DBSTypedObject) object);
             }
-            if (image == null) {
+            if (image == null && useDefault) {
                 image = DBIcon.TYPE_OBJECT;
             }
         }

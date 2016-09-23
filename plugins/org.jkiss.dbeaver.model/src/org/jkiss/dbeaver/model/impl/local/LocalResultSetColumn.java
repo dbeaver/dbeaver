@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 /**
  * LocalResultSetColumn
  */
-public class LocalResultSetColumn implements DBCAttributeMetaData, DBPImageProvider
+public class LocalResultSetColumn implements DBCAttributeMetaData
 {
     private final LocalResultSet resultSet;
     private final int index;
@@ -163,9 +163,4 @@ public class LocalResultSetColumn implements DBCAttributeMetaData, DBPImageProvi
         return typedObject == null ? 0 : typedObject.getMaxLength();
     }
 
-    @Nullable
-    @Override
-    public DBPImage getObjectImage() {
-        return DBUtils.getTypeImage(this);
-    }
 }
