@@ -35,6 +35,10 @@ import java.util.StringTokenizer;
 public class TextUtils {
     public static final char PARAGRAPH_CHAR = (char) 182;
 
+    public static String compactWhiteSpaces(String str) {
+        return str.replaceAll("\\s+", " ");
+    }
+
     public static boolean isEmptyLine(IDocument document, int line)
             throws BadLocationException {
         IRegion region = document.getLineInformation(line);

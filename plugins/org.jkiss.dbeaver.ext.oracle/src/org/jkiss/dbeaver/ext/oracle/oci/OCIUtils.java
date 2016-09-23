@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.utils.WinRegistry;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -349,7 +350,7 @@ public class OCIUtils
     }
 
     private static String getPlainTnsDescription(String line) {
-        return line.trim().replaceAll("\\s+", " ");
+        return TextUtils.compactWhiteSpaces(line.trim());
     }
 
     public static boolean isInstantClient(String oraHome)
