@@ -101,16 +101,22 @@ public class SQLSemanticProcessor {
     private static boolean patchSelectQuery(DBPDataSource dataSource, PlainSelect select, DBDDataFilter filter) throws JSQLParserException {
         // WHERE
         if (filter.hasConditions()) {
-            FromItem fromItem = select.getFromItem();
-            String tableAlias = fromItem.getAlias() == null ? null : fromItem.getAlias().getName();
-            if (tableAlias == null) {
-                if (fromItem instanceof Table) {
-                    tableAlias = ((Table) fromItem).getName();
+            for (DBDAttributeConstraint co : filter.getConstraints()) {
+                if (co.hasCondition()) {
+                    Table table = getConstraintTable(select, co);
+                    if (table != null) {
+                        if (table.getAlias() != null) {
+                            co.setEntityAlias(table.getAlias().getName());
+                        } else {
+                            co.setEntityAlias(table.getName());
+                        }
+                    } else {
+                        co.setEntityAlias(null);
+                    }
                 }
             }
-
             StringBuilder whereString = new StringBuilder();
-            SQLUtils.appendConditionString(filter, dataSource, tableAlias, whereString, true);
+            SQLUtils.appendConditionString(filter, dataSource, null, whereString, true);
             String condString = whereString.toString();
             addWhereToSelect(select, condString);
         }
