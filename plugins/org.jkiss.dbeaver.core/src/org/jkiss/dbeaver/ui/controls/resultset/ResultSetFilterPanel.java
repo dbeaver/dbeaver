@@ -53,10 +53,7 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.StyledTextContentAdapter;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
@@ -383,7 +380,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 displayName = m.replaceAll("");
             }
 
-            displayName = displayName.replaceAll("--.+", "").replaceAll("\\s+", " ");
+            displayName = displayName.replaceAll("--.+", "");
+            displayName = TextUtils.compactWhiteSpaces(displayName);
             activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
             if (CommonUtils.isEmpty(activeDisplayName)) {
                 activeDisplayName = DEFAULT_QUERY_TEXT;

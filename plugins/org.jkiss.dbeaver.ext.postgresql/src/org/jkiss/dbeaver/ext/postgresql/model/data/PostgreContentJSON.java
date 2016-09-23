@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentChars;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
 import java.sql.SQLException;
@@ -66,4 +68,8 @@ public class PostgreContentJSON extends JDBCContentChars {
         }
     }
 
+    @Override
+    public String getDisplayString(DBDDisplayFormat format) {
+        return TextUtils.compactWhiteSpaces(data);
+    }
 }

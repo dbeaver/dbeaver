@@ -23,14 +23,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -50,7 +48,11 @@ public class ImageStreamValueManager implements IStreamValueManager {
         // Applies to image values
         ImageDetector imageDetector = new ImageDetector(value);
         if (!DBUtils.isNullValue(value)) {
-            DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), imageDetector);
+            try {
+                imageDetector.run(monitor);
+            } catch (Throwable e) {
+                return MatchType.NONE;
+            }
         }
         return imageDetector.isImage() ? MatchType.EXCLUSIVE : MatchType.NONE;
     }

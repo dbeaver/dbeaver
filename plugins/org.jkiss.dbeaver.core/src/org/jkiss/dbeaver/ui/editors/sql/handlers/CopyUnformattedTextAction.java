@@ -26,6 +26,7 @@ import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
@@ -95,7 +96,7 @@ public class CopyUnformattedTextAction extends Action {
                             break;
                         }
                     }
-                    comment = comment.replaceAll("\\s+", " ");
+                    comment = TextUtils.compactWhiteSpaces(comment);
                     result.append(comment);
                 } else {
                     lastWhitespace = false;
