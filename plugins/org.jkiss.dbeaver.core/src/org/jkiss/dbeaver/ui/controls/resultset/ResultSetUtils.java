@@ -372,11 +372,11 @@ public class ResultSetUtils
     public static boolean equalAttributes(DBCAttributeMetaData attr1, DBCAttributeMetaData attr2) {
         return
             CommonUtils.equalObjects(attr1.getLabel(), attr2.getLabel()) &&
+            CommonUtils.equalObjects(attr1.getName(), attr2.getName()) &&
             CommonUtils.equalObjects(attr1.getEntityMetaData(), attr2.getEntityMetaData()) &&
             attr1.getOrdinalPosition() == attr2.getOrdinalPosition() &&
             attr1.isRequired() == attr2.isRequired() &&
             attr1.getMaxLength() == attr2.getMaxLength() &&
-            CommonUtils.equalObjects(attr1.getName(), attr2.getName()) &&
             attr1.getPrecision() == attr2.getPrecision() &&
             attr1.getScale() == attr2.getScale() &&
             attr1.getTypeID() == attr2.getTypeID() &&
