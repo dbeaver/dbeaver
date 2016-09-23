@@ -145,9 +145,8 @@ public class SQLSemanticProcessor {
     private static Expression getConstraintExpression(PlainSelect select, DBDAttributeConstraint co) throws JSQLParserException {
         Expression orderExpr;
         String attrName = co.getAttribute().getName();
-        if (CommonUtils.isEmpty(attrName)) {
-            // Use column position
-            orderExpr = new LongValue(co.getOrderPosition() + 1);
+        if (attrName.isEmpty()) {
+            orderExpr = new LongValue(co.getAttribute().getOrdinalPosition() + 1);
         } else if (CommonUtils.isJavaIdentifier(attrName)) {
             // Use column table only if there are multiple source tables (joins)
             Table orderTable = CommonUtils.isEmpty(select.getJoins()) ? null : getConstraintTable(select, co);
@@ -155,6 +154,8 @@ public class SQLSemanticProcessor {
         } else {
             // TODO: set tableAlias for all column references in expression
             orderExpr = CCJSqlParserUtil.parseExpression(attrName);
+            //orderExpr = new CustomExpression(attrName);
+            //orderExpr = new LongValue(co.getAttribute().getOrdinalPosition() + 1);
         }
         return orderExpr;
     }
