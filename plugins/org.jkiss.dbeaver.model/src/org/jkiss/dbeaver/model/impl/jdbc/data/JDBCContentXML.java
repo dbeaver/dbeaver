@@ -144,7 +144,7 @@ public class JDBCContentXML extends JDBCContentLOB {
             } else if (xml != null) {
                 preparedStatement.setSQLXML(paramIndex, xml);
             } else {
-                preparedStatement.setNull(paramIndex + 1, java.sql.Types.SQLXML);
+                preparedStatement.setNull(paramIndex, java.sql.Types.SQLXML);
             }
         }
         catch (SQLException e) {

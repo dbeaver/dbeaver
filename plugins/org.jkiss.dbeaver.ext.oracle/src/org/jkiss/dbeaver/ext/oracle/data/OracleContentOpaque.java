@@ -100,7 +100,7 @@ public abstract class OracleContentOpaque<OPAQUE_TYPE extends Object> extends JD
             } else if (opaque != null) {
                 preparedStatement.setObject(paramIndex, opaque);
             } else {
-                preparedStatement.setNull(paramIndex + 1, java.sql.Types.SQLXML);
+                preparedStatement.setNull(paramIndex, java.sql.Types.SQLXML);
             }
         }
         catch (IOException e) {

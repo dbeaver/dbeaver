@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -128,6 +129,11 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         }
 
         this.dataKind = JDBCDataSource.getDataKind(getName(), valueType);
+        if (this.dataKind == DBPDataKind.OBJECT) {
+            if (PostgreConstants.TYPE_JSONB.equals(name) || PostgreConstants.TYPE_JSON.equals(name)) {
+                this.dataKind = DBPDataKind.CONTENT;
+            }
+        }
 
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "typowner");
         this.isByValue = JDBCUtils.safeGetBoolean(dbResult, "typbyval");

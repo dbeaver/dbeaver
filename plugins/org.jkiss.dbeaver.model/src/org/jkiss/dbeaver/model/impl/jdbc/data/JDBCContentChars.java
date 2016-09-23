@@ -44,7 +44,7 @@ import java.sql.SQLException;
 public class JDBCContentChars extends JDBCContentAbstract implements DBDContentStorage, DBDContentCached {
 
     private String originalData;
-    private String data;
+    protected String data;
 
     public JDBCContentChars(DBPDataSource dataSource, String data) {
         super(dataSource);
