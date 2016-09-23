@@ -48,7 +48,7 @@ public abstract class JDBCAttribute extends AbstractAttribute implements DBSObje
     @Override
     public DBPImage getObjectImage()
     {
-        DBPImage columnImage = DBUtils.getDataIcon(this);
+        DBPImage columnImage = DBUtils.getTypeImage(this);
         JDBCColumnKeyType keyType = getKeyType();
         if (keyType != null) {
             columnImage = getOverlayImage(columnImage, keyType);

@@ -170,7 +170,7 @@ public class MetaDataPanel implements IResultSetPanel {
         @Nullable
         @Override
         protected DBPImage getObjectImage(DBDAttributeBinding item) {
-            return DBUtils.getTypeImage(item.getMetaAttribute());
+            return DBUtils.getObjectImage(item.getMetaAttribute());
         }
 
         @Override

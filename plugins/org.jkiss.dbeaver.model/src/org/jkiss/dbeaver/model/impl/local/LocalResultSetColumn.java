@@ -166,6 +166,6 @@ public class LocalResultSetColumn implements DBCAttributeMetaData, DBPImageProvi
     @Nullable
     @Override
     public DBPImage getObjectImage() {
-        return DBUtils.getDataIcon(this);
+        return DBUtils.getTypeImage(this);
     }
 }
