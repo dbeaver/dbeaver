@@ -40,6 +40,8 @@ public class DBDAttributeConstraint {
     private boolean visible;
     private int visualPosition;
     private final int originalVisualPosition;
+    // USed to generate expressions
+    private transient String entityAlias;
 
     public DBDAttributeConstraint(DBDAttributeBinding attribute)
     {
@@ -162,6 +164,18 @@ public class DBDAttributeConstraint {
     public void setVisualPosition(int visualPosition)
     {
         this.visualPosition = visualPosition;
+    }
+
+    /**
+     * Attribute owner entity alias.
+     * Null by default. Can be set by SQL generation routines after entity alias resolution.
+     */
+    public String getEntityAlias() {
+        return entityAlias;
+    }
+
+    public void setEntityAlias(String entityAlias) {
+        this.entityAlias = entityAlias;
     }
 
     public void reset()

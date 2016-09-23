@@ -322,7 +322,9 @@ public final class SQLUtils {
 
             if (hasWhere) query.append(operator);
             hasWhere = true;
-            if (conditionTable != null) {
+            if (constraint.getEntityAlias() != null) {
+                query.append(constraint.getEntityAlias()).append('.');
+            } else if (conditionTable != null) {
                 query.append(conditionTable).append('.');
             }
             query.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML));
