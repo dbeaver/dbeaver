@@ -1404,17 +1404,19 @@ public class SQLEditor extends SQLEditorBase implements
                     if (statement != null && !resultTabs.isDisposed()) {
                         resultsProvider.query = statement;
                         resultsProvider.lastGoodQuery = statement;
-                        resultsProvider.tabItem.setToolTipText(CommonUtils.truncateString(statement.getQuery(), 1000));
-                        // Special statements (not real statements) have their name in data
-                        if (isStatsResult) {
-                            String tabName = "Statistics";
-                            int queryIndex = queryProcessors.indexOf(QueryProcessor.this);
-                            if (queryIndex > 0) {
-                                tabName += " - " + (queryIndex + 1);
-                            }
-                            resultsProvider.tabItem.setText(tabName);
-                            if (!CommonUtils.isEmpty(statement.getQuery())) {
-                                resultsProvider.tabItem.setToolTipText(statement.getQuery());
+                        if (!resultsProvider.tabItem.isDisposed()) {
+                            resultsProvider.tabItem.setToolTipText(CommonUtils.truncateString(statement.getQuery(), 1000));
+                            // Special statements (not real statements) have their name in data
+                            if (isStatsResult) {
+                                String tabName = "Statistics";
+                                int queryIndex = queryProcessors.indexOf(QueryProcessor.this);
+                                if (queryIndex > 0) {
+                                    tabName += " - " + (queryIndex + 1);
+                                }
+                                resultsProvider.tabItem.setText(tabName);
+                                if (!CommonUtils.isEmpty(statement.getQuery())) {
+                                    resultsProvider.tabItem.setToolTipText(statement.getQuery());
+                                }
                             }
                         }
                     }
