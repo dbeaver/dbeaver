@@ -65,6 +65,8 @@ public class SQLSemanticProcessor {
         }
     }
 
+    // FIXME: Applying filters changes query formatting (thus it changes column names in expressions)
+    // FIXME: Solution - always wrap query in subselect + add patched WHERE and ORDER
     public static String addFiltersToQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
         boolean supportSubqueries = dataSource instanceof SQLDataSource && ((SQLDataSource) dataSource).getSQLDialect().supportsSubqueries();
         try {
