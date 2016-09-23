@@ -1284,7 +1284,7 @@ public final class DBUtils {
             case CONTENT:
                 if (typeName.contains("XML") || typeName.contains("xml")) {
                     return DBIcon.TYPE_XML;
-                } else if (typeName.contains("CHAR")) {
+                } else if (typeName.contains("CHAR") || typeName.contains("char")) {
                     return DBIcon.TYPE_TEXT;
                 }
                 return DBIcon.TYPE_LOB;
