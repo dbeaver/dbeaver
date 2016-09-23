@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
@@ -30,12 +28,6 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  * Oracle data types provider
  */
 public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
-
-    @Override
-    public DBPImage getTypeImage(DBSTypedObject type)
-    {
-        return DBUtils.getTypeImage(type);
-    }
 
     @Override
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)

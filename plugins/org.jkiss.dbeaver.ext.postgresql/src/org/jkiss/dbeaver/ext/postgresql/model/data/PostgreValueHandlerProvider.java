@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.ext.postgresql.model.data;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
@@ -33,12 +31,6 @@ import java.sql.Types;
  * PostgreValueHandlerProvider
  */
 public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
-
-    @Override
-    public DBPImage getTypeImage(DBSTypedObject type)
-    {
-        return DBUtils.getTypeImage(type);
-    }
 
     @Nullable
     @Override
