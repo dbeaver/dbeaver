@@ -199,7 +199,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Override
     public boolean isHidden() {
-        return getOrdinalPosition() < 0;
+        return isPersisted() && getOrdinalPosition() < 0;
     }
 
     public String getFullQualifiedTypeName() {
