@@ -118,9 +118,12 @@ public abstract class JDBCCompositeCache<
         throws DBException
     {
         List<TYPE> result = new ArrayList<>();
-        for (OBJECT object : getObjects(monitor, owner, forParent)) {
-            if (type.isInstance(object)) {
-                result.add(type.cast(object));
+        Collection<OBJECT> objects = getObjects(monitor, owner, forParent);
+        if (objects != null) {
+            for (OBJECT object : objects) {
+                if (type.isInstance(object)) {
+                    result.add(type.cast(object));
+                }
             }
         }
         return result;
