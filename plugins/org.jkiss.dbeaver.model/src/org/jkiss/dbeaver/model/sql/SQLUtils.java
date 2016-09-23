@@ -327,8 +327,23 @@ public final class SQLUtils {
             } else if (conditionTable != null) {
                 query.append(conditionTable).append('.');
             }
-            query.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML));
-            query.append(' ').append(condition);
+            // Attribute name could be an expression. So check if this is a real attribute
+            // and generate full/quoted name for it.
+            String attrName;
+            DBSAttributeBase cAttr = constraint.getAttribute();
+            if (cAttr instanceof DBDAttributeBinding) {
+                DBDAttributeBinding binding = (DBDAttributeBinding) cAttr;
+                if (binding.getEntityAttribute() != null &&
+                    binding.getMetaAttribute().getName().equals(binding.getMetaAttribute().getName()))
+                {
+                    attrName = DBUtils.getObjectFullName(dataSource, binding, DBPEvaluationContext.DML);
+                } else {
+                    attrName = binding.getMetaAttribute().getName();
+                }
+            } else {
+                attrName = cAttr.getName();
+            }
+            query.append(attrName).append(' ').append(condition);
         }
 
         if (!CommonUtils.isEmpty(filter.getWhere())) {
