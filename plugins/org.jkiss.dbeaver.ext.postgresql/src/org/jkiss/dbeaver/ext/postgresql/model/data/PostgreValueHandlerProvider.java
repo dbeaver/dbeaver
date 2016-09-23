@@ -49,10 +49,16 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
             return PostgreArrayValueHandler.INSTANCE;
         } else if (typeID == Types.STRUCT) {
             return PostgreStructValueHandler.INSTANCE;
-        } else if (typedObject.getTypeName().equalsIgnoreCase(PostgreConstants.TYPE_HSTORE)) {
-            return PostgreHStoreValueHandler.INSTANCE;
         } else {
-            return null;
+            switch (typedObject.getTypeName()) {
+                case PostgreConstants.TYPE_JSONB:
+                case PostgreConstants.TYPE_JSON:
+                    return PostgreJSONValueHandler.INSTANCE;
+                case PostgreConstants.TYPE_HSTORE:
+                    return PostgreHStoreValueHandler.INSTANCE;
+                default:
+                    return null;
+            }
         }
     }
 
