@@ -191,15 +191,17 @@ public class ViewValuePanel implements IResultSetPanel {
             {
                 @Override
                 public void updateValue(@Nullable Object value, boolean updatePresentation) {
-                    super.updateValue(value, updatePresentation);
-                    presentation.updateValueView();
+                    valueSaving = true;
+                    try {
+                        super.updateValue(value, updatePresentation);
+                        presentation.updateValueView();
+                    } finally {
+                        valueSaving = false;
+                    }
                 }
             };
             updateActions = true;
             force = true;
-        } else if (!force && previewController.getCurRow() == row && previewController.getBinding() == attr) {
-            // The same value
-            return;
         } else {
             updateActions = force = (force || previewController.getBinding() != attr);
             previewController.setCurRow(row);
