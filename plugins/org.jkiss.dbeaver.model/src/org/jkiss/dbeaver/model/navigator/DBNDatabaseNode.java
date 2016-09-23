@@ -137,11 +137,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     @Override
     public DBPImage getNodeIcon()
     {
-        DBPImage image = null;
         final DBSObject object = getObject();
-        if (object instanceof DBPImageProvider) {
-            image = ((DBPImageProvider) object).getObjectImage();
-        }
+        DBPImage image = DBUtils.getObjectImage(object, false);
         if (image == null) {
             DBXTreeNode meta = getMeta();
             if (meta != null) {

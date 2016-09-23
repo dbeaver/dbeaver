@@ -17,12 +17,11 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 
 /**
@@ -41,11 +40,7 @@ public abstract class AbstractTableIndexColumn implements DBSTableIndexColumn, D
     @Override
     public DBPImage getObjectImage()
     {
-        DBSTableColumn tableColumn = getTableColumn();
-        if (tableColumn instanceof DBPImageProvider) {
-            return ((DBPImageProvider)tableColumn).getObjectImage();
-        }
-        return null;
+        return DBUtils.getObjectImage(getTableColumn());
     }
 
     @Nullable

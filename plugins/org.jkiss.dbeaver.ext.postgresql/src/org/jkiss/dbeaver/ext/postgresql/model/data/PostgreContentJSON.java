@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentChars;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
@@ -70,6 +71,13 @@ public class PostgreContentJSON extends JDBCContentChars {
 
     @Override
     public String getDisplayString(DBDDisplayFormat format) {
-        return TextUtils.compactWhiteSpaces(data);
+        return data == null ? null : TextUtils.compactWhiteSpaces(data);
     }
+
+    @Override
+    public PostgreContentJSON cloneValue(DBRProgressMonitor monitor)
+    {
+        return new PostgreContentJSON(dataSource, data);
+    }
+
 }

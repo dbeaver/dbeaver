@@ -151,9 +151,6 @@ public class DBDAttributeBindingElement extends DBDAttributeBindingNested implem
     @Nullable
     @Override
     public DBPImage getObjectImage() {
-        if (collection.getComponentType() instanceof DBPImageProvider) {
-            return ((DBPImageProvider) collection.getComponentType()).getObjectImage();
-        }
-        return DBUtils.getTypeImage(collection.getComponentType());
+        return DBUtils.getObjectImage(collection.getComponentType());
     }
 }

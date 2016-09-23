@@ -20,7 +20,10 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
@@ -37,7 +40,7 @@ import java.sql.SQLException;
 /**
  * JDBCColumnMetaData
  */
-public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvider {
+public class JDBCColumnMetaData implements DBCAttributeMetaData {
     private static final Log log = Log.getLog(JDBCColumnMetaData.class);
 
     public static final String PROP_CATEGORY_COLUMN = "Column";
@@ -299,12 +302,6 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvide
     @Override
     public JDBCTableMetaData getEntityMetaData() {
         return tableMetaData;
-    }
-
-    @Nullable
-    @Override
-    public DBPImage getObjectImage() {
-        return DBUtils.getTypeImage(this);
     }
 
     @Override
