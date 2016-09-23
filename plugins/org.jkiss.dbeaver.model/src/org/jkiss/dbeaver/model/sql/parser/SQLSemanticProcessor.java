@@ -26,18 +26,17 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -101,14 +100,15 @@ public class SQLSemanticProcessor {
 
     private static boolean patchSelectQuery(DBPDataSource dataSource, PlainSelect select, DBDDataFilter filter) throws JSQLParserException {
         // WHERE
-        FromItem fromItem = select.getFromItem();
-        String tableAlias = fromItem.getAlias() == null ? null : fromItem.getAlias().getName();
-        if (tableAlias == null) {
-            if (fromItem instanceof Table) {
-                tableAlias = ((Table) fromItem).getName();
-            }
-        }
         if (filter.hasConditions()) {
+            FromItem fromItem = select.getFromItem();
+            String tableAlias = fromItem.getAlias() == null ? null : fromItem.getAlias().getName();
+            if (tableAlias == null) {
+                if (fromItem instanceof Table) {
+                    tableAlias = ((Table) fromItem).getName();
+                }
+            }
+
             StringBuilder whereString = new StringBuilder();
             SQLUtils.appendConditionString(filter, dataSource, tableAlias, whereString, true);
             String condString = whereString.toString();
@@ -121,17 +121,8 @@ public class SQLSemanticProcessor {
                 orderByElements = new ArrayList<>();
                 select.setOrderByElements(orderByElements);
             }
-            Table orderTable = tableAlias == null ? null : new Table(tableAlias);
             for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
-                Expression orderExpr;
-                String attrName = DBUtils.getObjectFullName(co.getAttribute(), DBPEvaluationContext.DML);
-                if (CommonUtils.isEmpty(attrName)) {
-                    // Use column position
-                    orderExpr = new LongValue(co.getOrderPosition() + 1);
-                } else {
-                    orderExpr = new Column(orderTable, DBUtils.getObjectFullName(co.getAttribute(), DBPEvaluationContext.DML));
-                }
-
+                Expression orderExpr = getConstraintExpression(select, co);
                 OrderByElement element = new OrderByElement();
                 element.setExpression(orderExpr);
                 if (co.isOrderDescending()) {
@@ -145,6 +136,65 @@ public class SQLSemanticProcessor {
         return true;
     }
 
+    private static Expression getConstraintExpression(PlainSelect select, DBDAttributeConstraint co) throws JSQLParserException {
+        Expression orderExpr;
+        String attrName = co.getAttribute().getName();
+        if (CommonUtils.isEmpty(attrName)) {
+            // Use column position
+            orderExpr = new LongValue(co.getOrderPosition() + 1);
+        } else if (CommonUtils.isJavaIdentifier(attrName)) {
+            // Use column table only if there are multiple source tables (joins)
+            Table orderTable = CommonUtils.isEmpty(select.getJoins()) ? null : getConstraintTable(select, co);
+            orderExpr = new Column(orderTable, attrName);
+        } else {
+            // TODO: set tableAlias for all column references in expression
+            orderExpr = CCJSqlParserUtil.parseExpression(attrName);
+        }
+        return orderExpr;
+    }
+
+    /**
+     * Extract alias (or source table name) for specified constraint from SQL select.
+     * Searches in FROM and JOIN
+     */
+    @Nullable
+    public static Table getConstraintTable(PlainSelect select, DBDAttributeConstraint constraint) {
+        String constrTable;
+        DBSAttributeBase ca = constraint.getAttribute();
+        if (ca instanceof DBDAttributeBinding) {
+            constrTable = ((DBDAttributeBinding) ca).getMetaAttribute().getEntityName();
+        } else if (ca instanceof DBSEntityAttribute) {
+            constrTable = ((DBSEntityAttribute) ca).getParentObject().getName();
+        } else {
+            return null;
+        }
+        if (constrTable == null) {
+            return null;
+        }
+        FromItem fromItem = select.getFromItem();
+        Table table = findTableInFrom(fromItem, constrTable);
+        if (table == null) {
+            // Maybe it is a join
+            if (!CommonUtils.isEmpty(select.getJoins())) {
+                for (Join join : select.getJoins()) {
+                    table = findTableInFrom(join.getRightItem(), constrTable);
+                    if (table != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        return table;
+    }
+
+    @Nullable
+    private static Table findTableInFrom(FromItem fromItem, String tableName) {
+        if (fromItem instanceof Table && tableName.equals(((Table) fromItem).getName())) {
+            return (Table) fromItem;
+        }
+        return null;
+    }
+
     public static void addWhereToSelect(PlainSelect select, String condString) throws JSQLParserException {
         Expression filterWhere;
         try {
@@ -152,11 +202,15 @@ public class SQLSemanticProcessor {
         } catch (JSQLParserException e) {
             throw new JSQLParserException("Bad query condition: [" + condString + "]", e);
         }
+        addWhereToSelect(select, filterWhere);
+    }
+
+    public static void addWhereToSelect(PlainSelect select, Expression conditionExpr) throws JSQLParserException {
         Expression sourceWhere = select.getWhere();
         if (sourceWhere == null) {
-            select.setWhere(filterWhere);
+            select.setWhere(conditionExpr);
         } else {
-            select.setWhere(new AndExpression(new Parenthesis(sourceWhere), filterWhere));
+            select.setWhere(new AndExpression(new Parenthesis(sourceWhere), conditionExpr));
         }
     }
 
