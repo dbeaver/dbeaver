@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.ext.db2.data;
 
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
@@ -33,12 +31,6 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  * @author Denis Forveille
  */
 public class DB2ValueHandlerProvider implements DBDValueHandlerProvider {
-
-    @Override
-    public DBPImage getTypeImage(DBSTypedObject type)
-    {
-        return DBUtils.getTypeImage(type);
-    }
 
     @Override
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)

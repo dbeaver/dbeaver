@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ext.phoenix.model.data;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
@@ -32,12 +30,6 @@ import java.sql.Types;
  * PhoenixValueHandlerProvider
  */
 public class PhoenixValueHandlerProvider implements DBDValueHandlerProvider {
-
-    @Override
-    public DBPImage getTypeImage(DBSTypedObject type)
-    {
-        return DBUtils.getTypeImage(type);
-    }
 
     @Nullable
     @Override

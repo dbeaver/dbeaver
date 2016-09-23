@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
@@ -29,12 +28,6 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  * WMI data types provider
  */
 public class WMIValueHandlerProvider implements DBDValueHandlerProvider {
-
-    @Override
-    public DBPImage getTypeImage(DBSTypedObject type)
-    {
-        return WMIClassAttribute.getPropertyImage(type.getTypeID());
-    }
 
     @Override
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
