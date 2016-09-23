@@ -195,6 +195,7 @@
             <type standard="ARRAY"/>
             <type standard="STRUCT"/>
             <type name="HSTORE"/>
+            <type name="JSON"/>
             <type name="JSONB"/>
         </provider>
     </extension>
