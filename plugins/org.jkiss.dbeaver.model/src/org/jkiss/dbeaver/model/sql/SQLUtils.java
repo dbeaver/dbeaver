@@ -334,14 +334,15 @@ public final class SQLUtils {
             if (cAttr instanceof DBDAttributeBinding) {
                 DBDAttributeBinding binding = (DBDAttributeBinding) cAttr;
                 if (binding.getEntityAttribute() != null &&
-                    binding.getMetaAttribute().getName().equals(binding.getMetaAttribute().getName()))
+                    binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()))
                 {
                     attrName = DBUtils.getObjectFullName(dataSource, binding, DBPEvaluationContext.DML);
                 } else {
+                    // Most likely it is an expression so we don't want to quote it
                     attrName = binding.getMetaAttribute().getName();
                 }
             } else {
-                attrName = cAttr.getName();
+                attrName = DBUtils.getObjectFullName(dataSource, cAttr, DBPEvaluationContext.DML);
             }
             query.append(attrName).append(' ').append(condition);
         }

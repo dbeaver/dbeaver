@@ -118,6 +118,12 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         return null;
     }
 
+    @NotNull
+    @Override
+    public DBSAttributeBase getAttribute() {
+        return attribute;
+    }
+
     @Nullable
     @Override
     public Object extractNestedValue(@NotNull Object ownerValue) throws DBCException {
