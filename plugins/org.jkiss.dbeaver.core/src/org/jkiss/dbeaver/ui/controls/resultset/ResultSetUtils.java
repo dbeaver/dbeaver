@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -371,8 +372,8 @@ public class ResultSetUtils
 
     public static boolean equalAttributes(DBCAttributeMetaData attr1, DBCAttributeMetaData attr2) {
         return
-            CommonUtils.equalObjects(attr1.getLabel(), attr2.getLabel()) &&
-            CommonUtils.equalObjects(attr1.getName(), attr2.getName()) &&
+            SQLUtils.equalsWithoutExtraSpaces(attr1.getLabel(), attr2.getLabel()) &&
+            SQLUtils.equalsWithoutExtraSpaces(attr1.getName(), attr2.getName()) &&
             CommonUtils.equalObjects(attr1.getEntityMetaData(), attr2.getEntityMetaData()) &&
             attr1.getOrdinalPosition() == attr2.getOrdinalPosition() &&
             attr1.isRequired() == attr2.isRequired() &&

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 
@@ -157,13 +158,13 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
                 }
                 // Match all hierarchy names
                 for (DBDAttributeBinding a1 = cmpAttr, a2 = this; a1 != null && a2 != null; a1 = a1.getParentObject(), a2 = a2.getParentObject()) {
-                    if (!attr.getName().equals(this.getName())) {
+                    if (!SQLUtils.equalsWithoutExtraSpaces(attr.getName(), this.getName())) {
                         return false;
                     }
                 }
                 return true;
             } else if (attr != null) {
-                return attr.getName().equals(this.getName());
+                return SQLUtils.equalsWithoutExtraSpaces(attr.getName(), this.getName());
             }
         }
         return false;
