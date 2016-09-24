@@ -163,7 +163,7 @@ public class MetaDataPanel implements IResultSetPanel {
             if (item instanceof DBDAttributeBindingMeta) {
                 return item.getMetaAttribute();
             } else {
-                return item.getEntityAttribute();
+                return item.getAttribute();
             }
         }
 
