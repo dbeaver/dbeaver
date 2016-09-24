@@ -631,4 +631,40 @@ public final class SQLUtils {
         }
         return hasFixes ? String.valueOf(fixed) : sql;
     }
+
+    public static boolean equalsWithoutExtraSpaces(String str1, String str2) {
+        return removeExtraSpaces(str1).equals(removeExtraSpaces(str2));
+    }
+
+    public static String removeExtraSpaces(String str) {
+        if (str.indexOf(' ') == -1) {
+            return str;
+        }
+        StringBuilder result = new StringBuilder(str.length());
+        int length = str.length();
+        for (int i = 0; i < length; i++) {
+            char c = str.charAt(i);
+            if (Character.isWhitespace(c)) {
+                boolean needsSpace = Character.isLetterOrDigit(c);
+                for (i = i + 1; i < length; i++) {
+                    c = str.charAt(i);
+                    if (Character.isWhitespace(c)) {
+                        continue;
+                    }
+                    if (needsSpace && Character.isLetterOrDigit(c)) {
+                        // We need exactly one space before letter/digit
+                        result.append(' ');
+                    } else {
+                        // We don't need spaces before control symbols
+                    }
+                    result.append(c);
+                    break;
+                }
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
+    }
+
 }
