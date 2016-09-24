@@ -1296,16 +1296,20 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public DBPImage getCellImage(Object colElement, Object rowElement)
         {
+            // TODO: tired from cell icons. But maybe they make some sense - let's keep them commented
+/*
             if (!showCelIcons) {
                 return null;
             }
             Object cellValue = getCellValue(colElement, rowElement, false);
             if (cellValue instanceof DBDContent || cellValue instanceof DBDReference) {
                 DBDAttributeBinding attr = (DBDAttributeBinding)(controller.isRecordMode() ? rowElement : colElement);
-                return DBUtils.getObjectImage(attr.getMetaAttribute());
+                return DBUtils.getObjectImage(attr);
             } else {
                 return null;
             }
+*/
+            return null;
         }
 
         @NotNull
@@ -1381,7 +1385,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Image getImage(Object element)
         {
             if (element instanceof DBDAttributeBinding/* && (!isRecordMode() || !model.isDynamicMetadata())*/) {
-                return DBeaverIcons.getImage(DBUtils.getObjectImage(((DBDAttributeBinding) element).getMetaAttribute()));
+                return DBeaverIcons.getImage(DBUtils.getObjectImage(((DBDAttributeBinding) element).getAttribute()));
             }
             return null;
         }

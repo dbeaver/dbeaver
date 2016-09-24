@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -53,7 +50,7 @@ import java.util.Locale;
 /**
  * PostgreTypeType
  */
-public class PostgreDataType extends JDBCDataType<PostgreSchema> implements PostgreClass, DBPQualifiedObject
+public class PostgreDataType extends JDBCDataType<PostgreSchema> implements PostgreClass, DBPQualifiedObject, DBPImageProvider
 {
     private static final Log log = Log.getLog(PostgreDataType.class);
 
@@ -439,6 +436,15 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         } else {
             return DBUtils.getQuotedIdentifier(owner) + "." + getName();
         }
+    }
+
+    @Nullable
+    @Override
+    public DBPImage getObjectImage() {
+        if (PostgreConstants.TYPE_JSONB.equals(getName()) || PostgreConstants.TYPE_JSON.equals(getName())) {
+            return DBIcon.TYPE_JSON;
+        }
+        return null;
     }
 
     class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreDataTypeAttribute> {

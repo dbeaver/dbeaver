@@ -109,6 +109,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon TYPE_DATETIME = new DBIcon("datetime", "types/datetime.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TYPE_BINARY = new DBIcon("binary", "types/binary.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TYPE_TEXT = new DBIcon("text", "types/text.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TYPE_JSON = new DBIcon("json", "types/json.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TYPE_XML = new DBIcon("xml", "types/xml.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TYPE_LOB = new DBIcon("lob", "types/lob.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TYPE_ARRAY = new DBIcon("array", "types/array.png"); //$NON-NLS-1$ //$NON-NLS-2$
