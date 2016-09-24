@@ -223,6 +223,15 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
         compositePane.setLayout(gl);
         compositePane.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        addTraverseListener(new TraverseListener() {
+            @Override
+            public void keyTraversed(TraverseEvent e) {
+                FolderPane pane = getActiveFolderPane();
+                if (pane != null) {
+                    pane.folderList.handleTraverse(e);
+                }
+            }
+        });
         addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e) {
@@ -282,18 +291,26 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
 
     @Override
     public ITabbedFolder getActiveFolder() {
+        FolderPane pane = getActiveFolderPane();
+        if (pane != null) {
+            return getActiveFolder(pane);
+        }
+        return null;
+    }
+
+    public FolderPane getActiveFolderPane() {
         if (folderPanes.length == 1) {
-            return getActiveFolder(folderPanes[0]);
+            return folderPanes[0];
         }
         Control focusControl = getDisplay().getFocusControl();
         for (FolderPane folderPane : folderPanes) {
             if (UIUtils.isParent(folderPane.editorPane, focusControl)) {
                 lastActiveFolder = folderPane;
-                return getActiveFolder(folderPane);
+                return folderPane;
             }
         }
         if (lastActiveFolder != null) {
-            return getActiveFolder(lastActiveFolder);
+            return lastActiveFolder;
         }
         return null;
     }

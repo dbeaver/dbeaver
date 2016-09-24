@@ -496,24 +496,8 @@ public class TabbedFolderList extends Composite {
             }
         });
         this.addTraverseListener(new TraverseListener() {
-
             public void keyTraversed(TraverseEvent e) {
-                if (e.detail == SWT.TRAVERSE_ARROW_PREVIOUS
-                    || e.detail == SWT.TRAVERSE_ARROW_NEXT) {
-                    int nMax = elements.length - 1;
-                    int nCurrent = getSelectionIndex();
-                    if (e.detail == SWT.TRAVERSE_ARROW_PREVIOUS) {
-                        nCurrent -= 1;
-                        nCurrent = Math.max(0, nCurrent);
-                    } else {
-                        nCurrent += 1;
-                        nCurrent = Math.min(nCurrent, nMax);
-                    }
-                    select(nCurrent);
-                    redraw();
-                } else {
-                    e.doit = true;
-                }
+                handleTraverse(e);
             }
         });
         addDisposeListener(new DisposeListener() {
@@ -673,12 +657,12 @@ public class TabbedFolderList extends Composite {
             topNavigationElement.redraw();
             bottomNavigationElement.redraw();
 
-            if (selectedElementIndex < topVisibleIndex
-                || selectedElementIndex > bottomVisibleIndex) {
+            if (selectedElementIndex < topVisibleIndex || selectedElementIndex > bottomVisibleIndex) {
                 computeTopAndBottomTab();
             }
         }
         notifyListeners(SWT.Selection, new Event());
+        elements[index].getInfo().getContents().setFocus();
     }
 
     /**
@@ -1025,6 +1009,25 @@ public class TabbedFolderList extends Composite {
         TypedListener typedListener = new TypedListener (listener);
         addListener (SWT.Selection,typedListener);
         addListener (SWT.DefaultSelection,typedListener);
+    }
+
+    public void handleTraverse(TraverseEvent e) {
+        if (e.detail == SWT.TRAVERSE_PAGE_PREVIOUS || e.detail == SWT.TRAVERSE_PAGE_NEXT) {
+            int nMax = elements.length - 1;
+            int nCurrent = getSelectionIndex();
+            if (e.detail == SWT.TRAVERSE_PAGE_PREVIOUS) {
+                nCurrent -= 1;
+                nCurrent = Math.max(0, nCurrent);
+            } else {
+                nCurrent += 1;
+                nCurrent = Math.min(nCurrent, nMax);
+            }
+            select(nCurrent);
+            redraw();
+            e.doit = false;
+        } else {
+            e.doit = true;
+        }
     }
 
 }
