@@ -158,13 +158,13 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
                 }
                 // Match all hierarchy names
                 for (DBDAttributeBinding a1 = cmpAttr, a2 = this; a1 != null && a2 != null; a1 = a1.getParentObject(), a2 = a2.getParentObject()) {
-                    if (!SQLUtils.equalsWithoutExtraSpaces(attr.getName(), this.getName())) {
+                    if (!SQLUtils.compareAliases(attr.getName(), this.getName())) {
                         return false;
                     }
                 }
                 return true;
             } else if (attr != null) {
-                return SQLUtils.equalsWithoutExtraSpaces(attr.getName(), this.getName());
+                return SQLUtils.compareAliases(attr.getName(), this.getName());
             }
         }
         return false;

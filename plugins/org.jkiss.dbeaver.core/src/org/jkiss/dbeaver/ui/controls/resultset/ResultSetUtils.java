@@ -372,8 +372,8 @@ public class ResultSetUtils
 
     public static boolean equalAttributes(DBCAttributeMetaData attr1, DBCAttributeMetaData attr2) {
         return
-            SQLUtils.equalsWithoutExtraSpaces(attr1.getLabel(), attr2.getLabel()) &&
-            SQLUtils.equalsWithoutExtraSpaces(attr1.getName(), attr2.getName()) &&
+            SQLUtils.compareAliases(attr1.getLabel(), attr2.getLabel()) &&
+            SQLUtils.compareAliases(attr1.getName(), attr2.getName()) &&
             CommonUtils.equalObjects(attr1.getEntityMetaData(), attr2.getEntityMetaData()) &&
             attr1.getOrdinalPosition() == attr2.getOrdinalPosition() &&
             attr1.isRequired() == attr2.isRequired() &&

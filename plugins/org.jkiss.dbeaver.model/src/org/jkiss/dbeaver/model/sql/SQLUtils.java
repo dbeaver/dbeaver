@@ -636,7 +636,7 @@ public final class SQLUtils {
      * Compares two string ignoring extra whitespaces.
      * We can remove double whitespaces and any whitespaces between special chars (*-+,: etc).
      */
-    public static boolean equalsWithoutExtraSpaces(String str1, String str2) {
+    public static boolean compareAliases(String str1, String str2) {
         return removeExtraSpaces(str1).equals(removeExtraSpaces(str2));
     }
 
