@@ -223,8 +223,14 @@ public class SearchDataQuery implements ISearchQuery {
                         }
                         String typeName = attribute.getTypeName();
                         if (typeName.equals(DBConstants.TYPE_NAME_UUID) || typeName.equals(DBConstants.TYPE_NAME_UUID2)) {
-                            operator = DBCLogicalOperator.EQUALS;
-                            value = "'" + params.searchString + "'";
+                            try {
+                                UUID uuid = UUID.fromString(params.searchString);
+                                operator = DBCLogicalOperator.EQUALS;
+                                value = "'" + uuid.toString() + "'";
+                            } catch (Exception e) {
+                                // No a UUID
+                                continue;
+                            }
                         } else {
                             continue;
                         }
