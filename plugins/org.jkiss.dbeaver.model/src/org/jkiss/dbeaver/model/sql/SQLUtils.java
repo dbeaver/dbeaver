@@ -632,6 +632,10 @@ public final class SQLUtils {
         return hasFixes ? String.valueOf(fixed) : sql;
     }
 
+    /**
+     * Compares two string ignoring extra whitespaces.
+     * We can remove double whitespaces and any whitespaces between special chars (*-+,: etc).
+     */
     public static boolean equalsWithoutExtraSpaces(String str1, String str2) {
         return removeExtraSpaces(str1).equals(removeExtraSpaces(str2));
     }
@@ -645,7 +649,7 @@ public final class SQLUtils {
         for (int i = 0; i < length; i++) {
             char c = str.charAt(i);
             if (Character.isWhitespace(c)) {
-                boolean needsSpace = Character.isLetterOrDigit(c);
+                boolean needsSpace = i > 0 && Character.isLetterOrDigit(str.charAt(i - 1));
                 for (i = i + 1; i < length; i++) {
                     c = str.charAt(i);
                     if (Character.isWhitespace(c)) {
