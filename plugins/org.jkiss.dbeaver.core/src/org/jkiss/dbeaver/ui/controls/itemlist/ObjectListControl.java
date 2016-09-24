@@ -505,8 +505,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             for (Object child : children) {
                 OBJECT_TYPE childItem = (OBJECT_TYPE)child;
                 Object objectValue = getObjectValue(childItem);
-                if (!classList.contains(objectValue.getClass())) {
-                    classList.add(objectValue.getClass());
+                if (objectValue != null) {
+                    if (!classList.contains(objectValue.getClass())) {
+                        classList.add(objectValue.getClass());
+                    }
                 }
                 collectItemClasses(childItem, classList, collectedSet);
             }

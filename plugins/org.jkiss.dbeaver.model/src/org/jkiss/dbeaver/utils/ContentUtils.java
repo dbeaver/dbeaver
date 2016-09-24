@@ -423,6 +423,11 @@ public class ContentUtils {
         return MimeTypes.TEXT_XML.equalsIgnoreCase(content.getContentType());
     }
 
+    public static boolean isJSON(DBDContent content)
+    {
+        return MimeTypes.TEXT_JSON.equalsIgnoreCase(content.getContentType());
+    }
+
     public static String getContentStringValue(DBRProgressMonitor monitor, DBDContent object) throws DBCException {
         DBDContentStorage data = object.getContents(monitor);
         if (data != null) {
