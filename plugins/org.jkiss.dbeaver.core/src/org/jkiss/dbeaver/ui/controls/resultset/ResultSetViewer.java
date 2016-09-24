@@ -735,6 +735,9 @@ public class ResultSetViewer extends Viewer
     }
 
     public void showPanels(boolean show) {
+        if (show == isPanelsVisible()) {
+            return;
+        }
         if (!show) {
             viewerSash.setMaximizedControl(presentationPanel);
         } else {
@@ -745,6 +748,7 @@ public class ResultSetViewer extends Viewer
         }
 
         getPresentationSettings().panelsVisible = show;
+        savePresentationSettings();
     }
 
     private List<IContributionItem> fillPanelsMenu() {
