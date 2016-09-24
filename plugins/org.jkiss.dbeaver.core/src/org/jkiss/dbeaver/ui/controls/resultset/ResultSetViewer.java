@@ -740,11 +740,20 @@ public class ResultSetViewer extends Viewer
         }
         if (!show) {
             viewerSash.setMaximizedControl(presentationPanel);
+            // Set focus to presentation
+            activePresentation.getControl().setFocus();
         } else {
             activateDefaultPanels(getPresentationSettings());
             viewerSash.setMaximizedControl(null);
             updatePanelActions();
+            updatePanelsContent(false);
             activePresentation.updateValueView();
+
+            // Set focus to panel
+            CTabItem activePanelTab = panelFolder.getSelection();
+            if (activePanelTab != null) {
+                activePanelTab.getControl().setFocus();
+            }
         }
 
         getPresentationSettings().panelsVisible = show;
