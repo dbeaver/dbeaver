@@ -183,7 +183,7 @@
                 label="Primary entity background"
                 categoryId="org.jkiss.dbeaver.ui.presentation.erd"
                 id="org.jkiss.dbeaver.erd.diagram.entity.primary.background"
-                value="255, 226, 255">
+                value="255,226,255">
             <description>Primary entity background</description>
         </colorDefinition>
         <colorDefinition

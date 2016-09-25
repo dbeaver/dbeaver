@@ -53,7 +53,7 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
     protected Text createControl(Composite editPlaceholder)
     {
         final boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
-        final Text editor = new Text(valueController.getEditPlaceholder(), inline ? SWT.BORDER : SWT.NONE);
+        final Text editor = new Text(valueController.getEditPlaceholder(), inline ? SWT.BORDER : SWT.MULTI);
         editor.setEditable(!valueController.isReadOnly());
         editor.setTextLimit(MAX_NUMBER_LENGTH);
         Object curValue = valueController.getValue();
