@@ -55,7 +55,6 @@ public class EntityFigure extends Figure {
         if (tableImage != null) {
             nameLabel.setIcon(tableImage);
         }
-        nameLabel.setForegroundColor(ColorConstants.black);
 
         ToolbarLayout layout = new ToolbarLayout();
         layout.setHorizontal(false);
@@ -85,6 +84,7 @@ public class EntityFigure extends Figure {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
         }
         setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
+        nameLabel.setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
     }
 
     public void setSelected(boolean isSelected)
@@ -121,11 +121,16 @@ public class EntityFigure extends Figure {
     @Override
     public void add(IFigure figure, Object constraint, int index) {
         if (figure instanceof AttributeItemFigure) {
+            ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+            figure.setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
+            figure.setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_BACKGROUND));
+
             if (((AttributeItemFigure) figure).getAttribute().isInPrimaryKey()) {
                 keyFigure.add(figure, constraint, -1);
             } else {
                 attributeFigure.add(figure, constraint, -1);
             }
+
         } else {
             super.add(figure, constraint, index);
         }
