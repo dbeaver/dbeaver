@@ -100,6 +100,7 @@ public class DB2Constants {
 
     // Schema for system datatypes
     public static final String             SYSTEM_DATATYPE_SCHEMA      = "SYSIBM";
+    public static final String             SYSTEM_CATALOG_SCHEMA       = "SYSCAT";
 
     // Keywords
 
