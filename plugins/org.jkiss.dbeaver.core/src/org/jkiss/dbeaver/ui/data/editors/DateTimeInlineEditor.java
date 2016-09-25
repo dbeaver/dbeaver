@@ -46,7 +46,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
 
         timeEditor = new CustomTimeEditor(
             valueController.getEditPlaceholder(),
-            (inline ? SWT.BORDER : SWT.NONE));
+            (inline ? SWT.BORDER : SWT.MULTI));
         timeEditor.setEnabled(!valueController.isReadOnly());
 
         return timeEditor.getControl();
