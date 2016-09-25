@@ -63,8 +63,6 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     private static final DBSObjectType[] AUTOC_OBJ_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
         DB2ObjectType.MQT, DB2ObjectType.NICKNAME, };
 
-    private static final String SQL_TABLES_ALL;
-    private static final String SQL_TABLES_SCHEMA;
     private static final String SQL_COLS_ALL;
     private static final String SQL_COLS_SCHEMA;
 
@@ -113,6 +111,9 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         }
 
         DB2Schema schema = parentObject instanceof DB2Schema ? (DB2Schema) parentObject : null;
+        if (schema == null && !globalSearch) {
+            schema = dataSource.getDefaultObject();
+        }
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Find objects by name")) {
             return searchAllObjects(session, schema, objectNameMask, db2ObjectTypes, caseSensitive, maxResults);
@@ -128,7 +129,6 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     private List<DBSObjectReference> searchAllObjects(final JDBCSession session, final DB2Schema schema, String objectNameMask,
         List<DB2ObjectType> db2ObjectTypes, boolean caseSensitive, int maxResults) throws SQLException, DBException
     {
-
         List<DBSObjectReference> objects = new ArrayList<>();
 
         String searchObjectNameMask = objectNameMask;
@@ -141,8 +141,8 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         // Tables, Alias, Views, Nicknames, MQT
         if ((db2ObjectTypes.contains(DB2ObjectType.ALIAS)) || (db2ObjectTypes.contains(DB2ObjectType.TABLE))
             || (db2ObjectTypes.contains(DB2ObjectType.NICKNAME)) || (db2ObjectTypes.contains(DB2ObjectType.VIEW))
-            || (db2ObjectTypes.contains(DB2ObjectType.MQT))) {
-
+            || (db2ObjectTypes.contains(DB2ObjectType.MQT)))
+        {
             searchTables(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults);
 
             if (nbResults >= maxResults) {
@@ -168,9 +168,15 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     {
         String baseSQL;
         if (schema != null) {
-            baseSQL = SQL_TABLES_SCHEMA;
+            baseSQL =
+                "SELECT TABSCHEMA,TABNAME,TYPE FROM SYSCAT.TABLES\n" +
+                "WHERE TABSCHEMA =? AND TABNAME LIKE ? AND TYPE IN (%s)\n" +
+                "WITH UR";
         } else {
-            baseSQL = SQL_TABLES_ALL;
+            baseSQL =
+                "SELECT TABSCHEMA,TABNAME,TYPE FROM SYSCAT.TABLES\n" +
+                "WHERE TABNAME LIKE ? AND TYPE IN (%s)\n" +
+                "WITH UR";
         }
 
         String sql = buildTableSQL(baseSQL, db2ObjectTypes);
@@ -179,6 +185,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             if (schema != null) {
                 dbStat.setString(n++, schema.getName());
+                //dbStat.setString(n++, DB2Constants.SYSTEM_CATALOG_SCHEMA);
             }
             dbStat.setString(n++, searchObjectNameMask);
 
@@ -376,24 +383,6 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
     static {
         StringBuilder sb = new StringBuilder(1024);
-        sb.append("SELECT TABSCHEMA,TABNAME,TYPE");
-        sb.append("  FROM SYSCAT.TABLES");
-        sb.append(" WHERE TABSCHEMA = ?");
-        sb.append("   AND TABNAME LIKE ?");
-        sb.append("   AND TYPE IN (%s)");
-        sb.append(" WITH UR");
-        SQL_TABLES_SCHEMA = sb.toString();
-
-        sb.setLength(0);
-
-        sb.append("SELECT TABSCHEMA,TABNAME,TYPE");
-        sb.append("  FROM SYSCAT.TABLES");
-        sb.append(" WHERE TABNAME LIKE ?");
-        sb.append("   AND TYPE IN (%s)");
-        sb.append(" WITH UR");
-        SQL_TABLES_ALL = sb.toString();
-
-        sb.setLength(0);
 
         sb.append("SELECT TABSCHEMA,TABNAME,COLNAME");
         sb.append("  FROM SYSCAT.COLUMNS");
