@@ -91,6 +91,7 @@ public class TableToolTip {
                             if (!CommonUtils.isEmpty(toolTip)) {
                                 if (tip != null && !tip.isDisposed ()) tip.dispose ();
                                 tip = new Shell (table.getShell(), SWT.ON_TOP | SWT.NO_FOCUS | SWT.TOOL);
+                                tip.setForeground (table.getDisplay().getSystemColor (SWT.COLOR_INFO_FOREGROUND));
                                 tip.setBackground (table.getDisplay().getSystemColor (SWT.COLOR_INFO_BACKGROUND));
                                 FillLayout layout = new FillLayout ();
                                 layout.marginWidth = 2;
