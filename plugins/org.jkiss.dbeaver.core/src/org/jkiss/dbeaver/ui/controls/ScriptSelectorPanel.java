@@ -77,6 +77,7 @@ public class ScriptSelectorPanel {
         this.workbenchWindow = workbenchWindow;
         Shell parent = this.workbenchWindow.getShell();
 
+        final Color fg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_FOREGROUND);
         final Color bg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
 
         popup = new Shell(parent, SWT.RESIZE | SWT.TITLE | SWT.CLOSE);
@@ -109,10 +110,12 @@ public class ScriptSelectorPanel {
         //gl.marginHeight = 0;
         //gl.marginWidth = 0;
         composite.setLayout(gl);
+        composite.setForeground(fg);
         composite.setBackground(bg);
 
         patternText = new Text(composite, SWT.NONE);
         patternText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        patternText.setForeground(fg);
         patternText.setBackground(bg);
         patternText.addModifyListener(new ModifyListener() {
             @Override
@@ -147,6 +150,7 @@ public class ScriptSelectorPanel {
         final GridData gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalSpan = 2;
         scriptTree.setLayoutData(gd);
+        scriptTree.setForeground(fg);
         scriptTree.setBackground(bg);
         scriptTree.setLinesVisible(true);
         //scriptViewer.setHeaderVisible(true);
