@@ -197,7 +197,7 @@
                 label="Entity name foreground"
                 categoryId="org.jkiss.dbeaver.ui.presentation.erd"
                 id="org.jkiss.dbeaver.erd.diagram.entity.name.foreground"
-                value="COLOR_LIST_FOREGROUND">
+                value="COLOR_INFO_FOREGROUND">
             <description>Entity name foreground</description>
         </colorDefinition>
         <colorDefinition
