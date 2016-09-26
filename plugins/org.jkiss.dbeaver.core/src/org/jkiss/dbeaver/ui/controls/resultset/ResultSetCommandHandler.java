@@ -87,6 +87,8 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_GENERATE_SCRIPT = "org.jkiss.dbeaver.core.resultset.generateScript";
     public static final String CMD_NAVIGATE_LINK = "org.jkiss.dbeaver.core.resultset.navigateLink";
     public static final String CMD_FILTER_MENU = "org.jkiss.dbeaver.core.resultset.filterMenu";
+    public static final String CMD_COPY_COLUMN_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyColumnNames";
+    public static final String CMD_COPY_ROW_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyRowNames";
 
     public static IResultSetController getActiveResultSet(IWorkbenchPart activePart) {
         if (activePart instanceof IResultSetContainer) {
@@ -231,6 +233,30 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 } catch (InvocationTargetException e) {
                     UIUtils.showErrorDialog(HandlerUtil.getActiveShell(event), "Script generation", "Can't generate changes script", e.getTargetException());
                 }
+                break;
+            }
+            case CMD_COPY_COLUMN_NAMES: {
+                StringBuilder buffer = new StringBuilder();
+                IResultSetSelection selection = rsv.getSelection();
+                for (DBDAttributeBinding attr : ((IResultSetSelection) selection).getSelectedAttributes()) {
+                    if (buffer.length() > 0) {
+                        buffer.append("\t");
+                    }
+                    buffer.append(attr.getName());
+                }
+                ResultSetUtils.copyToClipboard(buffer.toString());
+                break;
+            }
+            case CMD_COPY_ROW_NAMES: {
+                StringBuilder buffer = new StringBuilder();
+                IResultSetSelection selection = rsv.getSelection();
+                for (ResultSetRow row : ((IResultSetSelection)selection).getSelectedRows()) {
+                    if (buffer.length() > 0) {
+                        buffer.append("\n");
+                    }
+                    buffer.append(row.getVisualNumber() + 1);
+                }
+                ResultSetUtils.copyToClipboard(buffer.toString());
                 break;
             }
             case IWorkbenchCommandConstants.EDIT_COPY:
