@@ -74,21 +74,28 @@ public class OracleTableConstraint extends OracleTableConstraintBase {
 
     public static DBSEntityConstraintType getConstraintType(String code)
     {
-        if ("C".equals(code)) {
-            return DBSEntityConstraintType.CHECK;
-        } else if ("P".equals(code)) {
-            return DBSEntityConstraintType.PRIMARY_KEY;
-        } else if ("U".equals(code)) {
-            return DBSEntityConstraintType.UNIQUE_KEY;
-        } else if ("R".equals(code)) {
-            return DBSEntityConstraintType.FOREIGN_KEY;
-        } else if ("V".equals(code)) {
-            return OracleView.CONSTRAINT_WITH_CHECK_OPTION;
-        } else if ("O".equals(code)) {
-            return OracleView.CONSTRAINT_WITH_READ_ONLY;
-        } else {
-            log.debug("Unsupported constraint type: " + code);
-            return DBSEntityConstraintType.CHECK;
+        switch (code) {
+            case "C":
+                return DBSEntityConstraintType.CHECK;
+            case "P":
+                return DBSEntityConstraintType.PRIMARY_KEY;
+            case "U":
+                return DBSEntityConstraintType.UNIQUE_KEY;
+            case "R":
+                return DBSEntityConstraintType.FOREIGN_KEY;
+            case "V":
+                return OracleConstants.CONSTRAINT_WITH_CHECK_OPTION;
+            case "O":
+                return OracleConstants.CONSTRAINT_WITH_READ_ONLY;
+            case "H":
+                return OracleConstants.CONSTRAINT_HASH_EXPRESSION;
+            case "F":
+                return OracleConstants.CONSTRAINT_REF_COLUMN;
+            case "S":
+                return OracleConstants.CONSTRAINT_SUPPLEMENTAL_LOGGING;
+            default:
+                log.debug("Unsupported Oracle constraint type: " + code);
+                return DBSEntityConstraintType.CHECK;
         }
     }
 }
