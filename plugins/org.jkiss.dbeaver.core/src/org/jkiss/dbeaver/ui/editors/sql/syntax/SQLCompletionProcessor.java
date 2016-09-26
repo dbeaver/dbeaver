@@ -294,6 +294,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         if (rootContainer == null) {
             return;
         }
+
+        DBSObjectContainer sc = rootContainer;
+        DBSObject childObject = sc;
+        List<String> tokens = wordDetector.splitWordPart();
+
+        // Detect selected object (container).
+        // There could be multiple selected objects on different hierarchy levels (e.g. PG)
         DBSObjectContainer selectedContainer = null;
         {
             DBSObject selectedObject = DBUtils.getSelectedObject(dataSource, true);
@@ -301,10 +308,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 selectedContainer = DBUtils.getAdapter(DBSObjectContainer.class, selectedObject);
             }
         }
-
-        DBSObjectContainer sc = rootContainer;
-        DBSObject childObject = sc;
-        List<String> tokens = wordDetector.splitWordPart();
 
         String lastToken = null;
         for (int i = 0; i < tokens.size(); i++) {
@@ -326,6 +329,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     childObject = selectedContainer.getChild(monitor, objectName);
                     if (childObject != null) {
                         sc = selectedContainer;
+                    } else {
+                        // It is possible that first token refers to selected container itself
+                        if (objectName.equals(selectedContainer.getName())) {
+                            childObject = sc = selectedContainer;
+                        }
                     }
                 }
                 if (childObject == null) {
