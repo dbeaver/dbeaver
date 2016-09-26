@@ -46,9 +46,6 @@ import java.sql.SQLException;
 public class OracleView extends OracleTableBase implements OracleSourceObject
 {
 
-    public static final DBSEntityConstraintType CONSTRAINT_WITH_CHECK_OPTION = new DBSEntityConstraintType("V", "With Check Option", null, false, false);
-    public static final DBSEntityConstraintType CONSTRAINT_WITH_READ_ONLY = new DBSEntityConstraintType("O", "With Read Only", null, false, false);
-
     public class AdditionalInfo extends TableAdditionalInfo {
         private String text;
         private String typeText;

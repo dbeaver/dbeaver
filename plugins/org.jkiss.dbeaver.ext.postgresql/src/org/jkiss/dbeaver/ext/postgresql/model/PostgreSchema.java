@@ -521,7 +521,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                 case "t": constraintType = PostgreConstants.CONSTRAINT_TRIGGER; break;
                 case "x": constraintType = PostgreConstants.CONSTRAINT_EXCLUSIVE; break;
                 default:
-                    log.warn("Unsupported constraint type");
+                    log.warn("Unsupported PG constraint type: " + type);
                     return null;
             }
             try {
