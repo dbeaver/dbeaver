@@ -43,6 +43,8 @@ import java.util.Map;
  */
 public class ResultSetCopySpecialHandler extends ResultSetCommandHandler implements IElementUpdater {
 
+    public static final String CMD_COPY_SPECIAL = CoreCommands.CMD_COPY_SPECIAL;
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -50,12 +52,14 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
         if (resultSet == null) {
             return null;
         }
-        if (event.getCommand().getId().equals(CoreCommands.CMD_COPY_SPECIAL)) {
-            ConfigDialog configDialog = new ConfigDialog(HandlerUtil.getActiveShell(event));
-            if (configDialog.open() == IDialogConstants.OK_ID) {
-                ResultSetUtils.copyToClipboard(resultSet.getActivePresentation().copySelectionToString(
-                    configDialog.copySettings));
-            }
+        switch (event.getCommand().getId()) {
+            case CoreCommands.CMD_COPY_SPECIAL:
+                ConfigDialog configDialog = new ConfigDialog(HandlerUtil.getActiveShell(event));
+                if (configDialog.open() == IDialogConstants.OK_ID) {
+                    ResultSetUtils.copyToClipboard(resultSet.getActivePresentation().copySelectionToString(
+                        configDialog.copySettings));
+                }
+                break;
         }
         return null;
     }

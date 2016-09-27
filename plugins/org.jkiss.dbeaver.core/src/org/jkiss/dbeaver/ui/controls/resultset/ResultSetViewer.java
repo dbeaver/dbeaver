@@ -1405,34 +1405,10 @@ public class ResultSetViewer extends Viewer
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_CUT));
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_COPY));
 
-                MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(CoreCommands.CMD_COPY_SPECIAL));
-                extCopyMenu.add(ActionUtils.makeCommandContribution(site, CoreCommands.CMD_COPY_SPECIAL));
-                extCopyMenu.add(new Action("Copy column name(s)") {
-                    @Override
-                    public void run() {
-                        StringBuilder buffer = new StringBuilder();
-                        for (DBDAttributeBinding attr : getSelection().getSelectedAttributes()) {
-                            if (buffer.length() > 0) {
-                                buffer.append("\t");
-                            }
-                            buffer.append(attr.getName());
-                        }
-                        ResultSetUtils.copyToClipboard(buffer.toString());
-                    }
-                });
-                extCopyMenu.add(new Action("Copy row number(s)") {
-                    @Override
-                    public void run() {
-                        StringBuilder buffer = new StringBuilder();
-                        for (ResultSetRow row : getSelection().getSelectedRows()) {
-                            if (buffer.length() > 0) {
-                                buffer.append("\n");
-                            }
-                            buffer.append(row.getVisualNumber());
-                        }
-                        ResultSetUtils.copyToClipboard(buffer.toString());
-                    }
-                });
+                MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(ResultSetCopySpecialHandler.CMD_COPY_SPECIAL));
+                extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCopySpecialHandler.CMD_COPY_SPECIAL));
+                extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_COPY_COLUMN_NAMES));
+                extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_COPY_ROW_NAMES));
                 manager.add(extCopyMenu);
 
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
