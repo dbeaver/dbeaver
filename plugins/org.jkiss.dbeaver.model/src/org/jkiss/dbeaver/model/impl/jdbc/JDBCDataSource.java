@@ -314,18 +314,18 @@ public abstract class JDBCDataSource
             try {
                 databaseMajorVersion = metaData.getDatabaseMajorVersion();
                 databaseMinorVersion = metaData.getDatabaseMinorVersion();
-            } catch (SQLException e) {
+            } catch (Throwable e) {
                 log.error("Error determining server version", e);
             }
 
             try {
                 sqlDialect = createSQLDialect(metaData);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 log.error("Error creating SQL dialect", e);
             }
             try {
                 dataSourceInfo = createDataSourceInfo(metaData);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 log.error("Error obtaining database info");
             }
         } catch (SQLException ex) {
