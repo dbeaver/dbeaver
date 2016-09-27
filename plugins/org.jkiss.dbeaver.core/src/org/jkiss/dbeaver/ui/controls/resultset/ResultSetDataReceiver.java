@@ -130,10 +130,8 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         throws DBCException
     {
         if (!nextSegmentRead) {
-            if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_READ_METADATA)) {
-                // Read locators' metadata
-                ResultSetUtils.bindAttributes(session, resultSet, metaColumns, rows);
-            }
+            // Read locators' metadata
+            ResultSetUtils.bindAttributes(session, resultSet, metaColumns, rows);
         }
 
         final List<Object[]> tmpRows = rows;

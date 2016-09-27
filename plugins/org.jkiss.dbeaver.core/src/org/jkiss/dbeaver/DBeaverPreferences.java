@@ -108,6 +108,7 @@ public final class DBeaverPreferences
 
     public static final String RESULT_SET_AUTO_FETCH_NEXT_SEGMENT = "resultset.autofetch.next.segment"; //$NON-NLS-1$
     public static final String RESULT_SET_READ_METADATA = "resultset.read.metadata"; //$NON-NLS-1$
+    public static final String RESULT_SET_READ_REFERENCES = "resultset.read.references"; //$NON-NLS-1$
     public static final String RESULT_SET_MAX_ROWS = "resultset.maxrows"; //$NON-NLS-1$
     public static final String RESULT_SET_CANCEL_TIMEOUT = "resultset.cancel.timeout"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_EDITOR_TYPE = "resultset.binary.editor"; //$NON-NLS-1$
