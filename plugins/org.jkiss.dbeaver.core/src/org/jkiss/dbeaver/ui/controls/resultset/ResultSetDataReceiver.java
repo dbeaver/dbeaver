@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -129,8 +130,10 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         throws DBCException
     {
         if (!nextSegmentRead) {
-            // Read locators' metadata
-            ResultSetUtils.bindAttributes(session, resultSet, metaColumns, rows);
+            if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_READ_METADATA)) {
+                // Read locators' metadata
+                ResultSetUtils.bindAttributes(session, resultSet, metaColumns, rows);
+            }
         }
 
         final List<Object[]> tmpRows = rows;

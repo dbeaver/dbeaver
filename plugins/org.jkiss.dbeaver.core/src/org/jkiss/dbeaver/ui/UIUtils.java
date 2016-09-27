@@ -598,6 +598,17 @@ public class UIUtils {
         return button;
     }
 
+    public static Button createCheckbox(Composite parent, String label, boolean checked, int hSpan)
+    {
+        Button checkbox = createCheckbox(parent, label, checked);
+        if (hSpan > 1) {
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.horizontalSpan = hSpan;
+            checkbox.setLayoutData(gd);
+        }
+        return checkbox;
+    }
+
     public static Button createCheckbox(Composite parent, String label, boolean checked)
     {
         final Button button = new Button(parent, SWT.CHECK);

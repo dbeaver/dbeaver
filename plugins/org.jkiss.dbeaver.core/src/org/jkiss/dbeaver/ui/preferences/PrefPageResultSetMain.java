@@ -42,6 +42,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button resultSetUseSQLCheck;
     private Button serverSideOrderingCheck;
     private Button useFetchSize;
+    private Button readQueryMetadata;
     private Spinner queryCancelTimeout;
 
     private Button keepStatementOpenCheck;
@@ -63,6 +64,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(DBeaverPreferences.RESULT_SET_MAX_ROWS) ||
             store.contains(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
+            store.contains(DBeaverPreferences.RESULT_SET_READ_METADATA) ||
             store.contains(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT) ||
             store.contains(ModelPreferences.QUERY_ROLLBACK_ON_ERROR) ||
             store.contains(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
@@ -87,10 +89,12 @@ public class PrefPageResultSetMain extends TargetPrefPage
             queriesGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
             resultSetSize = UIUtils.createLabelSpinner(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_max_size, "", 0, 0, 1024 * 1024);
-            autoFetchNextSegmentCheck = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_auto_fetch_segment, true);
-            resultSetUseSQLCheck = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_use_sql, false);
-            serverSideOrderingCheck = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, false);
-            useFetchSize = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_fetch_size, false);
+            autoFetchNextSegmentCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_auto_fetch_segment, true, 2);
+            resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_use_sql, false, 2);
+            serverSideOrderingCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, false, 2);
+            useFetchSize = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_fetch_size, false, 2);
+            readQueryMetadata = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_read_metadata, false, 2);
+            readQueryMetadata.setToolTipText("Disables metadata read. Executes query faster but disables results edit and foreign key navigation");
             queryCancelTimeout = UIUtils.createLabelSpinner(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout_tip, 0, 0, Integer.MAX_VALUE);
             queryCancelTimeout.setEnabled(false);
         }
@@ -101,11 +105,11 @@ public class PrefPageResultSetMain extends TargetPrefPage
             txnGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
             txnGroup.setText(CoreMessages.pref_page_sql_editor_group_misc);
-            txnGroup.setLayout(new GridLayout(2, false));
+            txnGroup.setLayout(new GridLayout(1, false));
 
-            keepStatementOpenCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_keep_cursor, false);
-            rollbackOnErrorCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_rollback_on_error, false);
-            alwaysUseAllColumns = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
+            keepStatementOpenCheck = UIUtils.createCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_keep_cursor, false);
+            rollbackOnErrorCheck = UIUtils.createCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_rollback_on_error, false);
+            alwaysUseAllColumns = UIUtils.createCheckbox(txnGroup, CoreMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
         }
 
         return composite;
@@ -120,6 +124,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             resultSetUseSQLCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
             serverSideOrderingCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
             useFetchSize.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE));
+            readQueryMetadata.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_READ_METADATA));
             queryCancelTimeout.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT));
 
             keepStatementOpenCheck.setSelection(store.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN));
@@ -138,6 +143,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_READ_METADATA, readQueryMetadata.getSelection());
             store.setValue(ModelPreferences.RESULT_SET_USE_FETCH_SIZE, useFetchSize.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getSelection());
 
@@ -157,6 +163,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_MAX_ROWS);
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
         store.setToDefault(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_READ_METADATA);
         store.setToDefault(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT);
 
