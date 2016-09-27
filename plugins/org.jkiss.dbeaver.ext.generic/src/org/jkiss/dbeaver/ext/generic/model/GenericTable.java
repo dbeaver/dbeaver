@@ -101,7 +101,8 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)
     {
-        if (context == DBPEvaluationContext.DDL && !getDataSource().getMetaModel().useCatalogInObjectNames()) {
+        if (isView() && context == DBPEvaluationContext.DDL && !getDataSource().getMetaModel().useCatalogInObjectNames()) {
+            // [SQL Server] workaround. You can't use catalog name in operations with views.
             return DBUtils.getFullQualifiedName(
                 getDataSource(),
                 getSchema(),
