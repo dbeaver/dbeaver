@@ -63,6 +63,12 @@ public class ResultSetUtils
     {
         final DBRProgressMonitor monitor = session.getProgressMonitor();
         final DBPDataSource dataSource = session.getDataSource();
+        boolean readMetaData = dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_READ_METADATA);
+        if (!readMetaData) {
+            return;
+        }
+        boolean readReferences = dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_READ_REFERENCES);
+
         final Map<DBCEntityMetaData, DBSEntity> entityBindingMap = new IdentityHashMap<>();
 
         monitor.beginTask("Discover resultset metadata", 3);
@@ -192,10 +198,12 @@ public class ResultSetUtils
             }
             monitor.worked(1);
 
-            monitor.subTask("Late bindings");
-            // Read nested bindings
-            for (DBDAttributeBinding binding : bindings) {
-                binding.lateBinding(session, rows);
+            if (readReferences) {
+                monitor.subTask("Late bindings");
+                // Read nested bindings
+                for (DBDAttributeBinding binding : bindings) {
+                    binding.lateBinding(session, rows);
+                }
             }
             monitor.subTask("Complete metadata load");
             // Reload attributes in row identifiers

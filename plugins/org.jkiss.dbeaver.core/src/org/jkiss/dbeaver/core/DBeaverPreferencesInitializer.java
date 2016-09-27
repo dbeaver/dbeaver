@@ -143,6 +143,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         // ResultSet
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_READ_METADATA, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_READ_REFERENCES, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_MAX_ROWS, 200);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT, 5000);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE, IValueController.EditType.EDITOR);

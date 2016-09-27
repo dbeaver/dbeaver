@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -43,6 +45,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button serverSideOrderingCheck;
     private Button useFetchSize;
     private Button readQueryMetadata;
+    private Button readQueryReferences;
     private Spinner queryCancelTimeout;
 
     private Button keepStatementOpenCheck;
@@ -95,8 +98,17 @@ public class PrefPageResultSetMain extends TargetPrefPage
             useFetchSize = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_fetch_size, false, 2);
             readQueryMetadata = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_read_metadata, false, 2);
             readQueryMetadata.setToolTipText("Disables metadata read. Executes query faster but disables results edit and foreign key navigation");
+            readQueryReferences = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_read_references, false, 2);
+            readQueryReferences.setToolTipText("Disables references (foreign keys) information reading.");
             queryCancelTimeout = UIUtils.createLabelSpinner(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout_tip, 0, 0, Integer.MAX_VALUE);
             queryCancelTimeout.setEnabled(false);
+
+            readQueryMetadata.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    updateOptionsEnablement();
+                }
+            });
         }
 
         // Transactions settings
@@ -115,6 +127,10 @@ public class PrefPageResultSetMain extends TargetPrefPage
         return composite;
     }
 
+    private void updateOptionsEnablement() {
+        readQueryReferences.setEnabled(readQueryMetadata.getSelection());
+    }
+
     @Override
     protected void loadPreferences(DBPPreferenceStore store)
     {
@@ -125,11 +141,14 @@ public class PrefPageResultSetMain extends TargetPrefPage
             serverSideOrderingCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
             useFetchSize.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE));
             readQueryMetadata.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_READ_METADATA));
+            readQueryReferences.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_READ_REFERENCES));
             queryCancelTimeout.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT));
 
             keepStatementOpenCheck.setSelection(store.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN));
             rollbackOnErrorCheck.setSelection(store.getBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR));
             alwaysUseAllColumns.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS));
+
+            updateOptionsEnablement();
         } catch (Exception e) {
             log.warn(e);
         }
@@ -144,6 +163,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_READ_METADATA, readQueryMetadata.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_READ_REFERENCES, readQueryReferences.getSelection());
             store.setValue(ModelPreferences.RESULT_SET_USE_FETCH_SIZE, useFetchSize.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getSelection());
 
@@ -164,12 +184,15 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
         store.setToDefault(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_READ_METADATA);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_READ_REFERENCES);
         store.setToDefault(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT);
 
         store.setToDefault(DBeaverPreferences.KEEP_STATEMENT_OPEN);
         store.setToDefault(ModelPreferences.QUERY_ROLLBACK_ON_ERROR);
         store.setToDefault(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS);
+
+        updateOptionsEnablement();
     }
 
     @Override
