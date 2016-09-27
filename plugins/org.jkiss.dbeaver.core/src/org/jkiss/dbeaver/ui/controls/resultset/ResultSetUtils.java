@@ -61,8 +61,9 @@ public class ResultSetUtils
         DBDAttributeBindingMeta[] bindings,
         List<Object[]> rows)
     {
-        DBRProgressMonitor monitor = session.getProgressMonitor();
-        Map<DBCEntityMetaData, DBSEntity> entityBindingMap = new IdentityHashMap<>();
+        final DBRProgressMonitor monitor = session.getProgressMonitor();
+        final DBPDataSource dataSource = session.getDataSource();
+        final Map<DBCEntityMetaData, DBSEntity> entityBindingMap = new IdentityHashMap<>();
 
         monitor.beginTask("Discover resultset metadata", 3);
         try {
@@ -86,7 +87,7 @@ public class ResultSetUtils
                         entityMeta = sqlQuery.getSingleSource();
                     }
                     if (entityMeta != null) {
-                        entity = getEntityFromMetaData(session, entityMeta);
+                        entity = getEntityFromMetaData(monitor, dataSource, entityMeta);
                         if (entity != null) {
                             entityBindingMap.put(entityMeta, entity);
                         }
@@ -110,10 +111,10 @@ public class ResultSetUtils
                     if (attrEntity == null) {
                         if (entity != null && entity instanceof DBSTable && ((DBSTable) entity).isView()) {
                             // If this is a view then don't try to detect entity for each attribute
-                            // MySQL returns rouce table name instead of view name. That's crazy.
+                            // MySQL returns source table name instead of view name. That's crazy.
                             attrEntity = entity;
                         } else {
-                            attrEntity = getEntityFromMetaData(session, attrEntityMeta);
+                            attrEntity = getEntityFromMetaData(monitor, dataSource, attrEntityMeta);
                         }
                     }
                     if (attrEntity != null) {
@@ -210,12 +211,12 @@ public class ResultSetUtils
         }
     }
 
-    private static DBSEntity getEntityFromMetaData(DBCSession session, DBCEntityMetaData entityMeta) throws DBException {
-        final DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, session.getDataSource());
+    private static DBSEntity getEntityFromMetaData(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCEntityMetaData entityMeta) throws DBException {
+        final DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
         if (objectContainer != null) {
-            DBSEntity entity = getEntityFromMetaData(session, objectContainer, entityMeta, false);
+            DBSEntity entity = getEntityFromMetaData(monitor, objectContainer, entityMeta, false);
             if (entity == null) {
-                entity = getEntityFromMetaData(session, objectContainer, entityMeta, true);
+                entity = getEntityFromMetaData(monitor, objectContainer, entityMeta, true);
             }
             if (entity == null) {
                 log.debug("Table '" + DBUtils.getSimpleQualifiedName(entityMeta.getCatalogName(), entityMeta.getSchemaName(), entityMeta.getEntityName()) + "' not found in metadata catalog");
@@ -225,8 +226,8 @@ public class ResultSetUtils
             return null;
         }
     }
-    private static DBSEntity getEntityFromMetaData(DBCSession session, DBSObjectContainer objectContainer, DBCEntityMetaData entityMeta, boolean transformName) throws DBException {
-        final DBPDataSource dataSource = session.getDataSource();
+    private static DBSEntity getEntityFromMetaData(DBRProgressMonitor monitor, DBSObjectContainer objectContainer, DBCEntityMetaData entityMeta, boolean transformName) throws DBException {
+        final DBPDataSource dataSource = objectContainer.getDataSource();
         String catalogName = entityMeta.getCatalogName();
         String schemaName = entityMeta.getSchemaName();
         String entityName = entityMeta.getEntityName();
@@ -235,36 +236,36 @@ public class ResultSetUtils
             schemaName = DBObjectNameCaseTransformer.transformName(dataSource, schemaName);
             entityName = DBObjectNameCaseTransformer.transformName(dataSource, entityName);
         }
-        Class<? extends DBSObject> scChildType = objectContainer.getChildType(session.getProgressMonitor());
+        Class<? extends DBSObject> scChildType = objectContainer.getChildType(monitor);
         DBSObject entityObject;
         if (!CommonUtils.isEmpty(catalogName) && scChildType != null &&
             (DBSSchema.class.isAssignableFrom(scChildType) || DBSTable.class.isAssignableFrom(scChildType))) {
             // Do not use catalog name
             // Some data sources do not load catalog list but result set meta data contains one (e.g. DB2 and SQLite)
-            entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, null, schemaName, entityName);
+            entityObject = DBUtils.getObjectByPath(monitor, objectContainer, null, schemaName, entityName);
         } else {
             if (CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName) && scChildType != null && DBSCatalog.class.isAssignableFrom(scChildType)) {
                 // No catalog name specified but metadata supports catalogs (e.g. PostgreSQL)
                 // Catalog specified instead of schema. This may happen if metadata provided by SQL query parser
                 // which doesn't know a difference between catalogs and schemas
-                entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, schemaName, null, entityName);
+                entityObject = DBUtils.getObjectByPath(monitor, objectContainer, schemaName, null, entityName);
                 if (entityObject == null) {
-                    entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, null, schemaName, entityName);
+                    entityObject = DBUtils.getObjectByPath(monitor, objectContainer, null, schemaName, entityName);
                 }
                 if (entityObject == null) {
                     // Try using active object
                     DBSObject selectedObject = DBUtils.getSelectedObject(objectContainer, false);
                     if (selectedObject != null && selectedObject instanceof DBSCatalog) {
                         objectContainer = (DBSCatalog)selectedObject;
-                        entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, schemaName, null, entityName);
+                        entityObject = DBUtils.getObjectByPath(monitor, objectContainer, schemaName, null, entityName);
                         if (entityObject == null) {
-                            entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, null, schemaName, entityName);
+                            entityObject = DBUtils.getObjectByPath(monitor, objectContainer, null, schemaName, entityName);
                         }
                     }
 
                 }
             } else {
-                entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, catalogName, schemaName, entityName);
+                entityObject = DBUtils.getObjectByPath(monitor, objectContainer, catalogName, schemaName, entityName);
             }
         }
         if (entityObject == null) {
