@@ -1675,6 +1675,11 @@
             <command commandId="org.jkiss.dbeaver.core.object.create">
                 <visibleWhen checkEnabled="true"/>
             </command>
+            <command commandId="org.jkiss.dbeaver.core.new.folder">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+
+            <separator name="copy" visible="true"/>
 
             <command commandId="org.eclipse.ui.edit.copy">
                 <visibleWhen checkEnabled="true"/>
