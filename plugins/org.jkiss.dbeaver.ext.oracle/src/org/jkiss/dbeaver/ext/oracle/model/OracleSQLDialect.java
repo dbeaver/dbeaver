@@ -247,6 +247,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
                 "PREVIOUS"
 
             ));
+        removeSQLKeyword("SYSTEM");
     }
 
     @Override
