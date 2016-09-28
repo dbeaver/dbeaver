@@ -122,10 +122,6 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, sqlStringToken, '\\'));
         rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlQuotedToken, '\\'));
 
-        for (String lineComment : dialect.getSingleLineComments()) {
-            rules.add(new EndOfLineRule(lineComment, commentToken));
-        }
-
         // Add special case word rule.
         EmptyCommentRule wordRule = new EmptyCommentRule(multilineCommentToken);
         rules.add(wordRule);
