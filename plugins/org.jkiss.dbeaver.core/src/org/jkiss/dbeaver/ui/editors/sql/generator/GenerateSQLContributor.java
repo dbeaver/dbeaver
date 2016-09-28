@@ -25,6 +25,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -56,6 +57,9 @@ import java.util.*;
 public class GenerateSQLContributor extends CompoundContributionItem {
 
     static protected final Log log = Log.getLog(GenerateSQLContributor.class);
+
+    //////////////////////////////////////////////////////////
+    // Contributors
 
     @Override
     protected IContributionItem[] getContributionItems()
@@ -97,141 +101,11 @@ public class GenerateSQLContributor extends CompoundContributionItem {
     private void makeTableContributions(List<IContributionItem> menu, final List<DBSEntity> entities)
     {
         // Table
-        menu.add(makeAction("SELECT ", new TableAnalysisRunner(entities) {
-            @Override
-            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
-                sql.append("SELECT ");
-                boolean hasAttr = false;
-                for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
-                    if (DBUtils.isHiddenObject(attr)) {
-                        continue;
-                    }
-                    if (hasAttr) sql.append(", ");
-                    sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
-                    hasAttr = true;
-                }
-                sql.append("\nFROM ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML));
-                sql.append(";\n");
-            }
-        }));
-        menu.add(makeAction("INSERT ", new TableAnalysisRunner(entities) {
-            @Override
-            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
-                sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML)).append("\n(");
-                boolean hasAttr = false;
-                for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
-                    if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
-                        continue;
-                    }
-                    if (hasAttr) sql.append(", ");
-                    sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
-                    hasAttr = true;
-                }
-                sql.append(")\nVALUES(");
-                hasAttr = false;
-                for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
-                    if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
-                        continue;
-                    }
-                    if (hasAttr) sql.append(", ");
-                    appendDefaultValue(sql, attr);
-                    hasAttr = true;
-                }
-                sql.append(");\n");
-            }
-
-        }));
-        menu.add(makeAction("UPDATE ", new TableAnalysisRunner(entities) {
-            @Override
-            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
-                Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
-                sql.append("UPDATE ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML))
-                    .append("\nSET ");
-                boolean hasAttr = false;
-                for (DBSAttributeBase attr : getValueAttributes(monitor, object, keyAttributes)) {
-                    if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
-                        continue;
-                    }
-                    if (hasAttr) sql.append(", ");
-                    sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
-                    appendDefaultValue(sql, attr);
-                    hasAttr = true;
-                }
-                if (!CommonUtils.isEmpty(keyAttributes)) {
-                    sql.append("\nWHERE ");
-                    hasAttr = false;
-                    for (DBSEntityAttribute attr : keyAttributes) {
-                        if (hasAttr) sql.append(" AND ");
-                        sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
-                        appendDefaultValue(sql, attr);
-                        hasAttr = true;
-                    }
-                }
-                sql.append(";\n");
-            }
-        }));
-        menu.add(makeAction("DELETE ", new TableAnalysisRunner(entities) {
-            @Override
-            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
-                sql.append("DELETE FROM  ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML))
-                    .append("\nWHERE ");
-                Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
-                if (CommonUtils.isEmpty(keyAttributes)) {
-                    keyAttributes = getAllAttributes(monitor, object);
-                }
-                boolean hasAttr = false;
-                for (DBSEntityAttribute attr : keyAttributes) {
-                    if (hasAttr) sql.append(" AND ");
-                    sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
-                    appendDefaultValue(sql, attr);
-                    hasAttr = true;
-                }
-                sql.append(";\n");
-            }
-        }));
-        menu.add(makeAction("MERGE", new TableAnalysisRunner(entities) {
-            @Override
-            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
-                boolean hasAttr = false;
-
-                sql.append("MERGE INTO ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML)).append(" AS tgt\n");
-                sql.append("USING SOURCE_TABLE AS src\n");
-                Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
-                if (!CommonUtils.isEmpty(keyAttributes)) {
-                    sql.append("ON (");
-                    for (DBSEntityAttribute attr : keyAttributes) {
-                        if (hasAttr) sql.append(" AND ");
-                        sql.append("tgt.").append(DBUtils.getQuotedIdentifier(attr))
-                            .append("=src.").append(DBUtils.getQuotedIdentifier(attr));
-                        hasAttr = true;
-                    }
-                    sql.append(")\n");
-                }
-                sql.append("WHEN MATCHED\nTHEN UPDATE SET\n");
-                hasAttr = false;
-                for (DBSAttributeBase attr : getValueAttributes(monitor, object, keyAttributes)) {
-                    if (hasAttr) sql.append(", ");
-                    sql.append("tgt.").append(DBUtils.getQuotedIdentifier(object.getDataSource(), attr.getName()))
-                        .append("=src.").append(DBUtils.getQuotedIdentifier(object.getDataSource(), attr.getName()));
-                    hasAttr = true;
-                }
-                sql.append("\nWHEN NOT MATCHED\nTHEN INSERT (");
-                hasAttr = false;
-                for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
-                    if (hasAttr) sql.append(", ");
-                    sql.append(DBUtils.getQuotedIdentifier(attr));
-                    hasAttr = true;
-                }
-                sql.append(")\nVALUES (");
-                hasAttr = false;
-                for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
-                    if (hasAttr) sql.append(", ");
-                    sql.append("src.").append(DBUtils.getQuotedIdentifier(attr));
-                    hasAttr = true;
-                }
-                sql.append(");\n");
-            }
-        }));
+        menu.add(makeAction("SELECT ", SELECT_GENERATOR(entities, true)));
+        menu.add(makeAction("INSERT ", INSERT_GENERATOR(entities)));
+        menu.add(makeAction("UPDATE ", UPDATE_GENERATOR(entities)));
+        menu.add(makeAction("DELETE ", DELETE_GENERATOR(entities)));
+        menu.add(makeAction("MERGE", MERGE_GENERATOR(entities)));
     }
 
     private void makeScriptContributions(List<IContributionItem> menu, final List<DBPScriptObject> scriptObjects)
@@ -375,7 +249,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         return false;
     }
 
-    private abstract static class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String> {
+    public abstract static class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String> {
         final protected List<OBJECT> objects;
 
         protected SQLGenerator(List<OBJECT> objects)
@@ -506,7 +380,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         }
     }
 
-    private static ContributionItem makeAction(String text, final SQLGenerator runnable)
+    private static ContributionItem makeAction(String text, final DBRRunnableWithResult<String> runnable)
     {
         return new ActionContributionItem(
             new Action(text, DBeaverIcons.getImageDescriptor(UIIcon.SQL_TEXT)) {
@@ -571,6 +445,170 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             return null;
         }
         return (IStructuredSelection)selection;
+    }
+
+    ///////////////////////////////////////////////////
+    // Generators
+
+
+    @NotNull
+    public static DBRRunnableWithResult<String> SELECT_GENERATOR(final List<DBSEntity> entities, final boolean columnList) {
+        return new TableAnalysisRunner(entities) {
+            @Override
+            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
+                sql.append("SELECT ");
+                if (!columnList) {
+                    sql.append("* ");
+                } else {
+                    boolean hasAttr = false;
+                    for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
+                        if (DBUtils.isHiddenObject(attr)) {
+                            continue;
+                        }
+                        if (hasAttr) sql.append(", ");
+                        sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
+                        hasAttr = true;
+                    }
+                    sql.append("\n");
+                }
+                sql.append("FROM ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML));
+                sql.append(";\n");
+            }
+        };
+    }
+
+    @NotNull
+    private DBRRunnableWithResult<String> DELETE_GENERATOR(final List<DBSEntity> entities) {
+        return new TableAnalysisRunner(entities) {
+            @Override
+            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
+                sql.append("DELETE FROM  ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML))
+                    .append("\nWHERE ");
+                Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
+                if (CommonUtils.isEmpty(keyAttributes)) {
+                    keyAttributes = getAllAttributes(monitor, object);
+                }
+                boolean hasAttr = false;
+                for (DBSEntityAttribute attr : keyAttributes) {
+                    if (hasAttr) sql.append(" AND ");
+                    sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
+                    appendDefaultValue(sql, attr);
+                    hasAttr = true;
+                }
+                sql.append(";\n");
+            }
+        };
+    }
+
+    @NotNull
+    public static DBRRunnableWithResult<String> INSERT_GENERATOR(final List<DBSEntity> entities) {
+        return new TableAnalysisRunner(entities) {
+            @Override
+            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
+                sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML)).append("\n(");
+                boolean hasAttr = false;
+                for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
+                    if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
+                        continue;
+                    }
+                    if (hasAttr) sql.append(", ");
+                    sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
+                    hasAttr = true;
+                }
+                sql.append(")\nVALUES(");
+                hasAttr = false;
+                for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
+                    if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
+                        continue;
+                    }
+                    if (hasAttr) sql.append(", ");
+                    appendDefaultValue(sql, attr);
+                    hasAttr = true;
+                }
+                sql.append(");\n");
+            }
+
+        };
+    }
+
+    @NotNull
+    public static DBRRunnableWithResult<String> UPDATE_GENERATOR(final List<DBSEntity> entities) {
+        return new TableAnalysisRunner(entities) {
+            @Override
+            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
+                Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
+                sql.append("UPDATE ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML))
+                    .append("\nSET ");
+                boolean hasAttr = false;
+                for (DBSAttributeBase attr : getValueAttributes(monitor, object, keyAttributes)) {
+                    if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
+                        continue;
+                    }
+                    if (hasAttr) sql.append(", ");
+                    sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
+                    appendDefaultValue(sql, attr);
+                    hasAttr = true;
+                }
+                if (!CommonUtils.isEmpty(keyAttributes)) {
+                    sql.append("\nWHERE ");
+                    hasAttr = false;
+                    for (DBSEntityAttribute attr : keyAttributes) {
+                        if (hasAttr) sql.append(" AND ");
+                        sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
+                        appendDefaultValue(sql, attr);
+                        hasAttr = true;
+                    }
+                }
+                sql.append(";\n");
+            }
+        };
+    }
+
+    @NotNull
+    public static DBRRunnableWithResult<String> MERGE_GENERATOR(final List<DBSEntity> entities) {
+        return new TableAnalysisRunner(entities) {
+            @Override
+            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
+                boolean hasAttr = false;
+
+                sql.append("MERGE INTO ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML)).append(" AS tgt\n");
+                sql.append("USING SOURCE_TABLE AS src\n");
+                Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
+                if (!CommonUtils.isEmpty(keyAttributes)) {
+                    sql.append("ON (");
+                    for (DBSEntityAttribute attr : keyAttributes) {
+                        if (hasAttr) sql.append(" AND ");
+                        sql.append("tgt.").append(DBUtils.getQuotedIdentifier(attr))
+                            .append("=src.").append(DBUtils.getQuotedIdentifier(attr));
+                        hasAttr = true;
+                    }
+                    sql.append(")\n");
+                }
+                sql.append("WHEN MATCHED\nTHEN UPDATE SET\n");
+                hasAttr = false;
+                for (DBSAttributeBase attr : getValueAttributes(monitor, object, keyAttributes)) {
+                    if (hasAttr) sql.append(", ");
+                    sql.append("tgt.").append(DBUtils.getQuotedIdentifier(object.getDataSource(), attr.getName()))
+                        .append("=src.").append(DBUtils.getQuotedIdentifier(object.getDataSource(), attr.getName()));
+                    hasAttr = true;
+                }
+                sql.append("\nWHEN NOT MATCHED\nTHEN INSERT (");
+                hasAttr = false;
+                for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
+                    if (hasAttr) sql.append(", ");
+                    sql.append(DBUtils.getQuotedIdentifier(attr));
+                    hasAttr = true;
+                }
+                sql.append(")\nVALUES (");
+                hasAttr = false;
+                for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
+                    if (hasAttr) sql.append(", ");
+                    sql.append("src.").append(DBUtils.getQuotedIdentifier(attr));
+                    hasAttr = true;
+                }
+                sql.append(");\n");
+            }
+        };
     }
 
 }
