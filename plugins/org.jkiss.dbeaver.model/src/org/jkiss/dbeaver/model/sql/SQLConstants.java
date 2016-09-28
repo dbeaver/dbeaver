@@ -56,6 +56,7 @@ public class SQLConstants {
         KEYWORD_UPDATE,
         KEYWORD_INTO,
         "TABLE",
+        "VIEW",
         "JOIN"
     };
 
