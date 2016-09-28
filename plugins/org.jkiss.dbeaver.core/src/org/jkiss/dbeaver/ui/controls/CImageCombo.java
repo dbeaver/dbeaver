@@ -1002,14 +1002,14 @@ public class CImageCombo extends Composite {
         }
         if (!drop) {
             this.popup.setVisible(false);
-            this.sizeHint = this.popup.getSize();
             if (!isDisposed() && this.arrow.isFocusControl()) {
                 this.comboComposite.setFocus();
             }
             return;
         }
 
-        if (getShell() != this.popup.getParent()) {
+        boolean newPopup = getShell() != this.popup.getParent();
+        if (newPopup) {
             int selectionIndex = this.table.getSelectionIndex();
             this.table.removeListener(SWT.Dispose, this.listener);
             createPopup(selectionIndex);
@@ -1058,6 +1058,15 @@ public class CImageCombo extends Composite {
             if (column.getWidth() < maxSize) {
                 column.setWidth(maxSize);
             }
+        }
+        if (this.popup.getData("resizeListener") == null) {
+            this.popup.addListener(SWT.Resize, new Listener() {
+                @Override
+                public void handleEvent(Event event) {
+                    CImageCombo.this.sizeHint = popup.getSize();
+                }
+            });
+            this.popup.setData("resizeListener", Boolean.TRUE);
         }
         this.popup.setVisible(true);
         this.table.setFocus();
