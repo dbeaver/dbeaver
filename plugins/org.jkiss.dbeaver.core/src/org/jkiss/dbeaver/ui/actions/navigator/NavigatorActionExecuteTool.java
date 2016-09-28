@@ -48,8 +48,8 @@ public class NavigatorActionExecuteTool implements IActionDelegate
     @Override
     public void run(IAction action)
     {
-        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects((IStructuredSelection) selection);
+        if (!selection.isEmpty()) {
+            List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(selection);
             executeTool(DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart(), selectedObjects);
         }
     }

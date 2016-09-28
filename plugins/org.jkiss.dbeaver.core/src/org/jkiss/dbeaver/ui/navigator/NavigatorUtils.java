@@ -117,16 +117,18 @@ public class NavigatorUtils {
         return DBUtils.getFromObject(selection.getFirstElement());
     }
 
-    public static List<DBSObject> getSelectedObjects(IStructuredSelection selection)
+    public static List<DBSObject> getSelectedObjects(ISelection selection)
     {
         if (selection.isEmpty()) {
             return Collections.emptyList();
         }
         List<DBSObject> result = new ArrayList<>();
-        for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
-            DBSObject selectedObject = DBUtils.getFromObject(iter.next());
-            if (selectedObject != null) {
-                result.add(selectedObject);
+        if (selection instanceof IStructuredSelection) {
+            for (Iterator iter = ((IStructuredSelection)selection).iterator(); iter.hasNext(); ) {
+                DBSObject selectedObject = DBUtils.getFromObject(iter.next());
+                if (selectedObject != null) {
+                    result.add(selectedObject);
+                }
             }
         }
         return result;
