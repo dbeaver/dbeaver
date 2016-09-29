@@ -239,4 +239,8 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         }
     }
 
+    @Override
+    public String toString() {
+        return displayString;
+    }
 }

@@ -42,9 +42,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -148,11 +146,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer)
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-        final DBPDataSource dataSource = editor.getDataSource();
-        if (dataSource != null) {
-            store = dataSource.getContainer().getPreferenceStore();
-        }
+        DBPPreferenceStore store = editor.getActivePreferenceStore();
 
         final DBPPreferenceStore configStore = store;
 
