@@ -598,9 +598,11 @@ public class UIUtils {
         return button;
     }
 
-    public static Button createCheckbox(Composite parent, String label, boolean checked, int hSpan)
-    {
+    public static Button createCheckbox(Composite parent, String label, String tooltip, boolean checked, int hSpan) {
         Button checkbox = createCheckbox(parent, label, checked);
+        if (tooltip != null) {
+            checkbox.setToolTipText(tooltip);
+        }
         if (hSpan > 1) {
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = hSpan;

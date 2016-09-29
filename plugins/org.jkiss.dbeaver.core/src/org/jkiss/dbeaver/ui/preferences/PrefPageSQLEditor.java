@@ -47,6 +47,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
     private Button csAutoActivationCheck;
     private Spinner csAutoActivationDelaySpinner;
+    private Button csAutoActivateOnKeystroke;
     private Button csAutoInsertCheck;
     private Combo csInsertCase;
     private Button csHideDuplicates;
@@ -73,12 +74,23 @@ public class PrefPageSQLEditor extends TargetPrefPage
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION) ||
+            store.contains(DBeaverPreferences.EDITOR_CONNECT_ON_ACTIVATE) ||
+            store.contains(DBeaverPreferences.EDITOR_CONNECT_ON_EXECUTE) ||
+    
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE) ||
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) ||
+    
+            store.contains(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION) ||
+            store.contains(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY) ||
+            store.contains(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION) ||
+            store.contains(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO) ||
+            store.contains(SQLPreferenceConstants.PROPOSAL_INSERT_CASE) ||
+            store.contains(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) ||
+            store.contains(SQLPreferenceConstants.PROPOSAL_SHORT_NAME) ||
+    
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS) ||
-            store.contains(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) ||
             store.contains(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO) ||
             store.contains(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE) ||
 
@@ -103,17 +115,17 @@ public class PrefPageSQLEditor extends TargetPrefPage
         composite2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         {
-            Group connectionsGroup = UIUtils.createControlGroup(composite2, "Connections", 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-            editorSeparateConnectionCheck = UIUtils.createLabelCheckbox(connectionsGroup, "Open separate connection for each editor", false);
+            Group connectionsGroup = UIUtils.createControlGroup(composite2, "Connections", 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+            editorSeparateConnectionCheck = UIUtils.createCheckbox(connectionsGroup, "Open separate connection for each editor", false);
 
-            connectOnActivationCheck = UIUtils.createLabelCheckbox(connectionsGroup, "Connect on editor activation", false);
-            connectOnExecuteCheck = UIUtils.createLabelCheckbox(connectionsGroup, "Connect on query execute", false);
+            connectOnActivationCheck = UIUtils.createCheckbox(connectionsGroup, "Connect on editor activation", false);
+            connectOnExecuteCheck = UIUtils.createCheckbox(connectionsGroup, "Connect on query execute", false);
         }
 
         {
-            Group connectionsGroup = UIUtils.createControlGroup(composite2, "Auto-save", 2, GridData.FILL_HORIZONTAL, 0);
-            autoSaveOnClose = UIUtils.createLabelCheckbox(connectionsGroup, "Auto-save editor on close", false);
-            saveOnQueryExecution = UIUtils.createLabelCheckbox(connectionsGroup, "Save editor on query execute", false);
+            Group connectionsGroup = UIUtils.createControlGroup(composite2, "Auto-save", 1, GridData.FILL_HORIZONTAL, 0);
+            autoSaveOnClose = UIUtils.createCheckbox(connectionsGroup, "Auto-save editor on close", false);
+            saveOnQueryExecution = UIUtils.createCheckbox(connectionsGroup, "Save editor on query execute", false);
         }
 
         // Content assistant
@@ -122,7 +134,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
             assistGroup.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_BEGINNING));
             ((GridData)assistGroup.getLayoutData()).verticalSpan = 2;
 
-            csAutoActivationCheck = UIUtils.createLabelCheckbox(assistGroup, "Enable auto activation", "Enables content assistant auto activation (on text typing)", false);
+            csAutoActivationCheck = UIUtils.createCheckbox(assistGroup, "Enable auto activation", "Enables content assistant auto activation (on text typing)", false, 2);
+
             UIUtils.createControlLabel(assistGroup, "Auto activation delay");
             csAutoActivationDelaySpinner = new Spinner(assistGroup, SWT.BORDER);
             csAutoActivationDelaySpinner.setSelection(0);
@@ -132,42 +145,48 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csAutoActivationDelaySpinner.setMaximum(1000000);
             csAutoActivationDelaySpinner.setToolTipText("Delay before content assistant will run after typing trigger key");
 
-            csAutoInsertCheck = UIUtils.createLabelCheckbox(
+            csAutoActivateOnKeystroke = UIUtils.createCheckbox(
+                assistGroup,
+                "Activate on typing",
+                "Activate completion proposals on any letter typing.",
+                false, 2);
+            csAutoInsertCheck = UIUtils.createCheckbox(
                 assistGroup,
                 "Auto-insert proposal",
                 "Enables the content assistant's auto insertion mode.\nIf enabled, the content assistant inserts a proposal automatically if it is the only proposal.\nIn the case of ambiguities, the user must make the choice.",
-                false);
+                false, 2);
+
             UIUtils.createControlLabel(assistGroup, "Insert case");
             csInsertCase = new Combo(assistGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             csInsertCase.add("Default");
             csInsertCase.add("Upper case");
             csInsertCase.add("Lower case");
 
-            csHideDuplicates = UIUtils.createLabelCheckbox(assistGroup, "Hide duplicate names from\nnon-active schemas", false);
-            csShortName = UIUtils.createLabelCheckbox(assistGroup, "Use short object names\n(omit schema/catalog)", false);
+            csHideDuplicates = UIUtils.createCheckbox(assistGroup, "Hide duplicate names from\nnon-active schemas", null, false, 2);
+            csShortName = UIUtils.createCheckbox(assistGroup, "Use short object names\n(omit schema/catalog)", null, false, 2);
         }
 
         // Autoclose
         {
-            Composite acGroup = UIUtils.createControlGroup(composite2, "Auto close", 2, GridData.FILL_BOTH, 0);
+            Composite acGroup = UIUtils.createControlGroup(composite2, "Auto close", 1, GridData.FILL_BOTH, 0);
 
-            acSingleQuotesCheck = UIUtils.createLabelCheckbox(acGroup, "Single quotes", false);
-            acDoubleQuotesCheck = UIUtils.createLabelCheckbox(acGroup, "Double quotes", false);
-            acBracketsCheck = UIUtils.createLabelCheckbox(acGroup, "Brackets", false);
+            acSingleQuotesCheck = UIUtils.createCheckbox(acGroup, "Single quotes", false);
+            acDoubleQuotesCheck = UIUtils.createCheckbox(acGroup, "Double quotes", false);
+            acBracketsCheck = UIUtils.createCheckbox(acGroup, "Brackets", false);
         }
 
         {
             // Formatting
-            Composite afGroup = UIUtils.createControlGroup(composite2, "Auto format", 2, GridData.FILL_BOTH, 0);
-            afKeywordCase = UIUtils.createLabelCheckbox(
+            Composite afGroup = UIUtils.createControlGroup(composite2, "Auto format", 1, GridData.FILL_BOTH, 0);
+            afKeywordCase = UIUtils.createCheckbox(
                 afGroup,
                 "Convert keyword case",
                 "Auto-convert keywords to upper/lower case on enter",
-                false);
-            afExtractFromSource = UIUtils.createLabelCheckbox(
+                false, 1);
+            afExtractFromSource = UIUtils.createCheckbox(
                 afGroup,
                 "Extract SQL from source code",
-                "On source code paste will remove all source language elements like quotes, +, \\n, etc", false);
+                "On source code paste will remove all source language elements like quotes, +, \\n, etc", false, 1);
         }
 
         // Scripts
@@ -175,7 +194,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             Composite scriptsGroup = UIUtils.createControlGroup(composite2, CoreMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_BOTH, 0);
             ((GridData)scriptsGroup.getLayoutData()).horizontalSpan = 2;
 
-            autoFoldersCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, false);
+            autoFoldersCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, null, false, 2);
             scriptTitlePattern = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_title_pattern, "");
 
             String[] vars = new String[] {SQLEditor.VAR_CONNECTION_NAME, SQLEditor.VAR_DRIVER_NAME, SQLEditor.VAR_FILE_NAME, SQLEditor.VAR_FILE_EXT};
@@ -203,9 +222,11 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
             csAutoActivationCheck.setSelection(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
             csAutoActivationDelaySpinner.setSelection(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
+            csAutoActivateOnKeystroke.setSelection(store.getBoolean(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION));
             csAutoInsertCheck.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
             csInsertCase.select(store.getInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE));
             csHideDuplicates.setSelection(store.getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS));
+
             csShortName.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_SHORT_NAME));
             acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
             acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
@@ -234,6 +255,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
             store.setValue(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, csAutoActivationCheck.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, csAutoActivationDelaySpinner.getSelection());
+            store.setValue(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION, csAutoActivateOnKeystroke.getSelection());
             store.setValue(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, csAutoInsertCheck.getSelection());
             store.setValue(SQLPreferenceConstants.PROPOSAL_INSERT_CASE, csInsertCase.getSelectionIndex());
             store.setValue(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, csHideDuplicates.getSelection());
@@ -266,6 +288,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         store.setToDefault(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION);
         store.setToDefault(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY);
+        store.setToDefault(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION);
         store.setToDefault(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO);
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
         store.setToDefault(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS);

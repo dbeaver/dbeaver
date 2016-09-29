@@ -20,19 +20,13 @@ package org.jkiss.dbeaver.ui.editors.sql;
 public class SQLPreferenceConstants
 {
 
-    public static final String INSERT_SINGLE_PROPOSALS_AUTO            = "insert.single.proposals.auto";
-    public static final String ENABLE_AUTO_ACTIVATION                  = "enable.auto.activation";
-    public static final String AUTO_ACTIVATION_DELAY                   = "auto.activation.delay";
-    public static final String PROPOSAL_INSERT_CASE                    = "proposal.insert.case";
-    public static final String HIDE_DUPLICATE_PROPOSALS                = "hide.duplicate.proposals";
-    public static final String PROPOSAL_SHORT_NAME                     = "proposals.short.name";
-
-    // Syntax Validation
-    public static final String SYNTAX_VALIDATION                       = "syntax.validation";
-    public static final String SYNTAX_VALIDATION_MAX_LINE              = "syntax.validation.max.line";
-    public static final String SYNTAX_VALIDATION_MAX_LINE_NUMBER       = "syntax.validation.max.line.number";
-    public static final String SHOW_DAILOG_FOR_SYNTAX_VALIDATION       = "show.dailog.for.syntax.validation";
-    public static final String SHOW_SYNTAX_ERROR_DETAIL                = "show.syntax.error.detail";
+    public static final String INSERT_SINGLE_PROPOSALS_AUTO            = "SQLEditor.ContentAssistant.insert.single.proposal";
+    public static final String ENABLE_AUTO_ACTIVATION                  = "SQLEditor.ContentAssistant.auto.activation.enable";
+    public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation";
+    public static final String AUTO_ACTIVATION_DELAY                   = "SQLEditor.ContentAssistant.auto.activation.delay";
+    public static final String PROPOSAL_INSERT_CASE                    = "SQLEditor.ContentAssistant.insert.case";
+    public static final String HIDE_DUPLICATE_PROPOSALS                = "SQLEditor.ContentAssistant.hide.duplicates";
+    public static final String PROPOSAL_SHORT_NAME                     = "SQLEditor.ContentAssistant.proposals.short.name";
 
     // Auto-save
     public static final String AUTO_SAVE_ON_CLOSE                      = "SQLEditor.autoSaveOnClose";
@@ -55,8 +49,8 @@ public class SQLPreferenceConstants
     public static final int PROPOSAL_CASE_UPPER                         = 1;
     public static final int PROPOSAL_CASE_LOWER                         = 2;
 
-    public final static String SQL_FORMAT_KEYWORD_CASE_AUTO =           "SQLEditor.format.keywordCaseAuto";
-    public final static String SQL_FORMAT_EXTRACT_FROM_SOURCE =         "SQLEditor.format.extractFromSource";
+    public final static String SQL_FORMAT_KEYWORD_CASE_AUTO             = "SQLEditor.format.keywordCaseAuto";
+    public final static String SQL_FORMAT_EXTRACT_FROM_SOURCE           = "SQLEditor.format.extractFromSource";
 
     public final static String BEEP_ON_QUERY_END                        = "SQLEditor.beepOnQueryEnd";
 }
