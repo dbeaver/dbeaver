@@ -217,6 +217,18 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
 
         }
+        if (proposals.size() == 1 && isSimpleMode()) {
+            // To avoid auto-replace add a dummy proposal
+            proposals.add(
+                createCompletionProposal(
+                    wordPart,
+                    wordPart,
+                    wordPart,
+                    null,
+                    false,
+                    null)
+            );
+        }
         return proposals.toArray(new ICompletionProposal[proposals.size()]);
     }
 
