@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.indent;
 
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -98,7 +100,12 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         DBeaverUI.asyncExec(new Runnable() {
             @Override
             public void run() {
-                //((SourceViewer)sourceViewer).doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+                SQLCompletionProcessor.setSimpleMode(true);
+                try {
+                    ((SourceViewer) sourceViewer).doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+                } finally {
+                    SQLCompletionProcessor.setSimpleMode(false);
+                }
             }
         });
     }
