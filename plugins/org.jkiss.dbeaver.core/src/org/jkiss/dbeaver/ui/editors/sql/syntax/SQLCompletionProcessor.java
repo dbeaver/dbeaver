@@ -407,7 +407,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     // Try in active object
                     makeProposalsFromChildren(monitor, selectedContainer, lastToken, proposals);
                 }
-                if (proposals.isEmpty()) {
+                if (proposals.isEmpty() && !isSimpleMode()) {
                     // At last - try to find child tables by pattern
                     DBSStructureAssistant structureAssistant = null;
                     for (DBSObject object = childObject; object != null; object =  object.getParentObject()) {

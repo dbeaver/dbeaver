@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Locale;
+
 /**
  * SQL Completion proposal
  */
@@ -63,6 +65,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     private IContextInformation contextInformation;
     /** The additional info of this proposal. */
     private String additionalProposalInfo;
+    private boolean simpleMode;
 
     private DBPNamedObject object;
 
@@ -80,7 +83,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         this.syntaxManager = syntaxManager;
         this.displayString = displayString;
         this.replacementString = replacementString;
-        this.replacementFull = replacementString.toLowerCase();
+        this.replacementFull = replacementString.toLowerCase(Locale.ENGLISH);
         int divPos = this.replacementFull.lastIndexOf(syntaxManager.getStructSeparator());
         if (divPos == -1) {
             this.replacementLast = null;
@@ -95,6 +98,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         setPosition(wordDetector);
 
         this.object = object;
+        this.simpleMode = SQLCompletionProcessor.isSimpleMode();
     }
 
     public DBPNamedObject getObject() {
@@ -200,13 +204,20 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         if (divPos != -1) {
             wordPart = wordPart.substring(divPos + 1);
         }
-        String wordLower = wordPart.toLowerCase();
+        String wordLower = wordPart.toLowerCase(Locale.ENGLISH);
         if (!CommonUtils.isEmpty(wordPart)) {
-            if (
-                (TextUtils.fuzzyScore(replacementFull, wordLower) > 0 && (CommonUtils.isEmpty(event.getText()) || TextUtils.fuzzyScore(replacementFull, event.getText()) > 0)) ||
-                (this.replacementLast != null && TextUtils.fuzzyScore(this.replacementLast, wordLower) > 0)
-                )
-            {
+            boolean matched;
+            if (simpleMode) {
+                matched = replacementFull.startsWith(wordLower) &&
+                    (CommonUtils.isEmpty(event.getText()) || replacementFull.contains(event.getText().toLowerCase(Locale.ENGLISH))) ||
+                    (this.replacementLast != null && this.replacementLast.startsWith(wordLower));
+            } else {
+                matched = (TextUtils.fuzzyScore(replacementFull, wordLower) > 0 &&
+                    (CommonUtils.isEmpty(event.getText()) || TextUtils.fuzzyScore(replacementFull, event.getText()) > 0)) ||
+                    (this.replacementLast != null && TextUtils.fuzzyScore(this.replacementLast, wordLower) > 0);
+            }
+
+            if (matched) {
                 setPosition(wordDetector);
                 return true;
             }
