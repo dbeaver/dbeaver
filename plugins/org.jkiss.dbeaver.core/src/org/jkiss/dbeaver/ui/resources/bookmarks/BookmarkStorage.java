@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBIconBinary;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -65,37 +64,34 @@ public class BookmarkStorage {
     public BookmarkStorage(IFile file, boolean loadImage) throws DBException, CoreException
     {
         this.title = file.getFullPath().removeFileExtension().lastSegment();
-        try {
-            final InputStream contents = file.getContents(true);
-            try {
-                final Document document = XMLUtils.parseDocument(contents);
-                final Element root = document.getDocumentElement();
-                this.title = root.getAttribute(ATTR_TITLE);
-                this.description = root.getAttribute(ATTR_DESCRIPTION);
-                this.dataSourceId = root.getAttribute(ATTR_DATA_SOURCE);
-                if (dataSourceId == null) {
-                    throw new DBException("Data source ID missing in bookmark definition");
+        try (InputStream contents = file.getContents(true)) {
+            final Document document = XMLUtils.parseDocument(contents);
+            final Element root = document.getDocumentElement();
+            this.title = root.getAttribute(ATTR_TITLE);
+            this.description = root.getAttribute(ATTR_DESCRIPTION);
+            this.dataSourceId = root.getAttribute(ATTR_DATA_SOURCE);
+            if (dataSourceId == null) {
+                throw new DBException("Data source ID missing in bookmark definition");
+            }
+            this.dataSourcePath = new ArrayList<>();
+            for (Element elem : XMLUtils.getChildElementList(root, TAG_PATH)) {
+                this.dataSourcePath.add(XMLUtils.getElementBody(elem));
+            }
+            if (loadImage) {
+                Element imgElement = XMLUtils.getChildElement(root, TAG_IMAGE);
+                if (imgElement != null) {
+                    String imgString = XMLUtils.getElementBody(imgElement);
+                    final byte[] imgBytes = Base64.decode(imgString);
+                    ImageLoader loader = new ImageLoader();
+                    this.image = new DBIconBinary(
+                        dataSourcePath.toString(),
+                        loader.load(new ByteArrayInputStream(imgBytes))[0]);
                 }
-                this.dataSourcePath = new ArrayList<>();
-                for (Element elem : XMLUtils.getChildElementList(root, TAG_PATH)) {
-                    this.dataSourcePath.add(XMLUtils.getElementBody(elem));
-                }
-                if (loadImage) {
-                    Element imgElement = XMLUtils.getChildElement(root, TAG_IMAGE);
-                    if (imgElement != null) {
-                        String imgString = XMLUtils.getElementBody(imgElement);
-                        final byte[] imgBytes = Base64.decode(imgString);
-                        ImageLoader loader = new ImageLoader();
-                        this.image = new DBIconBinary(
-                            dataSourcePath.toString(),
-                            loader.load(new ByteArrayInputStream(imgBytes))[0]);
-                    }
-                }
-            } finally {
-                ContentUtils.close(contents);
             }
         } catch (XMLException e) {
             throw new DBException("Error reading bookmarks storage", e);
+        } catch (IOException e) {
+            throw new DBException("IO Error reading bookmarks storage", e);
         }
     }
 

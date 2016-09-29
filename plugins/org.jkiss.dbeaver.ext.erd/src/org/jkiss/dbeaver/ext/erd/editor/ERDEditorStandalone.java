@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.gef.EditPart;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -38,13 +37,12 @@ import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -169,13 +167,8 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
         entityDiagram.setLayoutManualDesired(true);
         diagramPart.setModel(entityDiagram);
 
-        try {
-            final InputStream fileContent = file.getContents();
-            try {
-                DiagramLoader.load(progressMonitor, file.getProject(), diagramPart, fileContent);
-            } finally {
-                ContentUtils.close(fileContent);
-            }
+        try (final InputStream fileContent = file.getContents()) {
+            DiagramLoader.load(progressMonitor, file.getProject(), diagramPart, fileContent);
         } catch (Exception e) {
             log.error("Error loading ER diagram from '" + file.getName() + "'", e);
         }

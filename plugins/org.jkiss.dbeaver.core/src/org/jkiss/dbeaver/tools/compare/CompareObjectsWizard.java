@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.tools.compare;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -26,12 +25,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -160,14 +159,11 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
             }
 
             reportFile.deleteOnExit();
-            OutputStream outputStream = new FileOutputStream(reportFile);
-            try {
+            try (OutputStream outputStream = new FileOutputStream(reportFile)) {
                 monitor.beginTask("Render report", report.getReportLines().size());
                 CompareReportRenderer reportRenderer = new CompareReportRenderer();
                 reportRenderer.renderReport(monitor, report, getSettings(), outputStream);
                 monitor.done();
-            } finally {
-                ContentUtils.close(outputStream);
             }
             UIUtils.launchProgram(reportFile.getAbsolutePath());
         } catch (IOException e) {

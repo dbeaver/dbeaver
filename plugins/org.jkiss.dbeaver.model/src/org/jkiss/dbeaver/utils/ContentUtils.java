@@ -311,8 +311,7 @@ public class ContentUtils {
 
     public static String readFileToString(File file) throws IOException
     {
-        InputStream fileStream = new FileInputStream(file);
-        try {
+        try (InputStream fileStream = new FileInputStream(file)) {
             UnicodeReader unicodeReader = new UnicodeReader(fileStream, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
             StringBuilder result = new StringBuilder((int) file.length());
             char[] buffer = new char[4000];
@@ -324,8 +323,6 @@ public class ContentUtils {
                 result.append(buffer, 0, count);
             }
             return result.toString();
-        } finally {
-            ContentUtils.close(fileStream);
         }
     }
 
