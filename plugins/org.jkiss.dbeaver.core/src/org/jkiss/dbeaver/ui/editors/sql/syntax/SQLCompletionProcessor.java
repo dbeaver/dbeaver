@@ -62,6 +62,7 @@ import java.util.regex.PatternSyntaxException;
 public class SQLCompletionProcessor implements IContentAssistProcessor
 {
     private static final Log log = Log.getLog(SQLCompletionProcessor.class);
+    public static final String ALL_COLUMNS_PATTERN = "*";
 
     private enum QueryType {
         TABLE,
@@ -117,6 +118,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         final List<SQLCompletionProposal> proposals = new ArrayList<>();
         QueryType queryType = null;
+        String searchPrefix = wordPart;
         {
             final String prevKeyWord = wordDetector.getPrevKeyWord();
             if (!CommonUtils.isEmpty(prevKeyWord)) {
@@ -132,12 +134,15 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     }
                 } else if (editor.getSyntaxManager().getDialect().isAttributeQueryWord(prevKeyWord)) {
                     queryType = QueryType.COLUMN;
+                    if (!isSimpleMode() && CommonUtils.isEmpty(wordPart) && wordDetector.getPrevDelimiter().equals(ALL_COLUMNS_PATTERN)) {
+                        searchPrefix = ALL_COLUMNS_PATTERN;
+                    }
                 }
             }
         }
         if (queryType != null && wordPart != null) {
             if (editor.getDataSource() != null) {
-                ProposalSearchJob searchJob = new ProposalSearchJob(proposals, wordPart, queryType);
+                ProposalSearchJob searchJob = new ProposalSearchJob(proposals, searchPrefix, queryType);
                 searchJob.schedule();
 
                 // Wait until job finished
@@ -569,12 +574,17 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 List<DBSObject> matchedObjects = new ArrayList<>();
                 final Map<String, Integer> scoredMatches = new HashMap<>();
                 boolean simpleMode = isSimpleMode();
+                boolean allObjects = !simpleMode && ALL_COLUMNS_PATTERN.equals(startPart);
+                StringBuilder combinedMatch = new StringBuilder();
                 for (DBSObject child : children) {
                     if (DBUtils.isHiddenObject(child)) {
                         // Skip hidden
                         continue;
                     }
-                    if (simpleMode) {
+                    if (allObjects) {
+                        if (combinedMatch.length() > 0) combinedMatch.append(", ");
+                        combinedMatch.append(DBUtils.getQuotedIdentifier(child));
+                    } else if (simpleMode) {
                         if (startPart == null || child.getName().toUpperCase(Locale.ENGLISH).startsWith(startPart)) {
                             matchedObjects.add(child);
                         }
@@ -586,7 +596,14 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         }
                     }
                 }
-                if (!matchedObjects.isEmpty()) {
+                if (combinedMatch.length() > 0) {
+                    String replaceString = combinedMatch.toString();
+
+                    proposals.add(createCompletionProposal(
+                        replaceString,
+                        replaceString,
+                        "All objects"));
+                } else if (!matchedObjects.isEmpty()) {
                     if (startPart != null) {
                         if (simpleMode) {
                             Collections.sort(matchedObjects, new Comparator<DBSObject>() {
@@ -788,6 +805,23 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             object);
     }
 
+    protected SQLCompletionProposal createCompletionProposal(
+        String replaceString,
+        String displayString,
+        String description)
+    {
+        return new SQLCompletionProposal(
+            editor.getSyntaxManager(),
+            displayString,
+            replaceString, // replacementString
+            wordDetector, // wordDetector
+            replaceString.length(), //cursorPosition the position of the cursor following the insert
+            null, //image to display
+            new ContextInformation(null, displayString, displayString), //the context information associated with this proposal
+            description,
+            null);
+    }
+
     /**
      * This method is incomplete in that it does not implement logic to produce
      * some context help relevant to SQL. It just hard codes two strings to
@@ -914,6 +948,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             for (SQLCompletionProposal proposal : proposals) {
                 DBSObject container = proposal.getObjectContainer();
                 DBPNamedObject object = proposal.getObject();
+                if (object == null) {
+                    continue;
+                }
                 Map<Class, List<SQLCompletionProposal>> typeMap = containerMap.get(container);
                 if (typeMap == null) {
                     typeMap = new HashMap<>();
