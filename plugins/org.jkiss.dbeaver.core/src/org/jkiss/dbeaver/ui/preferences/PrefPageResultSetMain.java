@@ -92,14 +92,14 @@ public class PrefPageResultSetMain extends TargetPrefPage
             queriesGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
             resultSetSize = UIUtils.createLabelSpinner(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_max_size, "", 0, 0, 1024 * 1024);
-            autoFetchNextSegmentCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_auto_fetch_segment, true, 2);
-            resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_use_sql, false, 2);
-            serverSideOrderingCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, false, 2);
-            useFetchSize = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_fetch_size, false, 2);
-            readQueryMetadata = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_read_metadata, false, 2);
-            readQueryMetadata.setToolTipText("Disables metadata read. Executes query faster but disables results edit and foreign key navigation");
-            readQueryReferences = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_read_references, false, 2);
-            readQueryReferences.setToolTipText("Disables references (foreign keys) information reading.");
+            autoFetchNextSegmentCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_auto_fetch_segment, null, true, 2);
+            resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_use_sql, null, false, 2);
+            serverSideOrderingCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, null, false, 2);
+            useFetchSize = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_fetch_size, null, false, 2);
+            readQueryMetadata = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_read_metadata,
+                "Disables metadata read. Executes query faster but disables results edit and foreign key navigation", false, 2);
+            readQueryReferences = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_read_references,
+                "Disables references (foreign keys) information reading.", false, 2);
             queryCancelTimeout = UIUtils.createLabelSpinner(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout_tip, 0, 0, Integer.MAX_VALUE);
             queryCancelTimeout.setEnabled(false);
 

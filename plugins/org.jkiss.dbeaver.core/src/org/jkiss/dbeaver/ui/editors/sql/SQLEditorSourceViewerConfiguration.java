@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
-import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.formatter.ContentFormatter;
@@ -122,7 +121,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType)
     {
         if (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)) {
-            return new IAutoEditStrategy[] { new SQLAutoIndentStrategy(editor, SQLPartitionScanner.SQL_PARTITIONING, editor.getSyntaxManager()) } ;
+            return new IAutoEditStrategy[] { new SQLAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING, editor.getSyntaxManager()) } ;
         } else if (SQLPartitionScanner.CONTENT_TYPE_SQL_COMMENT.equals(contentType) || SQLPartitionScanner.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(contentType)) {
             return new IAutoEditStrategy[] { new SQLCommentAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING) } ;
         } else if (SQLPartitionScanner.CONTENT_TYPE_SQL_STRING.equals(contentType)) {
@@ -157,7 +156,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
         final DBPPreferenceStore configStore = store;
 
-        final ContentAssistant assistant = new ContentAssistant();
+        final SQLContentAssistant assistant = new SQLContentAssistant();
 
         assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
@@ -182,6 +181,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         assistant.setContextInformationPopupBackground(background);
         //Set auto insert mode.
         assistant.enableAutoInsert(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
+        assistant.setShowEmptyList(true);
 
         final DBPPreferenceListener prefListener = new DBPPreferenceListener() {
             @Override
@@ -340,19 +340,11 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         return SQLPartitionScanner.SQL_CONTENT_TYPES;
     }
 
-    /*
-	 * @see SourceViewerConfiguration#getDefaultPrefixes(ISourceViewer, String)
-	 *  @since 2.0
-	 */
-
     @Override
     public String[] getDefaultPrefixes(ISourceViewer sourceViewer, String contentType)
     {
         SQLDialect dialect = editor.getSQLDialect();
-        if (dialect != null) {
-            return ArrayUtils.add(String.class, dialect.getSingleLineComments(), "");
-        }
-        return new String[] { SQLConstants.SL_COMMENT, "" };
+        return ArrayUtils.add(String.class, dialect.getSingleLineComments(), "");
     }
 
     @Override

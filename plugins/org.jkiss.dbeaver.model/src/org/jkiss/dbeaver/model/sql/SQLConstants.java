@@ -18,29 +18,12 @@
 
 package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.dbeaver.ModelPreferences;
-
 /**
  * SQL editor constants
  */
 public class SQLConstants {
 
     public static final String NULL_VALUE = "NULL";
-
-    public final static String SQL_CONTENT_TYPE = "org.jkiss.dbeaver.sql";
-
-    public final static String SQL_COMMENT = "sql_comment";
-
-    public static final String SHORT_MESSAGE = "short_message"; //$NON-NLS-1$
-
-    /**
-     * Marker type contant for SQL portability targets.
-     */
-    public static final String PORTABILITY_MARKER_TYPE = ModelPreferences.PLUGIN_ID + ".portabilitytask";           //$NON-NLS-1$
-    /**
-     * Marker type contant for SQL syntax errors.
-     */
-    public static final String SYNTAX_MARKER_TYPE      = ModelPreferences.PLUGIN_ID + ".syntaxproblem";             //$NON-NLS-1$
 
     public static final String STR_QUOTE_SINGLE = "'";
     public static final String STR_QUOTE_DOUBLE = "\"";
@@ -69,6 +52,11 @@ public class SQLConstants {
         "OR",
         "BY",
         "HAVING"
+    };
+
+    public static final String[] DDL_KEYWORDS = {
+        "CREATE",
+        "ALTER",
     };
 
     public static final String[] SQL2003_RESERVED_KEYWORDS = {

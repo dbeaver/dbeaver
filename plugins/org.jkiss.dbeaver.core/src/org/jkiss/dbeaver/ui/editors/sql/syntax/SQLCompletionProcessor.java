@@ -217,18 +217,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
 
         }
-        if (proposals.size() == 1 && isSimpleMode()) {
-            // To avoid auto-replace add a dummy proposal
-            proposals.add(
-                createCompletionProposal(
-                    wordPart,
-                    wordPart,
-                    wordPart,
-                    null,
-                    false,
-                    null)
-            );
-        }
         return proposals.toArray(new ICompletionProposal[proposals.size()]);
     }
 
@@ -373,7 +361,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     if (i == 0) {
                         // Assume it's a table alias ?
                         childObject = this.getTableFromAlias(monitor, sc, token);
-                        if (childObject == null) {
+                        if (childObject == null && !isSimpleMode()) {
+                            // Searhc using structure assistant
                             DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                             if (structureAssistant != null) {
                                 Collection<DBSObjectReference> references = structureAssistant.findObjectsByMask(
@@ -528,20 +517,22 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 }
             }
             if (childObject == null && nameList.size() <= 1) {
-                // No such object found - may be it's start of table name
-                DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
-                if (structureAssistant != null) {
-                    String objectNameMask = nameList.get(0);
-                    Collection<DBSObjectReference> tables = structureAssistant.findObjectsByMask(
-                        monitor,
-                        sc,
-                        structureAssistant.getAutoCompleteObjectTypes(),
-                        wordDetector.removeQuotes(objectNameMask),
-                        wordDetector.isQuoted(objectNameMask),
-                        false,
-                        2);
-                    if (!tables.isEmpty()) {
-                        return tables.iterator().next().resolveObject(monitor);
+                if (!isSimpleMode()) {
+                    // No such object found - may be it's start of table name
+                    DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
+                    if (structureAssistant != null) {
+                        String objectNameMask = nameList.get(0);
+                        Collection<DBSObjectReference> tables = structureAssistant.findObjectsByMask(
+                            monitor,
+                            sc,
+                            structureAssistant.getAutoCompleteObjectTypes(),
+                            wordDetector.removeQuotes(objectNameMask),
+                            wordDetector.isQuoted(objectNameMask),
+                            false,
+                            2);
+                        if (!tables.isEmpty()) {
+                            return tables.iterator().next().resolveObject(monitor);
+                        }
                     }
                 }
                 return null;
@@ -823,7 +814,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     @Override
     public char[] getCompletionProposalAutoActivationCharacters()
     {
-        return new char[] {'.'};
+        boolean useKeystrokes = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION);
+        return useKeystrokes ?
+            new char[] {'.', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j' , 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '_', '$'} :
+            new char[] {'.', };
     }
 
     @Nullable

@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -84,6 +85,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
         editorPH.setLayout(new FillLayout());
 
         sqlViewer = new SQLEditorBase() {
+            @NotNull
             @Override
             protected SQLDialect getSQLDialect() {
                 return BaseSQLDialog.this.getSQLDialect();
