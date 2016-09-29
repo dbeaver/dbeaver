@@ -262,9 +262,12 @@ public class TextUtils {
                 if (queryChar == termChar) {
                     // simple character matches result in one point
                     score++;
-                    if (termIndex == 0 || !Character.isLetter(termLowerCase.charAt(termIndex - 1))) {
+                    if (termIndex == 0) {
+                        // First character
+                        score += 4;
+                    } else if (!Character.isLetter(termLowerCase.charAt(termIndex - 1))) {
                         // Previous character was a divider
-                        score++;
+                        score += 2;
                     }
 
                     // subsequent character matches further improve

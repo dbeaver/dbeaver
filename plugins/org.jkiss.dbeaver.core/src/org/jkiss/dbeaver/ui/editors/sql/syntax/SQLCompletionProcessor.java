@@ -139,9 +139,15 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         }
 
-        if (proposals.isEmpty() || !CommonUtils.isEmpty(wordPart))  {
+        if (!CommonUtils.isEmpty(wordPart))  {
             // Keyword assist
             List<String> matchedKeywords = editor.getSyntaxManager().getDialect().getMatchedKeywords(wordPart);
+            Collections.sort(matchedKeywords, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    return TextUtils.fuzzyScore(o1, wordPart) - TextUtils.fuzzyScore(o2, wordPart);
+                }
+            });
             for (String keyWord : matchedKeywords) {
                 DBPKeywordType keywordType = editor.getSyntaxManager().getDialect().getKeywordType(keyWord);
                 if (keywordType != null) {

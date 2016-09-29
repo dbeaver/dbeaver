@@ -17,15 +17,14 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.*;
-import org.eclipse.ui.texteditor.ITextEditorActionConstants;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -37,23 +36,22 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     private static final Log log = Log.getLog(SQLAutoIndentStrategy.class);
     private static final int MINIMUM_SOUCE_CODE_LENGTH = 10;
 
-    private final SQLEditorBase editor;
+    private final ISourceViewer sourceViewer;
 
     private String partitioning;
     private SQLSyntaxManager syntaxManager;
 
     private Map<Integer, String> autoCompletionMap = new HashMap<>();
     private String[] delimiters;
-    private IAction hippieAction;
 
     /**
      * Creates a new SQL auto indent strategy for the given document partitioning.
      */
-    public SQLAutoIndentStrategy(SQLEditorBase editor, String partitioning, SQLSyntaxManager syntaxManager)
+    public SQLAutoIndentStrategy(ISourceViewer sourceViewer, String partitioning, SQLSyntaxManager syntaxManager)
     {
         this.partitioning = partitioning;
         this.syntaxManager = syntaxManager;
-        this.editor = editor;
+        this.sourceViewer = sourceViewer;
     }
 
 
@@ -72,18 +70,18 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             if (syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE)) {
                 transformSourceCode(document, command);
             }
-        } else if (command.length == 0 && command.text != null && command.offset > 0) {
+        } else if (command.length == 0 && command.text != null) {
             final boolean lineDelimiter = isLineDelimiter(document, command.text);
             try {
-                boolean isLetter = Character.isJavaIdentifierPart(document.getChar(command.offset - 1));
+                boolean isPrevLetter = command.offset > 0 && Character.isJavaIdentifierPart(document.getChar(command.offset - 1));
                 boolean processed = false;
-                if (command.offset > 1 && isLetter &&
+                if (command.offset > 1 && isPrevLetter &&
                     (lineDelimiter || (command.text.length() == 1 && !Character.isJavaIdentifierPart(command.text.charAt(0)))) &&
                     syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO))
                 {
                     processed = updateKeywordCase(document, command);
                 }
-                if (!processed && !lineDelimiter && isLetter) {
+                if (!processed && (command.text.length() == 1 && Character.isJavaIdentifierPart(command.text.charAt(0)))) {
                     bringHippieCompletion(document, command);
                 }
             } catch (BadLocationException e) {
@@ -96,12 +94,13 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     }
 
     private void bringHippieCompletion(IDocument document, DocumentCommand command) {
-//        if (this.hippieAction == null) {
-//            this.hippieAction = editor.getAction(ITextEditorActionConstants.HIPPIE_COMPLETION);
-//        }
-//        if (this.hippieAction != null) {
-//            this.hippieAction.run();
-//        }
+        // TODO: add config option to disable this
+        DBeaverUI.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                //((SourceViewer)sourceViewer).doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+            }
+        });
     }
 
     private boolean transformSourceCode(IDocument document, DocumentCommand command) {
