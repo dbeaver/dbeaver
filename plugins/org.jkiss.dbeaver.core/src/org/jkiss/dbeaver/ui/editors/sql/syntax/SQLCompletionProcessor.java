@@ -135,6 +135,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 } else if (editor.getSyntaxManager().getDialect().isAttributeQueryWord(prevKeyWord)) {
                     queryType = QueryType.COLUMN;
                     if (!isSimpleMode() && CommonUtils.isEmpty(wordPart) && wordDetector.getPrevDelimiter().equals(ALL_COLUMNS_PATTERN)) {
+                        wordDetector.moveToDelimiter();
                         searchPrefix = ALL_COLUMNS_PATTERN;
                     }
                 }
