@@ -197,7 +197,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 }
             }
         }
-        DBSObject selectedObject = DBUtils.getSelectedObject(editor.getDataSource(), true);
+        DBSObject selectedObject = DBUtils.getActiveInstanceObject(editor.getDataSource());
         boolean hideDups = getPreferences().getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) && selectedObject != null;
         if (hideDups) {
             for (int i = 0; i < proposals.size(); i++) {
@@ -328,11 +328,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         // Detect selected object (container).
         // There could be multiple selected objects on different hierarchy levels (e.g. PG)
-        DBSObjectContainer selectedContainer = null;
+        DBSObjectContainer selectedContainers[];
         {
-            DBSObject selectedObject = DBUtils.getSelectedObject(dataSource, true);
-            if (selectedObject != null) {
-                selectedContainer = DBUtils.getAdapter(DBSObjectContainer.class, selectedObject);
+            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(dataSource);
+            selectedContainers = new DBSObjectContainer[selectedObjects.length];
+            for (int i = 0; i < selectedObjects.length; i++) {
+                selectedContainers[i] = DBUtils.getAdapter(DBSObjectContainer.class, selectedObjects[i]);
             }
         }
 
@@ -351,15 +352,15 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 token = DBUtils.getUnQuotedIdentifier(dataSource, token);
                 String objectName = DBObjectNameCaseTransformer.transformName(dataSource, token);
                 childObject = sc.getChild(monitor, objectName);
-                if (childObject == null && i == 0 && selectedContainer != null) {
-                    // Probably it is from selected object, let's try it
-                    childObject = selectedContainer.getChild(monitor, objectName);
-                    if (childObject != null) {
-                        sc = selectedContainer;
-                    } else {
-                        // It is possible that first token refers to selected container itself
-                        if (objectName.equals(selectedContainer.getName())) {
-                            childObject = sc = selectedContainer;
+                if (childObject == null && i == 0) {
+                    for (int k = 0; k < selectedContainers.length; k++) {
+                        if (selectedContainers[k] != null) {
+                            // Probably it is from selected object, let's try it
+                            childObject = selectedContainers[k].getChild(monitor, objectName);
+                            if (childObject != null) {
+                                sc = selectedContainers[k];
+                                break;
+                            }
                         }
                     }
                 }
@@ -409,11 +410,17 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         } else {
             // Get matched children
             makeProposalsFromChildren(monitor, childObject, lastToken, proposals);
+            if (tokens.size() == 1) {
+                // Get children from selected object
+            }
             if (proposals.isEmpty() || tokens.size() == 1) {
-                if (selectedContainer != null && selectedContainer != childObject) {
-                    // Try in active object
-                    makeProposalsFromChildren(monitor, selectedContainer, lastToken, proposals);
+                // Try in active object
+                for (int k = 0; k < selectedContainers.length; k++) {
+                    if (selectedContainers[k] != null && selectedContainers[k] != childObject) {
+                        makeProposalsFromChildren(monitor, selectedContainers[k], lastToken, proposals);
+                    }
                 }
+
                 if (proposals.isEmpty() && !isSimpleMode()) {
                     // At last - try to find child tables by pattern
                     DBSStructureAssistant structureAssistant = null;

@@ -1645,6 +1645,24 @@ public final class DBUtils {
         return null;
     }
 
+    @NotNull
+    public static DBSObject[] getSelectedObjects(@NotNull DBSObject object)
+    {
+        DBSObjectSelector objectSelector = getAdapter(DBSObjectSelector.class, object);
+        if (objectSelector != null) {
+            DBSObject selectedObject1 = objectSelector.getDefaultObject();
+            if (selectedObject1 != null) {
+                DBSObject nestedObject = getSelectedObject(selectedObject1, true);
+                if (nestedObject != null) {
+                    return new DBSObject[] { selectedObject1, nestedObject };
+                } else {
+                    return new DBSObject[] { selectedObject1 };
+                }
+            }
+        }
+        return new DBSObject[0];
+    }
+
     public static boolean isHiddenObject(Object object) {
         return object instanceof DBPHiddenObject && ((DBPHiddenObject) object).isHidden();
     }
