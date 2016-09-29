@@ -73,7 +73,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     private int documentOffset;
     private String activeQuery = null;
     private SQLWordPartDetector wordDetector;
+
     private static boolean lookupTemplates = false;
+    private static boolean simpleMode = false;
 
     public SQLCompletionProcessor(SQLEditorBase editor)
     {
@@ -87,6 +89,16 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     public static void setLookupTemplates(boolean lookupTemplates) {
         SQLCompletionProcessor.lookupTemplates = lookupTemplates;
     }
+
+
+    public static boolean isSimpleMode() {
+        return simpleMode;
+    }
+
+    public static void setSimpleMode(boolean simpleMode) {
+        SQLCompletionProcessor.simpleMode = simpleMode;
+    }
+
 
     @Override
     public ICompletionProposal[] computeCompletionProposals(
@@ -142,12 +154,15 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         if (!CommonUtils.isEmpty(wordPart))  {
             // Keyword assist
             List<String> matchedKeywords = editor.getSyntaxManager().getDialect().getMatchedKeywords(wordPart);
-            Collections.sort(matchedKeywords, new Comparator<String>() {
-                @Override
-                public int compare(String o1, String o2) {
-                    return TextUtils.fuzzyScore(o1, wordPart) - TextUtils.fuzzyScore(o2, wordPart);
-                }
-            });
+            if (!isSimpleMode()) {
+                // Sort using fuzzy match
+                Collections.sort(matchedKeywords, new Comparator<String>() {
+                    @Override
+                    public int compare(String o1, String o2) {
+                        return TextUtils.fuzzyScore(o1, wordPart) - TextUtils.fuzzyScore(o2, wordPart);
+                    }
+                });
+            }
             for (String keyWord : matchedKeywords) {
                 DBPKeywordType keywordType = editor.getSyntaxManager().getDialect().getKeywordType(keyWord);
                 if (keywordType != null) {
@@ -534,7 +549,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         List<SQLCompletionProposal> proposals)
     {
         if (startPart != null) {
-            startPart = wordDetector.removeQuotes(startPart).toUpperCase();
+            startPart = wordDetector.removeQuotes(startPart).toUpperCase(Locale.ENGLISH);
             int divPos = startPart.lastIndexOf(editor.getSyntaxManager().getStructSeparator());
             if (divPos != -1) {
                 startPart = startPart.substring(divPos + 1);
@@ -550,33 +565,49 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             if (children != null && !children.isEmpty()) {
                 List<DBSObject> matchedObjects = new ArrayList<>();
                 final Map<String, Integer> scoredMatches = new HashMap<>();
+                boolean simpleMode = isSimpleMode();
                 for (DBSObject child : children) {
                     if (DBUtils.isHiddenObject(child)) {
                         // Skip hidden
                         continue;
                     }
-                    int score = CommonUtils.isEmpty(startPart) ? 1 : TextUtils.fuzzyScore(child.getName(), startPart);
-                    if (score > 0) {
-                        matchedObjects.add(child);
-                        scoredMatches.put(child.getName(), score);
+                    if (simpleMode) {
+                        if (startPart == null || child.getName().toUpperCase(Locale.ENGLISH).startsWith(startPart)) {
+                            matchedObjects.add(child);
+                        }
+                    } else {
+                        int score = CommonUtils.isEmpty(startPart) ? 1 : TextUtils.fuzzyScore(child.getName(), startPart);
+                        if (score > 0) {
+                            matchedObjects.add(child);
+                            scoredMatches.put(child.getName(), score);
+                        }
                     }
                 }
                 if (!matchedObjects.isEmpty()) {
                     if (startPart != null) {
-                        Collections.sort(matchedObjects, new Comparator<DBSObject>() {
-                            @Override
-                            public int compare(DBSObject o1, DBSObject o2) {
-                                int score1 = scoredMatches.get(o1.getName());
-                                int score2 = scoredMatches.get(o2.getName());
-                                if (score1 == score2) {
-                                    if (o1 instanceof DBSAttributeBase) {
-                                        return ((DBSAttributeBase) o1).getOrdinalPosition() - ((DBSAttributeBase) o2).getOrdinalPosition();
-                                    }
+                        if (simpleMode) {
+                            Collections.sort(matchedObjects, new Comparator<DBSObject>() {
+                                @Override
+                                public int compare(DBSObject o1, DBSObject o2) {
                                     return o1.getName().compareTo(o2.getName());
                                 }
-                                return score2 - score1;
-                            }
-                        });
+                            });
+                        } else {
+                            Collections.sort(matchedObjects, new Comparator<DBSObject>() {
+                                @Override
+                                public int compare(DBSObject o1, DBSObject o2) {
+                                    int score1 = scoredMatches.get(o1.getName());
+                                    int score2 = scoredMatches.get(o2.getName());
+                                    if (score1 == score2) {
+                                        if (o1 instanceof DBSAttributeBase) {
+                                            return ((DBSAttributeBase) o1).getOrdinalPosition() - ((DBSAttributeBase) o2).getOrdinalPosition();
+                                        }
+                                        return o1.getName().compareTo(o2.getName());
+                                    }
+                                    return score2 - score1;
+                                }
+                            });
+                        }
                     }
                     for (DBSObject child : matchedObjects) {
                         proposals.add(makeProposalsFromObject(monitor, child));
@@ -841,7 +872,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         public ProposalSearchJob(List<SQLCompletionProposal> proposals, String wordPart, QueryType qt) {
             super("Search proposals...");
-            setUser(true);
+            setSystem(true);
             this.proposals = proposals;
             this.wordPart = wordPart;
             this.qt = qt;
