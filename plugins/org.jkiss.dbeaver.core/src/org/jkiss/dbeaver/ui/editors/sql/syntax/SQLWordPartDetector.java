@@ -40,6 +40,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
     private int cursorOffset;
     private int startOffset;
     private int endOffset;
+    private int delimiterOffset;
 
     /**
      * Method SQLWordPartDetector.
@@ -76,11 +77,14 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                     char ch = document.getChar(prevOffset);
                     if (isWordPart(ch)) {
                         break;
+                    } else if (!Character.isWhitespace(ch)) {
+                        delimiterOffset = prevOffset;
                     }
                     prevPiece.append(ch);
                     prevOffset--;
                 }
                 if (prevDelimiter == null) {
+                    //startOffset - prevPiece.length();
                     prevDelimiter = prevPiece.toString().trim();
                 }
                 for (String delim : syntaxManager.getStatementDelimiters()) {
@@ -179,4 +183,8 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
         return super.splitIdentifier(wordPart);
     }
 
+    public void moveToDelimiter() {
+        int shift = startOffset - delimiterOffset;
+        startOffset -= shift;
+    }
 }
