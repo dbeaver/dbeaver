@@ -63,8 +63,8 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
@@ -83,7 +83,6 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.itemlist.ObjectSearcher;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -673,8 +672,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         IFigure figure = rootPart.getLayer(ScalableFreeformRootEditPart.PRINTABLE_LAYERS);
         Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane) figure).getFreeformExtent() : figure.getBounds();
         try {
-            FileOutputStream fos = new FileOutputStream(filePath);
-            try {
+            try (FileOutputStream fos = new FileOutputStream(filePath)) {
                 Rectangle r = figure.getBounds();
                 GC gc = null;
                 Graphics g = null;
@@ -707,8 +705,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 }
 
                 fos.flush();
-            } finally {
-                ContentUtils.close(fos);
             }
             UIUtils.launchProgram(filePath);
             //UIUtils.showMessageBox(shell, "Save ERD", "Diagram has been exported to " + filePath, SWT.ICON_INFORMATION);

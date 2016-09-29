@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.FileOutputStream;
@@ -55,8 +54,7 @@ public class ERDExportGraphML
 
     void exportDiagramToGraphML(String filePath) {
         try {
-            FileOutputStream fos = new FileOutputStream(filePath);
-            try {
+            try (FileOutputStream fos = new FileOutputStream(filePath)) {
                 XMLBuilder xml = new XMLBuilder(fos, "utf-8");
                 xml.setButify(true);
 
@@ -267,8 +265,6 @@ public class ERDExportGraphML
 
                 xml.flush();
                 fos.flush();
-            } finally {
-                ContentUtils.close(fos);
             }
             UIUtils.launchProgram(filePath);
         } catch (Exception e) {

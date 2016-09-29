@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.registry.updater;
 
 import org.jkiss.dbeaver.runtime.WebUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -52,14 +51,9 @@ public class VersionDescriptor {
     public VersionDescriptor(String fileAddr)
         throws IOException
     {
-        try {
-            InputStream inputStream = WebUtils.openConnectionStream(fileAddr);
-            try {
-                Document document = XMLUtils.parseDocument(inputStream);
-                parseVersionInfo(document);
-            } finally {
-                ContentUtils.close(inputStream);
-            }
+        try (InputStream inputStream = WebUtils.openConnectionStream(fileAddr)) {
+            Document document = XMLUtils.parseDocument(inputStream);
+            parseVersionInfo(document);
         } catch (XMLException e) {
             throw new IOException("XML parse error", e);
         }

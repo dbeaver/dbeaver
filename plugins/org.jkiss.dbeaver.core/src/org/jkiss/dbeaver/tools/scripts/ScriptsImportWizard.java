@@ -17,10 +17,9 @@
  */
 package org.jkiss.dbeaver.tools.scripts;
 
-import org.eclipse.core.resources.IResource;
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -30,15 +29,15 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.resources.ResourceUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -158,11 +157,8 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
 				}
 			}
             // Copy file
-            FileInputStream in = new FileInputStream(file);
-            try {
+            try (FileInputStream in = new FileInputStream(file)) {
                 targetFile.create(in, true, nullMonitor);
-            } finally {
-                ContentUtils.close(in);
             }
             // Set datasource
             if (importData.getDataSourceContainer() != null) {

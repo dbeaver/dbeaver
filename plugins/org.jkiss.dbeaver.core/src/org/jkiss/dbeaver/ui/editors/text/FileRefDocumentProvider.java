@@ -209,14 +209,9 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
 
     protected boolean setDocumentContent(IDocument document, IStorage storage) throws CoreException
     {
-        try {
-            InputStream contentStream = storage.getContents();
-            try {
-                String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : GeneralUtils.getDefaultFileEncoding());
-                setDocumentContent(document, contentStream, encoding);
-            } finally {
-                ContentUtils.close(contentStream);
-            }
+        try (InputStream contentStream = storage.getContents()) {
+            String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : GeneralUtils.getDefaultFileEncoding());
+            setDocumentContent(document, contentStream, encoding);
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }

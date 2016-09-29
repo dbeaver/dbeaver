@@ -47,9 +47,8 @@ import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SimpleStringEncrypter;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -335,26 +334,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             return;
         }
         boolean extraConfig = !fromFile.getName().equalsIgnoreCase(CONFIG_FILE_NAME);
-        try {
-            InputStream is = new FileInputStream(fromFile);
-            try {
-                try {
-                    loadDataSources(is, encrypter, extraConfig, refresh, parseResults);
-                } catch (DBException ex) {
-                    log.warn("Error loading datasource config from " + fromFile.getAbsolutePath(), ex);
-                }
-                finally {
-                    is.close();
-                }
-            }
-            catch (IOException ex) {
-                log.warn("IO error", ex);
-            }
-            finally {
-                ContentUtils.close(is);
-            }
-        } catch (IOException e) {
-            log.warn("Can't load config file " + fromFile.getAbsolutePath(), e);
+        try (InputStream is = new FileInputStream(fromFile)) {
+            loadDataSources(is, encrypter, extraConfig, refresh, parseResults);
+        } catch (DBException ex) {
+            log.warn("Error loading datasource config from " + fromFile.getAbsolutePath(), ex);
+        } catch (IOException ex) {
+            log.warn("IO error", ex);
         }
     }
 
