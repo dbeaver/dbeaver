@@ -122,7 +122,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             assistGroup.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_BEGINNING));
             ((GridData)assistGroup.getLayoutData()).verticalSpan = 2;
 
-            csAutoActivationCheck = UIUtils.createLabelCheckbox(assistGroup, "Enable auto activation", "Enables the content assistant's auto activation", false);
+            csAutoActivationCheck = UIUtils.createLabelCheckbox(assistGroup, "Enable auto activation", "Enables content assistant auto activation (on text typing)", false);
             UIUtils.createControlLabel(assistGroup, "Auto activation delay");
             csAutoActivationDelaySpinner = new Spinner(assistGroup, SWT.BORDER);
             csAutoActivationDelaySpinner.setSelection(0);
@@ -130,6 +130,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csAutoActivationDelaySpinner.setIncrement(50);
             csAutoActivationDelaySpinner.setMinimum(0);
             csAutoActivationDelaySpinner.setMaximum(1000000);
+            csAutoActivationDelaySpinner.setToolTipText("Delay before content assistant will run after typing trigger key");
+
             csAutoInsertCheck = UIUtils.createLabelCheckbox(
                 assistGroup,
                 "Auto-insert proposal",

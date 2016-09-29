@@ -19,13 +19,14 @@ package org.jkiss.dbeaver.ui.editors.sql.indent;
 
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.text.source.SourceViewer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
@@ -38,7 +39,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     private static final Log log = Log.getLog(SQLAutoIndentStrategy.class);
     private static final int MINIMUM_SOUCE_CODE_LENGTH = 10;
 
-    private final ISourceViewer sourceViewer;
+    private final SQLEditorBase editor;
 
     private String partitioning;
     private SQLSyntaxManager syntaxManager;
@@ -49,11 +50,11 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     /**
      * Creates a new SQL auto indent strategy for the given document partitioning.
      */
-    public SQLAutoIndentStrategy(ISourceViewer sourceViewer, String partitioning, SQLSyntaxManager syntaxManager)
+    public SQLAutoIndentStrategy(SQLEditorBase editor, String partitioning, SQLSyntaxManager syntaxManager)
     {
         this.partitioning = partitioning;
         this.syntaxManager = syntaxManager;
-        this.sourceViewer = sourceViewer;
+        this.editor = editor;
     }
 
 
@@ -83,8 +84,8 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                 {
                     processed = updateKeywordCase(document, command);
                 }
-                if (!processed && (command.text.length() == 1 && Character.isJavaIdentifierPart(command.text.charAt(0)))) {
-                    bringHippieCompletion(document, command);
+                if (!processed && (command.text.length() == 1 && Character.isLetter(command.text.charAt(0)))) {
+                    runContentAssistant(document, command);
                 }
             } catch (BadLocationException e) {
                 log.debug(e);
@@ -95,19 +96,21 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         }
     }
 
-    private void bringHippieCompletion(IDocument document, DocumentCommand command) {
-        // TODO: add config option to disable this
-        DBeaverUI.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                SQLCompletionProcessor.setSimpleMode(true);
-                try {
-                    ((SourceViewer) sourceViewer).doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
-                } finally {
-                    SQLCompletionProcessor.setSimpleMode(false);
+    private void runContentAssistant(IDocument document, DocumentCommand command) {
+        DBPDataSource dataSource = editor.getDataSource();
+        if (dataSource == null || dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)) {
+            DBeaverUI.asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    SQLCompletionProcessor.setSimpleMode(true);
+                    try {
+                        editor.getViewer().doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+                    } finally {
+                        SQLCompletionProcessor.setSimpleMode(false);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     private boolean transformSourceCode(IDocument document, DocumentCommand command) {

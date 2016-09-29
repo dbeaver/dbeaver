@@ -28,7 +28,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
-import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.widgets.Composite;
@@ -182,9 +182,9 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         return (TextViewer) getSourceViewer();
     }
 
-    public ISourceViewer getViewer()
+    public SourceViewer getViewer()
     {
-        return getSourceViewer();
+        return (SourceViewer) super.getSourceViewer();
     }
 
     public void enableUndoManager(boolean enable)
