@@ -26,9 +26,8 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.MimeType;
 
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -69,7 +68,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
             try {
                 MimeType contentType = new MimeType(type);
                 contentTypes.add(contentType);
-            } catch (MimeTypeParseException e) {
+            } catch (Throwable e) {
                 log.warn("Invalid content type: " + type, e);
             }
         }
@@ -121,7 +120,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
                 if (mimeType.match(documentType)) {
                     return true;
                 }
-            } catch (MimeTypeParseException e) {
+            } catch (Throwable e) {
                 log.warn("Bad document content type: " + documentType, e);
             }
         }

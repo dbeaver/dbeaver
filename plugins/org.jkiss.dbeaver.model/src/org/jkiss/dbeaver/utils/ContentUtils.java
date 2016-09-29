@@ -34,8 +34,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
 import java.io.*;
 import java.net.URI;
 import java.text.MessageFormat;
@@ -352,20 +350,6 @@ public class ContentUtils {
         } finally {
             ContentUtils.close(is);
         }
-    }
-
-    @Nullable
-    public static MimeType getMimeType(String contentType)
-    {
-        MimeType mimeType = null;
-        if (contentType != null) {
-            try {
-                mimeType = new MimeType(contentType);
-            } catch (MimeTypeParseException e) {
-                log.error("Invalid content MIME type", e);
-            }
-        }
-        return mimeType;
     }
 
     @Nullable
