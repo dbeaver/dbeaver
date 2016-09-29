@@ -17,12 +17,15 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.*;
+import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -34,19 +37,23 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     private static final Log log = Log.getLog(SQLAutoIndentStrategy.class);
     private static final int MINIMUM_SOUCE_CODE_LENGTH = 10;
 
+    private final SQLEditorBase editor;
+
     private String partitioning;
     private SQLSyntaxManager syntaxManager;
 
     private Map<Integer, String> autoCompletionMap = new HashMap<>();
     private String[] delimiters;
+    private IAction hippieAction;
 
     /**
      * Creates a new SQL auto indent strategy for the given document partitioning.
      */
-    public SQLAutoIndentStrategy(String partitioning, SQLSyntaxManager syntaxManager)
+    public SQLAutoIndentStrategy(SQLEditorBase editor, String partitioning, SQLSyntaxManager syntaxManager)
     {
         this.partitioning = partitioning;
         this.syntaxManager = syntaxManager;
+        this.editor = editor;
     }
 
 
@@ -65,14 +72,19 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             if (syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE)) {
                 transformSourceCode(document, command);
             }
-        } else if (command.length == 0 && command.text != null) {
+        } else if (command.length == 0 && command.text != null && command.offset > 0) {
             final boolean lineDelimiter = isLineDelimiter(document, command.text);
             try {
-                if (command.offset > 1 && Character.isJavaIdentifierPart(document.getChar(command.offset - 1)) &&
+                boolean isLetter = Character.isJavaIdentifierPart(document.getChar(command.offset - 1));
+                boolean processed = false;
+                if (command.offset > 1 && isLetter &&
                     (lineDelimiter || (command.text.length() == 1 && !Character.isJavaIdentifierPart(command.text.charAt(0)))) &&
                     syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO))
                 {
-                    updateKeywordCase(document, command);
+                    processed = updateKeywordCase(document, command);
+                }
+                if (!processed && !lineDelimiter && isLetter) {
+                    bringHippieCompletion(document, command);
                 }
             } catch (BadLocationException e) {
                 log.debug(e);
@@ -81,6 +93,15 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                 smartIndentAfterNewLine(document, command);
             }
         }
+    }
+
+    private void bringHippieCompletion(IDocument document, DocumentCommand command) {
+//        if (this.hippieAction == null) {
+//            this.hippieAction = editor.getAction(ITextEditorActionConstants.HIPPIE_COMPLETION);
+//        }
+//        if (this.hippieAction != null) {
+//            this.hippieAction.run();
+//        }
     }
 
     private boolean transformSourceCode(IDocument document, DocumentCommand command) {
