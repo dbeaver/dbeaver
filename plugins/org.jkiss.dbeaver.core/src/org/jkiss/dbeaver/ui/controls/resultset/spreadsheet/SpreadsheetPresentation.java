@@ -1114,7 +1114,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public DBDAttributeBinding getElementAttribute(Object element) {
             GridPos pos = (GridPos)element;
             return (DBDAttributeBinding) (controller.isRecordMode() ?
-                spreadsheet.getRowElement(pos.col) :
+                spreadsheet.getRowElement(pos.row) :
                 spreadsheet.getColumnElement(pos.col));
         }
 
