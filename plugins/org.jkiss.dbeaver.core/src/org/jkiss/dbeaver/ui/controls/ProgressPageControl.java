@@ -364,6 +364,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         //ToolBar searchTools = new ToolBar(searchControlsComposite, SWT.HORIZONTAL);
         if (searchToolbarManager == null) {
             searchToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+            // Do not add prev/next buttons - they doesn't make sense now.
+            // Keep code just in case
+/*
             searchToolbarManager.add(ActionUtils.makeCommandContribution(
                     PlatformUI.getWorkbench(),
                     IWorkbenchActionDefinitionIds.FIND_NEXT,
@@ -374,7 +377,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                     IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
                     null,
                     UIIcon.ARROW_UP));
-            //ToolItem closeButton = new ToolItem(searchTools, SWT.PUSH);
+*/
             searchToolbarManager.add(new Action(CoreMessages.controls_progress_page_action_close, UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
                 @Override
                 public void run()

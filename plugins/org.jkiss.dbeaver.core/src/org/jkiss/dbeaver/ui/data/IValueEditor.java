@@ -52,7 +52,9 @@ public interface IValueEditor
         throws DBException;
 
     /**
-     * Fills current editor with specified value. Do not updates value in controller.
+     * Fills current editor with specified value.
+     * In inline mode implementation should select whole value.
+     * Do not updates value in controller.
      * @param value new value for editor
      * @throws DBException on any error
      */
