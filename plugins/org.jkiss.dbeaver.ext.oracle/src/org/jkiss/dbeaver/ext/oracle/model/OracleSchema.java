@@ -711,7 +711,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                     (object == null && objectName == null ? "" : "AND OBJECT_NAME=? ") +
                     "ORDER BY OBJECT_NAME");
             dbStat.setString(1, owner.getName());
-            if (object != null || objectName != null) dbStat.setString(1, object != null ? object.getName() : objectName);
+            if (object != null || objectName != null) dbStat.setString(2, object != null ? object.getName() : objectName);
             return dbStat;
         }
 

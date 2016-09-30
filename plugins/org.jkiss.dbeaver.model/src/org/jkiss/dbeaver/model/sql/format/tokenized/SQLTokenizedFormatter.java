@@ -175,9 +175,6 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                     case "DELETE":
                     case "SELECT":
                     case "UPDATE": //$NON-NLS-1$
-                        indent++;
-                        index += insertReturnAndIndent(argList, index + 1, indent);
-                        break;
                     case "INSERT":
                     case "INTO":
                     case "CREATE":
@@ -374,9 +371,11 @@ public class SQLTokenizedFormatter implements SQLFormatter {
             return 0;
         try {
             String s = GeneralUtils.getDefaultLineSeparator();
-            final FormatterToken prevToken = argList.get(argIndex - 1);
-            if (prevToken.getType() == TokenType.COMMENT && prevToken.getString().startsWith("--")) { //$NON-NLS-1$
-                s = ""; //$NON-NLS-1$
+            if (argIndex > 0) {
+                final FormatterToken prevToken = argList.get(argIndex - 1);
+                if (prevToken.getType() == TokenType.COMMENT && prevToken.getString().startsWith("--")) { //$NON-NLS-1$
+                    s = ""; //$NON-NLS-1$
+                }
             }
             for (int index = 0; index < argIndent; index++) {
                 s += formatterCfg.getIndentString();
