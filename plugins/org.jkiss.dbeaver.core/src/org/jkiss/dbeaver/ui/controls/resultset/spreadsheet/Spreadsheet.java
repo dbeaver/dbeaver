@@ -24,6 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.Accessible;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.accessibility.AccessibleListener;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -36,7 +37,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 
 /**
@@ -233,7 +233,7 @@ public class Spreadsheet extends LightGrid implements Listener {
     public void handleEvent(final Event event)
     {
         switch (event.type) {
-            case SWT.KeyUp:
+//            case SWT.KeyUp:
             case SWT.KeyDown:
                 boolean ctrlPressed = ((event.stateMask & SWT.MOD1) != 0);
 
@@ -243,22 +243,31 @@ public class Spreadsheet extends LightGrid implements Listener {
                     (event.keyCode >= 'a' && event.keyCode <= 'z') ||
                     (event.keyCode >= '0' && event.keyCode <= '9')))
                 {
-                    // Open inline editor and forward key events to it
-                    // Note: if user types too fast them multiple key events may be posted
-                    // to spreadsheet before inline editor will open. So if inline editor is already open
-                    // then just reuse it
                     Control editorControl = tableEditor.getEditor();
                     if (editorControl == null || editorControl.isDisposed()) {
                         editorControl = presentation.openValueEditor(true);
                     }
+
                     if (editorControl != null && event.keyCode != SWT.CR) {
                         if (!editorControl.isDisposed()) {
+                            // We used to forward key even to control but it worked poorly.
+                            // So let's just insert first letter (it will remove old value which must be selected for inline controls)
+                            String strValue = String.valueOf((char)event.keyCode);
+                            if (editorControl instanceof Text) {
+                                ((Text) editorControl).insert(strValue);
+                            } else if (editorControl instanceof StyledText) {
+                                ((StyledText) editorControl).insert(strValue);
+                            }
+/*
+                            // Set editor value
                             // Forward the same key event to just created control
                             final Event kdEvent = new Event();
                             kdEvent.type = event.type;
                             kdEvent.character = event.character;
                             kdEvent.keyCode = event.keyCode;
-                            UIUtils.postEvent(editorControl, kdEvent);
+                            editorControl.setFocus();
+                            editorControl.getDisplay().post(kdEvent);
+*/
                         }
                     }
                 }

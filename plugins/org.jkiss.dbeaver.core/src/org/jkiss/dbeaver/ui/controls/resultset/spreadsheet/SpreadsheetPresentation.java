@@ -347,11 +347,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         ResultSetRow curRow = controller.getCurrentRow();
         if (!controller.isRecordMode()) {
             changed = curRow != newRow || curAttribute != newCol;
-            if (newRow instanceof ResultSetRow && newCol instanceof DBDAttributeBinding) {
+            if (newRow instanceof ResultSetRow) {
                 curRow = (ResultSetRow) newRow;
+                controller.setCurrentRow(curRow);
+            }
+            if (newCol instanceof DBDAttributeBinding) {
                 curAttribute = (DBDAttributeBinding) newCol;
             }
-            controller.setCurrentRow(curRow);
         } else {
             changed = curAttribute != newRow;
             if (newRow instanceof DBDAttributeBinding) {
