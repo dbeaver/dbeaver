@@ -45,24 +45,29 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        PostgreDataType itemType = null;
-        final PostgreDataType arrayType = PostgreUtils.findDataType((PostgreDataSource) session.getDataSource(), type);
-        if (arrayType != null) {
-            itemType = arrayType.getElementType();
-        }
-        if (itemType != null) {
-            if (object != null && object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
-                final Object value = PostgreUtils.extractValue(object);
-                if (value == null) {
-                    return null;
-                } else if (value instanceof String) {
-                    return convertStringToArray(session, itemType, (String) value);
-                } else {
-                    // Can't parse
-                    return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), new Object[]{value});
+        if (object != null) {
+            String className = object.getClass().getName();
+            if (object instanceof String || className.equals(PostgreConstants.PG_OBJECT_CLASS)) {
+                PostgreDataType itemType = null;
+                final PostgreDataType arrayType = PostgreUtils.findDataType((PostgreDataSource) session.getDataSource(), type);
+                if (arrayType != null) {
+                    itemType = arrayType.getElementType();
                 }
-            } else if (object instanceof String) {
-                return convertStringToArray(session, itemType, (String) object);
+                if (itemType != null) {
+                    if (className.equals(PostgreConstants.PG_OBJECT_CLASS)) {
+                        final Object value = PostgreUtils.extractValue(object);
+                        if (value == null) {
+                            return null;
+                        } else if (value instanceof String) {
+                            return convertStringToArray(session, itemType, (String) value);
+                        } else {
+                            // Can't parse
+                            return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), new Object[]{value});
+                        }
+                    } else if (object instanceof String) {
+                        return convertStringToArray(session, itemType, (String) object);
+                    }
+                }
             }
         }
         return super.getValueFromObject(session, type, object, copy);
