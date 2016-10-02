@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.sql.SQLException;
 
@@ -80,6 +81,9 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
             return new String((byte[])object);
         } else if (object instanceof DBDContent) {
             return ContentUtils.getContentStringValue(session.getProgressMonitor(), (DBDContent) object);
+        } else if (object.getClass().isArray()) {
+            // Special workaround for #798 - convert array to string (weird stuff)
+            return GeneralUtils.makeDisplayString(object);
         } else {
             log.debug("Unrecognized type '" + object.getClass().getName() + "' - can't convert to string");
             return object.toString();
