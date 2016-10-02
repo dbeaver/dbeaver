@@ -329,12 +329,20 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         searchText.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyReleased(KeyEvent e)
-            {
-                if (e.character == SWT.ESC) {
-                    cancelSearch(true);
-                } else if (e.character == SWT.CR) {
-                    performSearch(SearchType.NEXT);
+            public void keyPressed(KeyEvent e) {
+                switch (e.keyCode) {
+                    case SWT.ESC:
+                        cancelSearch(true);
+                        break;
+                    case SWT.CR:
+                    case SWT.ARROW_UP:
+                    case SWT.ARROW_DOWN:
+                        if (childPageControl != null) {
+                            childPageControl.setFocus();
+                        }
+                        e.doit = false;
+                        //performSearch(SearchType.NEXT);
+                        break;
                 }
             }
         });
