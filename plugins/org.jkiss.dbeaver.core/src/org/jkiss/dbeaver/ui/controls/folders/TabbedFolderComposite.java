@@ -132,7 +132,7 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
         public void setFolders(TabbedFolderInfo[] folders) {
             this.folders = folders;
             this.folderList.setFolders(this.folders);
-            this.folderList.select(0);
+            //this.folderList.select(0);
         }
 
         private void onFolderSwitch(TabbedFolderInfo folder) {
@@ -317,7 +317,13 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
 
     private ITabbedFolder getActiveFolder(FolderPane folderPane) {
         TabbedFolderList folderList = folderPane.folderList;
-        return folderList.getElementAt(folderList.getSelectionIndex()).getInfo().getContents();
+        int selectionIndex = folderList.getSelectionIndex();
+        if (selectionIndex < 0) {
+            // If no folder was activated - do it now
+            selectionIndex = 0;
+            folderList.select(selectionIndex);
+        }
+        return folderList.getElementAt(selectionIndex).getInfo().getContents();
     }
 
     @Override
