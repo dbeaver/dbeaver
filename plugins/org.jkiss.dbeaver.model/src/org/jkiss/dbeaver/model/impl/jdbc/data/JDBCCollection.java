@@ -61,7 +61,7 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
     private final DBDValueHandler valueHandler;
 
     @NotNull
-    public static JDBCCollection makeArray(JDBCSession session, DBSTypedObject column, Array array) throws DBCException {
+    public static JDBCCollection makeArray(@NotNull JDBCSession session, @NotNull DBSTypedObject column, Array array) throws DBCException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         DBSDataType elementType = null;
@@ -75,7 +75,7 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
             try {
                 if (array == null) {
                     String arrayTypeName = column.getTypeName();
-                    final DBSDataType arrayType = session.getDataSource().resolveDataType(monitor, arrayTypeName);
+                    DBSDataType arrayType = session.getDataSource().resolveDataType(monitor, arrayTypeName);
                     if (arrayType != null) {
                         elementType = arrayType.getComponentType(monitor);
                     }
@@ -158,16 +158,29 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
             return new JDBCCollection(elementType, elementValueHandler, null);
         }
         Object arrObject = array.getArray();
+        return extractDataFromJavaArray(session, elementType, elementValueHandler, arrObject);
+    }
+
+    @NotNull
+    private static JDBCCollection extractDataFromJavaArray(
+        @NotNull JDBCSession session,
+        @NotNull DBSDataType elementType,
+        @NotNull DBDValueHandler elementValueHandler,
+        @Nullable Object arrObject)
+        throws DBCException
+    {
         int arrLength = arrObject == null ? 0 : java.lang.reflect.Array.getLength(arrObject);
         Object[] contents = new Object[arrLength];
+        Object itemValue;
         for (int i = 0; i < arrLength; i++) {
             Object item = java.lang.reflect.Array.get(arrObject, i);
             if (item != null && item.getClass().isArray() && elementType.getDataKind() != DBPDataKind.ARRAY) {
                 // This may happen in case of multidimensional array
-                System.out.println(1);
+                itemValue = extractDataFromJavaArray(session, elementType, elementValueHandler, item);
+            } else {
+                itemValue = elementValueHandler.getValueFromObject(session, elementType, item, false);
             }
-            item = elementValueHandler.getValueFromObject(session, elementType, item, false);
-            contents[i] = item;
+            contents[i] = itemValue;
         }
         return new JDBCCollection(elementType, elementValueHandler, contents);
     }
