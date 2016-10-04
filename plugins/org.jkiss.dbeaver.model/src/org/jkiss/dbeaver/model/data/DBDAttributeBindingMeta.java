@@ -49,6 +49,15 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     private List<DBSEntityReferrer> referrers;
 
     public DBDAttributeBindingMeta(
+        @NotNull DBCSession session,
+        @NotNull DBCAttributeMetaData metaAttribute)
+    {
+        super(DBUtils.findValueHandler(session, metaAttribute));
+        this.dataSource = session.getDataSource();
+        this.metaAttribute = metaAttribute;
+    }
+
+    public DBDAttributeBindingMeta(
         @NotNull DBPDataSource dataSource,
         @NotNull DBCAttributeMetaData metaAttribute)
     {
