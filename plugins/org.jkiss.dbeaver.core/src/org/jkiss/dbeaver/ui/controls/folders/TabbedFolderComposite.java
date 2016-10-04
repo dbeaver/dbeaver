@@ -132,7 +132,7 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
         public void setFolders(TabbedFolderInfo[] folders) {
             this.folders = folders;
             this.folderList.setFolders(this.folders);
-            //this.folderList.select(0);
+            this.folderList.select(0);
         }
 
         private void onFolderSwitch(TabbedFolderInfo folder) {
