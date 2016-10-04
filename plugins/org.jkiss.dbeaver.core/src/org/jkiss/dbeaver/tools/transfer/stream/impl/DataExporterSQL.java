@@ -104,7 +104,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     @Override
     public void exportRow(DBRProgressMonitor monitor, Object[] row) throws DBException, IOException
     {
-        SQLDialect.MultiValueInsertMode insertMode = getMultiValueInsertMode();
+        SQLDialect.MultiValueInsertMode insertMode = rowsInStatement == 1 ? SQLDialect.MultiValueInsertMode.NOT_SUPPORTED : getMultiValueInsertMode();
         int columnsSize = columns.size();
         boolean firstRow = false;
         if (insertMode == SQLDialect.MultiValueInsertMode.NOT_SUPPORTED || rowCount % rowsInStatement == 0) {

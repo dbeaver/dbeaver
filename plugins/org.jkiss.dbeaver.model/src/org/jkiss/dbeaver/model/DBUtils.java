@@ -485,7 +485,7 @@ public final class DBUtils {
     @NotNull
     public static DBDAttributeBindingMeta getAttributeBinding(@NotNull DBCSession session, @NotNull DBCAttributeMetaData attributeMeta)
     {
-        return new DBDAttributeBindingMeta(session.getDataSource(), attributeMeta);
+        return new DBDAttributeBindingMeta(session, attributeMeta);
     }
 
     @NotNull

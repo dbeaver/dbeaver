@@ -320,6 +320,10 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                     // Do not add space between name and value [JDBC:MSSQL]
                     continue;
                 }
+                if (token.getType() == TokenType.SYMBOL && prev.getType() == TokenType.SYMBOL) {
+                    // Do not add space between symbols
+                    continue;
+                }
                 argList.add(index, new FormatterToken(TokenType.SPACE, " ")); //$NON-NLS-1$
             }
         }
