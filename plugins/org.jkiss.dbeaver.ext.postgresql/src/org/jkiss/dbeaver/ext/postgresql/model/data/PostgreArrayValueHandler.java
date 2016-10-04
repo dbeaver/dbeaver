@@ -100,7 +100,13 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                     str.append(','); //$NON-NLS-1$
                 }
                 final Object item = collection.getItem(i);
-                String itemString = valueHandler.getValueDisplayString(collection.getComponentType(), item, DBDDisplayFormat.NATIVE);
+                String itemString;
+                if (item instanceof JDBCCollection) {
+                    // Multi-dimensional arrays case
+                    itemString = getValueDisplayString(column, item, format);
+                } else {
+                    itemString = valueHandler.getValueDisplayString(collection.getComponentType(), item, DBDDisplayFormat.NATIVE);
+                }
                 str.append(itemString);
             }
             str.append("}");
