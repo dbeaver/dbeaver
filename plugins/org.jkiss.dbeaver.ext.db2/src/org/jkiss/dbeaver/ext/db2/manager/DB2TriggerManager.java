@@ -23,13 +23,14 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DB2 Trigger Manager
  * 
  * @author Denis Forveille
  */
-public class DB2TriggerManager extends DB2AbstractDropOnlyManager<DB2Trigger, DB2Schema> {
+public class DB2TriggerManager extends DB2AbstractDropOnlyManager<DB2Trigger, DBSObject> {
 
     private static final String SQL_DROP = "DROP TRIGGER %s";
 

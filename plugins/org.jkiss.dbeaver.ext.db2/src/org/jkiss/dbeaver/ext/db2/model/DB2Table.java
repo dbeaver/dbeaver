@@ -181,27 +181,13 @@ public class DB2Table extends DB2TableBase
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        super.refreshObject(monitor);
-
-        getContainer().getTableCache().clearChildrenCache(this);
-
-        tableTriggerCache.clearCache();
-        if (partitionCache != null) {
-            partitionCache.clearCache();
-        }
-        if (periodCache != null) {
-            periodCache.clearCache();
-        }
-
         getContainer().getConstraintCache().clearObjectCache(this);
         getContainer().getAssociationCache().clearObjectCache(this);
         getContainer().getReferenceCache().clearObjectCache(this);
 
-        // DF: Clear base index/trigger cache. Not cheap but didn't found another way..
-        getContainer().getIndexCache().clearCache();
-        getContainer().getTriggerCache().clearCache();
+        super.refreshObject(monitor);
 
-        return this;
+        return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
 
     @NotNull

@@ -68,10 +68,9 @@ public class DB2MaterializedQueryTable extends DB2ViewBase implements DB2SourceO
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        super.refreshObject(monitor);
-        
         getContainer().getMaterializedQueryTableCache().clearChildrenCache(this);
-        return this;
+
+        return super.refreshObject(monitor);
     }
 
     @Override

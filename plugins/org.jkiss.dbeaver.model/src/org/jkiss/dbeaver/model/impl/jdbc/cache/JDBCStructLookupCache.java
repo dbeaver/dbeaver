@@ -79,7 +79,7 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
             if (isChildrenCached(oldObject)) {
                 clearChildrenCache(oldObject);
             }
-            removeObject(oldObject);
+            removeObject(oldObject, false);
             if (newObject != null) {
                 cacheObject(newObject);
             }

@@ -67,8 +67,9 @@ public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObjec
     /**
      * Removes specified object from cache
      * @param object object to remove
+     * @param resetFullCache if true resets fullyCached flag. May be used to refresh linked objects.
      */
-    void removeObject(@NotNull OBJECT object);
+    void removeObject(@NotNull OBJECT object, boolean resetFullCache);
 
     /**
      * Clears all cache

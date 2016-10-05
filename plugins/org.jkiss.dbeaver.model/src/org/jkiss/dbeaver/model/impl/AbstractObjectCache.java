@@ -108,7 +108,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     }
 
     @Override
-    public void removeObject(@NotNull OBJECT object)
+    public void removeObject(@NotNull OBJECT object, boolean resetFullCache)
     {
         synchronized (this) {
             if (this.objectList != null) {
@@ -117,6 +117,9 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                 if (this.objectMap != null) {
                     this.objectMap.remove(getObjectName(object));
                 }
+            }
+            if (resetFullCache) {
+                fullCache = false;
             }
         }
     }

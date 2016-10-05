@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -112,8 +113,18 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     {
         tableIndexCache.clearCache();
 
-        // DF: Clear base index cache. Not cheap but didn't found another way..
-        getContainer().getIndexCache().clearCache();
+        // DF: Clear base index/trigger cache manually.
+        // FIXME: use composite cache or something smart
+        for (DB2Index index : new ArrayList<>(getContainer().getIndexCache().getCachedObjects())) {
+            if (index.getTable() == this) {
+                getContainer().getIndexCache().removeObject(index, true);
+            }
+        }
+        for (DB2Trigger trigger : new ArrayList<>(getContainer().getTriggerCache().getCachedObjects())) {
+            if (trigger.getTable() == this) {
+                getContainer().getTriggerCache().removeObject(trigger, true);
+            }
+        }
 
         return this;
     }

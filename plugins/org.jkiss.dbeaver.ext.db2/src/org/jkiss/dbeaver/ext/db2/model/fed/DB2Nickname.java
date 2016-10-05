@@ -121,13 +121,8 @@ public class DB2Nickname extends DB2TableBase implements DBPNamedObject2, DBPRef
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        super.refreshObject(monitor);
-
         getContainer().getNicknameCache().clearChildrenCache(this);
-
-        // DF: Clear base index/trigger cache. Not cheap but didn't found
-        // another way..
-        getContainer().getIndexCache().clearCache();
+        super.refreshObject(monitor);
 
         return this;
     }

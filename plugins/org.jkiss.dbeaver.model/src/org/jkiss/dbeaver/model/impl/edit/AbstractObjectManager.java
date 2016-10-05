@@ -71,7 +71,7 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
         {
             DBSObjectCache<? extends DBSObject, OBJECT_TYPE> cache = objectMaker.getObjectsCache(object);
             if (cache != null) {
-                cache.removeObject(object);
+                cache.removeObject(object, false);
             }
         }
     }
