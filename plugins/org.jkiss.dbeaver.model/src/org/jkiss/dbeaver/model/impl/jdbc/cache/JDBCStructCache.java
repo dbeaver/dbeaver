@@ -171,9 +171,9 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     }
 
     @Override
-    public void removeObject(@NotNull OBJECT object)
+    public void removeObject(@NotNull OBJECT object, boolean resetFullCache)
     {
-        super.removeObject(object);
+        super.removeObject(object, resetFullCache);
         clearChildrenCache(object);
     }
 

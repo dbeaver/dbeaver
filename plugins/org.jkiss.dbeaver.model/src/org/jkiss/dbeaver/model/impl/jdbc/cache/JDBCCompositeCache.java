@@ -178,9 +178,9 @@ public abstract class JDBCCompositeCache<
     }
 
     @Override
-    public void removeObject(@NotNull OBJECT object)
+    public void removeObject(@NotNull OBJECT object, boolean resetFullCache)
     {
-        super.removeObject(object);
+        super.removeObject(object, resetFullCache);
         objectCache.remove(getParent(object));
     }
 

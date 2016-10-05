@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -328,7 +327,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             OBJECT_TYPE object = getObject();
             DBSObjectCache<? extends DBSObject, OBJECT_TYPE> cache = getObjectsCache(object);
             if (cache != null) {
-                cache.removeObject(object);
+                cache.removeObject(object, false);
             }
         }
     }

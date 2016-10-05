@@ -68,9 +68,7 @@ public class DB2View extends DB2ViewBase implements DB2SourceObject {
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         super.refreshObject(monitor);
-
-        getContainer().getViewCache().clearChildrenCache(this);
-        return this;
+        return getContainer().getViewCache().refreshObject(monitor, getContainer(), this);
     }
 
     @Override

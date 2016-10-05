@@ -45,8 +45,8 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     }
 
     @Override
-    public void removeObject(@NotNull PostgreDataType object) {
-        super.removeObject(object);
+    public void removeObject(@NotNull PostgreDataType object, boolean resetFullCache) {
+        super.removeObject(object, resetFullCache);
         dataTypeMap.remove(object.getObjectId());
     }
 
