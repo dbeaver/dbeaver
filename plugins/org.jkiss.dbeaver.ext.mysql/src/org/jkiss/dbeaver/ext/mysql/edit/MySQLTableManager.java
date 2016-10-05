@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
@@ -63,10 +64,10 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     protected MySQLTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom) throws DBException
     {
         final MySQLTable table;
-        if (copyFrom instanceof  MySQLTable) {
-            table = new MySQLTable(monitor, parent, (MySQLTable)copyFrom);
-            table.setName(getTableName(monitor, parent, ((MySQLTable) copyFrom).getName()));
-        } else {
+        if (copyFrom instanceof DBSEntity) {
+            table = new MySQLTable(monitor, parent, (DBSEntity)copyFrom);
+            table.setName(getTableName(monitor, parent, ((DBSEntity) copyFrom).getName()));
+        } else if (copyFrom == null) {
             table = new MySQLTable(parent);
             setTableName(monitor, parent, table);
 
@@ -74,6 +75,8 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
             additionalInfo.setEngine(parent.getDataSource().getDefaultEngine());
             additionalInfo.setCharset(parent.getDefaultCharset());
             additionalInfo.setCollation(parent.getDefaultCollation());
+        } else {
+            throw new DBException("Can't create MySQL table from '" + copyFrom + "'");
         }
 
         return table;

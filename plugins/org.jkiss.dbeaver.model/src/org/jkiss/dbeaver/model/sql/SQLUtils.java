@@ -500,7 +500,7 @@ public final class SQLUtils {
         }
     }
 
-    public static String getColumnTypeModifiers(@NotNull DBSAttributeBase column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+    public static String getColumnTypeModifiers(@NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
         if (dataKind == DBPDataKind.STRING) {
             if (typeName.indexOf('(') == -1) {
                 final long maxLength = column.getMaxLength();
