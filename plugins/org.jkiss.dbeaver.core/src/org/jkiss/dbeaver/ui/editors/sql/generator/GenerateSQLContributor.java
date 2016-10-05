@@ -119,7 +119,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 if (sql.length() > 0) {
                     sql.append("\n");
                 }
-                String definitionText = object.getObjectDefinitionText(monitor).trim();
+                String definitionText = CommonUtils.notEmpty(object.getObjectDefinitionText(monitor)).trim();
                 sql.append(definitionText);
                 if (!definitionText.endsWith(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
                     sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
