@@ -168,7 +168,29 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
-        return null;
+        AdditionalInfo info = getAdditionalInfo(monitor);
+        StringBuilder sql = new StringBuilder();
+        sql.append("-- DROP SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
+        sql.append("CREATE SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL));
+        if (info.getIncrementBy() != null && info.getIncrementBy().longValue() > 0) {
+            sql.append("\nINCREMENT BY ").append(info.getIncrementBy());
+        }
+        if (info.getMinValue() != null && info.getMinValue().longValue() > 0) {
+            sql.append("\nMINVALUE ").append(info.getMinValue());
+        } else {
+            sql.append("\nNO MINVALUE");
+        }
+        if (info.getMaxValue() != null && info.getMaxValue().longValue() > 0) {
+            sql.append("\nMAXVALUE ").append(info.getMaxValue());
+        } else {
+            sql.append("\nNO MAXVALUE");
+        }
+        if (info.getLastValue() != null && info.getLastValue().longValue() > 0) {
+            sql.append("\nSTART ").append(info.getLastValue());
+        }
+
+
+        return sql.toString();
     }
 
 }
