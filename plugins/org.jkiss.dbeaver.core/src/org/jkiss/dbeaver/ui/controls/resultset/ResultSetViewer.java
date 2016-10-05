@@ -2019,7 +2019,7 @@ public class ResultSetViewer extends Viewer
                 filter,
                 0,
                 getSegmentMaxRows(),
-                -1,
+                curRow == null ? -1 : curRow.getRowNumber(),
                 null);
         }
     }
@@ -2182,7 +2182,7 @@ public class ResultSetViewer extends Viewer
                             model.setUpdateInProgress(false);
                             if (error == null && dataFilter != null) {
                                 model.updateDataFilter(dataFilter);
-                                activePresentation.refreshData(true, false);
+                                //activePresentation.refreshData(true, false);
                             }
                             updateFiltersText(error == null);
                             updateToolbar();
