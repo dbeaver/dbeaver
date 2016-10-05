@@ -298,7 +298,7 @@ public class ResultSetViewer extends Viewer
                     }
                 }
 
-                if (container.isReadyToRun() && !model.isUpdateInProgress() && model.getVisibleAttributeCount() > 0) {
+                if (container.isReadyToRun() && !model.isUpdateInProgress()) {
                     enableFilters = true;
                 }
             }
