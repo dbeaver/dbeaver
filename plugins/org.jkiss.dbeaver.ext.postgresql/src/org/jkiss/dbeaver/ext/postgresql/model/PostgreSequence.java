@@ -140,11 +140,6 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     ///////////////////////////////////////////////////////////////////////
     // Entity
 
-    @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return this;
-    }
-
     @NotNull
     @Override
     public DBSEntityType getEntityType() {
