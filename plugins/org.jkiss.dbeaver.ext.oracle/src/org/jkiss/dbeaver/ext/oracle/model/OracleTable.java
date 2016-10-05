@@ -193,10 +193,8 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        super.refreshObject(monitor);
         getContainer().foreignKeyCache.clearObjectCache(this);
-
-        return this;
+        return super.refreshObject(monitor);
     }
 
     @Override

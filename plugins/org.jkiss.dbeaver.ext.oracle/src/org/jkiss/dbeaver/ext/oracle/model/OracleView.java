@@ -33,8 +33,6 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -156,13 +154,6 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
             }
             return additionalInfo;
         }
-    }
-
-    @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
-        additionalInfo.loaded = false;
-        return super.refreshObject(monitor);
     }
 
     @Override

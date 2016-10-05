@@ -33,10 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
@@ -486,6 +483,13 @@ public class MySQLTable extends MySQLTableBase
     public String getDescription()
     {
         return additionalInfo.description;
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        getContainer().constraintCache.clearObjectCache(this);
+        getContainer().indexCache.clearObjectCache(this);
+        return super.refreshObject(monitor);
     }
 
     public static class EngineListProvider implements IPropertyValueListProvider<MySQLTable> {
