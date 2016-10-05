@@ -2878,7 +2878,9 @@ public class ResultSetViewer extends Viewer
             super(name);
         }
         @NotNull
-        protected DBVEntity getVirtualEntity(DBDAttributeBinding binding) {
+        protected DBVEntity getVirtualEntity(DBDAttributeBinding binding)
+            throws IllegalStateException
+        {
             final DBSEntity entity = getModel().getSingleSource();
             if (entity == null) {
                 throw new IllegalStateException("No virtual entity for multi-source query");
@@ -2917,9 +2919,17 @@ public class ResultSetViewer extends Viewer
             } finally {
                 shell.dispose();
             }
-            final DBVEntity vEntity = getVirtualEntity(attribute);
-            vEntity.setColorOverride(attribute, value, null, StringConverter.asString(color));
-            updateColors(vEntity);
+            try {
+                final DBVEntity vEntity = getVirtualEntity(attribute);
+                vEntity.setColorOverride(attribute, value, null, StringConverter.asString(color));
+                updateColors(vEntity);
+            } catch (IllegalStateException e) {
+                UIUtils.showErrorDialog(
+                    viewerPanel.getShell(),
+                    "Row color",
+                    "Can't set row color",
+                    e);
+            }
         }
     }
 
