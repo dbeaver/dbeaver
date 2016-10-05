@@ -43,7 +43,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     public static final PostgreArrayValueHandler INSTANCE = new PostgreArrayValueHandler();
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public JDBCCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object != null) {
             String className = object.getClass().getName();
@@ -70,7 +70,8 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 }
             }
         }
-        return super.getValueFromObject(session, type, object, copy);
+        JDBCCollection collection = super.getValueFromObject(session, type, object, copy);
+        return collection;
     }
 
     private JDBCCollection convertStringToArray(@NotNull DBCSession session, @NotNull PostgreDataType itemType, @NotNull String value) {
@@ -99,7 +100,13 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                     str.append(','); //$NON-NLS-1$
                 }
                 final Object item = collection.getItem(i);
-                String itemString = valueHandler.getValueDisplayString(collection.getComponentType(), item, DBDDisplayFormat.NATIVE);
+                String itemString;
+                if (item instanceof JDBCCollection) {
+                    // Multi-dimensional arrays case
+                    itemString = getValueDisplayString(column, item, format);
+                } else {
+                    itemString = valueHandler.getValueDisplayString(collection.getComponentType(), item, DBDDisplayFormat.NATIVE);
+                }
                 str.append(itemString);
             }
             str.append("}");

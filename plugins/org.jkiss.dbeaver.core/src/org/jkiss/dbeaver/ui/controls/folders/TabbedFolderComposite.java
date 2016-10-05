@@ -317,7 +317,13 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
 
     private ITabbedFolder getActiveFolder(FolderPane folderPane) {
         TabbedFolderList folderList = folderPane.folderList;
-        return folderList.getElementAt(folderList.getSelectionIndex()).getInfo().getContents();
+        int selectionIndex = folderList.getSelectionIndex();
+        if (selectionIndex < 0) {
+            // If no folder was activated - do it now
+            selectionIndex = 0;
+            folderList.select(selectionIndex);
+        }
+        return folderList.getElementAt(selectionIndex).getInfo().getContents();
     }
 
     @Override
