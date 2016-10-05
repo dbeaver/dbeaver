@@ -119,8 +119,8 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
 
     private void initRules(SQLDialect dialect)
     {
-        rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, sqlStringToken, '\\'));
-        rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlQuotedToken, '\\'));
+        rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, sqlStringToken, (char)0));
+        rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlQuotedToken, (char)0));
 
         // Add special case word rule.
         EmptyCommentRule wordRule = new EmptyCommentRule(multilineCommentToken);
