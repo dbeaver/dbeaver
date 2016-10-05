@@ -18,10 +18,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
@@ -88,19 +85,35 @@ public class MetaDataPanel implements IResultSetPanel {
         this.attributeList.getItemsViewer().addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                IStructuredSelection selection = attributeList.getItemsViewer().getStructuredSelection();
-                if (!selection.isEmpty()) {
-                    DBDAttributeBinding attr = (DBDAttributeBinding) selection.getFirstElement();
-                    if (attr != null) {
-                        if (isAttributeVisible(attr)) {
-                            presentation.setCurrentAttribute(attr);
-                        }
+                DBDAttributeBinding attr = getSelectedAttribute();
+                if (attr != null) {
+                    if (isAttributeVisible(attr)) {
+                        presentation.setCurrentAttribute(attr);
                     }
                 }
             }
         });
+        if (this.presentation instanceof ISelectionProvider) {
+            ((ISelectionProvider) this.presentation).addSelectionChangedListener(
+                new ISelectionChangedListener() {
+                @Override
+                public void selectionChanged(SelectionChangedEvent event) {
+                    DBDAttributeBinding attr = presentation.getCurrentAttribute();
+                    if (attr != null && attr != getSelectedAttribute()) {
+                        attributeList.getItemsViewer().setSelection(new StructuredSelection(attr));
+                    }
+                }
+            });
+        }
 
         return this.attributeList;
+    }
+    private DBDAttributeBinding getSelectedAttribute() {
+        IStructuredSelection selection = attributeList.getItemsViewer().getStructuredSelection();
+        if (!selection.isEmpty()) {
+            return (DBDAttributeBinding) selection.getFirstElement();
+        }
+        return null;
     }
 
     private boolean isAttributeVisible(DBDAttributeBinding attr) {
