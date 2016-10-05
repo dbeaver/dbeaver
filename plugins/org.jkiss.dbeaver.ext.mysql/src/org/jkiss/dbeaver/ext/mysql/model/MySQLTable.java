@@ -142,7 +142,7 @@ public class MySQLTable extends MySQLTableBase
         for (DBSEntityAssociation srcFK : CommonUtils.safeCollection(source.getAssociations(monitor))) {
             MySQLTableForeignKey fk = new MySQLTableForeignKey(monitor, this, srcFK);
             if (fk.getReferencedConstraint() != null) {
-                fk.setName(fk.getName() + "_1");
+                fk.setName(fk.getName() + "_copy"); // Fix FK name - they are unique within schema
                 fkList.add(fk);
             } else {
                 log.debug("Can't copy association '" + srcFK.getName() + "' - can't find referenced constraint");
