@@ -23,7 +23,10 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,13 +43,18 @@ public class MySQLTableConstraint extends JDBCTableConstraint<MySQLTable> {
     }
 
     // Copy constructor
-    protected MySQLTableConstraint(DBRProgressMonitor monitor, MySQLTable table, MySQLTableConstraint source) throws DBException {
+    protected MySQLTableConstraint(DBRProgressMonitor monitor, MySQLTable table, DBSEntityConstraint source) throws DBException {
         super(table, source, false);
-        if (source.columns != null) {
-            this.columns = new ArrayList<>(source.columns.size());
-            for (MySQLTableConstraintColumn col : source.columns) {
-                MySQLTableColumn ownCol = table.getAttribute(monitor, col.getName());
-                this.columns.add(new MySQLTableConstraintColumn(this, ownCol, col.getOrdinalPosition()));
+        if (source instanceof DBSEntityReferrer) {
+            List<? extends DBSEntityAttributeRef> columns = ((DBSEntityReferrer) source).getAttributeReferences(monitor);
+            if (columns != null) {
+                this.columns = new ArrayList<>(columns.size());
+                for (DBSEntityAttributeRef col : columns) {
+                    if (col.getAttribute() != null) {
+                        MySQLTableColumn ownCol = table.getAttribute(monitor, col.getAttribute().getName());
+                        this.columns.add(new MySQLTableConstraintColumn(this, ownCol, col.getAttribute().getOrdinalPosition()));
+                    }
+                }
             }
         }
     }

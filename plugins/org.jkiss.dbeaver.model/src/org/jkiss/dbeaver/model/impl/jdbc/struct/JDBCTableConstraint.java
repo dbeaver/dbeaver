@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSConstraintEnumerable;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
@@ -61,7 +62,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
     }
 
     // Copy constructor
-    protected JDBCTableConstraint(TABLE table, JDBCTableConstraint source, boolean persisted) {
+    protected JDBCTableConstraint(TABLE table, DBSEntityConstraint source, boolean persisted) {
         super(table, source);
         this.persisted = persisted;
     }

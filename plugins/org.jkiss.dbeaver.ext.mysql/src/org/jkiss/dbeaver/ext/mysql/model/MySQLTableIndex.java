@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -28,6 +29,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -58,17 +61,19 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> im
     }
 
     // Copy constructor
-    MySQLTableIndex(MySQLTable table, MySQLTableIndex source)
-    {
+    MySQLTableIndex(DBRProgressMonitor monitor, MySQLTable table, DBSTableIndex source) throws DBException {
         super(table.getContainer(), table, source, false);
-        this.nonUnique = source.nonUnique;
-        this.cardinality = source.cardinality;
-        this.indexComment = source.indexComment;
-        this.additionalInfo = source.additionalInfo;
-        if (source.columns != null) {
-            this.columns = new ArrayList<>(source.columns.size());
-            for (MySQLTableIndexColumn sourceColumn : source.columns) {
-                this.columns.add(new MySQLTableIndexColumn(this, sourceColumn));
+        this.nonUnique = !source.isUnique();
+        this.indexComment = source.getDescription();
+        if (source instanceof MySQLTableIndex) {
+            this.cardinality = ((MySQLTableIndex)source).cardinality;
+            this.additionalInfo = ((MySQLTableIndex)source).additionalInfo;
+        }
+        List<? extends DBSTableIndexColumn> columns = source.getAttributeReferences(monitor);
+        if (columns != null) {
+            this.columns = new ArrayList<>(columns.size());
+            for (DBSTableIndexColumn sourceColumn : columns) {
+                this.columns.add(new MySQLTableIndexColumn(monitor, this, sourceColumn));
             }
         }
     }

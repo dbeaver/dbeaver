@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.utils.CommonUtils;
@@ -92,18 +93,24 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     // Copy constructor
     public MySQLTableColumn(
         MySQLTableBase table,
-        MySQLTableColumn source)
+        DBSEntityAttribute source)
         throws DBException
     {
         super(table, source, false);
-        this.comment = source.comment;
-        this.charLength = source.charLength;
-        this.collation = source.collation;
-        this.keyType = source.keyType;
-        this.extraInfo = source.extraInfo;
-        this.fullTypeName = source.fullTypeName;
-        if (source.enumValues != null) {
-            this.enumValues = new ArrayList<>(source.enumValues);
+        this.comment = source.getDescription();
+        if (source instanceof MySQLTableColumn) {
+            MySQLTableColumn mySource = (MySQLTableColumn)source;
+            this.charLength = mySource.charLength;
+            this.collation = mySource.collation;
+            this.keyType = mySource.keyType;
+            this.extraInfo = mySource.extraInfo;
+            this.fullTypeName = mySource.fullTypeName;
+            if (mySource.enumValues != null) {
+                this.enumValues = new ArrayList<>(mySource.enumValues);
+            }
+        } else {
+            this.collation = table.getContainer().getDefaultCollation();
+            this.fullTypeName = source.getTypeName();
         }
     }
 

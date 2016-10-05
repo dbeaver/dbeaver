@@ -19,11 +19,16 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+
+import java.util.List;
 
 /**
  * JDBCTableForeignKey
@@ -54,6 +59,41 @@ public abstract class JDBCTableForeignKey<
         this.updateRule = updateRule;
     }
 
+    public JDBCTableForeignKey(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull TABLE table,
+        @NotNull DBSEntityAssociation source,
+        boolean persisted) throws DBException {
+        super(table, source, persisted);
+
+        DBSEntityConstraint srcRefConstraint = source.getReferencedConstraint();
+        if (srcRefConstraint != null) {
+            DBSEntity refEntity = srcRefConstraint.getParentObject();
+            if (refEntity != null) {
+                if (srcRefConstraint instanceof JDBCTableConstraint && refEntity.getParentObject() == table.getParentObject()) {
+                    // Referenced object in the same schema as we are - let's just use it
+                    this.referencedKey = (PRIMARY_KEY) srcRefConstraint;
+                } else {
+                    // Try to find table with the same name as referenced constraint owner
+                    DBSObject refTable = table.getContainer().getChild(monitor, refEntity.getName());
+                    if (refTable instanceof DBSEntity) {
+                        List<DBSEntityAttribute> refAttrs = DBUtils.getEntityAttributes(monitor, referencedKey);
+                        this.referencedKey = (PRIMARY_KEY) DBUtils.findEntityConstraint(monitor, (DBSEntity) refTable, refAttrs);
+                    }
+                }
+            }
+        }
+
+        if (source instanceof DBSTableForeignKey) {
+            this.deleteRule = ((DBSTableForeignKey)source).getDeleteRule();
+            this.updateRule = ((DBSTableForeignKey)source).getUpdateRule();
+        } else {
+            this.deleteRule = DBSForeignKeyModifyRule.NO_ACTION;
+            this.updateRule = DBSForeignKeyModifyRule.NO_ACTION;
+        }
+    }
+
+    @Nullable
     @Property(viewable = true, order = 3)
     public TABLE getReferencedTable()
     {

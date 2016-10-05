@@ -19,8 +19,11 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 
 /**
  * GenericIndexColumn
@@ -50,14 +53,17 @@ public class MySQLTableIndexColumn extends AbstractTableIndexColumn
         this.subPart = subPart;
     }
 
-    MySQLTableIndexColumn(MySQLTableIndex toIndex, MySQLTableIndexColumn source)
-    {
+    MySQLTableIndexColumn(DBRProgressMonitor monitor, MySQLTableIndex toIndex, DBSTableIndexColumn source) throws DBException {
         this.index = toIndex;
-        this.tableColumn = source.tableColumn;
-        this.ordinalPosition = source.ordinalPosition;
-        this.ascending = source.ascending;
-        this.nullable = source.nullable;
-        this.subPart = source.subPart;
+        if (source.getTableColumn() != null) {
+            this.tableColumn = toIndex.getTable().getAttribute(monitor, source.getTableColumn().getName());
+        }
+        this.ordinalPosition = source.getOrdinalPosition();
+        this.ascending = source.isAscending();
+        if (source instanceof MySQLTableIndexColumn) {
+            this.nullable = ((MySQLTableIndexColumn)source).nullable;
+            this.subPart = ((MySQLTableIndexColumn)source).subPart;
+        }
     }
 
     @NotNull
