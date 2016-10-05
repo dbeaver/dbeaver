@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -102,7 +101,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
         column.setOrdinalPosition(-1);
-        column.setFullTypeName(typeName + CommonUtils.notEmpty(SQLUtils.getColumnTypeModifiers(column, typeName, column.getDataKind())));
+        column.setFullTypeName(DBUtils.getFullTypeName(column));
         return column;
     }
 

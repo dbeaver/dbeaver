@@ -24,10 +24,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
@@ -110,7 +112,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
             }
         } else {
             this.collation = table.getContainer().getDefaultCollation();
-            this.fullTypeName = source.getTypeName();
+            this.fullTypeName = DBUtils.getFullTypeName(this);
         }
     }
 

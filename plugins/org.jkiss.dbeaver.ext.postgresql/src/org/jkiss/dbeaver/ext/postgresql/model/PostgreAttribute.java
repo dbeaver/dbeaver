@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -205,10 +206,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     public String getFullQualifiedTypeName() {
         String fqtn = dataType.getTypeName();
         if (dataType.getDataKind() != DBPDataKind.CONTENT) {
-            String modifiers = SQLUtils.getColumnTypeModifiers(this, fqtn, dataType.getDataKind());
-            if (modifiers != null) {
-                return fqtn + modifiers;
-            }
+            return DBUtils.getFullTypeName(this);
         }
         return fqtn;
     }

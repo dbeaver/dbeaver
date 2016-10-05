@@ -1198,12 +1198,8 @@ public final class DBUtils {
     public static String getFullTypeName(@NotNull DBSTypedObject typedObject)
     {
         String typeName = typedObject.getTypeName();
-        switch (typedObject.getDataKind()) {
-            case STRING:
-            case CONTENT:
-                return typeName + "(" + typedObject.getMaxLength() + ")";
-            default: return typeName;
-        }
+        String typeModifiers = SQLUtils.getColumnTypeModifiers(typedObject, typeName, typedObject.getDataKind());
+        return typeModifiers == null ? typeName : (typeName + CommonUtils.notEmpty(typeModifiers));
     }
 
     @NotNull

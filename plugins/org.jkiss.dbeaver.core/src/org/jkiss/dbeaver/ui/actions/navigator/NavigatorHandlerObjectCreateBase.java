@@ -66,9 +66,9 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             }
 
             DBSObject sourceObject = copyFrom == null ? null : copyFrom.getObject();
-            if (sourceObject != null && !childType.isAssignableFrom(sourceObject.getClass())) {
-                throw new DBException("Can't create '" + childType.getName() + "' from '" + sourceObject.getClass().getName() + "'");
-            }
+//            if (sourceObject != null && !childType.isAssignableFrom(sourceObject.getClass())) {
+//                throw new DBException("Can't create '" + childType.getName() + "' from '" + sourceObject.getClass().getName() + "'");
+//            }
 
             final EntityEditorsRegistry editorsRegistry = EntityEditorsRegistry.getInstance();
             DBEObjectManager<?> objectManager = editorsRegistry.getObjectManager(childType);
