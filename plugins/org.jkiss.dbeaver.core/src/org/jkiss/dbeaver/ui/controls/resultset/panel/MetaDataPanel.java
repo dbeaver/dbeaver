@@ -123,19 +123,23 @@ public class MetaDataPanel implements IResultSetPanel {
             return;
         }
         List<DBDAttributeBinding> newAttributes = Arrays.asList(presentation.getController().getModel().getAttributes());
-        if (CommonUtils.equalObjects(curAttributes, newAttributes)) {
-            // No changes
-            return;
+        if (curAttributes != null && curAttributes.size() == newAttributes.size()) {
+            boolean equals = true;
+            for (int i = 0; i < curAttributes.size(); i++) {
+                if (curAttributes.get(i) != newAttributes.get(i)) {
+                    equals = false;
+                    break;
+                }
+            }
+            if (equals) {
+                // No changes
+                return;
+            }
         }
         curAttributes = newAttributes;
-        Control table = attributeList.getControl();
-        table.setRedraw(false);
-        try {
-            attributeList.clearListData();
-            attributeList.loadData();
-        } finally {
-            table.setRedraw(true);
-        }
+
+        attributeList.clearListData();
+        attributeList.loadData();
     }
 
     @Override
