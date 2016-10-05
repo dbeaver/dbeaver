@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -56,6 +58,7 @@ public class MetaDataPanel implements IResultSetPanel {
     private MetaDataTable attributeList;
     private List<DBDAttributeBinding> curAttributes;
     private Color colorDisabled;
+    private transient boolean updateSelection = false;
 
     public MetaDataPanel() {
     }
@@ -86,22 +89,40 @@ public class MetaDataPanel implements IResultSetPanel {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 DBDAttributeBinding attr = getSelectedAttribute();
-                if (attr != null) {
+                if (attr != null && !updateSelection) {
                     if (isAttributeVisible(attr)) {
-                        presentation.setCurrentAttribute(attr);
+                        updateSelection = true;
+                        try {
+                            presentation.setCurrentAttribute(attr);
+                        } finally {
+                            updateSelection = false;
+                        }
                     }
                 }
             }
         });
         if (this.presentation instanceof ISelectionProvider) {
-            ((ISelectionProvider) this.presentation).addSelectionChangedListener(
-                new ISelectionChangedListener() {
+            final ISelectionChangedListener listener = new ISelectionChangedListener() {
                 @Override
                 public void selectionChanged(SelectionChangedEvent event) {
-                    DBDAttributeBinding attr = presentation.getCurrentAttribute();
-                    if (attr != null && attr != getSelectedAttribute()) {
-                        attributeList.getItemsViewer().setSelection(new StructuredSelection(attr));
+                    if (!updateSelection && MetaDataPanel.this.presentation.getController().getVisiblePanel() == MetaDataPanel.this) {
+                        DBDAttributeBinding attr = presentation.getCurrentAttribute();
+                        if (attr != null && attr != getSelectedAttribute()) {
+                            updateSelection = true;
+                            try {
+                                attributeList.getItemsViewer().setSelection(new StructuredSelection(attr));
+                            } finally {
+                                updateSelection = false;
+                            }
+                        }
                     }
+                }
+            };
+            ((ISelectionProvider) this.presentation).addSelectionChangedListener(listener);
+            attributeList.getControl().addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e) {
+                    ((ISelectionProvider) presentation).removeSelectionChangedListener(listener);
                 }
             });
         }

@@ -682,7 +682,14 @@ public class ResultSetViewer extends Viewer
                 }
             }
         }
+        if (!settings.enabledPanelIds.contains(settings.activePanelId)) {
+            settings.activePanelId = null;
+        }
         if (!settings.enabledPanelIds.isEmpty()) {
+            if (settings.activePanelId == null) {
+                // Set first panel active
+                settings.activePanelId = settings.enabledPanelIds.iterator().next();
+            }
             for (String panelId : settings.enabledPanelIds) {
                 if (!CommonUtils.isEmpty(panelId)) {
                     activatePanel(panelId, panelId.equals(settings.activePanelId), false);
@@ -742,7 +749,7 @@ public class ResultSetViewer extends Viewer
 
         if (!show) {
             viewerSash.setMaximizedControl(presentationPanel);
-            if (activePanelTab != null && UIUtils.hasFocus(activePanelTab.getControl())) {
+            if (activePanelTab != null && !activePanelTab.getControl().isDisposed() && UIUtils.hasFocus(activePanelTab.getControl())) {
                 // Set focus to presentation
                 activePresentation.getControl().setFocus();
             }
@@ -754,7 +761,7 @@ public class ResultSetViewer extends Viewer
             activePresentation.updateValueView();
 
             // Set focus to panel
-            if (activePanelTab != null && UIUtils.hasFocus(activePresentation.getControl())) {
+            if (activePanelTab != null && !activePanelTab.getControl().isDisposed() && UIUtils.hasFocus(activePresentation.getControl())) {
                 activePanelTab.getControl().setFocus();
             }
         }
