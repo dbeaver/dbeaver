@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -43,10 +44,10 @@ public abstract class AbstractTable<
     }
 
     // Copy constructor
-    protected AbstractTable(CONTAINER container, AbstractTable source)
+    protected AbstractTable(CONTAINER container, DBSEntity source)
     {
         this(container);
-        this.tableName = source.tableName;
+        this.tableName = source.getName();
     }
 
     protected AbstractTable(CONTAINER container, String tableName)

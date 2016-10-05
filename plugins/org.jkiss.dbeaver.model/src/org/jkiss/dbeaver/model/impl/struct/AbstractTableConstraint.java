@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
@@ -43,12 +44,12 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
     }
 
     // Copy constructor
-    protected AbstractTableConstraint(TABLE table, AbstractTableConstraint source)
+    protected AbstractTableConstraint(TABLE table, DBSEntityConstraint source)
     {
         this.table = table;
-        this.name = source.name;
-        this.description = source.description;
-        this.constraintType = source.constraintType;
+        this.name = source.getName();
+        this.description = source.getDescription();
+        this.constraintType = source.getConstraintType();
     }
 
     @Property(id = "owner", viewable = true, order = 2)

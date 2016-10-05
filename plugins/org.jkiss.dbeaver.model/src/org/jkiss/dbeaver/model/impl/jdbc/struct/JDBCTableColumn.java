@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSAttributeEnumerable;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
@@ -79,13 +80,13 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
 
     protected JDBCTableColumn(
         TABLE_TYPE table,
-        JDBCTableColumn source,
+        DBSEntityAttribute source,
         boolean persisted)
     {
         super(source);
         this.table = table;
         this.persisted = persisted;
-        this.defaultValue = source.defaultValue;
+        this.defaultValue = source.getDefaultValue();
     }
 
     public TABLE_TYPE getTable()

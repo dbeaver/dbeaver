@@ -33,8 +33,13 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -100,38 +105,48 @@ public class MySQLTable extends MySQLTableBase
     }
 
     // Copy constructor
-    public MySQLTable(DBRProgressMonitor monitor, MySQLTable source) throws DBException {
-        super(monitor, source);
-        AdditionalInfo sourceAI = source.getAdditionalInfo(monitor);
-        additionalInfo.loaded = true;
-        additionalInfo.description = sourceAI.description;
-        additionalInfo.charset = sourceAI.charset;
-        additionalInfo.collation = sourceAI.collation;
-        additionalInfo.engine = sourceAI.engine;
-        // Copy partitions
-        for (MySQLPartition partition : source.partitionCache.getCachedObjects()) {
-            partitionCache.cacheObject(new MySQLPartition(monitor, this, partition));
-        }
-        // Copy indexes
-        for (MySQLTableIndex srcIndex : CommonUtils.safeCollection(source.getIndexes(monitor))) {
-            if (srcIndex.getName().equals(MySQLConstants.INDEX_PRIMARY)) {
-                // Skip primary key index (it will be created implicitly)
-                continue;
+    public MySQLTable(DBRProgressMonitor monitor, MySQLCatalog catalog, DBSEntity source) throws DBException {
+        super(monitor, catalog, source);
+        if (source instanceof MySQLTable) {
+            AdditionalInfo sourceAI = ((MySQLTable)source).getAdditionalInfo(monitor);
+            additionalInfo.loaded = true;
+            additionalInfo.description = sourceAI.description;
+            additionalInfo.charset = sourceAI.charset;
+            additionalInfo.collation = sourceAI.collation;
+            additionalInfo.engine = sourceAI.engine;
+            // Copy partitions
+            for (MySQLPartition partition : ((MySQLTable)source).partitionCache.getCachedObjects()) {
+                partitionCache.cacheObject(new MySQLPartition(monitor, this, partition));
             }
-            MySQLTableIndex index = new MySQLTableIndex(this, srcIndex);
-            this.getContainer().indexCache.cacheObject(index);
+        }
+        if (source instanceof DBSTable) {
+            // Copy indexes
+            for (DBSTableIndex srcIndex : CommonUtils.safeCollection(((DBSTable)source).getIndexes(monitor))) {
+                if (srcIndex instanceof MySQLTableIndex && srcIndex.getName().equals(MySQLConstants.INDEX_PRIMARY)) {
+                    // Skip primary key index (it will be created implicitly)
+                    continue;
+                }
+                MySQLTableIndex index = new MySQLTableIndex(monitor, this, srcIndex);
+                this.getContainer().indexCache.cacheObject(index);
+            }
         }
 
         // Copy constraints
-        for (MySQLTableConstraint srcConstr : CommonUtils.safeCollection(source.getConstraints(monitor))) {
+        for (DBSEntityConstraint srcConstr : CommonUtils.safeCollection(source.getConstraints(monitor))) {
             MySQLTableConstraint constr = new MySQLTableConstraint(monitor, this, srcConstr);
             this.getContainer().constraintCache.cacheObject(constr);
         }
 
         // Copy FKs
         List<MySQLTableForeignKey> fkList = new ArrayList<>();
-        for (MySQLTableForeignKey fk : CommonUtils.safeCollection(source.getAssociations(monitor))) {
-            fkList.add(new MySQLTableForeignKey(monitor, this, fk));
+        for (DBSEntityAssociation srcFK : CommonUtils.safeCollection(source.getAssociations(monitor))) {
+            MySQLTableForeignKey fk = new MySQLTableForeignKey(monitor, this, srcFK);
+            if (fk.getReferencedConstraint() != null) {
+                fk.setName(fk.getName() + "_1");
+                fkList.add(fk);
+            } else {
+                log.debug("Can't copy association '" + srcFK.getName() + "' - can't find referenced constraint");
+            }
         }
         this.foreignKeys.setCache(fkList);
     }

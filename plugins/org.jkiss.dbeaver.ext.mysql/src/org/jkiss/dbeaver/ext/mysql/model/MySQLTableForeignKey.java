@@ -23,7 +23,11 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,23 +52,26 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
     }
 
     // Copy constructor
-    public MySQLTableForeignKey(DBRProgressMonitor monitor, MySQLTable table, MySQLTableForeignKey source) throws DBException {
+    public MySQLTableForeignKey(DBRProgressMonitor monitor, MySQLTable table, DBSEntityAssociation source) throws DBException {
         super(
+            monitor,
             table,
-            source.getName(),
-            source.getDescription(),
-            source.getReferencedConstraint(),
-            source.deleteRule,
-            source.updateRule,
+            source,
             false);
-        if (source.columns != null) {
-            this.columns = new ArrayList<>(source.columns.size());
-            for (MySQLTableForeignKeyColumn srcCol : source.columns) {
-                this.columns.add(new MySQLTableForeignKeyColumn(
-                    this,
-                    table.getAttribute(monitor, srcCol.getName()),
-                    srcCol.getOrdinalPosition(),
-                    table.getAttribute(monitor, srcCol.getReferencedColumn().getName())));
+        if (source instanceof DBSEntityReferrer) {
+            List<? extends DBSEntityAttributeRef> columns = ((DBSEntityReferrer) source).getAttributeReferences(monitor);
+            if (columns != null) {
+                this.columns = new ArrayList<>(columns.size());
+                for (DBSEntityAttributeRef srcCol : columns) {
+                    if (srcCol instanceof DBSTableForeignKeyColumn) {
+                        DBSTableForeignKeyColumn fkCol = (DBSTableForeignKeyColumn) srcCol;
+                        this.columns.add(new MySQLTableForeignKeyColumn(
+                            this,
+                            table.getAttribute(monitor, fkCol.getName()),
+                            fkCol.getOrdinalPosition(),
+                            table.getAttribute(monitor, fkCol.getReferencedColumn().getName())));
+                    }
+                }
             }
         }
     }

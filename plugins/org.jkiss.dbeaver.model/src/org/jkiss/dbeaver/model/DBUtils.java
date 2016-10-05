@@ -768,7 +768,9 @@ public final class DBUtils {
                 if (!attrIterator.hasNext()) {
                     return false;
                 }
-                if (ref.getAttribute() != attrIterator.next()) {
+                if (ref.getAttribute() == null ||
+                    !CommonUtils.equalObjects(ref.getAttribute().getName(), attrIterator.next().getName()))
+                {
                     return false;
                 }
             }
@@ -1667,4 +1669,16 @@ public final class DBUtils {
         return object instanceof DBPHiddenObject && ((DBPHiddenObject) object).isHidden();
     }
 
+/*
+    // Helper function - updates copied object name by replacing old parent name with new parent name
+    public static String generateObjectCopyName(DBPNamedObject object, DBPNamedObject originalParent, DBPNamedObject newParent) {
+        String name = object.getName();
+        if (name.contains(originalParent.getName())) {
+            name = name.replace(originalParent.getName(), newParent.getName());
+        } else {
+            name = name + "_1";
+        }
+        return name;
+    }
+*/
 }

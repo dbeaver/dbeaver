@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -39,7 +40,7 @@ public abstract class JDBCAttribute extends AbstractAttribute implements DBSObje
     }
 
     // Copy constructor
-    protected JDBCAttribute(JDBCAttribute source)
+    protected JDBCAttribute(DBSAttributeBase source)
     {
         super(source);
     }

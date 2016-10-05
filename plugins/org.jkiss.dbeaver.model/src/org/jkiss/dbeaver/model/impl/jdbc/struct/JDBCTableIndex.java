@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 /**
  * JDBC abstract index
@@ -48,11 +49,11 @@ public abstract class JDBCTableIndex<CONTAINER extends DBSObjectContainer, TABLE
     }
 
     // Copy constructor
-    protected JDBCTableIndex(CONTAINER container, TABLE table, JDBCTableIndex source, boolean persisted) {
+    protected JDBCTableIndex(CONTAINER container, TABLE table, DBSTableIndex source, boolean persisted) {
         this.container = container;
         this.table = table;
-        this.name = source.name;
-        this.indexType = source.indexType;
+        this.name = source.getName();
+        this.indexType = source.getIndexType();
         this.persisted = persisted;
     }
 
