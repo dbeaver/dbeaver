@@ -214,10 +214,9 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().tableCache.clearChildrenCache(this);
         getContainer().constraintCache.clearObjectCache(this);
 
-        return this;
+        return getContainer().tableCache.refreshObject(monitor, getContainer(), this);
     }
 
     @Association

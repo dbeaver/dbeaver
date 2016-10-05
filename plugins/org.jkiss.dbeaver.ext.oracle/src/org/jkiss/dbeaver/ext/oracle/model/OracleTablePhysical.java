@@ -169,15 +169,8 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        super.refreshObject(monitor);
         this.getContainer().indexCache.clearObjectCache(this);
-
-        partitionInfo = null;
-        if (partitionCache != null) {
-            partitionCache.clearCache();
-        }
-        realRowCount = null;
-        return this;
+        return super.refreshObject(monitor);
     }
 
     @Override
