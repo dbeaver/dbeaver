@@ -122,6 +122,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport,
  com.jcraft.jsch,
- org.objectweb.asm
+ org.objectweb.asm,
+ org.eclipse.e4.ui.css.core,
+ org.eclipse.e4.ui.css.swt
 Bundle-Vendor: JKISS
 Bundle-Localization: plugin
