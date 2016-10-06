@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -32,16 +30,18 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
 import org.jkiss.dbeaver.ui.navigator.database.CheckboxTreeManager;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadNode;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -228,17 +228,21 @@ public class SearchDataPage extends AbstractSearchPage {
         final List<DBNNode> checkedNodes = new ArrayList<>();
         dataSourceTree.setEnabled(false);
         try {
-            container.getRunnableContext().run(true, true, new IRunnableWithProgress() {
+            DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
                 @Override
-                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    checkedNodes.addAll(
-                        loadTreeState(RuntimeUtils.makeMonitor(monitor), store, PROP_SOURCES));
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    monitor.beginTask("Load database nodes", 1);
+                    try {
+                        monitor.subTask("Load tree state");
+                        checkedNodes.addAll(
+                            loadTreeState(monitor, store, PROP_SOURCES));
+                    } finally {
+                        monitor.done();
+                    }
                 }
             });
         } catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(getShell(), "Data sources load", "Error loading settings", e.getTargetException());
-        } catch (InterruptedException e) {
-            // ignore
         }
         if (!checkedNodes.isEmpty()) {
             boolean first = true;
