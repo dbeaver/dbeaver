@@ -47,7 +47,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
     @Override
     protected Control createControl(Composite parent) {
         Composite placeholder = new Composite(parent, SWT.NONE);
-        placeholder.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        //placeholder.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         GridLayout gl = new GridLayout(1, false);
         gl.verticalSpacing = 0;
         gl.horizontalSpacing = 0;
@@ -56,10 +56,10 @@ public class CustomCheckboxCellEditor extends CellEditor {
         placeholder.setLayout(gl);
 
         combo = new Button(placeholder, SWT.CHECK);
-        final GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);
-        gd.verticalIndent = 2;
+        final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER);
+        gd.verticalIndent = 1;
         gd.horizontalIndent = 4;
-        gd.grabExcessHorizontalSpace = true;
+        //gd.grabExcessHorizontalSpace = true;
         //combo.add(DBConstants.BOOLEAN_PROP_NO);
         //combo.add(DBConstants.BOOLEAN_PROP_YES);
         combo.setLayoutData(gd);
