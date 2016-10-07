@@ -27,6 +27,9 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -248,7 +251,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
             }
             Collection<? extends DBSEntityAttribute> idColumns = null;
             try {
-                idColumns = DBUtils.getBestTableIdentifier(monitor, entity);
+                idColumns = getBestTableIdentifier(monitor, entity);
                 if (keyColumns != null) {
                     keyColumns.addAll(idColumns);
                 }
@@ -293,6 +296,51 @@ public class ERDEntity extends ERDObject<DBSEntity>
             }
         }
         return erdEntity;
+    }
+
+    @NotNull
+    public static Collection<? extends DBSEntityAttribute> getBestTableIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity)
+        throws DBException
+    {
+        if (entity instanceof DBSTable && ((DBSTable) entity).isView()) {
+            return Collections.emptyList();
+        }
+        if (CommonUtils.isEmpty(entity.getAttributes(monitor))) {
+            return Collections.emptyList();
+        }
+
+        // Find PK or unique key
+        DBSEntityConstraint uniqueId = null;
+        //DBSEntityConstraint uniqueIndex = null;
+        for (DBSEntityConstraint id : entity.getConstraints(monitor)) {
+            if (id instanceof DBSEntityReferrer && id.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                return DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) id);
+            } else if (id.getConstraintType().isUnique()) {
+                uniqueId = id;
+            } else if (id instanceof DBSTableIndex && ((DBSTableIndex) id).isUnique()) {
+                uniqueId = id;
+            }
+        }
+        if (uniqueId instanceof DBSEntityReferrer) {
+            return DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) uniqueId);
+        }
+
+        // Check indexes
+        if (entity instanceof DBSTable) {
+            try {
+                Collection<? extends DBSTableIndex> indexes = ((DBSTable)entity).getIndexes(monitor);
+                if (!CommonUtils.isEmpty(indexes)) {
+                    for (DBSTableIndex index : indexes) {
+                        if (DBUtils.isIdentifierIndex(monitor, index)) {
+                            return DBUtils.getEntityAttributes(monitor, index);
+                        }
+                    }
+                }
+            } catch (DBException e) {
+                log.debug(e);
+            }
+        }
+        return Collections.emptyList();
     }
 
     public void addRelations(DBRProgressMonitor monitor, Map<DBSEntity, ERDEntity> tableMap, boolean reflect)
