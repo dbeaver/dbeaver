@@ -179,7 +179,7 @@ public abstract class ObjectViewerRenderer {
                     //(editable ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxDisabledOn()) :
                     //(editable ? ImageUtils.getImageCheckboxEnabledOff() : ImageUtils.getImageCheckboxDisabledOff());
                 final Rectangle imageBounds = image.getBounds();
-                gc.drawImage(image, event.x + 4 /*+ (columnWidth - imageBounds.width) / 2*/, event.y + (columnHeight - imageBounds.height) / 2);
+                gc.drawImage(image, event.x + 4 /*+ (columnWidth - imageBounds.width) / 2*/, event.y + 2);
                 event.doit = false;
 //                            System.out.println("PAINT " + cellValue + " " + System.currentTimeMillis());
             } else if (isHyperlink(cellValue)) {
