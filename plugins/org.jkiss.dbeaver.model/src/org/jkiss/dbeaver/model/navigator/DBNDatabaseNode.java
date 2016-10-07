@@ -315,6 +315,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                 }
             } else {
                 // Not persisted node - nothing to refresh
+                getModel().fireNodeUpdate(source, this, DBNEvent.NodeChange.REFRESH);
                 return this;
             }
         } else {
