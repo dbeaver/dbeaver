@@ -20,14 +20,13 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -35,7 +34,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class CustomCheckboxCellEditor extends CellEditor {
 
-    private CCombo combo;
+    private Button combo;
 
     public CustomCheckboxCellEditor(Composite parent) {
         this(parent, SWT.NONE);
@@ -56,13 +55,13 @@ public class CustomCheckboxCellEditor extends CellEditor {
         gl.marginWidth = 0;
         placeholder.setLayout(gl);
 
-        combo = new CCombo(placeholder, SWT.DROP_DOWN | SWT.READ_ONLY);
+        combo = new Button(placeholder, SWT.CHECK);
         final GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);
-//        gd.verticalIndent = 2;
-//        gd.horizontalIndent = 4;
+        gd.verticalIndent = 2;
+        gd.horizontalIndent = 4;
         gd.grabExcessHorizontalSpace = true;
-        combo.add(DBConstants.BOOLEAN_PROP_NO);
-        combo.add(DBConstants.BOOLEAN_PROP_YES);
+        //combo.add(DBConstants.BOOLEAN_PROP_NO);
+        //combo.add(DBConstants.BOOLEAN_PROP_YES);
         combo.setLayoutData(gd);
         combo.setFont(parent.getFont());
         combo.addFocusListener(new FocusAdapter() {
@@ -86,7 +85,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
     @Override
     protected Boolean doGetValue() {
-        return combo.getSelectionIndex() > 0;
+        return combo.getSelection();
     }
 
     @Override
@@ -104,7 +103,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
     @Override
     protected void doSetValue(Object value) {
         Assert.isTrue(combo != null && (value instanceof Boolean));
-        combo.select(CommonUtils.toBoolean(value) ? 1 : 0);
+        combo.setSelection(CommonUtils.toBoolean(value));
     }
 
     @Override
