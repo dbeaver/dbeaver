@@ -690,7 +690,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
 
         DBSObject databaseObject = getEditorInput().getDatabaseObject();
-        if (databaseObject != null && databaseObject.isPersisted()) {
+        if (databaseObject != null) {
             // Refresh visual content in parts
             for (IEditorPart editor : editorMap.values()) {
                 if (editor instanceof IRefreshablePart) {

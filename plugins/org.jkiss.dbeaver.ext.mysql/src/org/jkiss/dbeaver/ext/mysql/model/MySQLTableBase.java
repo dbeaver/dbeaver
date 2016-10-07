@@ -116,7 +116,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         throws DBException
     {
         if (!isPersisted()) {
-            return "";
+            return JDBCUtils.generateTableDDL(monitor, this, false);
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Retrieve table DDL")) {
             try (PreparedStatement dbStat = session.prepareStatement(
