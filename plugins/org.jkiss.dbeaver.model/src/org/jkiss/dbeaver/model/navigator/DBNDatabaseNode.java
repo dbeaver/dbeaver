@@ -302,14 +302,19 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         }
         DBSObject object = getObject();
         if (object instanceof DBPRefreshableObject) {
-            DBSObject newObject = ((DBPRefreshableObject) object).refreshObject(monitor);
-            if (newObject == null) {
-                if (parentNode instanceof DBNDatabaseNode) {
-                    ((DBNDatabaseNode) parentNode).removeChildItem(object);
+            if (object.isPersisted()) {
+                DBSObject newObject = ((DBPRefreshableObject) object).refreshObject(monitor);
+                if (newObject == null) {
+                    if (parentNode instanceof DBNDatabaseNode) {
+                        ((DBNDatabaseNode) parentNode).removeChildItem(object);
+                    }
+                    return null;
+                } else {
+                    refreshNodeContent(monitor, newObject, source);
+                    return this;
                 }
-                return null;
             } else {
-                refreshNodeContent(monitor, newObject, source);
+                // Not persisted node - nothing to refresh
                 return this;
             }
         } else {
