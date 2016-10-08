@@ -18,9 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.fed;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
@@ -38,12 +35,15 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.ResultSet;
+import java.sql.Timestamp;
 
 /**
  * DB2 Federated Nickname
@@ -52,24 +52,24 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DB2Nickname extends DB2TableBase implements DBPNamedObject2, DBPRefreshableObject, DB2SourceObject {
 
-    private DB2TableStatus status;
+    private DB2TableStatus        status;
 
-    private String dataCapture;
-    private String constChecked;
+    private String                dataCapture;
+    private String                constChecked;
     private DB2TablePartitionMode partitionMode;
-    private DB2TableAccessMode accessMode;
+    private DB2TableAccessMode    accessMode;
 
-    private Timestamp statsTime;
-    private Long card;
-    private Long nPages;
-    private Long fPages;
-    private Long overFLow;
+    private Timestamp             statsTime;
+    private Long                  card;
+    private Long                  nPages;
+    private Long                  fPages;
+    private Long                  overFLow;
 
-    private String remoteTableName;
-    private String remoteSchemaName;
-    private DB2RemoteServer db2RemoteServer;
+    private String                remoteTableName;
+    private String                remoteSchemaName;
+    private DB2RemoteServer       db2RemoteServer;
     private DB2NicknameRemoteType remoteType;
-    private Boolean cachingAllowed;
+    private Boolean               cachingAllowed;
 
     // -----------------
     // Constructors
@@ -113,7 +113,7 @@ public class DB2Nickname extends DB2TableBase implements DBPNamedObject2, DBPRef
     }
 
     @Override
-    public JDBCStructCache<DB2Schema, DB2Nickname, DB2TableColumn> getCache()
+    public JDBCStructLookupCache<DB2Schema, DB2Nickname, DB2TableColumn> getCache()
     {
         return getContainer().getNicknameCache();
     }
@@ -122,9 +122,10 @@ public class DB2Nickname extends DB2TableBase implements DBPNamedObject2, DBPRef
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         getContainer().getNicknameCache().clearChildrenCache(this);
+
         super.refreshObject(monitor);
 
-        return this;
+        return getContainer().getNicknameCache().refreshObject(monitor, getContainer(), this);
     }
 
     @NotNull
