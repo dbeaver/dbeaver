@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,9 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * DB2 Table Type
@@ -49,15 +52,17 @@ public enum DB2TableType implements DBPNamedObject {
 
     W("Typed view", DB2ObjectType.VIEW);
 
-    private String name;
-    private DB2ObjectType db2ObjectType;
+    private String                                  description;
+    private DB2ObjectType                           db2ObjectType;
+
+    private static final Map<DB2ObjectType, String> IN_CLAUSE_CACHE = new HashMap<>();
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2TableType(String name, DB2ObjectType db2ObjectType)
+    private DB2TableType(String description, DB2ObjectType db2ObjectType)
     {
-        this.name = name;
+        this.description = description;
         this.db2ObjectType = db2ObjectType;
     }
 
@@ -67,7 +72,31 @@ public enum DB2TableType implements DBPNamedObject {
     @Override
     public String toString()
     {
-        return name;
+        return description;
+    }
+
+    public static String getInClause(DB2ObjectType objectType)
+    {
+        String inClause = IN_CLAUSE_CACHE.get(objectType);
+        if (inClause == null) {
+            StringBuilder sb = new StringBuilder(128);
+            sb.append("(");
+            for (DB2TableType db2TableType : values()) {
+                if (db2TableType.getDb2ObjectType() == objectType) {
+                    sb.append("'").append(db2TableType.name()).append("'");
+                    sb.append(",");
+                }
+            }
+            // Remove last "," eventually
+            inClause = "()";
+            if (sb.length() > 0) {
+                sb.deleteCharAt(sb.length() - 1);
+                sb.append(")");
+                inClause = sb.toString();
+            }
+            IN_CLAUSE_CACHE.put(objectType, inClause);
+        }
+        return inClause;
     }
 
     // ----------------
@@ -77,7 +106,7 @@ public enum DB2TableType implements DBPNamedObject {
     @Override
     public String getName()
     {
-        return name;
+        return description; // DF: yes strange getter..
     }
 
     public DB2ObjectType getDb2ObjectType()

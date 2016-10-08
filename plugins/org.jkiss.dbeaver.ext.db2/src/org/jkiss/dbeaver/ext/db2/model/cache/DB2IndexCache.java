@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
-import java.sql.SQLException;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -34,31 +32,61 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
+
+import java.sql.SQLException;
 
 /**
  * Cache for DB2 Indexes at the Schema Level
  * 
  * @author Denis Forveille
  */
-public final class DB2IndexCache extends JDBCStructCache<DB2Schema, DB2Index, DB2IndexColumn> {
+public final class DB2IndexCache extends JDBCStructLookupCache<DB2Schema, DB2Index, DB2IndexColumn> {
 
-    private static final Log log = Log.getLog(DB2IndexCache.class);
+    private static final Log    log          = Log.getLog(DB2IndexCache.class);
 
-    private static final String SQL_INDS_ALL = "SELECT * FROM SYSCAT.INDEXES WHERE INDSCHEMA = ? ORDER BY INDNAME WITH UR";
     private static final String SQL_COLS_IND = "SELECT * FROM SYSCAT.INDEXCOLUSE WHERE INDSCHEMA = ? AND INDNAME = ? ORDER BY COLSEQ WITH UR";
+    private static final String SQL_IND;
+    private static final String SQL_IND_ALL;
+
+    static {
+        StringBuilder sb = new StringBuilder(128);
+        sb.append("SELECT *");
+        sb.append("  FROM SYSCAT.INDEXES");
+        sb.append(" WHERE INDSCHEMA = ?");
+        sb.append(" ORDER BY INDNAME");
+        sb.append(" WITH UR");
+        SQL_IND_ALL = sb.toString();
+
+        sb.setLength(0);
+
+        sb.append("SELECT *");
+        sb.append("  FROM SYSCAT.INDEXES");
+        sb.append(" WHERE INDSCHEMA = ?");
+        sb.append("   AND INDNAME = ?");
+        sb.append(" WITH UR");
+        SQL_IND = sb.toString();
+    }
 
     public DB2IndexCache()
     {
         super("INDNAME");
-    } 
+    }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException
+    public JDBCStatement prepareLookupStatement(JDBCSession session, DB2Schema db2Schema, DB2Index db2Index, String db2IndexName)
+        throws SQLException
     {
-        JDBCPreparedStatement dbStat = session.prepareStatement(SQL_INDS_ALL);
-        dbStat.setString(1, db2Schema.getName());
-        return dbStat;
+        if (db2Index != null || db2IndexName != null) {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_IND);
+            dbStat.setString(1, db2Schema.getName());
+            dbStat.setString(2, db2Index != null ? db2Index.getName() : db2IndexName);
+            return dbStat;
+        } else {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_IND_ALL);
+            dbStat.setString(1, db2Schema.getName());
+            return dbStat;
+        }
     }
 
     @Override
