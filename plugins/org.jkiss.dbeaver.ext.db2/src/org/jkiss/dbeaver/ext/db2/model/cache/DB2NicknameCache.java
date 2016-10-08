@@ -71,8 +71,9 @@ public final class DB2NicknameCache extends JDBCStructLookupCache<DB2Schema, DB2
         setListOrderComparator(DBUtils.<DB2Nickname> nameComparator());
     }
 
+    @NotNull
     @Override
-    public JDBCStatement prepareLookupStatement(JDBCSession session, DB2Schema db2Schema, DB2Nickname db2Nickname,
+    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, DB2Nickname db2Nickname,
         String db2NicknameName) throws SQLException
     {
         if (db2Nickname != null || db2NicknameName != null) {
