@@ -73,8 +73,9 @@ public final class DB2IndexCache extends JDBCStructLookupCache<DB2Schema, DB2Ind
         super("INDNAME");
     }
 
+    @NotNull
     @Override
-    public JDBCStatement prepareLookupStatement(JDBCSession session, DB2Schema db2Schema, DB2Index db2Index, String db2IndexName)
+    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, DB2Index db2Index, String db2IndexName)
         throws SQLException
     {
         if (db2Index != null || db2IndexName != null) {
