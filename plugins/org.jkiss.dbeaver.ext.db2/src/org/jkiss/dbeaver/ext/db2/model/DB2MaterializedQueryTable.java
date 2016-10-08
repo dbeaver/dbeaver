@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -70,7 +70,9 @@ public class DB2MaterializedQueryTable extends DB2ViewBase implements DB2SourceO
     {
         getContainer().getMaterializedQueryTableCache().clearChildrenCache(this);
 
-        return super.refreshObject(monitor);
+        super.refreshObject(monitor);
+
+        return getContainer().getMaterializedQueryTableCache().refreshObject(monitor, getContainer(), this);
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.db2.model.cache;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
@@ -42,6 +43,36 @@ public final class DB2ViewCache extends JDBCStructLookupCache<DB2Schema, DB2View
 
     private static final String SQL_COLS_TAB = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA=? AND TABNAME = ? ORDER BY COLNO WITH UR";
     private static final String SQL_COLS_ALL = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA=? ORDER BY TABNAME, COLNO WITH UR";
+    private static final String SQL_VIEW;
+    private static final String SQL_VIEW_ALL;
+
+    static {
+
+        StringBuilder sb = new StringBuilder(256);
+        sb.append("SELECT *");
+        sb.append(" FROM SYSCAT.TABLES T");
+        sb.append("    , SYSCAT.VIEWS V");
+        sb.append(" WHERE V.VIEWSCHEMA = ?");
+        sb.append("   AND T.TABSCHEMA = V.VIEWSCHEMA");
+        sb.append("   AND T.TABNAME = V.VIEWNAME");
+        sb.append("   AND T.TYPE IN ").append(DB2TableType.getInClause(DB2ObjectType.VIEW));
+        sb.append(" ORDER BY T.TABNAME");
+        sb.append(" WITH UR");
+        SQL_VIEW_ALL = sb.toString();
+
+        sb.setLength(0);
+
+        sb.append("SELECT *");
+        sb.append(" FROM SYSCAT.TABLES T");
+        sb.append("    , SYSCAT.VIEWS V");
+        sb.append(" WHERE V.VIEWSCHEMA = ?");
+        sb.append("   AND V.VIEWNAME = ?");
+        sb.append("   AND T.TABSCHEMA = V.VIEWSCHEMA");
+        sb.append("   AND T.TABNAME = V.VIEWNAME");
+        sb.append("   AND T.TYPE IN ").append(DB2TableType.getInClause(DB2ObjectType.VIEW));
+        sb.append(" WITH UR");
+        SQL_VIEW = sb.toString();
+    }
 
     public DB2ViewCache()
     {
@@ -50,29 +81,31 @@ public final class DB2ViewCache extends JDBCStructLookupCache<DB2Schema, DB2View
 
     @NotNull
     @Override
-    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema schema, @Nullable DB2View object, @Nullable String objectName) throws SQLException {
-        final JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT * FROM SYSCAT.TABLES T, SYSCAT.VIEWS V\n" +
-            "WHERE V.VIEWSCHEMA = ? AND T.TABSCHEMA = V.VIEWSCHEMA AND T.TABNAME = V.VIEWNAME " +
-            "AND T.TYPE IN ('" + DB2TableType.V.name() + "','" + DB2TableType.W.name() + "')\n" +
-            (object == null && objectName == null ? "" : "AND T.TABNAME=?\n") +
-            "ORDER BY T.TABNAME\nWITH UR"
-        );
-        dbStat.setString(1, schema.getName());
-        if (object != null || objectName != null) dbStat.setString(2, object != null ? object.getName() : objectName);
-        return dbStat;
+    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @Nullable DB2View db2View, @Nullable String db2ViewName) throws SQLException
+    {
+        if (db2View != null || db2ViewName != null) {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_VIEW);
+            dbStat.setString(1, db2Schema.getName());
+            dbStat.setString(2, db2View != null ? db2View.getName() : db2ViewName);
+            return dbStat;
+        } else {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_VIEW_ALL);
+            dbStat.setString(1, db2Schema.getName());
+            return dbStat;
+        }
     }
 
     @Override
-    protected DB2View fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet dbResult) throws SQLException,
-        DBException
+    protected DB2View fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet dbResult)
+        throws SQLException, DBException
     {
         return new DB2View(session.getProgressMonitor(), db2Schema, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @Nullable DB2View forView)
-        throws SQLException
+    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @Nullable DB2View forView) throws SQLException
     {
 
         String sql;
@@ -90,8 +123,8 @@ public final class DB2ViewCache extends JDBCStructLookupCache<DB2Schema, DB2View
     }
 
     @Override
-    protected DB2TableColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2View db2View, @NotNull JDBCResultSet dbResult)
-        throws SQLException, DBException
+    protected DB2TableColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2View db2View,
+        @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         return new DB2TableColumn(session.getProgressMonitor(), db2View, dbResult);
     }

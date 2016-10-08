@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.db2.model.cache;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
@@ -42,6 +43,29 @@ public final class DB2TableCache extends JDBCStructLookupCache<DB2Schema, DB2Tab
 
     private static final String SQL_COLS_TAB = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY COLNO WITH UR";
     private static final String SQL_COLS_ALL = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA = ? ORDER BY TABNAME, COLNO WITH UR";
+    private static final String SQL_TAB;
+    private static final String SQL_TAB_ALL;
+
+    static {
+        StringBuilder sb = new StringBuilder(256);
+        sb.append("SELECT *");
+        sb.append("  FROM SYSCAT.TABLES");
+        sb.append(" WHERE TABSCHEMA = ?");
+        sb.append("   AND TYPE IN ").append(DB2TableType.getInClause(DB2ObjectType.TABLE));
+        sb.append(" ORDER BY TABNAME");
+        sb.append(" WITH UR");
+        SQL_TAB_ALL = sb.toString();
+
+        sb.setLength(0);
+
+        sb.append("SELECT *");
+        sb.append("  FROM SYSCAT.TABLES");
+        sb.append(" WHERE TABSCHEMA = ?");
+        sb.append("   AND TABNAME = ?");
+        sb.append("   AND TYPE IN ").append(DB2TableType.getInClause(DB2ObjectType.TABLE));
+        sb.append(" WITH UR");
+        SQL_TAB = sb.toString();
+    }
 
     public DB2TableCache()
     {
@@ -50,29 +74,31 @@ public final class DB2TableCache extends JDBCStructLookupCache<DB2Schema, DB2Tab
 
     @NotNull
     @Override
-    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema schema, @Nullable DB2Table object, @Nullable String objectName) throws SQLException {
-        String query =
-            "SELECT * FROM SYSCAT.TABLES\n" +
-            "WHERE TABSCHEMA = ? AND TYPE IN (" +
-            "'" + DB2TableType.H.name() + "','" + DB2TableType.L.name() + "','" + DB2TableType.T.name() + "','" + DB2TableType.U.name() + "','" + DB2TableType.G.name() + "')\n" +
-            (object == null && objectName == null ? "" : "AND TABNAME=?\n") +
-            "ORDER BY TABNAME\nWITH UR";
-        final JDBCPreparedStatement dbStat = session.prepareStatement(query);
-        dbStat.setString(1, schema.getName());
-        if (object != null || objectName != null) dbStat.setString(2, object != null ? object.getName() : objectName);
-        return dbStat;
+    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @Nullable DB2Table db2Table, @Nullable String db2TableName) throws SQLException
+    {
+        if (db2Table != null || db2TableName != null) {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_TAB);
+            dbStat.setString(1, db2Schema.getName());
+            dbStat.setString(2, db2Table != null ? db2Table.getName() : db2TableName);
+            return dbStat;
+        } else {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_TAB_ALL);
+            dbStat.setString(1, db2Schema.getName());
+            return dbStat;
+        }
     }
 
     @Override
-    protected DB2Table fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet dbResult) throws SQLException,
-        DBException
+    protected DB2Table fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet dbResult)
+        throws SQLException, DBException
     {
         return new DB2Table(session.getProgressMonitor(), db2Schema, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @Nullable DB2Table forTable)
-        throws SQLException
+    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @Nullable DB2Table forTable) throws SQLException
     {
 
         String sql;
@@ -90,8 +116,8 @@ public final class DB2TableCache extends JDBCStructLookupCache<DB2Schema, DB2Tab
     }
 
     @Override
-    protected DB2TableColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Table db2Table, @NotNull JDBCResultSet dbResult)
-        throws SQLException, DBException
+    protected DB2TableColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Table db2Table,
+        @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         return new DB2TableColumn(session.getProgressMonitor(), db2Table, dbResult);
     }
