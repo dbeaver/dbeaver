@@ -8,6 +8,9 @@
         <description>3rd party JDBC drivers for DBeaver</description>
     </category-def>
 
+    <feature id="org.jkiss.dbeaver.core.feature">
+        <category name="org.jkiss.dbeaver"/>
+    </feature>
     <feature id="org.jkiss.dbeaver.runtime.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
@@ -21,6 +24,9 @@
         <category name="org.jkiss.dbeaver"/>
     </feature>
     <feature id="org.jkiss.dbeaver.ext.db2.feature">
+        <category name="org.jkiss.dbeaver"/>
+    </feature>
+    <feature id="org.jkiss.dbeaver.ext.wmi.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
 </site>
