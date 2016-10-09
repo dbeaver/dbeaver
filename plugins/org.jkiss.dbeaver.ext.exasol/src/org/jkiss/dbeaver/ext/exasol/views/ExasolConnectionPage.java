@@ -79,7 +79,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             hostText.setLayoutData(gd);
             hostText.addModifyListener(textListener);
             
-            Label backupHostLabel = UIUtils.createControlLabel(addrGroup, "Backup Host List");
+            final Label backupHostLabel = UIUtils.createControlLabel(addrGroup, "Backup Host List");
             gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
             backupHostLabel.setLayoutData(gd);
             backupHostLabel.setEnabled(showBackupHosts);
