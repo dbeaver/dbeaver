@@ -959,6 +959,7 @@ public class ResultSetViewer extends Viewer
         UIUtils.createHorizontalLine(viewerPanel);
 
         Composite statusBar = new Composite(viewerPanel, SWT.NONE);
+        statusBar.setBackgroundMode(SWT.INHERIT_FORCE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         statusBar.setLayoutData(gd);
         GridLayout gl = new GridLayout(4, false);
