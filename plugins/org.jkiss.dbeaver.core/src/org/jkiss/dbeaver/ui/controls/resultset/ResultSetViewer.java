@@ -1189,6 +1189,11 @@ public class ResultSetViewer extends Viewer
             status = "???"; //$NON-NLS-1$
         }
         statusLabel.setText(status);
+        if (error) {
+            statusLabel.setToolTipText(status);
+        } else {
+            statusLabel.setToolTipText(null);
+        }
     }
 
     public void updateStatusMessage()
