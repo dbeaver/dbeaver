@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2016 Sargul ()
  * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
