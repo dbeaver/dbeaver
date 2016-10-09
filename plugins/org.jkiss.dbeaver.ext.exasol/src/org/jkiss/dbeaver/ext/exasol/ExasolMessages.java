@@ -1,9 +1,7 @@
-package org.jkiss.dbeaver.ext.exasol;
-
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016 Sargul ()
- * Copyright (C) 2016 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2016 Karl Griesser ()
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -18,6 +16,7 @@ package org.jkiss.dbeaver.ext.exasol;
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+package org.jkiss.dbeaver.ext.exasol;
 
 
 import org.eclipse.osgi.util.NLS;
