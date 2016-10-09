@@ -59,7 +59,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     private boolean showDivider;
 
-    private Text listInfoLabel;
+    private Label listInfoLabel;
 
     private ProgressBar progressBar;
     private Text searchText;
@@ -185,9 +185,11 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         gl.marginWidth = 0;
         infoGroup.setLayout(gl);
 
-        listInfoLabel = new Text(infoGroup, SWT.READ_ONLY);
+        listInfoLabel = new Label(infoGroup, SWT.NONE);
+        //listInfoLabel.setCursor(infoGroup.getDisplay().getSystemCursor(SWT.CURSOR_HELP));
         //listInfoLabel.setBackground(container.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
         gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalIndent = 5;
         gd.minimumWidth = 100;
         listInfoLabel.setLayoutData(gd);
 
