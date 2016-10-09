@@ -124,7 +124,7 @@ public class ResultSetViewer extends Viewer
     private ToolBarManager panelToolBar;
     private final Composite presentationPanel;
 
-    private Text statusLabel;
+    private Label statusLabel;
 
     private final DynamicFindReplaceTarget findReplaceTarget;
 
@@ -968,8 +968,10 @@ public class ResultSetViewer extends Viewer
         //gl.marginBottom = 5;
         statusBar.setLayout(gl);
 
-        statusLabel = new Text(statusBar, SWT.READ_ONLY);
+        statusLabel = new Label(statusBar, SWT.READ_ONLY);
+        statusLabel.setCursor(statusBar.getDisplay().getSystemCursor(SWT.CURSOR_HELP));
         gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalIndent = 5;
         statusLabel.setLayoutData(gd);
         statusLabel.addMouseListener(new MouseAdapter() {
             @Override
