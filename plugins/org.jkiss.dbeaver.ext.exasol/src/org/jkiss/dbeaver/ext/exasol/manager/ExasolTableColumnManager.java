@@ -129,7 +129,8 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
             new SQLDatabasePersistAction(
                 "Rename column",
                 "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " RENAME COLUMN " +
-                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO " + command.getNewName())
+                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO " +
+                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName()))
         );
     }
 }
