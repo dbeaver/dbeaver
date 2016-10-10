@@ -1,18 +1,27 @@
-/**
- * 
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License (version 2)
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
-
-import java.util.List;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
+import org.jkiss.dbeaver.ext.exasol.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -21,12 +30,12 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
 
 /**
  * @author Karl
- *
  */
 
 
@@ -43,8 +52,8 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     private static final String CMD_COMMENT = "Comment on Table";
     private static final String CMD_RENAME = "Rename Table";
 
-    private static final Class<?>[] CHILD_TYPES = { ExasolTableColumn.class, ExasolTableUniqueKey.class, ExasolTableForeignKey.class
-         };
+    private static final Class<?>[] CHILD_TYPES = {ExasolTableColumn.class, ExasolTableUniqueKey.class, ExasolTableForeignKey.class
+    };
 
     // -----------------
     // Business Contract
@@ -52,15 +61,13 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
 
     @NotNull
     @Override
-    public Class<?>[] getChildTypes()
-    {
+    public Class<?>[] getChildTypes() {
         return CHILD_TYPES;
     }
 
     @Nullable
     @Override
-    public DBSObjectCache<ExasolSchema, ExasolTable> getObjectsCache(ExasolTable object)
-    {
+    public DBSObjectCache<ExasolSchema, ExasolTable> getObjectsCache(ExasolTable object) {
         return object.getSchema().getTableCache();
     }
 
@@ -70,8 +77,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
 
     @Override
     public ExasolTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, ExasolSchema exasolSchema,
-                                         Object copyFrom)
-    {
+                                            Object copyFrom) {
         ExasolTable table = new ExasolTable(exasolSchema, NEW_TABLE_NAME);
         try {
             setTableName(monitor, exasolSchema, table);
@@ -83,14 +89,12 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
 
     @Override
     @SuppressWarnings("rawtypes")
-    public void appendTableModifiers(ExasolTable exasolTable, NestedObjectCommand tableProps, StringBuilder ddl)
-    {
+    public void appendTableModifiers(ExasolTable exasolTable, NestedObjectCommand tableProps, StringBuilder ddl) {
 
     }
 
     @Override
-    public void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command)
-    {
+    public void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command) {
         super.addStructObjectCreateActions(actions, command);
         // Eventually add Comment
         DBEPersistAction commentAction = buildCommentAction(command.getObject());
@@ -104,8 +108,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     // ------
 
     @Override
-    public void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
-    {
+    public void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command) {
         ExasolTable exasolTable = command.getObject();
 
         if (command.getProperties().size() > 1) {
@@ -129,8 +132,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     // Rename
     // ------
     @Override
-    public void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command)
-    {
+    public void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command) {
         String sql = String.format(SQL_RENAME_TABLE, command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL), command.getNewName());
         actions.add(
             new SQLDatabasePersistAction(CMD_RENAME, sql)
@@ -138,16 +140,14 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, ExasolTable object, String newName) throws DBException
-    {
+    public void renameObject(DBECommandContext commandContext, ExasolTable object, String newName) throws DBException {
         processObjectRename(commandContext, object, newName);
     }
 
     // -------
     // Helpers
     // -------
-    private DBEPersistAction buildCommentAction(ExasolTable exasolTable)
-    {
+    private DBEPersistAction buildCommentAction(ExasolTable exasolTable) {
         if (CommonUtils.isNotEmpty(exasolTable.getDescription())) {
             String commentSQL = String.format(SQL_COMMENT, exasolTable.getFullyQualifiedName(DBPEvaluationContext.DDL), exasolTable.getDescription());
             return new SQLDatabasePersistAction(CMD_COMMENT, commentSQL);
