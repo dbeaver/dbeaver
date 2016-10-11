@@ -1409,6 +1409,7 @@ public class ResultSetViewer extends Viewer
 
         // Custom oldValue items
         final ResultSetValueController valueController;
+        final Object value;
         if (attr != null && row != null) {
             valueController = new ResultSetValueController(
                 this,
@@ -1416,8 +1417,13 @@ public class ResultSetViewer extends Viewer
                 row,
                 IValueController.EditType.NONE,
                 null);
+            value = valueController.getValue();
+        } else {
+            valueController = null;
+            value = null;
+        }
 
-            final Object value = valueController.getValue();
+        {
             {
                 // Standard items
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_CUT));
@@ -1426,36 +1432,39 @@ public class ResultSetViewer extends Viewer
                 MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(ResultSetCopySpecialHandler.CMD_COPY_SPECIAL));
                 extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCopySpecialHandler.CMD_COPY_SPECIAL));
                 extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_COPY_COLUMN_NAMES));
-                extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_COPY_ROW_NAMES));
+                if (row != null) {
+                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_COPY_ROW_NAMES));
+                }
                 manager.add(extCopyMenu);
 
-                manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
-                manager.add(ActionUtils.makeCommandContribution(site, CoreCommands.CMD_PASTE_SPECIAL));
-                manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_DELETE));
-                // Edit items
-                manager.add(new Separator());
-                manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
-                manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT_INLINE));
-                if (!valueController.isReadOnly() && !DBUtils.isNullValue(value)/* && !attr.isRequired()*/) {
-                    manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_CELL_SET_NULL));
+                if (valueController != null) {
+                    manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
+                    manager.add(ActionUtils.makeCommandContribution(site, CoreCommands.CMD_PASTE_SPECIAL));
+                    manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_DELETE));
+                    // Edit items
+                    manager.add(new Separator());
+                    manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
+                    manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT_INLINE));
+                    if (!valueController.isReadOnly() && !DBUtils.isNullValue(value)/* && !attr.isRequired()*/) {
+                        manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_CELL_SET_NULL));
+                    }
                 }
                 manager.add(new GroupMarker(MENU_GROUP_EDIT));
             }
 
-            // Menus from value handler
-            try {
-                manager.add(new Separator());
-                valueController.getValueManager().contributeActions(manager, valueController, null);
-            }
-            catch (Exception e) {
-                log.error(e);
-            }
+            if (valueController != null) {
+                // Menus from value handler
+                try {
+                    manager.add(new Separator());
+                    valueController.getValueManager().contributeActions(manager, valueController, null);
+                } catch (Exception e) {
+                    log.error(e);
+                }
 
-            if (row.getState() == ResultSetRow.STATE_REMOVED || (row.changes != null && row.changes.containsKey(attr))) {
-                manager.insertAfter(IResultSetController.MENU_GROUP_EDIT, ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_CELL_RESET));
+                if (row.getState() == ResultSetRow.STATE_REMOVED || (row.changes != null && row.changes.containsKey(attr))) {
+                    manager.insertAfter(IResultSetController.MENU_GROUP_EDIT, ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_CELL_RESET));
+                }
             }
-        } else {
-            valueController = null;
         }
 
         if (dataSource != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {

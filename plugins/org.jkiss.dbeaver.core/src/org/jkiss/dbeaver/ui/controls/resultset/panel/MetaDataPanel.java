@@ -17,9 +17,12 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
@@ -34,6 +37,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
@@ -192,6 +196,23 @@ public class MetaDataPanel implements IResultSetPanel {
                 @Override
                 public boolean hasChildren(Object element) {
                     return !CommonUtils.isEmpty(((DBDAttributeBinding) element).getNestedBindings());
+                }
+            });
+        }
+
+        @Override
+        protected void fillCustomActions(IContributionManager contributionManager) {
+            contributionManager.add(new Action("Copy column names") {
+                @Override
+                public void run() {
+                    StringBuilder text = new StringBuilder();
+                    for (Object item : getItemsViewer().getStructuredSelection().toArray()) {
+                        if (item instanceof DBDAttributeBinding) {
+                            if (text.length() > 0) text.append("\n");
+                            text.append(((DBDAttributeBinding) item).getName());
+                        }
+                    }
+                    UIUtils.setClipboardContents(getDisplay(), TextTransfer.getInstance(), text.toString());
                 }
             });
         }
