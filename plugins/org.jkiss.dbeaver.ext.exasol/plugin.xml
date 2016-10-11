@@ -90,6 +90,7 @@
                         description="Exasol JDBC driver"
                         webURL="https://www.exasol.com/portal/display/DOWNLOAD/5.0">
 
+                    <replace provider="generic" driver="exasol"/>
                     <property name="querytimeout" value="600"/>
                     <property name="clientname" value="DBeaver"/>
                     <property name="connecttimeout" value="40"/>
