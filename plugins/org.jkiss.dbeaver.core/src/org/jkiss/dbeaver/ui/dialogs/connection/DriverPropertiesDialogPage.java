@@ -95,6 +95,9 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
                     DBeaverUI.syncExec(new Runnable() {
                         @Override
                         public void run() {
+                            if (propsControl.getControl() == null || propsControl.getControl().isDisposed()) {
+                                return;
+                            }
                             propsControl.loadProperties(propertySource);
                             prevConnectionInfo = activeDataSource.getConnectionConfiguration();
 
