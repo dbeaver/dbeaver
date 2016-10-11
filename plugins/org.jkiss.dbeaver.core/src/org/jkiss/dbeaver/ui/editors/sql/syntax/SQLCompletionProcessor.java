@@ -792,9 +792,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     replaceString = replaceString.toLowerCase();
                     break;
                 default:
-                    DBPIdentifierCase convertCase = dataSource instanceof SQLDataSource ?
-                        ((SQLDataSource) dataSource).getSQLDialect().storesUnquotedCase() : DBPIdentifierCase.MIXED;
-                    replaceString = convertCase.transform(replaceString);
+                    // Do not convert case if we got it directly from object
+                    if (!isObject) {
+                        DBPIdentifierCase convertCase = dataSource instanceof SQLDataSource ?
+                            ((SQLDataSource) dataSource).getSQLDialect().storesUnquotedCase() : DBPIdentifierCase.MIXED;
+                        replaceString = convertCase.transform(replaceString);
+                    }
                     break;
             }
         }
