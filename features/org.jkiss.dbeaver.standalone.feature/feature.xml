@@ -22,33 +22,14 @@
         <update label="DBeaver Universal Database Manager" url="http://dbeaver.jkiss.org/"/>
     </url>
 
-    <includes
-            id="org.jkiss.dbeaver.rcp.feature"
-            version="0.0.0"/>
-
-    <includes
-            id="org.jkiss.dbeaver.core.feature"
-            version="0.0.0"/>
-
-    <includes
-            id="org.jkiss.dbeaver.ext.generic.feature"
-            version="0.0.0"/>
-
-    <includes
-            id="org.jkiss.dbeaver.ext.mysql.feature"
-            version="0.0.0"/>
-
-    <includes
-            id="org.jkiss.dbeaver.ext.oracle.feature"
-            version="0.0.0"/>
-
-    <includes
-            id="org.jkiss.dbeaver.ext.wmi.feature"
-            version="0.0.0"/>
-
-    <includes
-            id="org.jkiss.dbeaver.ext.db2.feature"
-            version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.rcp.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.core.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.ext.generic.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.ext.mysql.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.ext.oracle.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.ext.wmi.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.ext.db2.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.ext.exasol.feature" version="0.0.0"/>
 
     <requires>
         <import plugin="org.eclipse.core.runtime"/>
