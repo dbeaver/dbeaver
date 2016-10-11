@@ -93,7 +93,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
             DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
         final DBPDataSourceContainer[] containerList = containers.toArray(new DBPDataSourceContainer[containers.size()]);
 
-        final IFolder rootFolder = ResourceUtils.getScriptsFolder(project, false);
+        final IFolder rootFolder = ResourceUtils.getScriptsFolder(project, true);
         final List<ResourceUtils.ResourceInfo> scriptTree = ResourceUtils.findScriptTree(rootFolder, containerList.length == 0 ? null : containerList);
         if (scriptTree.isEmpty() && containerList.length == 1) {
             // Create new script
