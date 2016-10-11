@@ -52,9 +52,16 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
         DBPConnectionConfiguration connectionInfo)
         throws DBException {
         Collection<DBPPropertyDescriptor> props = null;
-        Object driverInstance = driver.getDriverInstance(runnableContext);
-        if (driverInstance instanceof Driver) {
-            props = readDriverProperties(connectionInfo, (Driver) driverInstance);
+        if (driver.isInternalDriver()) {
+            // Do not load properties from internal (ODBC) driver.
+            // There is a bug in sun's JdbcOdbc bridge driver (#830): if connection fails during props reading
+            // then all subsequent calls to openConnection will fail until another props reading will succeed.
+            props = null;
+        } else {
+            Object driverInstance = driver.getDriverInstance(runnableContext);
+            if (driverInstance instanceof Driver) {
+                props = readDriverProperties(connectionInfo, (Driver) driverInstance);
+            }
         }
         if (props == null) {
             return null;
