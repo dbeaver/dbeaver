@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
 /**
  * Data source provider
@@ -47,14 +46,13 @@ public interface DBPDataSourceProvider extends DBPObject
     /**
      * Supported connection properties.
      *
-     * @param runnableContext runnable context. May be used by implementation to load necessary driver artifacts.
+     * @param monitor progress monitor
      * @param driver driver
-     * @param connectionInfo connection information
-     * @return property group which contains all supported properties
+     * @param connectionInfo connection information   @return property group which contains all supported properties
      * @throws DBException on any error
      */
     DBPPropertyDescriptor[] getConnectionProperties(
-        DBRRunnableContext runnableContext,
+        DBRProgressMonitor monitor,
         DBPDriver driver,
         DBPConnectionConfiguration connectionInfo)
         throws DBException;

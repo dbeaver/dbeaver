@@ -21,9 +21,12 @@ package org.jkiss.dbeaver.model.connection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
 import java.util.Map;
@@ -111,8 +114,8 @@ public interface DBPDriver extends DBPNamedObject
     Collection<? extends DBPDriverLibrary> getDriverLibraries();
 
     @NotNull
-    Object getDriverInstance(@NotNull DBRRunnableContext runnableContext) throws DBException;
+    Object getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;
 
-    void loadDriver(DBRRunnableContext runnableContext) throws DBException;
+    void loadDriver(DBRProgressMonitor monitor) throws DBException;
 
 }

@@ -67,7 +67,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     @Override
     public void loadSettings() {
         DBPDriver driver = site.getDriver();
-        if (driver != null) {
+        if (driver != null && driverText != null) {
             driverText.setText(CommonUtils.toString(driver.getFullName()));
         }
     }
