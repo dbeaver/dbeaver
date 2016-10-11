@@ -85,69 +85,69 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
         this.scale = JDBCUtils.safeGetInteger(dbResult, "MINIMUM_SCALE");
 
         TypeDesc tempTypeDesc = null;
-        this.name = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
+        String typeName = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
+        int precision = JDBCUtils.safeGetInt(dbResult, "PRECISION");
+        int minimumScale = JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE");
+        int maximumScale = JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE");
+
+        this.name = typeName;
         switch (name) {
             case "BIGINT":
-                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.BIGINT, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.BIGINT, precision, minimumScale, maximumScale, typeName);
                 break;
             case "INTEGER":
-                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, precision, minimumScale, maximumScale, typeName);
                 break;
-
             case "DECIMAL":
-                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, precision, minimumScale, maximumScale, typeName);
                 break;
-
             case "DOUBLE PRECISION":
-                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE, precision, minimumScale, maximumScale, typeName);
                 break;
             case "FLOAT":
-                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.FLOAT, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.FLOAT, precision, minimumScale, maximumScale, typeName);
                 break;
             case "INTERVAL DAY TO SECOND":
-                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, precision, minimumScale, maximumScale, typeName);
                 break;
             case "INTERVAL YEAR TO MONTH":
-                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, precision, minimumScale, maximumScale, typeName);
                 break;
-
             case "SMALLINT":
-                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.SMALLINT, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.SMALLINT, precision, minimumScale, maximumScale, typeName);
                 break;
             case "TINYINT":
-                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.TINYINT, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.TINYINT, precision, minimumScale, maximumScale, typeName);
                 break;
             case "GEOMETRY":
-                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, precision, minimumScale, maximumScale, typeName);
                 break;
             case "BOOLEAN":
-                tempTypeDesc = new TypeDesc(DBPDataKind.BOOLEAN, Types.BOOLEAN, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.BOOLEAN, Types.BOOLEAN, precision, minimumScale, maximumScale, typeName);
                 break;
             case "CHAR":
-                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.CHAR, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.CHAR, precision, minimumScale, maximumScale, typeName);
                 break;
             case "VARCHAR":
-                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, precision, minimumScale, maximumScale, typeName);
                 break;
             case "LONG VARCHAR":
-                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.LONGNVARCHAR, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.LONGNVARCHAR, precision, minimumScale, maximumScale, typeName);
                 break;
             case "DATE":
-                tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, Types.DATE, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, Types.DATE, precision, minimumScale, maximumScale, typeName);
                 break;
             case "TIMESTAMP":
-                tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, precision, minimumScale, maximumScale, typeName);
                 break;
             case "TIMESTAMP WITH LOCAL TIME ZONE":
-                tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP_WITH_TIMEZONE, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+                tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, 2014, precision, minimumScale, maximumScale, typeName);
                 break;
             default:
                 LOG.error("DataType '" + name + "' is unknown to DBeaver");
         }
 
         this.typeDesc = tempTypeDesc;
-
-
     }
 
     @Override
