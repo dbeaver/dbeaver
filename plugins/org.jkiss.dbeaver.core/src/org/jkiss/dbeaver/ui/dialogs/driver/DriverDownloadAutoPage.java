@@ -17,9 +17,11 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -29,8 +31,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
@@ -132,25 +133,56 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
     @Override
     boolean performFinish() {
-        downloadLibraryFiles(new RunnableContextDelegate(getContainer()));
-        return true;
-    }
-
-    private void downloadLibraryFiles(DBRRunnableContext runnableContext)
-    {
-        if (!getWizard().getDriver().acceptDriverLicenses(runnableContext)) {
-            return;
-        }
-
         try {
-            runnableContext.run(true, true, new LibraryDownloader());
-            getWizard().getDriver().setModified(true);
-            DataSourceProviderRegistry.getInstance().saveDrivers();
+            getContainer().run(true, true, new IRunnableWithProgress() {
+                @Override
+                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    downloadLibraryFiles(new DefaultProgressMonitor(monitor));
+                }
+            });
         } catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(getShell(), "Driver download", "Error downloading driver files", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }
+        return true;
+    }
+
+    private void downloadLibraryFiles(DBRProgressMonitor monitor) throws InterruptedException {
+        if (!getWizard().getDriver().acceptDriverLicenses()) {
+            return;
+        }
+
+        List<DBPDriverDependencies.DependencyNode> nodes = getWizard().getDependencies().getLibraryList();
+        for (int i = 0, filesSize = nodes.size(); i < filesSize; ) {
+            DBPDriverLibrary lib = nodes.get(i).library;
+            int result = IDialogConstants.OK_ID;
+            try {
+                lib.downloadLibraryFile(monitor, getWizard().isForceDownload(), "Download " + (i + 1) + "/" + filesSize);
+            } catch (IOException e) {
+                if (lib.getType() == DBPDriverLibrary.FileType.license) {
+                    result = IDialogConstants.OK_ID;
+                } else {
+                    DownloadRetry retryConfirm = new DownloadRetry(lib, e);
+                    DBeaverUI.syncExec(retryConfirm);
+                    result = retryConfirm.result;
+                }
+            }
+            switch (result) {
+                case IDialogConstants.CANCEL_ID:
+                case IDialogConstants.ABORT_ID:
+                    return;
+                case IDialogConstants.RETRY_ID:
+                    continue;
+                case IDialogConstants.OK_ID:
+                case IDialogConstants.IGNORE_ID:
+                    i++;
+                    break;
+            }
+        }
+
+        getWizard().getDriver().setModified(true);
+        DataSourceProviderRegistry.getInstance().saveDrivers();
     }
 
     private class DownloadRetry implements Runnable {
@@ -220,37 +252,4 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         }
     }
 
-    private class LibraryDownloader implements DBRRunnableWithProgress {
-        @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-
-            List<DBPDriverDependencies.DependencyNode> nodes = getWizard().getDependencies().getLibraryList();
-            for (int i = 0, filesSize = nodes.size(); i < filesSize; ) {
-                DBPDriverLibrary lib = nodes.get(i).library;
-                int result = IDialogConstants.OK_ID;
-                try {
-                    lib.downloadLibraryFile(monitor, getWizard().isForceDownload(), "Download " + (i + 1) + "/" + filesSize);
-                } catch (IOException e) {
-                    if (lib.getType() == DBPDriverLibrary.FileType.license) {
-                        result = IDialogConstants.OK_ID;
-                    } else {
-                        DownloadRetry retryConfirm = new DownloadRetry(lib, e);
-                        DBeaverUI.syncExec(retryConfirm);
-                        result = retryConfirm.result;
-                    }
-                }
-                switch (result) {
-                    case IDialogConstants.CANCEL_ID:
-                    case IDialogConstants.ABORT_ID:
-                        return;
-                    case IDialogConstants.RETRY_ID:
-                        continue;
-                    case IDialogConstants.OK_ID:
-                    case IDialogConstants.IGNORE_ID:
-                        i++;
-                        break;
-                }
-            }
-        }
-    }
 }

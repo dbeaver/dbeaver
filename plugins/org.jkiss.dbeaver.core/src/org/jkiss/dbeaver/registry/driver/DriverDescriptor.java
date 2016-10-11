@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -488,11 +487,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     @NotNull
     @Override
-    public Object getDriverInstance(@NotNull DBRRunnableContext runnableContext)
+    public Object getDriverInstance(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (driverInstance == null) {
-            loadDriver(runnableContext);
+            loadDriver(monitor);
         }
         if (isInternalDriver() && driverInstance == null) {
             return createDriverInstance();
@@ -809,13 +808,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     @Override
-    public void loadDriver(DBRRunnableContext runnableContext)
+    public void loadDriver(DBRProgressMonitor monitor)
         throws DBException
     {
-        this.loadDriver(runnableContext, false);
+        this.loadDriver(monitor, false);
     }
 
-    private void loadDriver(DBRRunnableContext runnableContext, boolean forceReload)
+    private void loadDriver(DBRProgressMonitor monitor, boolean forceReload)
         throws DBException
     {
         if (isLoaded && !forceReload) {
@@ -825,7 +824,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         loadLibraries();
 
-        if (!acceptDriverLicenses(runnableContext)) {
+        if (!acceptDriverLicenses()) {
             throw new DBException("You have to accept driver '" + getFullName() + "' license to be able to connect");
         }
 
@@ -1026,7 +1025,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    public boolean acceptDriverLicenses(DBRRunnableContext runnableContext)
+    public boolean acceptDriverLicenses()
     {
 /*
         // User must accept all licenses before actual drivers download
