@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -238,7 +239,8 @@ public class ResultSetCommandHandler extends AbstractHandler {
             case CMD_COPY_COLUMN_NAMES: {
                 StringBuilder buffer = new StringBuilder();
                 IResultSetSelection selection = rsv.getSelection();
-                for (DBDAttributeBinding attr : ((IResultSetSelection) selection).getSelectedAttributes()) {
+                Collection<DBDAttributeBinding> attrs = selection.isEmpty() ? rsv.getModel().getVisibleAttributes() : selection.getSelectedAttributes();
+                for (DBDAttributeBinding attr : attrs) {
                     if (buffer.length() > 0) {
                         buffer.append("\t");
                     }
