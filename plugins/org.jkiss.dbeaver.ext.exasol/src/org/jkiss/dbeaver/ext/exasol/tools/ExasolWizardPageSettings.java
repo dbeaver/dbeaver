@@ -1,3 +1,21 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License (version 2)
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 package org.jkiss.dbeaver.ext.exasol.tools;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -18,16 +36,14 @@ import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
 
-public class ExasolWizardPageSettings <WIZARD extends AbstractToolWizard> extends AbstractToolWizardPage<WIZARD> {
+public class ExasolWizardPageSettings<WIZARD extends AbstractToolWizard> extends AbstractToolWizardPage<WIZARD> {
 
-	
-	public ExasolWizardPageSettings(WIZARD wizard, String title)
-    {
+
+    public ExasolWizardPageSettings(WIZARD wizard, String title) {
         super(wizard, title);
     }
 
-    public void createSecurityGroup(Composite parent)
-    {
+    public void createSecurityGroup(Composite parent) {
         try {
             final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
             final DBPConnectionConfiguration connectionInfo = wizard.getConnectionInfo();
@@ -61,8 +77,7 @@ public class ExasolWizardPageSettings <WIZARD extends AbstractToolWizard> extend
             authButton.setText("Authentication");
             authButton.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), "Authentication", false);
                     authDialog.setUserName(wizard.getToolUserName());
                     authDialog.setUserPassword(wizard.getToolUserPassword());
@@ -87,8 +102,7 @@ public class ExasolWizardPageSettings <WIZARD extends AbstractToolWizard> extend
             resetButton.setText("Reset to default");
             resetButton.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     connectionInfo.getProperties().remove(authProperty);
                     wizard.setToolUserName(connectionInfo.getUserName());
                     wizard.setToolUserPassword(connectionInfo.getUserPassword());
@@ -99,11 +113,11 @@ public class ExasolWizardPageSettings <WIZARD extends AbstractToolWizard> extend
         }
     }
 
-	@Override
-	public void createControl(Composite arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void createControl(Composite arg0) {
+        // TODO Auto-generated method stub
+
+    }
 
 }
 

@@ -75,8 +75,8 @@ public interface DBPDriver extends DBPNamedObject
 
     boolean isEmbedded();
     boolean isAnonymousAccess();
-
     boolean isCustomDriverLoader();
+    boolean isInternalDriver();
 
     @Nullable
     DBXTreeNode getNavigatorRoot();

@@ -220,7 +220,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
         String columnName = DBUtils.getQuotedIdentifier(column.getDataSource(), column.getName());
 
         if (command instanceof SQLObjectEditor.ObjectRenameCommand) {
-            columnName = ((ObjectRenameCommand) command).getNewName();
+            columnName = DBUtils.getQuotedIdentifier(column.getDataSource(), ((ObjectRenameCommand) command).getNewName());
         }
 
         StringBuilder decl = new StringBuilder(40);

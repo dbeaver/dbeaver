@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -180,7 +181,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     @Override
     public void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command)
     {
-        String sql = String.format(SQL_RENAME_TABLE, command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL), command.getNewName());
+        String sql = String.format(SQL_RENAME_TABLE, command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL), DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName()));
         actions.add(
             new SQLDatabasePersistAction(CMD_RENAME, sql)
         );
