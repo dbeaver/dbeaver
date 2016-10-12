@@ -91,8 +91,11 @@ public class DriverDownloadDialog extends WizardDialog
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        if (!getWizard().isForceDownload() && DriverEditDialog.getDialogCount() == 0) {
-            createButton(parent, EDIT_DRIVER_BUTTON_ID, "Edit Driver", false);
+        DriverDownloadWizard wizard = getWizard();
+        if (!wizard.isForceDownload() && DriverEditDialog.getDialogCount() == 0) {
+            createButton(parent, EDIT_DRIVER_BUTTON_ID,
+                wizard.isAutoDownloadWizard() ? "Edit Driver" : "Add JARs",
+                false);
         }
 
         super.createButtonsForButtonBar(parent);
@@ -110,11 +113,11 @@ public class DriverDownloadDialog extends WizardDialog
     }
 
     @Override
-    protected void buttonPressed(int buttonId) {
+    public void buttonPressed(int buttonId) {
         if (buttonId == EDIT_DRIVER_BUTTON_ID) {
             cancelPressed();
             DriverEditDialog dialog = new DriverEditDialog(null, getDriver());
-            dialog.open();
+            dialog.open(!getWizard().isAutoDownloadWizard());
         }
         super.buttonPressed(buttonId);
     }

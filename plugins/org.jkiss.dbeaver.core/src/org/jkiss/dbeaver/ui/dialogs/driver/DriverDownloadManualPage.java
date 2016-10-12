@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverFileSource;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 class DriverDownloadManualPage extends DriverDownloadPage {
@@ -48,10 +49,16 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Text infoText = new Text(composite, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP);
+        Link infoText = new Link(composite, SWT.NONE);
         infoText.setText(driver.getFullName() + " driver files missing.\n\n" +
             "According to vendor policy this driver isn't publicly available\nand you have to download it manually from vendor's web site.\n\n" +
-            "After successful driver download you will need to add JAR files in DBeaver libraries list.");
+            "After successful driver download you will need to <a>add JAR files</a> in DBeaver libraries list.");
+        infoText.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                getWizard().getContainer().buttonPressed(DriverDownloadDialog.EDIT_DRIVER_BUTTON_ID);
+            }
+        });
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         infoText.setLayoutData(gd);
 
@@ -94,6 +101,8 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         UIUtils.packColumns(filesTable, true);
 
         createLinksPanel(composite);
+
+        composite.setTabList(ArrayUtils.remove(Control.class, composite.getTabList(), infoText));
 
         setControl(composite);
     }
