@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016 Karl Griesser ()
+ * Copyright (C) 2016 Karl Griesser (fullref@gmail.com)
  * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -37,18 +37,16 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.Types;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Exasol data types
- * 
+ *
  * @author Karl Griesser
  */
 public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataType, DBPQualifiedObject {
 
 
-	private static final Log LOG = Log.getLog(ExasolDataType.class);
+    private static final Log LOG = Log.getLog(ExasolDataType.class);
 
 
     private DBSObject parentNode; // see below
@@ -65,115 +63,110 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     private Integer scale;
 
     private ExasolDataSource exasolDataSource;
-    
-    private String name; 
+
+    private String name;
 
 
     // -----------------------
     // Constructors
     // -----------------------
     protected ExasolDataType(DBSObject parent, String name, boolean persisted) {
-		super(parent, name, persisted);
+        super(parent, name, persisted);
         exasolDataSource = (ExasolDataSource) parent.getDataSource();
 
-	}
+    }
 
-    public ExasolDataType(DBSObject owner, ResultSet dbResult) throws DBException
-    {
-    	super(owner, JDBCUtils.safeGetString(dbResult, "TYPE_NAME"), true);
-    	this.exasolDataSource = ((ExasolDataSource) owner).getDataSource();
-    	
-    	this.exasolTypeId = JDBCUtils.safeGetInteger(dbResult, "TYPE_ID");
-    	this.length = JDBCUtils.safeGetInteger(dbResult, "PRECISION");
-    	this.scale = JDBCUtils.safeGetInteger(dbResult, "MINIMUM_SCALE");
-    	
-    	TypeDesc tempTypeDesc = null;
-    	this.name = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
-    	switch (name) {
-    	case "BIGINT":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.BIGINT, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-    		break;
-    	case "INTEGER":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-    		break;
-    		
-    	case "DECIMAL":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-    		break;
-    		
-    	case "DOUBLE PRECISION":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-    		break;
-    	case "FLOAT":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.FLOAT, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-    		break;
-    	case "INTERVAL DAY TO SECOND":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-    		break;
-    	case "INTERVAL YEAR TO MONTH":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-    		break;
-    		
-    	case "SMALLINT":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.SMALLINT, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-    		break;
-    	case "TINYINT":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.TINYINT, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-    		break;
-    	case "GEOMETRY":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-    		break;
-    	case "BOOLEAN":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.BOOLEAN, Types.BOOLEAN, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-    		break;
-    	case "CHAR":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.CHAR, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-    		break;
-    	case "VARCHAR":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-    		break;
-    	case "LONG VARCHAR":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.LONGNVARCHAR, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-			break;
-    	case "DATE":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, Types.DATE, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-			break;
-    	case "TIMESTAMP":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-			break;
-    	case "TIMESTAMP WITH LOCAL TIME ZONE":
-    		tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP_WITH_TIMEZONE, JDBCUtils.safeGetInt(dbResult, "PRECISION"), JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE"), JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE"), JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
-			break;
-		default:
-			LOG.error("DataType '" + name + "' is unknown to DBeaver" );
-    	}
-    	
-    	this.typeDesc = tempTypeDesc;
-    	
-    	
+    public ExasolDataType(DBSObject owner, ResultSet dbResult) throws DBException {
+        super(owner, JDBCUtils.safeGetString(dbResult, "TYPE_NAME"), true);
+        this.exasolDataSource = ((ExasolDataSource) owner).getDataSource();
+
+        this.exasolTypeId = JDBCUtils.safeGetInteger(dbResult, "TYPE_ID");
+        this.length = JDBCUtils.safeGetInteger(dbResult, "PRECISION");
+        this.scale = JDBCUtils.safeGetInteger(dbResult, "MINIMUM_SCALE");
+
+        TypeDesc tempTypeDesc = null;
+        String typeName = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
+        int precision = JDBCUtils.safeGetInt(dbResult, "PRECISION");
+        int minimumScale = JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE");
+        int maximumScale = JDBCUtils.safeGetInt(dbResult, "MAXIMUM_SCALE");
+
+        this.name = typeName;
+        switch (name) {
+            case "BIGINT":
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.BIGINT, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "INTEGER":
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "DECIMAL":
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "DOUBLE PRECISION":
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "FLOAT":
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.FLOAT, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "INTERVAL DAY TO SECOND":
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "INTERVAL YEAR TO MONTH":
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "SMALLINT":
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.SMALLINT, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "TINYINT":
+                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.TINYINT, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "GEOMETRY":
+                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "BOOLEAN":
+                tempTypeDesc = new TypeDesc(DBPDataKind.BOOLEAN, Types.BOOLEAN, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "CHAR":
+                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.CHAR, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "VARCHAR":
+                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "LONG VARCHAR":
+                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.LONGNVARCHAR, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "DATE":
+                tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, Types.DATE, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "TIMESTAMP":
+                tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, precision, minimumScale, maximumScale, typeName);
+                break;
+            case "TIMESTAMP WITH LOCAL TIME ZONE":
+                tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, 2014, precision, minimumScale, maximumScale, typeName);
+                break;
+            default:
+                LOG.error("DataType '" + name + "' is unknown to DBeaver");
+        }
+
+        this.typeDesc = tempTypeDesc;
     }
 
     @Override
-    public DBSObject getParentObject()
-    {
+    public DBSObject getParentObject() {
         return parentNode;
     }
 
     @Override
-    public String getTypeName()
-    {
+    public String getTypeName() {
         return name;
     }
 
 
-    public int getEquivalentSqlType()
-    {
+    public int getEquivalentSqlType() {
         return typeDesc.sqlType;
     }
 
     @Override
-    public int getPrecision()
-    {
+    public int getPrecision() {
         if (typeDesc.precision != null) {
             return typeDesc.precision;
         } else {
@@ -184,14 +177,12 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
 
     @Nullable
     @Override
-    public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBCException
-    {
+    public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBCException {
         return null;
     }
 
     @Override
-    public int getMinScale()
-    {
+    public int getMinScale() {
         if (typeDesc.minScale != null) {
             return typeDesc.minScale;
         } else {
@@ -200,8 +191,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     }
 
     @Override
-    public int getMaxScale()
-    {
+    public int getMaxScale() {
         if (typeDesc.maxScale != null) {
             return typeDesc.maxScale;
         } else {
@@ -221,61 +211,52 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     @NotNull
     @Override
     @Property(viewable = true, editable = false, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
     @Property(viewable = true, editable = false, order = 2)
-    public ExasolSchema getSchema()
-    {
+    public ExasolSchema getSchema() {
         return exasolSchema;
     }
 
 
     @Override
     @Property(viewable = true, editable = false, order = 4)
-    public DBPDataKind getDataKind()
-    {
+    public DBPDataKind getDataKind() {
         return typeDesc == null ? DBPDataKind.UNKNOWN : typeDesc.dataKind;
     }
 
 
     @Override
     @Property(viewable = true, editable = false, order = 5)
-    public long getMaxLength()
-    {
+    public long getMaxLength() {
         return length;
     }
 
     @Override
     @Property(viewable = true, editable = false, order = 6)
-    public int getScale()
-    {
+    public int getScale() {
         return scale;
     }
 
     @Override
     @Property(viewable = false, editable = false, order = 10)
-    public int getTypeID()
-    {
+    public int getTypeID() {
         return typeDesc.sqlType;
     }
 
     @Property(viewable = false, editable = false, order = 11)
-    public Integer getExasolTypeId()
-    {
+    public Integer getExasolTypeId() {
         return exasolTypeId;
     }
 
     @Nullable
     @Override
     @Property(viewable = false, editable = false)
-    public String getDescription()
-    {
+    public String getDescription() {
         return null;
     }
-
 
 
     // --------------
@@ -289,9 +270,8 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
         private final Integer maxScale;
         private final String name;
 
-        private TypeDesc(DBPDataKind dataKind, Integer sqlType, Integer precision, Integer minScale, Integer maxScale, String name)
-        {
-        	this.name = name;
+        private TypeDesc(DBPDataKind dataKind, Integer sqlType, Integer precision, Integer minScale, Integer maxScale, String name) {
+            this.name = name;
             this.dataKind = dataKind;
             this.sqlType = sqlType;
             this.precision = precision;
@@ -301,22 +281,22 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     }
 
 
-	@Override
-	public boolean isPersisted() {
-		return true;
-	}
+    @Override
+    public boolean isPersisted() {
+        return true;
+    }
 
 
-	@Override
-	public Object geTypeExtension() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Object geTypeExtension() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public String getFullyQualifiedName(DBPEvaluationContext context) {
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return name;
-	}
-	
+    }
+
 
 }

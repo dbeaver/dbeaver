@@ -1,3 +1,21 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License (version 2)
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
 import org.jkiss.code.Nullable;
@@ -21,9 +39,8 @@ import java.util.List;
 
 /**
  * Exasol Table Column Manager
- * 
+ *
  * @author Karl Griesser
- * 
  */
 public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableColumn, ExasolTableBase> implements DBEObjectRenamer<ExasolTableColumn> {
 
@@ -40,14 +57,12 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     // -----------------
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, ExasolTableColumn> getObjectsCache(ExasolTableColumn object)
-    {
+    public DBSObjectCache<? extends DBSObject, ExasolTableColumn> getObjectsCache(ExasolTableColumn object) {
         return object.getParentObject().getContainer().getTableCache().getChildrenCache((ExasolTable) object.getParentObject());
     }
 
     @Override
-    public boolean canEditObject(ExasolTableColumn object)
-    {
+    public boolean canEditObject(ExasolTableColumn object) {
         // Edit is only availabe for ExasolTable and not for other kinds of tables (View, MQTs, Nicknames..)
         ExasolTableBase exasolTableBase = object.getParentObject();
         if ((exasolTableBase != null) & (exasolTableBase.getClass().equals(ExasolTable.class))) {
@@ -63,8 +78,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
 
     @Override
     protected ExasolTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, ExasolTableBase parent,
-                                                  Object copyFrom)
-    {
+                                                     Object copyFrom) {
         ExasolTableColumn column = new ExasolTableColumn(parent);
         column.setName(getNewColumnName(monitor, context, parent));
         return column;
@@ -74,16 +88,14 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     // Alter
     // -----
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
-    {
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command) {
         ExasolTableColumn exasolColumn = command.getObject();
 
         if (!command.getProperties().isEmpty()) {
-        	final String deltaSQL = exasolColumn.getName() +  " " + exasolColumn.getFormatType() 
-        		+ " " + (exasolColumn.getDefaultValue() == null ? "" : " DEFAULT " + exasolColumn.getDefaultValue()) 
-        		+ " " + (exasolColumn.isIdentity() ? " IDENTITY " + exasolColumn.getIdentityValue().toString() : "") 
-        		+ " " + (exasolColumn.isRequired() ? "NOT NULL" : "NULL") 
-        		; 
+            final String deltaSQL = exasolColumn.getName() + " " + exasolColumn.getFormatType()
+                + " " + (exasolColumn.getDefaultValue() == null ? "" : " DEFAULT " + exasolColumn.getDefaultValue())
+                + " " + (exasolColumn.isIdentity() ? " IDENTITY " + exasolColumn.getIdentityValue().toString() : "")
+                + " " + (exasolColumn.isRequired() ? "NOT NULL" : "NULL");
             if (!deltaSQL.isEmpty()) {
                 String sqlAlterColumn = String.format(SQL_ALTER, exasolColumn.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL), deltaSQL);
                 actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sqlAlterColumn));
@@ -101,8 +113,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     // -------
     // Helpers
     // -------
-    private DBEPersistAction buildCommentAction(ExasolTableColumn exasolColumn)
-    {
+    private DBEPersistAction buildCommentAction(ExasolTableColumn exasolColumn) {
         if (CommonUtils.isNotEmpty(exasolColumn.getDescription())) {
             String tableName = exasolColumn.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
             String columnName = exasolColumn.getName();
@@ -121,15 +132,15 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     }
 
     @Override
-    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command)
-    {
+    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command) {
         final ExasolTableColumn column = command.getObject();
 
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename column",
                 "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " RENAME COLUMN " +
-                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO " + command.getNewName())
+                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO " +
+                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName()))
         );
     }
 }

@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -609,6 +608,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return getProviderDescriptor().isDriversManagable();
     }
 
+    @Override
     public boolean isInternalDriver()
     {
         return
@@ -840,7 +840,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 }
     
                 // Create driver instance
-                if (!this.isInternalDriver()) {
+                /*if (!this.isInternalDriver())*/ {
                     driverInstance = createDriverInstance();
                 }
     

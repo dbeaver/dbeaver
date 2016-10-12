@@ -17,18 +17,20 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
-
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * DriverPropertiesDialogPage
@@ -60,40 +62,47 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     {
         // Set props model
         if (propsControl != null) {
-            // Load properties in job
-            DBeaverUI.runUIJob("Refresh driver properties", 250, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    refreshDriverProperties();
-                }
-            });
-        }
-    }
+            final DBPDataSourceContainer activeDataSource = site.getActiveDataSource();
+            if (prevConnectionInfo == activeDataSource.getConnectionConfiguration()) {
+                return;
+            }
 
-    protected void refreshDriverProperties()
-    {
-        DBPDataSourceContainer activeDataSource = site.getActiveDataSource();
-        if (prevConnectionInfo == activeDataSource.getConnectionConfiguration()) {
-            return;
-        }
-        DBPConnectionConfiguration tmpConnectionInfo = new DBPConnectionConfiguration();
-        DataSourceDescriptor tempDataSource = new DataSourceDescriptor(
-            site.getDataSourceRegistry(),
-            activeDataSource.getId(),
-            (DriverDescriptor) activeDataSource.getDriver(),
-            tmpConnectionInfo);
-        try {
+            final DBPConnectionConfiguration tmpConnectionInfo = new DBPConnectionConfiguration();
+            final DataSourceDescriptor tempDataSource = new DataSourceDescriptor(
+                site.getDataSourceRegistry(),
+                activeDataSource.getId(),
+                (DriverDescriptor) activeDataSource.getDriver(),
+                tmpConnectionInfo);
+
             hostPage.saveSettings(tempDataSource);
             tmpConnectionInfo.getProperties().putAll(activeDataSource.getConnectionConfiguration().getProperties());
-            propertySource = propsControl.makeProperties(
-                site.getRunnableContext(),
-                site.getDriver(),
-                tmpConnectionInfo);
-            propsControl.loadProperties(propertySource);
-            prevConnectionInfo = activeDataSource.getConnectionConfiguration();
-        } finally {
-            tempDataSource.dispose();
+
+            // Load properties in job
+            AbstractJob propsLoadJob = new AbstractJob("Refresh driver properties") {
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    propertySource = propsControl.makeProperties(
+                        site.getRunnableContext(),
+                        site.getDriver(),
+                        tmpConnectionInfo);
+                    return Status.OK_STATUS;
+                }
+            };
+            propsLoadJob.schedule();
+            propsLoadJob.addJobChangeListener(new JobChangeAdapter() {
+                @Override
+                public void done(IJobChangeEvent event) {
+                    DBeaverUI.syncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            propsControl.loadProperties(propertySource);
+                            prevConnectionInfo = activeDataSource.getConnectionConfiguration();
+
+                            tempDataSource.dispose();
+                        }
+                    });
+                }
+            });
         }
     }
 
