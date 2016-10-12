@@ -44,9 +44,9 @@ public class JDBCSQLDialect extends BasicSQLDialect {
 
     private static final Log log = Log.getLog(JDBCSQLDialect.class);
 
-    protected static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
-    protected static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_DATE_FORMAT);
-    protected static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIME_FORMAT);
+    protected static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_FORMAT + "''");
+    protected static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_DATE_FORMAT + "''");
+    protected static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_FORMAT + "''");
 
     private String name;
     private String identifierQuoteString;
@@ -176,7 +176,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
                     (metaData.supportsSchemasInPrivilegeDefinitions() ? SQLDialect.USAGE_PRIV : 0);
         } catch (SQLException e) {
             log.debug(e.getMessage());
-            schemaUsage = SQLDialect.USAGE_NONE;
+            schemaUsage = SQLDialect.USAGE_DDL | SQLDialect.USAGE_DML;
         }
         try {
             validCharacters = metaData.getExtraNameCharacters();

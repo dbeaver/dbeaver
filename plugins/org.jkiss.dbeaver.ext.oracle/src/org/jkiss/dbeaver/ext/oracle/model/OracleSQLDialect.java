@@ -26,6 +26,7 @@ import org.jkiss.utils.time.ExtendedDateFormat;
 
 import java.sql.Types;
 import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 /**
@@ -35,8 +36,9 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
     public static final String[] EXEC_KEYWORDS = new String[]{ "call" };
 
-    // Oracle uses microseconds precision
-    protected static final ExtendedDateFormat DEFAULT_DATETIME_FORMAT = new ExtendedDateFormat("yyyy-MM-dd HH:mm:ss.ffffff");
+    private static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new ExtendedDateFormat("'TIMESTAMP '''yyyy-MM-dd HH:mm:ss.ffffff''");
+    private static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("'DATE '''yyyy-MM-dd''");
+    private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("'TIME '''HH:mm:ss.SSS''");
 
     public OracleSQLDialect(JDBCDatabaseMetaData metaData) {
         super("Oracle", metaData);
@@ -295,9 +297,16 @@ class OracleSQLDialect extends JDBCSQLDialect {
     public Format getNativeValueFormat(DBSTypedObject type) {
         switch (type.getTypeID()) {
             case Types.TIMESTAMP:
+                return DEFAULT_DATETIME_FORMAT;
             case Types.TIMESTAMP_WITH_TIMEZONE:
             case -102: // TIMESTAMP_WITH_LOCAL_TIMEZONE
                 return DEFAULT_DATETIME_FORMAT;
+            case Types.TIME:
+                return DEFAULT_TIME_FORMAT;
+            case Types.TIME_WITH_TIMEZONE:
+                return DEFAULT_TIME_FORMAT;
+            case Types.DATE:
+                return DEFAULT_DATE_FORMAT;
         }
         return super.getNativeValueFormat(type);
     }
