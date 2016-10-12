@@ -299,6 +299,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
             case Types.TIMESTAMP:
                 return DEFAULT_DATETIME_FORMAT;
             case Types.TIMESTAMP_WITH_TIMEZONE:
+            case -101: // TIMESTAMP_WITH_TIMEZONE
             case -102: // TIMESTAMP_WITH_LOCAL_TIMEZONE
                 return DEFAULT_DATETIME_FORMAT;
             case Types.TIME:
