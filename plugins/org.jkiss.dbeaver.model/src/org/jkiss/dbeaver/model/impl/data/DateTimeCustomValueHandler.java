@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -36,6 +38,8 @@ import java.util.Date;
 public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
 
     protected static final Log log = Log.getLog(DateTimeCustomValueHandler.class);
+
+    private static final SimpleDateFormat DEFAULT_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
     private DBDDataFormatterProfile formatterProfile;
     protected DBDDataFormatter formatter;
@@ -80,6 +84,10 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
+        if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
+            return DEFAULT_FORMAT.format(value);
+        }
+
         if (value == null) {
             return super.getValueDisplayString(column, null, format);
         }
