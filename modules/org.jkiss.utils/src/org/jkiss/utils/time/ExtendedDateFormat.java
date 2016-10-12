@@ -18,6 +18,7 @@ package org.jkiss.utils.time;
 
 import java.sql.Timestamp;
 import java.text.FieldPosition;
+import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -138,7 +139,10 @@ public class ExtendedDateFormat extends SimpleDateFormat {
                 }
                 char c = text.charAt(digitPos);
                 if (!Character.isDigit(c)) {
-                    throw new IllegalArgumentException("Invalid nanosecond character at pos " + digitPos + ": " + c);
+                    pos.setErrorIndex(index);
+                    pos.setIndex(index);
+                    //throw new ParseException("Invalid nanosecond character at pos " + digitPos + ": " + c, index);
+                    return null;
                 }
                 long digit = ((int)c - (int)'0');
                 for (int k = MAX_NANO_LENGTH - i; k > 0; k--) {

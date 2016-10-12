@@ -43,9 +43,10 @@ import java.util.*;
 public class JDBCSQLDialect extends BasicSQLDialect {
 
     private static final Log log = Log.getLog(JDBCSQLDialect.class);
-    private static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
-    private static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_DATE_FORMAT);
-    private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIME_FORMAT);
+
+    protected static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
+    protected static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_DATE_FORMAT);
+    protected static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIME_FORMAT);
 
     private String name;
     private String identifierQuoteString;
@@ -316,7 +317,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
             case Types.TIME_WITH_TIMEZONE:
                 return DEFAULT_TIME_FORMAT;
             case Types.DATE:
-                return DEFAULT_TIME_FORMAT;
+                return DEFAULT_DATE_FORMAT;
         }
         return super.getNativeValueFormat(type);
     }

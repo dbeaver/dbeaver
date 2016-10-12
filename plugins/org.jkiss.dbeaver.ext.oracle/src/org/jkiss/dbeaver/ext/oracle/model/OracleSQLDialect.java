@@ -18,9 +18,14 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.time.ExtendedDateFormat;
 
+import java.sql.Types;
+import java.text.Format;
 import java.util.Arrays;
 
 /**
@@ -29,6 +34,9 @@ import java.util.Arrays;
 class OracleSQLDialect extends JDBCSQLDialect {
 
     public static final String[] EXEC_KEYWORDS = new String[]{ "call" };
+
+    // Oracle uses microseconds precision
+    protected static final ExtendedDateFormat DEFAULT_DATETIME_FORMAT = new ExtendedDateFormat("yyyy-MM-dd HH:mm:ss.ffffff");
 
     public OracleSQLDialect(JDBCDatabaseMetaData metaData) {
         super("Oracle", metaData);
@@ -281,4 +289,17 @@ class OracleSQLDialect extends JDBCSQLDialect {
     public boolean isDelimiterAfterBlock() {
         return true;
     }
+
+    @Nullable
+    @Override
+    public Format getNativeValueFormat(DBSTypedObject type) {
+        switch (type.getTypeID()) {
+            case Types.TIMESTAMP:
+            case Types.TIMESTAMP_WITH_TIMEZONE:
+            case -102: // TIMESTAMP_WITH_LOCAL_TIMEZONE
+                return DEFAULT_DATETIME_FORMAT;
+        }
+        return super.getNativeValueFormat(type);
+    }
+
 }
