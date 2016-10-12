@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tools.transfer.stream.impl;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -64,7 +65,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
         printTableName = CommonUtils.getBoolean(site.getProperties().get(PROP_PRINT_TABLE_NAME), true);
 
         TimeZone tz = TimeZone.getTimeZone("UTC");
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+        dateFormat = new SimpleDateFormat(DBConstants.DEFAULT_ISO_TIMESTAMP_FORMAT);
         dateFormat.setTimeZone(tz);
     }
 

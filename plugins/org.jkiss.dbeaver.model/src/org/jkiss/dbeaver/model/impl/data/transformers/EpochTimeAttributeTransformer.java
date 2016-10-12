@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -46,7 +47,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
     private static final Log log = Log.getLog(EpochTimeAttributeTransformer.class);
     private static final String PROP_UNIT = "unit";
 
-    private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+    private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT, Locale.ENGLISH);
 
     enum EpochUnit {
         seconds,

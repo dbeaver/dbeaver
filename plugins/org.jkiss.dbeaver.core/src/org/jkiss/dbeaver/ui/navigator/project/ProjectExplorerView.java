@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
@@ -155,7 +156,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
             }
         }));
         columnController.addColumn("Modified", "Time the file was last modified", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
-            private SimpleDateFormat sdf = new SimpleDateFormat(UIUtils.DEFAULT_TIMESTAMP_PATTERN);
+            private SimpleDateFormat sdf = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
             @Override
             public String getText(Object element) {
