@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -34,7 +36,9 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
 import java.sql.Types;
+import java.text.Format;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -42,9 +46,13 @@ import java.util.Date;
  */
 public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
 
-    public JDBCDateTimeValueHandler(DBPDataSource dataSource, DBDDataFormatterProfile formatterProfile)
+    protected static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_FORMAT + "''");
+    protected static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_DATE_FORMAT + "''");
+    protected static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_FORMAT + "''");
+
+    public JDBCDateTimeValueHandler(DBDDataFormatterProfile formatterProfile)
     {
-        super(dataSource, formatterProfile);
+        super(formatterProfile);
     }
 
     @Override
@@ -109,6 +117,36 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
         catch (SQLException e) {
             throw new DBCException(ModelMessages.model_jdbc_exception_could_not_bind_statement_parameter, e);
         }
+    }
+
+    @NotNull
+    @Override
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
+    {
+        if (format == DBDDisplayFormat.NATIVE) {
+            Format nativeFormat = getNativeValueFormat(column);
+            if (nativeFormat != null) {
+                return nativeFormat.format(value);
+            }
+        }
+        return super.getValueDisplayString(column, value, format);
+    }
+
+    @Nullable
+    protected Format getNativeValueFormat(DBSTypedObject type) {
+        switch (type.getTypeID()) {
+            case Types.TIMESTAMP:
+                return DEFAULT_DATETIME_FORMAT;
+            case Types.TIMESTAMP_WITH_TIMEZONE:
+                return DEFAULT_DATETIME_FORMAT;
+            case Types.TIME:
+                return DEFAULT_TIME_FORMAT;
+            case Types.TIME_WITH_TIMEZONE:
+                return DEFAULT_TIME_FORMAT;
+            case Types.DATE:
+                return DEFAULT_DATE_FORMAT;
+        }
+        return null;
     }
 
     @NotNull

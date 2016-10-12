@@ -17,24 +17,22 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
-import java.text.Format;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -43,10 +41,6 @@ import java.util.*;
 public class JDBCSQLDialect extends BasicSQLDialect {
 
     private static final Log log = Log.getLog(JDBCSQLDialect.class);
-
-    protected static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_FORMAT + "''");
-    protected static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_DATE_FORMAT + "''");
-    protected static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_FORMAT + "''");
 
     private String name;
     private String identifierQuoteString;
@@ -302,24 +296,6 @@ public class JDBCSQLDialect extends BasicSQLDialect {
     public boolean supportsSubqueries()
     {
         return supportsSubqueries;
-    }
-
-    @Nullable
-    @Override
-    public Format getNativeValueFormat(DBSTypedObject type) {
-        switch (type.getTypeID()) {
-            case Types.TIMESTAMP:
-                return DEFAULT_DATETIME_FORMAT;
-            case Types.TIMESTAMP_WITH_TIMEZONE:
-                return DEFAULT_DATETIME_FORMAT;
-            case Types.TIME:
-                return DEFAULT_TIME_FORMAT;
-            case Types.TIME_WITH_TIMEZONE:
-                return DEFAULT_TIME_FORMAT;
-            case Types.DATE:
-                return DEFAULT_DATE_FORMAT;
-        }
-        return super.getNativeValueFormat(type);
     }
 
     public void setSupportsSubqueries(boolean supportsSubqueries)

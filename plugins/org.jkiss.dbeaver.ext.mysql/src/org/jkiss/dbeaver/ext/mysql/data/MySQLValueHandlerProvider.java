@@ -35,7 +35,7 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
         if (typedObject.getDataKind() == DBPDataKind.DATETIME) {
-            return new MySQLDateTimeValueHandler(dataSource, preferences.getDataFormatterProfile());
+            return new MySQLDateTimeValueHandler(preferences.getDataFormatterProfile());
         } else {
             return null;
         }

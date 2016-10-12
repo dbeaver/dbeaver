@@ -25,10 +25,8 @@ import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.Pair;
 
-import java.text.Format;
 import java.util.List;
 import java.util.Set;
 
@@ -260,8 +258,5 @@ public interface SQLDialect {
 
     @NotNull
     DBDBinaryFormatter getNativeBinaryFormatter();
-
-    @Nullable
-    Format getNativeValueFormat(DBSTypedObject type);
 
 }
