@@ -44,7 +44,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
         this.updateVersion = updateVersion;
         this.forceDownload = forceDownload;
         setWindowTitle(updateVersion ? "Update driver files" : "Setup driver files");
-        setNeedsProgressMonitor(hasPredefinedFiles());
+        setNeedsProgressMonitor(isAutoDownloadWizard());
         loadSettings();
     }
 
@@ -68,6 +68,10 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
         return updateVersion;
     }
 
+    public DriverDownloadDialog getContainer() {
+        return (DriverDownloadDialog)super.getContainer();
+    }
+
     private void loadSettings()
     {
         IDialogSettings section = UIUtils.getDialogSettings(DRIVER_DOWNLOAD_DIALOG_SETTINGS);
@@ -77,7 +81,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
     @Override
     public void addPages() {
         super.addPages();
-        if (hasPredefinedFiles()) {
+        if (isAutoDownloadWizard()) {
             downloadPage = new DriverDownloadAutoPage();
         } else {
             downloadPage = new DriverDownloadManualPage();
@@ -92,7 +96,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
     @Override
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
         setWindowTitle("Driver settings");
-        setNeedsProgressMonitor(hasPredefinedFiles());
+        setNeedsProgressMonitor(isAutoDownloadWizard());
         setHelpAvailable(false);
     }
 
@@ -108,14 +112,14 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
     }
 
     public String getFinishText() {
-        if (hasPredefinedFiles()) {
+        if (isAutoDownloadWizard()) {
             return "Download";
         } else {
             return "Open Download Page";
         }
     }
 
-    private boolean hasPredefinedFiles() {
+    public boolean isAutoDownloadWizard() {
         return CommonUtils.isEmpty(getDriver().getDriverFileSources());
     }
 
