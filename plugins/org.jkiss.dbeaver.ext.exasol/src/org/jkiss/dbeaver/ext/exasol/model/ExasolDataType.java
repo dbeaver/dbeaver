@@ -141,7 +141,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
                 tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, precision, minimumScale, maximumScale, typeName);
                 break;
             case "TIMESTAMP WITH LOCAL TIME ZONE":
-                tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, 2014, precision, minimumScale, maximumScale, typeName);
+                tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP_WITH_TIMEZONE, precision, minimumScale, maximumScale, typeName);
                 break;
             default:
                 LOG.error("DataType '" + name + "' is unknown to DBeaver");

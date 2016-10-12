@@ -20,14 +20,18 @@ package org.jkiss.dbeaver.model.impl.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -41,11 +45,13 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
 
     private static final SimpleDateFormat DEFAULT_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
-    private DBDDataFormatterProfile formatterProfile;
+    private final DBPDataSource dataSource;
+    private final DBDDataFormatterProfile formatterProfile;
     protected DBDDataFormatter formatter;
 
-    public DateTimeCustomValueHandler(DBDDataFormatterProfile formatterProfile)
+    public DateTimeCustomValueHandler(DBPDataSource dataSource, DBDDataFormatterProfile formatterProfile)
     {
+        this.dataSource = dataSource;
         this.formatterProfile = formatterProfile;
     }
 
@@ -85,7 +91,18 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
         if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
-            return DEFAULT_FORMAT.format(value);
+            String strValue = null;
+            if (dataSource instanceof SQLDataSource) {
+                SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
+                Format nativeFormat = sqlDialect.getNativeValueFormat(column);
+                if (nativeFormat != null) {
+                    strValue = nativeFormat.format(value);
+                }
+            }
+            if (strValue == null) {
+                strValue = DEFAULT_FORMAT.format(value);
+            }
+            return "'" + strValue + "'";
         }
 
         if (value == null) {
