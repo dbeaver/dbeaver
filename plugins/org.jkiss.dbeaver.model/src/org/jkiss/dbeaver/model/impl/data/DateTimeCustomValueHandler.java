@@ -91,18 +91,13 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
         if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
-            String strValue = null;
             if (dataSource instanceof SQLDataSource) {
-                SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
-                Format nativeFormat = sqlDialect.getNativeValueFormat(column);
+                Format nativeFormat = ((SQLDataSource) dataSource).getSQLDialect().getNativeValueFormat(column);
                 if (nativeFormat != null) {
-                    strValue = nativeFormat.format(value);
+                    return nativeFormat.format(value);
                 }
             }
-            if (strValue == null) {
-                strValue = DEFAULT_FORMAT.format(value);
-            }
-            return "'" + strValue + "'";
+            return DEFAULT_FORMAT.format(value);
         }
 
         if (value == null) {

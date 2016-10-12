@@ -17,14 +17,9 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-
-import java.sql.Types;
 
 /**
  * Object type support
@@ -36,23 +31,4 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
         super(dataSource, formatterProfile);
     }
 
-    @NotNull
-    @Override
-    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-        String dtString = super.getValueDisplayString(column, value, format);
-        if (format == DBDDisplayFormat.NATIVE) {
-            switch (column.getTypeID()) {
-                case Types.TIMESTAMP:
-                case Types.TIMESTAMP_WITH_TIMEZONE:
-                case -102: // TIMESTAMP_WITH_LOCAL_TIMEZONE
-                    return "TIMESTAMP " + dtString;
-                case Types.TIME:
-                case Types.TIME_WITH_TIMEZONE:
-                    return "TIME " + dtString;
-                case Types.DATE:
-                    return "DATE " + dtString;
-            }
-        }
-        return dtString;
-    }
 }
