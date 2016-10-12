@@ -18,15 +18,9 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.utils.time.ExtendedDateFormat;
 
-import java.sql.Types;
-import java.text.Format;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 /**
@@ -35,10 +29,6 @@ import java.util.Arrays;
 class OracleSQLDialect extends JDBCSQLDialect {
 
     public static final String[] EXEC_KEYWORDS = new String[]{ "call" };
-
-    private static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new ExtendedDateFormat("'TIMESTAMP '''yyyy-MM-dd HH:mm:ss.ffffff''");
-    private static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("'DATE '''yyyy-MM-dd''");
-    private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("'TIME '''HH:mm:ss.SSS''");
 
     public OracleSQLDialect(JDBCDatabaseMetaData metaData) {
         super("Oracle", metaData);
@@ -290,26 +280,6 @@ class OracleSQLDialect extends JDBCSQLDialect {
     @Override
     public boolean isDelimiterAfterBlock() {
         return true;
-    }
-
-    @Nullable
-    @Override
-    public Format getNativeValueFormat(DBSTypedObject type) {
-        switch (type.getTypeID()) {
-            case Types.TIMESTAMP:
-                return DEFAULT_DATETIME_FORMAT;
-            case Types.TIMESTAMP_WITH_TIMEZONE:
-            case -101: // TIMESTAMP_WITH_TIMEZONE
-            case -102: // TIMESTAMP_WITH_LOCAL_TIMEZONE
-                return DEFAULT_DATETIME_FORMAT;
-            case Types.TIME:
-                return DEFAULT_TIME_FORMAT;
-            case Types.TIME_WITH_TIMEZONE:
-                return DEFAULT_TIME_FORMAT;
-            case Types.DATE:
-                return DEFAULT_DATE_FORMAT;
-        }
-        return super.getNativeValueFormat(type);
     }
 
 }

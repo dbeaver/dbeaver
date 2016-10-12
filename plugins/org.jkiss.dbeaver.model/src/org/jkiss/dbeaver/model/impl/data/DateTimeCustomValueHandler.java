@@ -19,21 +19,15 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-import java.text.Format;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -43,15 +37,11 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
 
     protected static final Log log = Log.getLog(DateTimeCustomValueHandler.class);
 
-    private static final SimpleDateFormat DEFAULT_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
-
-    private final DBPDataSource dataSource;
     private final DBDDataFormatterProfile formatterProfile;
     protected DBDDataFormatter formatter;
 
-    public DateTimeCustomValueHandler(DBPDataSource dataSource, DBDDataFormatterProfile formatterProfile)
+    public DateTimeCustomValueHandler(DBDDataFormatterProfile formatterProfile)
     {
-        this.dataSource = dataSource;
         this.formatterProfile = formatterProfile;
     }
 
@@ -76,7 +66,7 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
                     Date result = new Date(strValue);
                     return result;
                 } catch (Exception e1) {
-                    log.debug("Can't parse string value [" + strValue + "] to date/time value", e);
+                    //log.debug("Can't parse string value [" + strValue + "] to date/time value", e);
                     return null;
                 }
             }
@@ -90,16 +80,6 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
-        if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
-            if (dataSource instanceof SQLDataSource) {
-                Format nativeFormat = ((SQLDataSource) dataSource).getSQLDialect().getNativeValueFormat(column);
-                if (nativeFormat != null) {
-                    return nativeFormat.format(value);
-                }
-            }
-            return DEFAULT_FORMAT.format(value);
-        }
-
         if (value == null) {
             return super.getValueDisplayString(column, null, format);
         }

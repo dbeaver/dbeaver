@@ -47,7 +47,7 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
             case NUMERIC:
                 return new JDBCNumberValueHandler(preferences.getDataFormatterProfile());
             case DATETIME:
-                return new JDBCDateTimeValueHandler(dataSource, preferences.getDataFormatterProfile());
+                return new JDBCDateTimeValueHandler(preferences.getDataFormatterProfile());
             case BINARY:
             case CONTENT:
                 return JDBCContentValueHandler.INSTANCE;

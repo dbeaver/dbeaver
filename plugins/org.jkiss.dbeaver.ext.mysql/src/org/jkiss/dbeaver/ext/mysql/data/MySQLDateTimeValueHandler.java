@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.data;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 
@@ -26,9 +25,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
  */
 public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
 
-    public MySQLDateTimeValueHandler(DBPDataSource dataSource, DBDDataFormatterProfile formatterProfile)
+    public MySQLDateTimeValueHandler(DBDDataFormatterProfile formatterProfile)
     {
-        super(dataSource, formatterProfile);
+        super(formatterProfile);
     }
 
 }

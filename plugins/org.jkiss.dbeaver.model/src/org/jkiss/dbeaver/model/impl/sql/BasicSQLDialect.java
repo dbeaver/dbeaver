@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.model.impl.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
@@ -28,11 +30,9 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.Pair;
 
-import java.text.*;
 import java.util.*;
 
 /**
@@ -42,7 +42,6 @@ public class BasicSQLDialect implements SQLDialect {
 
     private static final String[] DEFAULT_LINE_COMMENTS = {SQLConstants.SL_COMMENT};
     private static final String[] EXEC_KEYWORDS = new String[0];
-    private static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
@@ -350,15 +349,6 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public DBDBinaryFormatter getNativeBinaryFormatter() {
         return BinaryFormatterHexNative.INSTANCE;
-    }
-
-    @Nullable
-    @Override
-    public Format getNativeValueFormat(DBSTypedObject type) {
-        if (type.getDataKind() == DBPDataKind.DATETIME) {
-            return DEFAULT_DATETIME_FORMAT;
-        }
-        return null;
     }
 
     @Override
