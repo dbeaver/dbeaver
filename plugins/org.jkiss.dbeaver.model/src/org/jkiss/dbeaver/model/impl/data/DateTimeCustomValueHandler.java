@@ -112,13 +112,4 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
     @NotNull
     protected abstract String getFormatterId(DBSTypedObject column);
 
-    protected static String getTwoDigitValue(int value)
-    {
-        if (value < 10) {
-            return "0" + value;
-        } else {
-            return String.valueOf(value);
-        }
-    }
-
 }
