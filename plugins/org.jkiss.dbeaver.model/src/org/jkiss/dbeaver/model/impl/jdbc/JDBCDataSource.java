@@ -462,7 +462,9 @@ public abstract class JDBCDataSource
                 return DBPDataKind.NUMERIC;
             case Types.DATE:
             case Types.TIME:
+            case Types.TIME_WITH_TIMEZONE:
             case Types.TIMESTAMP:
+            case Types.TIMESTAMP_WITH_TIMEZONE:
                 return DBPDataKind.DATETIME;
             case Types.BINARY:
             case Types.VARBINARY:

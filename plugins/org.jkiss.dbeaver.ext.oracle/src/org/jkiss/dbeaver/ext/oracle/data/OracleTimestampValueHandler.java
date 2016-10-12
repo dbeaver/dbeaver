@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 
@@ -25,9 +26,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
  */
 public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
 
-    public OracleTimestampValueHandler(DBDDataFormatterProfile formatterProfile)
+    public OracleTimestampValueHandler(DBPDataSource dataSource, DBDDataFormatterProfile formatterProfile)
     {
-        super(formatterProfile);
+        super(dataSource, formatterProfile);
     }
 
 }

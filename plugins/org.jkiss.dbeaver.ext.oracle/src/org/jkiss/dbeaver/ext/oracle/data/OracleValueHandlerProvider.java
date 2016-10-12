@@ -40,7 +40,7 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
         } else if (typedObject.getTypeID() == java.sql.Types.STRUCT) {
             return OracleObjectValueHandler.INSTANCE;
         } else if (typeName.contains("TIMESTAMP")) {
-            return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
+            return new OracleTimestampValueHandler(dataSource, preferences.getDataFormatterProfile());
         } else {
             return null;
         }

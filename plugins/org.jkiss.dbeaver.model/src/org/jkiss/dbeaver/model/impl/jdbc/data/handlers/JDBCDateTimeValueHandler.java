@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -33,8 +33,8 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.text.ParseException;
-import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -42,9 +42,9 @@ import java.util.Date;
  */
 public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
 
-    public JDBCDateTimeValueHandler(DBDDataFormatterProfile formatterProfile)
+    public JDBCDateTimeValueHandler(DBPDataSource dataSource, DBDDataFormatterProfile formatterProfile)
     {
-        super(formatterProfile);
+        super(dataSource, formatterProfile);
     }
 
     @Override
@@ -55,9 +55,10 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                 // It seems that some drivers doesn't support reading date/time values with explicit calendar
                 // So let's use simple version
                 switch (type.getTypeID()) {
-                    case java.sql.Types.TIME:
+                    case Types.TIME:
+                    case Types.TIME_WITH_TIMEZONE:
                         return dbResults.getTime(index + 1);
-                    case java.sql.Types.DATE:
+                    case Types.DATE:
                         return dbResults.getDate(index + 1);
                     default:
                         return dbResults.getTimestamp(index + 1);
@@ -92,10 +93,11 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                 dbStat.setNull(index + 1, type.getTypeID());
             } else {
                 switch (type.getTypeID()) {
-                    case java.sql.Types.TIME:
+                    case Types.TIME:
+                    case Types.TIME_WITH_TIMEZONE:
                         dbStat.setTime(index + 1, getTimeValue(value));
                         break;
-                    case java.sql.Types.DATE:
+                    case Types.DATE:
                         dbStat.setDate(index + 1, getDateValue(value));
                         break;
                     default:
@@ -110,40 +112,11 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     }
 
     @NotNull
-    @Override
-    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
-    {
-        if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
-            Calendar cal = Calendar.getInstance();
-            cal.setTime((Date) value);
-            final String hourOfDay = getTwoDigitValue(cal.get(Calendar.HOUR_OF_DAY));
-            final String minutes = getTwoDigitValue(cal.get(Calendar.MINUTE));
-            final String seconds = getTwoDigitValue(cal.get(Calendar.SECOND));
-            final String year = String.valueOf(cal.get(Calendar.YEAR));
-            final String month = getTwoDigitValue(cal.get(Calendar.MONTH) + 1);
-            final String dayOfMonth = getTwoDigitValue(cal.get(Calendar.DAY_OF_MONTH));
-            switch (column.getTypeID()) {
-                case java.sql.Types.TIME:
-                    return "TO_DATE('" + hourOfDay + ":" + minutes + ":" + seconds + "','HH24:MI:SS')";
-                case java.sql.Types.DATE:
-                    return "TO_DATE('" + year + "-" + month + "-" + dayOfMonth + "','YYYY-MM-DD')";
-                default:
-                    return "TO_DATE('" + year + "-" + month + "-" + dayOfMonth +
-                        " " + hourOfDay + ":" + minutes + ":" + seconds +
-                        "','YYYY-MM-DD HH24:MI:SS')";
-            }
-        } else {
-            return super.getValueDisplayString(column, value, format);
-        }
-    }
-
-
-    @NotNull
     protected String getFormatterId(DBSTypedObject column)
     {
         switch (column.getTypeID()) {
-            case java.sql.Types.TIME: return DBDDataFormatter.TYPE_NAME_TIME;
-            case java.sql.Types.DATE: return DBDDataFormatter.TYPE_NAME_DATE;
+            case Types.TIME: return DBDDataFormatter.TYPE_NAME_TIME;
+            case Types.DATE: return DBDDataFormatter.TYPE_NAME_DATE;
             default: return DBDDataFormatter.TYPE_NAME_TIMESTAMP;
         }
     }
