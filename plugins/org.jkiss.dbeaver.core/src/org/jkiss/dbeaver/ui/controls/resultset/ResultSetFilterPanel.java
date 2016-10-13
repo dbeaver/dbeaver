@@ -592,6 +592,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         public ActiveObjectPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
             setLayoutData(new GridData(GridData.FILL_VERTICAL));
+            setToolTipText("Ctrl+click to open SQL console");
 
             this.addMouseListener(new MouseAdapter() {
                 @Override
