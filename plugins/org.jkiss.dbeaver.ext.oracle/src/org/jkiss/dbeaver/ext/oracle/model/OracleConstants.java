@@ -142,6 +142,10 @@ public class OracleConstants {
     public static final String VAR_TNS_ADMIN = "TNS_ADMIN";
     public static final String VAR_PATH = "PATH";
     public static final String VAR_ORACLE_NET_TNS_ADMIN = "oracle.net.tns_admin";
+
+    public static final int DATA_TYPE_TIMESTAMP_WITH_TIMEZONE = 101;
+    public static final int DATA_TYPE_TIMESTAMP_WITH_LOCAL_TIMEZONE = 102;
+
     public static final DBSEntityConstraintType CONSTRAINT_WITH_CHECK_OPTION = new DBSEntityConstraintType("V", "With Check Option", null, false, false);
     public static final DBSEntityConstraintType CONSTRAINT_WITH_READ_ONLY = new DBSEntityConstraintType("O", "With Read Only", null, false, false);
     public static final DBSEntityConstraintType CONSTRAINT_HASH_EXPRESSION = new DBSEntityConstraintType("H", "Hash expression", null, false, false);
@@ -155,14 +159,6 @@ public class OracleConstants {
         BASIC,
         TNS,
         CUSTOM
-    }
-
-    /**
-     * Connection target
-     */
-    public enum ConnectionTarget {
-        SID,
-        SERVICE
     }
 
     public static final String XMLTYPE_CLASS_NAME = "oracle.xdb.XMLType";

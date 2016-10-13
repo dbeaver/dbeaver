@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
@@ -63,6 +64,7 @@ class PostgreDialect extends JDBCSQLDialect {
         return true;
     }
 
+    @NotNull
     @Override
     public DBDBinaryFormatter getNativeBinaryFormatter() {
         return PostgreBinaryFormatter.INSTANCE;

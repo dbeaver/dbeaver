@@ -100,7 +100,6 @@ public class UIUtils {
 
     private static final Log log = Log.getLog(UIUtils.class);
 
-    public static final String DEFAULT_TIMESTAMP_PATTERN = "yyyy.MM.dd HH:mm";
     public static final String INLINE_WIDGET_EDITOR_ID = "org.jkiss.dbeaver.ui.InlineWidgetEditor";
 
     public static VerifyListener getIntegerVerifyListener(Locale locale)

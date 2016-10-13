@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 
 import java.sql.Driver;
@@ -47,7 +47,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
 
     @Override
     public DBPPropertyDescriptor[] getConnectionProperties(
-        DBRRunnableContext runnableContext,
+        DBRProgressMonitor monitor,
         DBPDriver driver,
         DBPConnectionConfiguration connectionInfo)
         throws DBException {
@@ -58,7 +58,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
             // then all subsequent calls to openConnection will fail until another props reading will succeed.
             props = null;
         } else {
-            Object driverInstance = driver.getDriverInstance(runnableContext);
+            Object driverInstance = driver.getDriverInstance(monitor);
             if (driverInstance instanceof Driver) {
                 props = readDriverProperties(connectionInfo, (Driver) driverInstance);
             }

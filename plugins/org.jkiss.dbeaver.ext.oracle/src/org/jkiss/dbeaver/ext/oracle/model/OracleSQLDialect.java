@@ -281,4 +281,5 @@ class OracleSQLDialect extends JDBCSQLDialect {
     public boolean isDelimiterAfterBlock() {
         return true;
     }
+
 }
