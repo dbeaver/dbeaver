@@ -22,9 +22,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.*;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
@@ -35,7 +35,10 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
@@ -72,14 +75,13 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.controls.CImageCombo;
+import org.jkiss.dbeaver.ui.controls.StatusLabel;
 import org.jkiss.dbeaver.ui.controls.ToolbarVerticalSeparator;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditDictionaryDialog;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
@@ -127,7 +129,7 @@ public class ResultSetViewer extends Viewer
 
     private final List<ToolBarManager> toolbarList = new ArrayList<>();
     private Composite statusBar;
-    private CLabel statusLabel;
+    private StatusLabel statusLabel;
 
     private final DynamicFindReplaceTarget findReplaceTarget;
 
@@ -164,8 +166,6 @@ public class ResultSetViewer extends Viewer
 
     private final IDialogSettings viewerSettings;
 
-    private final Color colorRed;
-
     private boolean actionsDisabled;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
@@ -177,7 +177,6 @@ public class ResultSetViewer extends Viewer
         this.container = container;
         this.dataReceiver = new ResultSetDataReceiver(this);
 
-        this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
         this.viewerSettings = UIUtils.getDialogSettings(ResultSetViewer.class.getSimpleName());
         loadPresentationSettings();
 
@@ -1054,17 +1053,12 @@ public class ResultSetViewer extends Viewer
             toolbarList.add(configToolbar);
         }
 
-        statusLabel = new CLabel(statusBar, SWT.BORDER);
-        statusLabel.setLayoutData(new RowData(300, SWT.DEFAULT));
-        statusLabel.setCursor(statusBar.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-        statusLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseUp(MouseEvent e) {
-                EditTextDialog.showText(site.getShell(), CoreMessages.controls_resultset_viewer_dialog_status_title, statusLabel.getText());
-            }
-        });
-
         presentationSwitchToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+
+        statusLabel = new StatusLabel(statusBar, getSite());
+        final int fontHeight = statusLabel.getFont().getFontData()[0].getHeight();
+        statusLabel.setLayoutData(new RowData(35 * fontHeight, SWT.DEFAULT));
+
         RowData rd = new RowData();
         rd.exclude = true;
         presentationSwitchToolbar.setLayoutData(rd);
@@ -1218,31 +1212,7 @@ public class ResultSetViewer extends Viewer
         if (statusLabel.isDisposed()) {
             return;
         }
-        if (error) {
-            statusLabel.setForeground(colorRed);
-        } else if (colorRed.equals(statusLabel.getForeground())) {
-            statusLabel.setForeground(getDefaultForeground());
-        }
-        if (status == null) {
-            status = "???"; //$NON-NLS-1$
-        } else {
-            status = status.trim();
-            int divPos = status.indexOf('\n');
-            if (divPos != -1) {
-                status = status.substring(0, divPos);
-            }
-        }
-        String statusIconId = error ? org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_ERROR : org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_INFO;
-        statusLabel.setImage(JFaceResources.getImage(statusIconId));
-        statusLabel.setText(status);
-        if (error) {
-            statusLabel.setToolTipText(status);
-        } else {
-            statusLabel.setToolTipText(null);
-        }
-//        Point statusSize = statusLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-//        ((RowData)statusLabel.getLayoutData()).width = Math.min(statusSize.x, statusBar.getSize().x);
-//        viewerPanel.layout();
+        statusLabel.setStatus(status, error);
     }
 
     public void updateStatusMessage()
