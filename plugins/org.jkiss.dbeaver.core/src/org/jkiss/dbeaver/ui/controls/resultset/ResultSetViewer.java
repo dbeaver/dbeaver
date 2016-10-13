@@ -981,7 +981,7 @@ public class ResultSetViewer extends Viewer
             }
         });
 
-        mainToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+        mainToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
         // Add presentation switcher
         presentationSwitchCombo = new PresentationSwitchCombo();
@@ -990,9 +990,9 @@ public class ResultSetViewer extends Viewer
         //mainToolbar.add(new Separator());
 
         // handle own commands
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES));
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_REJECT_CHANGES));
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_GENERATE_SCRIPT));
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES, "Apply", null, null, true));
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_REJECT_CHANGES, "Reject", null, null, true));
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_GENERATE_SCRIPT, "SQL", null, null, true));
         mainToolbar.add(new Separator());
         mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
         mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_ADD));
@@ -1019,13 +1019,16 @@ public class ResultSetViewer extends Viewer
         //mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
         mainToolbar.add(new ToggleModeAction());
 
-        CommandContributionItem panelsAction = new CommandContributionItem(new CommandContributionItemParameter(
-            site,
-            "org.jkiss.dbeaver.core.resultset.panels",
-            ResultSetCommandHandler.CMD_TOGGLE_PANELS,
-            CommandContributionItem.STYLE_PULLDOWN));
-        //panelsAction.
-        mainToolbar.add(panelsAction);
+        {
+            CommandContributionItemParameter ciParam = new CommandContributionItemParameter(
+                site,
+                "org.jkiss.dbeaver.core.resultset.panels",
+                ResultSetCommandHandler.CMD_TOGGLE_PANELS,
+                CommandContributionItem.STYLE_PULLDOWN);
+            ciParam.label = "Panels";
+            ciParam.mode = CommandContributionItem.MODE_FORCE_TEXT;
+            mainToolbar.add(new CommandContributionItem(ciParam));
+        }
         mainToolbar.add(new Separator());
         mainToolbar.add(new ConfigAction());
         mainToolbar.createControl(statusBar);
