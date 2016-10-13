@@ -1539,4 +1539,12 @@ public class UIUtils {
         }
     }
 
+    public static CoolItem createCoolItem(CoolBar coolBar, Control control) {
+        CoolItem item = new CoolItem(coolBar, SWT.NONE);
+        item.setControl(control);
+        Point size = control.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        Point preferred = item.computeSize(size.x, size.y);
+        item.setPreferredSize(preferred);
+        return item;
+    }
 }
