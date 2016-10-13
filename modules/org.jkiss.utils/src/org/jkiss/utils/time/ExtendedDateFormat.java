@@ -44,12 +44,17 @@ public class ExtendedDateFormat extends SimpleDateFormat {
     {
         super(stripNanos(pattern), locale);
 
+        int quoteCount = 0;
         for (int i = 0; i < pattern.length(); i++) {
             char c = pattern.charAt(i);
             if (c == '\'') {
+                quoteCount++;
                 for (int k = i + 1; k < pattern.length(); k++) {
                     if (pattern.charAt(k) == '\'') {
-                        i = k + 1;
+                        if (k != i + 1) {
+                            quoteCount++;
+                        }
+                        i = k;
                         break;
                     }
                 }
@@ -70,7 +75,7 @@ public class ExtendedDateFormat extends SimpleDateFormat {
                     }
                 }
             } else if (c == 'f') {
-                nanoStart = i;
+                nanoStart = i - quoteCount;
                 nanoOptional = false;
                 for (int k = i + 1; k < pattern.length(); k++) {
                     if (pattern.charAt(k) != 'f') {
@@ -79,7 +84,7 @@ public class ExtendedDateFormat extends SimpleDateFormat {
                     nanoLength++;
                 }
                 nanoLength++;
-                i = nanoStart + nanoLength;
+                i = i + nanoLength;
             }
         }
     }
@@ -94,9 +99,10 @@ public class ExtendedDateFormat extends SimpleDateFormat {
                 nanos = ((Timestamp) date).getNanos();
             }
             if (!nanoOptional || nanos > 0) {
+                StringBuilder nanosRes = new StringBuilder(nanoLength);
                 // Append nanos value in the end
                 if (nanoPrefix != null) {
-                    result.append(nanoPrefix);
+                    nanosRes.append(nanoPrefix);
                 }
                 String nanoStr = String.valueOf(nanos);
 
@@ -112,13 +118,14 @@ public class ExtendedDateFormat extends SimpleDateFormat {
                 } else {
                     // Pad with 0s
                     for (int i = 0; i < nanoLength - nanoStr.length(); i++) {
-                        result.append("0");
+                        nanosRes.append("0");
                     }
                 }
-                result.append(nanoStr);
+                nanosRes.append(nanoStr);
                 if (nanoPostfix != null) {
-                    result.append(nanoPostfix);
+                    nanosRes.append(nanoPostfix);
                 }
+                result.insert(nanoStart, nanosRes.toString());
             }
         }
         return result;
@@ -138,7 +145,10 @@ public class ExtendedDateFormat extends SimpleDateFormat {
                 }
                 char c = text.charAt(digitPos);
                 if (!Character.isDigit(c)) {
-                    throw new IllegalArgumentException("Invalid nanosecond character at pos " + digitPos + ": " + c);
+                    pos.setErrorIndex(index);
+                    pos.setIndex(index);
+                    //throw new ParseException("Invalid nanosecond character at pos " + digitPos + ": " + c, index);
+                    return null;
                 }
                 long digit = ((int)c - (int)'0');
                 for (int k = MAX_NANO_LENGTH - i; k > 0; k--) {
@@ -162,7 +172,7 @@ public class ExtendedDateFormat extends SimpleDateFormat {
             if (c == '\'') {
                 for (int k = i + 1; k < pattern.length(); k++) {
                     if (pattern.charAt(k) == '\'') {
-                        i = k + 1;
+                        i = k;
                         break;
                     }
                 }
@@ -186,6 +196,7 @@ public class ExtendedDateFormat extends SimpleDateFormat {
 
     public static void main(String[] args)
     {
+        test("'TIMESTAMP '''yyyy-MM-dd HH:mm:ss.ffffff''");
         test("yyyy-MM-dd Z hh:mm:ss[.fffffffff]");
         test("yyyy-MM-dd Z hh:mm:ss.fffffffff");
         test("yyyy-MM-dd Z hh:mm:ss");

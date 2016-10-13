@@ -345,6 +345,7 @@ public class BasicSQLDialect implements SQLDialect {
         return false;
     }
 
+    @NotNull
     @Override
     public DBDBinaryFormatter getNativeBinaryFormatter() {
         return BinaryFormatterHexNative.INSTANCE;

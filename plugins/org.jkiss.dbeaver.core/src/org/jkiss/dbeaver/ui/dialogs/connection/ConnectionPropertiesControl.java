@@ -18,20 +18,20 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
@@ -55,7 +55,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         setExpandSingleRoot(false);
     }
 
-    public PropertySourceCustom makeProperties(DBRRunnableContext runnableContext, DBPDriver driver, DBPConnectionConfiguration connectionInfo)
+    public PropertySourceCustom makeProperties(DBRProgressMonitor monitor, DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         Map<Object, Object> connectionProps = new HashMap<>();
         connectionProps.putAll(driver.getConnectionProperties());
@@ -63,7 +63,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         driverProvidedProperties = null;
         customProperties = null;
 
-        loadDriverProperties(runnableContext, driver, connectionInfo);
+        loadDriverProperties(monitor, driver, connectionInfo);
         loadCustomProperties(driver, connectionProps);
 
         return new PropertySourceCustom(
@@ -133,11 +133,11 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         return propertyDescriptors;
     }
 
-    private void loadDriverProperties(DBRRunnableContext runnableContext, DBPDriver driver, DBPConnectionConfiguration connectionInfo)
+    private void loadDriverProperties(DBRProgressMonitor monitor, DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         try {
             final DBPPropertyDescriptor[] connectionsProps =
-                driver.getDataSourceProvider().getConnectionProperties(runnableContext, driver, connectionInfo);
+                driver.getDataSourceProvider().getConnectionProperties(monitor, driver, connectionInfo);
             driverProvidedProperties = new ArrayList<>();
             if (connectionsProps != null) {
                 Collections.addAll(driverProvidedProperties, connectionsProps);

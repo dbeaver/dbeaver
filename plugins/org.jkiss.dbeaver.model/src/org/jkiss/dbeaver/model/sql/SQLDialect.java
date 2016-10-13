@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
@@ -28,7 +27,6 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.Pair;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -253,11 +251,12 @@ public interface SQLDialect {
      */
     boolean isDelimiterAfterBlock();
 
-    DBDBinaryFormatter getNativeBinaryFormatter();
-
     /**
      * Should we quote column/table/etc names if they conflicts with reserved words?
      */
     boolean isQuoteReservedWords();
+
+    @NotNull
+    DBDBinaryFormatter getNativeBinaryFormatter();
 
 }

@@ -37,7 +37,7 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
 
     protected static final Log log = Log.getLog(DateTimeCustomValueHandler.class);
 
-    private DBDDataFormatterProfile formatterProfile;
+    private final DBDDataFormatterProfile formatterProfile;
     protected DBDDataFormatter formatter;
 
     public DateTimeCustomValueHandler(DBDDataFormatterProfile formatterProfile)
@@ -66,7 +66,7 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
                     Date result = new Date(strValue);
                     return result;
                 } catch (Exception e1) {
-                    log.debug("Can't parse string value [" + strValue + "] to date/time value", e);
+                    //log.debug("Can't parse string value [" + strValue + "] to date/time value", e);
                     return null;
                 }
             }
@@ -111,14 +111,5 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
 
     @NotNull
     protected abstract String getFormatterId(DBSTypedObject column);
-
-    protected static String getTwoDigitValue(int value)
-    {
-        if (value < 10) {
-            return "0" + value;
-        } else {
-            return String.valueOf(value);
-        }
-    }
 
 }

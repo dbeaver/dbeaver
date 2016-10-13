@@ -130,6 +130,12 @@
                     <property id="ddl-drop-column-short" label="Drop column short syntax" description="Use 'ALTER TABLE DROP column-name' instead of standard syntax" type="boolean" required="false" defaultValue="false"/>
                     <property id="legacy-sql-dialect" label="Use legacy SQL dialect for DDL" description="Use legacy SQL dialect for DDL" type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
+                <propertyGroup label="Formatting" description="SQL values formats">
+                    <property id="native-format-timestamp" label="Timestamp format" description="Format pattern for timestamp columns" type="string" required="false"/>
+                    <property id="native-format-date" label="Date format" description="Format pattern for date columns" type="string" required="false"/>
+                    <property id="native-format-time" label="Time format" description="Format pattern for time columns" type="string" required="false"/>
+                </propertyGroup>
+
             </driver-properties>
 
             <drivers managable="true">
@@ -306,6 +312,9 @@
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>
 
+                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
+                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
+
                     <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE"/>
                     <file type="lib" os="win32" arch="x86" path="repo:/drivers/jtds/SSO/x86/ntlmauth.dll"/>
                     <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/jtds/SSO/x64/ntlmauth.dll"/>
@@ -325,6 +334,9 @@
                     <parameter name="query-set-active-db" value="use [?]"/>
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="supports-multiple-results" value="true"/>
+
+                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
+                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
 
 <!--
                     <fileSource url="http://www.microsoft.com/en-us/download/details.aspx?displaylang=en&amp;id=11774"
@@ -359,6 +371,10 @@
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>
+
+                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
+                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
+
                     <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE"/>
                 </driver>
                 <driver
@@ -763,6 +779,17 @@
                 </view>
             </views>
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                class="org.jkiss.dbeaver.ext.generic.data.GenericValueHandlerProvider"
+                id="org.jkiss.dbeaver.ext.generic.data.GenericValueHandlerProvider"
+                label="Generic data types provider">
+            <datasource id="generic"/>
+            <!-- Date/time value handler - needed to provide native datatime value formatting. Formatting itself provided in drivers configuration. -->
+            <type kind="DATETIME"/>
+        </provider>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">

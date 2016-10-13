@@ -22,6 +22,8 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -63,6 +65,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private DataSourceDescriptor dataSource;
     private final Set<DataSourceDescriptor> activated = new HashSet<>();
     private IDialogPage[] subPages, extraPages;
+    private TabFolder tabFolder;
 
     /**
      * Constructor for ConnectionPageSettings
@@ -115,6 +118,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         } else if (connectionEditor != null) {
             connectionEditor.loadSettings();
         }
+        activateCurrentItem();
         getContainer().updateTitleBar();
     }
 
@@ -174,18 +178,25 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 allPages.add(connectionEditor);
                 Collections.addAll(allPages, subPages);
 
-                TabFolder tabFolder = new TabFolder(parent, SWT.TOP);
+                tabFolder = new TabFolder(parent, SWT.TOP);
                 tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
                 for (IDialogPage page : allPages) {
                     TabItem item = new TabItem(tabFolder, SWT.NONE);
                     page.createControl(tabFolder);
+                    item.setData(page);
                     Control pageControl = page.getControl();
                     item.setControl(pageControl);
                     item.setText(CommonUtils.isEmpty(page.getTitle()) ? "General" : page.getTitle());
                     item.setToolTipText(page.getDescription());
                 }
                 tabFolder.setSelection(0);
+                tabFolder.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        activateCurrentItem();
+                    }
+                });
                 setControl(tabFolder);
             } else {
                 // Create single editor control
@@ -200,6 +211,16 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             setErrorMessage("Can't create settings dialog: " + ex.getMessage());
         }
         parent.layout();
+    }
+
+    private void activateCurrentItem() {
+        if (tabFolder != null) {
+            TabItem[] selection = tabFolder.getSelection();
+            if (selection.length == 1) {
+                IDialogPage page = (IDialogPage) selection[0].getData();
+                page.setVisible(true);
+            }
+        }
     }
 
     @Override

@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
@@ -208,6 +209,8 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                 }
             }
             if (hasCond) query.append(")");
+
+            query.append(" ORDER BY ").append(DBUtils.getQuotedIdentifier(keyColumn));
         }
 
         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
@@ -221,6 +224,13 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             }
 
             if (keyPattern != null) {
+                if (keyPattern instanceof Long) {
+                    keyPattern = ((Long) keyPattern) - (maxResults / 2);
+                } else if (keyPattern instanceof Integer) {
+                    keyPattern = ((Integer) keyPattern) - (maxResults / 2);
+                } else if (keyPattern instanceof BigDecimal) {
+                    keyPattern = ((BigDecimal) keyPattern).subtract(new BigDecimal(maxResults / 2));
+                }
                 keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, keyPattern);
             }
 
