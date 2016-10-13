@@ -326,20 +326,21 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
 
             startTime = System.currentTimeMillis();
             DBCExecutionSource source = new AbstractExecutionSource(dataContainer, executionContext, partSite.getPart(), sqlQuery);
-            curStatement = DBUtils.prepareStatement(
+            final DBCStatement dbcStatement = DBUtils.prepareStatement(
                 source,
                 session,
                 hasParameters ? DBCStatementType.QUERY : DBCStatementType.SCRIPT,
                 sqlQuery,
                 rsOffset, rsMaxRows);
+            curStatement = dbcStatement;
 
             if (hasParameters) {
-                bindStatementParameters(session, sqlQuery);
+                bindStatementParameters(session, dbcStatement, sqlQuery);
             }
 
             // Execute statement
             try {
-                boolean hasResultSet = curStatement.executeStatement();
+                boolean hasResultSet = dbcStatement.executeStatement();
                 curResult.setHasResultSet(hasResultSet);
                 statistics.addExecuteTime(System.currentTimeMillis() - startTime);
                 statistics.addStatementsCount();
@@ -351,13 +352,13 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                         if (hasResultSet && fetchResultSets) {
                             DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
                             if (dataReceiver != null) {
-                                hasResultSet = fetchQueryData(session, curStatement.openResultSet(), curResult, dataReceiver, true);
+                                hasResultSet = fetchQueryData(session, dbcStatement.openResultSet(), curResult, dataReceiver, true);
                             }
                         }
                     }
                     if (!hasResultSet) {
                         try {
-                            updateCount = curStatement.getUpdateRowCount();
+                            updateCount = dbcStatement.getUpdateRowCount();
                             if (updateCount >= 0) {
                                 curResult.setUpdateCount(updateCount);
                                 statistics.addRowsUpdated(updateCount);
@@ -379,7 +380,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                     }
 
                     if (dataSource.getInfo().supportsMultipleResults()) {
-                        hasResultSet = curStatement.nextResults();
+                        hasResultSet = dbcStatement.nextResults();
                         updateCount = hasResultSet ? -1 : 0;
                     } else {
                         break;
@@ -387,7 +388,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                 }
 
                 try {
-                    curResult.setWarnings(curStatement.getStatementWarnings());
+                    curResult.setWarnings(dbcStatement.getStatementWarnings());
                 } catch (Throwable e) {
                     log.warn("Can't read execution warnings", e);
                 }
@@ -520,7 +521,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         }.execute();
     }
 
-    private void bindStatementParameters(DBCSession session, SQLQuery sqlStatement) throws DBCException {
+    private void bindStatementParameters(DBCSession session, DBCStatement dbcStatement, SQLQuery sqlStatement) throws DBCException {
         // Bind them
         for (SQLQueryParameter param : sqlStatement.getParameters()) {
             if (param.isResolved()) {
@@ -529,7 +530,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                 // bind
                 param.getValueHandler().bindValueObject(
                     session,
-                    curStatement,
+                    dbcStatement,
                     param,
                     param.getOrdinalPosition(),
                     realValue);

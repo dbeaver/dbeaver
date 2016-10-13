@@ -1070,6 +1070,8 @@ public class SQLEditor extends SQLEditorBase implements
                             case OBJECT_REMOVE:
                                 getSite().getWorkbenchWindow().getActivePage().closeEditor(SQLEditor.this, false);
                                 break;
+                            default:
+                                break;
                         }
                         onDataSourceChange();
                     }
