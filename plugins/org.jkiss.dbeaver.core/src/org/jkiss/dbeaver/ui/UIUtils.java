@@ -144,7 +144,9 @@ public class UIUtils {
     }
 
     public static void createToolBarSeparator(ToolBar toolBar, int style) {
-        new ToolItem(toolBar, SWT.SEPARATOR).setControl(new Label(toolBar, SWT.SEPARATOR | style));
+        Label label = new Label(toolBar, SWT.NONE);
+        label.setImage(DBeaverIcons.getImage(UIIcon.DRAG_HANDLE));
+        new ToolItem(toolBar, SWT.SEPARATOR).setControl(label);
     }
 
     public static TableColumn createTableColumn(Table table, int style, String text)

@@ -440,6 +440,7 @@ public class ResultSetViewer extends Viewer
                 // Update combo
                 statusBar.setRedraw(false);
                 try {
+                    ((RowData)presentationSwitchToolbar.getLayoutData()).exclude = (activePresentationDescriptor == null);
                     if (activePresentationDescriptor == null) {
                         presentationSwitchToolbar.setEnabled(false);
                     } else {
@@ -463,7 +464,6 @@ public class ResultSetViewer extends Viewer
                                 }
                             });
                         }
-                        new ToolItem(presentationSwitchToolbar, SWT.SEPARATOR);
                     }
                     statusBar.layout();
                 } finally {
@@ -1030,7 +1030,12 @@ public class ResultSetViewer extends Viewer
         {
             ToolBarManager configToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             configToolbar.add(new ToolbarVerticalSeparator());
-            configToolbar.add(new ToggleModeAction());
+            {
+                //configToolbar.add(new ToggleModeAction());
+                ActionContributionItem item = new ActionContributionItem(new ToggleModeAction());
+                item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+                configToolbar.add(item);
+            }
 
             {
                 CommandContributionItemParameter ciParam = new CommandContributionItemParameter(
@@ -1044,6 +1049,7 @@ public class ResultSetViewer extends Viewer
             }
             configToolbar.add(new ToolbarVerticalSeparator());
             configToolbar.add(new ConfigAction());
+            configToolbar.add(new ToolbarVerticalSeparator());
             configToolbar.createControl(statusBar);
             toolbarList.add(configToolbar);
         }
@@ -1059,16 +1065,9 @@ public class ResultSetViewer extends Viewer
         });
 
         presentationSwitchToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-
-/*
-        statusBar.addControlListener(new ControlAdapter() {
-            @Override
-            public void controlResized(ControlEvent e) {
-                toolbarsComposite.layout(true, true);
-            }
-        });
-*/
-        //updateEditControls();
+        RowData rd = new RowData();
+        rd.exclude = true;
+        presentationSwitchToolbar.setLayoutData(rd);
     }
 
     @Nullable
@@ -3120,7 +3119,7 @@ public class ResultSetViewer extends Viewer
         }
 
         public ToggleModeAction() {
-            super("Toggle mode", Action.AS_CHECK_BOX);
+            super("Record", Action.AS_CHECK_BOX);
         }
 
         @Override
