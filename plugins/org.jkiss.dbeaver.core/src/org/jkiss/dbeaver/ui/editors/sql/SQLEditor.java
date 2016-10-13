@@ -622,6 +622,9 @@ public class SQLEditor extends SQLEditorBase implements
         if (dsContainer != null) {
             dsContainer.getRegistry().addDataSourceListener(this);
         }
+        if (isNonPersistentEditor()) {
+            setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_CONSOLE));
+        }
     }
 
     @Override
@@ -665,14 +668,6 @@ public class SQLEditor extends SQLEditorBase implements
                 " \nConnection: " + dataSourceContainer.getName() +
                 " \nType: " + (dataSourceContainer.getDriver().getFullName()) +
                 " \nURL: " + dataSourceContainer.getConnectionConfiguration().getUrl();
-    }
-
-    @Override
-    public Image getTitleImage() {
-        if (isNonPersistentEditor()) {
-            return DBeaverIcons.getImage(UIIcon.SQL_CONSOLE);
-        }
-        return super.getTitleImage();
     }
 
     private String getEditorName() {
@@ -1617,6 +1612,7 @@ public class SQLEditor extends SQLEditorBase implements
         private long lastUIUpdateTime;
         private final ITextSelection originalSelection = (ITextSelection) getSelectionProvider().getSelection();
         private int topOffset, visibleLength;
+        private Image editorImage;
 
         private SQLEditorQueryListener(QueryProcessor queryProcessor) {
             this.queryProcessor = queryProcessor;
@@ -1636,6 +1632,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void onStartQuery(final SQLQuery query) {
+            editorImage = getTitleImage();
             setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
             queryProcessor.curJobRunning.incrementAndGet();
             synchronized (runningQueries) {
@@ -1656,7 +1653,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void onEndQuery(final SQLQueryResult result) {
-            setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
+            setTitleImage(editorImage);
             synchronized (runningQueries) {
                 runningQueries.remove(result.getStatement());
             }
