@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -48,8 +49,8 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
             case Types.TIMESTAMP:
                 return DEFAULT_DATETIME_FORMAT;
             case Types.TIMESTAMP_WITH_TIMEZONE:
-            case -101: // TIMESTAMP_WITH_TIMEZONE
-            case -102: // TIMESTAMP_WITH_LOCAL_TIMEZONE
+            case OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE:
+            case OracleConstants.DATA_TYPE_TIMESTAMP_WITH_LOCAL_TIMEZONE:
                 return DEFAULT_DATETIME_FORMAT;
             case Types.TIME:
                 return DEFAULT_TIME_FORMAT;
