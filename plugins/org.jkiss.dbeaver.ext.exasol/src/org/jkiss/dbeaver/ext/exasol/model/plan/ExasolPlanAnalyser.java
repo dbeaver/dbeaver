@@ -93,12 +93,14 @@ public class ExasolPlanAnalyser implements DBCPlan {
             connection.commit();
 
             //retrieve execute info
-            stmt = connection.prepareStatement("SELECT * FROM EXA_USER_PROFILE_LAST_DAY WHERE SESSION_ID = CURRENT_SESSION AND STMT_ID > (CURRENT_STATEMENT - 10) AND COMMAND_CLASS <> 'OTHER' ORDER BY STMT_ID,PART_ID");
+            stmt = connection.prepareStatement("SELECT * FROM EXA_USER_PROFILE_LAST_DAY WHERE SESSION_ID = CURRENT_SESSION AND STMT_ID = (select max(stmt_id) from EXA_USER_PROFILE_LAST_DAY where sql_text = ?)");
+            stmt.setString(1, query);
             JDBCResultSet dbResult = stmt.executeQuery();
             while (dbResult.next()) {
                 ExasolPlanNode node = new ExasolPlanNode(null, dbResult);
                 rootNodes.add(node);
             }
+            stmt.clearParameters();
             dbResult.close();
             stmt.close();
 
