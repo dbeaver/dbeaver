@@ -41,7 +41,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
-import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
@@ -1637,6 +1636,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void onStartQuery(final SQLQuery query) {
+            setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
             queryProcessor.curJobRunning.incrementAndGet();
             synchronized (runningQueries) {
                 runningQueries.add(query);
@@ -1656,6 +1656,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void onEndQuery(final SQLQueryResult result) {
+            setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
             synchronized (runningQueries) {
                 runningQueries.remove(result.getStatement());
             }
