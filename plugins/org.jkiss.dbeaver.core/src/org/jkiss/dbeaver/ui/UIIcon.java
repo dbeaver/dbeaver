@@ -26,6 +26,8 @@ public class UIIcon {
 
     public static final DBIcon DBEAVER_LOGO = new DBIcon("dbeaver_logo", "dbeaver48.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon DRAG_HANDLE = new DBIcon("dragHandle", "platform:/plugin/org.eclipse.platform/images/dragHandle.png");
+
     public static final DBIcon LOADING1 = new DBIcon("loading1", "animation/loading1.gif"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon LOADING2 = new DBIcon("loading2", "animation/loading2.gif"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon LOADING3 = new DBIcon("loading3", "animation/loading3.gif"); //$NON-NLS-1$ //$NON-NLS-2$

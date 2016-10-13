@@ -155,7 +155,9 @@ public class DBIcon implements DBPImage
             }
             try {
                 DBIcon icon = (DBIcon) field.get(null);
-                icon.path = "platform:/plugin/" + iconBundle.getSymbolicName() + "/icons/" + icon.getLocation();
+                if (!icon.path.startsWith("platform:")) {
+                    icon.path = "platform:/plugin/" + iconBundle.getSymbolicName() + "/icons/" + icon.path;
+                }
                 URL fileURL = FileLocator.toFileURL(new URL(icon.path));
                 try {
                     String filePath = fileURL.toString().replace(" ", "%20");

@@ -35,10 +35,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
@@ -76,6 +73,7 @@ import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
+import org.jkiss.dbeaver.ui.controls.ToolbarVerticalSeparator;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -121,10 +119,13 @@ public class ResultSetViewer extends Viewer
     private final Composite viewerPanel;
     private ResultSetFilterPanel filtersPanel;
     private SashForm viewerSash;
+
     private CTabFolder panelFolder;
     private ToolBarManager panelToolBar;
+
     private final Composite presentationPanel;
 
+    private final List<ToolBarManager> toolbarList = new ArrayList<>();
     private Composite statusBar;
     private CLabel statusLabel;
 
@@ -145,8 +146,6 @@ public class ResultSetViewer extends Viewer
     private final IResultSetContainer container;
     @NotNull
     private final ResultSetDataReceiver dataReceiver;
-
-    private ToolBarManager mainToolbar;
 
     // Current row/col number
     @Nullable
@@ -522,8 +521,10 @@ public class ResultSetViewer extends Viewer
             findReplaceTarget.setTarget(nested);
         }
 
-        if (mainToolbar != null) {
-            mainToolbar.update(true);
+        if (!toolbarList.isEmpty()) {
+            for (ToolBarManager tb : toolbarList) {
+                tb.update(true);
+            }
         }
 
         // Set focus in presentation control
@@ -950,7 +951,9 @@ public class ResultSetViewer extends Viewer
      */
     private void updateToolbar()
     {
-        UIUtils.updateContributionItems(mainToolbar);
+        for (ToolBarManager tb : toolbarList) {
+            UIUtils.updateContributionItems(tb);
+        }
         UIUtils.updateContributionItems(panelToolBar);
     }
 
@@ -994,53 +997,56 @@ public class ResultSetViewer extends Viewer
         toolbarsLayout.pack = true;
         statusBar.setLayout(toolbarsLayout);
 
-        presentationSwitchToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-
-        mainToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-
-        // handle own commands
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES, "Apply", null, null, true));
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_REJECT_CHANGES, "Reject", null, null, true));
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_GENERATE_SCRIPT, "Script", null, null, true));
-        mainToolbar.add(new Separator());
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_ADD));
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_COPY));
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_DELETE));
-        mainToolbar.add(new Separator());
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_FIRST));
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_PREVIOUS));
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_NEXT));
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_LAST));
-        mainToolbar.add(new Separator());
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_PAGE));
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_ALL));
-        // Use simple action for refresh to avoid ambiguous behaviour of F5 shortcut
-        mainToolbar.add(new Separator());
-//        // FIXME: Link to standard Find/Replace action - it has to be handled by owner site
-//        mainToolbar.add(ActionUtils.makeCommandContribution(
-//            site,
-//            IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
-//            CommandContributionItem.STYLE_PUSH,
-//            UIIcon.FIND_TEXT));
-
-        mainToolbar.add(new Separator());
-        //mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
-        mainToolbar.add(new ToggleModeAction());
-
         {
-            CommandContributionItemParameter ciParam = new CommandContributionItemParameter(
-                site,
-                "org.jkiss.dbeaver.core.resultset.panels",
-                ResultSetCommandHandler.CMD_TOGGLE_PANELS,
-                CommandContributionItem.STYLE_PULLDOWN);
-            ciParam.label = "Panels";
-            ciParam.mode = CommandContributionItem.MODE_FORCE_TEXT;
-            mainToolbar.add(new CommandContributionItem(ciParam));
+            ToolBarManager editToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+
+            // handle own commands
+            editToolbar.add(new ToolbarVerticalSeparator());
+            editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES, "Apply", null, null, true));
+            editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_REJECT_CHANGES, "Reject", null, null, true));
+            editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_GENERATE_SCRIPT, "Script", null, null, true));
+            editToolbar.add(new ToolbarVerticalSeparator());
+            editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
+            editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_ADD));
+            editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_COPY));
+            editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_DELETE));
+
+            editToolbar.createControl(statusBar);
+            toolbarList.add(editToolbar);
         }
-        mainToolbar.add(new Separator());
-        mainToolbar.add(new ConfigAction());
-        mainToolbar.createControl(statusBar);
+        {
+            ToolBarManager navToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            navToolbar.add(new ToolbarVerticalSeparator());
+            navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_FIRST));
+            navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_PREVIOUS));
+            navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_NEXT));
+            navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_LAST));
+            navToolbar.add(new ToolbarVerticalSeparator());
+            navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_PAGE));
+            navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_ALL));
+            navToolbar.createControl(statusBar);
+            toolbarList.add(navToolbar);
+        }
+        {
+            ToolBarManager configToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            configToolbar.add(new ToolbarVerticalSeparator());
+            configToolbar.add(new ToggleModeAction());
+
+            {
+                CommandContributionItemParameter ciParam = new CommandContributionItemParameter(
+                    site,
+                    "org.jkiss.dbeaver.core.resultset.panels",
+                    ResultSetCommandHandler.CMD_TOGGLE_PANELS,
+                    CommandContributionItem.STYLE_PULLDOWN);
+                ciParam.label = "Panels";
+                ciParam.mode = CommandContributionItem.MODE_FORCE_TEXT;
+                configToolbar.add(new CommandContributionItem(ciParam));
+            }
+            configToolbar.add(new ToolbarVerticalSeparator());
+            configToolbar.add(new ConfigAction());
+            configToolbar.createControl(statusBar);
+            toolbarList.add(configToolbar);
+        }
 
         statusLabel = new CLabel(statusBar, SWT.BORDER);
         statusLabel.setLayoutData(new RowData(300, SWT.DEFAULT));
@@ -1051,6 +1057,8 @@ public class ResultSetViewer extends Viewer
                 EditTextDialog.showText(site.getShell(), CoreMessages.controls_resultset_viewer_dialog_status_title, statusLabel.getText());
             }
         });
+
+        presentationSwitchToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
 /*
         statusBar.addControlListener(new ControlAdapter() {
@@ -1104,14 +1112,15 @@ public class ResultSetViewer extends Viewer
 
         clearData();
 
-        if (mainToolbar != null) {
+        for (ToolBarManager tb : toolbarList) {
             try {
-                mainToolbar.dispose();
+                tb.dispose();
             } catch (Throwable e) {
                 // ignore
-                log.debug("Error disposing toolbar", e);
+                log.debug("Error disposing toolbar " + tb, e);
             }
         }
+        toolbarList.clear();
     }
 
     public boolean isAttributeReadOnly(DBDAttributeBinding attribute)
@@ -3122,50 +3131,6 @@ public class ResultSetViewer extends Viewer
         @Override
         public void run() {
             toggleMode();
-        }
-    }
-
-    private class PresentationSwitchCombo extends ContributionItem implements SelectionListener {
-        private ToolItem toolitem;
-        private CImageCombo combo;
-
-        @Override
-        public void fill(ToolBar parent, int index) {
-            toolitem = new ToolItem(parent, SWT.SEPARATOR, index);
-            Control control = createControl(parent);
-            toolitem.setControl(control);
-        }
-
-        @Override
-        public void fill(Composite parent) {
-            createControl(parent);
-        }
-
-        protected Control  createControl(Composite parent) {
-            combo = new CImageCombo(parent, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            combo.add(DBeaverIcons.getImage(DBIcon.TYPE_UNKNOWN), "", null, null);
-            final int textWidth = parent.getFont().getFontData()[0].getHeight() * 10;
-            combo.setWidthHint(textWidth);
-            if (toolitem != null) {
-                toolitem.setWidth(textWidth);
-            }
-            combo.addSelectionListener(this);
-            combo.setToolTipText(ActionUtils.findCommandDescription(ResultSetCommandHandler.CMD_SWITCH_PRESENTATION, getSite(), false));
-            return combo;
-        }
-
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-            ResultSetPresentationDescriptor selectedPresentation = (ResultSetPresentationDescriptor) combo.getData(combo.getSelectionIndex());
-            if (activePresentationDescriptor == selectedPresentation) {
-                return;
-            }
-            switchPresentation(selectedPresentation);
-        }
-
-        @Override
-        public void widgetDefaultSelected(SelectionEvent e) {
-
         }
     }
 

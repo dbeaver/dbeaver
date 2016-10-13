@@ -22,6 +22,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 
 /**
  * ToolbarVerticalSeparator
@@ -35,6 +37,8 @@ public class ToolbarVerticalSeparator extends WorkbenchWindowControlContribution
     @Override
     protected Control createControl(Composite parent)
     {
-        return new Label(parent, SWT.SEPARATOR | SWT.VERTICAL);
+        Label label = new Label(parent, SWT.NONE);
+        label.setImage(DBeaverIcons.getImage(UIIcon.DRAG_HANDLE));
+        return label;
     }
 }
