@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.data;
 
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
@@ -33,7 +34,7 @@ public class GenericValueHandlerProvider implements DBDValueHandlerProvider {
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
         if (typedObject.getDataKind() == DBPDataKind.DATETIME) {
-            return new GenericTimestampValueHandler(preferences.getDataFormatterProfile());
+            return new GenericTimestampValueHandler((GenericDataSource) dataSource, preferences.getDataFormatterProfile());
         } else {
             return null;
         }

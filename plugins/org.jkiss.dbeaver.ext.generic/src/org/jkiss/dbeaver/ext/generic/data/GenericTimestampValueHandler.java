@@ -18,40 +18,47 @@
 package org.jkiss.dbeaver.ext.generic.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.utils.time.ExtendedDateFormat;
 
 import java.sql.Types;
 import java.text.Format;
-import java.text.SimpleDateFormat;
 
 /**
  * Object type support
  */
 public class GenericTimestampValueHandler extends JDBCDateTimeValueHandler {
 
-    private static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new ExtendedDateFormat("'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'");
-    private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("''HH:mm:ss.SSS''");
+    private final GenericDataSource dataSource;
 
-    public GenericTimestampValueHandler(DBDDataFormatterProfile formatterProfile)
+    public GenericTimestampValueHandler(GenericDataSource dataSource, DBDDataFormatterProfile formatterProfile)
     {
         super(formatterProfile);
+
+        this.dataSource = dataSource;
     }
 
     @Nullable
     @Override
     public Format getNativeValueFormat(DBSTypedObject type) {
+        Format nativeFormat = null;
         switch (type.getTypeID()) {
             case Types.TIMESTAMP:
-                return DEFAULT_DATETIME_FORMAT;
             case Types.TIMESTAMP_WITH_TIMEZONE:
-                return DEFAULT_DATETIME_FORMAT;
+                nativeFormat = dataSource.getNativeFormatTimestamp();
+                break;
             case Types.TIME:
-                return DEFAULT_TIME_FORMAT;
             case Types.TIME_WITH_TIMEZONE:
-                return DEFAULT_TIME_FORMAT;
+                nativeFormat = dataSource.getNativeFormatTime();
+                break;
+            case Types.DATE:
+                nativeFormat = dataSource.getNativeFormatDate();
+                break;
+        }
+        if (nativeFormat != null) {
+            return nativeFormat;
         }
         return super.getNativeValueFormat(type);
     }

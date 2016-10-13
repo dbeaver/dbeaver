@@ -42,10 +42,12 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.time.ExtendedDateFormat;
 
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.text.Format;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -73,6 +75,7 @@ public class GenericDataSource extends JDBCDataSource
     private String allObjectsPattern;
     private boolean supportsStructCache;
     private DBCQueryPlanner queryPlanner;
+    private Format nativeFormatTimestamp, nativeFormatTime, nativeFormatDate;
 
     public GenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
@@ -94,6 +97,11 @@ public class GenericDataSource extends JDBCDataSource
         } else if ("null".equalsIgnoreCase(this.allObjectsPattern)) {
             this.allObjectsPattern = null;
         }
+
+        // Init native formats
+        nativeFormatTimestamp = makeNativeFormat(GenericConstants.PARAM_NATIVE_FORMAT_TIMESTAMP);
+        nativeFormatTime = makeNativeFormat(GenericConstants.PARAM_NATIVE_FORMAT_TIME);
+        nativeFormatDate = makeNativeFormat(GenericConstants.PARAM_NATIVE_FORMAT_DATE);
     }
 
     @Override
@@ -871,6 +879,33 @@ public class GenericDataSource extends JDBCDataSource
             return super.resolveDataKind(dataType.getTypeName(), dataType.getTypeID());
         }
         return super.resolveDataKind(typeName, valueType);
+    }
+
+    // Native formats
+
+    public Format getNativeFormatTimestamp() {
+        return nativeFormatTimestamp;
+    }
+
+    public Format getNativeFormatTime() {
+        return nativeFormatTime;
+    }
+
+    public Format getNativeFormatDate() {
+        return nativeFormatDate;
+    }
+
+    private Format makeNativeFormat(String paramName) {
+        Object param = getContainer().getDriver().getDriverParameter(paramName);
+        if (param == null) {
+            return null;
+        }
+        try {
+            return new ExtendedDateFormat(CommonUtils.toString(param));
+        } catch (Exception e) {
+            log.error(e);
+            return null;
+        }
     }
 
     private class TableTypeCache extends JDBCObjectCache<GenericDataSource, GenericTableType> {
