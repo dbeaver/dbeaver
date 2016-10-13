@@ -2,7 +2,6 @@ language: java
 script: mvn test
 jdk:
   - oraclejdk8
-  - oraclejdk7
 
 notifications:
   email:
