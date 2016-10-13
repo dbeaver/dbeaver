@@ -41,6 +41,8 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
@@ -124,6 +126,7 @@ public class ResultSetViewer extends Viewer
     private ToolBarManager panelToolBar;
     private final Composite presentationPanel;
 
+    private Composite statusBar;
     private Label statusLabel;
 
     private final DynamicFindReplaceTarget findReplaceTarget;
@@ -958,41 +961,37 @@ public class ResultSetViewer extends Viewer
     {
         UIUtils.createHorizontalLine(viewerPanel);
 
-        Composite statusBar = new Composite(viewerPanel, SWT.NONE);
+        statusBar = new Composite(viewerPanel, SWT.NONE);
         statusBar.setBackgroundMode(SWT.INHERIT_FORCE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         statusBar.setLayoutData(gd);
-        GridLayout gl = new GridLayout(4, false);
-        gl.marginWidth = 0;
-        gl.marginHeight = 0;
-        //gl.marginBottom = 5;
-        statusBar.setLayout(gl);
-
-        statusLabel = new Label(statusBar, SWT.READ_ONLY);
-        statusLabel.setCursor(statusBar.getDisplay().getSystemCursor(SWT.CURSOR_HELP));
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalIndent = 5;
-        statusLabel.setLayoutData(gd);
-        statusLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseDoubleClick(MouseEvent e)
-            {
-                EditTextDialog.showText(site.getShell(), CoreMessages.controls_resultset_viewer_dialog_status_title, statusLabel.getText());
-            }
-        });
-
-        mainToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+        RowLayout toolbarsLayout = new RowLayout(SWT.HORIZONTAL);
+        toolbarsLayout.marginTop = 0;
+        toolbarsLayout.marginBottom = 0;
+        toolbarsLayout.center = true;
+        toolbarsLayout.wrap = true;
+        toolbarsLayout.pack = true;
+        statusBar.setLayout(toolbarsLayout);
 
         // Add presentation switcher
         presentationSwitchCombo = new PresentationSwitchCombo();
         presentationSwitchCombo.createControl(statusBar);
-        //mainToolbar.add(presentationSwitchCombo);
-        //mainToolbar.add(new Separator());
+        {
+            ToolBar presentationToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            ToolItem p1 = new ToolItem(presentationToolbar, SWT.NONE);
+            p1.setText("Grid");
+            p1.setImage(DBeaverIcons.getImage(UIIcon.RS_GRID));
+            ToolItem p2 = new ToolItem(presentationToolbar, SWT.NONE);
+            p2.setText("Text");
+            p2.setImage(DBeaverIcons.getImage(DBIcon.TYPE_TEXT));
+        }
+
+        mainToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
         // handle own commands
         mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES, "Apply", null, null, true));
         mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_REJECT_CHANGES, "Reject", null, null, true));
-        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_GENERATE_SCRIPT, "SQL", null, null, true));
+        mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_GENERATE_SCRIPT, "Script", null, null, true));
         mainToolbar.add(new Separator());
         mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
         mainToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_ADD));
@@ -1031,8 +1030,29 @@ public class ResultSetViewer extends Viewer
         }
         mainToolbar.add(new Separator());
         mainToolbar.add(new ConfigAction());
+        mainToolbar.add(new Separator());
         mainToolbar.createControl(statusBar);
 
+        //new Label(statusBar, SWT.SEPARATOR);
+
+        statusLabel = new Label(statusBar, SWT.READ_ONLY);
+        statusLabel.setLayoutData(new RowData(300, SWT.DEFAULT));
+        statusLabel.setCursor(statusBar.getDisplay().getSystemCursor(SWT.CURSOR_HELP));
+        statusLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                EditTextDialog.showText(site.getShell(), CoreMessages.controls_resultset_viewer_dialog_status_title, statusLabel.getText());
+            }
+        });
+
+/*
+        statusBar.addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                toolbarsComposite.layout(true, true);
+            }
+        });
+*/
         //updateEditControls();
     }
 
@@ -1197,6 +1217,7 @@ public class ResultSetViewer extends Viewer
         } else {
             statusLabel.setToolTipText(null);
         }
+        //statusBar.layout();
     }
 
     public void updateStatusMessage()
