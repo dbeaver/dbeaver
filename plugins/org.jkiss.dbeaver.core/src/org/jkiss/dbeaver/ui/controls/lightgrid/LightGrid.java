@@ -565,6 +565,11 @@ public abstract class LightGrid extends Canvas {
         }
         recalculateSizes();
         updateScrollbars();
+        // Add focus cell to selection
+        GridPos focusPos = getFocusPos();
+        if (focusPos.isValid()) {
+            selectCell(focusPos);
+        }
     }
 
     private void createChildColumns(GridColumn parent) {
