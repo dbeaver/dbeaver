@@ -21,7 +21,7 @@ You can download prebuilt binaries from http://dbeaver.jkiss.org/download/
 ## Building
 
 #### Prerequisites:
- 1. Java (JDK) 1.7+
+ 1. Java (JDK) 1.8+
  2. Apache Maven 3+
  3. Internet access
 
