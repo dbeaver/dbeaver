@@ -22,9 +22,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.dialogs.*;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
@@ -40,7 +40,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
@@ -127,7 +126,7 @@ public class ResultSetViewer extends Viewer
     private final Composite presentationPanel;
 
     private Composite statusBar;
-    private Label statusLabel;
+    private CLabel statusLabel;
 
     private final DynamicFindReplaceTarget findReplaceTarget;
 
@@ -136,7 +135,7 @@ public class ResultSetViewer extends Viewer
     private IResultSetPresentation activePresentation;
     private ResultSetPresentationDescriptor activePresentationDescriptor;
     private List<ResultSetPresentationDescriptor> availablePresentations;
-    private PresentationSwitchCombo presentationSwitchCombo;
+    private ToolBar presentationSwitchToolbar;
     private final List<ResultSetPanelDescriptor> availablePanels = new ArrayList<>();
 
     private final Map<ResultSetPresentationDescriptor, PresentationSettings> presentationSettings = new HashMap<>();
@@ -307,7 +306,7 @@ public class ResultSetViewer extends Viewer
             }
         }
         filtersPanel.enableFilters(enableFilters);
-        presentationSwitchCombo.combo.setEnabled(enableFilters);
+        //presentationSwitchToolbar.setEnabled(enableFilters);
     }
 
     public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
@@ -377,12 +376,14 @@ public class ResultSetViewer extends Viewer
     }
 
     void updatePresentation(final DBCResultSet resultSet) {
+        boolean changed = false;
         try {
             if (resultSet instanceof StatResultSet) {
                 // Statistics - let's use special presentation for it
                 availablePresentations = Collections.emptyList();
                 setActivePresentation(new StatisticsPresentation());
                 activePresentationDescriptor = null;
+                changed = true;
             } else {
                 // Regular results
                 IResultSetContext context = new IResultSetContext() {
@@ -429,29 +430,47 @@ public class ResultSetViewer extends Viewer
                         IResultSetPresentation instance = newPresentation.createInstance();
                         activePresentationDescriptor = newPresentation;
                         setActivePresentation(instance);
+                        changed = true;
                     } catch (DBException e) {
                         log.error(e);
                     }
                 }
             }
         } finally {
-            // Update combo
-            CImageCombo combo = presentationSwitchCombo.combo;
-            combo.setRedraw(false);
-            try {
-                if (activePresentationDescriptor == null) {
-                    combo.setEnabled(false);
-                } else {
-                    combo.setEnabled(true);
-                    combo.removeAll();
-                    for (ResultSetPresentationDescriptor pd : availablePresentations) {
-                        combo.add(DBeaverIcons.getImage(pd.getIcon()), pd.getLabel(), null, pd);
+            if (changed) {
+                // Update combo
+                statusBar.setRedraw(false);
+                try {
+                    if (activePresentationDescriptor == null) {
+                        presentationSwitchToolbar.setEnabled(false);
+                    } else {
+                        presentationSwitchToolbar.setEnabled(true);
+                        for (ToolItem item : presentationSwitchToolbar.getItems()) item.dispose();
+                        for (ResultSetPresentationDescriptor pd : availablePresentations) {
+                            ToolItem item = new ToolItem(presentationSwitchToolbar, SWT.CHECK);
+                            item.setImage(DBeaverIcons.getImage(pd.getIcon()));
+                            item.setText(pd.getLabel());
+                            item.setToolTipText(pd.getDescription());
+                            item.setData(pd);
+                            if (pd == activePresentationDescriptor) {
+                                item.setSelection(true);
+                            }
+                            item.addSelectionListener(new SelectionAdapter() {
+                                @Override
+                                public void widgetSelected(SelectionEvent e) {
+                                    if (e.widget != null && e.widget.getData() != null) {
+                                        switchPresentation((ResultSetPresentationDescriptor) e.widget.getData());
+                                    }
+                                }
+                            });
+                        }
+                        new ToolItem(presentationSwitchToolbar, SWT.SEPARATOR);
                     }
-                    combo.select(activePresentationDescriptor);
+                    statusBar.layout();
+                } finally {
+                    // Enable redraw
+                    statusBar.setRedraw(true);
                 }
-            } finally {
-                // Enable redraw
-                combo.setRedraw(true);
             }
         }
 
@@ -543,7 +562,9 @@ public class ResultSetViewer extends Viewer
             setActivePresentation(instance);
             instance.refreshData(true, false);
 
-            presentationSwitchCombo.combo.select(activePresentationDescriptor);
+            for (ToolItem item : presentationSwitchToolbar.getItems()) {
+                item.setSelection(item.getData() == activePresentationDescriptor);
+            }
             // Save in global preferences
             DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
             savePresentationSettings();
@@ -973,18 +994,7 @@ public class ResultSetViewer extends Viewer
         toolbarsLayout.pack = true;
         statusBar.setLayout(toolbarsLayout);
 
-        // Add presentation switcher
-        presentationSwitchCombo = new PresentationSwitchCombo();
-        presentationSwitchCombo.createControl(statusBar);
-        {
-            ToolBar presentationToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            ToolItem p1 = new ToolItem(presentationToolbar, SWT.NONE);
-            p1.setText("Grid");
-            p1.setImage(DBeaverIcons.getImage(UIIcon.RS_GRID));
-            ToolItem p2 = new ToolItem(presentationToolbar, SWT.NONE);
-            p2.setText("Text");
-            p2.setImage(DBeaverIcons.getImage(DBIcon.TYPE_TEXT));
-        }
+        presentationSwitchToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
         mainToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
@@ -1030,17 +1040,14 @@ public class ResultSetViewer extends Viewer
         }
         mainToolbar.add(new Separator());
         mainToolbar.add(new ConfigAction());
-        mainToolbar.add(new Separator());
         mainToolbar.createControl(statusBar);
 
-        //new Label(statusBar, SWT.SEPARATOR);
-
-        statusLabel = new Label(statusBar, SWT.READ_ONLY);
+        statusLabel = new CLabel(statusBar, SWT.BORDER);
         statusLabel.setLayoutData(new RowData(300, SWT.DEFAULT));
-        statusLabel.setCursor(statusBar.getDisplay().getSystemCursor(SWT.CURSOR_HELP));
+        statusLabel.setCursor(statusBar.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
         statusLabel.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseDoubleClick(MouseEvent e) {
+            public void mouseUp(MouseEvent e) {
                 EditTextDialog.showText(site.getShell(), CoreMessages.controls_resultset_viewer_dialog_status_title, statusLabel.getText());
             }
         });
@@ -1210,14 +1217,24 @@ public class ResultSetViewer extends Viewer
         }
         if (status == null) {
             status = "???"; //$NON-NLS-1$
+        } else {
+            status = status.trim();
+            int divPos = status.indexOf('\n');
+            if (divPos != -1) {
+                status = status.substring(0, divPos);
+            }
         }
+        String statusIconId = error ? org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_ERROR : org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_INFO;
+        statusLabel.setImage(JFaceResources.getImage(statusIconId));
         statusLabel.setText(status);
         if (error) {
             statusLabel.setToolTipText(status);
         } else {
             statusLabel.setToolTipText(null);
         }
-        //statusBar.layout();
+//        Point statusSize = statusLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+//        ((RowData)statusLabel.getLayoutData()).width = Math.min(statusSize.x, statusBar.getSize().x);
+//        viewerPanel.layout();
     }
 
     public void updateStatusMessage()
