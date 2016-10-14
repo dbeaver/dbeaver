@@ -84,7 +84,7 @@ public class StatusLabel extends Composite {
         }
 
         Label detailsIcon = new Label(this, SWT.NONE);
-        detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.SQL_TEXT));
+        detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
         detailsIcon.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         detailsIcon.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));

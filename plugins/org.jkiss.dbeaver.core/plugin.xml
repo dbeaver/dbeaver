@@ -341,7 +341,7 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.row.delete" icon="icons/sql/row_delete.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.applyChanges" icon="icons/sql/accept.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" icon="icons/sql/cancel.png"/>
-        <image commandId="org.jkiss.dbeaver.core.resultset.generateScript" icon="icons/misc/sql.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.generateScript" icon="icons/sql/sql_inspector.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="icons/sql/grid.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.navigateLink" icon="icons/misc/link.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.cell.save" icon="icons/file/save.png"/>
