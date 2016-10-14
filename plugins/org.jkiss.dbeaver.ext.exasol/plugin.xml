@@ -66,9 +66,25 @@
                         </folder>
                     </items>
                 </folder>
-                <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolUser" label="%tree.users.node.name"
-                        icon="#folder_user" description="Users">
-                    <items label="%tree.user.node.name" path="user" property="users" icon="#user"/>
+                <folder
+                      description="Users"
+                      icon="#folder_user"
+                      label="%tree.users.node.name"
+                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolUser"
+                      visibleIf="object.dataSource.authorizedForUsers">
+                    <items
+                          icon="#user"
+                          label="%tree.user.node.name"
+                          path="user"
+                          property="users">
+                       <items
+                             icon="icons/role.gif"
+                             label="%tree.roles.node.name"
+                             path="role"
+                             property="roles"
+                             visibleIf="object.dataSource.authorizedForRolePrivs">
+                       </items>
+                    </items>
                 </folder>
                 <folder type="" label="%tree.administer.node.name" icon="#folder_admin"
                         description="Maintenance/Settings">
@@ -78,6 +94,19 @@
                             description="Server Session manager"
                             editor="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
                             />
+                </folder>
+                <folder
+                      description="Connections"
+                      icon="#folder_connections"
+                      label="%tree.connections.node.name"
+                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolConnection"
+                      visibleIf="object.dataSource.authorizedForConnections">
+                   <items
+                         icon="icons/remoteServer.gif"
+                         label="%tree.connection.node.name"
+                         path="connection"
+                         property="connections">
+                   </items>
                 </folder>
             </tree>
             <drivers managable="true">
