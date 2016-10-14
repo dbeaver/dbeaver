@@ -39,101 +39,142 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExasolUser implements DBAUser, DBPRefreshableObject, DBPSaveableObject {
+public class ExasolUser
+		implements DBAUser, DBPRefreshableObject, DBPSaveableObject {
 
+	private static final Log log = Log.getLog(ExasolUser.class);
 
-    private static final Log log = Log.getLog(ExasolUser.class);
+	private ExasolDataSource dataSource;
+	private String userName;
+	private String description;
+	private boolean persisted;
+	private String dn;
+	private String password;
+	private String priority;
 
-    private ExasolDataSource dataSource;
-    private String userName;
-    private String description;
-    private boolean persisted;
+	private List<ExasolRole> roles;
 
-    private List<ExasolRole> roles;
+	public ExasolUser(ExasolDataSource dataSource, ResultSet resultSet)
+	{
+		this.dataSource = dataSource;
+		if (resultSet != null) {
+			this.persisted = true;
+			this.userName = JDBCUtils.safeGetString(resultSet, "USER_NAME");
+			this.description = JDBCUtils.safeGetString(resultSet,
+					"USER_COMMENT");
+			this.dn = JDBCUtils.safeGetString(resultSet, "DISTINGUISHED_NAME");
+			this.password = JDBCUtils.safeGetString(resultSet, "PASSWORD");
+			this.priority = JDBCUtils.safeGetString(resultSet, "USER_PRIORITY");
+		} else {
+			this.persisted = false;
+			this.userName = "user";
+			this.description = "";
+			this.dn = "";
+			this.password = "";
+			this.priority = "";
+		}
+	}
 
-    public ExasolUser(ExasolDataSource dataSource, ResultSet resultSet) {
-        this.dataSource = dataSource;
-        if (resultSet != null) {
-            this.persisted = true;
-            this.userName = JDBCUtils.safeGetString(resultSet, "USER_NAME");
-            this.description = JDBCUtils.safeGetString(resultSet, "USER_COMMENT");
-        } else {
-            this.persisted = false;
-            this.userName = "user";
-            this.description = "";
-        }
-    }
+	@Override
+	@Property(viewable = true, order = 100)
+	public String getDescription()
+	{
+		return this.description;
+	}
 
-    @Override
-    @Property(viewable = true, order = 100)
-    public String getDescription() {
-        return this.description;
-    }
+	@Property(viewable = true, order = 20)
+	public String getPassword()
+	{
+		return this.password;
+	}
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+	@Property(viewable = true, order = 30)
+	public String getDn()
+	{
+		return this.dn;
+	}
 
-    @Override
-    public DBSObject getParentObject() {
-        return this.dataSource.getContainer();
-    }
+	@Property(viewable = true, order = 40)
+	public String getPriority()
+	{
+		return this.priority;
+	}
 
-    @Override
-    public DBPDataSource getDataSource() {
-        return this.dataSource;
-    }
+	public void setDescription(String description)
+	{
+		this.description = description;
+	}
 
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName() {
-        return this.userName;
-    }
+	@Override
+	public DBSObject getParentObject()
+	{
+		return this.dataSource.getContainer();
+	}
 
-    @Override
-    public boolean isPersisted() {
-        return this.persisted;
-    }
+	@Override
+	public DBPDataSource getDataSource()
+	{
+		return this.dataSource;
+	}
 
-    @Override
-    public void setPersisted(boolean persisted) {
-        this.persisted = persisted;
-    }
+	@NotNull
+	@Override
+	@Property(viewable = true, order = 1)
+	public String getName()
+	{
+		return this.userName;
+	}
 
-    @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
-        roles = null;
-        return this;
-    }
+	@Override
+	public boolean isPersisted()
+	{
+		return this.persisted;
+	}
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public List<ExasolRole> getRoles(DBRProgressMonitor monitor) throws DBException {
-        if (this.roles != null) {
-            return this.roles;
-        }
-        if (!isPersisted()) {
-            this.roles = new ArrayList();
-            return this.roles;
-        }
+	@Override
+	public void setPersisted(boolean persisted)
+	{
+		this.persisted = persisted;
+	}
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read User Roles")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("select * from EXA_USER_ROLE_PRIVS")) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    this.roles = new ArrayList();
-                    while (dbResult.next()) {
-                        this.roles.add(new ExasolRole(dataSource, dbResult));
-                    }
-                    return this.roles;
-                }
+	@Override
+	public DBSObject refreshObject(DBRProgressMonitor monitor)
+			throws DBException
+	{
+		roles = null;
+		return this;
+	}
 
-            } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
-            }
-        }
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public List<ExasolRole> getRoles(DBRProgressMonitor monitor)
+			throws DBException
+	{
+		if (this.roles != null) {
+			return this.roles;
+		}
+		if (!isPersisted()) {
+			this.roles = new ArrayList();
+			return this.roles;
+		}
 
+		try (JDBCSession session = DBUtils.openMetaSession(monitor,
+				getDataSource(), "Read User Roles")) {
+			try (JDBCPreparedStatement dbStat = session.prepareStatement(
+					"select * from EXA_DBA_ROLES WHERE role_name in (SELECT GRANTED_ROLE FROM EXA_DBA_ROLE_PRIVS WHERE GRANTEE = ?)")) {
+				dbStat.setString(1, userName);
+				try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+					this.roles = new ArrayList();
+					while (dbResult.next()) {
+						this.roles.add(new ExasolRole(dataSource, dbResult));
+					}
+					return this.roles;
+				}
 
-    }
+			} catch (SQLException e) {
+				throw new DBException(e, getDataSource());
+			}
+		}
 
+	}
 
 }
