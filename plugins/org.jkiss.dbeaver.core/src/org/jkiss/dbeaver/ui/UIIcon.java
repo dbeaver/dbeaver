@@ -167,6 +167,7 @@ public class UIIcon {
     public static final DBIcon SQL_VALIDATE = new DBIcon("sql_validate", "sql/sql_validate.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_PREVIEW = new DBIcon("sql_preview", "sql/sql_preview.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_TEXT = new DBIcon("sql_text", "sql/sql_text.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
     public static final DBIcon SAVE_TO_DATABASE = new DBIcon("save_to_db", "sql/save_to_database.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon PANEL_VALUE = new DBIcon("panel_value", "sql/panel_value.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -174,6 +175,7 @@ public class UIIcon {
     public static final DBIcon PANEL_METADATA = new DBIcon("panel_metadata", "sql/panel_metadata.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon PAGES = new DBIcon("pages", "misc/pages.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TEXTFIELD = new DBIcon("textfield", "misc/textfield.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     static  {
         DBIcon.loadIcons(UIIcon.class);
