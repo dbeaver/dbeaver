@@ -85,8 +85,13 @@ public class ExasolServerSession implements DBAServerSession {
 
     @Override
     public String getActiveQuery() {
-        // TODO Auto-generated method stub
-        return null;
+        if ( (! this.status.equals("IDLE") )  )
+        {
+        	return this.stmtId.toString();
+        } else
+        {
+        	return null;
+        }
     }
 
     @Property(viewable = true, editable = false, order = 1)
