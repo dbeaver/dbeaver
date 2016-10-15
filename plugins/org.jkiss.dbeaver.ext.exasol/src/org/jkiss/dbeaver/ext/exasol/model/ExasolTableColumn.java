@@ -110,6 +110,13 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
     public String getTypeName() {
         return this.dataType.getName();
     }
+    
+    @Override
+    public int getTypeID()
+    {
+    	return this.dataType.getTypeID();
+    }
+    
 
     // -----------------
     // Properties
