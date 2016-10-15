@@ -109,8 +109,9 @@ public class PrefPageSQLExecute extends TargetPrefPage
                 executeTimeoutText.setSelection(0);
                 executeTimeoutText.setDigits(0);
                 executeTimeoutText.setIncrement(1);
-                executeTimeoutText.setMinimum(1);
+                executeTimeoutText.setMinimum(0);
                 executeTimeoutText.setMaximum(100000);
+                executeTimeoutText.setToolTipText("Query execute timeout (in seconds). 0 means no timeout");
 
                 soundOnQueryEnd = UIUtils.createLabelCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_sound_on_query_end, false);
             }

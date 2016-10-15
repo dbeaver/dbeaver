@@ -147,6 +147,11 @@ public class WMIStatement implements DBCStatement {
         return null;
     }
 
+    @Override
+    public void setStatementTimeout(int timeout) throws DBCException {
+
+    }
+
     @Nullable
     @Override
     public DBCExecutionSource getStatementSource()

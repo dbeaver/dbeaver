@@ -117,4 +117,9 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseable
     @Nullable
     Throwable[] getStatementWarnings() throws DBCException;
 
+    /**
+     * Sets statement execution timeout (in seconds)
+     * @throws DBCException
+     */
+    void setStatementTimeout(int timeout) throws DBCException;
 }
