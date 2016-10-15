@@ -334,6 +334,15 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                 rsOffset, rsMaxRows);
             curStatement = dbcStatement;
 
+            int statementTimeout = getDataSourceContainer().getPreferenceStore().getInt(DBeaverPreferences.STATEMENT_TIMEOUT);
+            if (statementTimeout > 0) {
+                try {
+                    dbcStatement.setStatementTimeout(statementTimeout);
+                } catch (Throwable e) {
+                    log.debug("Can't set statement timeout:" + e.getMessage());
+                }
+            }
+
             if (hasParameters) {
                 bindStatementParameters(session, dbcStatement, sqlQuery);
             }

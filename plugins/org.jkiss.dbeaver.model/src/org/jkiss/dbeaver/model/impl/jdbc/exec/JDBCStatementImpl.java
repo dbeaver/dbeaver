@@ -635,6 +635,15 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     }
 
     @Override
+    public void setStatementTimeout(int timeout) throws DBCException {
+        try {
+            getOriginal().setQueryTimeout(timeout);
+        } catch (SQLException e) {
+            throw new DBCException(e, connection.getDataSource());
+        }
+    }
+
+    @Override
     public int getUpdateCount() throws SQLException
     {
         return (updateCount = getOriginal().getUpdateCount());
