@@ -26,8 +26,6 @@ import org.jkiss.dbeaver.ext.exasol.editors.ExasolSourceObject;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -44,7 +42,7 @@ import java.util.Collection;
 /**
  * @author Karl
  */
-public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject, DBPNamedObject2, DBDPseudoAttributeContainer, ExasolSourceObject {
+public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject, DBPNamedObject2, ExasolSourceObject {
 
     private Boolean hasDistKey;
     private Timestamp lastCommit;
@@ -164,11 +162,6 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     public DBSObjectState getObjectState() {
         // table can only be in state normal
         return DBSObjectState.NORMAL;
-    }
-
-    @Override
-    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException {
-        return new DBDPseudoAttribute[]{ExasolConstants.PSEUDO_ATTR_RID_BIT};
     }
 
 }

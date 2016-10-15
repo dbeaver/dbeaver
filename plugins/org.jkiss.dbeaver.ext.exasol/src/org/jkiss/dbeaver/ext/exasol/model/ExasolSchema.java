@@ -115,9 +115,8 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
     }
 
     @Override
-    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException {
-        // TODO Auto-generated method stub
-        return null;
+    public Class<ExasolTableBase> getChildType(DBRProgressMonitor monitor) throws DBException {
+    	return ExasolTableBase.class;
     }
 
     @Override
