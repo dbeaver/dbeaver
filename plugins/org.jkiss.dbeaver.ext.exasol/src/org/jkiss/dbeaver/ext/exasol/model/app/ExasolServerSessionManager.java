@@ -37,8 +37,8 @@ import java.util.Map;
 public class ExasolServerSessionManager implements DBAServerSessionManager<ExasolServerSession> {
 
     public static final String PROP_KILL_QUERY = "killQuery";
-    private static final String KILL_APP_CMD = "kill session %d";
-    private static final String KILL_STMT_CMD = "kill statement in session %d";
+    private static final String KILL_APP_CMD = "kill session %s";
+    private static final String KILL_STMT_CMD = "kill statement in session %s";
 
     private final ExasolDataSource dataSource;
 
