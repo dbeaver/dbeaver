@@ -489,6 +489,14 @@ public class MySQLTable extends MySQLTableBase
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         getContainer().constraintCache.clearObjectCache(this);
         getContainer().indexCache.clearObjectCache(this);
+        // Remove cached triggers
+        List<MySQLTrigger> triggerCache = getContainer().triggerCache.getCachedObjects();
+        for (MySQLTrigger trigger : triggerCache.toArray(new MySQLTrigger[triggerCache.size()])) {
+            if (trigger.getTable() == this) {
+                getContainer().triggerCache.removeObject(trigger, true);
+            }
+        }
+
         return super.refreshObject(monitor);
     }
 
