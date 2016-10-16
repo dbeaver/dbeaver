@@ -425,6 +425,10 @@ public class ResultSetModel {
         return metadataDynamic;
     }
 
+    boolean isSourceChanged() {
+        return sourceChanged;
+    }
+
     /**
      * Sets new metadata of result set
      *
@@ -546,7 +550,6 @@ public class ResultSetModel {
         }
 
         hasData = true;
-        sourceChanged = false;
     }
 
     boolean hasColorMapping(DBDAttributeBinding binding) {

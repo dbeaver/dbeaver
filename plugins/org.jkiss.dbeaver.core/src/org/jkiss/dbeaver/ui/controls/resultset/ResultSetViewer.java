@@ -1262,7 +1262,7 @@ public class ResultSetViewer extends Viewer
 
         {
 
-            if (getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE)) {
+            if (model.isSourceChanged() && getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE)) {
                 boolean newRecordMode = (rows.size() == 1);
                 if (newRecordMode != recordMode) {
                     toggleMode();
