@@ -47,9 +47,7 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
 	public String getLabelText()
 	{
         if (diagram.hasAttributeStyle(ERDAttributeStyle.TYPES)) {
-            String typeName = object.getTypeName();
-            return object.getName() + ": " + typeName +
-                CommonUtils.notEmpty(SQLUtils.getColumnTypeModifiers(object, typeName, object.getDataKind()));
+            return object.getName() + ": " + object.getFullTypeName();
         } else {
             return object.getName();
         }
