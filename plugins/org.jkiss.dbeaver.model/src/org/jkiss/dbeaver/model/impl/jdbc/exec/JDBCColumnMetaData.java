@@ -280,6 +280,11 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
     }
 
     @Override
+    public String getFullTypeName() {
+        return DBUtils.getFullTypeName(this);
+    }
+
+    @Override
     public boolean isReadOnly() {
         return readOnly;
     }

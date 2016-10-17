@@ -203,7 +203,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return isPersisted() && getOrdinalPosition() < 0;
     }
 
-    public String getFullQualifiedTypeName() {
+    public String getFullTypeName() {
         String fqtn = dataType.getTypeName();
         if (dataType.getDataKind() != DBPDataKind.CONTENT) {
             return DBUtils.getFullTypeName(this);

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -96,6 +97,11 @@ public abstract class AbstractAttribute implements DBSAttributeBase
     public String getTypeName()
     {
         return typeName;
+    }
+
+    @Override
+    public String getFullTypeName() {
+        return DBUtils.getFullTypeName(this);
     }
 
     public void setTypeName(String typeName)

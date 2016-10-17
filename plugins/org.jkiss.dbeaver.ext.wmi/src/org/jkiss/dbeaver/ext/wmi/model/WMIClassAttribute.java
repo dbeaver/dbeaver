@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPImageProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
@@ -48,6 +45,11 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
     public String getTypeName()
     {
         return element.getTypeName();
+    }
+
+    @Override
+    public String getFullTypeName() {
+        return DBUtils.getFullTypeName(this);
     }
 
     @Override

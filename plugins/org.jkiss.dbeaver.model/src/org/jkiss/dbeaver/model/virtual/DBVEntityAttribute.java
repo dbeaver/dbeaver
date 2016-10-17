@@ -89,6 +89,11 @@ public class DBVEntityAttribute implements DBSEntityAttribute
     }
 
     @Override
+    public String getFullTypeName() {
+        return getTypeName();
+    }
+
+    @Override
     public int getTypeID() {
         return -1;
     }

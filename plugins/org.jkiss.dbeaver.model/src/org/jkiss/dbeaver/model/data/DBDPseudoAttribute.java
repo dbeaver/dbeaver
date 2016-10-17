@@ -191,6 +191,11 @@ public class DBDPseudoAttribute implements DBPNamedObject {
         }
 
         @Override
+        public String getFullTypeName() {
+            return attribute.getFullTypeName();
+        }
+
+        @Override
         public int getTypeID()
         {
             return attribute.getTypeID();

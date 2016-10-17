@@ -194,7 +194,6 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         super.setTypeName(fullTypeName.replace("([A-Za-z\\s]+).*", "$1").trim());
     }
 
-    //@Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     @Override
     public String getTypeName()
     {

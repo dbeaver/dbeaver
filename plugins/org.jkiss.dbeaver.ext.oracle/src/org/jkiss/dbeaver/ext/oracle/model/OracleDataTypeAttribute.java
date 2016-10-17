@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -113,6 +114,11 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     public String getTypeName()
     {
         return attrType.getFullyQualifiedName(DBPEvaluationContext.DDL);
+    }
+
+    @Override
+    public String getFullTypeName() {
+        return DBUtils.getFullTypeName(this);
     }
 
     @Override
