@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
@@ -230,6 +231,11 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         @Override
         public String getTypeName()
         {
+            return attribute.getTypeName();
+        }
+
+        @Override
+        public String getFullTypeName() {
             return attribute.getTypeName();
         }
 

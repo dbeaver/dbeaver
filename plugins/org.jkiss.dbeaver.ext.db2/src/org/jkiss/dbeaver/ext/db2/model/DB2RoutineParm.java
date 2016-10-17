@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineRowType;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -138,6 +139,11 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DB
     public String getTypeName()
     {
         return typeName;
+    }
+
+    @Override
+    public String getFullTypeName() {
+        return DBUtils.getFullTypeName(this);
     }
 
     @Override

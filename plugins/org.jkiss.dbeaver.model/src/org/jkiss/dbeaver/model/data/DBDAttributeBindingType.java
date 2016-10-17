@@ -157,6 +157,11 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
     }
 
     @Override
+    public String getFullTypeName() {
+        return DBUtils.getFullTypeName(attribute);
+    }
+
+    @Override
     public int getTypeID() {
         return attribute.getTypeID();
     }

@@ -78,6 +78,11 @@ public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
     }
 
     @Override
+    public String getFullTypeName() {
+        return DBUtils.getFullTypeName(this);
+    }
+
+    @Override
     public int getTypeID()
     {
         return valueType;

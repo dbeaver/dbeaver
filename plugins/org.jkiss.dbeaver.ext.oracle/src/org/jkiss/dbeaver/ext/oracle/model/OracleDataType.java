@@ -302,6 +302,11 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     @Override
+    public String getFullTypeName() {
+        return DBUtils.getFullTypeName(this);
+    }
+
+    @Override
     public int getTypeID()
     {
         return valueType;

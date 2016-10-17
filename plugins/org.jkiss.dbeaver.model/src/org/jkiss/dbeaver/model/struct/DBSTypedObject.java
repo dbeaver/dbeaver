@@ -32,6 +32,11 @@ public interface DBSTypedObject extends DBPObject
     String getTypeName();
 
     /**
+     * Type name with all qualifiers.
+     */
+    String getFullTypeName();
+
+    /**
      * Type numeric ID.
      * (may refer on java.sql.Types or other constant depending on implementer)
      * @return value type

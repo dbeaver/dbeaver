@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -121,6 +122,11 @@ public class PostgreProcedureParameter implements DBSProcedureParameter, DBSAttr
     @Override
     public String getTypeName() {
         return dataType.getTypeName();
+    }
+
+    @Override
+    public String getFullTypeName() {
+        return dataType.getFullTypeName();
     }
 
     @Override

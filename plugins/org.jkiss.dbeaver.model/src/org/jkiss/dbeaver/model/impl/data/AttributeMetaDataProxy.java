@@ -134,6 +134,11 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
     }
 
     @Override
+    public String getFullTypeName() {
+        return attribute.getFullTypeName();
+    }
+
+    @Override
     public int getTypeID() {
         return attribute.getTypeID();
     }

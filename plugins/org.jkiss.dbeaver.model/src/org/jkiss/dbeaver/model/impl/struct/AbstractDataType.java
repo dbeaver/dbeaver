@@ -68,6 +68,11 @@ public abstract class AbstractDataType<DS extends DBPDataSource> implements DBSD
     }
 
     @Override
+    public String getFullTypeName() {
+        return DBUtils.getFullTypeName(this);
+    }
+
+    @Override
     public int getScale() {
         return 0;
     }

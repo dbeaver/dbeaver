@@ -226,6 +226,11 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         return name;
     }
 
+    @Override
+    public String getFullTypeName() {
+        return DBUtils.getFullTypeName(this);
+    }
+
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)

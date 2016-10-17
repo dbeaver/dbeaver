@@ -101,7 +101,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
         column.setOrdinalPosition(-1);
-        column.setFullTypeName(DBUtils.getFullTypeName(column));
+        column.setFullTypeName(column.getFullTypeName());
         return column;
     }
 

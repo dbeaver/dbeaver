@@ -160,6 +160,11 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
         return name;
     }
 
+    @Override
+    public String getFullTypeName() {
+        return DBUtils.getFullTypeName(this);
+    }
+
 
     public int getEquivalentSqlType() {
         return typeDesc.sqlType;

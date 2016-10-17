@@ -109,6 +109,11 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     }
 
     @Override
+    public String getFullTypeName() {
+        return getAttribute().getFullTypeName();
+    }
+
+    @Override
     public int getTypeID() {
         return getAttribute().getTypeID();
     }

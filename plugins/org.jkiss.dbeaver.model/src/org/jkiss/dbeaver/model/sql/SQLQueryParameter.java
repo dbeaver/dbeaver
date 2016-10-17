@@ -152,6 +152,11 @@ public class SQLQueryParameter implements DBSAttributeBase {
     }
 
     @Override
+    public String getFullTypeName() {
+        return DBUtils.getFullTypeName(this);
+    }
+
+    @Override
     public int getTypeID()
     {
         return paramType == null ? -1 : paramType.getTypeID();

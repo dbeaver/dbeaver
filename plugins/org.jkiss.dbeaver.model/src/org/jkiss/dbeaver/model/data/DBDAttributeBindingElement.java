@@ -124,6 +124,11 @@ public class DBDAttributeBindingElement extends DBDAttributeBindingNested implem
     }
 
     @Override
+    public String getFullTypeName() {
+        return DBUtils.getFullTypeName(collection.getComponentType());
+    }
+
+    @Override
     public int getTypeID() {
         return collection.getComponentType().getTypeID();
     }
