@@ -154,6 +154,8 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     {
         try {
             if (storage != null) {
+//                String stringValue = ContentUtils.getContentStringValue(session.getProgressMonitor(), this);
+//                preparedStatement.setString(paramIndex, stringValue);
                 // Try 3 jdbc methods to set character stream
                 releaseTempStream();
                 tmpReader = storage.getContentReader();
@@ -194,7 +196,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         catch (SQLException e) {
             throw new DBCException(e, dataSource);
         }
-        catch (IOException e) {
+        catch (Exception e) {
             throw new DBCException("IO error while reading content", e);
         }
     }

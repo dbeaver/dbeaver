@@ -18,20 +18,16 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.utils.MimeTypes;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.sql.SQLException;
-import java.sql.SQLXML;
 
 /**
  * CLOB handler
@@ -39,15 +35,35 @@ import java.sql.SQLXML;
 public class OracleCLOBValueHandler extends JDBCContentValueHandler {
 
     public static final OracleCLOBValueHandler INSTANCE = new OracleCLOBValueHandler();
+    public static final int MAX_PART_SIZE = 4000;
 
     @Override
     public void writeStreamValue(@NotNull DBCSession session, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
-        if (!object.isNull()) {
-            writer.write("TO_CLOB(");
+        DBDContentStorage contents = object.getContents(session.getProgressMonitor());
+        if (contents == null) {
+            writer.write("NULL");
+            return;
         }
-        super.writeStreamValue(session, type, object, writer);
-        if (!object.isNull()) {
-            writer.write(")");
+        String strValue = ContentUtils.getContentStringValue(session.getProgressMonitor(), object);
+        String[] parts = splitString(strValue);
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+            if (i > 0) writer.write("||");
+            writer.write("TO_CLOB('");
+            writer.write(part.replace("'", "''"));
+            writer.write("')");
         }
+    }
+
+    private static String[] splitString(String strValue) {
+        int partCount = strValue.length() / MAX_PART_SIZE;
+        if (strValue.length() % MAX_PART_SIZE > 0) partCount++;
+        String[] parts = new String[partCount];
+        for (int i = 0; i < partCount; i++) {
+            int startOffset = i * MAX_PART_SIZE;
+            int endOffset = strValue.length() < startOffset + MAX_PART_SIZE ? strValue.length() : startOffset + MAX_PART_SIZE;
+            parts[i] = strValue.substring(startOffset, endOffset);
+        }
+        return parts;
     }
 }
