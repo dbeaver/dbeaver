@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -45,7 +46,7 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
             return OracleBFILEValueHandler.INSTANCE;
         } else if (typedObject.getTypeID() == java.sql.Types.STRUCT) {
             return OracleObjectValueHandler.INSTANCE;
-        } else if (typeName.contains("TIMESTAMP")) {
+        } else if (typeName.contains("TIMESTAMP") || typedObject.getDataKind() == DBPDataKind.DATETIME) {
             return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
         } else {
             return null;

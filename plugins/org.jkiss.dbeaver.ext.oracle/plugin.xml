@@ -389,13 +389,10 @@
 
             <datasource id="oracle"/>
 
-            <type name="BLOB"/>
-            <type name="CLOB"/>
-            <type name="NCLOB"/>
-            <type name="BFILE"/>
-            <type name="BFILE"/>
             <type name="XMLTYPE"/>
             <type name="SYS.XMLTYPE"/>
+            <type kind="CONTENT"/>
+            <type kind="DATETIME"/>
             <type name="TIMESTAMP"/>
             <type name="TIMESTAMP WITH TZ"/>
             <type name="TIMESTAMP WITH LOCAL TZ"/>
