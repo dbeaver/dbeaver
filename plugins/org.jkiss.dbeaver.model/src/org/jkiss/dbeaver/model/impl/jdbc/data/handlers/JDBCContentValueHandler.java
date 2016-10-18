@@ -244,11 +244,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
         if (cs != null) {
             if (ContentUtils.isTextContent(object)) {
                 writer.write("'");
-                StringWriter strBuffer = new StringWriter();
-                try (Reader in = cs.getContentReader()) {
-                    IOUtils.copyText(in, strBuffer);
-                }
-                String strValue = strBuffer.toString();
+                String strValue = ContentUtils.getContentStringValue(session.getProgressMonitor(), object);
                 if (session.getDataSource() instanceof SQLDataSource) {
                     strValue = ((SQLDataSource) session.getDataSource()).getSQLDialect().escapeString(strValue);
                 }

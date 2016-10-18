@@ -24,17 +24,12 @@ import org.eclipse.swt.custom.StyledText;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.utils.ContentUtils;
-
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringWriter;
 
 /**
 * TextPanelEditor
@@ -54,16 +49,12 @@ public class TextPanelEditor implements IStreamValueEditor<StyledText> {
     public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @NotNull DBDContent value) throws DBException
     {
         monitor.subTask("Read text value");
-        DBDContentStorage data = value.getContents(monitor);
-        StringWriter buffer = new StringWriter();
-        if (data != null) {
-            try (Reader contentReader = data.getContentReader()) {
-                ContentUtils.copyStreams(contentReader, -1, buffer, monitor);
-            } catch (IOException e) {
-                throw new DBException("Error reading text from stream", e);
-            }
+        if (value.isNull()) {
+            control.setText("");
+        } else {
+            String strValue = ContentUtils.getContentStringValue(monitor, value);
+            control.setText(strValue);
         }
-        control.setText(buffer.toString());
     }
 
     @Override
