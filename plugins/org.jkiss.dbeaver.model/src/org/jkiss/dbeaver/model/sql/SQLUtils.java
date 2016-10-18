@@ -43,6 +43,7 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -501,6 +502,7 @@ public final class SQLUtils {
     }
 
     public static String getColumnTypeModifiers(@NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+        typeName = typeName.toUpperCase(Locale.ENGLISH);
         if (dataKind == DBPDataKind.STRING) {
             if (typeName.indexOf('(') == -1) {
                 final long maxLength = column.getMaxLength();
@@ -508,13 +510,13 @@ public final class SQLUtils {
                     return "(" + maxLength + ")";
                 }
             }
-        } else if (dataKind == DBPDataKind.CONTENT) {
+        } else if (dataKind == DBPDataKind.CONTENT && !typeName.contains("LOB")) {
             final long maxLength = column.getMaxLength();
             if (maxLength > 0) {
                 return "(" + maxLength + ')';
             }
         } else if (dataKind == DBPDataKind.NUMERIC) {
-            if (typeName.equalsIgnoreCase("DECIMAL") || typeName.equalsIgnoreCase("NUMERIC") || typeName.equalsIgnoreCase("NUMBER")) {
+                if (typeName.equals("DECIMAL") || typeName.equals("NUMERIC") || typeName.equals("NUMBER")) {
                 int scale = column.getScale();
                 int precision = column.getPrecision();
                 if (precision == 0) {

@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.sql.Types;
+
 /**
  * Oracle data types provider
  */
@@ -33,7 +35,11 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
         final String typeName = typedObject.getTypeName();
-        if (OracleConstants.TYPE_NAME_XML.equals(typeName) || OracleConstants.TYPE_FQ_XML.equals(typeName)) {
+        if (typedObject.getTypeID() == Types.BLOB) {
+            return OracleBLOBValueHandler.INSTANCE;
+        } else if (typedObject.getTypeID() == Types.CLOB || typedObject.getTypeID() == Types.NCLOB) {
+            return OracleCLOBValueHandler.INSTANCE;
+        } else if (OracleConstants.TYPE_NAME_XML.equals(typeName) || OracleConstants.TYPE_FQ_XML.equals(typeName)) {
             return OracleXMLValueHandler.INSTANCE;
         } else if (OracleConstants.TYPE_NAME_BFILE.equals(typeName)) {
             return OracleBFILEValueHandler.INSTANCE;

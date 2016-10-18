@@ -389,6 +389,10 @@
 
             <datasource id="oracle"/>
 
+            <type name="BLOB"/>
+            <type name="CLOB"/>
+            <type name="NCLOB"/>
+            <type name="BFILE"/>
             <type name="BFILE"/>
             <type name="XMLTYPE"/>
             <type name="SYS.XMLTYPE"/>
