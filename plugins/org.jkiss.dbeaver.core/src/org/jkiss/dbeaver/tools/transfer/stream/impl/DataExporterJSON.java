@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -77,7 +78,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportHeader(DBRProgressMonitor monitor) throws DBException, IOException
+    public void exportHeader(DBCSession session) throws DBException, IOException
     {
         columns = getSite().getAttributes();
         tableName = getSite().getSource().getName();
@@ -94,7 +95,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportRow(DBRProgressMonitor monitor, Object[] row) throws DBException, IOException
+    public void exportRow(DBCSession session, Object[] row) throws DBException, IOException
     {
         if (rowNum > 0) {
             out.write(",\n");
@@ -113,7 +114,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
                 // Inline textual content and handle binaries in some special way
                 DBDContent content = (DBDContent) cellValue;
                 try {
-                    DBDContentStorage cs = content.getContents(monitor);
+                    DBDContentStorage cs = content.getContents(session.getProgressMonitor());
                     if (cs != null) {
                         if (ContentUtils.isTextContent(content)) {
                             try (Reader in = cs.getContentReader()) {

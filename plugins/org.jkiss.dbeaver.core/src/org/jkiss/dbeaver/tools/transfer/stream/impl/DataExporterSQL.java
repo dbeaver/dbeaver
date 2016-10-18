@@ -18,13 +18,12 @@
 package org.jkiss.dbeaver.tools.transfer.stream.impl;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -46,6 +45,8 @@ import java.util.List;
  * SQL Exporter
  */
 public class DataExporterSQL extends StreamExporterAbstract {
+
+    private static final Log log = Log.getLog(DataExporterSQL.class);
 
     private static final String PROP_OMIT_SCHEMA = "omitSchema";
     private static final String PROP_ROWS_IN_STATEMENT = "rowsInStatement";
@@ -87,7 +88,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportHeader(DBRProgressMonitor monitor) throws DBException, IOException
+    public void exportHeader(DBCSession session) throws DBException, IOException
     {
         columns = getSite().getAttributes();
         DBPNamedObject source = getSite().getSource();
@@ -102,7 +103,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportRow(DBRProgressMonitor monitor, Object[] row) throws DBException, IOException
+    public void exportRow(DBCSession session, Object[] row) throws DBException, IOException
     {
         SQLDialect.MultiValueInsertMode insertMode = rowsInStatement == 1 ? SQLDialect.MultiValueInsertMode.NOT_SUPPORTED : getMultiValueInsertMode();
         int columnsSize = columns.size();
@@ -152,21 +153,28 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 // just skip it
                 out.write(SQLConstants.NULL_VALUE);
             } else if (row[i] instanceof DBDContent) {
-                // Content
-                // Inline textual content and handle binaries in some special way
                 DBDContent content = (DBDContent)row[i];
-                try {
-                    DBDContentStorage cs = content.getContents(monitor);
-                    if (cs != null) {
-                        if (ContentUtils.isTextContent(content)) {
-                            writeStringValue(cs.getContentReader());
-                        } else {
-                            getSite().writeBinaryData(cs);
+                if (column.getValueHandler() instanceof DBDContentValueHandler) {
+                    ((DBDContentValueHandler) column.getValueHandler()).writeStreamValue(session, column, content, out);
+                } else {
+                    // Content
+                    // Inline textual content and handle binaries in some special way
+                    try {
+                        DBDContentStorage cs = content.getContents(session.getProgressMonitor());
+                        if (cs != null) {
+                            if (ContentUtils.isTextContent(content)) {
+                                try (Reader contentReader = cs.getContentReader()) {
+                                    writeStringValue(contentReader);
+                                }
+                            } else {
+                                getSite().writeBinaryData(cs);
+                            }
                         }
+                    } catch (DBException e) {
+                        log.warn(e);
+                    } finally {
+                        content.release();
                     }
-                }
-                finally {
-                    content.release();
                 }
             } else if (value instanceof File) {
                 out.write("@");

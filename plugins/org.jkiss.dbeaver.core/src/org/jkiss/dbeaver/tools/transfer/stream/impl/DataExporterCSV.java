@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -104,7 +105,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportHeader(DBRProgressMonitor monitor) throws DBException, IOException
+    public void exportHeader(DBCSession session) throws DBException, IOException
     {
         columns = getSite().getAttributes();
         if (headerPosition == HeaderPosition.top || headerPosition == HeaderPosition.both) {
@@ -129,7 +130,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportRow(DBRProgressMonitor monitor, Object[] row) throws DBException, IOException
+    public void exportRow(DBCSession session, Object[] row) throws DBException, IOException
     {
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns.get(i);
@@ -140,7 +141,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
                 // Inline textual content and handle binaries in some special way
                 DBDContent content = (DBDContent)row[i];
                 try {
-                    DBDContentStorage cs = content.getContents(monitor);
+                    DBDContentStorage cs = content.getContents(session.getProgressMonitor());
                     if (cs == null) {
                         writeCellValue(DBConstants.NULL_VALUE_LABEL, false);
                     } else if (ContentUtils.isTextContent(content)) {

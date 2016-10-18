@@ -21,9 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValueCloneable;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -31,14 +29,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.IOUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringWriter;
+import java.io.*;
 import java.sql.*;
 
 /**
@@ -47,7 +44,7 @@ import java.sql.*;
  *
  * @author Serge Rider
  */
-public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
+public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements DBDContentValueHandler {
 
     private static final Log log = Log.getLog(JDBCContentValueHandler.class);
 
@@ -239,6 +236,35 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             }
         }
         return super.getValueDisplayString(column, value, format);
+    }
+
+    @Override
+    public void writeStreamValue(@NotNull DBCSession session, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
+        DBDContentStorage cs = object.getContents(session.getProgressMonitor());
+        if (cs != null) {
+            if (ContentUtils.isTextContent(object)) {
+                writer.write("'");
+                try (Reader in = cs.getContentReader()) {
+                    IOUtils.copyText(in, writer);
+                }
+                writer.write("'");
+            } else {
+
+                if (session.getDataSource() instanceof SQLDataSource) {
+                    DBDBinaryFormatter binaryFormatter = ((SQLDataSource) session.getDataSource()).getSQLDialect().getNativeBinaryFormatter();
+                    ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) cs.getContentLength());
+                    try (InputStream contentStream = cs.getContentStream()) {
+                        IOUtils.copyStream(contentStream, buffer);
+                    }
+                    final byte[] bytes = buffer.toByteArray();
+                    final String binaryString = binaryFormatter.toString(bytes, 0, bytes.length);
+                    writer.write(binaryString);
+                } else {
+                    // Binary data not supported
+                    writer.write("NULL");
+                }
+            }
+        }
     }
 
 }
