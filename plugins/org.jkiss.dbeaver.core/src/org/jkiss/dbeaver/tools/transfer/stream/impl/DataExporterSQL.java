@@ -154,12 +154,12 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 out.write(SQLConstants.NULL_VALUE);
             } else if (row[i] instanceof DBDContent) {
                 DBDContent content = (DBDContent)row[i];
-                if (column.getValueHandler() instanceof DBDContentValueHandler) {
-                    ((DBDContentValueHandler) column.getValueHandler()).writeStreamValue(session, column, content, out);
-                } else {
-                    // Content
-                    // Inline textual content and handle binaries in some special way
-                    try {
+                try {
+                    if (column.getValueHandler() instanceof DBDContentValueHandler) {
+                        ((DBDContentValueHandler) column.getValueHandler()).writeStreamValue(session, column, content, out);
+                    } else {
+                        // Content
+                        // Inline textual content and handle binaries in some special way
                         DBDContentStorage cs = content.getContents(session.getProgressMonitor());
                         if (cs != null) {
                             if (ContentUtils.isTextContent(content)) {
@@ -170,11 +170,11 @@ public class DataExporterSQL extends StreamExporterAbstract {
                                 getSite().writeBinaryData(cs);
                             }
                         }
-                    } catch (DBException e) {
-                        log.warn(e);
-                    } finally {
-                        content.release();
                     }
+                } catch (Exception e) {
+                    log.warn(e);
+                } finally {
+                    content.release();
                 }
             } else if (value instanceof File) {
                 out.write("@");

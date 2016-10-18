@@ -33,7 +33,7 @@ import java.sql.SQLXML;
 /**
  * XML type support
  */
-public class OracleXMLValueHandler extends JDBCContentValueHandler {
+public class OracleXMLValueHandler extends OracleCLOBValueHandler {
 
     public static final OracleXMLValueHandler INSTANCE = new OracleXMLValueHandler();
 

@@ -18,7 +18,9 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 
 import java.util.Arrays;
@@ -282,4 +284,9 @@ class OracleSQLDialect extends JDBCSQLDialect {
         return true;
     }
 
+    @NotNull
+    @Override
+    public DBDBinaryFormatter getNativeBinaryFormatter() {
+        return BinaryFormatterHex.INSTANCE;
+    }
 }

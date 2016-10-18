@@ -244,9 +244,15 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
         if (cs != null) {
             if (ContentUtils.isTextContent(object)) {
                 writer.write("'");
+                StringWriter strBuffer = new StringWriter();
                 try (Reader in = cs.getContentReader()) {
-                    IOUtils.copyText(in, writer);
+                    IOUtils.copyText(in, strBuffer);
                 }
+                String strValue = strBuffer.toString();
+                if (session.getDataSource() instanceof SQLDataSource) {
+                    strValue = ((SQLDataSource) session.getDataSource()).getSQLDialect().escapeString(strValue);
+                }
+                writer.write(strValue);
                 writer.write("'");
             } else {
 
@@ -264,6 +270,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
                     writer.write("NULL");
                 }
             }
+        } else {
+            writer.write("NULL");
         }
     }
 
