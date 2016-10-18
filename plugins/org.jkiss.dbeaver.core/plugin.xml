@@ -1554,6 +1554,13 @@
                 </control>
                 <separator name="additions" visible="false"/>
             </toolbar>
+            <toolbar id="dbeaver-edit" label="Edit actions">
+                <command commandId="org.eclipse.ui.file.save"/>
+                <command commandId="org.eclipse.ui.file.revert" icon="icons/file/reset.png"/>
+                <command commandId="org.eclipse.ui.edit.undo"/>
+                <command commandId="org.eclipse.ui.edit.redo"/>
+                <command commandId="org.eclipse.ui.file.refresh"/>
+            </toolbar>
 
         </menuContribution>
 
