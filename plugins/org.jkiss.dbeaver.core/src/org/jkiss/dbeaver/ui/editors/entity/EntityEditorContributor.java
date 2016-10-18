@@ -19,20 +19,12 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
-import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ISearchContextProvider;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.actions.common.ContextSearchAction;
 
 /**
@@ -60,48 +52,10 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
         }
     }
 
-    public boolean isObjectEditable()
-    {
-        if (curEditor == null) {
-            return false;
-        }
-        DBCExecutionContext context = curEditor.getEditorInput().getExecutionContext();
-        if (context == null) {
-            return false;
-        }
-        if (context.getDataSource().getInfo().isReadOnlyMetaData()) {
-            return false;
-        }
-        DBSObject databaseObject = curEditor.getEditorInput().getDatabaseObject();
-        return databaseObject != null && EntityEditorsRegistry.getInstance().getObjectManager(databaseObject.getClass(), DBEObjectManager.class) != null;
-    }
-
-
     @Override
     public void contributeToMenu(IMenuManager menuManager)
     {
         super.contributeToMenu(menuManager);
-    }
-
-    @Override
-    public void contributeToToolBar(IToolBarManager manager)
-    {
-        super.contributeToToolBar(manager);
-        final IWorkbenchWindow workbenchWindow = getPage().getWorkbenchWindow();
-        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_SAVE, "Save", UIIcon.SAVE_TO_DATABASE, "View/Persist Changes", true));
-        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_REVERT, "Revert", UIIcon.RESET, "Revert changes", true));
-        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_UNDO));
-        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_REDO));
-        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_REFRESH));
-
-/*
-        manager.add(new Separator());
-        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, CoreCommands.CMD_OBJECT_CREATE));
-        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_DELETE));
-
-        manager.add(new Separator());
-        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_REFRESH));
-*/
     }
 
     public static void registerSearchActions(IEditorPart activeEditor)

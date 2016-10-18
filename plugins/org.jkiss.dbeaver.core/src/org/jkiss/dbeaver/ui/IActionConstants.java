@@ -35,6 +35,7 @@ public interface IActionConstants {
     String TOOLBAR_DATABASE = "dbeaver-general"; //$NON-NLS-1$
     String TOOLBAR_TXN = "dbeaver-transactions"; //$NON-NLS-1$
     String TOOLBAR_DATASOURCE = "datasource-settings"; //$NON-NLS-1$
+    String TOOLBAR_EDIT = "dbeaver-edit"; //$NON-NLS-1$
     //String MENU_ID = "org.jkiss.dbeaver.core.navigationMenu";
 
     String MB_ADDITIONS_END = "additions_end"; //$NON-NLS-1$
