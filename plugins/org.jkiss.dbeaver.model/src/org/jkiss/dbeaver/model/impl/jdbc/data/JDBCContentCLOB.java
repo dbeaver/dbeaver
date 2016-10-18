@@ -103,7 +103,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 catch (IOException e) {
                     throw new DBCException("Can't create temp file", e);
                 }
-                try (Writer os = new FileWriter(tempFile)) {
+                try (Writer os = new OutputStreamWriter(new FileOutputStream(tempFile), ContentUtils.DEFAULT_CHARSET)) {
                     ContentUtils.copyStreams(clob.getCharacterStream(), contentLength, os, monitor);
                 } catch (IOException e) {
                     ContentUtils.deleteTempFile(tempFile);
@@ -160,7 +160,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 releaseTempStream();
                 tmpReader = storage.getContentReader();
                 try {
-                    preparedStatement.setCharacterStream(
+                    preparedStatement.setNCharacterStream(
                         paramIndex,
                         tmpReader);
                 }

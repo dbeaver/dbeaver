@@ -50,7 +50,7 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
     public Reader getContentReader()
         throws IOException
     {
-        return new FileReader(file);
+        return new InputStreamReader(new FileInputStream(file), ContentUtils.DEFAULT_CHARSET);
     }
 
     @Override
