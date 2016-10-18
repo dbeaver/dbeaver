@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 
@@ -32,10 +33,10 @@ public interface IStreamDataExporter extends IDataTransferProcessor {
     void init(IStreamDataExporterSite site)
         throws DBException;
 
-    void exportHeader(DBRProgressMonitor monitor)
+    void exportHeader(DBCSession session)
         throws DBException, IOException;
 
-    void exportRow(DBRProgressMonitor monitor, Object[] row)
+    void exportRow(DBCSession session, Object[] row)
         throws DBException, IOException;
 
     void exportFooter(DBRProgressMonitor monitor)

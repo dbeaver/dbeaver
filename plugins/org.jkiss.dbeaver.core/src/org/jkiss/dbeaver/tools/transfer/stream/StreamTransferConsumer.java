@@ -102,7 +102,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         if (!initialized) {
             try {
-                processor.exportHeader(session.getProgressMonitor());
+                processor.exportHeader(session);
             } catch (DBException e) {
                 log.warn("Error while exporting table header", e);
             } catch (IOException e) {
@@ -143,7 +143,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 row[i] = value;
             }
             // Export row
-            processor.exportRow(session.getProgressMonitor(), row);
+            processor.exportRow(session, row);
         } catch (DBException e) {
             throw new DBCException("Error while exporting table row", e);
         } catch (IOException e) {
