@@ -199,7 +199,13 @@ class GridColumn {
                 child.pack(reflect);
                 childrenWidth += child.getWidth();
             }
-            newWidth = Math.max(newWidth, childrenWidth);
+            if (newWidth > childrenWidth) {
+                // Header width bigger than children width
+                GridColumn lastChild = children.get(children.size() - 1);
+                lastChild.setWidth(lastChild.getWidth() + newWidth - childrenWidth);
+            } else {
+                newWidth = childrenWidth;
+            }
         }
         if (reflect) {
             setWidth(newWidth, false);
