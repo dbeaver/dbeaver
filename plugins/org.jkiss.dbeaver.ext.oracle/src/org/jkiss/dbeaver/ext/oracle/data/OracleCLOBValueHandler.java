@@ -18,11 +18,12 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -38,13 +39,13 @@ public class OracleCLOBValueHandler extends JDBCContentValueHandler {
     public static final int MAX_PART_SIZE = 4000;
 
     @Override
-    public void writeStreamValue(@NotNull DBCSession session, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
-        DBDContentStorage contents = object.getContents(session.getProgressMonitor());
+    public void writeStreamValue(DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
+        DBDContentStorage contents = object.getContents(monitor);
         if (contents == null) {
             writer.write("NULL");
             return;
         }
-        String strValue = ContentUtils.getContentStringValue(session.getProgressMonitor(), object);
+        String strValue = ContentUtils.getContentStringValue(monitor, object);
         String[] parts = splitString(strValue);
         for (int i = 0; i < parts.length; i++) {
             String part = parts[i];

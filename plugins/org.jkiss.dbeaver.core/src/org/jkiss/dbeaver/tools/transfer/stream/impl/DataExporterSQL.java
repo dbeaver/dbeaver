@@ -156,7 +156,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 DBDContent content = (DBDContent)row[i];
                 try {
                     if (column.getValueHandler() instanceof DBDContentValueHandler) {
-                        ((DBDContentValueHandler) column.getValueHandler()).writeStreamValue(session, column, content, out);
+                        ((DBDContentValueHandler) column.getValueHandler()).writeStreamValue(session.getProgressMonitor(), session.getDataSource(), column, content, out);
                     } else {
                         // Content
                         // Inline textual content and handle binaries in some special way
