@@ -18,10 +18,11 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.io.IOException;
@@ -35,11 +36,11 @@ public class OracleBLOBValueHandler extends JDBCContentValueHandler {
     public static final OracleBLOBValueHandler INSTANCE = new OracleBLOBValueHandler();
 
     @Override
-    public void writeStreamValue(@NotNull DBCSession session, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
+    public void writeStreamValue(DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
         if (!object.isNull()) {
             writer.write("HEXTORAW('");
         }
-        super.writeStreamValue(session, type, object, writer);
+        super.writeStreamValue(monitor, dataSource, type, object, writer);
         if (!object.isNull()) {
             writer.write("')");
         }

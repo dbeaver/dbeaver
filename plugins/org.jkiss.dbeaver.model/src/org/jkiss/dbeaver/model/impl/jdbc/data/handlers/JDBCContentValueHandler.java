@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -239,21 +241,21 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
     }
 
     @Override
-    public void writeStreamValue(@NotNull DBCSession session, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
-        DBDContentStorage cs = object.getContents(session.getProgressMonitor());
+    public void writeStreamValue(DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
+        DBDContentStorage cs = object.getContents(monitor);
         if (cs != null) {
             if (ContentUtils.isTextContent(object)) {
                 writer.write("'");
-                String strValue = ContentUtils.getContentStringValue(session.getProgressMonitor(), object);
-                if (session.getDataSource() instanceof SQLDataSource) {
-                    strValue = ((SQLDataSource) session.getDataSource()).getSQLDialect().escapeString(strValue);
+                String strValue = ContentUtils.getContentStringValue(monitor, object);
+                if (dataSource instanceof SQLDataSource) {
+                    strValue = ((SQLDataSource) dataSource).getSQLDialect().escapeString(strValue);
                 }
                 writer.write(strValue);
                 writer.write("'");
             } else {
 
-                if (session.getDataSource() instanceof SQLDataSource) {
-                    DBDBinaryFormatter binaryFormatter = ((SQLDataSource) session.getDataSource()).getSQLDialect().getNativeBinaryFormatter();
+                if (dataSource instanceof SQLDataSource) {
+                    DBDBinaryFormatter binaryFormatter = ((SQLDataSource) dataSource).getSQLDialect().getNativeBinaryFormatter();
                     ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) cs.getContentLength());
                     try (InputStream contentStream = cs.getContentStream()) {
                         IOUtils.copyStream(contentStream, buffer);

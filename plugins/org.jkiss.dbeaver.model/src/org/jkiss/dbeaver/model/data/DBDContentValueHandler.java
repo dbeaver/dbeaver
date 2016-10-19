@@ -19,8 +19,10 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.io.IOException;
@@ -36,7 +38,7 @@ public interface DBDContentValueHandler extends DBDValueHandler
      * Writes content value.
      * Must use native content representation.
      */
-    void writeStreamValue(@NotNull DBCSession session, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer)
+    void writeStreamValue(DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer)
         throws DBCException, IOException;
 
 }

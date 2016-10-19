@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -39,6 +41,7 @@ import org.jkiss.utils.Pair;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Collections;
@@ -469,24 +472,27 @@ public final class SQLUtils {
             return SQLConstants.NULL_VALUE;
         }
         DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attribute);
-        String strValue = valueHandler.getValueDisplayString(attribute, value, DBDDisplayFormat.NATIVE);
-        SQLDialect sqlDialect = null;
-        if (dataSource instanceof SQLDataSource) {
-            sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
+
+        String strValue;
+
+        if (value instanceof DBDContent && dataSource instanceof SQLDataSource) {
+            strValue = convertStreamToSQL(attribute, (DBDContent) value, valueHandler, (SQLDataSource) dataSource);
+        } else {
+            strValue = valueHandler.getValueDisplayString(attribute, value, DBDDisplayFormat.NATIVE);
         }
         if (value instanceof Number) {
             return strValue;
+        }
+        SQLDialect sqlDialect = null;
+        if (dataSource instanceof SQLDataSource) {
+            sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
         }
         switch (attribute.getDataKind()) {
             case BOOLEAN:
             case NUMERIC:
                 return strValue;
             case CONTENT:
-                if (value instanceof DBDContent) {
-                    if (!ContentUtils.isTextContent((DBDContent) value)) {
-                        return "[BLOB]";
-                    }
-                }
+                return strValue;
             case STRING:
             case ROWID:
                 if (sqlDialect != null) {
@@ -498,6 +504,30 @@ public final class SQLUtils {
                     return sqlDialect.escapeScriptValue(attribute, value, strValue);
                 }
                 return strValue;
+        }
+    }
+
+    public static String convertStreamToSQL(DBSAttributeBase attribute, DBDContent content, DBDValueHandler valueHandler, SQLDataSource dataSource) {
+        try {
+            DBRProgressMonitor monitor = VoidProgressMonitor.INSTANCE;
+            if (valueHandler instanceof DBDContentValueHandler) {
+                StringWriter buffer = new StringWriter();
+                ((DBDContentValueHandler) valueHandler).writeStreamValue(monitor, dataSource, attribute, content, buffer);
+                return buffer.toString();
+            } else {
+                if (ContentUtils.isTextContent(content)) {
+                    String strValue = ContentUtils.getContentStringValue(monitor, content);
+                    strValue = dataSource.getSQLDialect().escapeString(strValue);
+                    return "'" + strValue + "'";
+                } else {
+                    byte[] binValue = ContentUtils.getContentBinaryValue(monitor, content);
+                    return dataSource.getSQLDialect().getNativeBinaryFormatter().toString(binValue, 0, binValue.length);
+                }
+            }
+        }
+        catch (Exception e) {
+            log.warn(e);
+            return SQLConstants.NULL_VALUE;
         }
     }
 

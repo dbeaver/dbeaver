@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.utils;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPApplication;
@@ -409,7 +410,8 @@ public class ContentUtils {
         return MimeTypes.TEXT_JSON.equalsIgnoreCase(content.getContentType());
     }
 
-    public static String getContentStringValue(DBRProgressMonitor monitor, DBDContent object) throws DBCException {
+    @NotNull
+    public static String getContentStringValue(@NotNull DBRProgressMonitor monitor, @NotNull DBDContent object) throws DBCException {
         DBDContentStorage data = object.getContents(monitor);
         if (data != null) {
             if (data instanceof DBDContentCached) {
@@ -434,6 +436,34 @@ public class ContentUtils {
             }
         }
         return object.toString();
+    }
+
+    @NotNull
+    public static byte[] getContentBinaryValue(@NotNull DBRProgressMonitor monitor, @NotNull DBDContent object) throws DBCException {
+        DBDContentStorage data = object.getContents(monitor);
+        if (data != null) {
+            if (data instanceof DBDContentCached) {
+                Object cachedValue = ((DBDContentCached) data).getCachedValue();
+                if (cachedValue instanceof byte[]) {
+                    return (byte[]) cachedValue;
+                }
+            }
+            try {
+                InputStream contentStream = data.getContentStream();
+                if (contentStream != null) {
+                    try {
+                        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                        ContentUtils.copyStreams(contentStream, object.getContentLength(), buf, monitor);
+                        return buf.toByteArray();
+                    } finally {
+                        IOUtils.close(contentStream);
+                    }
+                }
+            } catch (IOException e) {
+                log.debug("Can't extract string from content", e);
+            }
+        }
+        return null;
     }
 
     public static void deleteTempFile(File tempFile) {
