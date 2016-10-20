@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -95,14 +96,18 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             tableName = DBUtils.getUnQuotedIdentifier(tableName, syntaxManager.getQuoteSymbol());
             caseSensitive = true;
         }
-        String containerName = null;
+        String[] containerNames = null;
         if (!CommonUtils.equalObjects(fullName, tableName)) {
             int divPos = fullName.indexOf(syntaxManager.getStructSeparator());
             if (divPos != -1) {
-                containerName = fullName.substring(0, divPos);
-                tableName = fullName.substring(divPos + 1);
-                if (wordDetector.isQuoted(containerName)) {
-                    containerName = DBUtils.getUnQuotedIdentifier(containerName, syntaxManager.getQuoteSymbol());
+                String[] parts = ArrayUtils.toArray(String.class, CommonUtils.splitString(fullName, syntaxManager.getStructSeparator()));
+                tableName = parts[parts.length - 1];
+                containerNames = ArrayUtils.remove(String.class, parts, parts.length - 1);
+                for (int i = 0; i < containerNames.length; i++) {
+                    if (wordDetector.isQuoted(containerNames[i])) {
+                        containerNames[i] = DBUtils.getUnQuotedIdentifier(containerNames[i], syntaxManager.getQuoteSymbol());
+                    }
+                    containerNames[i] = DBObjectNameCaseTransformer.transformName(editor.getDataSource(), containerNames[i]);
                 }
                 if (wordDetector.isQuoted(tableName)) {
                     tableName = DBUtils.getUnQuotedIdentifier(tableName, syntaxManager.getQuoteSymbol());
@@ -132,7 +137,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             // Start new word finder job
             tlc = new ObjectLookupCache();
             linksCache.put(fullName, tlc);
-            TablesFinderJob job = new TablesFinderJob(structureAssistant, containerName, tableName, caseSensitive, tlc);
+            TablesFinderJob job = new TablesFinderJob(structureAssistant, containerNames, tableName, caseSensitive, tlc);
             job.schedule();
         }
         if (tlc.loading) {
@@ -177,18 +182,17 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
     private class TablesFinderJob extends DataSourceJob {
 
         private final DBSStructureAssistant structureAssistant;
-        private final String containerName;
+        private final String[] containerNames;
         private final String word;
         private final ObjectLookupCache cache;
         private final boolean caseSensitive;
 
-        protected TablesFinderJob(DBSStructureAssistant structureAssistant, String containerName, String word, boolean caseSensitive, ObjectLookupCache cache)
+        protected TablesFinderJob(DBSStructureAssistant structureAssistant, String[] containerNames, String word, boolean caseSensitive, ObjectLookupCache cache)
         {
             super("Find table names for '" + word + "'", DBeaverIcons.getImageDescriptor(UIIcon.SQL_EXECUTE), editor.getExecutionContext());
             this.structureAssistant = structureAssistant;
             // Transform container name case
-            this.containerName = containerName == null ?
-                null : DBObjectNameCaseTransformer.transformName(getExecutionContext().getDataSource(), containerName);
+            this.containerNames = containerNames;
             this.word = word;
             this.caseSensitive = caseSensitive;
             this.cache = cache;
@@ -203,10 +207,10 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             try {
 
                 DBSObjectContainer container = null;
-                if (!CommonUtils.isEmpty(containerName)) {
+                if (!ArrayUtils.isEmpty(containerNames)) {
                     DBSObjectContainer dsContainer = DBUtils.getAdapter(DBSObjectContainer.class, getExecutionContext().getDataSource());
                     if (dsContainer != null) {
-                        DBSObject childContainer = dsContainer.getChild(monitor, containerName);
+                        DBSObject childContainer = dsContainer.getChild(monitor, containerNames[0]);
                         if (childContainer instanceof DBSObjectContainer) {
                             container = (DBSObjectContainer) childContainer;
                         } else {
@@ -215,7 +219,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                             if (dsSelector != null) {
                                 DBSObject curCatalog = dsSelector.getDefaultObject();
                                 if (curCatalog instanceof DBSObjectContainer) {
-                                    childContainer = ((DBSObjectContainer)curCatalog).getChild(monitor, containerName);
+                                    childContainer = ((DBSObjectContainer)curCatalog).getChild(monitor, containerNames[0]);
                                 }
                             }
                             if (childContainer == null) {
@@ -224,6 +228,28 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                             } else if (childContainer instanceof DBSObjectContainer) {
                                 container = (DBSObjectContainer) childContainer;
                             }
+                        }
+                    }
+                }
+                if (container != null) {
+                    if (containerNames.length > 1) {
+                        for (int i = 1; i < containerNames.length; i++) {
+                            DBSObject childContainer = container.getChild(monitor, containerNames[i]);
+                            if (childContainer instanceof DBSObjectContainer) {
+                                container = (DBSObjectContainer) childContainer;
+                            } else {
+                                break;
+                            }
+                        }
+                    } else {
+                        // We have a container. But maybe it is a wrong one -
+                        // this may happen if database supports multiple nested containers (catalog+schema+?)
+                        // and schema name is the same as catalog name.
+                        // So let's try to get nested container because we always need the deepest one.
+                        DBSObject childContainer = container.getChild(monitor, containerNames[0]);
+                        if (childContainer instanceof DBSObjectContainer) {
+                            // Yep - this is it
+                            container = (DBSObjectContainer) childContainer;
                         }
                     }
                 }
