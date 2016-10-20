@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -67,6 +68,12 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
     }
 
     protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, MySQLTrigger trigger) {
+        if (trigger.isPersisted()) {
+            actions.add(
+                new SQLDatabasePersistAction("Drop trigger",
+                    "DROP TRIGGER " + trigger.getFullyQualifiedName(DBPEvaluationContext.DDL))
+            );
+        }
         String ddl =
             "CREATE TRIGGER " + trigger.getFullyQualifiedName(DBPEvaluationContext.DDL) + "\n" +
                 trigger.getActionTiming() + " " + trigger.getManipulationType() + "\n" +
