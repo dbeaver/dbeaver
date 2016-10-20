@@ -138,7 +138,7 @@ public class ExasolUser
 	}
 
 	@Override
-	public DBSObject refreshObject(DBRProgressMonitor monitor)
+	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
 			throws DBException
 	{
 		roles = null;

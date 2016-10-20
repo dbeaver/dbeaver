@@ -619,10 +619,10 @@ public class OracleDataSource extends JDBCDataSource
             }
 //                }
 
-//            DBSObjectFilter schemaFilters = owner.getContainer().getObjectFilter(OracleSchema.class, null, false);
-//            if (schemaFilters != null) {
-//                JDBCUtils.appendFilterClause(schemasQuery, schemaFilters, "U.USERNAME", false);
-//            }
+            DBSObjectFilter schemaFilters = owner.getContainer().getObjectFilter(OracleSchema.class, null, false);
+            if (schemaFilters != null) {
+                JDBCUtils.appendFilterClause(schemasQuery, schemaFilters, "U.USERNAME", false);
+            }
             schemasQuery.append(")");
             //if (!CommonUtils.isEmpty(owner.activeSchemaName)) {
             //schemasQuery.append("\nUNION ALL SELECT '").append(owner.activeSchemaName).append("' AS USERNAME FROM DUAL");
