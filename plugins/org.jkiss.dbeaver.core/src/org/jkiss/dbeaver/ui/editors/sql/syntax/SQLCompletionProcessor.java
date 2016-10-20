@@ -451,6 +451,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 activeQuery = queryAtPos.getQuery() + " ";
             }
         }
+        if (activeQuery == null) {
+            return null;
+        }
 
         final List<String> nameList = new ArrayList<>();
         if (token == null) {
@@ -861,7 +864,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     {
         boolean useKeystrokes = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION);
         return useKeystrokes ?
-            new char[] {'.', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j' , 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '_', '$'} :
+            ".abcdefghijklmnopqrstuvwxyz_$".toCharArray() :
             new char[] {'.', };
     }
 
