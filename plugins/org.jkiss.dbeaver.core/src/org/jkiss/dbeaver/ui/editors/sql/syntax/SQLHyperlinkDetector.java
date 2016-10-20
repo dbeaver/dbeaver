@@ -25,11 +25,13 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
@@ -73,7 +75,8 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
     @Override
     public synchronized IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks)
     {
-        if (region == null || textViewer == null || editor.getExecutionContext() == null) {
+        final DBCExecutionContext executionContext = editor.getExecutionContext();
+        if (region == null || textViewer == null || executionContext == null) {
             return null;
         }
 
@@ -137,7 +140,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             // Start new word finder job
             tlc = new ObjectLookupCache();
             linksCache.put(fullName, tlc);
-            TablesFinderJob job = new TablesFinderJob(structureAssistant, containerNames, tableName, caseSensitive, tlc);
+            TablesFinderJob job = new TablesFinderJob(executionContext, structureAssistant, containerNames, tableName, caseSensitive, tlc);
             job.schedule();
         }
         if (tlc.loading) {
@@ -183,17 +186,17 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 
         private final DBSStructureAssistant structureAssistant;
         private final String[] containerNames;
-        private final String word;
+        private final String objectName;
         private final ObjectLookupCache cache;
         private final boolean caseSensitive;
 
-        protected TablesFinderJob(DBSStructureAssistant structureAssistant, String[] containerNames, String word, boolean caseSensitive, ObjectLookupCache cache)
+        protected TablesFinderJob(@NotNull DBCExecutionContext executionContext, @NotNull DBSStructureAssistant structureAssistant, @Nullable String[] containerNames, @NotNull String objectName, boolean caseSensitive, @NotNull ObjectLookupCache cache)
         {
-            super("Find table names for '" + word + "'", DBeaverIcons.getImageDescriptor(UIIcon.SQL_EXECUTE), editor.getExecutionContext());
+            super("Find object '" + objectName + "'", DBeaverIcons.getImageDescriptor(UIIcon.SQL_EXECUTE), executionContext);
             this.structureAssistant = structureAssistant;
             // Transform container name case
             this.containerNames = containerNames;
-            this.word = word;
+            this.objectName = objectName;
             this.caseSensitive = caseSensitive;
             this.cache = cache;
             setUser(false);
@@ -233,6 +236,8 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                 }
                 if (container != null) {
                     if (containerNames.length > 1) {
+                        // We have multiple containers. They MUST combine a unique
+                        // path to the object
                         for (int i = 1; i < containerNames.length; i++) {
                             DBSObject childContainer = container.getChild(monitor, containerNames[i]);
                             if (childContainer instanceof DBSObjectContainer) {
@@ -255,7 +260,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                 }
 
                 DBSObjectType[] objectTypes = structureAssistant.getHyperlinkObjectTypes();
-                Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, container, objectTypes, word, caseSensitive, false, 10);
+                Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, container, objectTypes, objectName, caseSensitive, false, 10);
                 if (!CommonUtils.isEmpty(objects)) {
                     cache.references.addAll(objects);
                 }
