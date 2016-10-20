@@ -113,7 +113,7 @@ public class ExasolModule extends ExasolSchemaObject implements DBSProcedureCont
 
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.scriptCache.clearCache();
         return this;
     }

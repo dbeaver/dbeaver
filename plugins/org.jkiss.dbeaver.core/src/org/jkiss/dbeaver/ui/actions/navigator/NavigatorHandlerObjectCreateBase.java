@@ -24,6 +24,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
@@ -130,6 +131,14 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 if ((objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0) {
                     // Save object manager's content
                     commandTarget.getContext().saveChanges(monitor);
+                    // Refresh new object (so it can load some props from database)
+                    if (newObject instanceof DBPRefreshableObject) {
+                        final DBNDatabaseNode newChild = DBeaverCore.getInstance().getNavigatorModel().findNode(newObject);
+                        if (newChild != null) {
+                            newChild.refreshNode(monitor, this);
+                            newObject = (OBJECT_TYPE) newChild.getObject();
+                        }
+                    }
                 }
 
                 IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
