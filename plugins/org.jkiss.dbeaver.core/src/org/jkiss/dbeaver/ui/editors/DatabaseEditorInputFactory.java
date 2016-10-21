@@ -31,11 +31,13 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.utils.CommonUtils;
@@ -79,7 +81,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
         final String activePageId = memento.getString(TAG_ACTIVE_PAGE);
         final String activeFolderId = memento.getString(TAG_ACTIVE_FOLDER);
 
-        DataSourceDescriptor dataSourceContainer = DataSourceRegistry.findDataSource(dataSourceId);
+        DBPDataSourceContainer dataSourceContainer = DataSourceRegistry.findDataSource(dataSourceId);
         if (dataSourceContainer == null) {
             log.error("Can't find data source '" + dataSourceId + "'"); //$NON-NLS-2$
             return null;
@@ -115,7 +117,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
                                     return;
                                 }
                                 try {
-                                    DBNNode node = navigatorModel.getNodeByPath(
+                                    final DBNNode node = navigatorModel.getNodeByPath(
                                         monitor, project, nodePath);
                                     if (node == null) {
                                         throw new DBException("Node '" + nodePath + "' not found");
@@ -134,7 +136,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
                                         }
                                     }
                                     if (constructor != null) {
-                                        DatabaseEditorInput input = DatabaseEditorInput.class.cast(constructor.newInstance(node));
+                                        final DatabaseEditorInput input = DatabaseEditorInput.class.cast(constructor.newInstance(node));
                                         input.setDefaultPageId(activePageId);
                                         input.setDefaultFolderId(activeFolderId);
                                         result = input;
@@ -152,7 +154,11 @@ public class DatabaseEditorInputFactory implements IElementFactory
                     errorStatus = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), e.getMessage(), e);
                 }
                 if (result == null && errorStatus != null) {
-                    result = new ErrorEditorInput(errorStatus, dsNode);
+                    if (dsNode == null) {
+                        log.error("Can't find navigator node for datasource '" + dsObject.getName() + "'");
+                    } else {
+                        result = new ErrorEditorInput(errorStatus, dsNode);
+                    }
                 }
             }
         };
@@ -171,7 +177,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
         if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS)) {
             return;
         }
-        DBCExecutionContext context = input.getExecutionContext();
+        final DBCExecutionContext context = input.getExecutionContext();
         if (context == null) {
             // Detached - nothing to save
             return;
@@ -180,7 +186,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
             return;
         }
 
-        DBNDatabaseNode node = input.getNavigatorNode();
+        final DBNDatabaseNode node = input.getNavigatorNode();
         memento.putString(TAG_CLASS, input.getClass().getName());
         memento.putString(TAG_DATA_SOURCE, context.getDataSource().getContainer().getId());
         memento.putString(TAG_NODE, node.getNodeItemPath());

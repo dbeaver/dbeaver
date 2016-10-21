@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -29,12 +31,12 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
  */
 public class EntityEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
 {
-    public EntityEditorInput(DBNDatabaseNode dbmNode)
+    public EntityEditorInput(@NotNull DBNDatabaseNode dbmNode)
     {
         super(dbmNode);
     }
 
-    public EntityEditorInput(DBNDatabaseNode dbnDatabaseNode, DBECommandContext commandContext)
+    public EntityEditorInput(@NotNull DBNDatabaseNode dbnDatabaseNode, @Nullable DBECommandContext commandContext)
     {
         super(dbnDatabaseNode, commandContext);
     }

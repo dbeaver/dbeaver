@@ -22,6 +22,7 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -55,12 +56,12 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     private String defaultFolderId;
     private Map<String, Object> attributes = new LinkedHashMap<>();
 
-    protected DatabaseEditorInput(NODE node)
+    protected DatabaseEditorInput(@NotNull NODE node)
     {
         this(node, null);
     }
 
-    protected DatabaseEditorInput(NODE node, DBECommandContext commandContext)
+    protected DatabaseEditorInput(@NotNull NODE node, @Nullable DBECommandContext commandContext)
     {
         this.node = node;
         DBPDataSource dataSource = node.getDataSource();
