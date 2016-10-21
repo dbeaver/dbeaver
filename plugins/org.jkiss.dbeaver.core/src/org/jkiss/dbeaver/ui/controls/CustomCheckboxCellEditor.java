@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -46,41 +47,41 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
     @Override
     protected Control createControl(Composite parent) {
-        Composite placeholder = new Composite(parent, SWT.NONE);
-        //placeholder.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
-        GridLayout gl = new GridLayout(1, false);
-        gl.verticalSpacing = 0;
-        gl.horizontalSpacing = 0;
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        placeholder.setLayout(gl);
+        if (!RuntimeUtils.isPlatformWindows()) {
+            // On non-Windows WM extra composite breaks inline editor
+            combo = new Button(parent, SWT.CHECK);
+            combo.setFont(parent.getFont());
+            combo.addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusLost(FocusEvent e) {
+                    applyEditorValue();
+                }
+            });
+            return combo;
+        } else {
+            Composite placeholder = new Composite(parent, SWT.NONE);
+            GridLayout gl = new GridLayout(1, false);
+            gl.verticalSpacing = 0;
+            gl.horizontalSpacing = 0;
+            gl.marginHeight = 0;
+            gl.marginWidth = 0;
+            placeholder.setLayout(gl);
 
-        combo = new Button(placeholder, SWT.CHECK);
-        final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER);
-        gd.verticalIndent = 1;
-        gd.horizontalIndent = 4;
-        //gd.grabExcessHorizontalSpace = true;
-        //combo.add(DBConstants.BOOLEAN_PROP_NO);
-        //combo.add(DBConstants.BOOLEAN_PROP_YES);
-        combo.setLayoutData(gd);
-        combo.setFont(parent.getFont());
-        combo.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                applyEditorValue();
-            }
-        });
-//        combo.addSelectionListener(new SelectionAdapter() {
-//            public void widgetDefaultSelected(SelectionEvent event) {
-//                applyEditorValue();
-//            }
-//            public void widgetSelected(SelectionEvent event) {
-//                applyEditorValue();
-//            }
-//        });
+            combo = new Button(placeholder, SWT.CHECK);
+            final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER);
+            gd.verticalIndent = 1;
+            gd.horizontalIndent = 4;
+            combo.setLayoutData(gd);
+            combo.setFont(parent.getFont());
+            combo.addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusLost(FocusEvent e) {
+                    applyEditorValue();
+                }
+            });
+            return placeholder;
+        }
 
-
-        return placeholder;
     }
 
     @Override

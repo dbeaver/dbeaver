@@ -92,6 +92,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private final Map<OBJECT_TYPE, Map<String, Object>> lazyCache = new IdentityHashMap<>();
     private volatile boolean lazyLoadCanceled;
     private List<OBJECT_TYPE> objectList = null;
+    private Object focusObject;
+    private int focusColumn;
 
     public ObjectListControl(
         Composite parent,
@@ -775,6 +777,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return null;
     }
 
+    protected void setFocusCell(Object object, int columnIndex) {
+        this.focusObject = object;
+        this.focusColumn = columnIndex;
+    }
+
     //////////////////////////////////////////////////////
     // Editor activation
 
@@ -989,6 +996,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     } else if (cellValue != null ) {
                         ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
                         if (prop != null) {
+                            if (itemsViewer.isCellEditorActive() && focusObject == object && focusColumn == event.index) {
+                                // Do not paint over active editor
+                                return;
+                            }
                             renderer.paintCell(event, object, event.index, prop.isEditable(objectValue));
                         }
                     }

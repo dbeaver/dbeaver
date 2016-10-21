@@ -73,7 +73,7 @@ public final class SQLUtils {
 //        }
     }
 
-    public static String stripComments(SQLDialect dialect, String query)
+    public static String stripComments(@NotNull SQLDialect dialect, @NotNull String query)
     {
         Pair<String, String> multiLineComments = dialect.getMultiLineComments();
         return stripComments(
@@ -83,7 +83,7 @@ public final class SQLUtils {
             dialect.getSingleLineComments());
     }
 
-    public static String stripComments(String query, @Nullable String mlCommentStart, @Nullable String mlCommentEnd, String[] slComments)
+    public static String stripComments(@NotNull String query, @Nullable String mlCommentStart, @Nullable String mlCommentEnd, String[] slComments)
     {
         String leading = "", trailing = "";
         {
@@ -574,7 +574,7 @@ public final class SQLUtils {
         return false;
     }
 
-    public static String getScriptDescripion(String sql) {
+    public static String getScriptDescripion(@NotNull String sql) {
         sql = stripComments(BasicSQLDialect.INSTANCE, sql);
         Matcher matcher = CREATE_PREFIX_PATTERN.matcher(sql);
         if (matcher.find() && matcher.start(0) == 0) {
