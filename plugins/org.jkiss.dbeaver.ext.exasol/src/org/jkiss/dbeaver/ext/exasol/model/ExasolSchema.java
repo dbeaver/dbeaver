@@ -188,7 +188,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
 
         scriptCache.clearCache();
         tableCache.clearCache();

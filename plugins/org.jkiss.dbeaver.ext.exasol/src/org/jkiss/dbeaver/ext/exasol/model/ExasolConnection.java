@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.exasol.model;
 import java.sql.Date;
 import java.sql.ResultSet;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -119,7 +120,7 @@ public class ExasolConnection
 	}
 
 	@Override
-	public DBSObject refreshObject(DBRProgressMonitor monitor)
+	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
 			throws DBException
 	{
 		return this;

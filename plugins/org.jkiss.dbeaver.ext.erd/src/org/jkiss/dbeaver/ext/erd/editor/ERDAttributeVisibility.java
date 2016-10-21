@@ -58,7 +58,7 @@ public enum ERDAttributeVisibility
                 log.warn(e);
             }
         }
-        return PRIMARY;
+        return ALL;
     }
 
     public static void setDefaultVisibility(DBPPreferenceStore store, ERDAttributeVisibility visibility)
