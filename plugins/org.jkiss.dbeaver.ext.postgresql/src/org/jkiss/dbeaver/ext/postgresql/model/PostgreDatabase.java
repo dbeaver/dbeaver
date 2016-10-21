@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -637,10 +638,11 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         }
     }
 
-    static class SchemaCache extends JDBCObjectCache<PostgreDatabase, PostgreSchema>
+    static class SchemaCache extends JDBCObjectLookupCache<PostgreDatabase, PostgreSchema>
     {
+        @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner) throws SQLException
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable PostgreSchema object, @Nullable String objectName) throws SQLException
         {
 /*
             // Do not apply filters
@@ -649,11 +651,16 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
                 "SELECT n.oid,n.* FROM pg_catalog.pg_namespace n ORDER BY nspname");
 */
             StringBuilder catalogQuery = new StringBuilder("SELECT n.oid,n.* FROM pg_catalog.pg_namespace n");
-            DBSObjectFilter catalogFilters = owner.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
-            if (catalogFilters != null && !catalogFilters.isNotApplicable()) {
-                catalogFilters = new DBSObjectFilter(catalogFilters);
-                // Always read catalog schema
-                catalogFilters.addInclude(PostgreConstants.CATALOG_SCHEMA_NAME);
+            DBSObjectFilter catalogFilters = database.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
+            if ((catalogFilters != null && !catalogFilters.isNotApplicable()) || object != null || objectName != null) {
+                if (object != null || objectName != null) {
+                    catalogFilters = new DBSObjectFilter();
+                    catalogFilters.addInclude(object != null ? object.getName() : objectName);
+                } else {
+                    catalogFilters = new DBSObjectFilter(catalogFilters);
+                    // Always read catalog schema
+                    catalogFilters.addInclude(PostgreConstants.CATALOG_SCHEMA_NAME);
+                }
                 JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "nspname", true);
             }
             catalogQuery.append(" ORDER BY nspname");
@@ -676,6 +683,5 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
             }
             return new PostgreSchema(owner, name, resultSet);
         }
-
     }
 }
