@@ -844,6 +844,12 @@ public class PropertyTreeViewer extends TreeViewer {
             switch (event.type) {
                 case SWT.PaintItem: {
                     if (event.index == 1) {
+                        if (treeEditor != null && treeEditor.getItem() == event.item && treeEditor.getEditor() != null &&
+                            !treeEditor.getEditor().isDisposed() && treeEditor.getEditor().isVisible())
+                        {
+                            // Do not paint over active editor
+                            return;
+                        }
                         final TreeNode node = (TreeNode) event.item.getData();
                         if (node != null && node.property != null) {
                             renderer.paintCell(event, node, event.index, node.isEditable());
