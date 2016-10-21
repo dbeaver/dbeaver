@@ -110,6 +110,17 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         if (quoteStart == -1 || quoteEnd == -1) {
             return false;
         }
+        // Let's check that source code has some whitespaces
+        boolean hasWhitespaces = false;
+        for (int i = quoteStart + 1; i < quoteEnd; i++) {
+            if (Character.isWhitespace(sourceCode.charAt(i))) {
+                hasWhitespaces = true;
+                break;
+            }
+        }
+        if (!hasWhitespaces) {
+            return false;
+        }
         StringBuilder result = new StringBuilder(sourceCode.length());
         char prevChar = (char)-1;
         boolean inString = true;
