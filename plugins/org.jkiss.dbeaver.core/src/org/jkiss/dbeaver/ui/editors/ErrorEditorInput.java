@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.ISharedImages;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -30,7 +31,7 @@ public class ErrorEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
 {
     private final IStatus error;
 
-    public ErrorEditorInput(IStatus error, DBNDatabaseNode dataSourceNode) {
+    public ErrorEditorInput(@NotNull IStatus error, @NotNull DBNDatabaseNode dataSourceNode) {
         super(dataSourceNode);
         this.error = error;
     }
