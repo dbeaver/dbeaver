@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -28,7 +27,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 //import org.jkiss.dbeaver.Log;
 
 public abstract class ExasolObject<PARENT extends DBSObject> implements DBSObject, DBPSaveableObject {
-    private static final Log log = Log.getLog(ExasolObject.class);
 
     protected final PARENT parent;
     protected String name;

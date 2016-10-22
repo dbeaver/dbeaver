@@ -16,62 +16,53 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ext.exasol.model;
+package org.jkiss.dbeaver.ext.exasol.manager.security;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUser;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Timestamp;
 
-public class ExasolUser
+public class ExasolUser extends ExasolGrantee
 		implements DBAUser, DBPRefreshableObject, DBPSaveableObject {
 
-	private static final Log log = Log.getLog(ExasolUser.class);
 
 	private ExasolDataSource dataSource;
 	private String userName;
 	private String description;
-	private boolean persisted;
 	private String dn;
 	private String password;
 	private String priority;
+	private Timestamp created;
 
-	private List<ExasolRole> roles;
 
 	public ExasolUser(ExasolDataSource dataSource, ResultSet resultSet)
 	{
+		super(dataSource, resultSet);
 		this.dataSource = dataSource;
 		if (resultSet != null) {
-			this.persisted = true;
 			this.userName = JDBCUtils.safeGetString(resultSet, "USER_NAME");
 			this.description = JDBCUtils.safeGetString(resultSet,
 					"USER_COMMENT");
 			this.dn = JDBCUtils.safeGetString(resultSet, "DISTINGUISHED_NAME");
 			this.password = JDBCUtils.safeGetString(resultSet, "PASSWORD");
 			this.priority = JDBCUtils.safeGetString(resultSet, "USER_PRIORITY");
+			this.created = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
 		} else {
-			this.persisted = false;
 			this.userName = "user";
 			this.description = "";
 			this.dn = "";
 			this.password = "";
 			this.priority = "";
+			this.created = null;
 		}
 	}
 
@@ -100,6 +91,12 @@ public class ExasolUser
 		return this.priority;
 	}
 
+	@Property(viewable = true, order = 50)
+	public Timestamp getCreated()
+	{
+		return this.created;
+	}
+	
 	public void setDescription(String description)
 	{
 		this.description = description;
@@ -123,58 +120,6 @@ public class ExasolUser
 	public String getName()
 	{
 		return this.userName;
-	}
-
-	@Override
-	public boolean isPersisted()
-	{
-		return this.persisted;
-	}
-
-	@Override
-	public void setPersisted(boolean persisted)
-	{
-		this.persisted = persisted;
-	}
-
-	@Override
-	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-			throws DBException
-	{
-		roles = null;
-		return this;
-	}
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public List<ExasolRole> getRoles(DBRProgressMonitor monitor)
-			throws DBException
-	{
-		if (this.roles != null) {
-			return this.roles;
-		}
-		if (!isPersisted()) {
-			this.roles = new ArrayList();
-			return this.roles;
-		}
-
-		try (JDBCSession session = DBUtils.openMetaSession(monitor,
-				getDataSource(), "Read User Roles")) {
-			try (JDBCPreparedStatement dbStat = session.prepareStatement(
-					"select * from EXA_DBA_ROLES WHERE role_name in (SELECT GRANTED_ROLE FROM EXA_DBA_ROLE_PRIVS WHERE GRANTEE = ?)")) {
-				dbStat.setString(1, userName);
-				try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-					this.roles = new ArrayList();
-					while (dbResult.next()) {
-						this.roles.add(new ExasolRole(dataSource, dbResult));
-					}
-					return this.roles;
-				}
-
-			} catch (SQLException e) {
-				throw new DBException(e, getDataSource());
-			}
-		}
-
 	}
 
 }

@@ -37,8 +37,6 @@ import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Karl
@@ -93,7 +91,6 @@ public class ExasolServerSessionEditor extends AbstractSessionEditor {
             final String action = ExasolMessages.editors_exasol_session_editor_action_kill;
             if (UIUtils.confirmAction(getSite().getShell(), "Confirm kill session",
                 NLS.bind(ExasolMessages.editors_exasol_session_editor_confirm_action, action.toLowerCase(), session))) {
-                Map<String, Object> options = new HashMap<>();
                 getSessionsViewer().alterSession(getSessionsViewer().getSelectedSession(), Collections.singletonMap(ExasolServerSessionManager.PROP_KILL_QUERY, (Object) killQuery));
             }
         }

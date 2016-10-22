@@ -62,7 +62,6 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     private Integer length;
     private Integer scale;
 
-    private ExasolDataSource exasolDataSource;
 
     private String name;
 
@@ -72,13 +71,11 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     // -----------------------
     protected ExasolDataType(DBSObject parent, String name, boolean persisted) {
         super(parent, name, persisted);
-        exasolDataSource = (ExasolDataSource) parent.getDataSource();
 
     }
 
     public ExasolDataType(DBSObject owner, ResultSet dbResult) throws DBException {
         super(owner, JDBCUtils.safeGetString(dbResult, "TYPE_NAME"), true);
-        this.exasolDataSource = ((ExasolDataSource) owner).getDataSource();
 
         this.exasolTypeId = JDBCUtils.safeGetInteger(dbResult, "TYPE_ID");
         this.length = JDBCUtils.safeGetInteger(dbResult, "PRECISION");
@@ -273,7 +270,8 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
         private final Integer precision;
         private final Integer minScale;
         private final Integer maxScale;
-        private final String name;
+        @SuppressWarnings("unused")
+		private final String name;
 
         private TypeDesc(DBPDataKind dataKind, Integer sqlType, Integer precision, Integer minScale, Integer maxScale, String name) {
             this.name = name;
