@@ -85,7 +85,6 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -2522,7 +2521,7 @@ public class ResultSetViewer extends Viewer
         EditConstraintPage page = new EditConstraintPage(
             "Define virtual unique identifier",
             constraint);
-        if (!EditObjectDialog.showDialog(page)) {
+        if (!page.edit()) {
             return false;
         }
 
@@ -3070,7 +3069,7 @@ public class ResultSetViewer extends Viewer
             EditDictionaryPage page = new EditDictionaryPage(
                 "Edit dictionary",
                 model.getSingleSource());
-            EditObjectDialog.showDialog(page);
+            page.edit();
         }
 
         @Override

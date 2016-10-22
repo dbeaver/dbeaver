@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,7 +84,7 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
             protected DB2TableUniqueKey runTask() {
                 EditConstraintPage editPage = new EditConstraintPage(
                     DB2Messages.edit_db2_constraint_manager_dialog_title, table, CONS_TYPES);
-                if (!EditObjectDialog.showDialog(editPage)) {
+                if (!editPage.edit()) {
                     return null;
                 }
 

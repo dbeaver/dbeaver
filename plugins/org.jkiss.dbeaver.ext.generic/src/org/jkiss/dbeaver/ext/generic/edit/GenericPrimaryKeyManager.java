@@ -54,7 +54,7 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
                     "Create constraint",
                     parent,
                     new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY} );
-                if (!EditObjectDialog.showDialog(editPage)) {
+                if (!editPage.edit()) {
                     return null;
                 }
 

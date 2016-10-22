@@ -18,9 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
@@ -33,7 +31,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedureDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
 
 import java.util.List;
 
@@ -55,14 +53,14 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
         return new UITask<OracleProcedureStandalone>() {
             @Override
             protected OracleProcedureStandalone runTask() {
-                CreateProcedureDialog dialog = new CreateProcedureDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource());
-                if (dialog.open() != IDialogConstants.OK_ID) {
+                CreateProcedurePage editPage = new CreateProcedurePage(parent);
+                if (!editPage.edit()) {
                     return null;
                 }
                 return new OracleProcedureStandalone(
                     parent,
-                    dialog.getProcedureName(),
-                    dialog.getProcedureType());
+                    editPage.getProcedureName(),
+                    editPage.getProcedureType());
             }
         }.execute();
     }

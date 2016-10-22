@@ -61,7 +61,7 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
                     "Create index",
                     parent,
                     Collections.singletonList(DBSIndexType.OTHER));
-                if (!EditObjectDialog.showDialog(editPage)) {
+                if (!editPage.edit()) {
                     return null;
                 }
 

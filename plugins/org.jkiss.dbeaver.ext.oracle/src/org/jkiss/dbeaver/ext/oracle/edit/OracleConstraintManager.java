@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 
 /**
  * Oracle constraint manager
@@ -53,24 +52,24 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
         return new UITask<OracleTableConstraint>() {
             @Override
             protected OracleTableConstraint runTask() {
-                EditConstraintPage constraintPage = new EditConstraintPage(
+                EditConstraintPage editPage = new EditConstraintPage(
                     OracleMessages.edit_oracle_constraint_manager_dialog_title,
                     parent,
                     new DBSEntityConstraintType[] {
                         DBSEntityConstraintType.PRIMARY_KEY,
                         DBSEntityConstraintType.UNIQUE_KEY });
-                if (!EditObjectDialog.showDialog(constraintPage)) {
+                if (!editPage.edit()) {
                     return null;
                 }
 
                 final OracleTableConstraint constraint = new OracleTableConstraint(
                     parent,
-                    constraintPage.getConstraintName(),
-                    constraintPage.getConstraintType(),
+                    editPage.getConstraintName(),
+                    editPage.getConstraintType(),
                     null,
                     OracleObjectStatus.ENABLED);
                 int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : constraintPage.getSelectedAttributes()) {
+                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     constraint.addColumn(
                         new OracleTableConstraintColumn(
                             constraint,

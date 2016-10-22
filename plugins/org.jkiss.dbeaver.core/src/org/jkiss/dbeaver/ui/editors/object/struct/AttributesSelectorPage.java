@@ -208,7 +208,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         final Composite tableGroup = new Composite(panel, SWT.NONE);
         tableGroup.setLayout(new GridLayout(2, false));
         tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        UIUtils.createLabelText(
+        Text tableNameLabel = UIUtils.createLabelText(
             tableGroup,
             CoreMessages.dialog_struct_columns_select_label_table,
             DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY);

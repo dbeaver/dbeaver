@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -59,26 +58,26 @@ public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, Oracle
         return new UITask<OracleTableIndex>() {
             @Override
             protected OracleTableIndex runTask() {
-                EditIndexPage indexPage = new EditIndexPage(
+                EditIndexPage editPage = new EditIndexPage(
                     OracleMessages.edit_oracle_index_manager_dialog_title,
                     parent,
                     Collections.singletonList(DBSIndexType.OTHER));
-                if (!EditObjectDialog.showDialog(indexPage)) {
+                if (!editPage.edit()) {
                     return null;
                 }
 
                 StringBuilder idxName = new StringBuilder(64);
                 idxName.append(CommonUtils.escapeIdentifier(parent.getName())).append("_") //$NON-NLS-1$
-                    .append(CommonUtils.escapeIdentifier(indexPage.getSelectedAttributes().iterator().next().getName()))
+                    .append(CommonUtils.escapeIdentifier(editPage.getSelectedAttributes().iterator().next().getName()))
                     .append("_IDX"); //$NON-NLS-1$
                 final OracleTableIndex index = new OracleTableIndex(
                     parent.getSchema(),
                     parent,
                     DBObjectNameCaseTransformer.transformName(parent.getDataSource(), idxName.toString()),
-                    indexPage.isUnique(),
-                    indexPage.getIndexType());
+                    editPage.isUnique(),
+                    editPage.getIndexType());
                 int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : indexPage.getSelectedAttributes()) {
+                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     index.addColumn(
                         new OracleTableIndexColumn(
                             index,

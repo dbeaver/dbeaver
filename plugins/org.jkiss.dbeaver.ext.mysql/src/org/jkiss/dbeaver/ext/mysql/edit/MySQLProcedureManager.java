@@ -18,21 +18,20 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedureDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -73,13 +72,13 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
         return new UITask<MySQLProcedure>() {
             @Override
             protected MySQLProcedure runTask() {
-                CreateProcedureDialog dialog = new CreateProcedureDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource());
-                if (dialog.open() != IDialogConstants.OK_ID) {
+                CreateProcedurePage editPage = new CreateProcedurePage(parent);
+                if (!editPage.edit()) {
                     return null;
                 }
                 MySQLProcedure newProcedure = new MySQLProcedure(parent);
-                newProcedure.setProcedureType(dialog.getProcedureType());
-                newProcedure.setName(dialog.getProcedureName());
+                newProcedure.setProcedureType(editPage.getProcedureType());
+                newProcedure.setName(editPage.getProcedureName());
                 return newProcedure;
             }
         }.execute();

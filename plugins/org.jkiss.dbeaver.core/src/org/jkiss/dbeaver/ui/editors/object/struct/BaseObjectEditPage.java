@@ -29,6 +29,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -88,4 +89,12 @@ public abstract class BaseObjectEditPage extends DialogPage {
     }
 
     protected abstract Control createPageContents(Composite parent);
+
+    public boolean edit() {
+        return EditObjectDialog.showDialog(this);
+    }
+
+    public boolean edit(Shell shell) {
+        return EditObjectDialog.showDialog(shell, this);
+    }
 }

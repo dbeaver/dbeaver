@@ -58,13 +58,13 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
         return new UITask<OraclePackage>() {
             @Override
             protected OraclePackage runTask() {
-                EntityEditPage page = new EntityEditPage(parent.getDataSource(), DBSEntityType.PACKAGE);
-                if (!EditObjectDialog.showDialog(page)) {
+                EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.PACKAGE);
+                if (!editPage.edit()) {
                     return null;
                 }
                 return new OraclePackage(
                     parent,
-                    page.getEntityName());
+                    editPage.getEntityName());
             }
         }.execute();
     }

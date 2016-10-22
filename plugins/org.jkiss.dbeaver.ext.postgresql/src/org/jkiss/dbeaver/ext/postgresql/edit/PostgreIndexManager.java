@@ -57,7 +57,7 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
                     "Edit index",
                     parent,
                     Collections.singletonList(DBSIndexType.OTHER));
-                if (!EditObjectDialog.showDialog(editPage)) {
+                if (!editPage.edit()) {
                     return null;
                 }
 

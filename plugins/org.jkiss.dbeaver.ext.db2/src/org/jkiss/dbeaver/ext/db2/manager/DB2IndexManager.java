@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -84,7 +83,7 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2TableBase> {
             protected DB2Index runTask() {
                 EditIndexPage editPage = new EditIndexPage(
                     DB2Messages.edit_db2_index_manager_dialog_title, table, IX_TYPES);
-                if (!EditObjectDialog.showDialog(editPage)) {
+                if (!editPage.edit()) {
                     return null;
                 }
 
