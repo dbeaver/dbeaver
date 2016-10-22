@@ -336,11 +336,11 @@ public class EditForeignKeyDialog extends Dialog {
                 if (fkColumnInfo.ownColumn != null) {
                     item.setText(0, fkColumnInfo.ownColumn.getName());
                     item.setImage(0, getColumnIcon(fkColumnInfo.ownColumn));
-                    item.setText(1, fkColumnInfo.ownColumn.getTypeName());
+                    item.setText(1, fkColumnInfo.ownColumn.getFullTypeName());
                 }
                 item.setText(2, pkColumn.getAttribute().getName());
                 item.setImage(2, getColumnIcon(pkColumn.getAttribute()));
-                item.setText(3, pkColumn.getAttribute().getTypeName());
+                item.setText(3, pkColumn.getAttribute().getFullTypeName());
                 item.setData(fkColumnInfo);
             }
         } catch (DBException e) {
@@ -467,7 +467,7 @@ public class EditForeignKeyDialog extends Dialog {
                         fkInfo.ownColumn = ownColumns.get(columnsCombo.getSelectionIndex());
                         item.setText(0, fkInfo.ownColumn.getName());
                         item.setImage(0, getColumnIcon(fkInfo.ownColumn));
-                        item.setText(1, fkInfo.ownColumn.getTypeName());
+                        item.setText(1, fkInfo.ownColumn.getFullTypeName());
                         updateButtons();
                     }
                 }
