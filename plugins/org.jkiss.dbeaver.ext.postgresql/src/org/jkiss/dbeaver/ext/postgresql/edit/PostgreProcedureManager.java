@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedureDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;

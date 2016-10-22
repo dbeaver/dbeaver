@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyDialog;
 import org.jkiss.utils.CommonUtils;
 
 /**

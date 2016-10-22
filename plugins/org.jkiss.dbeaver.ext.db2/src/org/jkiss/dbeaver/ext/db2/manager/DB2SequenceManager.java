@@ -18,11 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -32,9 +29,11 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
+import org.jkiss.dbeaver.ui.dialogs.EditObjectDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -82,14 +81,12 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
         return new UITask<DB2Sequence>() {
             @Override
             protected DB2Sequence runTask() {
-                CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(),
-                    schema.getDataSource(),
-                    DB2Messages.edit_db2_sequence_manager_dialog_title);
-                if (dialog.open() != IDialogConstants.OK_ID) {
+                EntityEditPage page = new EntityEditPage(schema.getDataSource(), DBSEntityType.SEQUENCE);
+                if (!EditObjectDialog.showDialog(page)) {
                     return null;
                 }
 
-                return new DB2Sequence(schema, dialog.getEntityName());
+                return new DB2Sequence(schema, page.getEntityName());
             }
         }.execute();
     }

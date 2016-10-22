@@ -30,9 +30,12 @@ public class DBSEntityType
     public static final DBSEntityType TYPE = new DBSEntityType("type", "Type", DBIcon.TREE_DATA_TYPE, true); //$NON-NLS-1$
     public static final DBSEntityType CLASS = new DBSEntityType("class", "Class", DBIcon.TREE_CLASS, false); //$NON-NLS-1$
     public static final DBSEntityType ASSOCIATION = new DBSEntityType("association", "Association", DBIcon.TREE_ASSOCIATION, false); //$NON-NLS-1$
+    public static final DBSEntityType TRIGGER = new DBSEntityType("trigger", "Trigger", DBIcon.TREE_TRIGGER, true); //$NON-NLS-1$
 
     public static final DBSEntityType VIRTUAL_ENTITY = new DBSEntityType("virtual_entity", "Virtual Entity", DBIcon.TREE_TABLE, true); //$NON-NLS-1$
     public static final DBSEntityType VIRTUAL_ASSOCIATION = new DBSEntityType("virtual_association", "Virtual Association", DBIcon.TREE_ASSOCIATION, false); //$NON-NLS-1$
+    public static final DBSEntityType SEQUENCE = new DBSEntityType("sequence", "Sequence", DBIcon.TREE_SEQUENCE, true);
+    public static final DBSEntityType PACKAGE = new DBSEntityType("package", "Package", DBIcon.TREE_PACKAGE, true);
 
     private final String id;
     private final String name;

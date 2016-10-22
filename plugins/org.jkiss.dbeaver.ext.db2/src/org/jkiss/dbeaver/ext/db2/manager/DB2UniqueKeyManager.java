@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintDialog;
 
 import java.util.ArrayList;
 import java.util.List;

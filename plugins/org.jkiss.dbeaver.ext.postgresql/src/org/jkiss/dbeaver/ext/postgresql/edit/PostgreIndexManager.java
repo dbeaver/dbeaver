@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.dialogs.struct.EditIndexDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
