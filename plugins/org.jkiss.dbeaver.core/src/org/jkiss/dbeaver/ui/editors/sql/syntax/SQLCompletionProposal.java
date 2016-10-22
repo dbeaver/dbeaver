@@ -75,7 +75,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     private DBPNamedObject object;
 
     public SQLCompletionProposal(
-        SQLCompletionProcessor.CompletionRequest request,
+        SQLCompletionAnalyzer.CompletionRequest request,
         String displayString,
         String replacementString,
         int cursorPosition,

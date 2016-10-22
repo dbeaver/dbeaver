@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.utils.CommonUtils;
 
@@ -46,9 +47,34 @@ class SQLCompletionAnalyzer
 {
     private static final Log log = Log.getLog(SQLCompletionAnalyzer.class);
 
-    static void makeStructureProposals(
-        final DBRProgressMonitor monitor,
-        final SQLCompletionProcessor.CompletionRequest request)
+    static class CompletionRequest {
+        final SQLEditorBase editor;
+        final boolean simpleMode;
+        int documentOffset;
+        String activeQuery = null;
+
+        SQLWordPartDetector wordDetector;
+        String wordPart;
+        SQLCompletionProcessor.QueryType queryType;
+
+        final List<SQLCompletionProposal> proposals = new ArrayList<>();
+
+        CompletionRequest(SQLEditorBase editor, int documentOffset, boolean simpleMode) {
+            this.editor = editor;
+            this.documentOffset = documentOffset;
+            this.simpleMode = simpleMode;
+        }
+    }
+
+    private final DBRProgressMonitor monitor;
+    private final CompletionRequest request;
+
+    public SQLCompletionAnalyzer(DBRProgressMonitor monitor, CompletionRequest request) {
+        this.monitor = monitor;
+        this.request = request;
+    }
+
+    void runAnalyzer()
     {
         DBPDataSource dataSource = request.editor.getDataSource();
         if (dataSource == null) {
@@ -62,19 +88,19 @@ class SQLCompletionAnalyzer
                 DBPObject rootObject = null;
                 if (request.queryType == SQLCompletionProcessor.QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
                     // Try to detect current table
-                    rootObject = getTableFromAlias(monitor, request, (DBSObjectContainer)dataSource, null);
+                    rootObject = getTableFromAlias((DBSObjectContainer)dataSource, null);
                 } else if (dataSource instanceof DBSObjectContainer) {
                     // Try to get from active object
                     DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource);
                     if (selectedObject != null) {
-                        makeProposalsFromChildren(monitor, request, selectedObject, null);
+                        makeProposalsFromChildren(selectedObject, null);
                         rootObject = DBUtils.getPublicObject(selectedObject.getParentObject());
                     } else {
                         rootObject = dataSource;
                     }
                 }
                 if (rootObject != null) {
-                    makeProposalsFromChildren(monitor, request, rootObject, null);
+                    makeProposalsFromChildren(rootObject, null);
                 }
             } else {
                 DBSObject rootObject = null;
@@ -88,24 +114,22 @@ class SQLCompletionAnalyzer
                     }
                     int divPos = request.wordPart.indexOf(request.editor.getSyntaxManager().getStructSeparator());
                     String tableAlias = divPos == -1 ? null : request.wordPart.substring(0, divPos);
-                    rootObject = getTableFromAlias(monitor, request, sc, tableAlias);
+                    rootObject = getTableFromAlias(sc, tableAlias);
                 }
                 if (rootObject != null) {
-                    makeProposalsFromChildren(monitor, request, rootObject, request.wordPart);
+                    makeProposalsFromChildren(rootObject, request.wordPart);
                 } else {
                     // Get root object or objects from active database (if any)
-                    makeDataSourceProposals(monitor, request);
+                    makeDataSourceProposals();
                 }
             }
         } else {
             // Get list of sub-objects (filtered by wordPart)
-            makeDataSourceProposals(monitor, request);
+            makeDataSourceProposals();
         }
     }
 
-    private static void makeDataSourceProposals(
-        DBRProgressMonitor monitor,
-        SQLCompletionProcessor.CompletionRequest request)
+    private void makeDataSourceProposals()
     {
         DBPDataSource dataSource = request.editor.getDataSource();
         final DBSObjectContainer rootContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
@@ -158,9 +182,9 @@ class SQLCompletionAnalyzer
                 if (childObject == null) {
                     if (i == 0) {
                         // Assume it's a table alias ?
-                        childObject = getTableFromAlias(monitor, request, sc, token);
+                        childObject = getTableFromAlias(sc, token);
                         if (childObject == null && !request.simpleMode) {
-                            // Searhc using structure assistant
+                            // Search using structure assistant
                             DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                             if (structureAssistant != null) {
                                 Collection<DBSObjectReference> references = structureAssistant.findObjectsByMask(
@@ -197,10 +221,10 @@ class SQLCompletionAnalyzer
         }
         if (lastToken == null) {
             // Get all children objects as proposals
-            makeProposalsFromChildren(monitor, request, childObject, null);
+            makeProposalsFromChildren(childObject, null);
         } else {
             // Get matched children
-            makeProposalsFromChildren(monitor, request, childObject, lastToken);
+            makeProposalsFromChildren(childObject, lastToken);
             if (tokens.size() == 1) {
                 // Get children from selected object
             }
@@ -208,7 +232,7 @@ class SQLCompletionAnalyzer
                 // Try in active object
                 for (int k = 0; k < selectedContainers.length; k++) {
                     if (selectedContainers[k] != null && selectedContainers[k] != childObject) {
-                        makeProposalsFromChildren(monitor, request, selectedContainers[k], lastToken);
+                        makeProposalsFromChildren(selectedContainers[k], lastToken);
                     }
                 }
 
@@ -222,7 +246,7 @@ class SQLCompletionAnalyzer
                         }
                     }
                     if (structureAssistant != null) {
-                        makeProposalsFromAssistant(monitor, structureAssistant, sc, lastToken, request);
+                        makeProposalsFromAssistant(structureAssistant, sc, lastToken);
                     }
                 }
             }
@@ -230,7 +254,7 @@ class SQLCompletionAnalyzer
     }
 
     @Nullable
-    private static DBSObject getTableFromAlias(DBRProgressMonitor monitor, SQLCompletionProcessor.CompletionRequest request, DBSObjectContainer sc, @Nullable String token)
+    private DBSObject getTableFromAlias(DBSObjectContainer sc, @Nullable String token)
     {
         final DBPDataSource dataSource = request.editor.getDataSource();
         if (!(dataSource instanceof SQLDataSource)) {
@@ -350,11 +374,7 @@ class SQLCompletionAnalyzer
         }
     }
 
-    private static void makeProposalsFromChildren(
-        DBRProgressMonitor monitor,
-        SQLCompletionProcessor.CompletionRequest request,
-        DBPObject parent,
-        @Nullable String startPart)
+    private void makeProposalsFromChildren(DBPObject parent, @Nullable String startPart)
     {
         if (startPart != null) {
             startPart = request.wordDetector.removeQuotes(startPart).toUpperCase(Locale.ENGLISH);
@@ -431,7 +451,7 @@ class SQLCompletionAnalyzer
                         }
                     }
                     for (DBSObject child : matchedObjects) {
-                        request.proposals.add(makeProposalsFromObject(monitor, request, child));
+                        request.proposals.add(makeProposalsFromObject(child));
                     }
                 }
             }
@@ -440,12 +460,10 @@ class SQLCompletionAnalyzer
         }
     }
 
-    private static void makeProposalsFromAssistant(
-        DBRProgressMonitor monitor,
+    private void makeProposalsFromAssistant(
         DBSStructureAssistant assistant,
         @Nullable DBSObjectContainer rootSC,
-        String objectName,
-        SQLCompletionProcessor.CompletionRequest request)
+        String objectName)
     {
         try {
             Collection<DBSObjectReference> references = assistant.findObjectsByMask(
@@ -457,22 +475,20 @@ class SQLCompletionAnalyzer
                 false,
                 100);
             for (DBSObjectReference reference : references) {
-                request.proposals.add(makeProposalsFromObject(monitor, request, reference, reference.getObjectType().getImage()));
+                request.proposals.add(makeProposalsFromObject(reference, reference.getObjectType().getImage()));
             }
         } catch (DBException e) {
             log.error(e);
         }
     }
 
-    private static SQLCompletionProposal makeProposalsFromObject(DBRProgressMonitor monitor, SQLCompletionProcessor.CompletionRequest request, DBSObject object)
+    private SQLCompletionProposal makeProposalsFromObject(DBSObject object)
     {
         DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, object, false);
-        return makeProposalsFromObject(monitor, request, object, node == null ? null : node.getNodeIconDefault());
+        return makeProposalsFromObject(object, node == null ? null : node.getNodeIconDefault());
     }
 
-    private static SQLCompletionProposal makeProposalsFromObject(
-        DBRProgressMonitor monitor,
-        SQLCompletionProcessor.CompletionRequest request,
+    private SQLCompletionProposal makeProposalsFromObject(
         DBPNamedObject object,
         @Nullable DBPImage objectIcon)
     {
@@ -485,7 +501,7 @@ class SQLCompletionAnalyzer
             // If we replace short name with referenced object
             // and current active schema (catalog) is not this object's container then
             // replace with full qualified name
-            if (!getPreferences(request).getBoolean(SQLPreferenceConstants.PROPOSAL_SHORT_NAME) && object instanceof DBSObjectReference) {
+            if (!request.editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_SHORT_NAME) && object instanceof DBSObjectReference) {
                 if (request.wordDetector.getFullWord().indexOf(request.editor.getSyntaxManager().getStructSeparator()) == -1) {
                     DBSObjectReference structObject = (DBSObjectReference) object;
                     if (structObject.getContainer() != null) {
@@ -516,23 +532,11 @@ class SQLCompletionAnalyzer
             object);
     }
 
-    static DBPPreferenceStore getPreferences(SQLCompletionProcessor.CompletionRequest request) {
-        DBPPreferenceStore store = null;
-        DBPDataSource dataSource = request.editor.getDataSource();
-        if (dataSource != null) {
-            store = dataSource.getContainer().getPreferenceStore();
-        }
-        if (store == null) {
-            store = DBeaverCore.getGlobalPreferenceStore();
-        }
-        return store;
-    }
-
     /*
         * Turns the vector into an Array of ICompletionProposal objects
         */
     protected static SQLCompletionProposal createCompletionProposal(
-        SQLCompletionProcessor.CompletionRequest request,
+        CompletionRequest request,
         String replaceString,
         String displayString,
         String description,
@@ -540,7 +544,7 @@ class SQLCompletionAnalyzer
         boolean isObject,
         @Nullable DBPNamedObject object)
     {
-        DBPPreferenceStore store = getPreferences(request);
+        DBPPreferenceStore store = request.editor.getActivePreferenceStore();
         DBPDataSource dataSource = request.editor.getDataSource();
         if (dataSource != null) {
             if (isObject) {
@@ -585,7 +589,7 @@ class SQLCompletionAnalyzer
     }
 
     protected static SQLCompletionProposal createCompletionProposal(
-        SQLCompletionProcessor.CompletionRequest request,
+        CompletionRequest request,
         String replaceString,
         String displayString,
         String description)
@@ -600,4 +604,5 @@ class SQLCompletionAnalyzer
             description,
             null);
     }
+
 }
