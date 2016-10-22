@@ -20,21 +20,28 @@ package org.jkiss.dbeaver.ui.dialogs.struct;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * EditConstraintDialog
@@ -43,10 +50,14 @@ import java.util.Collection;
  */
 public class EditConstraintDialog extends AttributesSelectorDialog {
 
+    private DBSEntity entity;
+    private String constraintName;
     private DBSEntityConstraintType[] constraintTypes;
     private DBSEntityConstraintType selectedConstraintType;
     private DBSEntityReferrer constraint;
     private Collection<? extends DBSEntityAttributeRef> attributes;
+
+    private Map<DBSEntityConstraintType, String> TYPE_PREFIX = new HashMap<>();
 
     public EditConstraintDialog(
         Shell shell,
@@ -55,6 +66,7 @@ public class EditConstraintDialog extends AttributesSelectorDialog {
         DBSEntityConstraintType[] constraintTypes)
     {
         super(shell, title, entity);
+        this.entity = entity;
         this.constraintTypes = constraintTypes;
         Assert.isTrue(!ArrayUtils.isEmpty(this.constraintTypes));
     }
@@ -74,9 +86,39 @@ public class EditConstraintDialog extends AttributesSelectorDialog {
         }
     }
 
+    private void addTypePrefix(DBSEntityConstraintType type, String prefix) {
+        if (entity.getDataSource() instanceof SQLDataSource) {
+            prefix = ((SQLDataSource) entity.getDataSource()).getSQLDialect().storesUnquotedCase().transform(prefix);
+        }
+        TYPE_PREFIX.put(type, prefix);
+    }
+
     @Override
     protected void createContentsBeforeColumns(Composite panel)
     {
+        if (entity != null) {
+            addTypePrefix(DBSEntityConstraintType.PRIMARY_KEY, "_PK");
+            addTypePrefix(DBSEntityConstraintType.UNIQUE_KEY, "_UN");
+            addTypePrefix(DBSEntityConstraintType.VIRTUAL_KEY, "_VK");
+            addTypePrefix(DBSEntityConstraintType.FOREIGN_KEY, "_FK");
+
+            String namePrefix = TYPE_PREFIX.get(constraintTypes[0]);
+            if (namePrefix == null) {
+                namePrefix = "KEY";
+            }
+            this.constraintName = DBObjectNameCaseTransformer.transformName(entity.getDataSource(), CommonUtils.escapeIdentifier(entity.getName()) + namePrefix);
+        }
+
+        final Text nameText = entity != null ? UIUtils.createLabelText(panel, "Name", constraintName) : null;
+        if (nameText != null) {
+            nameText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    constraintName = nameText.getText();
+                }
+            });
+        }
+
         UIUtils.createControlLabel(panel, CoreMessages.dialog_struct_edit_constrain_label_type);
         final Combo typeCombo = new Combo(panel, SWT.DROP_DOWN | SWT.READ_ONLY);
         typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -93,9 +135,26 @@ public class EditConstraintDialog extends AttributesSelectorDialog {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
+                DBSEntityConstraintType oldType = selectedConstraintType;
                 selectedConstraintType = constraintTypes[typeCombo.getSelectionIndex()];
+                if (constraintName != null) {
+                    String oldPrefix = TYPE_PREFIX.get(oldType);
+                    if (oldPrefix != null && constraintName.endsWith(oldPrefix)) {
+                        String newPrefix = TYPE_PREFIX.get(selectedConstraintType);
+                        if (newPrefix != null) {
+                            constraintName = constraintName.substring(0, constraintName.length() - oldPrefix.length()) + newPrefix;
+                            if (nameText != null) {
+                                nameText.setText(constraintName);
+                            }
+                        }
+                    }
+                }
             }
         });
+    }
+
+    public String getConstraintName() {
+        return constraintName;
     }
 
     public DBSEntityConstraintType getConstraintType()

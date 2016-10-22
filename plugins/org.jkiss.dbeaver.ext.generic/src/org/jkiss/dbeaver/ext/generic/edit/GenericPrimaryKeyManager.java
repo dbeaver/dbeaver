@@ -22,7 +22,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,7 +30,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * Generic constraint manager
@@ -68,7 +66,7 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
                     null,
                     editDialog.getConstraintType(),
                     false);
-                primaryKey.setName(DBObjectNameCaseTransformer.transformObjectName(primaryKey, CommonUtils.escapeIdentifier(parent.getName()) + "_PK"));
+                primaryKey.setName(editDialog.getConstraintName());
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
                     primaryKey.addColumn(

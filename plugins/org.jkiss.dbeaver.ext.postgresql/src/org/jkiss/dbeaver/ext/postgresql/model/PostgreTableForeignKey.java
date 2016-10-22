@@ -76,7 +76,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
         @NotNull DBSForeignKeyModifyRule deleteRule,
         @NotNull DBSForeignKeyModifyRule updateRule)
     {
-        super(table, DBSEntityConstraintType.FOREIGN_KEY);
+        super(table, null, DBSEntityConstraintType.FOREIGN_KEY);
         this.refConstraint = refConstraint;
         this.refTable = (PostgreTableBase) refConstraint.getParentObject();
         this.updateRule = updateRule;

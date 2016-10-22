@@ -23,7 +23,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
@@ -32,7 +31,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * Postgre constraint manager
@@ -67,8 +65,8 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
 
                 final PostgreTableConstraint constraint = new PostgreTableConstraint(
                     parent,
+                    editDialog.getConstraintName(),
                     editDialog.getConstraintType());
-                constraint.setName(DBObjectNameCaseTransformer.transformObjectName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
                     constraint.addColumn(

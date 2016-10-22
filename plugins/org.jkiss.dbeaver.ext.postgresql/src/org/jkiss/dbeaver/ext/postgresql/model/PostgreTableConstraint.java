@@ -40,8 +40,8 @@ public class PostgreTableConstraint extends PostgreTableConstraintBase {
         this.source = JDBCUtils.safeGetString(resultSet, "consrc");
     }
 
-    public PostgreTableConstraint(PostgreTableBase table, DBSEntityConstraintType constraintType) {
-        super(table, constraintType);
+    public PostgreTableConstraint(PostgreTableBase table, String constraintName, DBSEntityConstraintType constraintType) {
+        super(table, constraintName, constraintType);
     }
 
     @Override
