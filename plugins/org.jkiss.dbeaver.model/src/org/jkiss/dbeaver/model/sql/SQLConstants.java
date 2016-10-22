@@ -43,11 +43,12 @@ public class SQLConstants {
         "JOIN"
     };
 
+    public static final String KEYWORD_ON = "ON";
     public static final String[] COLUMN_KEYWORDS = {
         "SELECT",
         "WHERE",
         "SET",
-        "ON",
+        KEYWORD_ON,
         "AND",
         "OR",
         "BY",
@@ -205,7 +206,7 @@ public class SQLConstants {
         "NUMERIC",
         "OF",
         "OLD",
-        "ON",
+        KEYWORD_ON,
         "ONLY",
         "OPEN",
         "OR",
