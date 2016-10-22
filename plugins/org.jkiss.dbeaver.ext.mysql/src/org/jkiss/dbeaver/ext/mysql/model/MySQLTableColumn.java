@@ -191,7 +191,12 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
 
     public void setFullTypeName(String fullTypeName) {
         this.fullTypeName = fullTypeName;
-        super.setTypeName(fullTypeName.replace("([A-Za-z\\s]+).*", "$1").trim());
+        int divPos = fullTypeName.indexOf('(');
+        if (divPos != -1) {
+            super.setTypeName(fullTypeName.substring(0, divPos).trim());
+        } else {
+            super.setTypeName(fullTypeName);
+        }
     }
 
     @Override
@@ -334,7 +339,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         public Object[] getPossibleValues(MySQLTableColumn object)
         {
             if (object.getCharset() == null) {
-                return null;
+                return new Object[0];
             } else {
                 return object.getCharset().getCollations().toArray();
             }

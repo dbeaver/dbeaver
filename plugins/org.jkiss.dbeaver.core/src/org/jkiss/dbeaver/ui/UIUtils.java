@@ -1265,7 +1265,7 @@ public class UIUtils {
         if (property instanceof IPropertyValueListProvider) {
             final IPropertyValueListProvider listProvider = (IPropertyValueListProvider) property;
             final Object[] items = listProvider.getPossibleValues(object);
-            if (!ArrayUtils.isEmpty(items)) {
+            if (items != null) {
                 final String[] strings = new String[items.length];
                 for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
                     strings[i] = items[i] instanceof DBPNamedObject ? ((DBPNamedObject)items[i]).getName() : CommonUtils.toString(items[i]);

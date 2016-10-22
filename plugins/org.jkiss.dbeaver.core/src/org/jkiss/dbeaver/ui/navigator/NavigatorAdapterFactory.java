@@ -120,7 +120,7 @@ public class NavigatorAdapterFactory implements IAdapterFactory
                 if (props.isEmpty() && adaptableObject instanceof DBSObject) {
                     // Add default properties
                     DBSObject meta = (DBSObject)adaptableObject;
-                    props.addProperty(null, "name", CoreMessages.model_navigator_Name, meta.getName()); //$NON-NLS-1$
+                    props.addProperty(null, DBConstants.PROP_ID_NAME, CoreMessages.model_navigator_Name, meta.getName()); //$NON-NLS-1$
                     props.addProperty(null, "desc", CoreMessages.model_navigator_Description, meta.getDescription()); //$NON-NLS-1$
                 }
                 return adapterType.cast(new PropertySourceDelegate(props));

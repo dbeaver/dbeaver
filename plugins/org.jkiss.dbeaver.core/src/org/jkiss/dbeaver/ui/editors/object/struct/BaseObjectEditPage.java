@@ -23,6 +23,7 @@ import org.eclipse.swt.events.HelpListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 
@@ -71,7 +72,7 @@ public abstract class BaseObjectEditPage extends DialogPage {
         this.container = container;
     }
 
-    protected void performFinish() {
+    protected void performFinish() throws DBException {
 
     }
 

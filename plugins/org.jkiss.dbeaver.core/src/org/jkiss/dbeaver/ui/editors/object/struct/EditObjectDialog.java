@@ -26,10 +26,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 class EditObjectDialog extends TrayDialog {
-
-    private static final Log log = Log.getLog(EditObjectDialog.class);
 
     private final IDialogPage dialogPage;
 
@@ -41,6 +40,11 @@ class EditObjectDialog extends TrayDialog {
             ((BaseObjectEditPage) this.dialogPage).setContainer(this);
         }
         //setHelpAvailable(false);
+    }
+
+    @Override
+    protected boolean isResizable() {
+        return true;
     }
 
     @Override
@@ -69,7 +73,8 @@ class EditObjectDialog extends TrayDialog {
             try {
                 ((BaseObjectEditPage) dialogPage).performFinish();
             } catch (Exception e) {
-                log.error("Error finishing page", e);
+                UIUtils.showErrorDialog(getShell(), "Error saving data", null, e);
+                return;
             }
         }
         super.okPressed();

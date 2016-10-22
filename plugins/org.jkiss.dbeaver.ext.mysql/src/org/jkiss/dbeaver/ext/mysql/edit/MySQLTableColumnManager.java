@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
@@ -102,6 +103,10 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
         column.setOrdinalPosition(-1);
         column.setFullTypeName(DBUtils.getFullTypeName(column));
+        AttributeEditPage page = new AttributeEditPage(null, column);
+        if (!page.edit()) {
+            return null;
+        }
         return column;
     }
 
