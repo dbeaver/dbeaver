@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
  * Status label
@@ -68,7 +69,11 @@ public class StatusLabel extends Composite {
         statusIcon.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         statusText = new Text(this, SWT.READ_ONLY);
-        statusText.setBackground(parent.getBackground());
+        if (RuntimeUtils.isPlatformWindows()) {
+            statusText.setBackground(null);
+        } else {
+            statusText.setBackground(parent.getBackground());
+        }
         statusText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         if (site != null) {
