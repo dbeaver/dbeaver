@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.dialogs;
+package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
@@ -24,9 +24,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 
 public class EditObjectDialog extends TrayDialog {
+
+    private static final Log log = Log.getLog(EditObjectDialog.class);
 
     private final IDialogPage dialogPage;
 
@@ -50,6 +53,33 @@ public class EditObjectDialog extends TrayDialog {
         return group;
     }
 
+    @Override
+    protected Control createContents(Composite parent) {
+        Control contents = super.createContents(parent);
+        updateButtons();
+        return contents;
+    }
+
+    @Override
+    protected void okPressed() {
+        if (dialogPage instanceof BaseObjectEditPage) {
+            try {
+                ((BaseObjectEditPage) dialogPage).performFinish();
+            } catch (Exception e) {
+                log.error("Error finishing page", e);
+            }
+        }
+        super.okPressed();
+    }
+
+    void updateButtons() {
+        boolean enabled = false;
+        if (dialogPage instanceof BaseObjectEditPage) {
+            enabled = ((BaseObjectEditPage) dialogPage).isPageComplete();
+        }
+        getButton(IDialogConstants.OK_ID).setEnabled(enabled);
+    }
+
     public static boolean showDialog(IDialogPage dialogPage) {
         return showDialog(DBeaverUI.getActiveWorkbenchShell(), dialogPage);
     }
@@ -58,4 +88,5 @@ public class EditObjectDialog extends TrayDialog {
         EditObjectDialog dialog = new EditObjectDialog(shell, dialogPage);
         return dialog.open() == IDialogConstants.OK_ID;
     }
+
 }

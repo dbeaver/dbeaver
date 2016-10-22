@@ -38,23 +38,22 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
 /**
- * EditDictionaryDialog
+ * EditDictionaryPage
  *
  * @author Serge Rider
  */
-public class EditDictionaryDialog extends AttributesSelectorDialog {
+public class EditDictionaryPage extends AttributesSelectorPage {
 
     private Text criteriaText;
     private DBVEntity dictionary;
     private Collection<DBSEntityAttribute> descColumns;
     private DBSEntity entity;
 
-    public EditDictionaryDialog(
-        Shell shell,
+    public EditDictionaryPage(
         String title,
         final DBSEntity entity)
     {
-        super(shell, title, entity);
+        super(title, entity);
         this.entity = entity;
         this.dictionary = DBVUtils.findVirtualEntity(entity, true);
         DBeaverUI.runInUI(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
@@ -125,11 +124,10 @@ public class EditDictionaryDialog extends AttributesSelectorDialog {
     }
 
     @Override
-    protected void okPressed()
+    protected void performFinish()
     {
         dictionary.setDescriptionColumnNames(criteriaText.getText());
         entity.getDataSource().getContainer().persistConfiguration();
-        super.okPressed();
     }
 
 }

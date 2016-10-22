@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.data.editors;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -54,8 +53,9 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryDialog;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -161,8 +161,8 @@ public class ReferenceValueEditor {
                 Link hintLabel = UIUtils.createLink(labelGroup, "(<a>Define Description</a>)", new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        EditDictionaryDialog dialog = new EditDictionaryDialog(parent.getShell(), "Dictionary structure", refTable);
-                        if (dialog.open() == IDialogConstants.OK_ID) {
+                        EditDictionaryPage editDictionaryPage = new EditDictionaryPage("Dictionary structure", refTable);
+                        if (EditObjectDialog.showDialog(parent.getShell(), editDictionaryPage)) {
                             loaderJob.schedule();
                         }
                     }

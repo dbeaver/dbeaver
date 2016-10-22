@@ -26,7 +26,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -38,22 +37,22 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * EditIndexDialog
+ * EditIndexPage
  *
  * @author Serge Rider
  */
-public class EditIndexDialog extends AttributesSelectorDialog {
+public class EditIndexPage extends AttributesSelectorPage {
 
     private List<DBSIndexType> indexTypes;
     private DBSIndexType selectedIndexType;
     private boolean unique;
 
-    public EditIndexDialog(
-        Shell shell,
+    public EditIndexPage(
         String title,
         DBSTable table,
-        Collection<DBSIndexType> indexTypes) {
-        super(shell, title, table);
+        Collection<DBSIndexType> indexTypes)
+    {
+        super(title, table);
         this.indexTypes = new ArrayList<>(indexTypes);
         Assert.isTrue(!CommonUtils.isEmpty(this.indexTypes));
     }

@@ -18,9 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
@@ -35,7 +33,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -60,27 +59,26 @@ public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, Oracle
         return new UITask<OracleTableIndex>() {
             @Override
             protected OracleTableIndex runTask() {
-                EditIndexDialog editDialog = new EditIndexDialog(
-                    DBeaverUI.getActiveWorkbenchShell(),
+                EditIndexPage indexPage = new EditIndexPage(
                     OracleMessages.edit_oracle_index_manager_dialog_title,
                     parent,
                     Collections.singletonList(DBSIndexType.OTHER));
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!EditObjectDialog.showDialog(indexPage)) {
                     return null;
                 }
 
                 StringBuilder idxName = new StringBuilder(64);
                 idxName.append(CommonUtils.escapeIdentifier(parent.getName())).append("_") //$NON-NLS-1$
-                    .append(CommonUtils.escapeIdentifier(editDialog.getSelectedAttributes().iterator().next().getName()))
+                    .append(CommonUtils.escapeIdentifier(indexPage.getSelectedAttributes().iterator().next().getName()))
                     .append("_IDX"); //$NON-NLS-1$
                 final OracleTableIndex index = new OracleTableIndex(
                     parent.getSchema(),
                     parent,
                     DBObjectNameCaseTransformer.transformName(parent.getDataSource(), idxName.toString()),
-                    editDialog.isUnique(),
-                    editDialog.getIndexType());
+                    indexPage.isUnique(),
+                    indexPage.getIndexType());
                 int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                for (DBSEntityAttribute tableColumn : indexPage.getSelectedAttributes()) {
                     index.addColumn(
                         new OracleTableIndexColumn(
                             index,

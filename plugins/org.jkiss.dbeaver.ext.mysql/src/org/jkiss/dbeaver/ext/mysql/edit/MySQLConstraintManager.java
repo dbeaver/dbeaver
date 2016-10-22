@@ -18,9 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -30,7 +28,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 
 /**
  * MySQL constraint manager
@@ -52,25 +51,24 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
         return new UITask<MySQLTableConstraint>() {
             @Override
             protected MySQLTableConstraint runTask() {
-                EditConstraintDialog editDialog = new EditConstraintDialog(
-                    DBeaverUI.getActiveWorkbenchShell(),
+                EditConstraintPage constraintPage = new EditConstraintPage(
                     MySQLMessages.edit_constraint_manager_title,
                     parent,
                     new DBSEntityConstraintType[] {
                         DBSEntityConstraintType.PRIMARY_KEY,
                         DBSEntityConstraintType.UNIQUE_KEY });
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!EditObjectDialog.showDialog(constraintPage)) {
                     return null;
                 }
 
                 final MySQLTableConstraint constraint = new MySQLTableConstraint(
                     parent,
-                    editDialog.getConstraintName(),
+                    constraintPage.getConstraintName(),
                     null,
-                    editDialog.getConstraintType(),
+                    constraintPage.getConstraintType(),
                     false);
                 int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                for (DBSEntityAttribute tableColumn : constraintPage.getSelectedAttributes()) {
                     constraint.addColumn(
                         new MySQLTableConstraintColumn(
                             constraint,

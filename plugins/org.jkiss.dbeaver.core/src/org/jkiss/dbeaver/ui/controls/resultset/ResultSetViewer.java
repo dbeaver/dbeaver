@@ -82,9 +82,10 @@ import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintDialog;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryDialog;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -2518,15 +2519,14 @@ public class ResultSetViewer extends Viewer
         }
         DBVEntityConstraint constraint = (DBVEntityConstraint) virtualEntityIdentifier.getUniqueKey();
 
-        EditConstraintDialog dialog = new EditConstraintDialog(
-            getControl().getShell(),
+        EditConstraintPage page = new EditConstraintPage(
             "Define virtual unique identifier",
             constraint);
-        if (dialog.open() != IDialogConstants.OK_ID) {
+        if (!EditObjectDialog.showDialog(page)) {
             return false;
         }
 
-        Collection<DBSEntityAttribute> uniqueAttrs = dialog.getSelectedAttributes();
+        Collection<DBSEntityAttribute> uniqueAttrs = page.getSelectedAttributes();
         constraint.setAttributes(uniqueAttrs);
         virtualEntityIdentifier = getVirtualEntityIdentifier();
         if (virtualEntityIdentifier == null) {
@@ -3067,11 +3067,10 @@ public class ResultSetViewer extends Viewer
         @Override
         public void run()
         {
-            EditDictionaryDialog dialog = new EditDictionaryDialog(
-                getSite().getShell(),
+            EditDictionaryPage page = new EditDictionaryPage(
                 "Edit dictionary",
                 model.getSingleSource());
-            dialog.open();
+            EditObjectDialog.showDialog(page);
         }
 
         @Override

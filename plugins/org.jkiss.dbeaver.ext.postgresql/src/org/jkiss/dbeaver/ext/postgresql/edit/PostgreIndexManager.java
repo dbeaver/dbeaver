@@ -17,9 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -29,7 +27,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -54,12 +53,11 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
         return new UITask<PostgreIndex>() {
             @Override
             protected PostgreIndex runTask() {
-                EditIndexDialog editDialog = new EditIndexDialog(
-                    DBeaverUI.getActiveWorkbenchShell(),
+                EditIndexPage editPage = new EditIndexPage(
                     "Edit index",
                     parent,
                     Collections.singletonList(DBSIndexType.OTHER));
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!EditObjectDialog.showDialog(editPage)) {
                     return null;
                 }
 
@@ -68,10 +66,10 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
                 final PostgreIndex index = new PostgreIndex(
                     parent,
                     idxName.toString(),
-                    editDialog.getIndexType(),
-                    editDialog.isUnique());
+                    editPage.getIndexType(),
+                    editPage.isUnique());
                 int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     if (colIndex == 1) {
                         idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
                     }

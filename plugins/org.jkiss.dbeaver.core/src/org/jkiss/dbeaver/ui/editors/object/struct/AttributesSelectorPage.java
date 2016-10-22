@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -47,13 +45,12 @@ import java.util.*;
 import java.util.List;
 
 /**
- * AttributesSelectorDialog
+ * AttributesSelectorPage
  *
  * @author Serge Rider
  */
-public abstract class AttributesSelectorDialog extends Dialog {
+public abstract class AttributesSelectorPage extends BaseObjectEditPage {
 
-    private String title;
     private DBSEntity entity;
     private Table columnsTable;
     private List<AttributeInfo> attributes = new ArrayList<>();
@@ -70,23 +67,17 @@ public abstract class AttributesSelectorDialog extends Dialog {
         }
     }
 
-    public AttributesSelectorDialog(
-        Shell shell,
+    public AttributesSelectorPage(
         String title,
         DBSEntity entity)
     {
-        super(shell);
-        setShellStyle(SWT.APPLICATION_MODAL | SWT.SHELL_TRIM);
-        this.title = title;
+        super(NLS.bind(CoreMessages.dialog_struct_columns_select_title, title, entity.getName()));
         this.entity = entity;
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
-    {
-        Composite dialogGroup = (Composite)super.createDialogArea(parent);
-
-        final Composite panel = UIUtils.createPlaceholder(dialogGroup, 1);
+    protected Control createPageContents(Composite parent) {
+        final Composite panel = UIUtils.createPlaceholder(parent, 1);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
@@ -99,10 +90,7 @@ public abstract class AttributesSelectorDialog extends Dialog {
         createContentsAfterColumns(panel);
         fillAttributes(entity);
 
-
-        //columnsTable.set
-
-        return dialogGroup;
+        return panel;
     }
 
     protected void createColumnsGroup(Composite panel)
@@ -259,7 +247,7 @@ public abstract class AttributesSelectorDialog extends Dialog {
         if (notify) {
             handleColumnsChange();
             updateToggleButton();
-            getButton(IDialogConstants.OK_ID).setEnabled(hasCheckedColumns());
+            updatePageState();
         }
     }
 
@@ -282,25 +270,6 @@ public abstract class AttributesSelectorDialog extends Dialog {
         } else {
             toggleButton.setText("Select All");
         }
-    }
-
-    @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
-        super.createButtonsForButtonBar(parent);
-        getButton(IDialogConstants.OK_ID).setEnabled(hasCheckedColumns());
-    }
-
-    @Override
-    protected void okPressed()
-    {
-        super.okPressed();
-    }
-
-    @Override
-    protected void configureShell(Shell shell) {
-        super.configureShell(shell);
-        shell.setText(NLS.bind(CoreMessages.dialog_struct_columns_select_title, title, entity.getName()));
     }
 
     public Collection<DBSEntityAttribute> getSelectedAttributes()

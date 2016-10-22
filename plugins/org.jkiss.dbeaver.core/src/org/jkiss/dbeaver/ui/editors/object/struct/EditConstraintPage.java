@@ -27,7 +27,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -44,11 +43,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * EditConstraintDialog
+ * EditConstraintPage
  *
  * @author Serge Rider
  */
-public class EditConstraintDialog extends AttributesSelectorDialog {
+public class EditConstraintPage extends AttributesSelectorPage {
 
     private DBSEntity entity;
     private String constraintName;
@@ -59,30 +58,28 @@ public class EditConstraintDialog extends AttributesSelectorDialog {
 
     private Map<DBSEntityConstraintType, String> TYPE_PREFIX = new HashMap<>();
 
-    public EditConstraintDialog(
-        Shell shell,
+    public EditConstraintPage(
         String title,
         DBSEntity entity,
         DBSEntityConstraintType[] constraintTypes)
     {
-        super(shell, title, entity);
+        super(title, entity);
         this.entity = entity;
         this.constraintTypes = constraintTypes;
         Assert.isTrue(!ArrayUtils.isEmpty(this.constraintTypes));
     }
 
-    public EditConstraintDialog(
-        Shell shell,
+    public EditConstraintPage(
         String title,
         DBSEntityReferrer constraint)
     {
-        super(shell, title, constraint.getParentObject());
+        super(title, constraint.getParentObject());
         this.constraint = constraint;
         this.constraintTypes = new DBSEntityConstraintType[] {constraint.getConstraintType()};
         try {
             this.attributes = constraint.getAttributeReferences(VoidProgressMonitor.INSTANCE);
         } catch (DBException e) {
-            UIUtils.showErrorDialog(shell, "Can't get attributes", "Error obtaining entity attributes", e);
+            UIUtils.showErrorDialog(null, "Can't get attributes", "Error obtaining entity attributes", e);
         }
     }
 

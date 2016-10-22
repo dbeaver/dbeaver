@@ -18,9 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -31,7 +29,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -56,26 +55,25 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
         return new UITask<MySQLTableIndex>() {
             @Override
             protected MySQLTableIndex runTask() {
-                EditIndexDialog editDialog = new EditIndexDialog(
-                    DBeaverUI.getActiveWorkbenchShell(),
+                EditIndexPage indexPage = new EditIndexPage(
                     MySQLMessages.edit_index_manager_title,
                     parent,
                     Collections.singletonList(DBSIndexType.OTHER));
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!EditObjectDialog.showDialog(indexPage)) {
                     return null;
                 }
 
                 final MySQLTableIndex index = new MySQLTableIndex(
                     parent,
-                    !editDialog.isUnique(),
+                    !indexPage.isUnique(),
                     null,
-                    editDialog.getIndexType(),
+                    indexPage.getIndexType(),
                     null,
                     false);
                 StringBuilder idxName = new StringBuilder(64);
                 idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
                 int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                for (DBSEntityAttribute tableColumn : indexPage.getSelectedAttributes()) {
                     if (colIndex == 1) {
                         idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
                     }

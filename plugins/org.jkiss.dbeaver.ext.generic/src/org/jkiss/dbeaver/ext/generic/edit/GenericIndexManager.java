@@ -17,9 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
@@ -33,7 +31,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -58,27 +57,26 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
         return new UITask<GenericTableIndex>() {
             @Override
             protected GenericTableIndex runTask() {
-                EditIndexDialog editDialog = new EditIndexDialog(
-                    DBeaverUI.getActiveWorkbenchShell(),
+                EditIndexPage editPage = new EditIndexPage(
                     "Create index",
                     parent,
                     Collections.singletonList(DBSIndexType.OTHER));
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!EditObjectDialog.showDialog(editPage)) {
                     return null;
                 }
 
                 final GenericTableIndex index = parent.getDataSource().getMetaModel().createIndexImpl(
                     parent,
-                    !editDialog.isUnique(),
+                    !editPage.isUnique(),
                     null,
                     0,
                     null,
-                    editDialog.getIndexType(),
+                    editPage.getIndexType(),
                     false);
                 StringBuilder idxName = new StringBuilder(64);
                 idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
                 int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     if (colIndex == 1) {
                         idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName()));
                     }

@@ -17,9 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -29,7 +27,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 
 /**
  * Generic constraint manager
@@ -51,12 +50,11 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
         return new UITask<GenericPrimaryKey>() {
             @Override
             protected GenericPrimaryKey runTask() {
-                EditConstraintDialog editDialog = new EditConstraintDialog(
-                    DBeaverUI.getActiveWorkbenchShell(),
+                EditConstraintPage editPage = new EditConstraintPage(
                     "Create constraint",
                     parent,
                     new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY} );
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!EditObjectDialog.showDialog(editPage)) {
                     return null;
                 }
 
@@ -64,11 +62,11 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
                     parent,
                     null,
                     null,
-                    editDialog.getConstraintType(),
+                    editPage.getConstraintType(),
                     false);
-                primaryKey.setName(editDialog.getConstraintName());
+                primaryKey.setName(editPage.getConstraintName());
                 int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     primaryKey.addColumn(
                         new GenericTableConstraintColumn(
                             primaryKey,
