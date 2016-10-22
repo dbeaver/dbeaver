@@ -18,9 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -31,7 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -52,8 +50,7 @@ public class MySQLForeignKeyManager extends SQLForeignKeyManager<MySQLTableForei
         return new UITask<MySQLTableForeignKey>() {
             @Override
             protected MySQLTableForeignKey runTask() {
-                EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
-                    DBeaverUI.getActiveWorkbenchShell(),
+                EditForeignKeyPage editPage = new EditForeignKeyPage(
                     MySQLMessages.edit_foreign_key_manager_title,
                     table,
                     new DBSForeignKeyModifyRule[] {
@@ -61,7 +58,7 @@ public class MySQLForeignKeyManager extends SQLForeignKeyManager<MySQLTableForei
                         DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
                         DBSForeignKeyModifyRule.SET_NULL,
                         DBSForeignKeyModifyRule.SET_DEFAULT });
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!editPage.edit()) {
                     return null;
                 }
 
@@ -69,15 +66,15 @@ public class MySQLForeignKeyManager extends SQLForeignKeyManager<MySQLTableForei
                     table,
                     null,
                     null,
-                    (MySQLTableConstraint) editDialog.getUniqueConstraint(),
-                    editDialog.getOnDeleteRule(),
-                    editDialog.getOnUpdateRule(),
+                    (MySQLTableConstraint) editPage.getUniqueConstraint(),
+                    editPage.getOnDeleteRule(),
+                    editPage.getOnUpdateRule(),
                     false);
                 foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
                     CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
-                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
+                        CommonUtils.escapeIdentifier(editPage.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
                 int colIndex = 1;
-                for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
+                for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
                     foreignKey.addColumn(
                         new MySQLTableForeignKeyColumn(
                             foreignKey,

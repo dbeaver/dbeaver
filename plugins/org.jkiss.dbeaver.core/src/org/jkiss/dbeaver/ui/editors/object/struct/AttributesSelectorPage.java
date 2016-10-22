@@ -310,6 +310,16 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
 
     }
 
+    @Override
+    public boolean isPageComplete() {
+        for (TableItem item : columnsTable.getItems()) {
+            if (item.getChecked()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private class SortListener implements Listener
     {
         int columnIndex;

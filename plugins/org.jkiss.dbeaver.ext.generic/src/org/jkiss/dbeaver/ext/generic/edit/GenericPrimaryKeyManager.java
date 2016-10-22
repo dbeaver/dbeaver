@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 
 /**
  * Generic constraint manager

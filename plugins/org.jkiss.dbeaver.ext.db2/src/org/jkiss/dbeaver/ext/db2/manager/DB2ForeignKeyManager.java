@@ -18,19 +18,13 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
+import org.jkiss.dbeaver.ext.db2.model.*;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DeleteUpdateRule;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
@@ -38,7 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -92,9 +86,9 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
         return new UITask<DB2TableForeignKey>() {
             @Override
             protected DB2TableForeignKey runTask() {
-                EditForeignKeyDialog editDialog = new EditForeignKeyDialog(DBeaverUI.getActiveWorkbenchShell(),
+                EditForeignKeyPage editDialog = new EditForeignKeyPage(
                     DB2Messages.edit_db2_foreign_key_manager_dialog_title, table, FK_RULES);
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!editDialog.edit()) {
                     return null;
                 }
 
@@ -115,7 +109,7 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
                 List<DB2TableKeyColumn> columns = new ArrayList<>(editDialog.getColumns().size());
                 DB2TableKeyColumn column;
                 int colIndex = 1;
-                for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
+                for (EditForeignKeyPage.FKColumnInfo tableColumn : editDialog.getColumns()) {
                     column = new DB2TableKeyColumn(foreignKey, (DB2TableColumn) tableColumn.getOwnColumn(), colIndex++);
                     columns.add(column);
                 }
