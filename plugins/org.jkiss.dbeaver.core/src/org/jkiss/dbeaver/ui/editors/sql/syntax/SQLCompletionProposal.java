@@ -29,10 +29,15 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
+import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -70,17 +75,16 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     private DBPNamedObject object;
 
     public SQLCompletionProposal(
-        SQLSyntaxManager syntaxManager,
+        SQLCompletionProcessor.CompletionRequest request,
         String displayString,
         String replacementString,
-        SQLWordPartDetector wordDetector,
         int cursorPosition,
         @Nullable Image image,
         IContextInformation contextInformation,
         String additionalProposalInfo,
         DBPNamedObject object)
     {
-        this.syntaxManager = syntaxManager;
+        this.syntaxManager = request.editor.getSyntaxManager();
         this.displayString = displayString;
         this.replacementString = replacementString;
         this.replacementFull = replacementString.toLowerCase(Locale.ENGLISH);
@@ -95,10 +99,40 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         this.contextInformation = contextInformation;
         this.additionalProposalInfo = additionalProposalInfo;
 
-        setPosition(wordDetector);
+        setPosition(request.wordDetector);
 
         this.object = object;
-        this.simpleMode = SQLCompletionProcessor.isSimpleMode();
+        this.simpleMode = request.simpleMode;
+    }
+
+    public static String makeObjectDescription(DBRProgressMonitor monitor, DBPNamedObject object, boolean html) {
+        StringBuilder info = new StringBuilder();
+        PropertyCollector collector = new PropertyCollector(object, false);
+        collector.collectProperties();
+        for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
+            if (descriptor.isRemote()) {
+                // Skip lazy properties
+                continue;
+            }
+            Object propValue = collector.getPropertyValue(monitor, descriptor.getId());
+            if (propValue == null) {
+                continue;
+            }
+            String propString;
+            if (propValue instanceof DBPNamedObject) {
+                propString = ((DBPNamedObject) propValue).getName();
+            } else {
+                propString = DBUtils.getDefaultValueDisplayString(propValue, DBDDisplayFormat.UI);
+            }
+            if (html) {
+                info.append("<b>").append(descriptor.getDisplayName()).append(":  </b>");
+                info.append(propString);
+                info.append("<br>");
+            } else {
+                info.append(descriptor.getDisplayName()).append(": ").append(propString).append("\n");
+            }
+        }
+        return info.toString();
     }
 
     public DBPNamedObject getObject() {
@@ -151,7 +185,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     public String getAdditionalProposalInfo()
     {
         if (additionalProposalInfo == null && object != null) {
-            additionalProposalInfo = SQLCompletionProcessor.makeObjectDescription(VoidProgressMonitor.INSTANCE, object, true);
+            additionalProposalInfo = makeObjectDescription(VoidProgressMonitor.INSTANCE, object, true);
         }
         return additionalProposalInfo;
     }

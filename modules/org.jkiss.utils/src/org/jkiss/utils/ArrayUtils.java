@@ -221,7 +221,7 @@ public class ArrayUtils {
         System.out.println(Arrays.toString(arr));
     }
 
-    public static <T> T[] toArray(Class<T> type, Collection<T> list) {
+    public static <T> T[] toArray(Class<T> type, Collection<? extends T> list) {
         return list.toArray((T[]) Array.newInstance(type, list.size()));
     }
 }

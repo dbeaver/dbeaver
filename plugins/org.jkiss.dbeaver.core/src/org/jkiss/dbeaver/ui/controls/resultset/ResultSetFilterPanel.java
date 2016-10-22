@@ -59,7 +59,7 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordPartDetector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -407,7 +407,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private void loadFiltersHistory(String query) {
         filtersHistory.clear();
         try {
-            final Collection<String> history = viewer.getFilterManager().getQueryFilterHistory(query);
+            final Collection<String> history = ResultSetViewer.getFilterManager().getQueryFilterHistory(query);
             filtersHistory.addAll(history);
         } catch (Throwable e) {
             log.debug("Error reading history", e);
@@ -439,7 +439,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         filtersHistory.add(whereCondition);
         if (!oldFilter) {
             try {
-                viewer.getFilterManager().saveQueryFilterValue(getActiveSourceQuery(), whereCondition);
+                ResultSetViewer.getFilterManager().saveQueryFilterValue(getActiveSourceQuery(), whereCondition);
             } catch (Throwable e) {
                 log.debug("Error saving filter", e);
             }
@@ -466,7 +466,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         panel.setLayout(gl);
 
         Label iconLabel = new Label(panel, SWT.NONE);
-        iconLabel.setImage(DBeaverIcons.getImage(getActiveObjectImage()));
+        DBPImage activeObjectImage = getActiveObjectImage();
+        if (activeObjectImage != null) {
+            iconLabel.setImage(DBeaverIcons.getImage(activeObjectImage));
+        }
         iconLabel.setToolTipText("Click to open query in editor");
         iconLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         iconLabel.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
@@ -544,7 +547,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     new ContentProposal(
                         content,
                         attribute.getName(),
-                        SQLCompletionProcessor.makeObjectDescription(VoidProgressMonitor.INSTANCE, attribute.getAttribute(), false),
+                        SQLCompletionProposal.makeObjectDescription(VoidProgressMonitor.INSTANCE, attribute.getAttribute(), false),
                         content.length()));
             }
         }
@@ -653,8 +656,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 maxWidth = control.getSize().x / 4;
             }
             Point textSize = sizingGC.textExtent(activeDisplayName);
-            Image image = DBeaverIcons.getImage(getActiveObjectImage());
-            if (image != null) {
+            DBPImage activeObjectImage = getActiveObjectImage();
+            if (activeObjectImage != null) {
+                Image image = DBeaverIcons.getImage(activeObjectImage);
                 textSize.x += image.getBounds().width + 4;
             }
             return new Point(
@@ -681,8 +685,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             e.gc.setClipping(e.x, e.y, e.width - 8, e.height);
 
             int textOffset = 2;
-            Image icon = DBeaverIcons.getImage(getActiveObjectImage());
-            if (icon != null) {
+            DBPImage activeObjectImage = getActiveObjectImage();
+            if (activeObjectImage != null) {
+                Image icon = DBeaverIcons.getImage(activeObjectImage);
                 e.gc.drawImage(icon, 2, 3);
                 textOffset += icon.getBounds().width + 2;
             }
@@ -810,7 +815,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         if (e.keyCode == SWT.DEL) {
                             final String filterValue = item.getText();
                             try {
-                                viewer.getFilterManager().deleteQueryFilterValue(getActiveSourceQuery(), filterValue);
+                                ResultSetViewer.getFilterManager().deleteQueryFilterValue(getActiveSourceQuery(), filterValue);
                             } catch (DBException e1) {
                                 log.warn("Error deleting filter value [" + filterValue + "]", e1);
                             }
