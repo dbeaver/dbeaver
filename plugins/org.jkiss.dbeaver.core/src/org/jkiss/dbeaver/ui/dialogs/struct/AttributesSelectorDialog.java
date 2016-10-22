@@ -132,9 +132,6 @@ public abstract class AttributesSelectorDialog extends Dialog {
         TableColumn colType = UIUtils.createTableColumn(columnsTable, SWT.RIGHT, "Type"); //$NON-NLS-1$
         colType.addListener(SWT.Selection, new SortListener(2));
 
-        TableColumn lengthType = UIUtils.createTableColumn(columnsTable, SWT.RIGHT, "Length"); //$NON-NLS-1$
-        lengthType.addListener(SWT.Selection, new SortListener(3));
-
         toggleButton = new Button(columnsGroup, SWT.PUSH);
         toggleButton.setText("Select All");
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -207,8 +204,8 @@ public abstract class AttributesSelectorDialog extends Dialog {
                 columnItem.setImage(0, DBeaverIcons.getImage(attributeNode.getNodeIcon()));
             }
             columnItem.setText(0, attribute.getName());
-            columnItem.setText(2, attribute.getTypeName());
-            columnItem.setText(3, String.valueOf(attribute.getMaxLength()));
+            columnItem.setText(1, String.valueOf(attribute.getOrdinalPosition()));
+            columnItem.setText(2, attribute.getFullTypeName());
             columnItem.setData(col);
             if (isColumnSelected(attribute)) {
                 columnItem.setChecked(true);
