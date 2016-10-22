@@ -54,7 +54,7 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.dialogs.struct.EditDictionaryDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryDialog;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.utils.CommonUtils;
 

@@ -19,22 +19,21 @@
 
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
+import org.jkiss.dbeaver.ui.dialogs.EditObjectDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
 import java.util.List;
 
@@ -56,11 +55,11 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
         return new UITask<MySQLTrigger>() {
             @Override
             protected MySQLTrigger runTask() {
-                CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource(), "Create trigger");
-                if (dialog.open() != IDialogConstants.OK_ID) {
+                EntityEditPage page = new EntityEditPage(parent.getDataSource(), DBSEntityType.TRIGGER);
+                if (!EditObjectDialog.showDialog(page)) {
                     return null;
                 }
-                MySQLTrigger newTrigger = new MySQLTrigger(parent.getContainer(), parent, dialog.getEntityName());
+                MySQLTrigger newTrigger = new MySQLTrigger(parent.getContainer(), parent, page.getEntityName());
                 newTrigger.setObjectDefinitionText(""); //$NON-NLS-1$
                 return newTrigger;
             }

@@ -18,10 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTrigger;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
@@ -32,9 +29,11 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
+import org.jkiss.dbeaver.ui.dialogs.EditObjectDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
 import java.util.List;
 
@@ -56,12 +55,12 @@ public class OracleTriggerManager extends SQLTriggerManager<OracleTrigger, Oracl
         return new UITask<OracleTrigger>() {
             @Override
             protected OracleTrigger runTask() {
-                CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource(), OracleMessages.edit_oracle_trigger_manager_dialog_title);
-                if (dialog.open() != IDialogConstants.OK_ID) {
+                EntityEditPage page = new EntityEditPage(parent.getDataSource(), DBSEntityType.TRIGGER);
+                if (!EditObjectDialog.showDialog(page)) {
                     return null;
                 }
-                OracleTrigger newTrigger = new OracleTrigger(parent.getContainer(), parent, dialog.getEntityName());
-                newTrigger.setObjectDefinitionText("TRIGGER " + dialog.getEntityName() + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                OracleTrigger newTrigger = new OracleTrigger(parent.getContainer(), parent, page.getEntityName());
+                newTrigger.setObjectDefinitionText("TRIGGER " + page.getEntityName() + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
                     "BEGIN\n" + //$NON-NLS-1$
                     "END;"); //$NON-NLS-1$
                 return newTrigger;

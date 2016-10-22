@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintDialog;
 
 /**
  * Postgre constraint manager

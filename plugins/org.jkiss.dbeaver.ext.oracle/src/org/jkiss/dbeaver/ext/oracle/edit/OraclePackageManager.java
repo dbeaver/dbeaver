@@ -18,11 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
@@ -34,9 +31,11 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
+import org.jkiss.dbeaver.ui.dialogs.EditObjectDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -59,13 +58,13 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
         return new UITask<OraclePackage>() {
             @Override
             protected OraclePackage runTask() {
-                CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource(), OracleMessages.edit_oracle_package_manager_dialog_title);
-                if (dialog.open() != IDialogConstants.OK_ID) {
+                EntityEditPage page = new EntityEditPage(parent.getDataSource(), DBSEntityType.PACKAGE);
+                if (!EditObjectDialog.showDialog(page)) {
                     return null;
                 }
                 return new OraclePackage(
                     parent,
-                    dialog.getEntityName());
+                    page.getEntityName());
             }
         }.execute();
     }
