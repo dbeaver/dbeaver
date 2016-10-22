@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,7 +37,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,10 +99,7 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
                 }
 
                 DB2TableUniqueKey constraint = new DB2TableUniqueKey(table, editDialog.getConstraintType());
-
-                String constraintName = DBObjectNameCaseTransformer.transformObjectName(constraint,
-                    CommonUtils.escapeIdentifier(table.getName()) + suffix);
-                constraint.setName(constraintName);
+                constraint.setName(editDialog.getConstraintName());
 
                 List<DB2TableKeyColumn> columns = new ArrayList<>(editDialog.getSelectedAttributes().size());
                 DB2TableKeyColumn column;

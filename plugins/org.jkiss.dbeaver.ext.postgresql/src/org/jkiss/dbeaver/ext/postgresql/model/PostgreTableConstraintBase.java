@@ -44,8 +44,8 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         this.oid = JDBCUtils.safeGetLong(resultSet, "oid");
     }
 
-    public PostgreTableConstraintBase(PostgreTableBase table, DBSEntityConstraintType constraintType) {
-        super(table, null, null, constraintType, false);
+    public PostgreTableConstraintBase(PostgreTableBase table, String constraintName, DBSEntityConstraintType constraintType) {
+        super(table, constraintName, null, constraintType, false);
     }
 
     @NotNull

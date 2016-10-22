@@ -43,8 +43,9 @@ public class PostgreTableInheritance extends PostgreTableConstraintBase implemen
         int sequenceNum,
         boolean persisted)
     {
-        super(table, DBSEntityConstraintType.INHERITANCE);
-        this.setName(table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "->" + superTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        super(table,
+            table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "->" + superTable.getFullyQualifiedName(DBPEvaluationContext.DDL),
+            DBSEntityConstraintType.INHERITANCE);
         this.setPersisted(persisted);
         this.superTable = superTable;
         this.sequenceNum = sequenceNum;

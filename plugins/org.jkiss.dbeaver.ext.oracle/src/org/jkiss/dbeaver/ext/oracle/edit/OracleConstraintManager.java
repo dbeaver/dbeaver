@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -34,7 +33,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * Oracle constraint manager
@@ -69,11 +67,10 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
 
                 final OracleTableConstraint constraint = new OracleTableConstraint(
                     parent,
-                    null,
+                    editDialog.getConstraintName(),
                     editDialog.getConstraintType(),
                     null,
                     OracleObjectStatus.ENABLED);
-                constraint.setName(DBObjectNameCaseTransformer.transformObjectName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
                     constraint.addColumn(
