@@ -39,9 +39,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
 
 
     private String owner;
-    private String name;
     private String description;
-    private ExasolSchema schema;
 
     private String text;
 
@@ -52,7 +50,6 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
     public ExasolView(DBRProgressMonitor monitor, ExasolSchema schema, ResultSet dbResult) {
         super(monitor, schema, dbResult);
         this.text = JDBCUtils.safeGetString(dbResult, "VIEW_TEXT");
-        this.schema = schema;
 
     }
 

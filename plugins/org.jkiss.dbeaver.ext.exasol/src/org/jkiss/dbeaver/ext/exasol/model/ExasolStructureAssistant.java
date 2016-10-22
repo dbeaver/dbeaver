@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -31,7 +30,6 @@ import java.util.Collection;
 
 public class ExasolStructureAssistant implements DBSStructureAssistant {
 
-    private static final Log LOG = Log.getLog(ExasolStructureAssistant.class);
 
     /**
      * Exasol Structure Assistant
@@ -79,6 +77,11 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
         // TODO Auto-generated method stub
         return null;
     }
+    
+    public ExasolDataSource getDataSource()
+	{
+		return dataSource;
+	}
 
 
 }
