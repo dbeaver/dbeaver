@@ -47,13 +47,10 @@ public class ExasolConnection
 		this.dataSource = dataSource;
 		if (dbResult != null) {
 			this.persisted = true;
-			this.connectionName = JDBCUtils.safeGetString(dbResult,
-					"CONNECTION_NAME");
-			this.connectionString = JDBCUtils.safeGetString(dbResult,
-					"CONNECTION_STRING");
+			this.connectionName = JDBCUtils.safeGetString(dbResult,"CONNECTION_NAME");
+			this.connectionString = JDBCUtils.safeGetString(dbResult,"CONNECTION_STRING");
 			this.created = JDBCUtils.safeGetDate(dbResult, "CREATED");
-			this.comment = JDBCUtils.safeGetString(dbResult,
-					"CONNECTION_COMMENT");
+			this.comment = JDBCUtils.safeGetString(dbResult,"CONNECTION_COMMENT");
 			this.userName = JDBCUtils.safeGetString(dbResult, "USER_NAME");
 		} else {
 			this.connectionName = "new connection";

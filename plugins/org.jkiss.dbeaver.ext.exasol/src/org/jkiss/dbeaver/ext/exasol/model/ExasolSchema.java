@@ -51,9 +51,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
         + "from EXA_ALL_SCRIPTS a inner join EXA_ALL_OBJECTS b "
         + "on a.script_name = b.object_name and a.script_schema = b.root_name where a.script_schema = ? order by script_name";
 
-    private static final String C_VIEWS = "select * FROM EXA_ALL_VIEWS WHERE VIEW_SCHEMA = ?";
-
-    private static final List<String> SYSTEM_SCHEMA = Arrays.asList("SYS");
+    private static final List<String> SYSTEM_SCHEMA = Arrays.asList("SYS","EXA_STATISTICS");
     private String name;
     private String owner;
     private Timestamp createTime;

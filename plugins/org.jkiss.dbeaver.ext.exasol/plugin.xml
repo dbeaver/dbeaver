@@ -67,24 +67,11 @@
                     </items>
                 </folder>
                 <folder
-                      description="Users"
-                      icon="#folder_user"
-                      label="%tree.users.node.name"
-                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolUser"
-                      visibleIf="object.dataSource.authorizedForUsers">
-                    <items
-                          icon="#user"
-                          label="%tree.user.node.name"
-                          path="user"
-                          property="users">
-                       <items
-                             icon="icons/role.gif"
-                             label="%tree.roles.node.name"
-                             path="role"
-                             property="roles"
-                             visibleIf="object.dataSource.authorizedForRolePrivs">
-                       </items>
-                    </items>
+                      description="Database virtual schemas"
+                      icon="#folder_schema"
+                      label="%tree.virtualschemas.node.name"
+                      type="org.jkiss.dbeaver.model.struct.DBSObject"
+                      visibleIf="object.dataSource.atLeastV6">
                 </folder>
                 <folder type="" label="%tree.administer.node.name" icon="#folder_admin"
                         description="Maintenance/Settings">
@@ -107,6 +94,124 @@
                          path="connection"
                          property="connections">
                    </items>
+                </folder>
+                <folder
+                      description="Security management"
+                      icon="icons/folder_security.gif"
+                      label="%tree.security.node.name"
+                      type="org.jkiss.dbeaver.model.struct.DBSObject"
+                      visibleIf="object.dataSource.authorizedForUsers">
+                   <folder
+                         description="Users"
+                         icon="#folder_user"
+                         label="%tree.users.node.name"
+                         type="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser"
+                         visibleIf="object.dataSource.authorizedForRolePrivs">
+                      <items
+                            icon="#user"
+                            label="%tree.user.node.name"
+                            path="user"
+                            property="users">
+                         <items
+                               icon="icons/role.gif"
+                               label="%tree.roles.node.name"
+                               navigable="false"
+                               path="role"
+                               property="roles"
+                               visibleIf="object.dataSource.authorizedForRolePrivs">
+                         </items>
+                         <items
+                               icon="#table"
+                               label="%tree.table.node.name"
+                               navigable="false"
+                               path="table"
+                               property="tables"
+                               visibleIf="object.dataSource.authorizedForObjectPrivs">
+                         </items>
+                         <items
+                               icon="#view"
+                               label="%tree.view.node.name"
+                               navigable="false"
+                               path="view"
+                               property="views"
+                               visibleIf="object.dataSource.authorizedForObjectPrivs">
+                         </items>
+                         <items
+                               icon="icons/remoteServer.gif"
+                               label="%tree.connection.node.name"
+                               navigable="false"
+                               path="connection"
+                               property="connections"
+                               visibleIf="object.dataSource.authorizedForConnections">
+                         </items>
+                         <items
+                               icon="#procedure"
+                               label="%tree.script.node.name"
+                               navigable="false"
+                               path="script"
+                               property="procedures"
+                               visibleIf="object.dataSource.authorizedForObjectPrivs">
+                         </items>
+                         <items
+                               icon="#dbauth"
+                               label="%tree.sysgrant.node.name"
+                               navigable="false"
+                               path="systemgrant"
+                               property="systemgrants">
+                         </items>
+                      </items>
+                   </folder>
+                   <folder
+                         description="Roles"
+                         icon="#folder_role"
+                         label="%tree.roles.node.name"
+                         type="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole"
+                         visibleIf="object.dataSource.authorizedForRolePrivs">
+                      <items
+                            icon="icons/role.gif"
+                            label="%tree.role.node.name"
+                            property="roles">
+                         <items
+                               icon="#table"
+                               label="%tree.table.node.name"
+                               navigable="false"
+                               path="table"
+                               property="tables"
+                               visibleIf="object.dataSource.authorizedForObjectPrivs">
+                         </items>
+                         <items
+                               icon="#view"
+                               label="%tree.view.node.name"
+                               navigable="false"
+                               path="view"
+                               property="views"
+                               visibleIf="object.dataSource.authorizedForObjectPrivs">
+                         </items>
+                         <items
+                               icon="icons/remoteServer.gif"
+                               label="%tree.connection.node.name"
+                               navigable="false"
+                               path="connection"
+                               property="connections"
+                               visibleIf="object.dataSource.authorizedForConnections">
+                         </items>
+                         <items
+                               icon="#procedure"
+                               label="%tree.script.node.name"
+                               navigable="false"
+                               path="script"
+                               property="procedures"
+                               visibleIf="object.dataSource.authorizedForObjectPrivs">
+                         </items>
+                         <items
+                               icon="#dbauth"
+                               label="%tree.sysgrant.node.name"
+                               navigable="false"
+                               path="systemgrant"
+                               property="systemgrants">
+                         </items>
+                      </items>
+                   </folder>
                 </folder>
             </tree>
             <drivers managable="true">

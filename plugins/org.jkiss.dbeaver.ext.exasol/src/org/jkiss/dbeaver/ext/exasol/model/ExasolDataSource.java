@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider;
 import org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser;
 import org.jkiss.dbeaver.ext.exasol.model.plan.ExasolPlanAnalyser;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -69,6 +71,7 @@ public class ExasolDataSource extends JDBCDataSource
 			+ "union all select distinct SCHEMA_NAME as \"OBJECT_NAME\", 'SYS' as owner, cast(null as timestamp) as created, '' as \"OBJECT_COMMENT\" from SYS.EXA_SYSCAT "
 			+ "order by b.object_name";
 	private static final String C_USERS = "select * from EXA_DBA_USERS";
+	private static final String C_ROLES = "SELECT * FROM EXA_DBA_ROLES";
 	private static final String C_DT = "SELECT * FROM EXA_SQL_TYPES";
 	private static final String C_CONNECTIONS = "SELECT * FROM EXA_DBA_CONNECTIONS";
 
@@ -77,6 +80,8 @@ public class ExasolDataSource extends JDBCDataSource
 
 	private ExasolCurrentUserPrivileges exasolCurrentUserPrivileges;
 	private DBSObjectCache<ExasolDataSource, ExasolUser> userCache = null;
+	private DBSObjectCache<ExasolDataSource, ExasolRole> roleCache = null;
+	
 	private DBSObjectCache<ExasolDataSource, ExasolConnection> connectionCache = null;
 
 	private DBSObjectCache<ExasolDataSource, ExasolDataType> dataTypeCache = new JDBCObjectSimpleCache<>(
@@ -141,6 +146,10 @@ public class ExasolDataSource extends JDBCDataSource
 			this.userCache = new JDBCObjectSimpleCache<>(ExasolUser.class,
 					C_USERS);
 		}
+		if (exasolCurrentUserPrivileges.getUserIsAuthorizedForRoles()) {
+			this.roleCache = new JDBCObjectSimpleCache<>(ExasolRole.class, C_ROLES);
+		}
+		
 		if (exasolCurrentUserPrivileges.getUserIsAuthorizedForConnections()) {
 			this.connectionCache = new JDBCObjectSimpleCache<>(
 					ExasolConnection.class, C_CONNECTIONS);
@@ -240,6 +249,8 @@ public class ExasolDataSource extends JDBCDataSource
 		this.schemaCache.clearCache();
 		this.userCache.clearCache();
 		this.dataTypeCache.clearCache();
+		this.roleCache.clearCache();
+		this.connectionCache.clearCache();
 
 		this.initialize(monitor);
 
@@ -376,6 +387,19 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		return userCache.getObject(monitor, this, name);
 	}
+	
+	public Collection<ExasolRole> getRoles(DBRProgressMonitor monitor)
+			throws DBException
+	{
+		return roleCache.getAllObjects(monitor, this);
+		
+	}
+	
+	public ExasolRole getRole(DBRProgressMonitor monitor, String name)
+			throws DBException
+	{
+		return roleCache.getObject(monitor, this, name);
+	}
 
 	public Collection<ExasolConnection> getConnections(
 			DBRProgressMonitor monitor) throws DBException
@@ -425,6 +449,26 @@ public class ExasolDataSource extends JDBCDataSource
 	public boolean isAuthorizedForRolePrivs()
 	{
 		return this.exasolCurrentUserPrivileges.getUserIsAuthorizedForRolePrivs();
+	}
+	
+	public boolean isatLeastV6()
+	{
+		return this.exasolCurrentUserPrivileges.getatLeastV6();
+	}
+
+	public boolean isatLeastV5()
+	{
+		return this.exasolCurrentUserPrivileges.getatLeastV5();
+	}
+	
+	public boolean isAuthorizedForConnectionPrivs()
+	{
+		return this.exasolCurrentUserPrivileges.getUserIsAuthorizedForConnectionPrivs();
+	}
+	
+	public boolean isAuthorizedForObjectPrivs()
+	{
+		return this.exasolCurrentUserPrivileges.getUserIsAuthorizedForObjectPrivs();
 	}
 
 	// -------------------------
