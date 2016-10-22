@@ -87,7 +87,7 @@ public class ExasolServerSession implements DBAServerSession {
     public String getActiveQuery() {
         if ( (! this.status.equals("IDLE") )  )
         {
-        	return this.stmtId.toString();
+        	return this.sqlText;
         } else
         {
         	return null;

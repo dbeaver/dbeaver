@@ -31,6 +31,8 @@ public class ExasolCurrentUserPrivileges {
 
 	private static final String C_CONNECTIONS = "SELECT CONNECTION_NAME FROM EXA_DBA_CONNECTIONS WHERE FALSE";
 	private static final String C_USERS = "SELECT USER_NAME FROM EXA_DBA_USERS WHERE FALSE";
+	private static final String C_OBJECT_PRIV = "SELECT OBJECT_NAME FROM EXA_DBA_OBJ_PRIVS WHERE FALSE";
+	private static final String C_CONNECTION_PRIV = "SELECT GRANTEE FROM EXA_DBA_CONNECTION_PRIVS WHERE FALSE";
 	private static final String C_ROLES = "SELECT ROLE_NAME FROM EXA_DBA_ROLES WHERE FALSE";
 	private static final String C_ROLE_PRIVS = "SELECT ROLE_NAME FROM EXA_DBA_ROLE_PRIVS WHERE FALSE";
 	private static final String C_VERSION = "select TO_NUMBER(\"VALUE\") AS VERSION from \"$ODBCJDBC\".DB_METADATA WHERE name LIKE 'databaseMajorVersion'";
@@ -39,6 +41,9 @@ public class ExasolCurrentUserPrivileges {
 	private final Boolean userIsAuthorizedForUsers;
 	private final Boolean userIsAuthorizedForRoles;
 	private final Boolean userIsAuthorizedForRolePrivs;
+	private final Boolean userIsAuthorizedForObjectPrivs;
+	private final Boolean userIsAuthorizedForConnectionPrivs;
+	
 	private final int ExasolVersion;
 	
 
@@ -51,6 +56,8 @@ public class ExasolCurrentUserPrivileges {
 		userIsAuthorizedForUsers = ExasolCurrentUserPrivileges.verifyPriv(C_USERS, session);
 		userIsAuthorizedForRolePrivs = ExasolCurrentUserPrivileges.verifyPriv(C_ROLE_PRIVS, session);
 		userIsAuthorizedForRoles = ExasolCurrentUserPrivileges.verifyPriv(C_ROLES, session);
+		userIsAuthorizedForObjectPrivs = ExasolCurrentUserPrivileges.verifyPriv(C_OBJECT_PRIV, session);
+		userIsAuthorizedForConnectionPrivs = ExasolCurrentUserPrivileges.verifyPriv(C_CONNECTION_PRIV, session);
 		
 		JDBCPreparedStatement dbStat;
 		try {
@@ -117,5 +124,16 @@ public class ExasolCurrentUserPrivileges {
 	{
 		return userIsAuthorizedForUsers;
 	}
+
+	public Boolean getUserIsAuthorizedForObjectPrivs()
+	{
+		return userIsAuthorizedForObjectPrivs;
+	}
+
+	public Boolean getUserIsAuthorizedForConnectionPrivs()
+	{
+		return userIsAuthorizedForConnectionPrivs;
+	}
+	
 
 }

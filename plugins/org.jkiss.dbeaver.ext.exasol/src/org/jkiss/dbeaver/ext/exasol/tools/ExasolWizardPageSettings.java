@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
 
+@SuppressWarnings("rawtypes")
 public class ExasolWizardPageSettings<WIZARD extends AbstractToolWizard> extends AbstractToolWizardPage<WIZARD> {
 
 
