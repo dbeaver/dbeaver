@@ -18,10 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
@@ -36,7 +34,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,27 +83,19 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
         return new UITask<DB2TableUniqueKey>() {
             @Override
             protected DB2TableUniqueKey runTask() {
-                EditConstraintDialog editDialog = new EditConstraintDialog(DBeaverUI.getActiveWorkbenchShell(),
+                EditConstraintPage editPage = new EditConstraintPage(
                     DB2Messages.edit_db2_constraint_manager_dialog_title, table, CONS_TYPES);
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!EditObjectDialog.showDialog(editPage)) {
                     return null;
                 }
 
-                String suffix;
-                DBSEntityConstraintType type = editDialog.getConstraintType();
-                if (type.equals(DBSEntityConstraintType.PRIMARY_KEY)) {
-                    suffix = CONS_PK_SUF;
-                } else {
-                    suffix = CONS_UK_SUF;
-                }
+                DB2TableUniqueKey constraint = new DB2TableUniqueKey(table, editPage.getConstraintType());
+                constraint.setName(editPage.getConstraintName());
 
-                DB2TableUniqueKey constraint = new DB2TableUniqueKey(table, editDialog.getConstraintType());
-                constraint.setName(editDialog.getConstraintName());
-
-                List<DB2TableKeyColumn> columns = new ArrayList<>(editDialog.getSelectedAttributes().size());
+                List<DB2TableKeyColumn> columns = new ArrayList<>(editPage.getSelectedAttributes().size());
                 DB2TableKeyColumn column;
                 int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     column = new DB2TableKeyColumn(constraint, (DB2TableColumn) tableColumn, colIndex++);
                     columns.add(column);
                 }

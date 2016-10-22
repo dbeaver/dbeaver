@@ -18,9 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2IndexColumn;
@@ -37,7 +35,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -83,14 +82,14 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2TableBase> {
         return new UITask<DB2Index>() {
             @Override
             protected DB2Index runTask() {
-                EditIndexDialog editDialog = new EditIndexDialog(DBeaverUI.getActiveWorkbenchShell(),
+                EditIndexPage editPage = new EditIndexPage(
                     DB2Messages.edit_db2_index_manager_dialog_title, table, IX_TYPES);
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!EditObjectDialog.showDialog(editPage)) {
                     return null;
                 }
 
                 String tableName = CommonUtils.escapeIdentifier(table.getName());
-                String colName = CommonUtils.escapeIdentifier(editDialog.getSelectedAttributes().iterator().next().getName());
+                String colName = CommonUtils.escapeIdentifier(editPage.getSelectedAttributes().iterator().next().getName());
 
                 String indexBaseName = String.format(CONS_IX_NAME, tableName, colName);
                 String indexName = DBObjectNameCaseTransformer.transformName(table.getDataSource(), indexBaseName);
@@ -98,11 +97,11 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2TableBase> {
                 DB2Index index = new DB2Index(
                     table,
                     indexName,
-                    editDialog.getIndexType(),
-                    editDialog.isUnique() ? DB2UniqueRule.U : DB2UniqueRule.D);
+                    editPage.getIndexType(),
+                    editPage.isUnique() ? DB2UniqueRule.U : DB2UniqueRule.D);
 
                 int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     index.addColumn(new DB2IndexColumn(index, (DB2TableColumn) tableColumn, colIndex++));
                 }
                 return index;

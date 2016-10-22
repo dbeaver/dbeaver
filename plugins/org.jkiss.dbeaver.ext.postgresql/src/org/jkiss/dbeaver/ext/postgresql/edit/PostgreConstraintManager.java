@@ -17,10 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -30,7 +28,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 
 /**
  * Postgre constraint manager
@@ -52,23 +51,22 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
         return new UITask<PostgreTableConstraintBase>() {
             @Override
             protected PostgreTableConstraintBase runTask() {
-                EditConstraintDialog editDialog = new EditConstraintDialog(
-                    DBeaverUI.getActiveWorkbenchShell(),
+                EditConstraintPage editPage = new EditConstraintPage(
                     "Add constraint",
                     parent,
                     new DBSEntityConstraintType[] {
                         DBSEntityConstraintType.PRIMARY_KEY,
                         DBSEntityConstraintType.UNIQUE_KEY });
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!EditObjectDialog.showDialog(editPage)) {
                     return null;
                 }
 
                 final PostgreTableConstraint constraint = new PostgreTableConstraint(
                     parent,
-                    editDialog.getConstraintName(),
-                    editDialog.getConstraintType());
+                    editPage.getConstraintName(),
+                    editPage.getConstraintType());
                 int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     constraint.addColumn(
                         new PostgreTableConstraintColumn(
                             constraint,

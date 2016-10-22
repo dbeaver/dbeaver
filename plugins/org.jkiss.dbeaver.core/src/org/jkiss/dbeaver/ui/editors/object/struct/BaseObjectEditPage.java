@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
@@ -38,6 +39,8 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public abstract class BaseObjectEditPage extends DialogPage {
+
+    private EditObjectDialog container;
 
     public BaseObjectEditPage(String title)
     {
@@ -63,6 +66,25 @@ public abstract class BaseObjectEditPage extends DialogPage {
                 performHelp();
             }
         });
+    }
+
+
+    public boolean isPageComplete() {
+        return true;
+    }
+
+    protected void updatePageState() {
+        if (container != null) {
+            container.updateButtons();
+        }
+    }
+
+    void setContainer(EditObjectDialog container) {
+        this.container = container;
+    }
+
+    protected void performFinish() {
+
     }
 
     protected abstract Control createPageContents(Composite parent);

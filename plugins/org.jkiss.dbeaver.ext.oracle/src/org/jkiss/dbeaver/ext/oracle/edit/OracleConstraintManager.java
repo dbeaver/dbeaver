@@ -18,10 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -32,7 +30,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 
 /**
  * Oracle constraint manager
@@ -54,25 +53,24 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
         return new UITask<OracleTableConstraint>() {
             @Override
             protected OracleTableConstraint runTask() {
-                EditConstraintDialog editDialog = new EditConstraintDialog(
-                    DBeaverUI.getActiveWorkbenchShell(),
+                EditConstraintPage constraintPage = new EditConstraintPage(
                     OracleMessages.edit_oracle_constraint_manager_dialog_title,
                     parent,
                     new DBSEntityConstraintType[] {
                         DBSEntityConstraintType.PRIMARY_KEY,
                         DBSEntityConstraintType.UNIQUE_KEY });
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!EditObjectDialog.showDialog(constraintPage)) {
                     return null;
                 }
 
                 final OracleTableConstraint constraint = new OracleTableConstraint(
                     parent,
-                    editDialog.getConstraintName(),
-                    editDialog.getConstraintType(),
+                    constraintPage.getConstraintName(),
+                    constraintPage.getConstraintType(),
                     null,
                     OracleObjectStatus.ENABLED);
                 int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
+                for (DBSEntityAttribute tableColumn : constraintPage.getSelectedAttributes()) {
                     constraint.addColumn(
                         new OracleTableConstraintColumn(
                             constraint,
