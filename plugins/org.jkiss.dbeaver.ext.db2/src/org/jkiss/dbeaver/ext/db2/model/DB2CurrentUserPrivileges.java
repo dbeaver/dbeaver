@@ -94,29 +94,22 @@ public class DB2CurrentUserPrivileges {
     public DB2CurrentUserPrivileges(DBRProgressMonitor monitor, JDBCSession session, String currentAuthId,
         DB2DataSource db2DataSource) throws SQLException
     {
-
-        JDBCPreparedStatement dbStat;
-
         // DF: There is no easy way to get this information from DB2 v9.1
         // WE consider the user has no system authorities
         listAuthorities = new ArrayList<>();
         if (db2DataSource.isAtLeastV9_5()) {
-            dbStat = session.prepareStatement(SEL_AUTHORITIES);
-            try {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(SEL_AUTHORITIES)) {
                 dbStat.setString(1, currentAuthId);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         listAuthorities.add(dbResult.getString(1));
                     }
                 }
-            } finally {
-                dbStat.close();
             }
         }
 
         listObjectPrivileges = new ArrayList<>();
-        dbStat = session.prepareStatement(SEL_OBJECTS);
-        try {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(SEL_OBJECTS)) {
             dbStat.setString(1, currentAuthId);
             dbStat.setString(2, currentAuthId);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -124,8 +117,6 @@ public class DB2CurrentUserPrivileges {
                     listObjectPrivileges.add(dbResult.getString(1));
                 }
             }
-        } finally {
-            dbStat.close();
         }
 
         // Cache Authorities

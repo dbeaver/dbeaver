@@ -173,30 +173,27 @@ public class DB2PlanOperator extends DB2PlanNode {
     {
 
         listArguments = new ArrayList<>();
-        JDBCPreparedStatement sqlStmt = session
-            .prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_ARGUMENT", "ARGUMENT_TYPE"));
-        try {
+        try (JDBCPreparedStatement sqlStmt = session.prepareStatement(
+            String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_ARGUMENT", "ARGUMENT_TYPE")))
+        {
             setQueryParameters(sqlStmt);
             try (JDBCResultSet res = sqlStmt.executeQuery()) {
                 while (res.next()) {
                     listArguments.add(new DB2PlanOperatorArgument(res));
                 }
             }
-        } finally {
-            sqlStmt.close();
         }
 
         listPredicates = new ArrayList<>();
-        sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_PREDICATE", "PREDICATE_ID"));
-        try {
+        try (JDBCPreparedStatement sqlStmt = session.prepareStatement(
+            String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_PREDICATE", "PREDICATE_ID")))
+        {
             setQueryParameters(sqlStmt);
             try (JDBCResultSet res = sqlStmt.executeQuery()) {
                 while (res.next()) {
                     listPredicates.add(new DB2PlanOperatorPredicate(res, this));
                 }
             }
-        } finally {
-            sqlStmt.close();
         }
     }
 
