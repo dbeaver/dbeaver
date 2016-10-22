@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -62,7 +61,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     public boolean isEditable(Object object)
     {
         DBEObjectEditor objectEditor = getObjectEditor(DBEObjectEditor.class);
-        return commandContext != null && objectEditor != null &&
+        return objectEditor != null &&
             object instanceof DBPObject && objectEditor.canEditObject((DBPObject) object);
     }
 
@@ -95,21 +94,23 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         if (!updatePropertyValue(monitor, editableValue, prop, newValue, false)) {
             return;
         }
-        if (lastCommand == null || lastCommand.getObject() != editableValue || lastCommand.property != prop) {
-            final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor(DBEObjectEditor.class);
-            if (objectEditor == null) {
-                log.error("Can't obtain object editor for " + getEditableValue());
-                return;
+        if (commandContext != null) {
+            if (lastCommand == null || lastCommand.getObject() != editableValue || lastCommand.property != prop) {
+                final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor(DBEObjectEditor.class);
+                if (objectEditor == null) {
+                    log.error("Can't obtain object editor for " + getEditableValue());
+                    return;
+                }
+                final DBEPropertyHandler<DBPObject> propertyHandler = objectEditor.makePropertyHandler(
+                    (DBPObject) editableValue,
+                    prop);
+                PropertyChangeCommand curCommand = new PropertyChangeCommand((DBPObject) editableValue, prop, propertyHandler, oldValue, newValue);
+                commandContext.addCommand(curCommand, commandReflector);
+                lastCommand = curCommand;
+            } else {
+                lastCommand.setNewValue(newValue);
+                commandContext.updateCommand(lastCommand, commandReflector);
             }
-            final DBEPropertyHandler<DBPObject> propertyHandler = objectEditor.makePropertyHandler(
-                (DBPObject)editableValue,
-                prop);
-            PropertyChangeCommand curCommand = new PropertyChangeCommand((DBPObject) editableValue, prop, propertyHandler, oldValue, newValue);
-            getCommandContext().addCommand(curCommand, commandReflector);
-            lastCommand = curCommand;
-        } else {
-            lastCommand.setNewValue(newValue);
-            getCommandContext().updateCommand(lastCommand, commandReflector);
         }
 
         // If we perform rename then we should refresh object cache
@@ -142,14 +143,22 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             // If value should be a named object then try to obtain it from list provider
             if (value != null && value.getClass() == String.class) {
                 final Object[] items = prop.getPossibleValues(editableValue);
-                if (!ArrayUtils.isEmpty(items)) {
-                    for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-                        if ((items[i] instanceof DBPNamedObject && value.equals(((DBPNamedObject)items[i]).getName())) ||
-                            (items[i] instanceof Enum && value.equals(((Enum)items[i]).name()))
-                            )
-                        {
-                            value = items[i];
-                            break;
+                if (items != null) {
+                    boolean found = false;
+                    if (items.length > 0) {
+                        for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
+                            if ((items[i] instanceof DBPNamedObject && value.equals(((DBPNamedObject) items[i]).getName())) ||
+                                (items[i] instanceof Enum && value.equals(((Enum) items[i]).name()))
+                                ) {
+                                value = items[i];
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!found) {
+                        if (value.getClass() != prop.getDataType()){
+                            value = null;
                         }
                     }
                 }

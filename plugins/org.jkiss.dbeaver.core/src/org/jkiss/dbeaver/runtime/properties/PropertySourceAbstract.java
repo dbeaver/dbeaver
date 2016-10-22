@@ -64,7 +64,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         this.loadLazyProps = loadLazyProps;
     }
 
-    public void addProperty(DBPPropertyDescriptor prop)
+    public synchronized void addProperty(DBPPropertyDescriptor prop)
     {
         if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isHidden()) {
             // Do not add it to property list
@@ -74,26 +74,38 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         propValues.put(prop.getId(), prop);
     }
 
-    public void addProperty(@Nullable String category, Object id, String name, Object value)
+    public synchronized void addProperty(@Nullable String category, Object id, String name, Object value)
     {
         props.add(new PropertyDescriptor(category, id, name, null, value == null ? null : value.getClass(), false, null, null, false));
         propValues.put(id, value);
     }
 
-    public void clearProperties()
+    public synchronized void removeProperty(DBPPropertyDescriptor prop)
+    {
+        propValues.remove(prop.getId());
+        lazyValues.remove(prop.getId());
+        props.remove(prop);
+    }
+
+    public synchronized void clearProperties()
     {
         props.clear();
         propValues.clear();
+        lazyValues.clear();
     }
 
-    public boolean hasProperty(ObjectPropertyDescriptor prop)
+    public synchronized boolean hasProperty(ObjectPropertyDescriptor prop)
     {
         return props.contains(prop);
     }
 
-    public boolean isEmpty()
+    public synchronized boolean isEmpty()
     {
         return props.isEmpty();
+    }
+
+    public DBPPropertyDescriptor[] getProperties() {
+        return props.toArray(new DBPPropertyDescriptor[props.size()]);
     }
 
     @Override
