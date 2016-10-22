@@ -48,6 +48,9 @@ public class DBeaverVersionChecker extends AbstractJob {
     @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
+        if (monitor.isCanceled() || DBeaverCore.isClosing()) {
+            return Status.CANCEL_STATUS;
+        }
         boolean showUpdateDialog = showAlways;
         if (!showUpdateDialog) {
             // Check for auto-update settings
