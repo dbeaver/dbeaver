@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -55,25 +54,25 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
         return new UITask<MySQLTableIndex>() {
             @Override
             protected MySQLTableIndex runTask() {
-                EditIndexPage indexPage = new EditIndexPage(
+                EditIndexPage editPage = new EditIndexPage(
                     MySQLMessages.edit_index_manager_title,
                     parent,
                     Collections.singletonList(DBSIndexType.OTHER));
-                if (!EditObjectDialog.showDialog(indexPage)) {
+                if (!editPage.edit()) {
                     return null;
                 }
 
                 final MySQLTableIndex index = new MySQLTableIndex(
                     parent,
-                    !indexPage.isUnique(),
+                    !editPage.isUnique(),
                     null,
-                    indexPage.getIndexType(),
+                    editPage.getIndexType(),
                     null,
                     false);
                 StringBuilder idxName = new StringBuilder(64);
                 idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
                 int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : indexPage.getSelectedAttributes()) {
+                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     if (colIndex == 1) {
                         idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
                     }

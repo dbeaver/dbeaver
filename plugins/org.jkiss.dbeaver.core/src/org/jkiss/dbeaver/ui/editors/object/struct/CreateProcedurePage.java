@@ -17,44 +17,43 @@
  */
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
-import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-public class CreateProcedureDialog extends TrayDialog {
+public class CreateProcedurePage extends BaseObjectEditPage {
 
-    private DBPDataSource dataSource;
+    private DBSObjectContainer container;
     private String name;
     private DBSProcedureType type;
 
-    public CreateProcedureDialog(Shell shell, DBPDataSource dataSource)
+    public CreateProcedurePage(DBSObjectContainer container)
     {
-        super(shell);
-        this.dataSource = dataSource;
+        super(CoreMessages.dialog_struct_create_procedure_title);
+        this.container = container;
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
-    {
-        getShell().setText(CoreMessages.dialog_struct_create_procedure_title);
-        Composite group = (Composite) super.createDialogArea(parent);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        group.setLayoutData(gd);
-
-        Composite propsGroup = new Composite(group, SWT.NONE);
+    protected Control createPageContents(Composite parent) {
+        Composite propsGroup = new Composite(parent, SWT.NONE);
         propsGroup.setLayout(new GridLayout(2, false));
-        gd = new GridData(GridData.FILL_HORIZONTAL);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
+        UIUtils.createLabelText(propsGroup, "Container", DBUtils.getObjectFullName(container, DBPEvaluationContext.UI)).setEditable(false);
         final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_procedure_label_name, null);
         nameText.addModifyListener(new ModifyListener() {
             @Override
@@ -75,7 +74,8 @@ public class CreateProcedureDialog extends TrayDialog {
             }
         });
         typeCombo.select(0);
-        return group;
+        propsGroup.setTabList(new Control[] { nameText, typeCombo} );
+        return propsGroup;
     }
 
     public DBSProcedureType getProcedureType()
@@ -85,6 +85,6 @@ public class CreateProcedureDialog extends TrayDialog {
 
     public String getProcedureName()
     {
-        return DBObjectNameCaseTransformer.transformName(dataSource, name);
+        return DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
     }
 }

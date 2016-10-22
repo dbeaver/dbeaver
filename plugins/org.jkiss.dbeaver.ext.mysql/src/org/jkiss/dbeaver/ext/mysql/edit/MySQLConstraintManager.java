@@ -51,24 +51,24 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
         return new UITask<MySQLTableConstraint>() {
             @Override
             protected MySQLTableConstraint runTask() {
-                EditConstraintPage constraintPage = new EditConstraintPage(
+                EditConstraintPage editPage = new EditConstraintPage(
                     MySQLMessages.edit_constraint_manager_title,
                     parent,
                     new DBSEntityConstraintType[] {
                         DBSEntityConstraintType.PRIMARY_KEY,
                         DBSEntityConstraintType.UNIQUE_KEY });
-                if (!EditObjectDialog.showDialog(constraintPage)) {
+                if (!editPage.edit()) {
                     return null;
                 }
 
                 final MySQLTableConstraint constraint = new MySQLTableConstraint(
                     parent,
-                    constraintPage.getConstraintName(),
+                    editPage.getConstraintName(),
                     null,
-                    constraintPage.getConstraintType(),
+                    editPage.getConstraintType(),
                     false);
                 int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : constraintPage.getSelectedAttributes()) {
+                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     constraint.addColumn(
                         new MySQLTableConstraintColumn(
                             constraint,

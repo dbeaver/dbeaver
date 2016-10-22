@@ -55,12 +55,12 @@ public class OracleTriggerManager extends SQLTriggerManager<OracleTrigger, Oracl
         return new UITask<OracleTrigger>() {
             @Override
             protected OracleTrigger runTask() {
-                EntityEditPage page = new EntityEditPage(parent.getDataSource(), DBSEntityType.TRIGGER);
-                if (!EditObjectDialog.showDialog(page)) {
+                EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.TRIGGER);
+                if (!editPage.edit()) {
                     return null;
                 }
-                OracleTrigger newTrigger = new OracleTrigger(parent.getContainer(), parent, page.getEntityName());
-                newTrigger.setObjectDefinitionText("TRIGGER " + page.getEntityName() + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                OracleTrigger newTrigger = new OracleTrigger(parent.getContainer(), parent, editPage.getEntityName());
+                newTrigger.setObjectDefinitionText("TRIGGER " + editPage.getEntityName() + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
                     "BEGIN\n" + //$NON-NLS-1$
                     "END;"); //$NON-NLS-1$
                 return newTrigger;

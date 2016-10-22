@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -56,13 +55,13 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
         return new UITask<OracleDataType>() {
             @Override
             protected OracleDataType runTask() {
-                EntityEditPage page = new EntityEditPage(parent.getDataSource(), DBSEntityType.TYPE);
-                if (!EditObjectDialog.showDialog(page)) {
+                EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.TYPE);
+                if (!editPage.edit()) {
                     return null;
                 }
                 OracleDataType dataType = new OracleDataType(
                     parent,
-                    page.getEntityName(),
+                    editPage.getEntityName(),
                     false);
                 dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
                     "(\n" + //$NON-NLS-1$

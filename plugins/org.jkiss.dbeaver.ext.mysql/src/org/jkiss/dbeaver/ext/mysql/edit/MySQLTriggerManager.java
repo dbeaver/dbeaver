@@ -55,11 +55,11 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
         return new UITask<MySQLTrigger>() {
             @Override
             protected MySQLTrigger runTask() {
-                EntityEditPage page = new EntityEditPage(parent.getDataSource(), DBSEntityType.TRIGGER);
-                if (!EditObjectDialog.showDialog(page)) {
+                EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.TRIGGER);
+                if (!editPage.edit()) {
                     return null;
                 }
-                MySQLTrigger newTrigger = new MySQLTrigger(parent.getContainer(), parent, page.getEntityName());
+                MySQLTrigger newTrigger = new MySQLTrigger(parent.getContainer(), parent, editPage.getEntityName());
                 newTrigger.setObjectDefinitionText(""); //$NON-NLS-1$
                 return newTrigger;
             }

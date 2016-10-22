@@ -17,10 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -31,7 +29,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedureDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -69,12 +68,12 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
         return new UITask<PostgreProcedure>() {
             @Override
             protected PostgreProcedure runTask() {
-                CreateProcedureDialog dialog = new CreateProcedureDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource());
-                if (dialog.open() != IDialogConstants.OK_ID) {
+                CreateProcedurePage editPage = new CreateProcedurePage(parent);
+                if (!editPage.edit()) {
                     return null;
                 }
                 PostgreProcedure newProcedure = new PostgreProcedure(parent);
-                newProcedure.setName(dialog.getProcedureName());
+                newProcedure.setName(editPage.getProcedureName());
                 return newProcedure;
             }
         }.execute();
