@@ -79,25 +79,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         SQLCompletionProcessor.simpleMode = simpleMode;
     }
 
-    static class CompletionRequest {
-        final SQLEditorBase editor;
-        final boolean simpleMode;
-        int documentOffset;
-        String activeQuery = null;
-
-        SQLWordPartDetector wordDetector;
-        String wordPart;
-        QueryType queryType;
-
-        final List<SQLCompletionProposal> proposals = new ArrayList<>();
-
-        CompletionRequest(SQLEditorBase editor, int documentOffset, boolean simpleMode) {
-            this.editor = editor;
-            this.documentOffset = documentOffset;
-            this.simpleMode = simpleMode;
-        }
-    }
-
     private final SQLEditorBase editor;
 
     public SQLCompletionProcessor(SQLEditorBase editor)
@@ -110,7 +91,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         ITextViewer viewer,
         int documentOffset)
     {
-        final CompletionRequest request = new CompletionRequest(editor, documentOffset, simpleMode);
+        final SQLCompletionAnalyzer.CompletionRequest request = new SQLCompletionAnalyzer.CompletionRequest(editor, documentOffset, simpleMode);
         SQLWordPartDetector wordDetector = request.wordDetector =
             new SQLWordPartDetector(viewer.getDocument(), editor.getSyntaxManager(), documentOffset);
         request.wordPart = wordDetector.getWordPart();
@@ -202,7 +183,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         }
         DBSObject selectedObject = DBUtils.getActiveInstanceObject(editor.getDataSource());
-        boolean hideDups = SQLCompletionAnalyzer.getPreferences(request).getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) && selectedObject != null;
+        boolean hideDups = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) && selectedObject != null;
         if (hideDups) {
             for (int i = 0; i < request.proposals.size(); i++) {
                 SQLCompletionProposal proposal = request.proposals.get(i);
@@ -231,7 +212,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     }
 
     @NotNull
-    private ICompletionProposal[] makeTemplateProposals(ITextViewer viewer, CompletionRequest request) {
+    private ICompletionProposal[] makeTemplateProposals(ITextViewer viewer, SQLCompletionAnalyzer.CompletionRequest request) {
         String wordPart = request.wordPart.toLowerCase();
         final List<SQLTemplateCompletionProposal> templateProposals = new ArrayList<>();
         // Templates
@@ -340,10 +321,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     }
 
     private class ProposalSearchJob extends AbstractJob {
-        private final CompletionRequest request;
+        private final SQLCompletionAnalyzer.CompletionRequest request;
         private transient boolean finished = false;
 
-        public ProposalSearchJob(CompletionRequest request) {
+        public ProposalSearchJob(SQLCompletionAnalyzer.CompletionRequest request) {
             super("Search proposals...");
             setSystem(true);
             this.request = request;
@@ -355,7 +336,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 monitor.beginTask("Seeking for completion proposals", 1);
                 try {
                     monitor.subTask("Make structure proposals");
-                    SQLCompletionAnalyzer.makeStructureProposals(monitor, request);
+                    SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(monitor, request);
+                    analyzer.runAnalyzer();
                 } finally {
                     monitor.done();
                 }
