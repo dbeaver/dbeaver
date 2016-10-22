@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -54,7 +55,6 @@ public abstract class AttributesSelectorDialog extends Dialog {
 
     private String title;
     private DBSEntity entity;
-    //private TableViewer columnsViewer;
     private Table columnsTable;
     private List<AttributeInfo> attributes = new ArrayList<>();
     private Button toggleButton;
@@ -220,7 +220,10 @@ public abstract class AttributesSelectorDialog extends Dialog {
         final Composite tableGroup = new Composite(panel, SWT.NONE);
         tableGroup.setLayout(new GridLayout(2, false));
         tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        UIUtils.createLabelText(tableGroup, CoreMessages.dialog_struct_columns_select_label_table, entity.getName(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(
+            tableGroup,
+            CoreMessages.dialog_struct_columns_select_label_table,
+            DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY);
         return tableGroup;
     }
 
