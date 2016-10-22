@@ -26,12 +26,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DB2 EXPLAIN_STATEMENT table
@@ -163,9 +158,9 @@ public class DB2PlanStatement {
     {
 
         mapDataObjects = new HashMap<>(32);
-        JDBCPreparedStatement sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OBJECT",
-            "OBJECT_SCHEMA,OBJECT_NAME"));
-        try {
+        try (JDBCPreparedStatement sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OBJECT",
+            "OBJECT_SCHEMA,OBJECT_NAME")))
+        {
             setQueryParameters(sqlStmt);
             try (JDBCResultSet res = sqlStmt.executeQuery()) {
                 DB2PlanObject db2PlanObject;
@@ -174,13 +169,12 @@ public class DB2PlanStatement {
                     mapDataObjects.put(db2PlanObject.getNodeName(), db2PlanObject);
                 }
             }
-        } finally {
-            sqlStmt.close();
         }
 
         mapOperators = new HashMap<>(64);
-        sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR", "OPERATOR_ID"));
-        try {
+        try (JDBCPreparedStatement sqlStmt = session.prepareStatement(
+            String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR", "OPERATOR_ID")))
+        {
             setQueryParameters(sqlStmt);
             try (JDBCResultSet res = sqlStmt.executeQuery()) {
                 DB2PlanOperator db2PlanOperator;
@@ -192,21 +186,18 @@ public class DB2PlanStatement {
                     }
                 }
             }
-        } finally {
-            sqlStmt.close();
         }
 
         listStreams = new ArrayList<>();
-        sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM", "STREAM_ID DESC"));
-        try {
+        try (JDBCPreparedStatement sqlStmt = session.prepareStatement(
+            String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM", "STREAM_ID DESC")))
+        {
             setQueryParameters(sqlStmt);
             try (JDBCResultSet res = sqlStmt.executeQuery()) {
                 while (res.next()) {
                     listStreams.add(new DB2PlanStream(res, this));
                 }
             }
-        } finally {
-            sqlStmt.close();
         }
     }
 

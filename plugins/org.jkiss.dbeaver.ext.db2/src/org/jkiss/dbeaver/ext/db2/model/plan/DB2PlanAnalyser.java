@@ -95,23 +95,17 @@ public class DB2PlanAnalyser implements DBCPlan {
             cleanExplainTables(session, stmtNo, planTableSchema);
 
             // Explain
-            JDBCPreparedStatement dbStat = session.prepareStatement(String.format(PT_EXPLAIN, stmtNo, query));
-            try {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(String.format(PT_EXPLAIN, stmtNo, query))) {
                 dbStat.execute();
-            } finally {
-                dbStat.close();
             }
 
             // Build Node Structure
-            dbStat = session.prepareStatement(String.format(SEL_STMT, planTableSchema));
-            try {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(String.format(SEL_STMT, planTableSchema))) {
                 dbStat.setInt(1, stmtNo);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     dbResult.next();
                     db2PlanStatement = new DB2PlanStatement(session, dbResult, planTableSchema);
                 }
-            } finally {
-                dbStat.close();
             }
 
             listNodes = db2PlanStatement.buildNodes();
