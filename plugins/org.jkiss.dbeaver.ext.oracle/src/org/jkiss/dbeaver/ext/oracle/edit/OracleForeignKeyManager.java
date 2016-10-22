@@ -18,9 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -31,7 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -53,8 +51,7 @@ public class OracleForeignKeyManager extends SQLForeignKeyManager<OracleTableFor
         return new UITask<OracleTableForeignKey>() {
             @Override
             protected OracleTableForeignKey runTask() {
-                EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
-                    DBeaverUI.getActiveWorkbenchShell(),
+                EditForeignKeyPage editPage = new EditForeignKeyPage(
                     OracleMessages.edit_oracle_foreign_key_manager_dialog_title,
                     table,
                     new DBSForeignKeyModifyRule[] {
@@ -62,7 +59,7 @@ public class OracleForeignKeyManager extends SQLForeignKeyManager<OracleTableFor
                         DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
                         DBSForeignKeyModifyRule.SET_NULL,
                         DBSForeignKeyModifyRule.SET_DEFAULT });
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!editPage.edit()) {
                     return null;
                 }
 
@@ -70,13 +67,13 @@ public class OracleForeignKeyManager extends SQLForeignKeyManager<OracleTableFor
                     table,
                     null,
                     null,
-                    (OracleTableConstraint) editDialog.getUniqueConstraint(),
-                    editDialog.getOnDeleteRule());
+                    (OracleTableConstraint) editPage.getUniqueConstraint(),
+                    editPage.getOnDeleteRule());
                 foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
                     CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
-                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
+                        CommonUtils.escapeIdentifier(editPage.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
                 int colIndex = 1;
-                for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
+                for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
                     foreignKey.addColumn(
                         new OracleTableForeignKeyColumn(
                             foreignKey,

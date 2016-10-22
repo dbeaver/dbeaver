@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
 import java.util.List;

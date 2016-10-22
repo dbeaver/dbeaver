@@ -17,9 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -29,7 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -54,8 +52,7 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
         return new UITask<PostgreTableForeignKey>() {
             @Override
             protected PostgreTableForeignKey runTask() {
-                EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
-                    DBeaverUI.getActiveWorkbenchShell(),
+                EditForeignKeyPage editPage = new EditForeignKeyPage(
                     "Edit foreign key",
                     table,
                     new DBSForeignKeyModifyRule[] {
@@ -63,20 +60,20 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
                         DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
                         DBSForeignKeyModifyRule.SET_NULL,
                         DBSForeignKeyModifyRule.SET_DEFAULT });
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!editPage.edit()) {
                     return null;
                 }
 
                 final PostgreTableForeignKey foreignKey = new PostgreTableForeignKey(
                     table,
-                    editDialog.getUniqueConstraint(),
-                    editDialog.getOnDeleteRule(),
-                    editDialog.getOnUpdateRule());
+                    editPage.getUniqueConstraint(),
+                    editPage.getOnDeleteRule(),
+                    editPage.getOnUpdateRule());
                 foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
                     CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
-                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
+                        CommonUtils.escapeIdentifier(editPage.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
                 int colIndex = 1;
-                for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
+                for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
                     foreignKey.addColumn(
                         new PostgreTableForeignKeyColumn(
                             foreignKey,

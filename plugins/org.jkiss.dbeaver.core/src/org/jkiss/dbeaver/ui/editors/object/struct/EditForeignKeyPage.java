@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -62,11 +60,11 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * EditForeignKeyDialog
+ * EditForeignKeyPage
  *
  * @author Serge Rider
  */
-public class EditForeignKeyDialog extends Dialog {
+public class EditForeignKeyPage extends BaseObjectEditPage {
 
     public static class FKColumnInfo {
         final DBSEntityAttribute refColumn;
@@ -88,7 +86,6 @@ public class EditForeignKeyDialog extends Dialog {
         }
     }
 
-    private String title;
     private IProgressControlProvider progressProvider;
     private DBSForeignKeyModifyRule[] supportedModifyRules;
     private DBSTable ownTable;
@@ -104,27 +101,26 @@ public class EditForeignKeyDialog extends Dialog {
     private DBSForeignKeyModifyRule onDeleteRule;
     private DBSForeignKeyModifyRule onUpdateRule;
 
-    public EditForeignKeyDialog(
-        Shell shell,
+    public EditForeignKeyPage(
         String title,
         DBSTable table,
         DBSForeignKeyModifyRule[] supportedModifyRules)
     {
-        super(shell);
-        setShellStyle(SWT.APPLICATION_MODAL | SWT.SHELL_TRIM);
-        this.title = title;
+        super(title);
         this.progressProvider = null;
         this.ownTable = table;
         this.ownerTableNode = DBeaverCore.getInstance().getNavigatorModel().findNode(ownTable);
         this.supportedModifyRules = supportedModifyRules;
+
+        if (ownerTableNode != null) {
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(ownerTableNode.getNodeIcon()));
+            setTitle(title + " | " + NLS.bind(CoreMessages.dialog_struct_edit_fk_title, title, ownerTableNode.getNodeName()));
+        }
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
-    {
-        Composite dialogGroup = (Composite)super.createDialogArea(parent);
-
-        final Composite panel = UIUtils.createPlaceholder(dialogGroup, 1, 5);
+    protected Control createPageContents(Composite parent) {
+        final Composite panel = UIUtils.createPlaceholder(parent, 1, 5);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
@@ -229,7 +225,7 @@ public class EditForeignKeyDialog extends Dialog {
         }
         //panel.setTabList(new Control[] { tableList, pkGroup, columnsTable, cascadeGroup });
 
-        return dialogGroup;
+        return panel;
     }
 
     private void handleRefTableSelect(ISelection selection)
@@ -257,7 +253,6 @@ public class EditForeignKeyDialog extends Dialog {
         try {
             curConstraints = new ArrayList<>();
             curConstraint = null;
-            final DBeaverCore core = DBeaverCore.getInstance();
             if (refTableNode != null) {
                 final DBSTable refTable = (DBSTable) refTableNode.getObject();
                 DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
@@ -300,7 +295,7 @@ public class EditForeignKeyDialog extends Dialog {
             // do nothing
         }
         handleUniqueKeySelect();
-        updateButtons();
+        updatePageState();
     }
 
     private void handleUniqueKeySelect()
@@ -354,39 +349,17 @@ public class EditForeignKeyDialog extends Dialog {
         return DBeaverIcons.getImage(DBUtils.getObjectImage(column));
     }
 
-    private void updateButtons()
-    {
-        boolean columnsValid = !fkColumns.isEmpty();
+    @Override
+    public boolean isPageComplete() {
+        if (fkColumns.isEmpty()) {
+            return false;
+        }
         for (FKColumnInfo col : fkColumns) {
             if (col.ownColumn == null || col.refColumn == null) {
-                columnsValid = false;
-                break;
+                return false;
             }
         }
-
-        getButton(IDialogConstants.OK_ID).setEnabled(columnsValid);
-    }
-
-    @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
-        super.createButtonsForButtonBar(parent);
-        getButton(IDialogConstants.OK_ID).setEnabled(false);
-    }
-
-    @Override
-    protected void okPressed()
-    {
-        super.okPressed();
-    }
-
-    @Override
-    protected void configureShell(Shell shell) {
-        super.configureShell(shell);
-        if (ownerTableNode != null) {
-            shell.setText(NLS.bind(CoreMessages.dialog_struct_edit_fk_title, title, ownerTableNode.getNodeName()));
-            shell.setImage(DBeaverIcons.getImage(ownerTableNode.getNodeIcon()));
-        }
+        return true;
     }
 
     public List<FKColumnInfo> getColumns()
@@ -468,7 +441,7 @@ public class EditForeignKeyDialog extends Dialog {
                         item.setText(0, fkInfo.ownColumn.getName());
                         item.setImage(0, getColumnIcon(fkInfo.ownColumn));
                         item.setText(1, fkInfo.ownColumn.getFullTypeName());
-                        updateButtons();
+                        updatePageState();
                     }
                 }
             });

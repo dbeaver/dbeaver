@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -162,7 +161,7 @@ public class ReferenceValueEditor {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         EditDictionaryPage editDictionaryPage = new EditDictionaryPage("Dictionary structure", refTable);
-                        if (EditObjectDialog.showDialog(parent.getShell(), editDictionaryPage)) {
+                        if (editDictionaryPage.edit(parent.getShell())) {
                             loaderJob.schedule();
                         }
                     }

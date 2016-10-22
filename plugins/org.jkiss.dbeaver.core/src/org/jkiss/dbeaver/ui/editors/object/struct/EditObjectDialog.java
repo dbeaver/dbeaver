@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 
-public class EditObjectDialog extends TrayDialog {
+class EditObjectDialog extends TrayDialog {
 
     private static final Log log = Log.getLog(EditObjectDialog.class);
 
@@ -37,6 +37,9 @@ public class EditObjectDialog extends TrayDialog {
     {
         super(shell);
         this.dialogPage = dialogPage;
+        if (this.dialogPage instanceof BaseObjectEditPage) {
+            ((BaseObjectEditPage) this.dialogPage).setContainer(this);
+        }
         //setHelpAvailable(false);
     }
 

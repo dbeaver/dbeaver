@@ -17,9 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -30,7 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -51,8 +49,7 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
         return new UITask<GenericTableForeignKey>() {
             @Override
             protected GenericTableForeignKey runTask() {
-                EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
-                    DBeaverUI.getActiveWorkbenchShell(),
+                EditForeignKeyPage editPage = new EditForeignKeyPage(
                     "Create foreign key",
                     table,
                     new DBSForeignKeyModifyRule[] {
@@ -60,7 +57,7 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
                         DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
                         DBSForeignKeyModifyRule.SET_NULL,
                         DBSForeignKeyModifyRule.SET_DEFAULT });
-                if (editDialog.open() != IDialogConstants.OK_ID) {
+                if (!editPage.edit()) {
                     return null;
                 }
 
@@ -68,16 +65,16 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
                     table,
                     null,
                     null,
-                    (GenericPrimaryKey) editDialog.getUniqueConstraint(),
-                    editDialog.getOnDeleteRule(),
-                    editDialog.getOnUpdateRule(),
+                    (GenericPrimaryKey) editPage.getUniqueConstraint(),
+                    editPage.getOnDeleteRule(),
+                    editPage.getOnUpdateRule(),
                     DBSForeignKeyDefferability.NOT_DEFERRABLE,
                     false);
                 foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
                     CommonUtils.escapeIdentifier(table.getName()) + "_" +
-                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK"));
+                        CommonUtils.escapeIdentifier(editPage.getUniqueConstraint().getParentObject().getName()) + "_FK"));
                 int colIndex = 1;
-                for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
+                for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
                     foreignKey.addColumn(
                         new GenericTableForeignKeyColumnTable(
                             foreignKey,
