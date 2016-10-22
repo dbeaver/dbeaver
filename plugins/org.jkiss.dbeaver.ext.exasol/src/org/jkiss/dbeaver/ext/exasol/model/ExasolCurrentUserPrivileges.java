@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class ExasolCurrentUserPrivileges {
@@ -32,11 +33,14 @@ public class ExasolCurrentUserPrivileges {
 	private static final String C_USERS = "SELECT USER_NAME FROM EXA_DBA_USERS WHERE FALSE";
 	private static final String C_ROLES = "SELECT ROLE_NAME FROM EXA_DBA_ROLES WHERE FALSE";
 	private static final String C_ROLE_PRIVS = "SELECT ROLE_NAME FROM EXA_DBA_ROLE_PRIVS WHERE FALSE";
+	private static final String C_VERSION = "select TO_NUMBER(\"VALUE\") AS VERSION from \"$ODBCJDBC\".DB_METADATA WHERE name LIKE 'databaseMajorVersion'";
 
 	private final Boolean userIsAuthorizedForConnections;
 	private final Boolean userIsAuthorizedForUsers;
 	private final Boolean userIsAuthorizedForRoles;
 	private final Boolean userIsAuthorizedForRolePrivs;
+	private final int ExasolVersion;
+	
 
 	public ExasolCurrentUserPrivileges(DBRProgressMonitor monitor,
 			JDBCSession session, ExasolDataSource exasolDataSource)
@@ -47,9 +51,35 @@ public class ExasolCurrentUserPrivileges {
 		userIsAuthorizedForUsers = ExasolCurrentUserPrivileges.verifyPriv(C_USERS, session);
 		userIsAuthorizedForRolePrivs = ExasolCurrentUserPrivileges.verifyPriv(C_ROLE_PRIVS, session);
 		userIsAuthorizedForRoles = ExasolCurrentUserPrivileges.verifyPriv(C_ROLES, session);
-
+		
+		JDBCPreparedStatement dbStat;
+		try {
+			dbStat = session.prepareStatement(C_VERSION);
+			ResultSet rs = dbStat.executeQuery();
+			rs.next();
+			ExasolVersion = JDBCUtils.safeGetInt(rs, "VERSION");			
+			rs.close();
+			dbStat.close();
+		} catch (SQLException e) {
+			throw new DBException(e,exasolDataSource);
+		}
 	}
 	
+	public int getExasolVersion()
+	{
+		return ExasolVersion;
+	}
+	
+	public Boolean getatLeastV5()
+	{
+		return ExasolVersion >= 5;
+	}
+	
+	public Boolean getatLeastV6()
+	{
+		return ExasolVersion >= 6;
+	}
+
 	public Boolean getUserIsAuthorizedForRoles()
 	{
 		return userIsAuthorizedForRoles;
