@@ -135,6 +135,7 @@ public class SQLEditor extends SQLEditorBase implements
     private DBPDataSourceContainer dataSourceContainer;
     private DBPDataSource curDataSource;
     private volatile DBCExecutionContext executionContext;
+    private volatile DBCExecutionContext lastExecutionContext;
     private volatile boolean ownContext = false;
     private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<>();
@@ -949,7 +950,11 @@ public class SQLEditor extends SQLEditorBase implements
 
         DatabaseEditorUtils.setPartBackground(this, sashForm);
 
+
         DBCExecutionContext executionContext = getExecutionContext();
+        if (lastExecutionContext == executionContext) {
+            return;
+        }
         for (QueryProcessor queryProcessor : queryProcessors) {
             for (QueryResultsContainer resultsProvider : queryProcessor.getResultContainers()) {
                 ResultSetViewer rsv = resultsProvider.getResultSetController();
@@ -979,6 +984,8 @@ public class SQLEditor extends SQLEditorBase implements
         } else {
             sashForm.setMaximizedControl(null);
         }
+
+        lastExecutionContext = executionContext;
     }
 
     @Override
