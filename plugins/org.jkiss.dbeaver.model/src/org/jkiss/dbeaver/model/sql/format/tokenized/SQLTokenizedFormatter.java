@@ -320,8 +320,8 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                     // Do not add space between name and value [JDBC:MSSQL]
                     continue;
                 }
-                if (token.getType() == TokenType.SYMBOL && ":".equals(token.getString()) ||
-                    prev.getType() == TokenType.SYMBOL && ":".equals(prev.getString()))
+                if (token.getType() == TokenType.SYMBOL && isEmbeddedToken(token) ||
+                    prev.getType() == TokenType.SYMBOL && isEmbeddedToken(prev))
                 {
                     // Do not insert spaces around colons
                     continue;
@@ -335,6 +335,10 @@ public class SQLTokenizedFormatter implements SQLFormatter {
         }
 
         return argList;
+    }
+
+    private static  boolean isEmbeddedToken(FormatterToken token) {
+        return ":".equals(token.getString()) || ".".equals(token.getString());
     }
 
     private boolean isJoinStart(List<FormatterToken> argList, int index) {
