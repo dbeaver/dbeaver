@@ -165,10 +165,10 @@ public class SQLRuleManager extends RuleBasedScanner {
         }
 
         // Add rules for delimited identifiers and string literals.
-        char escapeChar = syntaxManager.getEscapeChar();
+        //char escapeChar = syntaxManager.getEscapeChar();
         String quoteSymbol = syntaxManager.getQuoteSymbol();
         if (quoteSymbol != null) {
-            rules.add(new SingleLineRule(quoteSymbol, quoteSymbol, quotedToken, escapeChar));
+            rules.add(new SingleLineRule(quoteSymbol, quoteSymbol, quotedToken, (char)0));
         }
         if (quoteSymbol == null || !quoteSymbol.equals(SQLConstants.STR_QUOTE_SINGLE)) {
             rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, (char)0));
