@@ -24,6 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -75,6 +76,7 @@ public class ItemListControl extends NodeListControl
     @Override
     protected void fillCustomActions(IContributionManager contributionManager)
     {
+        super.fillCustomActions(contributionManager);
         if (getRootNode() instanceof DBNDatabaseFolder && ((DBNDatabaseFolder)getRootNode()).getItemsMeta() != null) {
             contributionManager.add(new Action(
                 "Filter",
@@ -87,6 +89,22 @@ public class ItemListControl extends NodeListControl
                 }
             });
         }
+        contributionManager.add(ActionUtils.makeCommandContribution(getWorkbenchSite(), IWorkbenchCommandConstants.FILE_REFRESH));
+        contributionManager.add(new Action(
+            "Pack columns",
+            DBeaverIcons.getImageDescriptor(UIIcon.TREE_EXPAND))
+        {
+            @Override
+            public void run()
+            {
+                ColumnViewer itemsViewer = getItemsViewer();
+                if (itemsViewer instanceof TreeViewer) {
+                    UIUtils.packColumns(((TreeViewer) itemsViewer).getTree());
+                } else {
+                    UIUtils.packColumns(((TableViewer) itemsViewer).getTable());
+                }
+            }
+        });
     }
 
     @Override
