@@ -26,6 +26,9 @@
     <feature id="org.jkiss.dbeaver.ext.db2.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
+    <feature id="org.jkiss.dbeaver.ext.exasol.feature">
+        <category name="org.jkiss.dbeaver"/>
+    </feature>
     <feature id="org.jkiss.dbeaver.ext.wmi.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
