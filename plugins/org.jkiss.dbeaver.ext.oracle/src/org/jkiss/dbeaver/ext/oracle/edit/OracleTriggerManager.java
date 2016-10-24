@@ -81,7 +81,7 @@ public class OracleTriggerManager extends SQLTriggerManager<OracleTrigger, Oracl
         if (source == null) {
             return;
         }
-        actions.add(new SQLDatabasePersistAction("Create trigger", "CREATE OR REPLACE " + source)); //$NON-NLS-2$
+        actions.add(new SQLDatabasePersistAction("Create trigger", "CREATE OR REPLACE " + source, true)); //$NON-NLS-2$
         OracleUtils.addSchemaChangeActions(actions, trigger);
     }
 

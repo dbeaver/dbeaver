@@ -27,17 +27,29 @@ public class SQLDatabasePersistAction implements DBEPersistAction {
     private final String title;
     private final String script;
     private final ActionType type;
+    private final boolean complex;
 
     public SQLDatabasePersistAction(String title, String script)
     {
-        this(title, script, ActionType.NORMAL);
+        this(title, script, ActionType.NORMAL, false);
+    }
+
+    public SQLDatabasePersistAction(String title, String script, boolean complex)
+    {
+        this(title, script, ActionType.NORMAL, complex);
     }
 
     public SQLDatabasePersistAction(String title, String script, ActionType type)
     {
+        this(title, script, type, false);
+    }
+
+    public SQLDatabasePersistAction(String title, String script, ActionType type, boolean complex)
+    {
         this.title = title;
         this.script = script;
         this.type = type;
+        this.complex = complex;
     }
 
     public SQLDatabasePersistAction(String script)
@@ -69,4 +81,8 @@ public class SQLDatabasePersistAction implements DBEPersistAction {
         return type;
     }
 
+    @Override
+    public boolean isComplex() {
+        return complex;
+    }
 }

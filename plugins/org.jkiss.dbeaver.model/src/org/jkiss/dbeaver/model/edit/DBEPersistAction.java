@@ -40,4 +40,7 @@ public interface DBEPersistAction {
         throws DBCException;
 
     ActionType getType();
+
+    boolean isComplex();
+
 }

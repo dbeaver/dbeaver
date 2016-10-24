@@ -108,7 +108,7 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
         actions.add(
             new SQLDatabasePersistAction("Drop procedure", "DROP " + procedure.getProcedureType() + " IF EXISTS " + procedure.getFullyQualifiedName(DBPEvaluationContext.DDL))); //$NON-NLS-2$ //$NON-NLS-3$
         actions.add(
-            new SQLDatabasePersistAction("Create procedure", procedure.getDeclaration()));
+            new SQLDatabasePersistAction("Create procedure", procedure.getDeclaration(), true));
     }
 
 }

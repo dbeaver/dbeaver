@@ -177,8 +177,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                         actions.add(
                             new SQLDatabasePersistAction(
                                 "Execute statement",
-                                queryString,
-                                DBEPersistAction.ActionType.NORMAL));
+                                queryString));
                     }
                 } finally {
                     if (!reuse) {

@@ -78,7 +78,7 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
             "ON " + trigger.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " FOR EACH ROW\n" +
             trigger.getBody();
 
-        actions.add(new SQLDatabasePersistAction("Create trigger", ddl)); //$NON-NLS-2$
+        actions.add(new SQLDatabasePersistAction("Create trigger", ddl, true)); //$NON-NLS-2$
     }
 
 }

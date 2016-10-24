@@ -56,4 +56,8 @@ public abstract class DirectDatabasePersistAction implements DBEPersistAction {
         return type;
     }
 
+    @Override
+    public boolean isComplex() {
+        return false;
+    }
 }

@@ -1237,8 +1237,7 @@ public final class DBUtils {
                 .append(DBEAVER_DDL_WARNING).append(lineSeparator);
         }
         if (persistActions != null) {
-            for (int i = 0; i < persistActions.length; i++) {
-                DBEPersistAction action = persistActions[i];
+            for (DBEPersistAction action : persistActions) {
                 String scriptLine = action.getScript();
                 if (CommonUtils.isEmpty(scriptLine)) {
                     continue;
@@ -1247,9 +1246,10 @@ public final class DBUtils {
                     script.append(lineSeparator);
                 }
                 script.append(scriptLine);
-                if (i < persistActions.length - 1) {
+                if (!action.isComplex()) {
                     script.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append(lineSeparator);
                 }
+                script.append(lineSeparator);
             }
         }
         return script.toString();
