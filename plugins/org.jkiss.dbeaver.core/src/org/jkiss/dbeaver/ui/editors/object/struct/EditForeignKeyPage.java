@@ -135,11 +135,11 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             //Composite columnsGroup = UIUtils.createControlGroup(panel, "Reference Table", 1, GridData.FILL_BOTH, 0);
             UIUtils.createControlLabel(panel, CoreMessages.dialog_struct_edit_fk_label_ref_table);
             ItemListControl tableList = new ItemListControl(panel, SWT.SINGLE | SWT.SHEET | SWT.BORDER, null, rootNode, null);
-            if (progressProvider != null) {
-                tableList.substituteProgressPanel(progressProvider.getProgressControl());
-            } else {
-                tableList.createProgressPanel();
-            }
+//            if (progressProvider != null) {
+//                tableList.substituteProgressPanel(progressProvider.getProgressControl());
+//            } else {
+//                tableList.createProgressPanel();
+//            }
 
             tableList.loadData();
             final GridData gd = new GridData(GridData.FILL_BOTH);
