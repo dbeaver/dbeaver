@@ -1582,7 +1582,7 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public String getName()
         {
-            String name = lastGoodQuery == null ? null : lastGoodQuery.getQuery();
+            String name = lastGoodQuery == null ? null : lastGoodQuery.getOriginalQuery();
             if (name == null) {
                 name = "SQL";
             }
