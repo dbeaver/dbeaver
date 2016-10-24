@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -216,7 +215,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                         // ignore
                     }
                     if (!sqlScript.isEmpty()) {
-                        String scriptText = DBUtils.generateScript(
+                        String scriptText = SQLUtils.generateScript(
                             rsv.getDataContainer() == null ? null : rsv.getDataContainer().getDataSource(),
                             sqlScript.toArray(new DBEPersistAction[sqlScript.size()]),
                             false);
