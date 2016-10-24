@@ -1155,7 +1155,8 @@ public class ResultSetViewer extends Viewer
         // Search in history
         for (int i = 0; i < stateHistory.size(); i++) {
             HistoryStateItem item = stateHistory.get(i);
-            if (item.dataContainer == dataContainer && CommonUtils.equalObjects(item.filter, dataFilter)) {
+            if (item.dataContainer == dataContainer && item.filter != null && item.filter.equalFilters(dataFilter)) {
+                item.filter = dataFilter; // Update data filter - it may contain some orderings
                 curState = item;
                 historyPosition = i;
                 return;
@@ -2133,7 +2134,7 @@ public class ResultSetViewer extends Viewer
 
     synchronized boolean runDataPump(
         @NotNull final DBSDataContainer dataContainer,
-        @Nullable DBDDataFilter dataFilter,
+        @Nullable final DBDDataFilter dataFilter,
         final int offset,
         final int maxRows,
         final int focusRow,
