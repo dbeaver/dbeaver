@@ -756,7 +756,7 @@ public class JDBCUtils {
         final SQLObjectEditor entityEditor = editorsRegistry.getObjectManager(table.getClass(), SQLObjectEditor.class);
         if (entityEditor instanceof SQLTableManager) {
             DBEPersistAction[] ddlActions = ((SQLTableManager) entityEditor).getTableDDL(monitor, table);
-            return DBUtils.generateScript(ddlActions, addComments);
+            return DBUtils.generateScript(table.getDataSource(), ddlActions, addComments);
         }
         log.debug("Table editor not found for " + table.getClass().getName());
         return SQLUtils.generateCommentLine(table.getDataSource(), "Can't generate DDL: table editor not found for " + table.getClass().getName());
