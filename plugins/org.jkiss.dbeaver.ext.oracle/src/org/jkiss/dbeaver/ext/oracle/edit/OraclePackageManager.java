@@ -111,12 +111,14 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
                 actionList.add(
                     new SQLDatabasePersistAction(
                         "Create package body",
-                        body)); //$NON-NLS-1$
+                        body,
+                        true)); //$NON-NLS-1$
             } else {
                 actionList.add(
                     new SQLDatabasePersistAction(
                         "Drop package header",
-                        "DROP PACKAGE BODY " + pack.getFullyQualifiedName(DBPEvaluationContext.DDL), DBEPersistAction.ActionType.OPTIONAL) //$NON-NLS-1$
+                        "DROP PACKAGE BODY " + pack.getFullyQualifiedName(DBPEvaluationContext.DDL),
+                        DBEPersistAction.ActionType.OPTIONAL) //$NON-NLS-1$
                     );
             }
         } catch (DBException e) {

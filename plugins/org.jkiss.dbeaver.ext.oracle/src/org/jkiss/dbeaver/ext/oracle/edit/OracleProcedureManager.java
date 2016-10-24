@@ -99,7 +99,7 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
         if (source == null) {
             return;
         }
-        actionList.add(new SQLDatabasePersistAction("Create procedure", source)); //$NON-NLS-2$
+        actionList.add(new SQLDatabasePersistAction("Create procedure", source, true)); //$NON-NLS-2$
         OracleUtils.addSchemaChangeActions(actionList, procedure);
     }
 
