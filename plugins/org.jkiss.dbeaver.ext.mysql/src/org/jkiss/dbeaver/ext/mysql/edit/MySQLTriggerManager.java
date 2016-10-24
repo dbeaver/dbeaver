@@ -69,7 +69,7 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
         if (trigger.isPersisted()) {
             actions.add(
                 new SQLDatabasePersistAction("Drop trigger",
-                    "DROP TRIGGER " + trigger.getFullyQualifiedName(DBPEvaluationContext.DDL))
+                    "DROP TRIGGER IF EXISTS " + trigger.getFullyQualifiedName(DBPEvaluationContext.DDL))
             );
         }
         String ddl =
