@@ -2133,7 +2133,7 @@ public class ResultSetViewer extends Viewer
 
     synchronized boolean runDataPump(
         @NotNull final DBSDataContainer dataContainer,
-        @Nullable final DBDDataFilter dataFilter,
+        @Nullable DBDDataFilter dataFilter,
         final int offset,
         final int maxRows,
         final int focusRow,
@@ -2211,13 +2211,12 @@ public class ResultSetViewer extends Viewer
                             updatePanelsContent(false);
 
                             if (error == null) {
-                                setNewState(dataContainer, dataFilter != null ? dataFilter :
-                                    (dataContainer == getDataContainer() ? model.getDataFilter() : null));
+                                setNewState(dataContainer, useDataFilter);
                             }
 
                             model.setUpdateInProgress(false);
-                            if (error == null && dataFilter != null) {
-                                model.updateDataFilter(dataFilter);
+                            if (error == null && useDataFilter != null) {
+                                model.updateDataFilter(useDataFilter);
                                 //activePresentation.refreshData(true, false);
                             }
                             updateFiltersText(error == null);
