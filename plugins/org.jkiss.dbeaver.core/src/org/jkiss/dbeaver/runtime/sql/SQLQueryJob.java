@@ -285,10 +285,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
             String filteredQueryText = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(
                 dataSource, originalQuery.getQuery(), dataFilter);
-            sqlQuery = new SQLQuery(
-                filteredQueryText,
-                sqlQuery.getOffset(),
-                sqlQuery.getLength());
+            sqlQuery = new SQLQuery(filteredQueryText, sqlQuery);
         }
 
         final SQLQueryResult curResult = new SQLQueryResult(sqlQuery);
