@@ -631,9 +631,9 @@ public class OracleDataSource extends JDBCDataSource
 
             JDBCPreparedStatement dbStat = session.prepareStatement(schemasQuery.toString());
 
-//            if (schemaFilters != null) {
-//                JDBCUtils.setFilterParameters(dbStat, 1, schemaFilters);
-//            }
+            if (schemaFilters != null) {
+                JDBCUtils.setFilterParameters(dbStat, 1, schemaFilters);
+            }
             return dbStat;
         }
 
