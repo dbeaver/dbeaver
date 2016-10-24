@@ -89,7 +89,10 @@ public class ItemListControl extends NodeListControl
                 }
             });
         }
-        contributionManager.add(ActionUtils.makeCommandContribution(getWorkbenchSite(), IWorkbenchCommandConstants.FILE_REFRESH));
+        IWorkbenchSite workbenchSite = getWorkbenchSite();
+        if (workbenchSite != null) {
+            contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
+        }
         contributionManager.add(new Action(
             "Pack columns",
             DBeaverIcons.getImageDescriptor(UIIcon.TREE_EXPAND))
