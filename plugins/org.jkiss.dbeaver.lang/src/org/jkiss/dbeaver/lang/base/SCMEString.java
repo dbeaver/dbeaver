@@ -15,29 +15,35 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.lang.sql;
+package org.jkiss.dbeaver.lang.base;
 
-import org.eclipse.jface.text.rules.IToken;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.lang.SCMCompositeNode;
 import org.jkiss.dbeaver.lang.SCMGroupNode;
-import org.jkiss.dbeaver.lang.SCMNode;
-import org.jkiss.dbeaver.lang.SCMSourceScanner;
-import org.jkiss.dbeaver.lang.SCMToken;
-import org.jkiss.dbeaver.lang.base.BaseNodeParser;
+import org.jkiss.dbeaver.lang.SCMLeafNode;
 
 /**
- * Source code node
+ * Leaf node - linked to particular source code segment
  */
-public class SQLNodeParser extends BaseNodeParser {
+public class SCMEString extends SCMLeafNode {
 
-
-    @NotNull
-    @Override
-    public SCMNode parseNode(@NotNull SCMGroupNode container, @NotNull IToken token, @NotNull SCMSourceScanner scanner) {
-        Object data = token.getData();
-        if (data == SCMToken.WORD) {
-            // Keyword or identifier
+    public SCMEString(@NotNull SCMGroupNode parent, int beginOffset, int endOffset) {
+        super(parent, beginOffset, endOffset);
+        if (endOffset - beginOffset < 2) {
+            throw new IllegalArgumentException("String node length must be >= 2 (" + (endOffset - beginOffset) + " specified");
         }
-        return super.parseNode(container, token, scanner);
     }
+
+    public String getStringValue() {
+        return parent.getSource().getSegment(beginOffset + 1, endOffset - 1);
+    }
+
+    public char getOpenQuote() {
+        return parent.getSource().getChar(beginOffset);
+    }
+
+    public char getCloseQuote() {
+        return parent.getSource().getChar(endOffset);
+    }
+
 }

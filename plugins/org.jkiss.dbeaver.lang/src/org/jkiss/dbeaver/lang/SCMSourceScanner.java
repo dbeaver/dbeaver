@@ -17,26 +17,15 @@
  */
 package org.jkiss.dbeaver.lang;
 
+import org.eclipse.jface.text.rules.ITokenScanner;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-
-import java.util.List;
 
 /**
  * Source code node
  */
-public interface SCMCompositeNode extends SCMNode {
+public interface SCMSourceScanner extends ITokenScanner {
 
     @NotNull
     SCMSourceText getSource();
-
-    @NotNull
-    List<SCMNode> getChildNodes();
-
-    @Nullable
-    SCMNode getFirstChild();
-
-    @Nullable
-    SCMNode getLastChild();
 
 }

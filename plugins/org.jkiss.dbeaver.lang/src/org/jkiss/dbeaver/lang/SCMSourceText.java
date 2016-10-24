@@ -20,35 +20,15 @@ package org.jkiss.dbeaver.lang;
 import org.jkiss.code.NotNull;
 
 /**
- * Leaf node - linked to particular source code segment
+ * Source code node
  */
-public abstract class SCMElement implements SCMNode {
+public interface SCMSourceText {
+
+    int getLength();
+
+    char getChar(int offset);
 
     @NotNull
-    private final SCMCompositeNode parent;
-    private final int beginOffset;
-    private final int endOffset;
-
-    public SCMElement(@NotNull SCMCompositeNode parent, int beginOffset, int endOffset) {
-        this.parent = parent;
-        this.beginOffset = beginOffset;
-        this.endOffset = endOffset;
-    }
-
-    @Override
-    public int getBeginOffset() {
-        return beginOffset;
-    }
-
-    @Override
-    public int getEndOffset() {
-        return endOffset;
-    }
-
-    @NotNull
-    @Override
-    public SCMNode getParentNode() {
-        return parent;
-    }
+    String getSegment(int beginOffset, int endOffset);
 
 }

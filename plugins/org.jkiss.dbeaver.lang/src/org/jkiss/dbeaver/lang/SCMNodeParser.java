@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.lang;
 
 import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.ITokenScanner;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
@@ -27,7 +26,10 @@ import org.jkiss.code.Nullable;
  */
 public interface SCMNodeParser {
 
-    @Nullable
-    SCMNode parseNode(@NotNull IToken token, @NotNull ITokenScanner scanner);
+    /**
+     * Returns parsed node. Null on end of file
+     */
+    @NotNull
+    SCMNode parseNode(@NotNull SCMGroupNode container, @NotNull IToken token, @NotNull SCMSourceScanner scanner);
 
 }

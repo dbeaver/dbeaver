@@ -15,38 +15,19 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.lang;
+package org.jkiss.dbeaver.lang.base;
 
-import org.eclipse.jface.text.Document;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.lang.SCMGroupNode;
+import org.jkiss.dbeaver.lang.SCMLeafNode;
 
 /**
- * Source code node
+ * Word
  */
-public class SCMDocument extends SCMGroup {
+public class SCMEWord extends SCMLeafNode {
 
-    private final Document document;
-
-    public SCMDocument(Document document) {
-        this.document = document;
-    }
-
-    public Document getDocument() {
-        return document;
-    }
-
-    @Override
-    public SCMNode getParentNode() {
-        return null;
-    }
-
-    @Override
-    public SCMNode getPreviousNode() {
-        return null;
-    }
-
-    @Override
-    public SCMNode getNextNode() {
-        return null;
+    public SCMEWord(@NotNull SCMGroupNode parent, int beginOffset, int endOffset) {
+        super(parent, beginOffset, endOffset);
     }
 
 }

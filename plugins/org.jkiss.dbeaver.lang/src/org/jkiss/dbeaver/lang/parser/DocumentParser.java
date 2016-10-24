@@ -17,12 +17,12 @@
  */
 package org.jkiss.dbeaver.lang.parser;
 
-import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.ITokenScanner;
-import org.jkiss.dbeaver.lang.SCMDocument;
 import org.jkiss.dbeaver.lang.SCMNode;
 import org.jkiss.dbeaver.lang.SCMNodeParser;
+import org.jkiss.dbeaver.lang.SCMRoot;
+import org.jkiss.dbeaver.lang.SCMSourceScanner;
+import org.jkiss.dbeaver.lang.base.SCMEUndefined;
 
 /**
  * DocumentParser.
@@ -35,18 +35,16 @@ public class DocumentParser {
         this.nodeParser = nodeParser;
     }
 
-    SCMNode parseTree(Document document, ITokenScanner scanner) {
-        SCMDocument documentNode = new SCMDocument(document);
+    public SCMNode parseTree(SCMSourceScanner scanner) {
+        SCMRoot documentNode = new SCMRoot(scanner);
 
         for (; ; ) {
             IToken token = scanner.nextToken();
             if (token.isEOF()) {
                 break;
             }
-            SCMNode node = nodeParser.parseNode(token, scanner);
-            if (node == null) {
-                break;
-            }
+
+            SCMNode node = nodeParser.parseNode(documentNode, token, scanner);
             documentNode.addChild(node);
         }
 

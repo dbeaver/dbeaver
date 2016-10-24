@@ -17,15 +17,24 @@
  */
 package org.jkiss.dbeaver.lang;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Base composite node implementation
  */
-public abstract class SCMGroup implements SCMCompositeNode {
+public abstract class SCMGroupNode implements SCMCompositeNode {
 
-    private final List<SCMNode> childNodes = new ArrayList<>();
+    private final SCMGroupNode parent;
+    private List<SCMNode> childNodes;
+
+    public SCMGroupNode(SCMGroupNode parent) {
+        this.parent = parent;
+    }
 
     @Override
     public int getBeginOffset() {
@@ -39,32 +48,63 @@ public abstract class SCMGroup implements SCMCompositeNode {
         return lastChild == null ? 0 : lastChild.getEndOffset();
     }
 
+    @NotNull
+    @Override
+    public SCMSourceText getSource() {
+        if (parent == null) {
+            throw new IllegalStateException("Null parent node");
+        }
+        return parent.getSource();
+    }
+
+    @Nullable
+    @Override
+    public SCMCompositeNode getParentNode() {
+        return parent;
+    }
+
+    @Nullable
+    @Override
+    public SCMNode getPreviousNode() {
+        return parent == null ? null : parent.getPreviousChild(this);
+    }
+
+    @Nullable
+    @Override
+    public SCMNode getNextNode() {
+        return parent == null ? null : parent.getNextChild(this);
+    }
+
+    @NotNull
     @Override
     public List<SCMNode> getChildNodes() {
-        return childNodes;
+        return childNodes != null ? childNodes : Collections.<SCMNode>emptyList();
     }
 
     @Override
     public SCMNode getFirstChild() {
-        return childNodes.isEmpty() ? null : childNodes.get(0);
+        return childNodes == null || childNodes.isEmpty() ? null : childNodes.get(0);
     }
 
     @Override
     public SCMNode getLastChild() {
-        return childNodes.isEmpty() ? null : childNodes.get(childNodes.size() - 1);
+        return childNodes == null || childNodes.isEmpty() ? null : childNodes.get(childNodes.size() - 1);
     }
 
     public SCMNode getNextChild(SCMNode node) {
-        int index = childNodes.indexOf(node);
+        int index = childNodes == null ? -1 : childNodes.indexOf(node);
         return index < 0 || index >= childNodes.size() - 1 ? null : childNodes.get(index + 1);
     }
 
     public SCMNode getPreviousChild(SCMNode node) {
-        int index = childNodes.indexOf(node);
+        int index = childNodes == null ? -1 : childNodes.indexOf(node);
         return index < 0 ? null : childNodes.get(index - 1);
     }
 
     public void addChild(SCMNode node) {
+        if (childNodes == null) {
+            childNodes = new ArrayList<>();
+        }
         childNodes.add(node);
     }
 }
