@@ -1236,16 +1236,21 @@ public final class DBUtils {
             script.append(DBEAVER_DDL_COMMENT).append(Platform.getProduct().getName()).append(lineSeparator)
                 .append(DBEAVER_DDL_WARNING).append(lineSeparator);
         }
-        for (DBEPersistAction action : ArrayUtils.safeArray(persistActions)) {
-            String scriptLine = action.getScript();
-            if (CommonUtils.isEmpty(scriptLine)) {
-                continue;
+        if (persistActions != null) {
+            for (int i = 0; i < persistActions.length; i++) {
+                DBEPersistAction action = persistActions[i];
+                String scriptLine = action.getScript();
+                if (CommonUtils.isEmpty(scriptLine)) {
+                    continue;
+                }
+                if (script.length() > 0) {
+                    script.append(lineSeparator);
+                }
+                script.append(scriptLine);
+                if (i < persistActions.length - 1) {
+                    script.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append(lineSeparator);
+                }
             }
-            if (script.length() > 0) {
-                script.append(lineSeparator);
-            }
-            script.append(scriptLine);
-            script.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append(lineSeparator);
         }
         return script.toString();
     }
