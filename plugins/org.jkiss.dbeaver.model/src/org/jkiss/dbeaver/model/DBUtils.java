@@ -1228,8 +1228,9 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String generateScript(DBEPersistAction[] persistActions, boolean addComments)
+    public static String generateScript(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments)
     {
+        SQLDialect sqlDialect = dataSource instanceof SQLDataSource ? ((SQLDataSource) dataSource).getSQLDialect() : null;
         String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder script = new StringBuilder(64);
         if (addComments) {
@@ -1237,19 +1238,28 @@ public final class DBUtils {
                 .append(DBEAVER_DDL_WARNING).append(lineSeparator);
         }
         if (persistActions != null) {
+            String redefiner = null;
+            if (sqlDialect != null) {
+                redefiner = sqlDialect.getScriptDelimiterRedefiner();
+            }
             for (DBEPersistAction action : persistActions) {
                 String scriptLine = action.getScript();
                 if (CommonUtils.isEmpty(scriptLine)) {
                     continue;
                 }
-                if (script.length() > 0) {
-                    script.append(lineSeparator);
+
+                String delimiter = sqlDialect == null ? SQLConstants.DEFAULT_STATEMENT_DELIMITER : sqlDialect.getScriptDelimiter();
+                if (action.isComplex() && redefiner != null) {
+                    script.append(lineSeparator).append(redefiner).append(" $$").append(lineSeparator);
+                    delimiter = "$$";
+                    script.append(delimiter).append(lineSeparator);
                 }
                 script.append(scriptLine);
-                if (!action.isComplex()) {
-                    script.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append(lineSeparator);
+                script.append(delimiter).append(lineSeparator);
+
+                if (action.isComplex() && redefiner != null) {
+                    script.append(redefiner).append(" ").append(sqlDialect.getScriptDelimiter()).append(lineSeparator);
                 }
-                script.append(lineSeparator);
             }
         }
         return script.toString();

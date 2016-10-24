@@ -388,6 +388,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 return IDialogConstants.CANCEL_ID;
             }
             script.append(DBUtils.generateScript(
+                commandContext.getExecutionContext().getDataSource(),
                 command.getPersistActions(), false));
         }
 

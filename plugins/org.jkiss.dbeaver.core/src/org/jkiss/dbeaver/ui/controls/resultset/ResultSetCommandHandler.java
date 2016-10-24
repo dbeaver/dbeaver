@@ -213,10 +213,13 @@ public class ResultSetCommandHandler extends AbstractHandler {
                             }
                         });
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        // ignore
                     }
                     if (!sqlScript.isEmpty()) {
-                        String scriptText = DBUtils.generateScript(sqlScript.toArray(new DBEPersistAction[sqlScript.size()]), false);
+                        String scriptText = DBUtils.generateScript(
+                            rsv.getDataContainer() == null ? null : rsv.getDataContainer().getDataSource(),
+                            sqlScript.toArray(new DBEPersistAction[sqlScript.size()]),
+                            false);
                         scriptText =
                             SQLUtils.generateCommentLine(
                                 rsv.getExecutionContext() == null ? null : rsv.getExecutionContext().getDataSource(),
