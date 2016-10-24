@@ -15,29 +15,38 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.lang.sql;
+package org.jkiss.dbeaver.lang.base;
 
 import org.eclipse.jface.text.rules.IToken;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.lang.SCMGroupNode;
-import org.jkiss.dbeaver.lang.SCMNode;
-import org.jkiss.dbeaver.lang.SCMSourceScanner;
-import org.jkiss.dbeaver.lang.SCMToken;
-import org.jkiss.dbeaver.lang.base.BaseNodeParser;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.lang.*;
 
 /**
  * Source code node
  */
-public class SQLNodeParser extends BaseNodeParser {
+public class BaseNodeParser implements SCMNodeParser {
 
 
     @NotNull
     @Override
     public SCMNode parseNode(@NotNull SCMGroupNode container, @NotNull IToken token, @NotNull SCMSourceScanner scanner) {
-        Object data = token.getData();
-        if (data == SCMToken.WORD) {
-            // Keyword or identifier
+        int tokenOffset = scanner.getTokenOffset();
+        int tokenLength = scanner.getTokenLength();
+        if (token.isWhitespace()) {
+            return new SCMEWhitespace(container, tokenOffset, tokenLength);
         }
-        return super.parseNode(container, token, scanner);
+        Object data = token.getData();
+        if (data instanceof SCMToken) {
+            switch ((SCMToken) data) {
+                case NUMBER:
+                    return new SCMENumber(container, tokenOffset, tokenLength);
+                case STRING:
+                    return new SCMEString(container, tokenOffset, tokenLength);
+                case WHITESPACE:
+                    return new SCMENumber(container, tokenOffset, tokenLength);
+            }
+        }
+        return new SCMEUndefined(container, tokenOffset, tokenLength);
     }
 }

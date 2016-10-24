@@ -29,7 +29,7 @@ public interface SCMNode {
     int getEndOffset();
 
     @Nullable
-    SCMNode getParentNode();
+    SCMCompositeNode getParentNode();
 
     @Nullable
     SCMNode getPreviousNode();

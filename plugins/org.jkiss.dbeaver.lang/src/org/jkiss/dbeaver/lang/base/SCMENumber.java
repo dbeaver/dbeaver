@@ -15,28 +15,26 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.lang;
+package org.jkiss.dbeaver.lang.base;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-
-import java.util.List;
+import org.jkiss.dbeaver.lang.SCMGroupNode;
+import org.jkiss.dbeaver.lang.SCMLeafNode;
 
 /**
- * Source code node
+ * Leaf node - linked to particular source code segment
  */
-public interface SCMCompositeNode extends SCMNode {
+public class SCMENumber extends SCMLeafNode {
 
-    @NotNull
-    SCMSourceText getSource();
+    public SCMENumber(@NotNull SCMGroupNode parent, int beginOffset, int endOffset) {
+        super(parent, beginOffset, endOffset);
+        if (endOffset - beginOffset <= 0) {
+            throw new IllegalArgumentException("Empty number value");
+        }
+    }
 
-    @NotNull
-    List<SCMNode> getChildNodes();
-
-    @Nullable
-    SCMNode getFirstChild();
-
-    @Nullable
-    SCMNode getLastChild();
+    public Number getNumberValue() {
+        return new Double(getPlainValue());
+    }
 
 }

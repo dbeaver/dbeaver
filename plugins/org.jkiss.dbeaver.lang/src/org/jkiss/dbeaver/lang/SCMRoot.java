@@ -18,25 +18,23 @@
 package org.jkiss.dbeaver.lang;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-
-import java.util.List;
 
 /**
  * Source code node
  */
-public interface SCMCompositeNode extends SCMNode {
+public class SCMRoot extends SCMGroupNode {
+
+    private final SCMSourceScanner scanner;
+
+    public SCMRoot(SCMSourceScanner scanner) {
+        super(null);
+        this.scanner = scanner;
+    }
 
     @NotNull
-    SCMSourceText getSource();
-
-    @NotNull
-    List<SCMNode> getChildNodes();
-
-    @Nullable
-    SCMNode getFirstChild();
-
-    @Nullable
-    SCMNode getLastChild();
+    @Override
+    public SCMSourceText getSource() {
+        return scanner.getSource();
+    }
 
 }
