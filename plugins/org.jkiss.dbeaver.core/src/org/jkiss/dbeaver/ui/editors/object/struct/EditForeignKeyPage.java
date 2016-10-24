@@ -48,7 +48,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.utils.CommonUtils;
@@ -86,7 +85,6 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         }
     }
 
-    private IProgressControlProvider progressProvider;
     private DBSForeignKeyModifyRule[] supportedModifyRules;
     private DBSTable ownTable;
     private DBSTable curRefTable;
@@ -107,7 +105,6 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         DBSForeignKeyModifyRule[] supportedModifyRules)
     {
         super(title);
-        this.progressProvider = null;
         this.ownTable = table;
         this.ownerTableNode = DBeaverCore.getInstance().getNavigatorModel().findNode(ownTable);
         this.supportedModifyRules = supportedModifyRules;
@@ -132,14 +129,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         {
             DBNNode rootNode = ownerTableNode == null ? DBeaverCore.getInstance().getNavigatorModel().getRoot() : ownerTableNode.getParentNode();
 
-            //Composite columnsGroup = UIUtils.createControlGroup(panel, "Reference Table", 1, GridData.FILL_BOTH, 0);
             UIUtils.createControlLabel(panel, CoreMessages.dialog_struct_edit_fk_label_ref_table);
             ItemListControl tableList = new ItemListControl(panel, SWT.SINGLE | SWT.SHEET | SWT.BORDER, null, rootNode, null);
-//            if (progressProvider != null) {
-//                tableList.substituteProgressPanel(progressProvider.getProgressControl());
-//            } else {
-//                tableList.createProgressPanel();
-//            }
 
             tableList.loadData();
             final GridData gd = new GridData(GridData.FILL_BOTH);
