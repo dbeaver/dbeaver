@@ -17,23 +17,15 @@
  */
 package org.jkiss.dbeaver.lang;
 
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
 /**
- * Source code node
+ * Keyword interface.
+ * Should be implemented by keyword enumerations.
  */
-public interface SCMNodeParser {
+public interface SCMKeyword {
 
-    SCMSourceScanner createScanner(Document document);
-
-    /**
-     * Returns parsed node. Null on end of file
-     */
     @NotNull
-    SCMNode parseNode(@NotNull SCMGroupNode container, @NotNull IToken token, @NotNull SCMSourceScanner scanner);
+    String name();
 
 }

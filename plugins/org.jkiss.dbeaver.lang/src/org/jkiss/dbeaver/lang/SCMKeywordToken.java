@@ -15,20 +15,44 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.lang.base;
+package org.jkiss.dbeaver.lang;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.lang.SCMCompositeNode;
-import org.jkiss.dbeaver.lang.SCMGroupNode;
-import org.jkiss.dbeaver.lang.SCMLeafNode;
+import org.eclipse.jface.text.rules.IToken;
 
 /**
- * Undefined node
+ * Keyword
  */
-public class SCMEUndefined extends SCMLeafNode {
+public class SCMKeywordToken implements IToken {
 
-    public SCMEUndefined(@NotNull SCMGroupNode parent, int beginOffset, int endOffset) {
-        super(parent, beginOffset, endOffset);
+    private final SCMKeyword keyword;
+
+    public SCMKeywordToken(SCMKeyword keyword) {
+        this.keyword = keyword;
+    }
+
+    @Override
+    public boolean isUndefined() {
+        return false;
+    }
+
+    @Override
+    public boolean isWhitespace() {
+        return false;
+    }
+
+    @Override
+    public boolean isEOF() {
+        return false;
+    }
+
+    @Override
+    public boolean isOther() {
+        return true;
+    }
+
+    @Override
+    public SCMKeyword getData() {
+        return keyword;
     }
 
 }

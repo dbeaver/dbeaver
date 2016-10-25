@@ -24,7 +24,7 @@ public enum SCMToken {
 
     WHITESPACE,
     COMMENT,
-    WORD,
+    LITERAL,
     STRING,
     NUMBER,
     OTHER,      // Symbols

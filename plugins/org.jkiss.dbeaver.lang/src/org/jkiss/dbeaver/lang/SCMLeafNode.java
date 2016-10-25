@@ -31,6 +31,9 @@ public abstract class SCMLeafNode implements SCMNode {
     protected int endOffset;
 
     public SCMLeafNode(@NotNull SCMGroupNode parent, int beginOffset, int endOffset) {
+        if (beginOffset > endOffset) {
+            throw new IllegalArgumentException("Begin offset must be <= endOffset");
+        }
         this.parent = parent;
         this.beginOffset = beginOffset;
         this.endOffset = endOffset;
@@ -68,4 +71,8 @@ public abstract class SCMLeafNode implements SCMNode {
         return parent.getSource().getSegment(beginOffset, endOffset);
     }
 
+    @Override
+    public String toString() {
+        return getPlainValue();
+    }
 }

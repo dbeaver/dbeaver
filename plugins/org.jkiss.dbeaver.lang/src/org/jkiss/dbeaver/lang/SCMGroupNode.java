@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.lang;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.lang.base.SCMEWhitespace;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -106,5 +108,24 @@ public abstract class SCMGroupNode implements SCMCompositeNode {
             childNodes = new ArrayList<>();
         }
         childNodes.add(node);
+    }
+
+    @Override
+    public String toString() {
+        String typeName = getClass().getSimpleName();
+        if (CommonUtils.isEmpty(childNodes)) {
+            return typeName;
+        }
+        StringBuilder str = new StringBuilder();
+        str.append("[");
+        for (SCMNode child : childNodes) {
+            if (child instanceof SCMEWhitespace){
+                str.append(child);
+            } else {
+                str.append("\t").append(child).append("\n");
+            }
+        }
+        str.append("]");
+        return str.toString();
     }
 }

@@ -17,20 +17,56 @@
  */
 package org.jkiss.dbeaver.lang.parser;
 
-import org.eclipse.jface.text.rules.RuleBasedScanner;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.rules.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.lang.SCMSourceScanner;
 import org.jkiss.dbeaver.lang.SCMSourceText;
+import org.jkiss.dbeaver.lang.SCMToken;
+import org.jkiss.utils.ArrayUtils;
+
+import java.util.Collection;
 
 /**
  * BaseSourceScanner.
  */
-public class BaseSourceScanner extends RuleBasedScanner implements SCMSourceScanner {
+public class BaseSourceScanner extends RuleBasedScanner implements SCMSourceScanner, SCMSourceText {
 
+    public BaseSourceScanner(Document document, Collection<IRule> rules) {
+
+        setRules(ArrayUtils.toArray(IRule.class, rules));
+
+        setRange(document, 0, document.getLength());
+    }
 
     @NotNull
     @Override
     public SCMSourceText getSource() {
-        return null;
+        return this;
+    }
+
+    @Override
+    public int getLength() {
+        return fDocument.getLength();
+    }
+
+    @Override
+    public char getChar(int offset) throws IndexOutOfBoundsException {
+        try {
+            return fDocument.getChar(offset);
+        } catch (BadLocationException e) {
+            throw new IndexOutOfBoundsException(e.getMessage());
+        }
+    }
+
+    @NotNull
+    @Override
+    public String getSegment(int beginOffset, int endOffset) {
+        try {
+            return fDocument.get(beginOffset, endOffset - beginOffset);
+        } catch (BadLocationException e) {
+            throw new IndexOutOfBoundsException(e.getMessage());
+        }
     }
 }
