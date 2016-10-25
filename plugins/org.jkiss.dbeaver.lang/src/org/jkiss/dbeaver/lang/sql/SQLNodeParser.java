@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.lang.*;
 import org.jkiss.dbeaver.lang.base.BaseNodeParser;
 import org.jkiss.dbeaver.lang.parser.KeywordRule;
+import org.jkiss.dbeaver.lang.sql.model.SQLStatementAbstract;
 import org.jkiss.dbeaver.lang.sql.model.SQLStatementSelect;
 
 import java.util.List;
@@ -44,9 +45,11 @@ public class SQLNodeParser extends BaseNodeParser {
             // Keyword or identifier
             SCMKeyword keyword = ((SCMKeywordToken)token).getData();
             if (keyword instanceof SQLKeyword) {
+                SQLStatementAbstract statement = null;
                 switch ((SQLKeyword)keyword) {
                     case SELECT:
-                        return new SQLStatementSelect(container);
+                        statement = new SQLStatementSelect(container);
+                        break;
                     case INSERT:
                     case UPDATE:
                     case DELETE:
@@ -54,6 +57,9 @@ public class SQLNodeParser extends BaseNodeParser {
                     default:
                         // Unexpected keyword
                         break;
+                }
+                if (statement != null) {
+
                 }
             } else {
                 // Unknown keyword type
