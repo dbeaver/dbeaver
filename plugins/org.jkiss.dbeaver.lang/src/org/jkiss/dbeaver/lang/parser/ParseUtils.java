@@ -50,7 +50,7 @@ public class ParseUtils {
     public static void main(String[] args) {
         System.out.println("Test SCM parser");
 
-        String sql = "SELECT * FROM SCHEMA.TABLE WHERE COL1 = 100 AND COL2 = 'TEST'";
+        String sql = "SELECT * FROM SCHEMA.TABLE WHERE COL1 <> 100 AND COL2 = 'TEST'";
 
         SCMRoot nodeTree = ParseUtils.parseDocument(new Document(sql), new SQLNodeParser());
 
