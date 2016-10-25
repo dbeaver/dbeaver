@@ -26,8 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
@@ -60,8 +59,17 @@ public class DataSourcePropertyTester extends PropertyTester
         DBCExecutionContext context = contextProvider.getExecutionContext();
         switch (property) {
             case PROP_CONNECTED:
-                boolean isConnected = Boolean.TRUE.equals(expectedValue);
-                return isConnected ? context != null && context.isConnected() : context == null || !context.isConnected();
+                boolean isConnected;
+                if (context != null) {
+                    isConnected = context.isConnected();
+                } else if (receiver instanceof IDataSourceContainerProvider) {
+                    DBPDataSourceContainer container = ((IDataSourceContainerProvider) receiver).getDataSourceContainer();
+                    isConnected = container != null && container.isConnected();
+                } else {
+                    isConnected = false;
+                }
+                boolean checkConnected = Boolean.TRUE.equals(expectedValue);
+                return checkConnected ? isConnected : !isConnected;
             case PROP_TRANSACTIONAL:
                 if (context == null) {
                     return false;
