@@ -259,4 +259,6 @@ public interface SQLDialect {
     @NotNull
     DBDBinaryFormatter getNativeBinaryFormatter();
 
+    @Nullable
+    String getTestSQL();
 }

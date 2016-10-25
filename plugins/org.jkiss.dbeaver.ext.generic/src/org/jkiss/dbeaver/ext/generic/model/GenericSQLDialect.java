@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.utils.CommonUtils;
@@ -35,17 +36,23 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private final boolean legacySQLDialect;
     private final boolean suportsUpsert;
     private final boolean quoteReservedWords;
+    private String testSQL;
 
     public GenericSQLDialect(GenericDataSource dataSource, JDBCDatabaseMetaData metaData)
     {
         super("Generic", metaData);
-        scriptDelimiter = CommonUtils.toString(dataSource.getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
-        legacySQLDialect = CommonUtils.toBoolean(dataSource.getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_LEGACY_DIALECT));
+        DBPDriver driver = dataSource.getContainer().getDriver();
+        scriptDelimiter = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
+        legacySQLDialect = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_LEGACY_DIALECT));
         suportsUpsert = dataSource.getMetaModel().supportsUpsertStatement();
         if (suportsUpsert) {
             addSQLKeyword("UPSERT");
         }
-        quoteReservedWords = CommonUtils.getBoolean(dataSource.getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_QUOTE_RESERVED_WORDS), true);
+        quoteReservedWords = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_QUOTE_RESERVED_WORDS), true);
+        this.testSQL = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_PING));
+        if (this.testSQL == null) {
+            this.testSQL = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
+        }
     }
 
     @NotNull
@@ -74,5 +81,10 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     @Override
     public boolean isQuoteReservedWords() {
         return quoteReservedWords;
+    }
+
+    @Override
+    public String getTestSQL() {
+        return testSQL;
     }
 }
