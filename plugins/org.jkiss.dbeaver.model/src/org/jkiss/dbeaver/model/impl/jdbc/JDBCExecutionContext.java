@@ -154,7 +154,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
     @Override
     public void isContextAlive(DBRProgressMonitor monitor) throws DBException {
-        if (!JDBCUtils.isConnectionAlive(getConnection())) {
+        if (!JDBCUtils.isConnectionAlive(getDataSource(), getConnection())) {
             throw new DBCException("Connection is dead");
         }
     }
@@ -175,7 +175,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             return InvalidateResult.CONNECTED;
         }
 
-        if (!JDBCUtils.isConnectionAlive(getConnection())) {
+        if (!JDBCUtils.isConnectionAlive(getDataSource(), getConnection())) {
             Boolean prevAutocommit = autoCommit;
             Integer txnLevel = transactionIsolationLevel;
             close();

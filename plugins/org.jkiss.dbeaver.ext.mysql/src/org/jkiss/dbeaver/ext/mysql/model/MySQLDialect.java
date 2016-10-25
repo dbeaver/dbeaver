@@ -62,4 +62,9 @@ class MySQLDialect extends JDBCSQLDialect {
     public String[] getSingleLineComments() {
         return new String[] { "-- ", "#" };
     }
+
+    @Override
+    public String getTestSQL() {
+        return "SELECT 1";
+    }
 }

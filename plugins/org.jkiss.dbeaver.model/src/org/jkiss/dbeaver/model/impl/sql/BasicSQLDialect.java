@@ -352,6 +352,11 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
+    public String getTestSQL() {
+        return null;
+    }
+
+    @Override
     public boolean isQuoteReservedWords() {
         return true;
     }

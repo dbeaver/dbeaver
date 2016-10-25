@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
@@ -465,7 +466,7 @@ public class JDBCUtils {
         }
     }
 
-    public static boolean isConnectionAlive(Connection connection)
+    public static boolean isConnectionAlive(DBPDataSource dataSource, Connection connection)
     {
         try {
             if (connection.isClosed()) {
@@ -475,20 +476,29 @@ public class JDBCUtils {
             log.debug(e);
             return false;
         }
+        String testSQL = null;
+        if (dataSource instanceof SQLDataSource) {
+            testSQL = ((SQLDataSource) dataSource).getSQLDialect().getTestSQL();
+        }
         try {
-            return connection.isValid(CONNECTION_VALIDATION_TIMEOUT);
-        } catch (Throwable e) {
-            // If anything fails - use dummy check (search for non-existing tables.
-            // If connection is alive it will return some result set without an error
-            // Otherwise it will fail with SQLException
-            log.debug("Can't validate connection", e);
-            try {
-                connection.getMetaData().getTables(null, null, "DBEAVER_FAKE_TABLE_NAME_FOR_PING", null);
-                return true;
-            } catch (Throwable e1) {
-                log.debug("Connection seems to be broken", e1);
-                return false;
+            if (!CommonUtils.isEmpty(testSQL)) {
+                // Execute test SQL
+                try (Statement dbStat = connection.createStatement()) {
+                    dbStat.execute(testSQL);
+                }
+            } else {
+                try {
+                    return connection.isValid(CONNECTION_VALIDATION_TIMEOUT);
+                } catch (Throwable e) {
+                    // isValid may be unsupported by driver
+                    // Let's try to read table list
+                    connection.getMetaData().getTables(null, null, "DBEAVER_FAKE_TABLE_NAME_FOR_PING", null);
+                }
             }
+            return true;
+        } catch (Throwable e1) {
+            log.debug("Connection seems to be broken", e1);
+            return false;
         }
     }
 
