@@ -733,7 +733,7 @@ public final class SQLUtils {
 
                 String delimiter = sqlDialect == null ? SQLConstants.DEFAULT_STATEMENT_DELIMITER : sqlDialect.getScriptDelimiter();
                 if (action.isComplex() && redefiner != null) {
-                    script.append(lineSeparator).append(redefiner).append(" $$").append(lineSeparator);
+                    script.append(lineSeparator).append(redefiner).append(" ").append(DBEAVER_SCRIPT_DELIMITER).append(lineSeparator);
                     delimiter = DBEAVER_SCRIPT_DELIMITER;
                     script.append(delimiter).append(lineSeparator);
                 }
