@@ -40,7 +40,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         ILoadService<RESULT> loadingService,
         ILoadVisualizer<RESULT> visualizer)
     {
-        return new LoadingJob<RESULT>(loadingService, visualizer);
+        return new LoadingJob<>(loadingService, visualizer);
     }
 
     private ILoadService<RESULT> loadingService;
@@ -90,7 +90,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             return new Status(Status.CANCEL, DBeaverCore.PLUGIN_ID, "Loading interrupted");
         }
         finally {
-            DBeaverUI.syncExec(new LoadFinisher(result, error));
+            DBeaverUI.asyncExec(new LoadFinisher(result, error));
         }
         return Status.OK_STATUS;
     }
@@ -133,7 +133,6 @@ public class LoadingJob<RESULT>  extends AbstractJob {
     }
 
     static class LoadingUIJob<RESULT> extends AbstractUIJob {
-        private static final Log log = Log.getLog(LoadingUIJob.class);
 
         private static final long DELAY = 200;
 
