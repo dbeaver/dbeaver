@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.lang;
 
+import org.eclipse.jface.text.rules.IToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
@@ -39,4 +40,18 @@ public interface SCMCompositeNode extends SCMNode {
     @Nullable
     SCMNode getLastChild();
 
+    @Nullable
+    SCMNode getNextChild(SCMNode node);
+
+    @Nullable
+    SCMNode getPreviousChild(SCMNode node);
+
+    void addChild(@NotNull SCMNode node);
+
+    /**
+     * Parse composite node contents.
+     * Returns non-null token if trailing token can't be evaluated.
+     */
+    @Nullable
+    IToken parseComposite(@NotNull SCMSourceScanner scanner);
 }

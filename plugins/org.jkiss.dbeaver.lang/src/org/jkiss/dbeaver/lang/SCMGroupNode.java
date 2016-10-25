@@ -31,10 +31,10 @@ import java.util.List;
  */
 public abstract class SCMGroupNode implements SCMCompositeNode {
 
-    private final SCMGroupNode parent;
+    private final SCMCompositeNode parent;
     private List<SCMNode> childNodes;
 
-    public SCMGroupNode(SCMGroupNode parent) {
+    public SCMGroupNode(SCMCompositeNode parent) {
         this.parent = parent;
     }
 
@@ -93,17 +93,20 @@ public abstract class SCMGroupNode implements SCMCompositeNode {
         return childNodes == null || childNodes.isEmpty() ? null : childNodes.get(childNodes.size() - 1);
     }
 
+    @Override
     public SCMNode getNextChild(SCMNode node) {
         int index = childNodes == null ? -1 : childNodes.indexOf(node);
         return index < 0 || index >= childNodes.size() - 1 ? null : childNodes.get(index + 1);
     }
 
+    @Override
     public SCMNode getPreviousChild(SCMNode node) {
         int index = childNodes == null ? -1 : childNodes.indexOf(node);
         return index < 0 ? null : childNodes.get(index - 1);
     }
 
-    public void addChild(SCMNode node) {
+    @Override
+    public void addChild(@NotNull SCMNode node) {
         if (childNodes == null) {
             childNodes = new ArrayList<>();
         }

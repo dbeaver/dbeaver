@@ -17,14 +17,15 @@
  */
 package org.jkiss.dbeaver.lang.sql.model;
 
+import org.jkiss.dbeaver.lang.SCMCompositeNode;
 import org.jkiss.dbeaver.lang.SCMGroupNode;
 
 /**
  * Abstract SQL statement
  */
-public class SQLStatementAbstract extends SCMGroupNode {
+public abstract class SQLStatementAbstract extends SCMGroupNode {
 
-    public SQLStatementAbstract(SCMGroupNode parent) {
+    public SQLStatementAbstract(SCMCompositeNode parent) {
         super(parent);
     }
 

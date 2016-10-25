@@ -22,6 +22,7 @@ import org.eclipse.jface.text.rules.IToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.lang.*;
 import org.jkiss.dbeaver.lang.base.BaseNodeParser;
+import org.jkiss.dbeaver.lang.base.SCMEKeyword;
 import org.jkiss.dbeaver.lang.parser.KeywordRule;
 import org.jkiss.dbeaver.lang.sql.model.SQLStatementAbstract;
 import org.jkiss.dbeaver.lang.sql.model.SQLStatementSelect;
@@ -40,7 +41,7 @@ public class SQLNodeParser extends BaseNodeParser {
 
     @NotNull
     @Override
-    public SCMNode parseNode(@NotNull SCMGroupNode container, @NotNull IToken token, @NotNull SCMSourceScanner scanner) {
+    public SCMNode parseNode(@NotNull SCMCompositeNode container, @NotNull IToken token, @NotNull SCMSourceScanner scanner) {
         if (token instanceof SCMKeywordToken) {
             // Keyword or identifier
             SCMKeyword keyword = ((SCMKeywordToken)token).getData();
@@ -59,7 +60,8 @@ public class SQLNodeParser extends BaseNodeParser {
                         break;
                 }
                 if (statement != null) {
-
+                    statement.addChild(new SCMEKeyword(statement, scanner));
+                    return statement;
                 }
             } else {
                 // Unknown keyword type

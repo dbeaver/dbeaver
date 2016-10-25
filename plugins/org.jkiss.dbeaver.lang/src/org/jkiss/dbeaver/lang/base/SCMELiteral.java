@@ -18,16 +18,17 @@
 package org.jkiss.dbeaver.lang.base;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.lang.SCMGroupNode;
+import org.jkiss.dbeaver.lang.SCMCompositeNode;
 import org.jkiss.dbeaver.lang.SCMLeafNode;
+import org.jkiss.dbeaver.lang.SCMSourceScanner;
 
 /**
  * Word
  */
 public class SCMELiteral extends SCMLeafNode {
 
-    public SCMELiteral(@NotNull SCMGroupNode parent, int beginOffset, int endOffset) {
-        super(parent, beginOffset, endOffset);
+    public SCMELiteral(@NotNull SCMCompositeNode parent, @NotNull SCMSourceScanner scanner) {
+        super(parent, scanner);
     }
 
 }

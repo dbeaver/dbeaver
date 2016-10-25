@@ -15,25 +15,20 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.lang;
+package org.jkiss.dbeaver.lang.base;
 
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.lang.SCMCompositeNode;
+import org.jkiss.dbeaver.lang.SCMLeafNode;
+import org.jkiss.dbeaver.lang.SCMSourceScanner;
 
 /**
- * Source code node
+ * KeyWord
  */
-public interface SCMNodeParser {
+public class SCMEKeyword extends SCMLeafNode {
 
-    SCMSourceScanner createScanner(Document document);
-
-    /**
-     * Returns parsed node. Null on end of file
-     */
-    @NotNull
-    SCMNode parseNode(@NotNull SCMGroupNode container, @NotNull IToken token, @NotNull SCMSourceScanner scanner);
+    public SCMEKeyword(@NotNull SCMCompositeNode parent, @NotNull SCMSourceScanner scanner) {
+        super(parent, scanner);
+    }
 
 }

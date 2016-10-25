@@ -21,14 +21,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.lang.SCMCompositeNode;
 import org.jkiss.dbeaver.lang.SCMGroupNode;
 import org.jkiss.dbeaver.lang.SCMLeafNode;
+import org.jkiss.dbeaver.lang.SCMSourceScanner;
 
 /**
  * Undefined node
  */
 public class SCMEUnknown extends SCMLeafNode {
 
-    public SCMEUnknown(@NotNull SCMGroupNode parent, int beginOffset, int endOffset) {
-        super(parent, beginOffset, endOffset);
+    public SCMEUnknown(@NotNull SCMCompositeNode parent, @NotNull SCMSourceScanner scanner) {
+        super(parent, scanner);
     }
 
 }

@@ -26,17 +26,14 @@ import org.jkiss.code.Nullable;
 public abstract class SCMLeafNode implements SCMNode {
 
     @NotNull
-    protected final SCMGroupNode parent;
+    protected final SCMCompositeNode parent;
     protected int beginOffset;
     protected int endOffset;
 
-    public SCMLeafNode(@NotNull SCMGroupNode parent, int beginOffset, int endOffset) {
-        if (beginOffset > endOffset) {
-            throw new IllegalArgumentException("Begin offset must be <= endOffset");
-        }
+    public SCMLeafNode(@NotNull SCMCompositeNode parent, @NotNull SCMSourceScanner scanner) {
         this.parent = parent;
-        this.beginOffset = beginOffset;
-        this.endOffset = endOffset;
+        this.beginOffset = scanner.getTokenOffset();
+        this.endOffset = this.beginOffset + scanner.getTokenLength();
     }
 
     @Override

@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.lang.parser;
 
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.rules.IToken;
-import org.jkiss.dbeaver.lang.SCMNode;
-import org.jkiss.dbeaver.lang.SCMNodeParser;
-import org.jkiss.dbeaver.lang.SCMRoot;
-import org.jkiss.dbeaver.lang.SCMSourceScanner;
+import org.jkiss.dbeaver.lang.*;
 import org.jkiss.dbeaver.lang.sql.SQLNodeParser;
 
 /**
@@ -30,22 +27,15 @@ import org.jkiss.dbeaver.lang.sql.SQLNodeParser;
  */
 public class ParseUtils {
 
-    public static SCMRoot parseDocument(Document document, SCMNodeParser nodeParser) {
+    public static SCMRoot parseDocument(Document document, SCMSourceParser nodeParser) {
         SCMSourceScanner scanner = nodeParser.createScanner(document);
-        SCMRoot documentNode = new SCMRoot(scanner);
+        SCMRoot documentNode = new SCMRoot(nodeParser, scanner);
 
-        for (; ; ) {
-            IToken token = scanner.nextToken();
-            if (token.isEOF()) {
-                break;
-            }
-
-            SCMNode node = nodeParser.parseNode(documentNode, token, scanner);
-            documentNode.addChild(node);
-        }
+        documentNode.parseComposite(scanner);
 
         return documentNode;
     }
+
 
     public static void main(String[] args) {
         System.out.println("Test SCM parser");
