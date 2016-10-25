@@ -18,16 +18,17 @@
 package org.jkiss.dbeaver.lang.base;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.lang.SCMGroupNode;
+import org.jkiss.dbeaver.lang.SCMCompositeNode;
 import org.jkiss.dbeaver.lang.SCMLeafNode;
+import org.jkiss.dbeaver.lang.SCMSourceScanner;
 
 /**
  * Leaf node - linked to particular source code segment
  */
 public class SCMENumber extends SCMLeafNode {
 
-    public SCMENumber(@NotNull SCMGroupNode parent, int beginOffset, int endOffset) {
-        super(parent, beginOffset, endOffset);
+    public SCMENumber(@NotNull SCMCompositeNode parent, @NotNull SCMSourceScanner scanner) {
+        super(parent, scanner);
         if (endOffset - beginOffset <= 0) {
             throw new IllegalArgumentException("Empty number value");
         }

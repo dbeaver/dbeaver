@@ -17,19 +17,37 @@
  */
 package org.jkiss.dbeaver.lang.sql.model;
 
-import org.jkiss.dbeaver.lang.SCMGroupNode;
+import org.eclipse.jface.text.rules.IToken;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.lang.SCMCompositeNode;
+import org.jkiss.dbeaver.lang.SCMSourceScanner;
 
 /**
  * Source code node
  */
 public class SQLStatementSelect extends SQLStatementAbstract {
 
-    public SQLStatementSelect(SCMGroupNode parent) {
+    public SQLStatementSelect(SCMCompositeNode parent) {
         super(parent);
     }
 
     @Override
     public String toString() {
         return ">>SELECT ";
+    }
+
+    @Nullable
+    @Override
+    public IToken parseComposite(@NotNull SCMSourceScanner scanner) {
+        IToken lastToken = parseSelectExpression(scanner);
+        if (lastToken != null && lastToken.isEOF()) {
+            return lastToken;
+        }
+        return null;
+    }
+
+    private IToken parseSelectExpression(SCMSourceScanner scanner) {
+        return null;
     }
 }

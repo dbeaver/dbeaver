@@ -21,14 +21,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.lang.SCMCompositeNode;
 import org.jkiss.dbeaver.lang.SCMGroupNode;
 import org.jkiss.dbeaver.lang.SCMLeafNode;
+import org.jkiss.dbeaver.lang.SCMSourceScanner;
 
 /**
  * Leaf node - linked to particular source code segment
  */
 public class SCMEString extends SCMLeafNode {
 
-    public SCMEString(@NotNull SCMGroupNode parent, int beginOffset, int endOffset) {
-        super(parent, beginOffset, endOffset);
+    public SCMEString(@NotNull SCMCompositeNode parent, @NotNull SCMSourceScanner scanner) {
+        super(parent, scanner);
         if (endOffset - beginOffset < 2) {
             throw new IllegalArgumentException("String node length must be >= 2 (" + (endOffset - beginOffset) + " specified");
         }

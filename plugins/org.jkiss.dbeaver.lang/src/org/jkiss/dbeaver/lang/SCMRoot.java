@@ -17,17 +17,21 @@
  */
 package org.jkiss.dbeaver.lang;
 
+import org.eclipse.jface.text.rules.IToken;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
  * Source code node
  */
 public class SCMRoot extends SCMGroupNode {
 
+    private final SCMSourceParser parser;
     private final SCMSourceScanner scanner;
 
-    public SCMRoot(SCMSourceScanner scanner) {
+    public SCMRoot(SCMSourceParser parser, SCMSourceScanner scanner) {
         super(null);
+        this.parser = parser;
         this.scanner = scanner;
     }
 
@@ -35,6 +39,34 @@ public class SCMRoot extends SCMGroupNode {
     @Override
     public SCMSourceText getSource() {
         return scanner.getSource();
+    }
+
+    @Nullable
+    @Override
+    public IToken parseComposite(@NotNull SCMSourceScanner scanner) {
+
+        for (; ; ) {
+            IToken token = scanner.nextToken();
+            if (token.isEOF()) {
+                break;
+            }
+
+            parseToken(this, token);
+        }
+
+        return null;
+    }
+
+    private void parseToken(SCMCompositeNode container, IToken token) {
+        SCMNode node = parser.parseNode(container, token, scanner);
+        container.addChild(node);
+        if (node instanceof SCMCompositeNode) {
+            SCMCompositeNode composite = (SCMCompositeNode) node;
+            token = composite.parseComposite(scanner);
+            if (token != null) {
+                parseToken(container, token);
+            }
+        }
     }
 
 }
