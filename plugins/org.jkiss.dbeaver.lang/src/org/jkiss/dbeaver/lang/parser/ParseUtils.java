@@ -17,25 +17,21 @@
  */
 package org.jkiss.dbeaver.lang.parser;
 
+import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.rules.IToken;
 import org.jkiss.dbeaver.lang.SCMNode;
 import org.jkiss.dbeaver.lang.SCMNodeParser;
 import org.jkiss.dbeaver.lang.SCMRoot;
 import org.jkiss.dbeaver.lang.SCMSourceScanner;
-import org.jkiss.dbeaver.lang.base.SCMEUndefined;
+import org.jkiss.dbeaver.lang.sql.SQLNodeParser;
 
 /**
- * DocumentParser.
+ * ParseUtils.
  */
-public class DocumentParser {
+public class ParseUtils {
 
-    private final SCMNodeParser nodeParser;
-
-    public DocumentParser(SCMNodeParser nodeParser) {
-        this.nodeParser = nodeParser;
-    }
-
-    public SCMNode parseTree(SCMSourceScanner scanner) {
+    public static SCMRoot parseDocument(Document document, SCMNodeParser nodeParser) {
+        SCMSourceScanner scanner = nodeParser.createScanner(document);
         SCMRoot documentNode = new SCMRoot(scanner);
 
         for (; ; ) {
@@ -51,4 +47,13 @@ public class DocumentParser {
         return documentNode;
     }
 
+    public static void main(String[] args) {
+        System.out.println("Test SCM parser");
+
+        String sql = "SELECT * FROM SCHEMA.TABLE WHERE COL1 = 100 AND COL2 = 'TEST'";
+
+        SCMRoot nodeTree = ParseUtils.parseDocument(new Document(sql), new SQLNodeParser());
+
+        System.out.println(nodeTree);
+    }
 }

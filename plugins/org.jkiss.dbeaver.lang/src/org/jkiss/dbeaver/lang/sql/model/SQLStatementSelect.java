@@ -15,25 +15,21 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.lang;
+package org.jkiss.dbeaver.lang.sql.model;
 
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.RuleBasedScanner;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.lang.SCMGroupNode;
 
 /**
  * Source code node
  */
-public interface SCMNodeParser {
+public class SQLStatementSelect extends SQLStatementAbstract {
 
-    SCMSourceScanner createScanner(Document document);
+    public SQLStatementSelect(SCMGroupNode parent) {
+        super(parent);
+    }
 
-    /**
-     * Returns parsed node. Null on end of file
-     */
-    @NotNull
-    SCMNode parseNode(@NotNull SCMGroupNode container, @NotNull IToken token, @NotNull SCMSourceScanner scanner);
-
+    @Override
+    public String toString() {
+        return ">>SELECT ";
+    }
 }

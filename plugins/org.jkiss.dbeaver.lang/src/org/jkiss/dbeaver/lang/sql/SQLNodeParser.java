@@ -17,26 +17,48 @@
  */
 package org.jkiss.dbeaver.lang.sql;
 
+import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.lang.SCMGroupNode;
-import org.jkiss.dbeaver.lang.SCMNode;
-import org.jkiss.dbeaver.lang.SCMSourceScanner;
-import org.jkiss.dbeaver.lang.SCMToken;
+import org.jkiss.dbeaver.lang.*;
 import org.jkiss.dbeaver.lang.base.BaseNodeParser;
+import org.jkiss.dbeaver.lang.parser.KeywordRule;
+import org.jkiss.dbeaver.lang.sql.model.SQLStatementSelect;
+
+import java.util.List;
 
 /**
  * Source code node
  */
 public class SQLNodeParser extends BaseNodeParser {
-
+    @Override
+    protected void addRules(List<IRule> rules) {
+        rules.add(new KeywordRule(SQLKeyword.values()));
+        super.addRules(rules);
+    }
 
     @NotNull
     @Override
     public SCMNode parseNode(@NotNull SCMGroupNode container, @NotNull IToken token, @NotNull SCMSourceScanner scanner) {
-        Object data = token.getData();
-        if (data == SCMToken.WORD) {
+        if (token instanceof SCMKeywordToken) {
             // Keyword or identifier
+            SCMKeyword keyword = ((SCMKeywordToken)token).getData();
+            if (keyword instanceof SQLKeyword) {
+                switch ((SQLKeyword)keyword) {
+                    case SELECT:
+                        return new SQLStatementSelect(container);
+                    case INSERT:
+                    case UPDATE:
+                    case DELETE:
+                        break;
+                    default:
+                        // Unexpected keyword
+                        break;
+                }
+            } else {
+                // Unknown keyword type
+            }
+
         }
         return super.parseNode(container, token, scanner);
     }

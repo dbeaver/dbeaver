@@ -15,25 +15,28 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.lang;
+package org.jkiss.dbeaver.lang.sql;
 
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.RuleBasedScanner;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.lang.SCMKeyword;
 
 /**
- * Source code node
+ * Keyword interface.
+ * Should be implemented by keyword enumerations.
  */
-public interface SCMNodeParser {
+public enum  SQLKeyword implements SCMKeyword {
 
-    SCMSourceScanner createScanner(Document document);
+    SELECT,
+    INSERT,
+    DELETE,
+    UPDATE,
 
-    /**
-     * Returns parsed node. Null on end of file
-     */
-    @NotNull
-    SCMNode parseNode(@NotNull SCMGroupNode container, @NotNull IToken token, @NotNull SCMSourceScanner scanner);
+    FROM,
+    WHERE,
+    ORDER_BY,
+    GROUP_BY,
+    HAVING,
+
+    AND,
+    OR,
 
 }

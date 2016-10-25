@@ -15,19 +15,17 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.lang.base;
+package org.jkiss.dbeaver.lang.sql.model;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.lang.SCMGroupNode;
-import org.jkiss.dbeaver.lang.SCMLeafNode;
 
 /**
- * Word
+ * Abstract SQL statement
  */
-public class SCMEWord extends SCMLeafNode {
+public class SQLStatementAbstract extends SCMGroupNode {
 
-    public SCMEWord(@NotNull SCMGroupNode parent, int beginOffset, int endOffset) {
-        super(parent, beginOffset, endOffset);
+    public SQLStatementAbstract(SCMGroupNode parent) {
+        super(parent);
     }
 
 }
