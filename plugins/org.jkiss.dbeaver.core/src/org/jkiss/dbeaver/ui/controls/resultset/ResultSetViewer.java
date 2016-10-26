@@ -1961,7 +1961,9 @@ public class ResultSetViewer extends Viewer
     {
         if (activePresentation instanceof ISelectionProvider) {
             ISelection selection = ((ISelectionProvider) activePresentation).getSelection();
-            if (selection instanceof IResultSetSelection) {
+            if (selection.isEmpty()) {
+                return new EmptySelection();
+            } else if (selection instanceof IResultSetSelection) {
                 return (IResultSetSelection) selection;
             } else {
                 log.debug("Bad selection type (" + selection + ") in presentation " + activePresentation);
