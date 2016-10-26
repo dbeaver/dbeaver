@@ -19,26 +19,26 @@ Suporta qualquer SGBD que tenha um driver JDBC (o que basicamente quer dizer - Q
 
 Você pode baixar os arquivos em http://dbeaver.jkiss.org/download/
 
-## Building
+## Instalação
 
-#### Prerequisites:
+#### Pré-requisitos:
  1. Java (JDK) 1.8+
  2. Apache Maven 3+
- 3. Internet access
+ 3. Acesso à Internet
 
-#### Build
+#### Instalar
 ```sh
 git clone https://github.com/serge-rider/dbeaver.git dbeaver
 cd dbeaver
 mvn install
 ```
-Binaries are in `product/standalone/target/products`
+Arquivos em `product/standalone/target/products`
 
-## Notes
+## Observações
 
-- Please leave bug reports and feature requests in the <a href="https://github.com/serge-rider/dbeaver/issues">GitHub issue tracker</a>.
-- DBeaver is a free non-profitable hobby project. Please don't expect immediate reaction on issues.
-- If you have any questions, suggestions, ideas, etc - <a href="mailto:serge@jkiss.org">write me</a>.
-- Pull requests are welcome.
-- Visit http://dbeaver.jkiss.org for more information.
-- Thanks for using DBeaver! Star if you like it.
+- Por favor, deixe os relatórios de bugs e pedidos de novas funcionalidades no <a href="https://github.com/serge-rider/dbeaver/issues">GitHub issue tracker</a>.
+- DBeaver é um projeto sem intenções lucrativas. Por favor, não espere ações imediatas aos relatos.
+- Caso tenha dúvidas, sugestões, ideias, etc - <a href="mailto:serge@jkiss.org">fale comigo</a>.
+- Pull requests são bem vindos.
+- Visite http://dbeaver.jkiss.org para mais informação.
+- Obrigado por utilizar DBeaver! Marque com estrela se gostar.
