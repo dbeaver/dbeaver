@@ -144,6 +144,44 @@ public class OracleDataSource extends JDBCDataSource
         if (setActiveObject) {
             setCurrentSchema(monitor, context, getDefaultObject());
         }
+
+        {
+            DBPConnectionConfiguration connectionInfo = getContainer().getConnectionConfiguration();
+
+            try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Set connection parameters")) {
+                // Set session settings
+                Object sessionLanguage = connectionInfo.getProperty(OracleConstants.PROP_SESSION_LANGUAGE);
+                if (sessionLanguage != null) {
+                    try {
+                        JDBCUtils.executeSQL(
+                            session,
+                            "ALTER SESSION SET NLS_LANGUAGE='" + sessionLanguage + "'");
+                    } catch (SQLException e) {
+                        log.warn("Can't set session language", e);
+                    }
+                }
+                Object sessionTerritory = connectionInfo.getProperty(OracleConstants.PROP_SESSION_TERRITORY);
+                if (sessionTerritory != null) {
+                    try {
+                        JDBCUtils.executeSQL(
+                            session,
+                            "ALTER SESSION SET NLS_TERRITORY='" + sessionTerritory + "'");
+                    } catch (SQLException e) {
+                        log.warn("Can't set session territory", e);
+                    }
+                }
+                Object nlsDateFormat = connectionInfo.getProperty(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
+                if (nlsDateFormat != null) {
+                    try {
+                        JDBCUtils.executeSQL(
+                            session,
+                            "ALTER SESSION SET NLS_DATE_FORMAT='" + nlsDateFormat + "'");
+                    } catch (SQLException e) {
+                        log.warn("Can't set session NLS date format", e);
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -256,28 +294,6 @@ public class OracleDataSource extends JDBCDataSource
         this.publicSchema = new OracleSchema(this, 1, OracleConstants.USER_PUBLIC);
         {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load data source meta info")) {
-                // Set session settings
-                Object sessionLanguage = connectionInfo.getProperty(OracleConstants.PROP_SESSION_LANGUAGE);
-                if (sessionLanguage != null) {
-                    try {
-                        JDBCUtils.executeSQL(
-                            session,
-                            "ALTER SESSION SET NLS_LANGUAGE='" + sessionLanguage + "'");
-                    } catch (SQLException e) {
-                        log.warn("Can't set session language", e);
-                    }
-                }
-                Object sessionTerritory = connectionInfo.getProperty(OracleConstants.PROP_SESSION_TERRITORY);
-                if (sessionTerritory != null) {
-                    try {
-                        JDBCUtils.executeSQL(
-                            session,
-                            "ALTER SESSION SET NLS_TERRITORY='" + sessionTerritory + "'");
-                    } catch (SQLException e) {
-                        log.warn("Can't set session territory", e);
-                    }
-                }
-
                 // Check DBA role
                 this.isAdmin = "YES".equals(
                     JDBCUtils.queryString(
