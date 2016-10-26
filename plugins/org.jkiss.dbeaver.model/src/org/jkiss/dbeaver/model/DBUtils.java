@@ -1074,7 +1074,7 @@ public final class DBUtils {
         }
         DBSDataType dataType = dataTypeProvider.resolveDataType(monitor, fullTypeName);
         if (dataType == null) {
-            log.debug("Data type '" + fullTypeName + "' can't be resolved by '" + dataSource + "'");
+            //log.debug("Data type '" + fullTypeName + "' can't be resolved by '" + dataSource + "'");
         }
         return dataType;
     }
