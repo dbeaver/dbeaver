@@ -18,14 +18,14 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager.security;
 
-public enum ExasolSecurityObject {
-	C("Connection Object"),
-	S("System OBject"),
-	T("Table, View, Script Object");
+public enum ExasolTableObjectType {
+	VIEW("VIEW"),
+	TABLE("TABLE"),
+	SCRIPT("SCRIPT");
 	
 	private String value;
 	
-	ExasolSecurityObject(String value)
+	ExasolTableObjectType(String value)
 	{
 		this.value = value;
 	}
