@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.exasol.manager.security;
 public enum ExasolTableObjectType {
 	VIEW("VIEW"),
 	TABLE("TABLE"),
+	SCHEMA("TABLE"),
 	SCRIPT("SCRIPT");
 	
 	private String value;
