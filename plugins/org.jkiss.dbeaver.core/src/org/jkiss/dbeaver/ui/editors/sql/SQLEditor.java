@@ -136,6 +136,7 @@ public class SQLEditor extends SQLEditorBase implements
     private DBPDataSource curDataSource;
     private volatile DBCExecutionContext executionContext;
     private volatile DBCExecutionContext lastExecutionContext;
+    private volatile boolean syntaxLoaded = false;
     private volatile boolean ownContext = false;
     private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<>();
@@ -952,7 +953,7 @@ public class SQLEditor extends SQLEditorBase implements
 
 
         DBCExecutionContext executionContext = getExecutionContext();
-        if (lastExecutionContext == executionContext) {
+        if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
         }
         for (QueryProcessor queryProcessor : queryProcessors) {
@@ -986,6 +987,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         lastExecutionContext = executionContext;
+        syntaxLoaded = true;
     }
 
     @Override
