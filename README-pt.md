@@ -8,7 +8,7 @@
 Ferramenta de acesso a bancos de dados multiplataforma para desenvolvedores, programadores SQL, DBAs e analistas.
 Suporta qualquer SGBD que tenha um driver JDBC (o que basicamente quer dizer - QUALQUER SGBD). Também pode funcionar com SGBDs que não possuem driver JDBC (WMI, MongoDB, Cassandra, Redis).
 
-* Tem inúmeros <a href="http://dbeaver.jkiss.org/docs/features/">recursos</a>. 
+* Possui inúmeros <a href="http://dbeaver.jkiss.org/docs/features/">recursos</a>. 
 * Baseado na plataforma <a href="http://www.eclipse.org/">Eclipse</a>.
 * Utiliza plataforma de plugins e provê funcionalidades adicionais para os SGBDs mais populares (MySQL, PostgreSQL, Oracle, DB2 na versão 3.7.x).
 
