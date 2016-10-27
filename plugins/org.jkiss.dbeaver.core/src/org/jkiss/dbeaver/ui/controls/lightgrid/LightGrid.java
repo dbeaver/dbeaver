@@ -468,8 +468,12 @@ public abstract class LightGrid extends Canvas {
     /**
      * Refresh grid data
      */
-    public void refreshData(boolean refreshColumns)
+    public void refreshData(boolean refreshColumns, boolean keepState)
     {
+        GridPos savedFocus = keepState ? getFocusPos() : null;
+        int savedHSB = keepState ? hScroll.getSelection() : -1;
+        int savedVSB = keepState ? vScroll.getSelection() : -1;
+
         if (refreshColumns) {
             this.removeAll();
         } else {
@@ -565,11 +569,24 @@ public abstract class LightGrid extends Canvas {
         }
         recalculateSizes();
         updateScrollbars();
-        // Add focus cell to selection
-        GridPos focusPos = getFocusPos();
-        if (focusPos.isValid()) {
-            selectCell(focusPos);
+
+        // Restore state
+        if (savedFocus != null && savedFocus.isValid()) {
+            setFocusItem(savedFocus.row);
+            setFocusColumn(savedFocus.col);
+            selectCell(savedFocus);
         }
+        if (savedHSB >= 0) {
+            hScroll.setSelection(savedHSB);
+        }
+        if (savedVSB >= 0) {
+            vScroll.setSelection(savedVSB);
+        }
+//        // Add focus cell to selection
+//        GridPos focusPos = getFocusPos();
+//        if (focusPos.isValid()) {
+//            selectCell(focusPos);
+//        }
     }
 
     private void createChildColumns(GridColumn parent) {

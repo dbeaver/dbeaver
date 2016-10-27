@@ -59,7 +59,7 @@ public class StatisticsPresentation extends AbstractPresentation {
     }
 
     @Override
-    public void refreshData(boolean refreshMetadata, boolean append) {
+    public void refreshData(boolean refreshMetadata, boolean append, boolean keepState) {
         table.removeAll();
 
         ResultSetRow row = controller.getModel().getRow(0);

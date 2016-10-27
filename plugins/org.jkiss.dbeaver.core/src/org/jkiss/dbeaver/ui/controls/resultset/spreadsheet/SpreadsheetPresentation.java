@@ -285,7 +285,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         if (recordMode) {
             // Refresh meta if we are in record mode
-            refreshData(true, false);
+            refreshData(true, false, true);
         }
     }
 
@@ -539,7 +539,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     @Override
-    public void refreshData(boolean refreshMetadata, boolean append) {
+    public void refreshData(boolean refreshMetadata, boolean append, boolean keepState) {
         // Cache preferences
         DBPPreferenceStore preferenceStore = getPreferenceStore();
         showOddRows = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
@@ -547,7 +547,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         spreadsheet.setRedraw(false);
         try {
-            spreadsheet.refreshData(refreshMetadata);
+            spreadsheet.refreshData(refreshMetadata, keepState);
         } finally {
             spreadsheet.setRedraw(true);
         }
@@ -556,7 +556,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     @Override
     public void formatData(boolean refreshData) {
         reorderLocally();
-        spreadsheet.refreshData(false);
+        spreadsheet.refreshData(false, true);
     }
 
     @Override
@@ -637,7 +637,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                             for (int i = 0, selectedColumnsSize = selectedColumns.size(); i < selectedColumnsSize; i++) {
                                 model.setAttributeVisibility((DBDAttributeBinding) selectedColumns.get(i), false);
                             }
-                            refreshData(true, false);
+                            refreshData(true, false, true);
                         }
                     }
                 });
@@ -873,14 +873,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     {
         controller.rejectChanges();
         controller.getModel().resetOrdering();
-        refreshData(false, false);
+        refreshData(false, false, true);
     }
 
     public void changeSorting(Object columnElement, final int state)
     {
         if (columnElement == null) {
             columnOrder = columnOrder == SWT.DEFAULT ? SWT.UP : (columnOrder == SWT.UP ? SWT.DOWN : SWT.DEFAULT);
-            spreadsheet.refreshData(false);
+            spreadsheet.refreshData(false, true);
             spreadsheet.redrawGrid();
             return;
         }
