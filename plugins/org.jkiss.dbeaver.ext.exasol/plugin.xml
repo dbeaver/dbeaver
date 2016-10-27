@@ -121,6 +121,14 @@
                                visibleIf="object.dataSource.authorizedForRolePrivs">
                          </items>
                          <items
+                               icon="#schema"
+                               label="%tree.schema.node.name"
+                               navigable="false"
+                               path="schema"
+                               property="schemas"
+                               visibleIf="object.dataSource.authorizedForObjectPrivs">
+                         </items>
+                         <items
                                icon="#table"
                                label="%tree.table.node.name"
                                navigable="false"
@@ -171,6 +179,22 @@
                             icon="icons/role.gif"
                             label="%tree.role.node.name"
                             property="roles">
+                         <items
+                               icon="icons/role.gif"
+                               label="%tree.roles.node.name"
+                               navigable="false"
+                               path="role"
+                               property="roles"
+                               visibleIf="object.dataSource.authorizedForRolePrivs">
+                         </items>
+                         <items
+                               icon="#schema"
+                               label="%tree.schema.node.name"
+                               navigable="false"
+                               path="schema"
+                               property="schemas"
+                               visibleIf="object.dataSource.authorizedForObjectPrivs">
+                         </items>
                          <items
                                icon="#table"
                                label="%tree.table.node.name"
