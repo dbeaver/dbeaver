@@ -53,7 +53,7 @@ public class SQLQuery {
     private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("--\\s*(?:NAME|TITLE)\\s*:\\s*(.+)\\s*", Pattern.CASE_INSENSITIVE);
 
     @NotNull
-    private final String originalQuery;
+    private String originalQuery;
     @NotNull
     private String query;
     private int offset;
@@ -79,6 +79,7 @@ public class SQLQuery {
      */
     public SQLQuery(@NotNull String query, @NotNull SQLQuery sourceQuery) {
         this(query, sourceQuery.offset, sourceQuery.length);
+        this.originalQuery = sourceQuery.originalQuery;
         this.parameters = sourceQuery.parameters;
         this.data = sourceQuery.data;
     }
