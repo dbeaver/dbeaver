@@ -19,13 +19,18 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.eclipse.core.runtime.IAdaptable;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider;
 import org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolBaseObjectGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolConnectionGrant;
 import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRoleGrant;
 import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolViewGrant;
 import org.jkiss.dbeaver.ext.exasol.model.plan.ExasolPlanAnalyser;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -51,9 +56,15 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolSchemaGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolScriptGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolSystemGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolTableGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolTableObjectType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,16 +78,10 @@ public class ExasolDataSource extends JDBCDataSource
 	private static final String GET_CURRENT_SCHEMA = "SELECT CURRENT_SCHEMA";
 	private static final String SET_CURRENT_SCHEMA = "OPEN SCHEMA \"%s\"";
 
-	private static final String C_SCHEMA = "select b.object_name,owner,created,object_comment from EXA_ALL_OBJECTS b where b.object_type = 'SCHEMA' "
-			+ "union all select distinct SCHEMA_NAME as \"OBJECT_NAME\", 'SYS' as owner, cast(null as timestamp) as created, '' as \"OBJECT_COMMENT\" from SYS.EXA_SYSCAT "
-			+ "order by b.object_name";
-	private static final String C_USERS = "select * from EXA_DBA_USERS";
-	private static final String C_ROLES = "SELECT * FROM EXA_DBA_ROLES";
-	private static final String C_DT = "SELECT * FROM EXA_SQL_TYPES";
-	private static final String C_CONNECTIONS = "SELECT * FROM EXA_DBA_CONNECTIONS";
-
 	private final DBSObjectCache<ExasolDataSource, ExasolSchema> schemaCache = new JDBCObjectSimpleCache<>(
-			ExasolSchema.class, C_SCHEMA);
+			ExasolSchema.class, "select b.object_name,owner,created,object_comment from EXA_ALL_OBJECTS b where b.object_type = 'SCHEMA' "
+					+ "union all select distinct SCHEMA_NAME as \"OBJECT_NAME\", 'SYS' as owner, cast(null as timestamp) as created, '' as \"OBJECT_COMMENT\" from SYS.EXA_SYSCAT "
+					+ "order by b.object_name");
 
 	private ExasolCurrentUserPrivileges exasolCurrentUserPrivileges;
 	private DBSObjectCache<ExasolDataSource, ExasolUser> userCache = null;
@@ -85,13 +90,13 @@ public class ExasolDataSource extends JDBCDataSource
 	private DBSObjectCache<ExasolDataSource, ExasolConnection> connectionCache = null;
 
 	private DBSObjectCache<ExasolDataSource, ExasolDataType> dataTypeCache = new JDBCObjectSimpleCache<>(
-			ExasolDataType.class, C_DT);
-
-	/*
-	 * private final DBSObjectCache<ExasolDataSource, ExasolConnection>
-	 * exasolconnection = new JDBCObjectSimpleCache<>( ExasolConnection.class,
-	 * C_SV);
-	 */
+			ExasolDataType.class, "SELECT * FROM EXA_SQL_TYPES");
+	
+	private DBSObjectCache<ExasolDataSource, ExasolRoleGrant> roleGrantCache = null;
+	private DBSObjectCache<ExasolDataSource, ExasolSystemGrant> systemGrantCache = null;
+	private DBSObjectCache<ExasolDataSource, ExasolConnectionGrant> connectionGrantCache = null;
+	private DBSObjectCache<ExasolDataSource, ExasolBaseObjectGrant> baseTableGrantCache = null;
+	
 
 	private String activeSchemaName;
 
@@ -112,7 +117,7 @@ public class ExasolDataSource extends JDBCDataSource
 	}
 
 	// -----------------------
-	// Initialisation/Structure
+	// Initialization/Structure
 	// -----------------------
 
 	@Override
@@ -144,15 +149,63 @@ public class ExasolDataSource extends JDBCDataSource
 
 		if (exasolCurrentUserPrivileges.getUserIsAuthorizedForUsers()) {
 			this.userCache = new JDBCObjectSimpleCache<>(ExasolUser.class,
-					C_USERS);
+					"select * from EXA_DBA_USERS ORDER BY USER_NAME");
 		}
 		if (exasolCurrentUserPrivileges.getUserIsAuthorizedForRoles()) {
-			this.roleCache = new JDBCObjectSimpleCache<>(ExasolRole.class, C_ROLES);
+			this.roleCache = new JDBCObjectSimpleCache<>(ExasolRole.class, "SELECT * FROM EXA_DBA_ROLES ORDER BY ROLE_NAME");
 		}
 		
 		if (exasolCurrentUserPrivileges.getUserIsAuthorizedForConnections()) {
 			this.connectionCache = new JDBCObjectSimpleCache<>(
-					ExasolConnection.class, C_CONNECTIONS);
+					ExasolConnection.class, "SELECT * FROM EXA_DBA_CONNECTIONS ORDER BY CONNECTION_NAME");
+		}
+		
+		if (exasolCurrentUserPrivileges.getUserIsAuthorizedForConnectionPrivs())
+		{
+			this.connectionGrantCache =  new JDBCObjectSimpleCache<>(
+					ExasolConnectionGrant.class,"SELECT c.*,P.ADMIN_OPTION,P.GRANTEE FROM SYS.EXA_DBA_CONNECTION_PRIVS P "
+							+ "INNER JOIN SYS.EXA_DBA_CONNECTIONS C on P.GRANTED_CONNECTION = C.CONNECTION_NAME ORDER BY P.GRANTEE,C.CONNECTION_NAME ");
+		}
+		
+		if (exasolCurrentUserPrivileges.getUserIsAuthorizedForObjectPrivs())
+		{
+			this.baseTableGrantCache = new JDBCObjectSimpleCache<>(
+					ExasolBaseObjectGrant.class,"SELECT " + 
+							"	OBJECT_SCHEMA," + 
+							"	OBJECT_TYPE," + 
+							"	GRANTEE," + 
+							"	OBJECT_NAME," + 
+							"	GROUP_CONCAT(" + 
+							"		DISTINCT PRIVILEGE" + 
+							"	ORDER BY" + 
+							"		OBJECT_SCHEMA," + 
+							"		OBJECT_NAME" + 
+							"		SEPARATOR '|'" + 
+							"	) as PRIVS " + 
+							" FROM" + 
+							"	SYS.EXA_DBA_OBJ_PRIVS P" + 
+							" GROUP BY" + 
+							"	OBJECT_SCHEMA," + 
+							"	OBJECT_TYPE," + 
+							"	GRANTEE," + 
+							"	OBJECT_NAME ORDER BY GRANTEE,OBJECT_SCHEMA,OBJECT_TYPE,OBJECT_NAME");
+
+		}
+		
+		if (exasolCurrentUserPrivileges.getUserIsAuthorizedForSystemPrivs())
+		{
+			this.systemGrantCache = new JDBCObjectSimpleCache<>(
+					ExasolSystemGrant.class,
+					"SELECT GRANTEE,PRIVILEGE,ADMIN_OPTION FROM SYS.EXA_DBA_SYS_PRIVS ORDER BY GRANTEE,PRIVILEGE");
+		}
+		
+		if (exasolCurrentUserPrivileges.getUserIsAuthorizedForRolePrivs())
+		{
+			this.roleGrantCache = new JDBCObjectSimpleCache<>(
+					ExasolRoleGrant.class,
+					"select r.*,p.ADMIN_OPTION,p.GRANTEE from EXA_DBA_ROLES r "
+					+ "INNER JOIN  EXA_DBA_ROLE_PRIVS p ON p.GRANTED_ROLE = r.ROLE_NAME ORDER BY P.GRANTEE,R.ROLE_NAME"
+					);
 		}
 
 	}
@@ -247,10 +300,27 @@ public class ExasolDataSource extends JDBCDataSource
 		super.refreshObject(monitor);
 
 		this.schemaCache.clearCache();
-		this.userCache.clearCache();
+		if (this.userCache != null) 
+				this.userCache.clearCache();
 		this.dataTypeCache.clearCache();
-		this.roleCache.clearCache();
-		this.connectionCache.clearCache();
+		
+		if (this.roleCache != null)
+			this.roleCache.clearCache();
+		if (this.connectionCache != null)
+			this.connectionCache.clearCache();
+
+		//caches for security
+		if (this.connectionGrantCache != null)
+			this.connectionGrantCache.clearCache();
+		
+		if (this.baseTableGrantCache != null)
+			this.baseTableGrantCache.clearCache();
+		
+		if (this.systemGrantCache != null)
+			this.systemGrantCache.clearCache();
+		
+		if (this.roleGrantCache != null)
+			this.roleCache.clearCache();
 
 		this.initialize(monitor);
 
@@ -406,12 +476,86 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		return connectionCache.getAllObjects(monitor, this);
 	}
-
+	
 	public ExasolConnection getConnection(DBRProgressMonitor monitor,
 			String name) throws DBException
 	{
 		return connectionCache.getObject(monitor, this, name);
 	}
+	
+	public Collection<ExasolBaseObjectGrant> getBaseTableGrants(DBRProgressMonitor monitor) throws DBException
+	{
+		return baseTableGrantCache.getAllObjects(monitor, this);
+	}
+	
+	public Collection<ExasolTableGrant> getTableGrants(DBRProgressMonitor monitor) throws DBException
+	{
+		Collection<ExasolTableGrant> grants = new ArrayList<>();
+		
+		for (ExasolBaseObjectGrant grant: this.getBaseTableGrants(monitor))
+		{
+			//only add tables
+			if (grant.getType() == ExasolTableObjectType.TABLE)
+				grants.add(new ExasolTableGrant(monitor, grant));
+		}
+		return grants;
+	}
+
+	public Collection<ExasolViewGrant> getViewGrants(DBRProgressMonitor monitor) throws DBException
+	{
+		Collection<ExasolViewGrant> grants = new ArrayList<>();
+		
+		for (ExasolBaseObjectGrant grant: this.getBaseTableGrants(monitor))
+		{
+			//only add tables
+			if (grant.getType() == ExasolTableObjectType.VIEW)
+				grants.add(new ExasolViewGrant(grant));
+		}
+		return grants;
+	}
+	
+	public Collection<ExasolScriptGrant> getScriptGrants(DBRProgressMonitor monitor) throws DBException
+	{
+		Collection<ExasolScriptGrant> grants = new ArrayList<>();
+		
+		for (ExasolBaseObjectGrant grant: this.getBaseTableGrants(monitor))
+		{
+			//only add tables
+			if (grant.getType() == ExasolTableObjectType.SCRIPT)
+				grants.add(new ExasolScriptGrant(grant));
+		}
+		return grants;
+	}
+	
+	public Collection<ExasolSchemaGrant> getSchemaGrants(DBRProgressMonitor monitor) throws DBException
+	{
+		Collection<ExasolSchemaGrant> grants = new ArrayList<>();
+		
+		for (ExasolBaseObjectGrant grant: this.getBaseTableGrants(monitor))
+		{
+			//only add tables
+			if (grant.getType() == ExasolTableObjectType.SCHEMA)
+				grants.add(new ExasolSchemaGrant(grant));
+		}
+		return grants;
+	}
+	
+	
+	public Collection<ExasolConnectionGrant> getConnectionGrants(DBRProgressMonitor monitor) throws DBException
+	{
+		return connectionGrantCache.getAllObjects(monitor, this);
+	}
+	
+	public Collection<ExasolSystemGrant> getSystemGrants(DBRProgressMonitor monitor) throws DBException
+	{
+		return this.systemGrantCache.getAllObjects(monitor, this);
+	}
+	
+	public Collection<ExasolRoleGrant> getRoleGrants(DBRProgressMonitor monitor) throws DBException
+	{
+		return this.roleGrantCache.getAllObjects(monitor, this);
+	}
+	
 
 	@Association
 	public Collection<ExasolDataType> getDataTypes(DBRProgressMonitor monitor)

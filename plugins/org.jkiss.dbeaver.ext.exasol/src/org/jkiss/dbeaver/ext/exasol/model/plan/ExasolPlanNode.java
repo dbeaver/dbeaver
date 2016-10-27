@@ -113,85 +113,85 @@ public class ExasolPlanNode implements DBCPlanNode {
     }
 
 
-    @Property(order = 2, viewable = true)
+    @Property(order = 3, viewable = true)
     public int getPartId() {
         return partId;
     }
 
 
-    @Property(order = 3, viewable = true)
+    @Property(order = 4, viewable = true)
     public String getPartName() {
         return partName;
     }
 
 
-    @Property(order = 4, viewable = true)
+    @Property(order = 5, viewable = true)
     public String getPartInfo() {
         return partInfo;
     }
 
 
-    @Property(order = 5, viewable = true)
+    @Property(order = 6, viewable = true)
     public String getObjectSchema() {
         return objectSchema;
     }
 
 
-    @Property(order = 6, viewable = true)
+    @Property(order = 7, viewable = true)
     public String getObjectName() {
         return objectName;
     }
 
 
-    @Property(order = 7, viewable = true)
+    @Property(order = 8, viewable = true)
     public Double getObjectRows() {
         return objectRows;
     }
 
 
-    @Property(order = 8, viewable = true)
+    @Property(order = 9, viewable = true)
     public Double getOutRows() {
         return outRows;
     }
 
 
-    @Property(order = 9, viewable = true)
+    @Property(order = 10, viewable = true)
     public Double getDuration() {
         return duration;
     }
 
 
-    @Property(order = 10, viewable = true)
+    @Property(order = 11, viewable = true)
     public Double getCpu() {
         return cpu;
     }
 
 
-    @Property(order = 11, viewable = true)
+    @Property(order = 12, viewable = true)
     public Double getTempDbRamPeak() {
         return tempDbRamPeak;
     }
 
 
-    @Property(order = 12, viewable = true)
+    @Property(order = 13, viewable = true)
     public Double getHddRead() {
         return hddRead;
     }
 
 
-    @Property(order = 13, viewable = true)
+    @Property(order = 14, viewable = true)
     public Double getHddWrite() {
         return hddWrite;
     }
 
 
-    @Property(order = 14, viewable = true)
+    @Property(order = 15, viewable = true)
     public Double getNetTransfer() {
         return netTransfer;
     }
 
 
-    @Property(order = 15, viewable = true)
+    @Property(order = 16, viewable = true)
     public String getDetailInfo() {
         return detailInfo;
     }

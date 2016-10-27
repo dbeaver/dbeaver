@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class ExasolSystemGrant implements DBAPrivilege {
@@ -36,16 +35,17 @@ public class ExasolSystemGrant implements DBAPrivilege {
 	private Boolean adminOption;
 	private String sysPrivilege;
 	private Boolean isPersisted;
+	private String grantee;
 
-	public ExasolSystemGrant(ExasolDataSource dataSource, ResultSet resultSet, DBRProgressMonitor monitor) throws DBException
+	public ExasolSystemGrant(ExasolDataSource dataSource, ResultSet resultSet) throws DBException
 	{
 		this.dataSource = dataSource;
 		this.sysPrivilege = JDBCUtils.safeGetString(resultSet, "PRIVILEGE");
 		this.adminOption = JDBCUtils.safeGetBoolean(resultSet, "ADMIN_OPTION");
 		this.isPersisted = true;
+		this.grantee = JDBCUtils.safeGetString(resultSet, "GRANTEE");
 	}
 
-	
 	@Property(viewable = true, order = 10)
 	public String getSystemPrivilege()
 	{
@@ -58,8 +58,6 @@ public class ExasolSystemGrant implements DBAPrivilege {
 		return this.adminOption;
 	}
 	
-	
-	
 	@Override
 	@Property(hidden=true)
 	public String getDescription()
@@ -70,7 +68,6 @@ public class ExasolSystemGrant implements DBAPrivilege {
 	@Override
 	public DBSObject getParentObject()
 	{
-		// TODO Auto-generated method stub
 		return dataSource.getContainer();
 	}
 
@@ -84,7 +81,7 @@ public class ExasolSystemGrant implements DBAPrivilege {
 	@Property(hidden=true)
 	public String getName()
 	{
-		return "FAKE";
+		return grantee;
 	}
 
 	@Override
