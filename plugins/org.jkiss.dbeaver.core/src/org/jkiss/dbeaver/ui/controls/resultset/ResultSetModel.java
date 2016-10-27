@@ -69,7 +69,7 @@ public class ResultSetModel {
 
     // Edited rows and cells
     private DBCStatistics statistics;
-    private transient boolean sourceChanged;
+    private transient boolean metadataChanged;
     private transient boolean metadataDynamic;
 
     public static class AttributeColorSettings {
@@ -425,8 +425,8 @@ public class ResultSetModel {
         return metadataDynamic;
     }
 
-    boolean isSourceChanged() {
-        return sourceChanged;
+    boolean isMetadataChanged() {
+        return metadataChanged;
     }
 
     /**
@@ -448,13 +448,14 @@ public class ResultSetModel {
             }
         }
 
+        this.metadataChanged = update;
         if (update) {
             if (!ArrayUtils.isEmpty(this.attributes) && !ArrayUtils.isEmpty(newAttributes) && isDynamicMetadata() &&
                 this.attributes[0].getTopParent().getMetaAttribute().getSource() == newAttributes[0].getTopParent().getMetaAttribute().getSource()) {
                 // the same source
-                sourceChanged = false;
+                metadataChanged = false;
             } else {
-                sourceChanged = true;
+                metadataChanged = true;
             }
         }
         this.clearData();
@@ -514,7 +515,7 @@ public class ResultSetModel {
         // Add new data
         appendData(rows);
 
-        if (sourceChanged) {
+        if (metadataChanged) {
             this.dataFilter = createDataFilter();
         } else {
             DBDDataFilter prevFilter = dataFilter;

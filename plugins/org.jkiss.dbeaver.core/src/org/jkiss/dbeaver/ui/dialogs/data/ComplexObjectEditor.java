@@ -573,7 +573,7 @@ public class ComplexObjectEditor extends TreeViewer {
                         }
                     }
                 };
-                DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), runnable);
+                DBeaverUI.runInUI(runnable);
                 children = getChildren(runnable.getResult());
             } else if (parent instanceof CompositeField) {
                 Object value = ((CompositeField) parent).value;

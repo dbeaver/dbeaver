@@ -69,40 +69,39 @@ public class ExasolPlanAnalyser implements DBCPlan {
                 connection.setAutoCommit(false);
 
             //alter session
-            JDBCPreparedStatement stmt = connection.prepareStatement("ALTER SESSION SET PROFILE = 'ON'");
-            stmt.execute();
-            stmt.close();
+            try (JDBCPreparedStatement stmt = connection.prepareStatement("ALTER SESSION SET PROFILE = 'ON'")) {
+            	stmt.execute();
+            }
 
             //execute query
-            stmt = connection.prepareStatement(query);
-            stmt.execute();
-            stmt.close();
+            try (JDBCPreparedStatement stmt = connection.prepareStatement(query)) {
+            	stmt.execute();
+            }
 
             //alter session
-            stmt = connection.prepareStatement("ALTER SESSION SET PROFILE = 'OFF'");
-            stmt.execute();
-            stmt.close();
+            try (JDBCPreparedStatement stmt = connection.prepareStatement("ALTER SESSION SET PROFILE = 'OFF'")) {
+            	stmt.execute();
+            }
 
             //rollback in case of DML
             connection.rollback();
 
             //alter session
-            stmt = connection.prepareStatement("FLUSH STATISTICS");
-            stmt.execute();
-            stmt.close();
+            try (JDBCPreparedStatement stmt = connection.prepareStatement("FLUSH STATISTICS")) {
+            	stmt.execute();
+            }
             connection.commit();
 
             //retrieve execute info
-            stmt = connection.prepareStatement("SELECT * FROM EXA_USER_PROFILE_LAST_DAY WHERE SESSION_ID = CURRENT_SESSION AND STMT_ID = (select max(stmt_id) from EXA_USER_PROFILE_LAST_DAY where sql_text = ?)");
-            stmt.setString(1, query);
-            JDBCResultSet dbResult = stmt.executeQuery();
-            while (dbResult.next()) {
-                ExasolPlanNode node = new ExasolPlanNode(null, dbResult);
-                rootNodes.add(node);
+            try (JDBCPreparedStatement stmt = connection.prepareStatement("SELECT * FROM EXA_USER_PROFILE_LAST_DAY WHERE SESSION_ID = CURRENT_SESSION AND STMT_ID = (select max(stmt_id) from EXA_USER_PROFILE_LAST_DAY where sql_text = ?)")) {
+	            stmt.setString(1, query);
+	            try (JDBCResultSet dbResult = stmt.executeQuery()) {
+		            while (dbResult.next()) {
+		                ExasolPlanNode node = new ExasolPlanNode(null, dbResult);
+		                rootNodes.add(node);
+		            }
+	            }
             }
-            stmt.clearParameters();
-            dbResult.close();
-            stmt.close();
 
         } catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());

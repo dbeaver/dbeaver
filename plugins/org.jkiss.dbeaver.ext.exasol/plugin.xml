@@ -70,8 +70,83 @@
                       description="Database virtual schemas"
                       icon="#folder_schema"
                       label="%tree.virtualschemas.node.name"
-                      type="org.jkiss.dbeaver.model.struct.DBSObject"
+                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema"
                       visibleIf="object.dataSource.atLeastV6">
+                   <items
+                         icon="#schema"
+                         label="%tree.virtualschema.node.name"
+                         path="virtualschema"
+                         property="virtualSchemas">
+                      <folder
+                            description="Tables"
+                            icon="#folder_table"
+                            label="%tree.tables.node.name"
+                            type="org.jkiss.dbeaver.ext.exasol.model.ExasolTable">
+                         <items
+                               icon="#table"
+                               label="%tree.table.node.name"
+                               path="table"
+                               property="tables">
+                            <folder
+                                  description="Table columns"
+                                  icon="#columns"
+                                  label="%tree.columns.node.name"
+                                  type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn">
+                               <items
+                                     icon="#column"
+                                     label="%tree.column.node.name"
+                                     path="attribute"
+                                     property="attributes">
+                               </items>
+                            </folder>
+                            <folder
+                                  description="Table constraints"
+                                  icon="#constraints"
+                                  label="%tree.constraints.node.name"
+                                  type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey">
+                               <items
+                                     icon="#unique-key"
+                                     label="%tree.constraint.node.name"
+                                     path="constraint"
+                                     property="constraints">
+                                  <items
+                                        inline="true"
+                                        label="%tree.constraint_columns.node.name"
+                                        navigable="false"
+                                        path="column"
+                                        property="attributeReferences">
+                                  </items>
+                               </items>
+                            </folder>
+                            <folder
+                                  description="Table foreign keys"
+                                  icon="#foreign-keys"
+                                  label="%tree.foreign_keys.node.name"
+                                  type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey">
+                               <items
+                                     icon="#foreign-key"
+                                     label="%tree.foreign_key.node.name"
+                                     path="association"
+                                     property="associations">
+                                  <items
+                                        inline="true"
+                                        itemLabel="%tree.column.node.name"
+                                        label="%tree.foreign_key_columns.node.name"
+                                        navigable="false"
+                                        path="column"
+                                        property="attributeReferences">
+                                  </items>
+                               </items>
+                            </folder>
+                         </items>
+                      </folder>
+                      <items
+                            icon="#parameter"
+                            label="%tree.virtualschemaparameters.node.name"
+                            navigable="false"
+                            property="virtualSchemaParameters">
+                      </items>
+                   </items>
                 </folder>
                 <folder type="" label="%tree.administer.node.name" icon="#folder_admin"
                         description="Maintenance/Settings">
@@ -119,6 +194,14 @@
                                path="role"
                                property="roles"
                                visibleIf="object.dataSource.authorizedForRolePrivs">
+                         </items>
+                         <items
+                               icon="#schema"
+                               label="%tree.schema.node.name"
+                               navigable="false"
+                               path="schema"
+                               property="schemas"
+                               visibleIf="object.dataSource.authorizedForObjectPrivs">
                          </items>
                          <items
                                icon="#table"
@@ -171,6 +254,22 @@
                             icon="icons/role.gif"
                             label="%tree.role.node.name"
                             property="roles">
+                         <items
+                               icon="icons/role.gif"
+                               label="%tree.roles.node.name"
+                               navigable="false"
+                               path="role"
+                               property="roles"
+                               visibleIf="object.dataSource.authorizedForRolePrivs">
+                         </items>
+                         <items
+                               icon="#schema"
+                               label="%tree.schema.node.name"
+                               navigable="false"
+                               path="schema"
+                               property="schemas"
+                               visibleIf="object.dataSource.authorizedForObjectPrivs">
+                         </items>
                          <items
                                icon="#table"
                                label="%tree.table.node.name"
@@ -270,6 +369,9 @@
             <objectType
                     name="org.jkiss.dbeaver.ext.exasol.model.ExasolScript">
             </objectType>
+            <objectType
+                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolView">
+            </objectType>
         </editor>
         <editor
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
@@ -289,6 +391,20 @@
                 class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTableColumnManager"
                 objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn">
         </manager>
+        <editor
+              class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+              contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
+              description="%editor.source.declaration.description"
+              embeddable="true"
+              icon="#sql_text"
+              id="source.declaration"
+              label="%meta.org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema.adapterNotes.name"
+              position="additions_middle"
+              type="folder">
+           <objectType
+                 name="org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema">
+           </objectType>
+        </editor>
     </extension>
     <extension point="org.eclipse.ui.editors">
         <editor

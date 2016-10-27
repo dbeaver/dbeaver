@@ -315,7 +315,7 @@ public class ResultSetViewer extends Viewer
                 refreshWithFilter(dataFilter);
             } else {
                 model.setDataFilter(dataFilter);
-                activePresentation.refreshData(true, false);
+                activePresentation.refreshData(true, false, true);
                 updateFiltersText();
             }
         }
@@ -560,7 +560,7 @@ public class ResultSetViewer extends Viewer
             IResultSetPresentation instance = selectedPresentation.createInstance();
             activePresentationDescriptor = selectedPresentation;
             setActivePresentation(instance);
-            instance.refreshData(true, false);
+            instance.refreshData(true, false, false);
 
             for (ToolItem item : presentationSwitchToolbar.getItems()) {
                 item.setSelection(item.getData() == activePresentationDescriptor);
@@ -932,7 +932,7 @@ public class ResultSetViewer extends Viewer
     {
         //Object state = savePresentationState();
         //this.redrawData(false);
-        activePresentation.refreshData(true, false);
+        activePresentation.refreshData(true, false, false);
         this.updateStatusMessage();
         //restorePresentationState(state);
     }
@@ -969,14 +969,14 @@ public class ResultSetViewer extends Viewer
 
             // Set cursor on new row
             if (!recordMode) {
-                activePresentation.refreshData(false, false);
+                activePresentation.refreshData(false, false, true);
                 this.updateFiltersText();
                 this.updateStatusMessage();
             } else {
                 this.updateRecordMode();
             }
         } else {
-            activePresentation.refreshData(false, false);
+            activePresentation.refreshData(false, false, true);
         }
     }
 
@@ -1090,7 +1090,7 @@ public class ResultSetViewer extends Viewer
         //Object state = savePresentationState();
         this.recordMode = recordMode;
         //redrawData(false);
-        activePresentation.refreshData(true, false);
+        activePresentation.refreshData(true, false, false);
         activePresentation.changeMode(recordMode);
         updateStatusMessage();
         //restorePresentationState(state);
@@ -1263,7 +1263,7 @@ public class ResultSetViewer extends Viewer
 
         {
 
-            if (model.isSourceChanged() && getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE)) {
+            if (model.isMetadataChanged() && getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE)) {
                 boolean newRecordMode = (rows.size() == 1);
                 if (newRecordMode != recordMode) {
                     toggleMode();
@@ -1272,7 +1272,7 @@ public class ResultSetViewer extends Viewer
             }
         }
 
-        this.activePresentation.refreshData(true, false);
+        this.activePresentation.refreshData(true, false, !model.isMetadataChanged());
         if (recordMode) {
             this.updateRecordMode();
         }
@@ -1285,7 +1285,7 @@ public class ResultSetViewer extends Viewer
     {
         model.appendData(rows);
         //redrawData(true);
-        activePresentation.refreshData(false, true);
+        activePresentation.refreshData(false, true, true);
 
         setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
 
@@ -1961,7 +1961,9 @@ public class ResultSetViewer extends Viewer
     {
         if (activePresentation instanceof ISelectionProvider) {
             ISelection selection = ((ISelectionProvider) activePresentation).getSelection();
-            if (selection instanceof IResultSetSelection) {
+            if (selection.isEmpty()) {
+                return new EmptySelection();
+            } else if (selection instanceof IResultSetSelection) {
                 return (IResultSetSelection) selection;
             } else {
                 log.debug("Bad selection type (" + selection + ") in presentation " + activePresentation);
@@ -2069,7 +2071,7 @@ public class ResultSetViewer extends Viewer
             if (curRow != null && curRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
                 segmentSize = (curRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
-            return runDataPump(dataContainer, null, 0, segmentSize, -1, onSuccess);
+            return runDataPump(dataContainer, null, 0, segmentSize, curRow == null ? 0 : curRow.getRowNumber(), onSuccess);
         } else {
             return false;
         }

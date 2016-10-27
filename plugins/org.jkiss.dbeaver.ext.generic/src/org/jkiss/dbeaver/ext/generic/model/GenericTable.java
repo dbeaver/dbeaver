@@ -216,6 +216,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
+        this.getContainer().getIndexCache().clearObjectCache(this);
+        this.getContainer().getPrimaryKeysCache().clearObjectCache(this);
+        this.getContainer().getForeignKeysCache().clearObjectCache(this);
         return this.getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
 

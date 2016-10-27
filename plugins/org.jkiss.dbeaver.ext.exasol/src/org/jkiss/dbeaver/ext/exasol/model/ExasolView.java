@@ -56,8 +56,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
 
     @Override
     public DBSObjectState getObjectState() {
-        // TODO Auto-generated method stub
-        return null;
+        return DBSObjectState.NORMAL;
     }
 
 
@@ -75,14 +74,6 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
     public String getOwner() {
         return owner;
     }
-
-
-    @NotNull
-    @Property(viewable = true, order = 100)
-    public String getText() {
-        return text;
-    }
-
 
     @Override
     public boolean isView() {
