@@ -571,16 +571,20 @@ public abstract class LightGrid extends Canvas {
         updateScrollbars();
 
         // Restore state
-        if (savedFocus != null && savedFocus.isValid()) {
+        if (savedFocus != null) {
+            savedFocus.row = Math.min(savedFocus.row, getItemCount() - 1);
+            savedFocus.col = Math.min(savedFocus.col, getColumnCount() - 1);
             setFocusItem(savedFocus.row);
             setFocusColumn(savedFocus.col);
-            selectCell(savedFocus);
+            if (savedFocus.isValid()) {
+                selectCell(savedFocus);
+            }
         }
         if (savedHSB >= 0) {
-            hScroll.setSelection(savedHSB);
+            hScroll.setSelection(Math.min(hScroll.getMaximum(), savedHSB));
         }
         if (savedVSB >= 0) {
-            vScroll.setSelection(savedVSB);
+            vScroll.setSelection(Math.min(vScroll.getMaximum(), savedVSB));
         }
 //        // Add focus cell to selection
 //        GridPos focusPos = getFocusPos();
