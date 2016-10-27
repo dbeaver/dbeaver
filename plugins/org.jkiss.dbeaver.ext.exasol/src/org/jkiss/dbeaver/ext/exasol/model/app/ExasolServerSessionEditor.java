@@ -58,6 +58,7 @@ public class ExasolServerSessionEditor extends AbstractSessionEditor {
     protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
         return new SessionManagerViewer(this, parent, new ExasolServerSessionManager((ExasolDataSource) executionContext.getDataSource())) {
             @Override
+            @SuppressWarnings("rawtypes")
             protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager) {
                 contributionManager.add(killSessionAction);
                 contributionManager.add(terminateQueryAction);
