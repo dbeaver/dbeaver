@@ -75,14 +75,6 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
         return owner;
     }
 
-
-    @NotNull
-    @Property(viewable = true, order = 100)
-    public String getText() {
-        return text;
-    }
-
-
     @Override
     public boolean isView() {
         return true;
