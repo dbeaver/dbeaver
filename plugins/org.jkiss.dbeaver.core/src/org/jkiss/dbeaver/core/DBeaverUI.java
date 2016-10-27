@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.runtime.*;
+import org.jkiss.dbeaver.runtime.DummyRunnableContext;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.ui.DBUICallback;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -175,7 +176,13 @@ public class DBeaverUI implements DBUICallback {
     }
 
     public static Shell getActiveWorkbenchShell() {
-        return getActiveWorkbenchWindow().getShell();
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+        if (window != null) {
+            return window.getShell();
+        } else {
+            return Display.getDefault().getActiveShell();
+        }
     }
 
     public static Display getDisplay() {
@@ -278,6 +285,13 @@ public class DBeaverUI implements DBUICallback {
         } catch (InterruptedException e) {
             // do nothing
         }
+    }
+
+    public static void runInUI(final DBRRunnableWithProgress runnable) {
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+        IRunnableContext context = window != null ? window : DummyRunnableContext.INSTANCE;
+        runInUI(context, runnable);
     }
 
     public static void asyncExec(Runnable runnable) {

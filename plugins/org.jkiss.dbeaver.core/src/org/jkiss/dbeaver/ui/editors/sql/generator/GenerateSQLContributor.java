@@ -387,7 +387,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 @Override
                 public void run()
                 {
-                    DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), runnable);
+                    DBeaverUI.runInUI(runnable);
                     Object sql = runnable.getResult();
                     if (sql == null) {
                         return;
