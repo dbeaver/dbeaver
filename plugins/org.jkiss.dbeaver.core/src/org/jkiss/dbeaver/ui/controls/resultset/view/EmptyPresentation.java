@@ -102,7 +102,7 @@ public class EmptyPresentation implements IResultSetPresentation {
     }
 
     @Override
-    public void refreshData(boolean refreshMetadata, boolean append) {
+    public void refreshData(boolean refreshMetadata, boolean append, boolean keepState) {
 
     }
 

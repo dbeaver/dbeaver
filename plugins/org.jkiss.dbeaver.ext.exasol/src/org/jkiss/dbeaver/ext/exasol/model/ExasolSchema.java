@@ -46,11 +46,6 @@ import java.util.List;
 
 public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer {
 
-    private static final String C_SCRIPT = "select "
-        + "script_name,script_owner,script_language,script_type,script_result_type,script_text,script_comment,b.created "
-        + "from EXA_ALL_SCRIPTS a inner join EXA_ALL_OBJECTS b "
-        + "on a.script_name = b.object_name and a.script_schema = b.root_name where a.script_schema = ? order by script_name";
-
     private static final List<String> SYSTEM_SCHEMA = Arrays.asList("SYS","EXA_STATISTICS");
     private String name;
     private String owner;
@@ -71,7 +66,13 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
     public ExasolSchema(ExasolDataSource exasolDataSource, String name) {
         super(exasolDataSource, true);
         this.name = name;
-        this.scriptCache = new JDBCObjectSimpleCache<>(ExasolScript.class, C_SCRIPT, name);
+        this.scriptCache = new JDBCObjectSimpleCache<>(
+        		ExasolScript.class,
+        		"select "
+        		+ "script_name,script_owner,script_language,script_type,script_result_type,script_text,script_comment,b.created "
+        		+ "from EXA_ALL_SCRIPTS a inner join EXA_ALL_OBJECTS b "
+        		+ "on a.script_name = b.object_name and a.script_schema = b.root_name where a.script_schema = ? order by script_name",
+        		name);
 
     }
 

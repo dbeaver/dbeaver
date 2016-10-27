@@ -265,30 +265,32 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 part = part.getSite().getPage().getActiveEditor();
             }
         }
-        final int selConnection = connectionCombo.getSelectionIndex();
-        DBPDataSourceContainer visibleContainer = null;
-        if (selConnection > 0) {
-            visibleContainer = (DBPDataSourceContainer) connectionCombo.getItem(selConnection).getData();
-        }
-        DBPDataSourceContainer newContainer = getDataSourceContainer(part);
-        if (activePart != part || activePart == null || visibleContainer != newContainer) {
-            // Update previous statuses
-            DBPDataSourceContainer oldContainer = getDataSourceContainer(activePart);
-            activePart = part;
-            if (oldContainer != newContainer) {
-                if (oldContainer != null) {
-                    oldContainer.getPreferenceStore().removePropertyChangeListener(this);
-                }
-                oldContainer = getDataSourceContainer();
-
-                if (oldContainer != null) {
-                    // Update editor actions
-                    oldContainer.getPreferenceStore().addPropertyChangeListener(this);
-                }
+        if (connectionCombo != null && !connectionCombo.isDisposed()) {
+            final int selConnection = connectionCombo.getSelectionIndex();
+            DBPDataSourceContainer visibleContainer = null;
+            if (selConnection > 0) {
+                visibleContainer = (DBPDataSourceContainer) connectionCombo.getItem(selConnection).getData();
             }
+            DBPDataSourceContainer newContainer = getDataSourceContainer(part);
+            if (activePart != part || activePart == null || visibleContainer != newContainer) {
+                // Update previous statuses
+                DBPDataSourceContainer oldContainer = getDataSourceContainer(activePart);
+                activePart = part;
+                if (oldContainer != newContainer) {
+                    if (oldContainer != null) {
+                        oldContainer.getPreferenceStore().removePropertyChangeListener(this);
+                    }
+                    oldContainer = getDataSourceContainer();
 
-            // Update controls and actions
-            updateControls(true);
+                    if (oldContainer != null) {
+                        // Update editor actions
+                        oldContainer.getPreferenceStore().addPropertyChangeListener(this);
+                    }
+                }
+
+                // Update controls and actions
+                updateControls(true);
+            }
         }
         if (part != null) {
             final IEditorInput editorInput = ((IEditorPart) part).getEditorInput();
@@ -595,7 +597,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         final String newName = databaseCombo.getItemText(databaseCombo.getSelectionIndex());
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
-            DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
+            DBeaverUI.runInUI(new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException {

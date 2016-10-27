@@ -21,10 +21,7 @@ package org.jkiss.dbeaver.ext.oracle.views;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleLanguage;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleTerritory;
@@ -45,6 +42,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
     private Combo languageCombo;
     private Combo territoryCombo;
+    private Text nlsDateFormat;
     private Button hideEmptySchemasCheckbox;
     private Button showDBAAlwaysCheckbox;
     private Button useRuleHint;
@@ -90,6 +88,8 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 territoryCombo.add(territory.getTerritory());
             }
             territoryCombo.setText(OracleConstants.NLS_DEFAULT_VALUE);
+
+            nlsDateFormat = UIUtils.createLabelText(sessionGroup, "NLS Date Format", "");
         }
 
         {
@@ -143,6 +143,11 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             territoryCombo.setText(nlsTerritory.toString());
         }
 
+        final Object dateFormat = connectionProperties.get(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
+        if (dateFormat != null) {
+            nlsDateFormat.setText(dateFormat.toString());
+        }
+
         final Object checkSchemaContent = connectionProperties.get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT);
         if (checkSchemaContent != null) {
             hideEmptySchemasCheckbox.setSelection(CommonUtils.getBoolean(checkSchemaContent, false));
@@ -169,6 +174,13 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 connectionProperties.put(OracleConstants.PROP_SESSION_TERRITORY, territoryCombo.getText());
             } else {
                 connectionProperties.remove(OracleConstants.PROP_SESSION_TERRITORY);
+            }
+
+            String dateFormat = nlsDateFormat.getText();
+            if (!dateFormat.isEmpty()) {
+                connectionProperties.put(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT, dateFormat);
+            } else {
+                connectionProperties.remove(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
             }
 
             connectionProperties.put(

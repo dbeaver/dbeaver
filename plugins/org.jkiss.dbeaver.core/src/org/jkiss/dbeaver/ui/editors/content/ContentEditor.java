@@ -461,7 +461,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     @Override
     public Object extractEditorValue() throws DBException
     {
-        DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
+        DBeaverUI.runInUI(new DBRRunnableWithProgress() {
             @Override
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
             {

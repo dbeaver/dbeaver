@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.exasol.manager.security;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
@@ -36,13 +36,6 @@ public abstract class ExasolGrantee
 	private ExasolDataSource dataSource;
 	private boolean persisted;
 
-	private List<ExasolRoleGrant> roles;
-	private List<ExasolTableGrant> tableGrants;
-	private List<ExasolViewGrant> viewGrants;
-	private List<ExasolScriptGrant> scriptGrants;
-	private List<ExasolConnectionGrant> connectGrants;
-	private List<ExasolSystemGrant> sysGrants;
-	private ExasolRetrievePermissions retrievPermissions;
 
 	public ExasolGrantee(ExasolDataSource dataSource, ResultSet resultSet)
 	{
@@ -52,7 +45,6 @@ public abstract class ExasolGrantee
 		} else {
 			this.persisted = false;
 		}
-		retrievPermissions = new ExasolRetrievePermissions(dataSource);
 	}
 
 	@Override
@@ -78,11 +70,6 @@ public abstract class ExasolGrantee
 	public DBSObject refreshObject(DBRProgressMonitor monitor)
 			throws DBException
 	{
-		roles = null;
-		tableGrants = null;
-		scriptGrants = null;
-		viewGrants = null;
-		connectGrants = null;
 		return this;
 	}
 
@@ -92,48 +79,42 @@ public abstract class ExasolGrantee
 		this.persisted = persisted;
 	}
 	
-	public List<ExasolSystemGrant> getSystemgrants(DBRProgressMonitor monitor) throws DBException
+	public Collection<ExasolSystemGrant> getSystemgrants(DBRProgressMonitor monitor) throws DBException
 	{
-		if (this.sysGrants != null) {
-			return this.sysGrants;
-		}
-		if (!isPersisted()) {
-			this.sysGrants = new ArrayList<ExasolSystemGrant>();
-			return this.sysGrants;
-		}
+		Collection<ExasolSystemGrant> sysGrants = new ArrayList<>();
 		
-		this.sysGrants = this.retrievPermissions.getSystemGrants(this, monitor);
+		for(ExasolSystemGrant grant: dataSource.getSystemGrants(monitor))
+		{
+			if (grant.getName().equals(this.getName()))
+				sysGrants.add(grant);
+		}
 		return sysGrants;
 	}
 	
-	public List<ExasolConnectionGrant> getConnections(DBRProgressMonitor monitor) throws DBException
+	public Collection<ExasolConnectionGrant> getConnections(DBRProgressMonitor monitor) throws DBException
 	{
-		if (this.connectGrants != null) {
-			return this.connectGrants;
+		Collection<ExasolConnectionGrant> conGrants = new ArrayList<>(); 
+		for(ExasolConnectionGrant grant: this.dataSource.getConnectionGrants(monitor))
+		{
+			if (grant.getName().equals(this.getName()))
+				conGrants.add(grant);
 		}
-		if (!isPersisted()) {
-			this.connectGrants = new ArrayList<ExasolConnectionGrant>();
-			return this.connectGrants;
-		}
+		return conGrants;
+			
 		
-		this.connectGrants = this.retrievPermissions.getConnectionGrants(this, monitor);
-		return connectGrants;
 	}
 
-	public List<ExasolRoleGrant> getRoles(DBRProgressMonitor monitor)
+	public Collection<ExasolRoleGrant> getRoles(DBRProgressMonitor monitor)
 			throws DBException
 	{
-		if (this.roles != null) {
-			return this.roles;
+		Collection<ExasolRoleGrant> roleGrants = new ArrayList<>();
+		for (ExasolRoleGrant grant: this.dataSource.getRoleGrants(monitor))
+		{
+			if (grant.getName().equals(this.getName()))
+				roleGrants.add(grant);
+				
 		}
-		if (!isPersisted()) {
-			this.roles = new ArrayList<ExasolRoleGrant>();
-			return this.roles;
-		}
-		
-		this.roles = this.retrievPermissions.getRoleGrants(this, monitor);
-		
-		return this.roles;
+		return roleGrants;
 		
 
 	}
@@ -141,47 +122,64 @@ public abstract class ExasolGrantee
 	//
 	// Retrieve Grants
 	//
-	public List<ExasolTableGrant> getTables(DBRProgressMonitor monitor) throws DBException
+	public Collection<ExasolTableGrant> getTables(DBRProgressMonitor monitor) throws DBException
 	{
-		if (this.tableGrants != null) {
-			return this.tableGrants;
+		Collection<ExasolTableGrant> grants = new ArrayList<>();
+		
+		for(ExasolTableGrant grant: this.dataSource.getTableGrants(monitor))
+		{
+			if (grant.getName().equals(this.getName()))
+			{
+				grants.add(grant);
+			}
 		}
-		if (!isPersisted()) {
-			this.tableGrants = new ArrayList<ExasolTableGrant>();
-			return this.tableGrants;
-		}
-		 this.tableGrants = this.retrievPermissions.getTableGrants(this, monitor);
-		return this.tableGrants;
+		return grants;
 		
 	}
 	
-	public List<ExasolViewGrant> getViews(DBRProgressMonitor monitor) throws DBException
+	public Collection<ExasolViewGrant> getViews(DBRProgressMonitor monitor) throws DBException
 	{
-		if (this.viewGrants != null) {
-			return this.viewGrants;
-		}
-		if (!isPersisted()) {
-			this.viewGrants = new ArrayList<ExasolViewGrant>();
-			return this.viewGrants;
-		}
+		Collection<ExasolViewGrant> grants = new ArrayList<>();
 		
-		this.viewGrants = this.retrievPermissions.getViewGrants(this, monitor);
-		return this.viewGrants;
+		for(ExasolViewGrant grant: this.dataSource.getViewGrants(monitor))
+		{
+			if (grant.getName().equals(this.getName()))
+			{
+				grants.add(grant);
+			}
+		}
+		return grants;
+		
 	}
-		
-	public List<ExasolScriptGrant> getProcedures(DBRProgressMonitor monitor) throws DBException
+
+	public Collection<ExasolScriptGrant> getProcedures(DBRProgressMonitor monitor) throws DBException
 	{
-		if (this.scriptGrants != null) {
-			return this.scriptGrants;
-		}
-		if (!isPersisted()) {
-			this.scriptGrants = new ArrayList<ExasolScriptGrant>();
-			return this.scriptGrants;
-		}
+		Collection<ExasolScriptGrant> grants = new ArrayList<>();
 		
-		this.scriptGrants = this.retrievPermissions.getScript(this, monitor);
-		return this.scriptGrants;
+		for(ExasolScriptGrant grant: this.dataSource.getScriptGrants(monitor))
+		{
+			if (grant.getName().equals(this.getName()))
+			{
+				grants.add(grant);
+			}
+		}
+		return grants;
+		
 	}
-	
+
+	public Collection<ExasolSchemaGrant> getSchemas(DBRProgressMonitor monitor) throws DBException
+	{
+		Collection<ExasolSchemaGrant> grants = new ArrayList<>();
+		
+		for(ExasolSchemaGrant grant: this.dataSource.getSchemaGrants(monitor))
+		{
+			if (grant.getName().equals(this.getName()))
+			{
+				grants.add(grant);
+			}
+		}
+		return grants;
+		
+	}
 
 }

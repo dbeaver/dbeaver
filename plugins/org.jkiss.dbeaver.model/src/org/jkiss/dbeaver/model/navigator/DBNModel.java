@@ -500,7 +500,11 @@ public class DBNModel implements IResourceChangeListener {
                             }
                         } else {
                             if (childDelta.getFlags() == IResourceDelta.OPEN) {
-                                projectNode.openProject();
+                                if (projectNode.getProject().isOpen()) {
+                                    projectNode.openProject();
+                                } else {
+                                    // Project was closed - do nothing.
+                                }
                             } else {
                                 // Some resource changed within the projectNode
                                 // Let it handle this event itself

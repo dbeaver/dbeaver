@@ -146,7 +146,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
     }
 
     private void detectStreamManager(final DBDContent content) {
-        DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
+        DBeaverUI.runInUI(new DBRRunnableWithProgress() {
             @Override
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 monitor.beginTask("Detect appropriate editor", 1);
