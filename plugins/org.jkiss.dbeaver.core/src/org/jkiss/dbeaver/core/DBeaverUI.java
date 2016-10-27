@@ -186,11 +186,13 @@ public class DBeaverUI implements DBUICallback {
     }
 
     public static Display getDisplay() {
-        Shell shell = getActiveWorkbenchShell();
-        if (shell != null && !shell.isDisposed())
-            return shell.getDisplay();
-        else
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+        if (window != null) {
+            return window.getShell().getDisplay();
+        } else {
             return Display.getDefault();
+        }
     }
 
 /*
