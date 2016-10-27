@@ -20,27 +20,75 @@ package org.jkiss.dbeaver.ext.exasol.manager.security;
 
 import java.sql.ResultSet;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolConnection;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public class ExasolConnectionGrant extends ExasolConnection
+public class ExasolConnectionGrant 
 		implements DBAPrivilege {
 
 	private Boolean adminOption;
+	private String connection;
+	private ExasolDataSource dataSource;
+	private String grantee;
+	private Boolean isPersisted;
 	public ExasolConnectionGrant(ExasolDataSource dataSource,
-			ResultSet dbResult)
+			ResultSet dbResult) 
 	{
-		super(dataSource, dbResult);
 		this.adminOption = JDBCUtils.safeGetBoolean(dbResult, "ADMIN_OPTION");
+		this.connection = JDBCUtils.safeGetString(dbResult, "CONNECTION_NAME");
+		this.grantee = JDBCUtils.safeGetString(dbResult, "GRANTEE");
+		this.dataSource = dataSource;
+		this.isPersisted = true;
+	}
+	
+	@Property(viewable = true, order = 10)
+	public ExasolConnection getConnection() throws DBException
+	{
+		return dataSource.getConnection(VoidProgressMonitor.INSTANCE, connection);
 	}
 	
 	@Property(viewable = true, order = 90)
 	public Boolean getAdminOption()
 	{
 		return this.adminOption;
+	}
+
+	@Override
+	@Property(hidden = true)
+	public String getDescription()
+	{
+		return null;
+	}
+
+	@Override
+	public DBSObject getParentObject()
+	{
+		return dataSource.getContainer();
+	}
+
+	@Override
+	public DBPDataSource getDataSource()
+	{
+		return this.dataSource;
+	}
+
+	@Override
+	public String getName()
+	{
+		return grantee;
+	}
+
+	@Override
+	public boolean isPersisted()
+	{
+		return isPersisted;
 	}
 
 }

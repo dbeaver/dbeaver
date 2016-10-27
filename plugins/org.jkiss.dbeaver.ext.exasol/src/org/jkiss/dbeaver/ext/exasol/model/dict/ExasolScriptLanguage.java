@@ -25,7 +25,8 @@ public enum ExasolScriptLanguage implements DBPNamedObject {
 
     R("R"),
     LUA("LUA"),
-    JAVA("JAVA");
+    JAVA("Java"),
+    PYTHON("Python");
 
     private String name;
 

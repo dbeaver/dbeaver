@@ -56,8 +56,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
 
     @Override
     public DBSObjectState getObjectState() {
-        // TODO Auto-generated method stub
-        return null;
+        return DBSObjectState.NORMAL;
     }
 
 

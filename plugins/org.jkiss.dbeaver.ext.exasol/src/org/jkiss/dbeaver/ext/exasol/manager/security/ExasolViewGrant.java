@@ -18,30 +18,22 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager.security;
 
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolView;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
-public class ExasolViewGrant extends ExasolBaseTableGrant {
+public class ExasolViewGrant extends ExasolBaseObjectGrant {
 
-	private ExasolView view;
-	
-	public ExasolViewGrant(ExasolDataSource dataSource, ResultSet resultSet,
-			DBRProgressMonitor monitor, DBSObject exasolGrantee) throws DBException
+	public ExasolViewGrant(ExasolBaseObjectGrant grant) throws DBException
 	{
-		super(dataSource, resultSet, monitor, exasolGrantee);
-		this.view = super.getSchema().getView(monitor, super.getObjectName());
+		super(grant);
 	}
 	
 	@Property(viewable = true, order = 10)
-	public ExasolView getView()
+	public ExasolView getView() throws DBException
 	{
-		return this.view;
+		return super.getSchema().getView(VoidProgressMonitor.INSTANCE, super.getObjectName());
 	}
 		
 
