@@ -928,15 +928,6 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void updateRecordMode()
-    {
-        //Object state = savePresentationState();
-        //this.redrawData(false);
-        activePresentation.refreshData(true, false, false);
-        this.updateStatusMessage();
-        //restorePresentationState(state);
-    }
-
     public void updateEditControls()
     {
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
@@ -969,15 +960,11 @@ public class ResultSetViewer extends Viewer
 
             // Set cursor on new row
             if (!recordMode) {
-                activePresentation.refreshData(false, false, true);
                 this.updateFiltersText();
-                this.updateStatusMessage();
-            } else {
-                this.updateRecordMode();
             }
-        } else {
-            activePresentation.refreshData(false, false, true);
         }
+        activePresentation.refreshData(rowsChanged && recordMode, false, true);
+        this.updateStatusMessage();
     }
 
     private void createStatusBar()
@@ -1226,9 +1213,14 @@ public class ResultSetViewer extends Viewer
             }
         } else {
             if (recordMode) {
-                setStatus(CoreMessages.controls_resultset_viewer_status_row + (curRow == null ? 0 : curRow.getVisualNumber() + 1) + "/" + model.getRowCount() + getExecutionTimeMessage());
+                setStatus(
+                    CoreMessages.controls_resultset_viewer_status_row + (curRow == null ? 0 : curRow.getVisualNumber() + 1) +
+                        "/" + model.getRowCount() +
+                    (curRow == null ? getExecutionTimeMessage() : ""));
             } else {
-                setStatus(String.valueOf(model.getRowCount()) + CoreMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage());
+                setStatus(
+                    String.valueOf(model.getRowCount()) +
+                    CoreMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage());
             }
         }
     }
@@ -1273,9 +1265,6 @@ public class ResultSetViewer extends Viewer
         }
 
         this.activePresentation.refreshData(true, false, !model.isMetadataChanged());
-        if (recordMode) {
-            this.updateRecordMode();
-        }
         this.updateFiltersText();
         this.updateStatusMessage();
         this.updateEditControls();
@@ -2164,6 +2153,7 @@ public class ResultSetViewer extends Viewer
             @Override
             public void aboutToRun(IJobChangeEvent event) {
                 model.setUpdateInProgress(true);
+                model.setStatistics(null);
                 DBeaverUI.asyncExec(new Runnable() {
                     @Override
                     public void run() {
@@ -2202,15 +2192,13 @@ public class ResultSetViewer extends Viewer
                                 // Seems to be refresh
                                 // Restore original position
                                 curRow = model.getRow(focusRow);
-                                //curAttribute = model.getVisibleAttribute(0);
-                                if (recordMode) {
-                                    updateRecordMode();
-                                } else {
-                                    updateStatusMessage();
-                                }
                                 restorePresentationState(presentationState);
                             }
                             activePresentation.updateValueView();
+                            if (recordMode) {
+                                redrawData(true);
+                            }
+                            updateStatusMessage();
                             updatePanelsContent(false);
 
                             if (error == null) {
