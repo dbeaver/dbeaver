@@ -78,10 +78,8 @@ public class ExasolDataSource extends JDBCDataSource
 	private static final String GET_CURRENT_SCHEMA = "SELECT CURRENT_SCHEMA";
 	private static final String SET_CURRENT_SCHEMA = "OPEN SCHEMA \"%s\"";
 
-	private final DBSObjectCache<ExasolDataSource, ExasolSchema> schemaCache = new JDBCObjectSimpleCache<>(
-			ExasolSchema.class, "select b.object_name,owner,created,object_comment from EXA_ALL_OBJECTS b where b.object_type = 'SCHEMA' "
-					+ "union all select distinct SCHEMA_NAME as \"OBJECT_NAME\", 'SYS' as owner, cast(null as timestamp) as created, '' as \"OBJECT_COMMENT\" from SYS.EXA_SYSCAT "
-					+ "order by b.object_name");
+	private DBSObjectCache<ExasolDataSource, ExasolSchema> schemaCache;
+	private DBSObjectCache<ExasolDataSource, ExasolVirtualSchema> virtualSchemaCache;
 
 	private ExasolCurrentUserPrivileges exasolCurrentUserPrivileges;
 	private DBSObjectCache<ExasolDataSource, ExasolUser> userCache = null;
@@ -125,7 +123,7 @@ public class ExasolDataSource extends JDBCDataSource
 			throws DBException
 	{
 		super.initialize(monitor);
-
+		
 		try (JDBCSession session = DBUtils.openMetaSession(monitor, this,
 				"Load data source meta info")) {
 
@@ -139,6 +137,43 @@ public class ExasolDataSource extends JDBCDataSource
 			LOG.warn("Error reading active schema", e);
 		}
 
+
+		String schemaSQL = "select b.object_name,b.owner,b.created,b.object_comment from EXA_ALL_OBJECTS b  "
+				+ "inner join EXA_SCHEMAS s on b.object_name = s.schema_name  where b.object_type = 'SCHEMA' ";
+		
+		if (exasolCurrentUserPrivileges.getatLeastV6()) {
+			
+			//additional where clause to filter virtual schemas
+			schemaSQL += " and not schema_is_virtual ";
+			
+			//build virtual schema cache for >V6 databases
+			virtualSchemaCache = new JDBCObjectSimpleCache<>(
+					ExasolVirtualSchema.class,
+					"select" + 
+					"	SCHEMA_NAME as OBJECT_NAME," + 
+					"	SCHEMA_OWNER AS OWNER," + 
+					"	ADAPTER_SCRIPT," + 
+					"	LAST_REFRESH," + 
+					"	LAST_REFRESH_BY," + 
+					"	ADAPTER_NOTES," + 
+					"	OBJECT_COMMENT," + 
+					"	CREATED" + 
+					" from" + 
+					"		EXA_VIRTUAL_SCHEMAS s" + 
+					"	INNER JOIN" + 
+					"		EXA_ALL_OBJECTS o" + 
+					"	ON" + 
+					"		o.OBJECT_NAME = s.SCHEMA_NAME AND" + 
+					"		o.OBJECT_TYPE = 'SCHEMA'"
+					);
+		}
+		
+		schemaSQL += " union all select distinct SCHEMA_NAME as \"OBJECT_NAME\", 'SYS' as owner, cast(null as timestamp) as created, '' as \"OBJECT_COMMENT\" from SYS.EXA_SYSCAT "
+				+ "order by b.object_name";
+		schemaCache = new JDBCObjectSimpleCache<>(
+				ExasolSchema.class, schemaSQL);
+		
+		
 		try {
 			this.dataTypeCache.getAllObjects(monitor, this);
 		} catch (DBException e) {
@@ -348,13 +383,18 @@ public class ExasolDataSource extends JDBCDataSource
 	public Collection<ExasolSchema> getChildren(
 			@NotNull DBRProgressMonitor monitor) throws DBException
 	{
-		return getSchemas(monitor);
+		Collection<ExasolSchema> totalList = getSchemas(monitor);
+		if (exasolCurrentUserPrivileges.getatLeastV6())
+			totalList.addAll(getVirtualSchemas(monitor));
+		return totalList;
 	}
 
 	@Override
 	public ExasolSchema getChild(@NotNull DBRProgressMonitor monitor,
 			@NotNull String childName) throws DBException
 	{
+		if (exasolCurrentUserPrivileges.getatLeastV6())
+			return getSchema(monitor, childName) != null ? getSchema(monitor,childName) : getVirtualSchema(monitor, childName);
 		return getSchema(monitor, childName);
 	}
 
@@ -439,6 +479,7 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		return schemaCache.getAllObjects(monitor, this);
 	}
+	
 
 	public ExasolSchema getSchema(DBRProgressMonitor monitor, String name)
 			throws DBException
@@ -446,6 +487,17 @@ public class ExasolDataSource extends JDBCDataSource
 		return schemaCache.getObject(monitor, this, name);
 	}
 
+	public Collection<ExasolVirtualSchema> getVirtualSchemas(DBRProgressMonitor monitor) 
+			throws DBException
+	{
+		return virtualSchemaCache.getAllObjects(monitor, this);
+	}
+	
+	public ExasolVirtualSchema getVirtualSchema(DBRProgressMonitor monitor, String name)
+			throws DBException
+	{
+		return virtualSchemaCache.getObject(monitor, this, name);
+	}
 	public Collection<ExasolUser> getUsers(DBRProgressMonitor monitor)
 			throws DBException
 	{
