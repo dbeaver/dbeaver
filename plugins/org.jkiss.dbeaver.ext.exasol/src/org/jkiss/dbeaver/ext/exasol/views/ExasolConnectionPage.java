@@ -55,7 +55,6 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
     private Text usernameText;
     private Text passwordText;
     private ClientHomesSelector homesSelector;
-    private boolean activated = false;
     private Button useBackupHostList;
     private boolean showBackupHosts = false;
     private Button encryptCommunication;
@@ -220,8 +219,6 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
                 this.encryptCommunication.setEnabled(true);
         }
 
-
-        activated = true;
     }
 
     @Override
