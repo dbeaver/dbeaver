@@ -48,6 +48,12 @@ public class SQLStatementSelect extends SQLStatementAbstract {
     }
 
     private IToken parseSelectExpression(SCMSourceScanner scanner) {
+        for (;;) {
+            IToken token = scanner.nextToken();
+            if (token.isEOF()) {
+                break;
+            }
+        }
         return null;
     }
 }

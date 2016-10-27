@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -69,27 +70,19 @@ public class ExasolPlanAnalyser implements DBCPlan {
                 connection.setAutoCommit(false);
 
             //alter session
-            try (JDBCPreparedStatement stmt = connection.prepareStatement("ALTER SESSION SET PROFILE = 'ON'")) {
-            	stmt.execute();
-            }
+            JDBCUtils.executeSQL(connection, "ALTER SESSION SET PROFILE = 'ON'");
 
             //execute query
-            try (JDBCPreparedStatement stmt = connection.prepareStatement(query)) {
-            	stmt.execute();
-            }
+            JDBCUtils.executeSQL(connection, query);
 
             //alter session
-            try (JDBCPreparedStatement stmt = connection.prepareStatement("ALTER SESSION SET PROFILE = 'OFF'")) {
-            	stmt.execute();
-            }
+            JDBCUtils.executeSQL(connection, "ALTER SESSION SET PROFILE = 'OFF'");
 
             //rollback in case of DML
             connection.rollback();
 
             //alter session
-            try (JDBCPreparedStatement stmt = connection.prepareStatement("FLUSH STATISTICS")) {
-            	stmt.execute();
-            }
+            JDBCUtils.executeSQL(connection, "FLUSH STATISTICS");
             connection.commit();
 
             //retrieve execute info
