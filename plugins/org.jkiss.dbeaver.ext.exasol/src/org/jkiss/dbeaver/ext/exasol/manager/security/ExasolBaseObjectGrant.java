@@ -23,15 +23,13 @@ import java.sql.ResultSet;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-public abstract class ExasolBaseTableGrant implements DBAPrivilege  {
+public class ExasolBaseObjectGrant implements DBAPrivilege  {
 	
 	
 	private ExasolDataSource dataSource;
@@ -45,14 +43,22 @@ public abstract class ExasolBaseTableGrant implements DBAPrivilege  {
 	private Boolean isPersted;
 	private ExasolSchema schema;
 	private String name;
-	private DBSObject exasolGrantee;
+	private String exasolGrantee;
+	private ExasolTableObjectType type;
 	
-	public  ExasolBaseTableGrant(ExasolDataSource dataSource, ResultSet resultSet, DBRProgressMonitor monitor,DBSObject exasolGrantee) throws DBException
+	
+	public  ExasolBaseObjectGrant(ExasolDataSource dataSource, ResultSet resultSet) throws DBException
 	{
+		this.type = ExasolTableObjectType.valueOf(JDBCUtils.safeGetString(resultSet, "OBJECT_TYPE"));
 		this.dataSource = dataSource;
-		this.exasolGrantee = exasolGrantee;
+		this.exasolGrantee = JDBCUtils.safeGetString(resultSet, "GRANTEE") ;
 		String grants = JDBCUtils.safeGetString(resultSet, "PRIVS");
-		this.schema = dataSource.getChild(monitor, JDBCUtils.safeGetString(resultSet, "OBJECT_SCHEMA"));
+		if (type == ExasolTableObjectType.SCHEMA) 
+		{
+			this.schema = dataSource.getChild(VoidProgressMonitor.INSTANCE, JDBCUtils.safeGetString(resultSet, "OBJECT_NAME"));
+		} else {
+			this.schema = dataSource.getChild(VoidProgressMonitor.INSTANCE, JDBCUtils.safeGetString(resultSet, "OBJECT_SCHEMA"));
+		}
 		this.name = JDBCUtils.safeGetString(resultSet, "OBJECT_NAME");
 		
 		for(String grant: CommonUtils.splitString(grants, '|'))
@@ -74,7 +80,7 @@ public abstract class ExasolBaseTableGrant implements DBAPrivilege  {
 				selectAuth=true;
 				break;
 			case "REFERENCES":
-				alterAuth=true;
+				referencesAuth=true;
 				break;
 			case "EXECUTE":
 				executeAuth=true;
@@ -84,6 +90,29 @@ public abstract class ExasolBaseTableGrant implements DBAPrivilege  {
 		}
 		
 		this.isPersted = true;
+	}
+	
+	public ExasolBaseObjectGrant(ExasolBaseObjectGrant grant)
+	{
+		this.dataSource =  grant.getDataSource();
+		this.exasolGrantee = grant.getGrantee();
+		this.alterAuth = grant.getAlterAuth();
+		this.deleteAuth = grant.getDeleteAuth();
+		this.insertAuth = grant.getInsertAuth();
+		this.updateAuth = grant.getUpdateAuth();
+		this.executeAuth = grant.getExecuteAuth();
+		this.referencesAuth = grant.getReferencesAuth();
+		this.selectAuth = grant.getSelectAuth();
+		this.type = grant.getType();
+		this.name = grant.getObjectName();
+		this.schema = grant.getSchema();
+		this.isPersted = true;
+		
+	}
+	
+	public ExasolTableObjectType getType()
+	{
+		return this.type;
 	}
 
 
@@ -141,9 +170,8 @@ public abstract class ExasolBaseTableGrant implements DBAPrivilege  {
 
 
 	@Override
-	public DBPDataSource getDataSource()
+	public ExasolDataSource getDataSource()
 	{
-		// TODO Auto-generated method stub
 		return this.dataSource;
 	}
 
@@ -151,7 +179,7 @@ public abstract class ExasolBaseTableGrant implements DBAPrivilege  {
     @Property(hidden = true)
 	public String getName()
 	{
-		return exasolGrantee.getName();
+		return exasolGrantee;
 	}
 	
 	@Override
@@ -177,6 +205,11 @@ public abstract class ExasolBaseTableGrant implements DBAPrivilege  {
 	public ExasolDataSource getParentObject()
 	{
 		return this.dataSource;
+	}
+	
+	public String getGrantee()
+	{
+		return this.exasolGrantee;
 	}
 
 }
