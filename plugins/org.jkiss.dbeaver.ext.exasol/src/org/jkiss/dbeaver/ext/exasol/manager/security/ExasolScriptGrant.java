@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ext.exasol.manager.security;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolScript;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 public class ExasolScriptGrant extends ExasolBaseObjectGrant {
