@@ -99,7 +99,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
                 break;
         }
         if (controller.isRecordMode()) {
-            refreshData(true, false);
+            refreshData(true, false, false);
         } else {
             getControl().redraw();
         }

@@ -55,7 +55,13 @@ public interface IResultSetPresentation {
 
     Control getControl();
 
-    void refreshData(boolean refreshMetadata, boolean append);
+    /**
+     * Refreshes data
+     * @param refreshMetadata    true if contents structure should be reloaded
+     * @param append             appends data
+     * @param keepState          commands to keep current presentation state even if refreshMetadata is true (usually this means data refresh/reorder).
+     */
+    void refreshData(boolean refreshMetadata, boolean append, boolean keepState);
 
     /**
      * Called after results refresh
