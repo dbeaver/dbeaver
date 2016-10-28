@@ -1138,11 +1138,13 @@ public class ResultSetViewer extends Viewer
 
     private void setNewState(DBSDataContainer dataContainer, @Nullable DBDDataFilter dataFilter) {
         // Create filter copy to avoid modifications
-        dataFilter = new DBDDataFilter(dataFilter);
+        dataFilter = dataFilter == null ? null : new DBDDataFilter(dataFilter);
         // Search in history
         for (int i = 0; i < stateHistory.size(); i++) {
             HistoryStateItem item = stateHistory.get(i);
-            if (item.dataContainer == dataContainer && item.filter != null && item.filter.equalFilters(dataFilter)) {
+            if (item.dataContainer == dataContainer &&
+                (item.filter == dataFilter || (item.filter != null && dataFilter != null && item.filter.equalFilters(dataFilter))))
+            {
                 item.filter = dataFilter; // Update data filter - it may contain some orderings
                 curState = item;
                 historyPosition = i;
@@ -2061,7 +2063,7 @@ public class ResultSetViewer extends Viewer
             if (curRow != null && curRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
                 segmentSize = (curRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
-            return runDataPump(dataContainer, null, 0, segmentSize, curRow == null ? 0 : curRow.getRowNumber(), false, onSuccess);
+            return runDataPump(dataContainer, model.getDataFilter(), 0, segmentSize, curRow == null ? 0 : curRow.getRowNumber(), false, onSuccess);
         } else {
             return false;
         }
@@ -2079,7 +2081,7 @@ public class ResultSetViewer extends Viewer
 
             runDataPump(
                 dataContainer,
-                null,
+                model.getDataFilter(),
                 model.getRowCount(),
                 getSegmentMaxRows(),
                 -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
@@ -2109,7 +2111,7 @@ public class ResultSetViewer extends Viewer
 
             runDataPump(
                 dataContainer,
-                null,
+                model.getDataFilter(),
                 model.getRowCount(),
                 -1,
                 curRow == null ? -1 : curRow.getRowNumber(),
@@ -2140,8 +2142,6 @@ public class ResultSetViewer extends Viewer
             return false;
         }
         // Read data
-        final DBDDataFilter useDataFilter = dataFilter != null ? dataFilter :
-            (dataContainer == getDataContainer() ? model.getDataFilter() : null);
         Composite progressControl = viewerPanel;
         if (activePresentation.getControl() instanceof Composite) {
             progressControl = (Composite) activePresentation.getControl();
@@ -2149,7 +2149,7 @@ public class ResultSetViewer extends Viewer
         final Object presentationState = savePresentationState();
         dataPumpJob = new ResultSetDataPumpJob(
             dataContainer,
-            useDataFilter,
+            dataFilter,
             this,
             getExecutionContext(),
             progressControl);
@@ -2199,21 +2199,18 @@ public class ResultSetViewer extends Viewer
                                 restorePresentationState(presentationState);
                             }
                             activePresentation.updateValueView();
-                            if (recordMode) {
-                                redrawData(true);
-                            }
-                            updateStatusMessage();
                             updatePanelsContent(false);
 
                             if (saveHistory && error == null) {
-                                setNewState(dataContainer, useDataFilter);
+                                setNewState(dataContainer, dataFilter);
                             }
 
                             model.setUpdateInProgress(false);
-                            if (error == null && useDataFilter != null) {
-                                model.updateDataFilter(useDataFilter);
+                            if (dataFilter != null) {
+                                model.updateDataFilter(dataFilter);
                                 //activePresentation.refreshData(true, false);
                             }
+                            activePresentation.refreshData(true, false, true);
                             updateFiltersText(error == null);
                             updateToolbar();
                             fireResultSetLoad();
