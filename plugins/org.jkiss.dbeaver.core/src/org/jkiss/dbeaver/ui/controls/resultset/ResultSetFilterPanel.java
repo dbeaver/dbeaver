@@ -873,7 +873,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 @Override
                 public void mouseUp(MouseEvent e) {
                     if (!viewer.isRefreshInProgress() && e.x > 8) {
-                        viewer.refresh();
+                        viewer.refreshData(null);
                         redraw();
                     }
                 }
