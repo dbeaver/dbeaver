@@ -81,7 +81,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     public static final int MIN_FILTER_TEXT_HEIGHT = 20;
     public static final int MAX_HISTORY_PANEL_HEIGHT = 200;
 
-    private static final String DEFAULT_QUERY_TEXT = "<empty>";
+    private static final String DEFAULT_QUERY_TEXT = "SQL";
 
     private final ResultSetViewer viewer;
     private final ActiveObjectPanel activeObjectPanel;
@@ -162,12 +162,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     final boolean supportsDataFilter = viewer.supportsDataFilter();
                     if (!supportsDataFilter || (filtersText.isEnabled() && filtersText.getCharCount() == 0)) {
                         e.gc.setForeground(shadowColor);
-                        e.gc.setBackground(filtersText.getBackground());
                         e.gc.setFont(hintFont);
                         e.gc.drawText(supportsDataFilter ?
                             "Enter a SQL expression to filter results (use Ctrl+Space)" :
                             "Data filter is not supported",
-                            2, 0);
+                            2, 0, true);
                         e.gc.setFont(null);
                     }
                 }
@@ -499,7 +498,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
         };
         editor.setHasVerticalRuler(false);
-        editor.init(new SubEditorSite(viewer.getSite()), new StringEditorInput("SQL", getActiveQueryText(), true, GeneralUtils.getDefaultFileEncoding()));
+        editor.init(new SubEditorSite(viewer.getSite()), new StringEditorInput(DEFAULT_QUERY_TEXT, getActiveQueryText(), true, GeneralUtils.getDefaultFileEncoding()));
         editor.createPartControl(editorPH);
         editor.reloadSyntaxRules();
         StyledText textWidget = editor.getTextViewer().getTextWidget();
