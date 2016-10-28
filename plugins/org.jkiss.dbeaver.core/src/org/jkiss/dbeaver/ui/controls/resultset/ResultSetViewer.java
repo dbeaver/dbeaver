@@ -252,6 +252,7 @@ public class ResultSetViewer extends Viewer
         });
 
         changeMode(false);
+        updateFiltersText();
     }
 
     @Override
@@ -298,7 +299,7 @@ public class ResultSetViewer extends Viewer
                     }
                 }
 
-                if (container.isReadyToRun() && !model.isUpdateInProgress()) {
+                if (container.isReadyToRun() && !model.isUpdateInProgress() && model.hasData()) {
                     enableFilters = true;
                 }
             }
@@ -2195,16 +2196,15 @@ public class ResultSetViewer extends Viewer
                                 curRow = model.getRow(focusRow);
                                 restorePresentationState(presentationState);
                             }
+                            if (saveHistory && error == null) {
+                                setNewState(dataContainer, useDataFilter);
+                            }
                             activePresentation.updateValueView();
                             if (recordMode) {
                                 redrawData(true);
                             }
                             updateStatusMessage();
                             updatePanelsContent(false);
-
-                            if (saveHistory && error == null) {
-                                setNewState(dataContainer, useDataFilter);
-                            }
 
                             model.setUpdateInProgress(false);
                             if (error == null && useDataFilter != null) {
