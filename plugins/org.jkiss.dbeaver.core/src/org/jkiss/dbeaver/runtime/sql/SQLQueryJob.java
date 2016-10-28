@@ -714,9 +714,9 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         statistics = new DBCStatistics();
         if (queries.isEmpty()) {
             throw new DBCException("No queries to run");
-        } else if (queries.size() > 1) {
+        } /*else if (queries.size() > 1) {
             throw new DBCException("You can't re-run just one script query");
-        }
+        }*/
         resultSetNumber = 0;
         SQLQuery query = queries.get(0);
         session.getProgressMonitor().beginTask(CommonUtils.truncateString(query.getQuery(), 512), 1);

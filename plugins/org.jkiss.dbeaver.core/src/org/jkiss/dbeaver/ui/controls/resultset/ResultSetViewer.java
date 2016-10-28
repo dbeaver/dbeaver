@@ -281,7 +281,7 @@ public class ResultSetViewer extends Viewer
         updateFiltersText(true);
     }
 
-    private void updateFiltersText(boolean resetFilterValue)
+    public void updateFiltersText(boolean resetFilterValue)
     {
         boolean enableFilters = false;
         DBCExecutionContext context = getExecutionContext();
