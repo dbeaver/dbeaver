@@ -712,8 +712,10 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         throws DBCException
     {
         statistics = new DBCStatistics();
-        if (queries.size() != 1) {
-            throw new DBCException("Invalid state of SQL Query job");
+        if (queries.isEmpty()) {
+            throw new DBCException("No queries to run");
+        } else if (queries.size() > 1) {
+            throw new DBCException("You can't re-run just one script query");
         }
         resultSetNumber = 0;
         SQLQuery query = queries.get(0);

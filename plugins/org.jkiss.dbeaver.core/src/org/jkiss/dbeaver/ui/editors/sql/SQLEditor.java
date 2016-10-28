@@ -965,7 +965,6 @@ public class SQLEditor extends SQLEditorBase implements
                     } else {
                         rsv.setStatus(CoreMessages.editors_sql_staus_connected_to + executionContext.getDataSource().getContainer().getName() + "'"); //$NON-NLS-2$
                     }
-                    rsv.updateFiltersText();
                 }
             }
         }
@@ -1341,6 +1340,7 @@ public class SQLEditor extends SQLEditorBase implements
                         job.setFetchResultSets(true);
                     }
                     job.schedule();
+                    curJob = job;
                 }
             }
         }
@@ -1703,9 +1703,12 @@ public class SQLEditor extends SQLEditorBase implements
             // Get results window (it is possible that it was closed till that moment
             SQLQuery query = result.getStatement();
             {
+                for (QueryResultsContainer cr : queryProcessor.resultContainers) {
+                    cr.viewer.updateFiltersText();
+                }
                 // Set tab name only if we have just one resultset
                 // If query produced multiple results - leave their names as is
-                if (queryProcessor.getResultContainers().size() == 1) {
+                if (scriptMode || queryProcessor.getResultContainers().size() == 1) {
                     QueryResultsContainer results = queryProcessor.getResults(query);
                     if (results != null) {
                         CTabItem tabItem = results.tabItem;
