@@ -1510,9 +1510,9 @@ public class SQLEditor extends SQLEditorBase implements
         {
             int features = DATA_SELECT;
 
-            if (resultSetNumber == 0) {
+            //if (resultSetNumber == 0) {
                 features |= DATA_FILTER;
-            }
+            //}
             return features;
         }
 
@@ -1535,7 +1535,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setDataFilter(dataFilter);
-                job.extractData(session);
+                job.extractData(session, query);
 
                 lastGoodQuery = job.getLastGoodQuery();
 
@@ -1599,7 +1599,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public String toString() {
-            return "SQL Query / " + SQLEditor.this.getEditorInput().getName();
+            return "SQL Query / " + SQLEditor.this.getEditorInput().getName() + ": " + query;
         }
 
     }
