@@ -1265,9 +1265,6 @@ public class ResultSetViewer extends Viewer
         }
 
         this.activePresentation.refreshData(true, false, !model.isMetadataChanged());
-        this.updateFiltersText();
-        this.updateStatusMessage();
-        this.updateEditControls();
     }
 
     void appendData(List<Object[]> rows)
