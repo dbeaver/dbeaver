@@ -162,6 +162,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     final boolean supportsDataFilter = viewer.supportsDataFilter();
                     if (!supportsDataFilter || (filtersText.isEnabled() && filtersText.getCharCount() == 0)) {
                         e.gc.setForeground(shadowColor);
+                        e.gc.setBackground(filtersText.getBackground());
                         e.gc.setFont(hintFont);
                         e.gc.drawText(supportsDataFilter ?
                             "Enter a SQL expression to filter results (use Ctrl+Space)" :
