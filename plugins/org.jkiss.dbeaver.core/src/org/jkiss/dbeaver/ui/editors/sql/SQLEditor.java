@@ -1704,7 +1704,7 @@ public class SQLEditor extends SQLEditorBase implements
             SQLQuery query = result.getStatement();
             {
                 for (QueryResultsContainer cr : queryProcessor.resultContainers) {
-                    cr.viewer.updateFiltersText();
+                    cr.viewer.updateFiltersText(false);
                 }
                 // Set tab name only if we have just one resultset
                 // If query produced multiple results - leave their names as is

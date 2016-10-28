@@ -159,22 +159,23 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filtersText.addPaintListener(new PaintListener() {
                 @Override
                 public void paintControl(PaintEvent e) {
-                    final boolean supportsDataFilter = viewer.supportsDataFilter();
-                    if (!supportsDataFilter || (filtersText.isEnabled() && filtersText.getCharCount() == 0)) {
-                        e.gc.setForeground(shadowColor);
-                        e.gc.setFont(hintFont);
-                        e.gc.drawText(supportsDataFilter ?
-                            "Enter a SQL expression to filter results (use Ctrl+Space)" :
-                            "Data filter is not supported",
-                            2, 0, true);
-                        e.gc.setFont(null);
+                    /*if (viewer.getModel().hasData())*/ {
+                        final boolean supportsDataFilter = viewer.supportsDataFilter();
+                        if (!supportsDataFilter || (filtersText.isEnabled() && filtersText.getCharCount() == 0)) {
+                            e.gc.setForeground(shadowColor);
+                            e.gc.setFont(hintFont);
+                            e.gc.drawText(supportsDataFilter ?
+                                    "Enter a SQL expression to filter results (use Ctrl+Space)" :
+                                    "Data filter is not supported",
+                                2, 0, true);
+                            e.gc.setFont(null);
+                        }
                     }
                 }
             });
             this.filtersText.addModifyListener(new ModifyListener() {
                 @Override
-                public void modifyText(ModifyEvent e)
-                {
+                public void modifyText(ModifyEvent e) {
                     String filterText = filtersText.getText();
                     filtersApplyButton.setEnabled(true);
                     filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
@@ -289,7 +290,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         filterToolbar.setEnabled(enable);
         refreshPanel.setEnabled(enable);
         historyPanel.setEnabled(enable);
-        filtersText.setEditable(enable);
+        filtersText.setEditable(enable && viewer.supportsDataFilter());
+    }
+
+    private boolean isFiltersAvailable() {
+        DBSDataContainer dataContainer = viewer.getDataContainer();
+        return dataContainer != null && (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_FILTER) != 0;
     }
 
     private void redrawPanels() {
