@@ -1841,7 +1841,7 @@ public class ResultSetViewer extends Viewer
         if (newWindow) {
             openResultsInNewWindow(monitor, targetEntity, newFilter);
         } else {
-            runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), -1, null);
+            runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, null);
         }
     }
 
@@ -1886,7 +1886,7 @@ public class ResultSetViewer extends Viewer
             segmentSize = (state.rowNumber / segmentSize + 1) * segmentSize;
         }
 
-        runDataPump(state.dataContainer, state.filter, 0, segmentSize, state.rowNumber, null);
+        runDataPump(state.dataContainer, state.filter, 0, segmentSize, state.rowNumber, true, null);
     }
 
     @Override
@@ -2020,7 +2020,7 @@ public class ResultSetViewer extends Viewer
             if (oldRow != null && oldRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
                 segmentSize = (oldRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
-            runDataPump(dataContainer, null, 0, segmentSize, oldRow == null ? -1 : oldRow.getVisualNumber(), new Runnable() {
+            runDataPump(dataContainer, null, 0, segmentSize, -1, true, new Runnable() {
                 @Override
                 public void run()
                 {
@@ -2048,6 +2048,7 @@ public class ResultSetViewer extends Viewer
                 0,
                 getSegmentMaxRows(),
                 curRow == null ? -1 : curRow.getRowNumber(),
+                true,
                 null);
         }
     }
@@ -2060,7 +2061,7 @@ public class ResultSetViewer extends Viewer
             if (curRow != null && curRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
                 segmentSize = (curRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
-            return runDataPump(dataContainer, null, 0, segmentSize, curRow == null ? 0 : curRow.getRowNumber(), onSuccess);
+            return runDataPump(dataContainer, null, 0, segmentSize, curRow == null ? 0 : curRow.getRowNumber(), false, onSuccess);
         } else {
             return false;
         }
@@ -2082,6 +2083,7 @@ public class ResultSetViewer extends Viewer
                 model.getRowCount(),
                 getSegmentMaxRows(),
                 -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
+                false,
                 null);
         }
     }
@@ -2111,6 +2113,7 @@ public class ResultSetViewer extends Viewer
                 model.getRowCount(),
                 -1,
                 curRow == null ? -1 : curRow.getRowNumber(),
+                false,
                 null);
         }
     }
@@ -2129,6 +2132,7 @@ public class ResultSetViewer extends Viewer
         final int offset,
         final int maxRows,
         final int focusRow,
+        final boolean saveHistory,
         @Nullable final Runnable finalizer)
     {
         if (dataPumpJob != null) {
@@ -2201,7 +2205,7 @@ public class ResultSetViewer extends Viewer
                             updateStatusMessage();
                             updatePanelsContent(false);
 
-                            if (error == null) {
+                            if (saveHistory && error == null) {
                                 setNewState(dataContainer, useDataFilter);
                             }
 
