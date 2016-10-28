@@ -4,7 +4,7 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="teradata" class="org.jkiss.dbeaver.ext.teradata.model.TeradataMetaModel" driverClass="com.ncr.teradata.TeraDriver"/>
+        <meta id="teradata" class="org.jkiss.dbeaver.ext.teradata.model.TeradataMetaModel" driverClass="com.ncr.teradata.TeraDriver,com.teradata.jdbc.TeraDriver"/>
     </extension>
 
 </plugin>
