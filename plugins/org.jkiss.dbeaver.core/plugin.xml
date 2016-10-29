@@ -1937,7 +1937,7 @@
         <key commandId="org.jkiss.dbeaver.ui.tools.menu" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+`"/>
 
         <key commandId="org.jkiss.dbeaver.core.resultset.toggleMode" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="TAB"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.switchPresentation" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+TAB"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.switchPresentation" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+`"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.navigateLink" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+SPACE"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.filterMenu" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F11"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.first" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_LEFT"/>
