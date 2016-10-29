@@ -66,6 +66,10 @@ public class SubEditorSite implements IEditorSite {
         }
     }
 
+    public IWorkbenchPartSite getParentSite() {
+        return parentSite;
+    }
+
     @Override
     public IActionBars getActionBars()
     {
