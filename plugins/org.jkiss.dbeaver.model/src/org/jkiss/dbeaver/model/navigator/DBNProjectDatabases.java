@@ -313,6 +313,12 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                     if (enabled != null && !enabled) {
                         // Clear disabled node
                         dbmNode.clearNode(false);
+                    } else {
+                        if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getObject() instanceof DBPDataSourceContainer) {
+                            // Force reorder
+                            children = null;
+                            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, this));
+                        }
                     }
                 }
                 break;
