@@ -20,10 +20,8 @@ package org.jkiss.dbeaver.ui.data.editors;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
@@ -32,7 +30,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -44,6 +43,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -59,6 +59,8 @@ import java.util.List;
 */
 public class ContentPanelEditor extends BaseValueEditor<Control> {
 
+    public static final String PREF_TEXT_EDITOR_WORD_WRAP = "content.text.editor.word-wrap";
+
     private static final Log log = Log.getLog(ContentPanelEditor.class);
 
     private static Map<String, String> valueToManagerMap = new HashMap<>();
@@ -66,6 +68,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
     private Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers;
     private StreamValueManagerDescriptor curStreamManager;
     private IStreamValueEditor streamEditor;
+    private Control editorControl;
 
     public ContentPanelEditor(IValueController controller) {
         super(controller);
@@ -142,7 +145,8 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
             return UIUtils.createInfoLabel(editPlaceholder, "No Editor");
         }
 
-        return streamEditor.createControl(valueController);
+        editorControl = streamEditor.createControl(valueController);
+        return editorControl;
     }
 
     private void detectStreamManager(final DBDContent content) {
@@ -225,13 +229,21 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
         return valueController.getExecutionContext().getDataSource().getContainer().getId() + ":" + valueId;
     }
 
+    public static void setEditorSettings(Control control) {
+        if (control instanceof StyledText) {
+            if (ViewValuePanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP)) {
+                ((StyledText) control).setWordWrap(true);
+            }
+        }
+    }
+
     private class ContentTypeSwitchAction extends Action implements SelectionListener {
         private Menu menu;
 
         public ContentTypeSwitchAction() {
             super(null, Action.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PAGES));
-            setToolTipText("Choose content viewer");
+            setToolTipText("Content viewer settings");
         }
 
         @Override
@@ -264,6 +276,21 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
                     item.setData(manager);
                     item.addSelectionListener(this);
                 }
+                if (editorControl instanceof StyledText){
+                    new MenuItem(menu, SWT.SEPARATOR);
+                    final MenuItem wwItem = new MenuItem(menu, SWT.CHECK);
+                    wwItem.setText("Word Wrap");
+                    wwItem.setSelection(((StyledText) editorControl).getWordWrap());
+                    wwItem.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            boolean newWW = !((StyledText) editorControl).getWordWrap();
+                            wwItem.setSelection(newWW);
+                            ((StyledText) editorControl).setWordWrap(newWW);
+                            ViewValuePanel.getPanelSettings().put(PREF_TEXT_EDITOR_WORD_WRAP, newWW);
+                        }
+                    });
+                }
                 toolBar.addDisposeListener(new DisposeListener() {
                     @Override
                     public void widgetDisposed(DisposeEvent e) {
@@ -272,7 +299,9 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
                 });
             }
             for (MenuItem item : menu.getItems()) {
-                item.setSelection(item.getData() == curStreamManager);
+                if (item.getData() instanceof StreamValueManagerDescriptor) {
+                    item.setSelection(item.getData() == curStreamManager);
+                }
             }
             return menu;
         }

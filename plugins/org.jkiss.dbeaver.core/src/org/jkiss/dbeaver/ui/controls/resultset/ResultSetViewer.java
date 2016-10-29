@@ -164,8 +164,6 @@ public class ResultSetViewer extends Viewer
     private final List<HistoryStateItem> stateHistory = new ArrayList<>();
     private int historyPosition = -1;
 
-    private final IDialogSettings viewerSettings;
-
     private boolean actionsDisabled;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
@@ -177,7 +175,6 @@ public class ResultSetViewer extends Viewer
         this.container = container;
         this.dataReceiver = new ResultSetDataReceiver(this);
 
-        this.viewerSettings = UIUtils.getDialogSettings(ResultSetViewer.class.getSimpleName());
         loadPresentationSettings();
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
@@ -333,12 +330,6 @@ public class ResultSetViewer extends Viewer
             return context.getDataSource().getContainer().getPreferenceStore();
         }
         return DBeaverCore.getGlobalPreferenceStore();
-    }
-
-    @NotNull
-    @Override
-    public IDialogSettings getViewerSettings() {
-        return viewerSettings;
     }
 
     @NotNull
@@ -579,25 +570,23 @@ public class ResultSetViewer extends Viewer
     }
 
     private void loadPresentationSettings() {
-        IDialogSettings pSections = viewerSettings.getSection(SETTINGS_SECTION_PRESENTATIONS);
-        if (pSections != null) {
-            for (IDialogSettings pSection : ArrayUtils.safeArray(pSections.getSections())) {
-                String pId = pSection.getName();
-                ResultSetPresentationDescriptor presentation = ResultSetPresentationRegistry.getInstance().getPresentation(pId);
-                if (presentation == null) {
-                    log.warn("Presentation '" + pId + "' not found. ");
-                    continue;
-                }
-                PresentationSettings settings = new PresentationSettings();
-                String panelIdList = pSection.get("enabledPanelIds");
-                if (panelIdList != null) {
-                    Collections.addAll(settings.enabledPanelIds, panelIdList.split(","));
-                }
-                settings.activePanelId = pSection.get("activePanelId");
-                settings.panelRatio = pSection.getInt("panelRatio");
-                settings.panelsVisible = pSection.getBoolean("panelsVisible");
-                presentationSettings.put(presentation, settings);
+        IDialogSettings pSections = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_PRESENTATIONS);
+        for (IDialogSettings pSection : ArrayUtils.safeArray(pSections.getSections())) {
+            String pId = pSection.getName();
+            ResultSetPresentationDescriptor presentation = ResultSetPresentationRegistry.getInstance().getPresentation(pId);
+            if (presentation == null) {
+                log.warn("Presentation '" + pId + "' not found. ");
+                continue;
             }
+            PresentationSettings settings = new PresentationSettings();
+            String panelIdList = pSection.get("enabledPanelIds");
+            if (panelIdList != null) {
+                Collections.addAll(settings.enabledPanelIds, panelIdList.split(","));
+            }
+            settings.activePanelId = pSection.get("activePanelId");
+            settings.panelRatio = pSection.getInt("panelRatio");
+            settings.panelsVisible = pSection.getBoolean("panelsVisible");
+            presentationSettings.put(presentation, settings);
         }
     }
 
@@ -611,7 +600,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void savePresentationSettings() {
-        IDialogSettings pSections = UIUtils.getSettingsSection(viewerSettings, SETTINGS_SECTION_PRESENTATIONS);
+        IDialogSettings pSections = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_PRESENTATIONS);
         for (Map.Entry<ResultSetPresentationDescriptor, PresentationSettings> pEntry : presentationSettings.entrySet()) {
             if (pEntry.getKey() == null) {
                 continue;

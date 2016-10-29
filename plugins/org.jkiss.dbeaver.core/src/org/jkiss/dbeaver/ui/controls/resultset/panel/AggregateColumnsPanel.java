@@ -93,7 +93,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     @Override
     public Control createContents(final IResultSetPresentation presentation, Composite parent) {
         this.presentation = presentation;
-        this.panelSettings = UIUtils.getSettingsSection(presentation.getController().getViewerSettings(), SETTINGS_SECTION_AGGREGATE);
+        this.panelSettings = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_AGGREGATE);
 
         loadSettings();
 
