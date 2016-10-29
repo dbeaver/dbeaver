@@ -261,6 +261,10 @@ public class SQLQuery {
         }
     }
 
+    public void reset() {
+        this.query = this.originalQuery;
+    }
+
     @Override
     public String toString()
     {
