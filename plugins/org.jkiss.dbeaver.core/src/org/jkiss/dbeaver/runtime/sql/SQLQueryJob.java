@@ -708,18 +708,24 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     }
 */
 
-    public void extractData(DBCSession session)
-        throws DBCException
-    {
-        if (queries.isEmpty()) {
-            throw new DBCException("No queries to run");
-        }
-        extractData(session, queries.get(0));
-    }
-
     public void extractData(DBCSession session, SQLQuery query)
         throws DBCException
     {
+        // There are two possibilities:
+        // We are in single query mode or
+        // we are in refresh of one of script queries
+        if (queries.isEmpty()) {
+            throw new DBCException("No queries to run");
+        } else if (queries.size() == 1) {
+            // Single query mode = use the one from query list
+            query = queries.get(0);
+        } else {
+            // Script mode
+            //query.getOriginalQuery();
+        }
+        // Reset query to original. Otherwise multiple filters will corrupt it
+        query.reset();
+
         statistics = new DBCStatistics();
         resultSetNumber = 0;
         session.getProgressMonitor().beginTask(CommonUtils.truncateString(query.getQuery(), 512), 1);

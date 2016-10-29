@@ -1535,14 +1535,8 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setDataFilter(dataFilter);
-/*
-                if (query != null) {
-                    job.extractData(session, query);
-                } else {
-                    job.extractData(session);
-                }
-*/
-                job.extractData(session);
+
+                job.extractData(session, query);
 
                 lastGoodQuery = job.getLastGoodQuery();
 
