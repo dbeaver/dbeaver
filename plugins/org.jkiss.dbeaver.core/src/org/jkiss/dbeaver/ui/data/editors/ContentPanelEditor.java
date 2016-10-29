@@ -51,8 +51,8 @@ import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 /**
 * ControlPanelEditor
@@ -251,7 +251,14 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
             if (menu == null) {
                 ToolBar toolBar = toolItem.getParent();
                 menu = new Menu(toolBar);
-                for (StreamValueManagerDescriptor manager : streamManagers.keySet()) {
+                List<StreamValueManagerDescriptor> managers = new ArrayList<>(streamManagers.keySet());
+                Collections.sort(managers, new Comparator<StreamValueManagerDescriptor>() {
+                    @Override
+                    public int compare(StreamValueManagerDescriptor o1, StreamValueManagerDescriptor o2) {
+                        return o1.getLabel().compareTo(o2.getLabel());
+                    }
+                });
+                for (StreamValueManagerDescriptor manager : managers) {
                     MenuItem item = new MenuItem(menu, SWT.RADIO);
                     item.setText(manager.getLabel());
                     item.setData(manager);
