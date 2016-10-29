@@ -2069,7 +2069,7 @@
             includeInMenu="true"
             name="Script position">
             <placement gravity="0.9"/>
-            <targetClass class="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor"/>
+            <targetClass class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase"/>
         </column>
     </extension>
 
