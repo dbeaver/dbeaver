@@ -40,4 +40,14 @@ public class SQLContentAssistant extends ContentAssistant {
             }
         }
     }
+
+    @Override
+    public String showContextInformation() {
+        SQLCompletionProcessor.setLookupTemplates(true);
+        try {
+            return super.showPossibleCompletions();
+        } finally {
+            SQLCompletionProcessor.setLookupTemplates(false);
+        }
+    }
 }
