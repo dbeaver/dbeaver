@@ -58,7 +58,7 @@ public class XMLPanelEditor implements IStreamValueEditor<StyledText> {
             return new StyledText(valueController.getEditPlaceholder(), SWT.NONE);
         }
         editor.createPartControl(valueController.getEditPlaceholder());
-        return editor.getTextViewer().getTextWidget();
+        return editor.getEditorControl();
     }
 
     @Override
