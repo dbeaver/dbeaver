@@ -59,14 +59,14 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     public static final String SETTINGS_SECTION_AGGREGATE = "panel-" + PANEL_ID;
     public static final String PARAM_GROUP_BY_COLUMNS = "groupByColumns";
 
-    private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("###,###,###,###,###,##0.000");;
-    private static final DecimalFormat INTEGER_FORMAT = new DecimalFormat("###,###,###,###,###,##0");;
+    private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("###,###,###,###,###,##0.000");
+    private static final DecimalFormat INTEGER_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
 
     private IResultSetPresentation presentation;
     private Tree aggregateTable;
 
     private boolean groupByColumns;
-    private boolean runServerQueries;
+    //private boolean runServerQueries;
 
     private IDialogSettings panelSettings;
 
