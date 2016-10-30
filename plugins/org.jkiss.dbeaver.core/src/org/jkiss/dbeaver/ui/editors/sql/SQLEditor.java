@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
@@ -758,8 +759,16 @@ public class SQLEditor extends SQLEditorBase implements
         }
         try {
             if (transformer != null) {
-                for (SQLQuery query : queries) {
-                    transformer.transformQuery(query);
+                DBPDataSource dataSource = getDataSource();
+                if (dataSource instanceof SQLDataSource) {
+                    List<SQLQuery> xQueries = new ArrayList<>(queries.size());
+                    for (int i = 0; i < queries.size(); i++) {
+                        SQLQuery query = transformer.transformQuery((SQLDataSource)dataSource, queries.get(i));
+                        if (query != null) {
+                            xQueries.add(query);
+                        }
+                    }
+                    queries = xQueries;
                 }
             }
         }

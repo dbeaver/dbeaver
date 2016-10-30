@@ -261,4 +261,13 @@ public interface SQLDialect {
 
     @Nullable
     String getTestSQL();
+
+    /**
+     * Dual table name.
+     * Used to evaluate expressions, call procedures, etc.
+     * @return fully qualified table name or null if table name is not needed.
+     */
+    @Nullable
+    String getDualTableName();
+
 }
