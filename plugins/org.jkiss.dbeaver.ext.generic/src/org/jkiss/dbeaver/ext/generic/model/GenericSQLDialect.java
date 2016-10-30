@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -36,22 +37,27 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private final boolean legacySQLDialect;
     private final boolean suportsUpsert;
     private final boolean quoteReservedWords;
+    private String dualTable;
     private String testSQL;
 
     public GenericSQLDialect(GenericDataSource dataSource, JDBCDatabaseMetaData metaData)
     {
         super("Generic", metaData);
         DBPDriver driver = dataSource.getContainer().getDriver();
-        scriptDelimiter = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
-        legacySQLDialect = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_LEGACY_DIALECT));
-        suportsUpsert = dataSource.getMetaModel().supportsUpsertStatement();
-        if (suportsUpsert) {
+        this.scriptDelimiter = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
+        this.legacySQLDialect = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_LEGACY_DIALECT));
+        this.suportsUpsert = dataSource.getMetaModel().supportsUpsertStatement();
+        if (this.suportsUpsert) {
             addSQLKeyword("UPSERT");
         }
-        quoteReservedWords = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_QUOTE_RESERVED_WORDS), true);
+        this.quoteReservedWords = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_QUOTE_RESERVED_WORDS), true);
         this.testSQL = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_PING));
-        if (this.testSQL == null) {
+        if (CommonUtils.isEmpty(this.testSQL)) {
             this.testSQL = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
+        }
+        this.dualTable = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_DUAL_TABLE));
+        if (this.dualTable.isEmpty()) {
+            this.dualTable = null;
         }
     }
 
@@ -86,5 +92,11 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     @Override
     public String getTestSQL() {
         return testSQL;
+    }
+
+    @Nullable
+    @Override
+    public String getDualTableName() {
+        return dualTable;
     }
 }

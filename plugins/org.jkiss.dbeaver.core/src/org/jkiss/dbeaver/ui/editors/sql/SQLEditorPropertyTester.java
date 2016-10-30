@@ -21,6 +21,7 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -40,6 +41,7 @@ public class SQLEditorPropertyTester extends PropertyTester
     public static final String PROP_CAN_EXPLAIN = "canExplain";
     public static final String PROP_CAN_NAVIGATE = "canNavigate";
     public static final String PROP_CAN_EXPORT = "canExport";
+    public static final String PROP_HAS_SELECTION = "hasSelection";
 
     public SQLEditorPropertyTester() {
         super();
@@ -80,6 +82,10 @@ public class SQLEditorPropertyTester extends PropertyTester
             }
             case PROP_CAN_EXPORT:
                 return hasConnection && editor.hasActiveQuery();
+            case PROP_HAS_SELECTION: {
+                ISelection selection = editor.getSelectionProvider().getSelection();
+                return selection instanceof ITextSelection && ((ITextSelection) selection).getLength() > 0;
+            }
         }
         return false;
     }

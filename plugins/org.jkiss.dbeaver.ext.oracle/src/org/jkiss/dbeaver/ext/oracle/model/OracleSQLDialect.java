@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
@@ -288,5 +289,11 @@ class OracleSQLDialect extends JDBCSQLDialect {
     @Override
     public DBDBinaryFormatter getNativeBinaryFormatter() {
         return BinaryFormatterHex.INSTANCE;
+    }
+
+    @Nullable
+    @Override
+    public String getDualTableName() {
+        return "DUAL";
     }
 }

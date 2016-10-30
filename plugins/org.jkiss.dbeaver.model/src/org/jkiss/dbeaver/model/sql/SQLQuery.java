@@ -78,8 +78,13 @@ public class SQLQuery {
      * Copies query state but sets new query string.
      */
     public SQLQuery(@NotNull String query, @NotNull SQLQuery sourceQuery) {
+        this(query, sourceQuery, true);
+    }
+    public SQLQuery(@NotNull String query, @NotNull SQLQuery sourceQuery, boolean preserveOriginal) {
         this(query, sourceQuery.offset, sourceQuery.length);
-        this.originalQuery = sourceQuery.originalQuery;
+        if (preserveOriginal) {
+            this.originalQuery = sourceQuery.originalQuery;
+        }
         this.parameters = sourceQuery.parameters;
         this.data = sourceQuery.data;
     }

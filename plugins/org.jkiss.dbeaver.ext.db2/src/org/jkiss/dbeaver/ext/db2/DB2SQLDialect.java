@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.db2;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 
@@ -59,4 +60,9 @@ public class DB2SQLDialect extends JDBCSQLDialect {
         return EXEC_KEYWORDS;
     }
 
+    @Nullable
+    @Override
+    public String getDualTableName() {
+        return "SYSIBM.SYSDUMMY1";
+    }
 }
