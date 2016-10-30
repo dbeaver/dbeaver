@@ -43,7 +43,6 @@
                         </goals>
                     </execution>
 
-<!--
                     <execution>
                         <id>process-macos-info</id>
                         <phase>generate-resources</phase>
@@ -64,7 +63,6 @@
                             <goal>copy-resources</goal>
                         </goals>
                     </execution>
--->
 
                 </executions>
             </plugin>
