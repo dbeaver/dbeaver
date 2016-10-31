@@ -127,7 +127,7 @@ class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
         };
         PumpVisualizer visualizer = new PumpVisualizer();
         DBCExecutionPurpose purpose = DBCExecutionPurpose.USER;
-        if (dataFilter.hasFilters()) {
+        if (dataFilter != null && dataFilter.hasFilters()) {
             purpose = DBCExecutionPurpose.USER_FILTERED;
         }
         try (DBCSession session = getExecutionContext().openSession(
