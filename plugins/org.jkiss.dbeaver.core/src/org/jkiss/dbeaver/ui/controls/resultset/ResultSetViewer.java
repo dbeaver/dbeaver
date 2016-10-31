@@ -2222,6 +2222,7 @@ public class ResultSetViewer extends Viewer
                             model.setUpdateInProgress(false);
                             updateFiltersText(error == null);
                             updateToolbar();
+                            updateStatusMessage();
                             fireResultSetLoad();
                         } finally {
                             if (finalizer != null) {
