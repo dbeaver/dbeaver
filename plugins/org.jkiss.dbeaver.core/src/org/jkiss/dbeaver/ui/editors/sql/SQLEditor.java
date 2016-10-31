@@ -1537,7 +1537,15 @@ public class SQLEditor extends SQLEditorBase implements
                 } else {
                     queryProcessor.curDataReceiver = null;
                 }
-                if (resultSetNumber > 0) {
+                // Count number of results for this query. If > 1 then we will refresh them all at once
+                int resultCounts = 0;
+                for (QueryResultsContainer qrc : queryProcessor.resultContainers) {
+                    if (qrc.query == query) {
+                        resultCounts++;
+                    }
+                }
+
+                if (resultCounts <= 1 && resultSetNumber > 0) {
                     job.setFetchResultSetNumber(resultSetNumber);
                 } else {
                     job.setFetchResultSetNumber(-1);
@@ -1545,7 +1553,7 @@ public class SQLEditor extends SQLEditorBase implements
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setDataFilter(dataFilter);
 
-                job.extractData(session, query);
+                job.extractData(session, query, resultCounts > 1 ? 0 : resultSetNumber);
 
                 lastGoodQuery = job.getLastGoodQuery();
 

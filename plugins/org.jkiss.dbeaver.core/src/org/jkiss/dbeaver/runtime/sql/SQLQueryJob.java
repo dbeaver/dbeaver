@@ -708,7 +708,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     }
 */
 
-    public void extractData(DBCSession session, SQLQuery query)
+    public void extractData(DBCSession session, SQLQuery query, int resultNumber)
         throws DBCException
     {
         // There are two possibilities:
@@ -727,7 +727,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         query.reset();
 
         statistics = new DBCStatistics();
-        resultSetNumber = 0;
+        resultSetNumber = resultNumber;
         session.getProgressMonitor().beginTask(CommonUtils.truncateString(query.getQuery(), 512), 1);
         try {
             boolean result = executeSingleQuery(session, query, true);
