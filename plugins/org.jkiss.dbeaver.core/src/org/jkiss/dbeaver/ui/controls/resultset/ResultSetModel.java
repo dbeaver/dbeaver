@@ -789,8 +789,14 @@ public class ResultSetModel {
             filterConstraint.setOrderDescending(constraint.isOrderDescending());
             filterConstraint.setVisible(constraint.isVisible());
             filterConstraint.setVisualPosition(constraint.getVisualPosition());
-            if (!constraint.isVisible() && filterConstraint.getAttribute() instanceof DBDAttributeBinding) {
-                visibleAttributes.remove(filterConstraint.getAttribute());
+            if (filterConstraint.getAttribute() instanceof DBDAttributeBinding) {
+                if (!constraint.isVisible()) {
+                    visibleAttributes.remove(filterConstraint.getAttribute());
+                } else {
+                    if (!visibleAttributes.contains(filterConstraint.getAttribute())) {
+                        visibleAttributes.add((DBDAttributeBinding)filterConstraint.getAttribute());
+                    }
+                }
             }
         }
         // Hide pseudo attributes
