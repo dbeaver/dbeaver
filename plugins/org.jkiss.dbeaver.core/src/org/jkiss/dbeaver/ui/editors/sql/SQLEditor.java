@@ -1551,9 +1551,7 @@ public class SQLEditor extends SQLEditorBase implements
 
                 return job.getStatistics();
             } else {
-                DBCStatistics statistics = new DBCStatistics();
-                statistics.addMessage("No active query - can't read data");
-                return statistics;
+                throw new DBCException("No active query - can't read data");
             }
         }
 
