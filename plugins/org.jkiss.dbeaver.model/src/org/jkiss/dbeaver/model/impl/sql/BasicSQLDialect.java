@@ -356,6 +356,12 @@ public class BasicSQLDialect implements SQLDialect {
         return null;
     }
 
+    @Nullable
+    @Override
+    public String getDualTableName() {
+        return null;
+    }
+
     @Override
     public boolean isQuoteReservedWords() {
         return true;

@@ -164,8 +164,6 @@ public class ResultSetViewer extends Viewer
     private final List<HistoryStateItem> stateHistory = new ArrayList<>();
     private int historyPosition = -1;
 
-    private final IDialogSettings viewerSettings;
-
     private boolean actionsDisabled;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
@@ -177,7 +175,6 @@ public class ResultSetViewer extends Viewer
         this.container = container;
         this.dataReceiver = new ResultSetDataReceiver(this);
 
-        this.viewerSettings = UIUtils.getDialogSettings(ResultSetViewer.class.getSimpleName());
         loadPresentationSettings();
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
@@ -252,6 +249,7 @@ public class ResultSetViewer extends Viewer
         });
 
         changeMode(false);
+        updateFiltersText();
     }
 
     @Override
@@ -280,7 +278,7 @@ public class ResultSetViewer extends Viewer
         updateFiltersText(true);
     }
 
-    private void updateFiltersText(boolean resetFilterValue)
+    public void updateFiltersText(boolean resetFilterValue)
     {
         boolean enableFilters = false;
         DBCExecutionContext context = getExecutionContext();
@@ -298,7 +296,7 @@ public class ResultSetViewer extends Viewer
                     }
                 }
 
-                if (container.isReadyToRun() && !model.isUpdateInProgress()) {
+                if (container.isReadyToRun() && !model.isUpdateInProgress() && model.hasData()) {
                     enableFilters = true;
                 }
             }
@@ -332,12 +330,6 @@ public class ResultSetViewer extends Viewer
             return context.getDataSource().getContainer().getPreferenceStore();
         }
         return DBeaverCore.getGlobalPreferenceStore();
-    }
-
-    @NotNull
-    @Override
-    public IDialogSettings getViewerSettings() {
-        return viewerSettings;
     }
 
     @NotNull
@@ -578,25 +570,23 @@ public class ResultSetViewer extends Viewer
     }
 
     private void loadPresentationSettings() {
-        IDialogSettings pSections = viewerSettings.getSection(SETTINGS_SECTION_PRESENTATIONS);
-        if (pSections != null) {
-            for (IDialogSettings pSection : ArrayUtils.safeArray(pSections.getSections())) {
-                String pId = pSection.getName();
-                ResultSetPresentationDescriptor presentation = ResultSetPresentationRegistry.getInstance().getPresentation(pId);
-                if (presentation == null) {
-                    log.warn("Presentation '" + pId + "' not found. ");
-                    continue;
-                }
-                PresentationSettings settings = new PresentationSettings();
-                String panelIdList = pSection.get("enabledPanelIds");
-                if (panelIdList != null) {
-                    Collections.addAll(settings.enabledPanelIds, panelIdList.split(","));
-                }
-                settings.activePanelId = pSection.get("activePanelId");
-                settings.panelRatio = pSection.getInt("panelRatio");
-                settings.panelsVisible = pSection.getBoolean("panelsVisible");
-                presentationSettings.put(presentation, settings);
+        IDialogSettings pSections = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_PRESENTATIONS);
+        for (IDialogSettings pSection : ArrayUtils.safeArray(pSections.getSections())) {
+            String pId = pSection.getName();
+            ResultSetPresentationDescriptor presentation = ResultSetPresentationRegistry.getInstance().getPresentation(pId);
+            if (presentation == null) {
+                log.warn("Presentation '" + pId + "' not found. ");
+                continue;
             }
+            PresentationSettings settings = new PresentationSettings();
+            String panelIdList = pSection.get("enabledPanelIds");
+            if (panelIdList != null) {
+                Collections.addAll(settings.enabledPanelIds, panelIdList.split(","));
+            }
+            settings.activePanelId = pSection.get("activePanelId");
+            settings.panelRatio = pSection.getInt("panelRatio");
+            settings.panelsVisible = pSection.getBoolean("panelsVisible");
+            presentationSettings.put(presentation, settings);
         }
     }
 
@@ -610,7 +600,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void savePresentationSettings() {
-        IDialogSettings pSections = UIUtils.getSettingsSection(viewerSettings, SETTINGS_SECTION_PRESENTATIONS);
+        IDialogSettings pSections = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_PRESENTATIONS);
         for (Map.Entry<ResultSetPresentationDescriptor, PresentationSettings> pEntry : presentationSettings.entrySet()) {
             if (pEntry.getKey() == null) {
                 continue;
@@ -1138,13 +1128,11 @@ public class ResultSetViewer extends Viewer
 
     private void setNewState(DBSDataContainer dataContainer, @Nullable DBDDataFilter dataFilter) {
         // Create filter copy to avoid modifications
-        dataFilter = new DBDDataFilter(dataFilter == null ? model.getDataFilter() : dataFilter);
+        dataFilter = new DBDDataFilter(dataFilter);
         // Search in history
         for (int i = 0; i < stateHistory.size(); i++) {
             HistoryStateItem item = stateHistory.get(i);
-            if (item.dataContainer == dataContainer &&
-                (item.filter == dataFilter || (item.filter != null && dataFilter != null && item.filter.equalFilters(dataFilter))))
-            {
+            if (item.dataContainer == dataContainer && item.filter != null && item.filter.equalFilters(dataFilter)) {
                 item.filter = dataFilter; // Update data filter - it may contain some orderings
                 curState = item;
                 historyPosition = i;
@@ -1267,9 +1255,6 @@ public class ResultSetViewer extends Viewer
         }
 
         this.activePresentation.refreshData(true, false, !model.isMetadataChanged());
-        this.updateFiltersText();
-        this.updateStatusMessage();
-        this.updateEditControls();
     }
 
     void appendData(List<Object[]> rows)
@@ -1843,7 +1828,7 @@ public class ResultSetViewer extends Viewer
         if (newWindow) {
             openResultsInNewWindow(monitor, targetEntity, newFilter);
         } else {
-            runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, false, null);
+            runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, null);
         }
     }
 
@@ -1888,7 +1873,7 @@ public class ResultSetViewer extends Viewer
             segmentSize = (state.rowNumber / segmentSize + 1) * segmentSize;
         }
 
-        runDataPump(state.dataContainer, state.filter, 0, segmentSize, state.rowNumber, true, false, null);
+        runDataPump(state.dataContainer, state.filter, 0, segmentSize, state.rowNumber, true, null);
     }
 
     @Override
@@ -2022,7 +2007,7 @@ public class ResultSetViewer extends Viewer
             if (oldRow != null && oldRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
                 segmentSize = (oldRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
-            runDataPump(dataContainer, null, 0, segmentSize, -1, true, false, new Runnable() {
+            runDataPump(dataContainer, null, 0, segmentSize, -1, true, new Runnable() {
                 @Override
                 public void run()
                 {
@@ -2051,7 +2036,6 @@ public class ResultSetViewer extends Viewer
                 getSegmentMaxRows(),
                 curRow == null ? -1 : curRow.getRowNumber(),
                 true,
-                false,
                 null);
         }
     }
@@ -2064,7 +2048,7 @@ public class ResultSetViewer extends Viewer
             if (curRow != null && curRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
                 segmentSize = (curRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
-            return runDataPump(dataContainer, model.getDataFilter(), 0, segmentSize, curRow == null ? 0 : curRow.getRowNumber(), false, false, onSuccess);
+            return runDataPump(dataContainer, null, 0, segmentSize, curRow == null ? 0 : curRow.getRowNumber(), false, onSuccess);
         } else {
             return false;
         }
@@ -2082,12 +2066,11 @@ public class ResultSetViewer extends Viewer
 
             runDataPump(
                 dataContainer,
-                model.getDataFilter(),
+                null,
                 model.getRowCount(),
                 getSegmentMaxRows(),
                 -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
                 false,
-                true,
                 null);
         }
     }
@@ -2113,12 +2096,11 @@ public class ResultSetViewer extends Viewer
 
             runDataPump(
                 dataContainer,
-                model.getDataFilter(),
+                null,
                 model.getRowCount(),
                 -1,
                 curRow == null ? -1 : curRow.getRowNumber(),
                 false,
-                true,
                 null);
         }
     }
@@ -2138,7 +2120,6 @@ public class ResultSetViewer extends Viewer
         final int maxRows,
         final int focusRow,
         final boolean saveHistory,
-        final boolean scroll,
         @Nullable final Runnable finalizer)
     {
         if (dataPumpJob != null) {
@@ -2146,6 +2127,8 @@ public class ResultSetViewer extends Viewer
             return false;
         }
         // Read data
+        final DBDDataFilter useDataFilter = dataFilter != null ? dataFilter :
+            (dataContainer == getDataContainer() ? model.getDataFilter() : null);
         Composite progressControl = viewerPanel;
         if (activePresentation.getControl() instanceof Composite) {
             progressControl = (Composite) activePresentation.getControl();
@@ -2153,7 +2136,7 @@ public class ResultSetViewer extends Viewer
         final Object presentationState = savePresentationState();
         dataPumpJob = new ResultSetDataPumpJob(
             dataContainer,
-            dataFilter,
+            useDataFilter,
             this,
             getExecutionContext(),
             progressControl);
@@ -2202,21 +2185,21 @@ public class ResultSetViewer extends Viewer
                                 curRow = model.getRow(focusRow);
                                 restorePresentationState(presentationState);
                             }
+                            if (saveHistory && error == null) {
+                                setNewState(dataContainer, useDataFilter);
+                            }
                             activePresentation.updateValueView();
+                            if (recordMode) {
+                                redrawData(true);
+                            }
+                            updateStatusMessage();
                             updatePanelsContent(false);
 
-                            if (!scroll) {
-                                if (saveHistory && error == null) {
-                                    setNewState(dataContainer, dataFilter);
-                                }
-
-                                if (dataFilter != null) {
-                                    model.updateDataFilter(dataFilter);
-                                    //activePresentation.refreshData(true, false);
-                                }
-                                activePresentation.refreshData(true, false, true);
-                            }
                             model.setUpdateInProgress(false);
+                            if (error == null && useDataFilter != null) {
+                                model.updateDataFilter(useDataFilter);
+                                //activePresentation.refreshData(true, false);
+                            }
                             updateFiltersText(error == null);
                             updateToolbar();
                             fireResultSetLoad();

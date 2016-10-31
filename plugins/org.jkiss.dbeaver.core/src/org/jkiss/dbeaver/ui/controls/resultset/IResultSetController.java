@@ -73,9 +73,6 @@ public interface IResultSetController extends DBPContextProvider {
     DBPPreferenceStore getPreferenceStore();
 
     @NotNull
-    IDialogSettings getViewerSettings();
-
-    @NotNull
     Color getDefaultBackground();
 
     @NotNull

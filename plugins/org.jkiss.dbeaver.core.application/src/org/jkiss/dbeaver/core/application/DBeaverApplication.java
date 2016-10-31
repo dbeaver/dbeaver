@@ -357,7 +357,7 @@ public class DBeaverApplication implements IApplication {
         try {
             return new DefaultParser().parse(DBeaverCommandLine.ALL_OPTIONS, Platform.getApplicationArgs(), false);
         } catch (Exception e) {
-            log.error("Error parsing command line", e);
+            log.error("Error parsing command line: " + e.getMessage());
             return null;
         }
     }

@@ -35,6 +35,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -74,6 +75,9 @@ public class ExecuteHandler extends AbstractHandler
             case CoreCommands.CMD_EXECUTE_ROW_COUNT:
                 editor.processSQL(false, false, new CountQueryTransformer());
                 break;
+            case CoreCommands.CMD_EXECUTE_EXPRESSION:
+                editor.processSQL(false, false, new ExpressionQueryTransformer());
+                break;
             case CoreCommands.CMD_EXPLAIN_PLAN:
                 editor.explainQueryPlan();
                 break;
@@ -87,7 +91,7 @@ public class ExecuteHandler extends AbstractHandler
 
     private static class CountQueryTransformer implements SQLQueryTransformer {
         @Override
-        public void transformQuery(SQLQuery query) throws DBException {
+        public SQLQuery transformQuery(SQLDataSource dataSource, SQLQuery query) throws DBException {
             try {
                 Statement statement = CCJSqlParserUtil.parse(query.getQuery());
                 if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
@@ -99,7 +103,7 @@ public class ExecuteHandler extends AbstractHandler
                     SelectItem countItem = new SelectExpressionItem(countFunc);
                     selectItems.add(countItem);
                     select.setSelectItems(selectItems);
-                    query.setQuery(select.toString());
+                    return new SQLQuery(select.toString(), query, false);
                 } else {
                     throw new DBException("Query [" + query.getQuery() + "] can't be modified");
                 }
@@ -107,7 +111,18 @@ public class ExecuteHandler extends AbstractHandler
                 throw new DBException("Can't transform query to SELECT count(*)", e);
             }
         }
+    }
 
+    private class ExpressionQueryTransformer implements SQLQueryTransformer {
+        @Override
+        public SQLQuery transformQuery(SQLDataSource dataSource, SQLQuery query) throws DBException {
+            String dualTableName = dataSource.getSQLDialect().getDualTableName();
+            String newQuery = "SELECT " + query.getQuery();
+            if (dualTableName != null) {
+                newQuery += " FROM " + dualTableName;
+            }
+            return new SQLQuery(newQuery, query, false);
+        }
     }
 
 }

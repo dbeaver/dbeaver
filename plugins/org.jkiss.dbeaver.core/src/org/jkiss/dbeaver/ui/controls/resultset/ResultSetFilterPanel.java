@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
@@ -82,21 +81,21 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     public static final int MIN_FILTER_TEXT_HEIGHT = 20;
     public static final int MAX_HISTORY_PANEL_HEIGHT = 200;
 
-    private static final String DEFAULT_QUERY_TEXT = "<empty>";
+    private static final String DEFAULT_QUERY_TEXT = "SQL";
 
     private final ResultSetViewer viewer;
     private final ActiveObjectPanel activeObjectPanel;
     private final RefreshPanel refreshPanel;
     private final HistoryPanel historyPanel;
 
-    private StyledText filtersText;
+    private final StyledText filtersText;
 
-    private ToolItem filtersApplyButton;
-    private ToolItem filtersClearButton;
-    private ToolItem historyBackButton;
-    private ToolItem historyForwardButton;
+    private final ToolBar filterToolbar;
+    private final ToolItem filtersApplyButton;
+    private final ToolItem filtersClearButton;
+    private final ToolItem historyBackButton;
+    private final ToolItem historyForwardButton;
 
-    private ControlEnableState filtersEnableState;
     private final Composite filterComposite;
 
     private final Color hoverBgColor;
@@ -160,27 +159,26 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filtersText.addPaintListener(new PaintListener() {
                 @Override
                 public void paintControl(PaintEvent e) {
-                    final boolean supportsDataFilter = viewer.supportsDataFilter();
-                    if (!supportsDataFilter || (filtersText.isEnabled() && filtersText.getCharCount() == 0)) {
-                        e.gc.setForeground(shadowColor);
-                        e.gc.setFont(hintFont);
-                        e.gc.drawText(supportsDataFilter ?
-                            "Enter a SQL expression to filter results (use Ctrl+Space)" :
-                            "Data filter is not supported",
-                            2, 0);
-                        e.gc.setFont(null);
+                    /*if (viewer.getModel().hasData())*/ {
+                        final boolean supportsDataFilter = viewer.supportsDataFilter();
+                        if (!supportsDataFilter || (filtersText.isEnabled() && filtersText.getCharCount() == 0)) {
+                            e.gc.setForeground(shadowColor);
+                            e.gc.setFont(hintFont);
+                            e.gc.drawText(supportsDataFilter ?
+                                    "Enter a SQL expression to filter results (use Ctrl+Space)" :
+                                    "Data filter is not supported",
+                                2, 0, true);
+                            e.gc.setFont(null);
+                        }
                     }
                 }
             });
             this.filtersText.addModifyListener(new ModifyListener() {
                 @Override
-                public void modifyText(ModifyEvent e)
-                {
-                    if (filtersEnableState == null) {
-                        String filterText = filtersText.getText();
-                        filtersApplyButton.setEnabled(true);
-                        filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
-                    }
+                public void modifyText(ModifyEvent e) {
+                    String filterText = filtersText.getText();
+                    filtersApplyButton.setEnabled(true);
+                    filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
                 }
             });
             this.filtersText.addKeyListener(new KeyAdapter() {
@@ -199,7 +197,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         UIUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.filtersText);
 
         {
-            ToolBar filterToolbar = new ToolBar(this, SWT.HORIZONTAL | SWT.RIGHT);
+            filterToolbar = new ToolBar(this, SWT.HORIZONTAL | SWT.RIGHT);
 
             filtersApplyButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersApplyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_APPLY));
@@ -272,7 +270,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
         });
 
-        filtersEnableState = ControlEnableState.disable(this);
+        enablePanelControls(false);
 
         this.addDisposeListener(new DisposeListener() {
             @Override
@@ -286,6 +284,18 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
         });
 
+    }
+
+    private void enablePanelControls(boolean enable) {
+        filterToolbar.setEnabled(enable);
+        refreshPanel.setEnabled(enable);
+        historyPanel.setEnabled(enable);
+        filtersText.setEditable(enable && viewer.supportsDataFilter());
+    }
+
+    private boolean isFiltersAvailable() {
+        DBSDataContainer dataContainer = viewer.getDataContainer();
+        return dataContainer != null && (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_FILTER) != 0;
     }
 
     private void redrawPanels() {
@@ -333,12 +343,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     }
 
     void enableFilters(boolean enableFilters) {
+        enablePanelControls(enableFilters);
         if (enableFilters) {
             final boolean supportsDataFilter = viewer.supportsDataFilter();
-            if (filtersEnableState != null) {
-                filtersEnableState.restore();
-                filtersEnableState = null;
-            }
             int historyPosition = viewer.getHistoryPosition();
             List<ResultSetViewer.HistoryStateItem> stateHistory = viewer.getStateHistory();
 
@@ -363,10 +370,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             } else {
                 historyForwardButton.setEnabled(false);
             }
-        } else if (filtersEnableState == null) {
-            filtersEnableState = ControlEnableState.disable(this);
         }
-        filtersText.getParent().setBackground(filtersText.getBackground());
+        filterComposite.setBackground(filtersText.getBackground());
 
         {
             String displayName = getActiveSourceQuery();
@@ -445,7 +450,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
         }
 
-        filtersText.setText(whereCondition);
+        setFilterValue(whereCondition);
     }
 
     Control getEditControl() {
@@ -453,7 +458,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     }
 
     void setFilterValue(String whereCondition) {
-        filtersText.setText(whereCondition);
+        if (whereCondition != null && !filtersText.getText().trim().equals(whereCondition.trim())) {
+            filtersText.setText(whereCondition);
+        }
     }
 
     @NotNull
@@ -497,7 +504,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
         };
         editor.setHasVerticalRuler(false);
-        editor.init(new SubEditorSite(viewer.getSite()), new StringEditorInput("SQL", getActiveQueryText(), true, GeneralUtils.getDefaultFileEncoding()));
+        editor.init(new SubEditorSite(viewer.getSite()), new StringEditorInput(DEFAULT_QUERY_TEXT, getActiveQueryText(), true, GeneralUtils.getDefaultFileEncoding()));
         editor.createPartControl(editorPH);
         editor.reloadSyntaxRules();
         StyledText textWidget = editor.getTextViewer().getTextWidget();

@@ -59,14 +59,14 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     public static final String SETTINGS_SECTION_AGGREGATE = "panel-" + PANEL_ID;
     public static final String PARAM_GROUP_BY_COLUMNS = "groupByColumns";
 
-    private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("###,###,###,###,###,##0.000");;
-    private static final DecimalFormat INTEGER_FORMAT = new DecimalFormat("###,###,###,###,###,##0");;
+    private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("###,###,###,###,###,##0.000");
+    private static final DecimalFormat INTEGER_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
 
     private IResultSetPresentation presentation;
     private Tree aggregateTable;
 
     private boolean groupByColumns;
-    private boolean runServerQueries;
+    //private boolean runServerQueries;
 
     private IDialogSettings panelSettings;
 
@@ -93,7 +93,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     @Override
     public Control createContents(final IResultSetPresentation presentation, Composite parent) {
         this.presentation = presentation;
-        this.panelSettings = UIUtils.getSettingsSection(presentation.getController().getViewerSettings(), SETTINGS_SECTION_AGGREGATE);
+        this.panelSettings = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_AGGREGATE);
 
         loadSettings();
 

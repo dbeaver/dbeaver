@@ -245,10 +245,23 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                         break;
                 }
             } else if (token.getType() == TokenType.COMMENT) {
-                Pair<String, String> mlComments = formatterCfg.getSyntaxManager().getDialect().getMultiLineComments();
-                if (mlComments != null) {
-                    if (token.getString().startsWith(mlComments.getFirst())) {
-                        index += insertReturnAndIndent(argList, index + 1, indent);
+                boolean isComment = false;
+                String[] slComments = formatterCfg.getSyntaxManager().getDialect().getSingleLineComments();
+                if (slComments != null) {
+                    for (String slc : slComments) {
+                        if (token.getString().startsWith(slc)) {
+                            index += insertReturnAndIndent(argList, index + 1, indent);
+                            isComment = true;
+                            break;
+                        }
+                    }
+                }
+                if (!isComment) {
+                    Pair<String, String> mlComments = formatterCfg.getSyntaxManager().getDialect().getMultiLineComments();
+                    if (mlComments != null) {
+                        if (token.getString().startsWith(mlComments.getFirst())) {
+                            index += insertReturnAndIndent(argList, index + 1, indent);
+                        }
                     }
                 }
             } else if (token.getType() == TokenType.COMMAND) {

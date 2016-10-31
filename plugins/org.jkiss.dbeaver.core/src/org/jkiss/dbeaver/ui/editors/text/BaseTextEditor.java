@@ -31,6 +31,7 @@ import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
@@ -115,7 +116,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
 
     @Nullable
     @Override
-    public Control getEditorControl() {
+    public StyledText getEditorControl() {
         final TextViewer textViewer = getTextViewer();
         return textViewer == null ? null : textViewer.getTextWidget();
     }
@@ -127,12 +128,16 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
 
         super.createPartControl(parent);
 
-        // TODO: investigate!!!
-        // SWT.DEL shortcut is disabled in AbstractTextEditor.createNavigationActions
-        // Dunno why (there is a weird explanations about bug closed in 2004)
-        // but it blocks DEL button in nested editors
         if (getSite() instanceof SubEditorSite) {
+            // SWT.DEL shortcut is disabled in AbstractTextEditor.createNavigationActions
+            // Dunno why (there is a weird explanations about bug closed in 2004)
+            // but it blocks DEL button in nested editors
             getTextViewer().getTextWidget().setKeyBinding(SWT.DEL, ST.DELETE_NEXT);
+
+            // Disable parent text editor key-bindings
+            // This works when text editor is embedded in another text editor (e.g. SQL editor)
+            // Commented because in fact this doesn't work. Owner editor still hooks/suppresses all extra commands
+            //UIUtils.enableHostEditorKeyBindingsSupport(((SubEditorSite) getSite()).getParentSite(), getTextViewer().getTextWidget());
         }
     }
 
