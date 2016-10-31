@@ -2039,6 +2039,10 @@ public class ResultSetViewer extends Viewer
     }
 
     public void refreshWithFilter(DBDDataFilter filter) {
+        if (!checkForChanges()) {
+            return;
+        }
+
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null) {
             runDataPump(
