@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
@@ -432,7 +433,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             // The same
             return;
         }
-        DBDDataFilter newFilter = viewer.getModel().createDataFilter();
+        DBDDataFilter newFilter = new DBDDataFilter(viewer.getModel().getDataFilter());
+        for (DBDAttributeConstraint ac : newFilter.getConstraints()) {
+            ac.setCriteria(null);
+        }
         newFilter.setWhere(condition);
         viewer.setDataFilter(newFilter, true);
         //viewer.getControl().setFocus();
