@@ -21,6 +21,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -64,6 +65,8 @@ public class ViewValuePanel implements IResultSetPanel {
     private static final Log log = Log.getLog(ViewValuePanel.class);
 
     public static final String PANEL_ID = "value-view";
+    public static final String SETTINGS_SECTION = "panel-" + PANEL_ID;
+
     private static final String VALUE_VIEW_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.panel.valueView";
 
     private IResultSetPresentation presentation;
@@ -75,6 +78,10 @@ public class ViewValuePanel implements IResultSetPanel {
 
     private volatile boolean valueSaving;
     private IValueManager valueManager;
+
+    public static IDialogSettings getPanelSettings() {
+        return ResultSetUtils.getViewerSettings(SETTINGS_SECTION);
+    }
 
     public ViewValuePanel() {
     }

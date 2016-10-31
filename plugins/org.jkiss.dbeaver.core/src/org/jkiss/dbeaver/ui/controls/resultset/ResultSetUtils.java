@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -54,6 +56,16 @@ import java.util.*;
 public class ResultSetUtils
 {
     private static final Log log = Log.getLog(ResultSetUtils.class);
+
+    private static volatile IDialogSettings viewerSettings;
+
+    @NotNull
+    public static IDialogSettings getViewerSettings(String section) {
+        if (viewerSettings == null) {
+            viewerSettings = UIUtils.getDialogSettings(ResultSetViewer.class.getSimpleName());
+        }
+        return UIUtils.getSettingsSection(viewerSettings, section);
+    }
 
     public static void bindAttributes(
         DBCSession session,

@@ -127,6 +127,9 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
+    // Last calculated client area
+    private volatile static Rectangle lastClientArea;
+
     private volatile String prevToolTip;
     private volatile ToolTipHandler toolTipHandler;
 
@@ -532,7 +535,7 @@ public abstract class LightGrid extends Canvas {
                 // So let's add a workaround for it and use column's width in this case
                 GridColumn column = getColumn(0);
                 int columnWidth = column.computeHeaderWidth();
-                int gridWidth = getSize().x - getRowHeaderWidth() - getHScrollSelectionInPixels() - getVerticalBar().getSize().x;
+                int gridWidth = getCurrentOrLastClientArea().width - getRowHeaderWidth() - getHScrollSelectionInPixels() - getVerticalBar().getSize().x;
                 if (gridWidth > columnWidth) {
                     columnWidth = gridWidth;
                 }
@@ -544,7 +547,7 @@ public abstract class LightGrid extends Canvas {
                     totalWidth += curColumn.getWidth();
                 }
                 // If grid width more than screen - lets narrow too long columns
-                int clientWidth = getClientArea().width;
+                int clientWidth = getCurrentOrLastClientArea().width;
                 if (totalWidth > clientWidth) {
                     int normalWidth = 0;
                     List<GridColumn> fatColumns = new ArrayList<>();
@@ -589,6 +592,20 @@ public abstract class LightGrid extends Canvas {
 //        if (focusPos.isValid()) {
 //            selectCell(focusPos);
 //        }
+    }
+
+    /**
+     * Returns current or last client area.
+     * If Grid controls are stacked then only the top is visible and has real client area.
+     * So we cache it - all stack has the same client area
+     */
+    private Rectangle getCurrentOrLastClientArea() {
+        Rectangle clientArea = getClientArea();
+        if (clientArea.width == 0) {
+            return lastClientArea;
+        }
+        lastClientArea = clientArea;
+        return clientArea;
     }
 
     private void createChildColumns(GridColumn parent) {

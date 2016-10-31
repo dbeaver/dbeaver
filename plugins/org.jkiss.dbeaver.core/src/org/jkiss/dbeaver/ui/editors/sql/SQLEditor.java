@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
@@ -758,8 +759,16 @@ public class SQLEditor extends SQLEditorBase implements
         }
         try {
             if (transformer != null) {
-                for (SQLQuery query : queries) {
-                    transformer.transformQuery(query);
+                DBPDataSource dataSource = getDataSource();
+                if (dataSource instanceof SQLDataSource) {
+                    List<SQLQuery> xQueries = new ArrayList<>(queries.size());
+                    for (int i = 0; i < queries.size(); i++) {
+                        SQLQuery query = transformer.transformQuery((SQLDataSource)dataSource, queries.get(i));
+                        if (query != null) {
+                            xQueries.add(query);
+                        }
+                    }
+                    queries = xQueries;
                 }
             }
         }
@@ -965,7 +974,6 @@ public class SQLEditor extends SQLEditorBase implements
                     } else {
                         rsv.setStatus(CoreMessages.editors_sql_staus_connected_to + executionContext.getDataSource().getContainer().getName() + "'"); //$NON-NLS-2$
                     }
-                    rsv.updateFiltersText();
                 }
             }
         }
@@ -1341,6 +1349,7 @@ public class SQLEditor extends SQLEditorBase implements
                         job.setFetchResultSets(true);
                     }
                     job.schedule();
+                    curJob = job;
                 }
             }
         }
@@ -1510,9 +1519,9 @@ public class SQLEditor extends SQLEditorBase implements
         {
             int features = DATA_SELECT;
 
-            if (resultSetNumber == 0) {
+            //if (resultSetNumber == 0) {
                 features |= DATA_FILTER;
-            }
+            //}
             return features;
         }
 
@@ -1535,7 +1544,8 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setDataFilter(dataFilter);
-                job.extractData(session);
+
+                job.extractData(session, query);
 
                 lastGoodQuery = job.getLastGoodQuery();
 
@@ -1599,7 +1609,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public String toString() {
-            return "SQL Query / " + SQLEditor.this.getEditorInput().getName();
+            return "SQL Query / " + SQLEditor.this.getEditorInput().getName() + ": " + query;
         }
 
     }
@@ -1703,9 +1713,12 @@ public class SQLEditor extends SQLEditorBase implements
             // Get results window (it is possible that it was closed till that moment
             SQLQuery query = result.getStatement();
             {
+                for (QueryResultsContainer cr : queryProcessor.resultContainers) {
+                    cr.viewer.updateFiltersText(false);
+                }
                 // Set tab name only if we have just one resultset
                 // If query produced multiple results - leave their names as is
-                if (queryProcessor.getResultContainers().size() == 1) {
+                if (scriptMode || queryProcessor.getResultContainers().size() == 1) {
                     QueryResultsContainer results = queryProcessor.getResults(query);
                     if (results != null) {
                         CTabItem tabItem = results.tabItem;

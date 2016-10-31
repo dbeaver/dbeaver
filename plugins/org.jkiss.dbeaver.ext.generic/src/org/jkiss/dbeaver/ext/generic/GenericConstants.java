@@ -45,6 +45,7 @@ public class GenericConstants {
     public static final String PARAM_DDL_DROP_COLUMN_SHORT = "ddl-drop-column-short";
     public static final String PARAM_LEGACY_DIALECT = "legacy-sql-dialect";
     public static final String PARAM_QUOTE_RESERVED_WORDS = "quote-reserved-words";
+    public static final String PARAM_DUAL_TABLE = "dual-table";
 
     public static final String PARAM_NATIVE_FORMAT_TIMESTAMP = "native-format-timestamp";
     public static final String PARAM_NATIVE_FORMAT_TIME = "native-format-time";

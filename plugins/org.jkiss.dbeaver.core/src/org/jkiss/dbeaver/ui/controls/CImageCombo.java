@@ -67,7 +67,6 @@ import java.util.Arrays;
 
 public class CImageCombo extends Composite {
 
-    private Composite comboComposite;
     private Label imageLabel;
     private Text text;
     private Table table;
@@ -111,42 +110,28 @@ public class CImageCombo extends Composite {
     public CImageCombo(Composite parent, int style)
     {
         super(parent, style = checkStyle(style));
-        /* This code is intentionally commented */
-        //if ((style & SWT.H_SCROLL) != 0) this.style |= SWT.H_SCROLL;
+        this.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER));
 
-/*
-        this.style |= SWT.H_SCROLL;
-
-        int textStyle = SWT.SINGLE;
-        if ((style & SWT.READ_ONLY) != 0) {
-            textStyle |= SWT.READ_ONLY;
-        }
-        if ((style & SWT.FLAT) != 0) {
-            textStyle |= SWT.FLAT;
-        }
-*/
-
-        this.comboComposite = new Composite(this, SWT.NONE);
-        this.comboComposite.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER));
-        GridLayout gridLayout = new GridLayout(2, false);
+        GridLayout gridLayout = new GridLayout(3, false);
         gridLayout.marginHeight = 0;
         gridLayout.marginWidth = 0;
         gridLayout.horizontalSpacing = 3;
-        this.comboComposite.setLayout(gridLayout);
+        this.setLayout(gridLayout);
 
-        this.imageLabel = new Label(this.comboComposite, SWT.NONE);
-        this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
+        this.imageLabel = new Label(this, SWT.NONE);
+        this.imageLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
 
-        this.text = new Text(this.comboComposite, SWT.READ_ONLY);
+        this.text = new Text(this, SWT.READ_ONLY);
         this.text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER));
 
-        this.comboComposite.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+        this.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 
         int arrowStyle = SWT.ARROW | SWT.DOWN;
         if ((style & SWT.FLAT) != 0) {
             arrowStyle |= SWT.FLAT;
         }
         this.arrow = new Button(this, arrowStyle);
+        this.arrow.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_CENTER));
 
         setEnabled(true, true);
 
@@ -238,7 +223,6 @@ public class CImageCombo extends Composite {
     public void setForeground(Color foreground)
     {
         super.setForeground(foreground);
-        this.comboComposite.setForeground(foreground);
         this.imageLabel.setForeground(foreground);
         this.text.setForeground(foreground);
         this.arrow.setForeground(foreground);
@@ -248,7 +232,6 @@ public class CImageCombo extends Composite {
     public void setBackground(Color background)
     {
         super.setBackground(background);
-        this.comboComposite.setBackground(background);
         this.imageLabel.setBackground(background);
         this.text.setBackground(background);
         this.arrow.setBackground(background);
@@ -313,7 +296,6 @@ public class CImageCombo extends Composite {
      *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
      *                                  </ul>
      * @see ModifyListener
-     * @see #removeModifyListener
      */
     public void addModifyListener(final ModifyListener listener)
     {
@@ -346,7 +328,6 @@ public class CImageCombo extends Composite {
      *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
      *                                  </ul>
      * @see SelectionListener
-     * @see #removeSelectionListener
      * @see SelectionEvent
      */
     public void addSelectionListener(final SelectionListener listener)
@@ -406,63 +387,18 @@ public class CImageCombo extends Composite {
     public Point computeSize(int wHint, int hHint, boolean changed)
     {
         checkWidget();
-        int width, height;
-        int textWidth = 0;
-        GC gc = new GC(this.comboComposite);
-        int spacer = gc.stringExtent(" ").x; //$NON-NLS-1$
-        if (this.table != null) {
-            String[] items = getStringsFromTable();
-            for (String item : items) {
-                textWidth = Math.max(gc.stringExtent(item).x, textWidth);
-            }
-        }
-        gc.dispose();
-        Point textSize = this.comboComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed);
-        Point arrowSize = this.arrow.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed);
+        Point textSize = super.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed);
         Point listSize = this.table.computeSize(wHint, SWT.DEFAULT, changed);
-        int borderWidth = getBorderWidth();
+        listSize.x += imageLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed).x;
+        listSize.x += arrow.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed).x;
+        listSize.x += 6;
 
-        height = Math.max(hHint, Math.max(textSize.y, arrowSize.y) + 2 * borderWidth);
-        width = Math.max(wHint, Math.max(textWidth + 2 * spacer + arrowSize.x + 2 * borderWidth, listSize.x));
+        int height = Math.max(hHint, textSize.y);
+        int width = Math.max(wHint, Math.max(textSize.x, listSize.x));
         if (widthHint != SWT.DEFAULT) {
             width = widthHint;
         }
         return new Point(width + 10, height);
-    }
-
-    /**
-     * Deselects the item at the given zero-relative index in the receiver's
-     * list.  If the item at the index was already deselected, it remains
-     * deselected. Indices that are out of range are ignored.
-     *
-     * @param index the index of the item to deselect
-     * @throws SWTException <ul>
-     *                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                      </ul>
-     */
-    public void deselect(int index)
-    {
-        checkWidget();
-        this.table.deselect(index);
-    }
-
-    /**
-     * Deselects all selected items in the receiver's list.
-     * <p>
-     * Note: To clear the selection in the receiver's text field,
-     * use <code>clearSelection()</code>.
-     * </p>
-     *
-     * @throws SWTException <ul>
-     *                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                      </ul>
-     */
-    public void deselectAll()
-    {
-        checkWidget();
-        this.table.deselectAll();
     }
 
     /**
@@ -505,22 +441,6 @@ public class CImageCombo extends Composite {
     {
         checkWidget();
         return this.table.getItemCount();
-    }
-
-    /**
-     * Returns the height of the area which would be used to
-     * display <em>one</em> of the items in the receiver's list.
-     *
-     * @return the height of one item
-     * @throws SWTException <ul>
-     *                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                      </ul>
-     */
-    public int getItemHeight()
-    {
-        checkWidget();
-        return this.table.getItemHeight();
     }
 
     /**
@@ -694,55 +614,6 @@ public class CImageCombo extends Composite {
     }
 
     /**
-     * Removes the listener from the collection of listeners who will
-     * be notified when the receiver's text is modified.
-     *
-     * @param listener the listener which should no longer be notified
-     * @throws IllegalArgumentException <ul>
-     *                                  <li>ERROR_NULL_ARGUMENT - if the listener is null</li>
-     *                                  </ul>
-     * @throws SWTException             <ul>
-     *                                  <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                                  </ul>
-     * @see ModifyListener
-     * @see #addModifyListener
-     */
-    public void removeModifyListener(ModifyListener listener)
-    {
-        checkWidget();
-        if (listener == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-        }
-        removeListener(SWT.Modify, listener);
-    }
-
-    /**
-     * Removes the listener from the collection of listeners who will
-     * be notified when the user changes the receiver's selection.
-     *
-     * @param listener the listener which should no longer be notified
-     * @throws IllegalArgumentException <ul>
-     *                                  <li>ERROR_NULL_ARGUMENT - if the listener is null</li>
-     *                                  </ul>
-     * @throws SWTException             <ul>
-     *                                  <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                                  </ul>
-     * @see SelectionListener
-     * @see #addSelectionListener
-     */
-    public void removeSelectionListener(SelectionListener listener)
-    {
-        checkWidget();
-        if (listener == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-        }
-        removeListener(SWT.Selection, listener);
-        removeListener(SWT.DefaultSelection, listener);
-    }
-
-    /**
      * Selects the item at the given zero-relative index in the receiver's
      * list.  If the item at the index was already selected, it remains
      * selected. Indices that are out of range are ignored.
@@ -803,7 +674,6 @@ public class CImageCombo extends Composite {
         this.font = font;
         this.text.setFont(font);
         this.table.setFont(font);
-        internalLayout(true);
     }
 
     /**
@@ -830,7 +700,7 @@ public class CImageCombo extends Composite {
     {
         checkWidget();
         if (string == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            string = "";
         }
         int index = -1;
         for (int i = 0, n = this.table.getItemCount(); i < n; i++) {
@@ -858,7 +728,6 @@ public class CImageCombo extends Composite {
         this.arrow.setToolTipText(string);
         this.imageLabel.setToolTipText(string);
         this.text.setToolTipText(string);
-        this.comboComposite.setToolTipText(string);
     }
 
     /**
@@ -883,14 +752,6 @@ public class CImageCombo extends Composite {
             return;
         }
         this.visibleItemCount = count;
-    }
-
-    public Point getSizeHint() {
-        return sizeHint;
-    }
-
-    public void setSizeHint(Point sizeHint) {
-        this.sizeHint = sizeHint;
     }
 
     void handleFocus(int type)
@@ -922,7 +783,7 @@ public class CImageCombo extends Composite {
                     return;
                 }
                 Control focusControl = getDisplay().getFocusControl();
-                if (focusControl == this.arrow || focusControl == this.table || focusControl == this.comboComposite) {
+                if (focusControl == this.arrow || focusControl == this.table || focusControl == this) {
                     return;
                 }
                 this.hasFocus = false;
@@ -1003,7 +864,7 @@ public class CImageCombo extends Composite {
         if (!drop) {
             this.popup.setVisible(false);
             if (!isDisposed() && this.arrow.isFocusControl()) {
-                this.comboComposite.setFocus();
+                this.setFocus();
             }
             return;
         }
@@ -1211,30 +1072,13 @@ public class CImageCombo extends Composite {
                 Display display = getDisplay();
                 display.removeFilter(SWT.FocusIn, this.filter);
                 this.popup = null;
-                this.comboComposite = null;
                 this.table = null;
                 this.arrow = null;
                 break;
             case SWT.Move:
                 dropDown(false);
                 break;
-            case SWT.Resize:
-                internalLayout(false);
-                break;
         }
-    }
-
-    void internalLayout(boolean changed)
-    {
-        if (isDropped()) {
-            dropDown(false);
-        }
-        Rectangle rect = getClientArea();
-        int width = rect.width;
-        int height = rect.height;
-        Point arrowSize = this.arrow.computeSize(SWT.DEFAULT, height, changed);
-        this.comboComposite.setBounds(0, 0, width - arrowSize.x, height);
-        this.arrow.setBounds(width - arrowSize.x, 0, arrowSize.x, arrowSize.y);
     }
 
     void popupEvent(Event event)
@@ -1257,38 +1101,6 @@ public class CImageCombo extends Composite {
         }
     }
 
-    Label getAssociatedLabel()
-    {
-        Control[] siblings = getParent().getChildren();
-        for (int i = 0; i < siblings.length; i++) {
-            if (siblings[i] == CImageCombo.this) {
-                if (i > 0 && siblings[i - 1] instanceof Label) {
-                    return (Label) siblings[i - 1];
-                }
-            }
-        }
-        return null;
-    }
-
-    char getMnemonic(String string)
-    {
-        int index = 0;
-        int length = string.length();
-        do {
-            while ((index < length) && (string.charAt(index) != '&')) {
-                index++;
-            }
-            if (++index >= length) {
-                return '\0';
-            }
-            if (string.charAt(index) != '&') {
-                return string.charAt(index);
-            }
-            index++;
-        } while (index < length);
-        return '\0';
-    }
-
     String[] getStringsFromTable()
     {
         String[] items = new String[this.table.getItems().length];
@@ -1296,25 +1108,6 @@ public class CImageCombo extends Composite {
             items[i] = this.table.getItem(i).getText();
         }
         return items;
-    }
-
-    String stripMnemonic(String string)
-    {
-        int index = 0;
-        int length = string.length();
-        do {
-            while ((index < length) && (string.charAt(index) != '&')) {
-                index++;
-            }
-            if (++index >= length) {
-                return string;
-            }
-            if (string.charAt(index) != '&') {
-                return string.substring(0, index - 1) + string.substring(index, length);
-            }
-            index++;
-        } while (index < length);
-        return string;
     }
 
     void textEvent(Event event)

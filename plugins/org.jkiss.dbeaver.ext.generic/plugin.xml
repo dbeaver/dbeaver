@@ -123,6 +123,7 @@
                     <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
                     <property id="query-set-active-db" label="Set active database" description="Query to change active database" type="string" required="false" defaultValue=""/>
                     <property id="ping-sql" label="PING query" description="Query to check connection state" type="string" required="false" defaultValue=""/>
+                    <property id="dual-table" label="Dual table name" description="Name of dummy 'DUAL' table which is used for expressions evaluation" type="string" required="false" defaultValue=""/>
                     <property id="active-entity-type" label="Active object type" description="Type of selectable object (schema, catalog)" type="string" required="false" defaultValue="" validValues="catalog,schema"/>
                     <property id="supports-scroll" label="Driver supports results scrolling" description="Driver supports resultset scrolling" type="boolean" required="false" defaultValue="false"/>
                     <property id="quote-reserved-words" label="Quote reserved words" description="Quote columns/table names if they conflicts with reserved SQL keywords" type="boolean" required="false" defaultValue="true"/>
@@ -452,12 +453,13 @@
                     webURL="http://db.apache.org/"
                     embedded="true"
                     description="Derby (Java DB) embedded driver">
+                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE"/>
                     <parameter name="create-url-param" value=";create=true"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
-                    <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                     <parameter name="supports-scroll" value="true"/>
-                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE"/>
+                    <parameter name="dual-table" value="SYSIBM.SYSDUMMY1"/>
                 </driver>
                 <driver
                     id="derby_server"
@@ -469,9 +471,10 @@
                     webURL="http://db.apache.org/"
                     description="Derby (Java DB) server driver">
                     <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE"/>
-                    <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                     <parameter name="supports-scroll" value="true"/>
+                    <parameter name="dual-table" value="SYSIBM.SYSDUMMY1"/>
                 </driver>
                 <driver
                     id="mimer"
