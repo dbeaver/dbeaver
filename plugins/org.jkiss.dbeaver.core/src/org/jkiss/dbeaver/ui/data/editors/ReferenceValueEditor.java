@@ -382,7 +382,7 @@ public class ReferenceValueEditor {
                             refColumn,
                             pattern,
                             precedingKeys,
-                            100);
+                            200);
                         for (DBDLabelValuePair pair : enumValues) {
                             keyValues.put(pair.getValue(), pair.getLabel());
                         }
