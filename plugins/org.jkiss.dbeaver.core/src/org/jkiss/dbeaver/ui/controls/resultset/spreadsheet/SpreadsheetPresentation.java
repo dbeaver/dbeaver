@@ -1349,9 +1349,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
             DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
             boolean odd = row.getVisualNumber() % 2 == 0;
-            if (row.background != null) {
-                return row.background;
-            }
             if (row.getState() == ResultSetRow.STATE_ADDED) {
                 return backgroundAdded;
             }
@@ -1360,6 +1357,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
             if (row.changes != null && row.changes.containsKey(attribute)) {
                 return backgroundModified;
+            }
+            if (row.background != null) {
+                return row.background;
             }
             if (attribute.getValueHandler() instanceof DBDValueHandlerComposite) {
                 return backgroundReadOnly;
