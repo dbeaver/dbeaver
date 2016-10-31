@@ -1519,9 +1519,9 @@ public class SQLEditor extends SQLEditorBase implements
         {
             int features = DATA_SELECT;
 
-            //if (resultSetNumber == 0) {
+            if (getQueryResultCounts() <= 1) {
                 features |= DATA_FILTER;
-            //}
+            }
             return features;
         }
 
@@ -1538,12 +1538,7 @@ public class SQLEditor extends SQLEditorBase implements
                     queryProcessor.curDataReceiver = null;
                 }
                 // Count number of results for this query. If > 1 then we will refresh them all at once
-                int resultCounts = 0;
-                for (QueryResultsContainer qrc : queryProcessor.resultContainers) {
-                    if (qrc.query == query) {
-                        resultCounts++;
-                    }
-                }
+                int resultCounts = getQueryResultCounts();
 
                 if (resultCounts <= 1 && resultSetNumber > 0) {
                     job.setFetchResultSetNumber(resultSetNumber);
@@ -1561,6 +1556,16 @@ public class SQLEditor extends SQLEditorBase implements
             } else {
                 throw new DBCException("No active query - can't read data");
             }
+        }
+
+        private int getQueryResultCounts() {
+            int resultCounts = 0;
+            for (QueryResultsContainer qrc : queryProcessor.resultContainers) {
+                if (qrc.query == query) {
+                    resultCounts++;
+                }
+            }
+            return resultCounts;
         }
 
         @Override
