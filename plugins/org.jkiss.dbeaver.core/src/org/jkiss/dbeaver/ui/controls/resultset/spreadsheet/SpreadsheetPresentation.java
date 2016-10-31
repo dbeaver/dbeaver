@@ -1452,7 +1452,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (element instanceof DBDAttributeBinding) {
                 DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
                 DBDAttributeConstraint constraint = controller.getModel().getDataFilter().getConstraint(attributeBinding);
-                if (constraint != null && constraint.hasFilter()) {
+                if (constraint != null && constraint.hasCondition()) {
                     return boldFont;
                 }
             }
