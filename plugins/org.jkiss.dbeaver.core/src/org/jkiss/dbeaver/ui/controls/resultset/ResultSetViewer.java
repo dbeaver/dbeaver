@@ -2199,11 +2199,14 @@ public class ResultSetViewer extends Viewer
                                     "Error executing query",
                                     "Query execution failed",
                                     error);
-                            } else if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
-                                // Seems to be refresh
-                                // Restore original position
-                                curRow = model.getRow(focusRow);
-                                restorePresentationState(presentationState);
+                            } else {
+                                updateStatusMessage();
+                                if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
+                                    // Seems to be refresh
+                                    // Restore original position
+                                    curRow = model.getRow(focusRow);
+                                    restorePresentationState(presentationState);
+                                }
                             }
                             activePresentation.updateValueView();
                             updatePanelsContent(false);
@@ -2222,7 +2225,6 @@ public class ResultSetViewer extends Viewer
                             model.setUpdateInProgress(false);
                             updateFiltersText(error == null);
                             updateToolbar();
-                            updateStatusMessage();
                             fireResultSetLoad();
                         } finally {
                             if (finalizer != null) {
