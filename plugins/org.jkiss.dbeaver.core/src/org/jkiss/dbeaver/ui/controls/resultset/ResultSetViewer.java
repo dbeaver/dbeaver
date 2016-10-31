@@ -1765,6 +1765,12 @@ public class ResultSetViewer extends Viewer
     public void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, boolean newWindow)
         throws DBException
     {
+        if (!new UIConfirmation() { @Override public Boolean runTask() { return checkForChanges(); } }
+            .confirm())
+        {
+            return;
+        }
+
         if (getExecutionContext() == null) {
             throw new DBException("Not connected");
         }
@@ -1968,14 +1974,12 @@ public class ResultSetViewer extends Viewer
         return container.getExecutionContext();
     }
 
-    @Override
-    public void refresh()
-    {
+    private boolean checkForChanges() {
         // Check if we are dirty
         if (isDirty()) {
             switch (promptToSaveOnClose()) {
                 case ISaveablePart2.CANCEL:
-                    return;
+                    return false;
                 case ISaveablePart2.YES:
                     // Apply changes
                     applyChanges(null, new ResultSetPersister.DataUpdateListener() {
@@ -1991,13 +1995,21 @@ public class ResultSetViewer extends Viewer
                             }
                         }
                     });
-                    return;
+                    return false;
                 default:
                     // Just ignore previous RS values
-                    break;
+                    return true;
             }
         }
+        return true;
+    }
 
+    @Override
+    public void refresh()
+    {
+        if (!checkForChanges()) {
+            return;
+        }
         // Pump data
         ResultSetRow oldRow = curRow;
 
@@ -2042,6 +2054,10 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public boolean refreshData(@Nullable Runnable onSuccess) {
+        if (!checkForChanges()) {
+            return false;
+        }
+
         DBSDataContainer dataContainer = getDataContainer();
         if (container.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
@@ -2193,7 +2209,7 @@ public class ResultSetViewer extends Viewer
                                 redrawData(true);
                             }
                             updateStatusMessage();
-                            updatePanelsContent(false);
+                            updatePanelsContent(true);
 
                             model.setUpdateInProgress(false);
                             if (error == null && useDataFilter != null) {

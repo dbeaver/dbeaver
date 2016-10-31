@@ -225,6 +225,9 @@ public class ViewValuePanel implements IResultSetPanel {
         if (valueSaving) {
             return;
         }
+        if (valueManager == null || valueEditor == null) {
+            forceRefresh = true;
+        }
         if (forceRefresh) {
             cleanupPanel();
             // Create a new one
@@ -320,6 +323,8 @@ public class ViewValuePanel implements IResultSetPanel {
     public void clearValue()
     {
         cleanupPanel();
+        valueManager = null;
+        valueEditor = null;
 
         presentation.getController().updateEditControls();
         viewPlaceholder.layout();
