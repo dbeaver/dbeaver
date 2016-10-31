@@ -162,6 +162,8 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                     keyPattern = (Double) keyPattern - gapSize;
                 } else if (keyPattern instanceof BigInteger) {
                     keyPattern = ((BigInteger) keyPattern).subtract(BigInteger.valueOf(gapSize));
+                } else if (keyPattern instanceof BigDecimal) {
+                    keyPattern = ((BigDecimal) keyPattern).subtract(new BigDecimal(gapSize));
                 }
             } else {
                 // not supported
@@ -224,13 +226,6 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             }
 
             if (keyPattern != null) {
-                if (keyPattern instanceof Long) {
-                    keyPattern = ((Long) keyPattern) - (maxResults / 2);
-                } else if (keyPattern instanceof Integer) {
-                    keyPattern = ((Integer) keyPattern) - (maxResults / 2);
-                } else if (keyPattern instanceof BigDecimal) {
-                    keyPattern = ((BigDecimal) keyPattern).subtract(new BigDecimal(maxResults / 2));
-                }
                 keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, keyPattern);
             }
 
