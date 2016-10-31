@@ -2173,7 +2173,7 @@ public class ResultSetViewer extends Viewer
                             }
                             final Shell shell = control.getShell();
                             if (error != null) {
-                                //setStatus(error.getMessage(), true);
+                                setStatus(error.getMessage(), true);
                                 UIUtils.showErrorDialog(
                                     shell,
                                     "Error executing query",
