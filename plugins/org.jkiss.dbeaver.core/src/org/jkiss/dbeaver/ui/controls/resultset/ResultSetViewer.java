@@ -1128,7 +1128,7 @@ public class ResultSetViewer extends Viewer
 
     private void setNewState(DBSDataContainer dataContainer, @Nullable DBDDataFilter dataFilter) {
         // Create filter copy to avoid modifications
-        dataFilter = new DBDDataFilter(dataFilter);
+        dataFilter = new DBDDataFilter(dataFilter == null ? model.getDataFilter() : dataFilter);
         // Search in history
         for (int i = 0; i < stateHistory.size(); i++) {
             HistoryStateItem item = stateHistory.get(i);
@@ -1834,7 +1834,7 @@ public class ResultSetViewer extends Viewer
         if (newWindow) {
             openResultsInNewWindow(monitor, targetEntity, newFilter);
         } else {
-            runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, null);
+            runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, false, null);
         }
     }
 
@@ -1879,7 +1879,7 @@ public class ResultSetViewer extends Viewer
             segmentSize = (state.rowNumber / segmentSize + 1) * segmentSize;
         }
 
-        runDataPump(state.dataContainer, state.filter, 0, segmentSize, state.rowNumber, true, null);
+        runDataPump(state.dataContainer, state.filter, 0, segmentSize, state.rowNumber, true, false, null);
     }
 
     @Override
@@ -2019,7 +2019,7 @@ public class ResultSetViewer extends Viewer
             if (oldRow != null && oldRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
                 segmentSize = (oldRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
-            runDataPump(dataContainer, null, 0, segmentSize, -1, true, new Runnable() {
+            runDataPump(dataContainer, null, 0, segmentSize, -1, true, false, new Runnable() {
                 @Override
                 public void run()
                 {
@@ -2048,6 +2048,7 @@ public class ResultSetViewer extends Viewer
                 getSegmentMaxRows(),
                 curRow == null ? -1 : curRow.getRowNumber(),
                 true,
+                false,
                 null);
         }
     }
@@ -2064,7 +2065,7 @@ public class ResultSetViewer extends Viewer
             if (curRow != null && curRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
                 segmentSize = (curRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
-            return runDataPump(dataContainer, null, 0, segmentSize, curRow == null ? 0 : curRow.getRowNumber(), false, onSuccess);
+            return runDataPump(dataContainer, null, 0, segmentSize, curRow == null ? 0 : curRow.getRowNumber(), false, false, onSuccess);
         } else {
             return false;
         }
@@ -2082,11 +2083,12 @@ public class ResultSetViewer extends Viewer
 
             runDataPump(
                 dataContainer,
-                null,
+                model.getDataFilter(),
                 model.getRowCount(),
                 getSegmentMaxRows(),
                 -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
                 false,
+                true,
                 null);
         }
     }
@@ -2112,11 +2114,12 @@ public class ResultSetViewer extends Viewer
 
             runDataPump(
                 dataContainer,
-                null,
+                model.getDataFilter(),
                 model.getRowCount(),
                 -1,
                 curRow == null ? -1 : curRow.getRowNumber(),
                 false,
+                true,
                 null);
         }
     }
@@ -2136,6 +2139,7 @@ public class ResultSetViewer extends Viewer
         final int maxRows,
         final int focusRow,
         final boolean saveHistory,
+        final boolean scroll,
         @Nullable final Runnable finalizer)
     {
         if (dataPumpJob != null) {
@@ -2201,22 +2205,21 @@ public class ResultSetViewer extends Viewer
                                 curRow = model.getRow(focusRow);
                                 restorePresentationState(presentationState);
                             }
-                            if (saveHistory && error == null) {
-                                setNewState(dataContainer, useDataFilter);
-                            }
                             activePresentation.updateValueView();
-                            if (recordMode) {
-                                redrawData(true);
-                            }
-                            updateStatusMessage();
-                            updatePanelsContent(true);
+                            updatePanelsContent(false);
 
-                            model.setUpdateInProgress(false);
-                            if (error == null && useDataFilter != null) {
-                                model.updateDataFilter(useDataFilter);
-                                // Update presentation to reflect filter settings
+                            if (!scroll) {
+                                if (saveHistory && error == null) {
+                                    setNewState(dataContainer, dataFilter);
+                                }
+
+                                if (dataFilter != null) {
+                                    model.updateDataFilter(dataFilter);
+                                    //activePresentation.refreshData(true, false);
+                                }
                                 activePresentation.refreshData(true, false, true);
                             }
+                            model.setUpdateInProgress(false);
                             updateFiltersText(error == null);
                             updateToolbar();
                             fireResultSetLoad();
