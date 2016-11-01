@@ -194,7 +194,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
 
     private void loadBinaryContent()
     {
-        String charset = GeneralUtils.DEFAULT_FILE_CHARSET_NAME;
+        String charset = GeneralUtils.UTF8_ENCODING;
         IEditorInput editorInput = getEditorInput();
         File systemFile = null;
         if (editorInput instanceof IPathEditorInput) {

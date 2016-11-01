@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tools.compare;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 
@@ -37,7 +38,7 @@ public class CompareReportRenderer {
     {
         this.report = report;
         this.settings = settings;
-        this.xml = new XMLBuilder(outputStream, "utf-8", true);
+        this.xml = new XMLBuilder(outputStream, GeneralUtils.UTF8_ENCODING, true);
         this.xml.setButify(true);
         xml.addContent(
             "<!DOCTYPE html \n" +

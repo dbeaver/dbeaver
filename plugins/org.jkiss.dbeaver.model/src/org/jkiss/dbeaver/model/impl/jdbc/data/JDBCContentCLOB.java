@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.CommonUtils;
 
@@ -103,7 +104,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 catch (IOException e) {
                     throw new DBCException("Can't create temp file", e);
                 }
-                try (Writer os = new OutputStreamWriter(new FileOutputStream(tempFile), ContentUtils.DEFAULT_CHARSET)) {
+                try (Writer os = new OutputStreamWriter(new FileOutputStream(tempFile), GeneralUtils.DEFAULT_ENCODING)) {
                     ContentUtils.copyStreams(clob.getCharacterStream(), contentLength, os, monitor);
                 } catch (IOException e) {
                     ContentUtils.deleteTempFile(tempFile);

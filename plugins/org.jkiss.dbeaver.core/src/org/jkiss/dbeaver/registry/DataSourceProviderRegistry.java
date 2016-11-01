@@ -180,7 +180,7 @@ public class DataSourceProviderRegistry
         File driversConfig = DBeaverActivator.getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME);
         try {
             OutputStream os = new FileOutputStream(driversConfig);
-            XMLBuilder xml = new XMLBuilder(os, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
+            XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             xml.startElement(RegistryConstants.TAG_DRIVERS);
             for (DataSourceProviderDescriptor provider : this.dataSourceProviders) {
@@ -250,7 +250,7 @@ public class DataSourceProviderRegistry
         File ctConfig = DBeaverActivator.getConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);
         try {
             OutputStream os = new FileOutputStream(ctConfig);
-            XMLBuilder xml = new XMLBuilder(os, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
+            XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             xml.startElement(RegistryConstants.TAG_TYPES);
             for (DBPConnectionType connectionType : connectionTypes.values()) {

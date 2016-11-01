@@ -113,7 +113,7 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
 /*
                     if (!CommonUtils.isEmpty(passwordEncoded)) {
                         try {
-                            password = new String(Base64.decode(passwordEncoded), ContentUtils.DEFAULT_CHARSET);
+                            password = new String(Base64.decode(passwordEncoded), ContentUtils.DEFAULT_ENCODING);
                         } catch (UnsupportedEncodingException e) {
                             // Ignore
                         }

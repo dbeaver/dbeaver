@@ -58,7 +58,6 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.resources.ResourceUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -256,7 +255,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
         String name,
         String sqlText)
     {
-        StringEditorInput sqlInput = new StringEditorInput(name, sqlText, false, ContentUtils.DEFAULT_CHARSET);
+        StringEditorInput sqlInput = new StringEditorInput(name, sqlText, false, GeneralUtils.DEFAULT_ENCODING);
         EditorUtils.setInputDataSource(sqlInput, dataSourceContainer, false);
         openSQLEditor(workbenchWindow, sqlInput);
     }

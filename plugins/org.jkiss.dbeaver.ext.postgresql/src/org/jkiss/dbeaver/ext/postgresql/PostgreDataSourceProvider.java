@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.WinRegistry;
 import org.jkiss.utils.CommonUtils;
 
@@ -46,7 +47,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         // Widely appears in MyISAM tables (joomla, etc)
         connectionsProps.put("zeroDateTimeBehavior", "convertToNull");
         // Set utf-8 as default charset
-        connectionsProps.put("characterEncoding", "utf-8");
+        connectionsProps.put("characterEncoding", GeneralUtils.UTF8_ENCODING);
         connectionsProps.put("tinyInt1isBit", "false");
     }
 

@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.*;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.security.MessageDigest;
@@ -192,7 +192,7 @@ public class EditConnectionWizard extends ConnectionWizard
             final String userPassword = dialog.getUserPassword();
             if (!CommonUtils.isEmpty(userPassword)) {
                 try {
-                    final byte[] md5hash = MessageDigest.getInstance("MD5").digest(userPassword.getBytes(ContentUtils.DEFAULT_CHARSET));
+                    final byte[] md5hash = MessageDigest.getInstance("MD5").digest(userPassword.getBytes(GeneralUtils.DEFAULT_ENCODING));
                     final String hexString = CommonUtils.toHexString(md5hash).toLowerCase(Locale.ENGLISH).trim();
                     if (hexString.equals(dataSource.getLockPasswordHash())) {
                         return true;

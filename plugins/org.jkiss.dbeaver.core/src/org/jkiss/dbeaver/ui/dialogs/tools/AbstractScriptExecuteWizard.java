@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
@@ -142,11 +143,11 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject,
     }
 
     protected String getInputCharset() {
-        return "UTF-8";
+        return GeneralUtils.UTF8_ENCODING;
     }
 
     protected String getOutputCharset() {
-        return "UTF-8";
+        return GeneralUtils.UTF8_ENCODING;
     }
 
     private class ProgressStreamReader extends InputStream {

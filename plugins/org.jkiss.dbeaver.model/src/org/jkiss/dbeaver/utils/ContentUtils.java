@@ -50,10 +50,8 @@ public class ContentUtils {
 
     private static final Log log = Log.getLog(ContentUtils.class);
 
-    public static final String DEFAULT_CHARSET = "UTF-8";
-
     static {
-        GeneralUtils.BOM_MAP.put(DEFAULT_CHARSET, new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF} );
+        GeneralUtils.BOM_MAP.put(GeneralUtils.DEFAULT_ENCODING, new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF} );
         GeneralUtils.BOM_MAP.put("UTF-16", new byte[] {(byte) 0xFE, (byte) 0xFF} );
         GeneralUtils.BOM_MAP.put("UTF-16BE", new byte[] {(byte) 0xFE, (byte) 0xFF} );
         GeneralUtils.BOM_MAP.put("UTF-16LE", new byte[] {(byte) 0xFF, (byte) 0xFE} );
@@ -278,7 +276,7 @@ public class ContentUtils {
         File file = localFile.getLocation().toFile();
         try {
             try (OutputStream outputStream = new FileOutputStream(file)) {
-                Writer writer = new OutputStreamWriter(outputStream, charset == null ? DEFAULT_CHARSET : charset);
+                Writer writer = new OutputStreamWriter(outputStream, charset == null ? GeneralUtils.DEFAULT_ENCODING : charset);
                 ContentUtils.copyStreams(reader, contentLength, writer, monitor);
                 writer.flush();
             }
@@ -313,7 +311,7 @@ public class ContentUtils {
     public static String readFileToString(File file) throws IOException
     {
         try (InputStream fileStream = new FileInputStream(file)) {
-            UnicodeReader unicodeReader = new UnicodeReader(fileStream, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
+            UnicodeReader unicodeReader = new UnicodeReader(fileStream, GeneralUtils.UTF8_ENCODING);
             StringBuilder result = new StringBuilder((int) file.length());
             char[] buffer = new char[4000];
             for (;;) {

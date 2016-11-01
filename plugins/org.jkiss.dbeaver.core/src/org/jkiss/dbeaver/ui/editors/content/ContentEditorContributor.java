@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -119,7 +119,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
 
         if (this.activeEditor != null) {
             if (encodingCombo != null && !encodingCombo.isDisposed()) {
-                String curCharset = ContentUtils.DEFAULT_CHARSET;
+                String curCharset = GeneralUtils.DEFAULT_ENCODING;
                 int charsetCount = encodingCombo.getItemCount();
                 for (int i = 0; i < charsetCount; i++) {
                     if (encodingCombo.getItem(i).equals(curCharset)) {

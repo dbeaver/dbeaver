@@ -33,7 +33,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -272,7 +271,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
                 {
                     try {
                         StringReader cr = new StringReader(document.get());
-                        ContentUtils.saveContentToFile(cr, saveFile, GeneralUtils.DEFAULT_FILE_CHARSET_NAME, monitor);
+                        ContentUtils.saveContentToFile(cr, saveFile, GeneralUtils.UTF8_ENCODING, monitor);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }

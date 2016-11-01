@@ -103,7 +103,7 @@ public class SQLQueryParameterRegistry
     {
         File storeFile = DBeaverActivator.getConfigurationFile(CONFIG_FILE_NAME);
         try (OutputStream os = new FileOutputStream(storeFile)) {
-            XMLBuilder xml = new XMLBuilder(os, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
+            XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             xml.startElement("bindings");
             for (Map.Entry<String, ParameterInfo> binding : parameterMap.entrySet()) {
