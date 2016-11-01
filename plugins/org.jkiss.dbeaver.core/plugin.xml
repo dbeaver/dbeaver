@@ -40,7 +40,6 @@
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
               base-type="org.eclipse.core.runtime.text"
-              default-charset="utf-8"
               file-extensions="sql"
               id="org.jkiss.dbeaver.sql"
               name="SQL Script"
@@ -2198,9 +2197,17 @@
               <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
            </enabledWhen>
         </page>
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.main.connectionTypes" name="Connection Types">
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.connectionTypes" name="Connection Types">
             <enabledWhen>
                 <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
+            </enabledWhen>
+        </page>
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseNavigator" id="org.jkiss.dbeaver.preferences.navigator" name="Navigator">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+                </or>
             </enabledWhen>
         </page>
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectSettings" id="org.jkiss.dbeaver.preferences.projectSettings" name="DBeaver Settings">

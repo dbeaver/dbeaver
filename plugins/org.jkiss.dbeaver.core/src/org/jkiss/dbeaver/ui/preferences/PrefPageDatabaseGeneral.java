@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
-import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -32,11 +31,10 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
  * PrefPageDatabaseGeneral
@@ -50,15 +48,10 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
     private Button longOperationsCheck;
     private Spinner longOperationsTimeout;
 
-    private Button expandOnConnectCheck;
-    private Button sortCaseInsensitiveCheck;
-    private Button groupByDriverCheck;
-    private Button editorFullName;
-    private Combo doubleClickBehavior;
-
     private Button keepEditorsOnRestart;
     private Button refreshEditorOnOpen;
     private Button syncEditorDataSourceWithNavigator;
+    private Combo defaultResourceEncoding;
 
     public PrefPageDatabaseGeneral()
     {
@@ -85,7 +78,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
 
         // Agent settings
         {
-            Group agentGroup = UIUtils.createControlGroup(composite, "Taskbar", 2, SWT.NONE, 0);
+            Group agentGroup = UIUtils.createControlGroup(composite, "Task Bar", 2, SWT.NONE, 0);
 
             longOperationsCheck = UIUtils.createCheckbox(agentGroup, "Enable long-time operations notification", false);
             longOperationsCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
@@ -112,28 +105,14 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
             syncEditorDataSourceWithNavigator.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
             syncEditorDataSourceWithNavigator.setToolTipText("Automatically sets editor (e.g. SQL editor) connection from selected navigator node.\nMakes sense if you need to change active connection/schema frequently.");
         }
-
         {
-            Group navigatorGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_navigator, 2, SWT.NONE, 0);
+            // Resources
+            Group groupResources = UIUtils.createControlGroup(composite, "Resources", 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            expandOnConnectCheck = UIUtils.createCheckbox(navigatorGroup, "Expand navigator tree on connect", false);
-            expandOnConnectCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
+            UIUtils.createControlLabel(groupResources, "Default resource encoding");
+            defaultResourceEncoding = UIUtils.createEncodingCombo(groupResources, GeneralUtils.DEFAULT_ENCODING);
+            defaultResourceEncoding.setToolTipText("Default encoding for scripts and text files. Change requires restart");
 
-            sortCaseInsensitiveCheck = UIUtils.createCheckbox(navigatorGroup, "Order elements alphabetically", false);
-            sortCaseInsensitiveCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
-
-            groupByDriverCheck = UIUtils.createCheckbox(navigatorGroup, "Group databases by driver", false);
-            groupByDriverCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
-            groupByDriverCheck.setEnabled(false);
-
-            editorFullName = UIUtils.createCheckbox(navigatorGroup, "Show full object names in editors", false);
-            editorFullName.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
-
-            doubleClickBehavior = UIUtils.createLabelCombo(navigatorGroup, "Double-click on connection", SWT.DROP_DOWN | SWT.READ_ONLY);
-            doubleClickBehavior.add("Open Properties", NavigatorViewBase.DoubleClickBehavior.EDIT.ordinal());
-            doubleClickBehavior.add("Connect / Disconnect", NavigatorViewBase.DoubleClickBehavior.CONNECT.ordinal());
-            doubleClickBehavior.add("Open SQL Editor", NavigatorViewBase.DoubleClickBehavior.SQL_EDITOR.ordinal());
-            doubleClickBehavior.add("Expand / Collapse", NavigatorViewBase.DoubleClickBehavior.EXPAND.ordinal());
         }
 
         performDefaults();
@@ -153,13 +132,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         keepEditorsOnRestart.setSelection(store.getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS));
         refreshEditorOnOpen.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN));
         syncEditorDataSourceWithNavigator.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
-
-        expandOnConnectCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT));
-        sortCaseInsensitiveCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY));
-        groupByDriverCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER));
-        editorFullName.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
-        doubleClickBehavior.select(
-            NavigatorViewBase.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK)).ordinal());
+        defaultResourceEncoding.setText(store.getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING));
     }
 
     @Override
@@ -175,23 +148,11 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         store.setValue(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, keepEditorsOnRestart.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, refreshEditorOnOpen.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, syncEditorDataSourceWithNavigator.getSelection());
-
-        store.setValue(DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT, expandOnConnectCheck.getSelection());
-        store.setValue(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY, sortCaseInsensitiveCheck.getSelection());
-        store.setValue(DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
-        store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
-        store.setValue(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK,
-            CommonUtils.fromOrdinal(NavigatorViewBase.DoubleClickBehavior.class, doubleClickBehavior.getSelectionIndex()).name());
+        store.setValue(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING, defaultResourceEncoding.getText());
 
         PrefUtils.savePreferenceStore(store);
 
         return true;
-    }
-
-    @Override
-    public void applyData(Object data)
-    {
-        super.applyData(data);
     }
 
     @Nullable
