@@ -34,6 +34,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -187,7 +188,11 @@ public class DBeaverApplication implements IApplication {
         instanceServer = DBeaverInstanceServer.startInstanceServer();
 
         // Set default resource encoding to UTF-8
-        ResourcesPlugin.getPlugin().getPluginPreferences().setValue(ResourcesPlugin.PREF_ENCODING, GeneralUtils.UTF8_ENCODING);
+        String defEncoding = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING);
+        if (CommonUtils.isEmpty(defEncoding)) {
+            defEncoding = GeneralUtils.UTF8_ENCODING;
+        }
+        ResourcesPlugin.getPlugin().getPluginPreferences().setValue(ResourcesPlugin.PREF_ENCODING, defEncoding);
 
         // Create display
         if (display == null) {
