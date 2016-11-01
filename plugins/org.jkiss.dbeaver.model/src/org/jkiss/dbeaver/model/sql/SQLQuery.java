@@ -268,6 +268,9 @@ public class SQLQuery {
 
     public void reset() {
         this.query = this.originalQuery;
+        if (this.parameters != null) {
+            setParameters(this.parameters);
+        }
     }
 
     @Override
