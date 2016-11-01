@@ -494,7 +494,11 @@ public class DataSourceDescriptor
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        this.reconnect(monitor, false);
+        if (dataSource instanceof DBPRefreshableObject) {
+            dataSource = (DBPDataSource) ((DBPRefreshableObject) dataSource).refreshObject(monitor);
+        } else {
+            this.reconnect(monitor, false);
+        }
 
         getRegistry().notifyDataSourceListeners(new DBPEvent(
             DBPEvent.Action.OBJECT_UPDATE,

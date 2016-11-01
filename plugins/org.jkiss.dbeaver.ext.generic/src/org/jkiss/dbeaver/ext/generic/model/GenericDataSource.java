@@ -530,6 +530,7 @@ public class GenericDataSource extends JDBCDataSource
         super.refreshObject(monitor);
 
         this.selectedEntityName = null;
+        this.structureContainer = null;
         this.tableTypeCache.clearCache();
         this.catalogs = null;
         this.schemas = null;
