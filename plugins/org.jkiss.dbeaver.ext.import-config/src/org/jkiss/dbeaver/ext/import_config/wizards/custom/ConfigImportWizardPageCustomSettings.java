@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.File;
 
@@ -81,7 +81,7 @@ public class ConfigImportWizardPageCustomSettings extends WizardPage {
         });
 
         UIUtils.createControlLabel(placeholder, "File encoding");
-        encodingCombo = UIUtils.createEncodingCombo(placeholder, ContentUtils.DEFAULT_CHARSET);
+        encodingCombo = UIUtils.createEncodingCombo(placeholder, GeneralUtils.DEFAULT_ENCODING);
 
 /*
         final SelectionAdapter typeListener = new SelectionAdapter() {

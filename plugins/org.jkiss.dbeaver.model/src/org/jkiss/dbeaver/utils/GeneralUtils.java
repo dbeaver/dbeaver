@@ -48,10 +48,13 @@ public class GeneralUtils {
 
     private static final Log log = Log.getLog(GeneralUtils.class);
 
-    public static final String DEFAULT_FILE_CHARSET_NAME = "UTF-8";
-    public static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
+    public static final String UTF8_ENCODING = "UTF-8";
+    public static final String DEFAULT_ENCODING = UTF8_ENCODING;
+
+    public static final Charset UTF8_CHARSET = Charset.forName(UTF8_ENCODING);
     public static final Charset DEFAULT_FILE_CHARSET = UTF8_CHARSET;
     public static final Charset ASCII_CHARSET = Charset.forName("US-ASCII");
+
     public static final String[] byteToHex = new String[256];
     public static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     static final Map<String, byte[]> BOM_MAP = new HashMap<>();
@@ -76,7 +79,7 @@ public class GeneralUtils {
      */
     public static String getDefaultFileEncoding()
     {
-        return DEFAULT_FILE_CHARSET_NAME;
+        return UTF8_ENCODING;
         //return System.getProperty("file.encoding", DEFAULT_FILE_CHARSET_NAME);
     }
 

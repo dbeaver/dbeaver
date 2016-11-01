@@ -22,11 +22,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
-import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.format.external.SQLExternalFormatter;
 import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -41,7 +40,7 @@ public class SQLFormatterConfiguration {
     private String indentString = "    ";
     private SQLSyntaxManager syntaxManager;
     @NotNull
-    private String sourceEncoding = ContentUtils.DEFAULT_CHARSET;
+    private String sourceEncoding = GeneralUtils.DEFAULT_ENCODING;
 
     public SQLFormatterConfiguration(SQLSyntaxManager syntaxManager)
     {

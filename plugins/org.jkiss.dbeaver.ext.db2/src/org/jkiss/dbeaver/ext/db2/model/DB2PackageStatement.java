@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.ResultSet;
@@ -51,7 +52,7 @@ public class DB2PackageStatement extends DB2Object<DB2Package> {
         this.text = JDBCUtils.safeGetString(resultSet, "TEXT");
         this.version = JDBCUtils.safeGetString(resultSet, "VERSION");
         try {
-            this.uniqueId = new String(JDBCUtils.safeGetBytes(resultSet, "UNIQUE_ID"), "UTF-8");
+            this.uniqueId = new String(JDBCUtils.safeGetBytes(resultSet, "UNIQUE_ID"), GeneralUtils.UTF8_ENCODING);
         } catch (UnsupportedEncodingException e) {
         }
     }

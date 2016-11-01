@@ -154,7 +154,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
                 }
             };
             try {
-                final String sqlText = ContentUtils.readToString(getClass().getResourceAsStream(FORMAT_FILE_NAME), ContentUtils.DEFAULT_CHARSET);
+                final String sqlText = ContentUtils.readToString(getClass().getResourceAsStream(FORMAT_FILE_NAME), GeneralUtils.DEFAULT_ENCODING);
                 IEditorSite subSite = new SubEditorSite(DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite());
                 StringEditorInput sqlInput = new StringEditorInput("SQL preview", sqlText, true, GeneralUtils.getDefaultFileEncoding());
                 sqlViewer.init(subSite, sqlInput);
@@ -254,7 +254,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
     private void formatSQL() {
         try {
-            final String sqlText = ContentUtils.readToString(getClass().getResourceAsStream(FORMAT_FILE_NAME), ContentUtils.DEFAULT_CHARSET);
+            final String sqlText = ContentUtils.readToString(getClass().getResourceAsStream(FORMAT_FILE_NAME), GeneralUtils.DEFAULT_ENCODING);
             sqlViewer.setInput(new StringEditorInput("SQL preview", sqlText, true, GeneralUtils.getDefaultFileEncoding()));
         } catch (Exception e) {
             log.error(e);

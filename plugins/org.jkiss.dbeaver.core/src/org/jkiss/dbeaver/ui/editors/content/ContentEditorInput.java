@@ -64,7 +64,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
     private IEditorPart defaultPart;
     private File contentFile;
     private boolean contentDetached = false;
-    private String fileCharset = ContentUtils.DEFAULT_CHARSET;
+    private String fileCharset = GeneralUtils.DEFAULT_ENCODING;
 
     public ContentEditorInput(
         IValueController valueController,

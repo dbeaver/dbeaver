@@ -152,7 +152,7 @@ public class DialogUtils {
                 try {
                     DBDContentStorage storage;
                     if (ContentUtils.isTextContent(value)) {
-                        storage = new ExternalContentStorage(DBeaverCore.getInstance(), openFile, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
+                        storage = new ExternalContentStorage(DBeaverCore.getInstance(), openFile, GeneralUtils.UTF8_ENCODING);
                     } else {
                         storage = new ExternalContentStorage(DBeaverCore.getInstance(), openFile);
                     }
@@ -191,7 +191,7 @@ public class DialogUtils {
                                 ContentUtils.saveContentToFile(
                                     cr,
                                     saveFile,
-                                    GeneralUtils.DEFAULT_FILE_CHARSET_NAME,
+                                    GeneralUtils.UTF8_ENCODING,
                                     monitor
                                 );
                             }

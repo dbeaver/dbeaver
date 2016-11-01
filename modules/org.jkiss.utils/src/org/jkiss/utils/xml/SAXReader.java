@@ -208,7 +208,6 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
         curListener = elementLayers.get(elementLayers.size() - 1);
         try {
             String value = textValue.toString();
-//			String data = value.length() == 0 ? value : new String(value.getBytes(), "UTF-8");
 
             curListener.saxText(this, value);
         } catch (Exception toCatch) {

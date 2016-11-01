@@ -140,7 +140,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
                     throw new DBException("Can't obtain file from editor input");
                 }
             }
-            String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
+            String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : GeneralUtils.UTF8_ENCODING);
 
             Charset charset = Charset.forName(encoding);
 
@@ -224,7 +224,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
 
         try {
             if (encoding == null) {
-                encoding = GeneralUtils.DEFAULT_FILE_CHARSET_NAME;
+                encoding = GeneralUtils.UTF8_ENCODING;
             }
 
             in = new BufferedReader(new InputStreamReader(contentStream, encoding), DEFAULT_BUFFER_SIZE);
