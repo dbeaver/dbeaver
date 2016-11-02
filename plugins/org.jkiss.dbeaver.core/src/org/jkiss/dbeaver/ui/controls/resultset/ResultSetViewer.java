@@ -2026,7 +2026,9 @@ public class ResultSetViewer extends Viewer
                 @Override
                 public void run()
                 {
-                    activePresentation.formatData(true);
+                    if (activePresentation.getControl() != null && !activePresentation.getControl().isDisposed()) {
+                        activePresentation.formatData(true);
+                    }
                 }
             });
         } else {
