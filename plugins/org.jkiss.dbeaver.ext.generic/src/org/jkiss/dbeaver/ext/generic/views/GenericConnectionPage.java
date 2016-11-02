@@ -465,7 +465,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             }
             final Set<String> properties = metaURL.getAvailableProperties();
             urlText.setEditable(false);
-            urlText.setBackground(urlText.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+            //urlText.setBackground(urlText.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
             showControlGroup(GROUP_HOST, properties.contains(DriverDescriptor.PROP_HOST));
             showControlGroup(GROUP_SERVER, properties.contains(DriverDescriptor.PROP_SERVER));
