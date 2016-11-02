@@ -525,7 +525,10 @@ public class ResultSetViewer extends Viewer
             DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    activePresentation.getControl().setFocus();
+                    Control control = activePresentation.getControl();
+                    if (control != null && !control.isDisposed()) {
+                        control.setFocus();
+                    }
                 }
             });
         }
