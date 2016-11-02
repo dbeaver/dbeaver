@@ -17,21 +17,23 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.Log;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -39,6 +41,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferSettings;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -194,6 +197,26 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                     }
                 }
             }
+            checkContainerConnection(runnableContext);
+        }
+    }
+
+    private void checkContainerConnection(IRunnableContext runnableContext) {
+        // If container node is datasource (this may happen if datasource do not support schemas/catalogs)
+        // then we need to check connection
+        if (containerNode instanceof DBNDataSource && containerNode.getDataSource() == null) {
+            try {
+                runnableContext.run(true, true, new IRunnableWithProgress() {
+                    @Override
+                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        containerNode.initializeNode(new DefaultProgressMonitor(monitor), null);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                UIUtils.showErrorDialog(null, "Init connection", "Error connecting to datasource", e.getTargetException());
+            } catch (InterruptedException e) {
+                // ignore
+            }
         }
     }
 
@@ -219,17 +242,16 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                 DBUtils.getObjectFullName(container, DBPEvaluationContext.UI) + " [" + container.getDataSource().getContainer().getName() + "]";
     }
 
-    public void loadNode() {
+    public void loadNode(IRunnableContext runnableContext) {
         if (containerNode == null && !CommonUtils.isEmpty(containerNodePath)) {
             if (!CommonUtils.isEmpty(containerNodePath)) {
                 try {
-                    DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
+                    runnableContext.run(true, true, new IRunnableWithProgress() {
                         @Override
-                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                        {
+                        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                             try {
                                 DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(
-                                    monitor,
+                                    new DefaultProgressMonitor(monitor),
                                     containerNodePath);
                                 if (node instanceof DBNDatabaseNode) {
                                     containerNode = (DBNDatabaseNode) node;
@@ -239,8 +261,11 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                             }
                         }
                     });
+                    checkContainerConnection(runnableContext);
                 } catch (InvocationTargetException e) {
                     log.error("Error getting container node", e.getTargetException());
+                } catch (InterruptedException e) {
+                    // ignore
                 }
             }
         }

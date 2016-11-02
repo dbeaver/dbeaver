@@ -677,7 +677,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     public void activatePage()
     {
         final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
-        settings.loadNode();
+        settings.loadNode(getContainer());
         DBNDatabaseNode containerNode = settings.getContainerNode();
         if (containerNode != null) {
             containerIcon.setImage(DBeaverIcons.getImage(containerNode.getNodeIconDefault()));
