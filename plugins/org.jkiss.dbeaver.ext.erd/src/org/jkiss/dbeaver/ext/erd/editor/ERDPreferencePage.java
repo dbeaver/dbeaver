@@ -46,6 +46,9 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.erd.general"; //$NON-NLS-1$
     private IAdaptable element;
+
+    private Button contentsShowViews;
+
     private Combo modeCombo;
     private Spinner spinnerMarginTop;
     private Spinner spinnerMarginBottom;
@@ -55,6 +58,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     private Button snapCheck;
     private Spinner spinnerGridWidth;
     private Spinner spinnerGridHeight;
+
     private List<Button> visibilityButtons = new ArrayList<>();
     private List<Button> styleButtons = new ArrayList<>();
 
@@ -65,19 +69,61 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
 
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
-        createGridGroup(store, composite);
-        createPrintGroup(store, composite);
+        createContentsGroup(store, composite);
+
         createVisibilityGroup(store, composite);
         createStyleGroup(store, composite);
 
+        createGridGroup(store, composite);
+        createPrintGroup(store, composite);
+
         return composite;
+    }
+
+    private void createContentsGroup(IPreferenceStore store, Composite composite)
+    {
+        Group contentsGroup = UIUtils.createControlGroup(composite, "Diagram contents", 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        ((GridData)contentsGroup.getLayoutData()).horizontalSpan = 2;
+        contentsShowViews = UIUtils.createCheckbox(contentsGroup, "Show views", store.getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS));
+    }
+
+    private void createVisibilityGroup(IPreferenceStore store, Composite composite)
+    {
+        ERDAttributeVisibility defaultVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
+
+        Group elemsGroup = UIUtils.createControlGroup(composite, "Attributes visibility", 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        for (ERDAttributeVisibility visibility : ERDAttributeVisibility.values()) {
+            Button radio = new Button(elemsGroup, SWT.RADIO);
+            radio.setData(visibility);
+            radio.setText(visibility.getTitle());
+            if (visibility == defaultVisibility) {
+                radio.setSelection(true);
+            }
+            visibilityButtons.add(radio);
+        }
+    }
+
+    private void createStyleGroup(IPreferenceStore store, Composite composite)
+    {
+        ERDAttributeStyle[] enabledStyles = ERDAttributeStyle.getDefaultStyles(store);
+
+        Group elemsGroup = UIUtils.createControlGroup(composite, "Attribute styles", 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        for (ERDAttributeStyle style : ERDAttributeStyle.values()) {
+            Button check = new Button(elemsGroup, SWT.CHECK);
+            check.setData(style);
+            check.setText(style.getTitle());
+            if (ArrayUtils.contains(enabledStyles, style)) {
+                check.setSelection(true);
+            }
+            styleButtons.add(check);
+        }
     }
 
     private void createGridGroup(IPreferenceStore store, Composite composite)
     {
         Group gridGroup = UIUtils.createControlGroup(composite, ERDMessages.pref_page_erd_group_grid, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-        gridCheck = UIUtils.createLabelCheckbox(gridGroup, ERDMessages.pref_page_erd_checkbox_grid_enabled, store.getBoolean(ERDConstants.PREF_GRID_ENABLED));
-        snapCheck = UIUtils.createLabelCheckbox(gridGroup, ERDMessages.pref_page_erd_checkbox_snap_to_grid, store.getBoolean(ERDConstants.PREF_GRID_SNAP_ENABLED));
+        gridCheck = UIUtils.createCheckbox(gridGroup, ERDMessages.pref_page_erd_checkbox_grid_enabled, null, store.getBoolean(ERDConstants.PREF_GRID_ENABLED), 2);
+        snapCheck = UIUtils.createCheckbox(gridGroup, ERDMessages.pref_page_erd_checkbox_snap_to_grid, null, store.getBoolean(ERDConstants.PREF_GRID_SNAP_ENABLED), 2);
 
         spinnerGridWidth = UIUtils.createLabelSpinner(gridGroup, ERDMessages.pref_page_erd_spinner_grid_width, store.getInt(ERDConstants.PREF_GRID_WIDTH), 5, Short.MAX_VALUE);
         spinnerGridHeight = UIUtils.createLabelSpinner(gridGroup, ERDMessages.pref_page_erd_spinner_grid_height, store.getInt(ERDConstants.PREF_GRID_HEIGHT), 5, Short.MAX_VALUE);
@@ -105,40 +151,6 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         spinnerMarginRight = UIUtils.createLabelSpinner(printGroup, ERDMessages.pref_page_erd_spinner_margin_right, store.getInt(ERDConstants.PREF_PRINT_MARGIN_RIGHT), 0, Short.MAX_VALUE);
     }
 
-    private void createVisibilityGroup(IPreferenceStore store, Composite composite)
-    {
-        ERDAttributeVisibility defaultVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
-
-        Group elemsGroup = UIUtils.createControlGroup(composite, "Attributes visibility", 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-        elemsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        for (ERDAttributeVisibility visibility : ERDAttributeVisibility.values()) {
-            Button radio = new Button(elemsGroup, SWT.RADIO);
-            radio.setData(visibility);
-            radio.setText(visibility.getTitle());
-            if (visibility == defaultVisibility) {
-                radio.setSelection(true);
-            }
-            visibilityButtons.add(radio);
-        }
-    }
-
-    private void createStyleGroup(IPreferenceStore store, Composite composite)
-    {
-        ERDAttributeStyle[] enabledStyles = ERDAttributeStyle.getDefaultStyles(store);
-
-        Group elemsGroup = UIUtils.createControlGroup(composite, "Attribute styles", 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-        elemsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        for (ERDAttributeStyle style : ERDAttributeStyle.values()) {
-            Button check = new Button(elemsGroup, SWT.CHECK);
-            check.setData(style);
-            check.setText(style.getTitle());
-            if (ArrayUtils.contains(enabledStyles, style)) {
-                check.setSelection(true);
-            }
-            styleButtons.add(check);
-        }
-    }
-
     @Override
     public void init(IWorkbench workbench)
     {
@@ -154,6 +166,8 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     public boolean performOk()
     {
         DBPPreferenceStore store = ERDActivator.getDefault().getPreferences();
+
+        store.setValue(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS, contentsShowViews.getSelection());
 
         store.setValue(ERDConstants.PREF_GRID_ENABLED, gridCheck.getSelection());
         store.setValue(ERDConstants.PREF_GRID_SNAP_ENABLED, snapCheck.getSelection());
