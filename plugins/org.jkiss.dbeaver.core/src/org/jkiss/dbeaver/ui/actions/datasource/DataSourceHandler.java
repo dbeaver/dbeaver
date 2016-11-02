@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -170,13 +171,18 @@ public class DataSourceHandler
 
     public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler)
     {
-        String prompt = networkHandler != null ?
+        final String prompt = networkHandler != null ?
             NLS.bind(CoreMessages.dialog_connection_auth_title_for_handler, networkHandler.getTitle()) :
             "'" + dataSourceContainer.getName() + CoreMessages.dialog_connection_auth_title; //$NON-NLS-1$
-        String user = networkHandler != null ? networkHandler.getUserName() : dataSourceContainer.getConnectionConfiguration().getUserName();
-        String password = networkHandler != null ? networkHandler.getPassword() : dataSourceContainer.getConnectionConfiguration().getUserPassword();
+        final String user = networkHandler != null ? networkHandler.getUserName() : dataSourceContainer.getConnectionConfiguration().getUserName();
+        final String password = networkHandler != null ? networkHandler.getPassword() : dataSourceContainer.getConnectionConfiguration().getUserPassword();
 
-        DBAAuthInfo authInfo = DBUserInterface.getInstance().promptUserCredentials(prompt, user, password, false);
+        DBAAuthInfo authInfo = new UITask<DBAAuthInfo>() {
+            @Override
+            protected DBAAuthInfo runTask() {
+                return DBUserInterface.getInstance().promptUserCredentials(prompt, user, password, false);
+            }
+        }.execute();
         if (authInfo == null) {
             return false;
         }
