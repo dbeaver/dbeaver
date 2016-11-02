@@ -22,6 +22,8 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.erd.ERDActivator;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -188,6 +190,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             } catch (DBException e) {
                 UIUtils.showErrorDialog(null, "Cache database model", "Error caching database model", e);
             }
+            boolean showViews = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS);
             Collection<? extends DBSObject> entities = objectContainer.getChildren(monitor);
             if (entities != null) {
                 Class<? extends DBSObject> childType = objectContainer.getChildType(monitor);
@@ -202,7 +205,11 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                         final DBSEntity entity1 = (DBSEntity) entity;
                         if (entity1.getEntityType() == DBSEntityType.TABLE ||
                             entity1.getEntityType() == DBSEntityType.CLASS ||
-                            entity1.getEntityType() == DBSEntityType.VIRTUAL_ENTITY) {
+                            entity1.getEntityType() == DBSEntityType.VIRTUAL_ENTITY ||
+                            (showViews && entity1.getEntityType() == DBSEntityType.VIEW)
+                            )
+
+                        {
                             result.add(entity1);
                         }
                     }

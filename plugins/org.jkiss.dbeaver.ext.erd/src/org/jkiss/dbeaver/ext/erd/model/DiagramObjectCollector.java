@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ext.erd.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ext.erd.ERDActivator;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -114,12 +116,15 @@ public class DiagramObjectCollector {
         Collection<? extends DBSObject> roots)
         throws DBException
     {
+        boolean showViews = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS);
         Collection<DBSEntity> tables = collectTables(monitor, roots);
         for (DBSEntity table : tables) {
-            if (DBUtils.isHiddenObject(table) ||
-                (table instanceof DBSTable && ((DBSTable) table).isView()))
-            {
+            if (DBUtils.isHiddenObject(table)) {
                 // Skip hidden tables
+                continue;
+            }
+            if (!showViews && table instanceof DBSTable && ((DBSTable) table).isView()) {
+                // Skip views
                 continue;
             }
             addDiagramEntity(monitor, table);

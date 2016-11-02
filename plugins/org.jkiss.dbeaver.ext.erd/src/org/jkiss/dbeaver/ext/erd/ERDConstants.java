@@ -37,6 +37,8 @@ public class ERDConstants {
     public static final int PRINT_MODE_DEFAULT = PrintFigureOperation.TILE;
     public static final int PRINT_MARGIN_DEFAULT = 0;
 
+    public static final String PREF_DIAGRAM_SHOW_VIEWS = "erd.diagram.show.views";
+
     public static final String PREF_GRID_ENABLED = "erd.grid.enabled";
     public static final String PREF_GRID_SNAP_ENABLED = "erd.grid.snap";
     public static final String PREF_GRID_WIDTH = "erd.grid.width";
