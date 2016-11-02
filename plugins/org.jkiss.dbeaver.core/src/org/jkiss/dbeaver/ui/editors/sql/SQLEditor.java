@@ -634,7 +634,7 @@ public class SQLEditor extends SQLEditorBase implements
     protected void doSetInput(IEditorInput editorInput) throws CoreException
     {
         super.doSetInput(editorInput);
-
+        syntaxLoaded = false;
         setDataSourceContainer(EditorUtils.getInputDataSource(editorInput));
         setPartName(getEditorName());
     }
