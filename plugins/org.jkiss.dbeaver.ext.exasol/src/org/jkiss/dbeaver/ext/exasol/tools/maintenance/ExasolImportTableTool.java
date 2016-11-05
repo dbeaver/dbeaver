@@ -68,6 +68,5 @@ public class ExasolImportTableTool implements IExternalTool {
 			dialog.open();
 		}
 
-		
 	}
 }

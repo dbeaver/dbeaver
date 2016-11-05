@@ -82,7 +82,6 @@ public abstract class ExasolBaseTableToolDialog
         return 0;
     }
     
-    
     protected String replaceVars(String input, ExasolTableBase table) 
     {
         String outString = GeneralUtils.replaceVariables(input, new GeneralUtils.IVariableResolver() {

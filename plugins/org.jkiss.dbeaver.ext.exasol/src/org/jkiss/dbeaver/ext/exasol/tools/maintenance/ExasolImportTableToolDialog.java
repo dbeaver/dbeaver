@@ -247,5 +247,4 @@ public class ExasolImportTableToolDialog extends ExasolBaseTableToolDialog {
 
 	}
 
-
 }

@@ -427,6 +427,7 @@
       <tools>
          <tool
                class="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolExportTableTool"
+               description="Export Tables, Views or Schemas to CSV"
                id="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolExportTableTool"
                label="%tool.org.jkiss.dbeaver.ext.exasol.table.export.name">
             <objectType
@@ -441,6 +442,7 @@
          </tool>
          <tool
                class="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolImportTableTool"
+               description="Import Tables or Schemas from CSV"
                id="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolImportTableTool"
                label="%tool.org.jkiss.dbeaver.ext.exasol.table.import.name">
             <objectType

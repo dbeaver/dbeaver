@@ -55,7 +55,6 @@ public class ExasolMessages extends NLS {
 	public static String dialog_table_tools_column_sep;
 	public static String dialog_table_tools_row_sep;
 	public static String dialog_table_tools_encoding;
-
 	public static String dialog_table_tools_import_title;
     
 
