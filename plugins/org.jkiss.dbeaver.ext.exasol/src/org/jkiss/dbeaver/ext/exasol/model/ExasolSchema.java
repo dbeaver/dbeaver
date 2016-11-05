@@ -64,7 +64,6 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
     private final ExasolTableUniqueKeyCache constraintCache = new ExasolTableUniqueKeyCache(tableCache);
     private final ExasolTableForeignKeyCache associationCache = new ExasolTableForeignKeyCache(tableCache);
 
-
     public ExasolSchema(ExasolDataSource exasolDataSource, String name) {
         super(exasolDataSource, true);
         this.name = name;
