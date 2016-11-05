@@ -29,7 +29,9 @@ import java.sql.SQLException;
 public class ExasolSQLDialect extends JDBCSQLDialect {
 
     private static final Log LOG = Log.getLog(ExasolDataSource.class);
-    public static final String[] EXEC_KEYWORDS = new String[]{"execute script"};
+    
+    //Exasol does not support prepareCall
+    public static final String[] EXEC_KEYWORDS = new String[]{};
 
 
     public ExasolSQLDialect(JDBCDatabaseMetaData metaData) {
@@ -58,8 +60,8 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
     @NotNull
     @Override
     public String[] getExecuteKeywords() {
-        return EXEC_KEYWORDS;
+        return new String[]{};
     }
-
+   
 }
 
