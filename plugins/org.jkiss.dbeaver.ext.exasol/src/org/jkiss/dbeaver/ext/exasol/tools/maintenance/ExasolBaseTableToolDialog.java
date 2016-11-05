@@ -82,7 +82,7 @@ public abstract class ExasolBaseTableToolDialog
         return 0;
     }
     
-    protected String replaceVars(String input, ExasolTableBase table) 
+    protected String replaceVars(String input, final ExasolTableBase table) 
     {
         String outString = GeneralUtils.replaceVariables(input, new GeneralUtils.IVariableResolver() {
             @Override
@@ -228,7 +228,7 @@ public abstract class ExasolBaseTableToolDialog
                                 	
                                 	Integer[] resultSetData = new Integer[] { affectedRows };
                                     	
-                                	LocalResultSet resultSet = new LocalResultSet<JDBCStatement>(session, (JDBCStatement) new JDBCStatementImpl<Statement>((JDBCSession) session, statement, true));
+                                	final LocalResultSet resultSet = new LocalResultSet<JDBCStatement>(session, (JDBCStatement) new JDBCStatementImpl<Statement>((JDBCSession) session, statement, true));
                                 	resultSet.addColumn("ROWS_AFFECTED", DBPDataKind.NUMERIC);
                                 	resultSet.addRow((Object[]) resultSetData );
                                 	

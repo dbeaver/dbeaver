@@ -110,7 +110,7 @@ public class ExasolExportTableToolDialog extends ExasolBaseTableToolDialog {
 	}
 
 	@Override
-	protected void createControls(Composite parent)
+	protected void createControls(final Composite parent)
 	{
 		Group optionsGroup = UIUtils.createControlGroup(parent,
 				ExasolMessages.dialog_table_tools_options, 1, 0, 0);
@@ -127,15 +127,14 @@ public class ExasolExportTableToolDialog extends ExasolBaseTableToolDialog {
 			@Override
 			public void widgetSelected(SelectionEvent e)
 			{
-				DirectoryDialog dialog = new DirectoryDialog(parent.getShell());
-				String directory = dialog.open();
+				final DirectoryDialog dialog = new DirectoryDialog(parent.getShell());
+				final String directory = dialog.open();
 				if (directory != null) {
 					selectedDirectory.setVisible(true);
 					selectedDirectory.setText(directory + File.separatorChar);
 				} else {
 					selectedDirectory.setVisible(false);
 				}
-				parent.layout(true, true);
 				updateSQL();
 			}
 		});
