@@ -104,7 +104,7 @@ public class ExasolExportTableToolDialog extends ExasolBaseTableToolDialog {
 		sb.append(" DELIMIT = " + sepMode);
 		// include column headings
 		if (btInclColNames.getSelection())
-			sb.append(" SKIP = 1");
+			sb.append(" WITH COLUMN NAMES");
 		sql.add(sb.toString());
 
 	}
