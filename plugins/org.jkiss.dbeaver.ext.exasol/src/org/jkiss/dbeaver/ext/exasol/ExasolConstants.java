@@ -432,6 +432,5 @@ public class ExasolConstants {
       encoding.put("CN-BIG5", "BIG5");
       encoding.put("BIG5-CP950", "BIG5");
     }
-       
     
 }

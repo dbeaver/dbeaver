@@ -59,7 +59,6 @@ public class ExasolUtils {
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
-
     public static String generateDDLforTable(DBRProgressMonitor monitor, ExasolDataSource dataSource,
                                              ExasolTable exasolTable) throws DBException {
 
