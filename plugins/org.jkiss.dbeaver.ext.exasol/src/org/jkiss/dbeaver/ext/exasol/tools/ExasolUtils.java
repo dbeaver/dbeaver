@@ -204,4 +204,13 @@ public class ExasolUtils {
         return listSessions;
     }
 
+
+	public static String generateDDLforSchema(DBRProgressMonitor monitor,
+			ExasolSchema exasolSchema)
+	{
+		String retStr = "CREATE SCHEMA " + exasolSchema.getName() + ";\n"
+				+ "ALTER SCHEMA " + exasolSchema.getName() + " CHANGE OWNER " + exasolSchema.getOwner() + ";\n";
+		return retStr;
+	}
+
 }
