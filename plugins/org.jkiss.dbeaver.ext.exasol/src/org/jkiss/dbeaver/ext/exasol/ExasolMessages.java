@@ -23,6 +23,8 @@ import org.eclipse.osgi.util.NLS;
 
 public class ExasolMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.exasol.ExasolResources"; //$NON-NLS-1$
+	public static String dialog_table_tools_options;
+	public static String dialog_table_tools_result;
 
     static {
         // initialize resource bundle
@@ -40,4 +42,20 @@ public class ExasolMessages extends NLS {
     public static String dialog_connection_password;
     public static String dialog_connection_port;
     public static String dialog_connection_user_name;
+
+    public static String dialog_table_tools_progress;
+	public static String dialog_table_tools_success_title;
+	public static String dialog_table_open_output_directory;
+	public static String dialog_table_tools_export_title;
+	public static String dialog_table_tools_export_compress;
+	public static String dialog_table_tools_column_heading;
+	public static String dialog_table_tools_file_template;
+	public static String dialog_table_tools_string_sep_mode;
+	public static String dialog_table_tools_string_sep;
+	public static String dialog_table_tools_column_sep;
+	public static String dialog_table_tools_row_sep;
+	public static String dialog_table_tools_encoding;
+	public static String dialog_table_tools_import_title;
+    
+
 }
