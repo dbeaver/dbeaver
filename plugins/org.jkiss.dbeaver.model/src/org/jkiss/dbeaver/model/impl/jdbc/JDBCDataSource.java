@@ -601,7 +601,7 @@ public abstract class JDBCDataSource
 
     @Nullable
     @Override
-    public ErrorPosition[] getErrorPosition(@NotNull Throwable error) {
+    public ErrorPosition[] getErrorPosition(@NotNull DBCSession session, @NotNull String query, @NotNull Throwable error) {
         return null;
     }
 
