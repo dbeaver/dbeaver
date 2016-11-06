@@ -613,18 +613,16 @@ public class OracleDataSource extends JDBCDataSource
         if (error instanceof SQLException && SQLState.SQL_42000.getCode().equals(((SQLException) error).getSQLState())) {
             try (CallableStatement stat = ((JDBCSession) session).prepareCall(
                 "declare\n" +
-                    "    l_theCursor     integer default dbms_sql.open_cursor; \n" +
-                    "    l_status        integer; \n" +
-                    "begin \n" +
-                    "     begin \n" +
-                    "     dbms_sql.parse(  l_theCursor, ?, dbms_sql.native ); \n" +
-                    "     exception \n" +
-                    "         when others then l_status := dbms_sql.last_error_position; \n" +
-                    "     end; \n" +
-                    "     dbms_sql.close_cursor( l_theCursor );\n" +
-                    "     DBMS_OUTPUT.put_line(l_status);\n" +
-                    "? := l_status;\n" +
-                    "end;")) {
+                "  l_cursor integer default dbms_sql.open_cursor; \n" +
+                "begin \n" +
+                "  begin \n" +
+                "  dbms_sql.parse(  l_cursor, ?, dbms_sql.native ); \n" +
+                "    exception \n" +
+                "      when others then ? := dbms_sql.last_error_position; \n" +
+                "    end; \n" +
+                "    dbms_sql.close_cursor( l_cursor );\n" +
+                "end;"))
+            {
                 stat.setString(1, query);
                 stat.registerOutParameter(2, Types.INTEGER);
                 stat.execute();
