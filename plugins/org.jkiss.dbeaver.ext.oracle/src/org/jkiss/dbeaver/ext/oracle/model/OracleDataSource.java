@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -46,6 +47,7 @@ import java.io.PrintWriter;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -586,7 +588,7 @@ public class OracleDataSource extends JDBCDataSource
 
     @Nullable
     @Override
-    public ErrorPosition[] getErrorPosition(@NotNull Throwable error) {
+    public ErrorPosition[] getErrorPosition(@NotNull DBCSession session, @NotNull String query, @NotNull Throwable error) {
         while (error instanceof DBException) {
             if (error.getCause() == null) {
                 return null;
@@ -606,6 +608,38 @@ public class OracleDataSource extends JDBCDataSource
             }
             if (!positions.isEmpty()) {
                 return positions.toArray(new ErrorPosition[positions.size()]);
+            }
+        }
+        if (error instanceof SQLException && SQLState.SQL_42000.getCode().equals(((SQLException) error).getSQLState())) {
+            try (CallableStatement stat = ((JDBCSession) session).prepareCall(
+                "declare\n" +
+                    "    l_theCursor     integer default dbms_sql.open_cursor; \n" +
+                    "    l_status        integer; \n" +
+                    "begin \n" +
+                    "     begin \n" +
+                    "     dbms_sql.parse(  l_theCursor, ?, dbms_sql.native ); \n" +
+                    "     exception \n" +
+                    "         when others then l_status := dbms_sql.last_error_position; \n" +
+                    "     end; \n" +
+                    "     dbms_sql.close_cursor( l_theCursor );\n" +
+                    "     DBMS_OUTPUT.put_line(l_status);\n" +
+                    "? := l_status;\n" +
+                    "end;")) {
+                stat.setString(1, query);
+                stat.registerOutParameter(2, Types.INTEGER);
+                stat.execute();
+                int errorPos = stat.getInt(2);
+                if (errorPos <= 0) {
+                    return null;
+                }
+
+                DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
+                pos.position = errorPos;
+                return new ErrorPosition[] { pos };
+
+            } catch (SQLException e) {
+                // Something went wrong
+                log.debug("Can't extract parse error info: " + e.getMessage());
             }
         }
         return null;

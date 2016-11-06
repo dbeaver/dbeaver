@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 
 /**
  * Error assistant
@@ -52,6 +53,6 @@ public interface DBPErrorAssistant
     ErrorType discoverErrorType(@NotNull DBException error);
 
     @Nullable
-    ErrorPosition[] getErrorPosition(@NotNull Throwable error);
+    ErrorPosition[] getErrorPosition(@NotNull DBCSession session, @NotNull String query, @NotNull Throwable error);
 
 }

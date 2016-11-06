@@ -314,7 +314,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             if (fireEvents && listener != null) {
                 // Notify query start
                 try {
-                    listener.onStartQuery(sqlQuery);
+                    listener.onStartQuery(session, sqlQuery);
                 } catch (Exception e) {
                     log.error(e);
                 }
@@ -422,7 +422,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             if (fireEvents && listener != null && startQueryAlerted) {
                 // Notify query end
                 try {
-                    listener.onEndQuery(curResult);
+                    listener.onEndQuery(session, curResult);
                 } catch (Exception e) {
                     log.error(e);
                 }

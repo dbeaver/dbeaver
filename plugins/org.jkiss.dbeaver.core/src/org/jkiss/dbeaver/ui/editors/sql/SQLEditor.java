@@ -1663,7 +1663,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void onStartQuery(final SQLQuery query) {
+        public void onStartQuery(DBCSession session, final SQLQuery query) {
             editorImage = getTitleImage();
             setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
             queryProcessor.curJobRunning.incrementAndGet();
@@ -1684,7 +1684,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void onEndQuery(final SQLQueryResult result) {
+        public void onEndQuery(final DBCSession session, final SQLQueryResult result) {
             setTitleImage(editorImage);
             synchronized (runningQueries) {
                 runningQueries.remove(result.getStatement());
@@ -1697,7 +1697,7 @@ public class SQLEditor extends SQLEditorBase implements
             DBeaverUI.runUIJob("Process SQL query result", new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    processQueryResult(result);
+                    processQueryResult(session, result);
                     if (!result.hasError() && topOffset >= 0) {
                         final TextViewer textViewer = getTextViewer();
                         if (textViewer != null) {
@@ -1708,14 +1708,14 @@ public class SQLEditor extends SQLEditorBase implements
             });
         }
 
-        private void processQueryResult(SQLQueryResult result) {
+        private void processQueryResult(DBCSession session, SQLQueryResult result) {
             if (!scriptMode) {
                 runPostExecuteActions(result);
             }
             Throwable error = result.getError();
             if (error != null) {
                 setStatus(GeneralUtils.getFirstMessage(error), true);
-                if (!scrollCursorToError(result, error)) {
+                if (!scrollCursorToError(session, result, error)) {
                     getSelectionProvider().setSelection(originalSelection);
                 }
             } else if (!scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
@@ -1778,7 +1778,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private boolean scrollCursorToError(@NotNull SQLQueryResult result, @NotNull Throwable error) {
+    private boolean scrollCursorToError(@NotNull DBCSession session, @NotNull SQLQueryResult result, @NotNull Throwable error) {
         DBCExecutionContext context = getExecutionContext();
         if (context == null) {
             return false;
@@ -1787,7 +1787,7 @@ public class SQLEditor extends SQLEditorBase implements
             boolean scrolled = false;
             DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, context.getDataSource());
             if (errorAssistant != null) {
-                DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(error);
+                DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(session, result.getStatement().getQuery(), error);
                 if (positions != null && positions.length > 0) {
                     int queryStartOffset = result.getStatement().getOffset();
 
