@@ -17,16 +17,16 @@ Suporta qualquer SGBD que tenha um driver JDBC (o que basicamente quer dizer - Q
 
 ## Download
 
-Você pode baixar os arquivos em http://dbeaver.jkiss.org/download/
+Você pode baixar os arquivos pré compilados em http://dbeaver.jkiss.org/download/
 
-## Instalação
+## Compilação
 
 #### Pré-requisitos:
  1. Java (JDK) 1.8+
  2. Apache Maven 3+
  3. Acesso à Internet
 
-#### Instalar
+#### Compilar
 ```sh
 git clone https://github.com/serge-rider/dbeaver.git dbeaver
 cd dbeaver
