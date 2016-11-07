@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.io.InputStream;
@@ -57,6 +58,9 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         ContentParameter(JDBCSession session, Object value) {
             if (value instanceof RowId) {
                 displayString = SQLUtils.quoteString(new String(((RowId) value).getBytes()));
+            } else if (value instanceof byte[]) {
+                byte[] bytes = (byte[])value;
+                displayString = session.getDataSource().getSQLDialect().getNativeBinaryFormatter().toString(bytes, 0, bytes.length);
             } else {
                 displayString = "DATA(" + (value == null ? DBConstants.NULL_VALUE_LABEL : value.getClass().getSimpleName()) + ")";
             }
