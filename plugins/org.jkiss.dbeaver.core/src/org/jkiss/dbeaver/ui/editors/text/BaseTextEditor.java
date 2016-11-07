@@ -17,10 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.text;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -36,7 +33,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
@@ -283,17 +279,10 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
             UIUtils.showErrorDialog(getSite().getShell(), "Save failed", null, e.getTargetException());
         }
 
-        try {
-            IFileStore fileStore = EFS.getStore(saveFile.toURI());
-            IEditorInput input = new FileStoreEditorInput(fileStore);
-            setExternalFileProperties(input);
-            init(getEditorSite(), input);
-        } catch (CoreException e) {
-            UIUtils.showErrorDialog(getSite().getShell(), "File save", "Can't open SQL editor from external file", e);
-        }
+        afterSaveToFile(saveFile);
     }
 
-    protected void setExternalFileProperties(IEditorInput input) {
+    protected void afterSaveToFile(File saveFile) {
 
     }
 
