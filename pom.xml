@@ -14,6 +14,7 @@
         <tycho-version>0.23.1</tycho-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <eclipse-p2-repo.url>http://download.eclipse.org/releases/mars/</eclipse-p2-repo.url>
+        <!--<eclipse-p2-repo.url>http://download.eclipse.org/releases/neon/</eclipse-p2-repo.url>-->
         <local-p2-repo.url>http://dbeaver.jkiss.org/eclipse-repo</local-p2-repo.url>
         <!--<local-p2-repo.url>file:///C:/temp/eclipse-repo/</local-p2-repo.url>-->
     </properties>
@@ -113,6 +114,7 @@
                             <os>solaris</os>
                             <ws>gtk</ws>
                             <arch>x86</arch>
+                            <!--<arch>x86_64</arch>-->
                         </environment>
                     </environments>
                 </configuration>
