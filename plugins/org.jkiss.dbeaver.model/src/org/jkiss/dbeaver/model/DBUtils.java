@@ -1649,4 +1649,16 @@ public final class DBUtils {
         return name;
     }
 */
+    public static DBDPseudoAttribute getRowIdAttribute(DBSEntity entity) {
+        if (entity instanceof DBDPseudoAttributeContainer) {
+            try {
+                return DBDPseudoAttribute.getAttribute(
+                    ((DBDPseudoAttributeContainer) entity).getPseudoAttributes(),
+                    DBDPseudoAttributeType.ROWID);
+            } catch (DBException e) {
+                log.warn("Can't get pseudo attributes for '" + entity.getName() + "'", e);
+            }
+        }
+        return null;
+    }
 }

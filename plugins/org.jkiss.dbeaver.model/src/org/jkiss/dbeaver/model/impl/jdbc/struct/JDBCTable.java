@@ -123,16 +123,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             log.warn(e);
         }
 
-        DBDPseudoAttribute rowIdAttribute = null;
-        if ((flags & FLAG_READ_PSEUDO) != 0 && this instanceof DBDPseudoAttributeContainer) {
-            try {
-                rowIdAttribute = DBDPseudoAttribute.getAttribute(
-                    ((DBDPseudoAttributeContainer) this).getPseudoAttributes(),
-                    DBDPseudoAttributeType.ROWID);
-            } catch (DBException e) {
-                log.warn("Can't get pseudo attributes for '" + getName() + "'", e);
-            }
-        }
+        DBDPseudoAttribute rowIdAttribute = (flags & FLAG_READ_PSEUDO) != 0 ?
+            DBUtils.getRowIdAttribute(this) : null;
 
         // Always use alias if we have criteria or ROWID.
         // Some criteria doesn't work without alias
