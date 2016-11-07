@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFileState;
 import org.eclipse.core.resources.IProject;
@@ -39,6 +41,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
@@ -430,11 +433,6 @@ public class SQLEditor extends SQLEditorBase implements
         //toolTipAction.setEnabled(false);
 
         CoreFeatures.SQL_EDITOR_OPEN.use();
-    }
-
-    @Override
-    protected void setExternalFileProperties(IEditorInput input) {
-        EditorUtils.setInputDataSource(input, getDataSourceContainer(), false);
     }
 
     private void createResultTabs()
@@ -1168,6 +1166,19 @@ public class SQLEditor extends SQLEditorBase implements
             return ISaveablePart2.YES;
         }
         return ISaveablePart2.DEFAULT;
+    }
+
+    protected void afterSaveToFile(File saveFile) {
+        try {
+            IFileStore fileStore = EFS.getStore(saveFile.toURI());
+            IEditorInput input = new FileStoreEditorInput(fileStore);
+
+            EditorUtils.setInputDataSource(input, getDataSourceContainer(), false);
+
+            init(getEditorSite(), input);
+        } catch (CoreException e) {
+            UIUtils.showErrorDialog(getSite().getShell(), "File save", "Can't open SQL editor from external file", e);
+        }
     }
 
     @Nullable
