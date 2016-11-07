@@ -125,6 +125,6 @@ public class DB2Constants {
         "YEAR", "YEARS", };
 
     public static final DBDPseudoAttribute PSEUDO_ATTR_RID_BIT         = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID,
-        "RID_BIT()", "RID_BIT($alias)", "rid_bit", "Unique physical row identifier", false);
+        "RID_BIT()", "RID_BIT($alias)", "RID_BIT", "Unique physical row identifier", false);
 
 }
