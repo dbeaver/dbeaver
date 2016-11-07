@@ -328,6 +328,11 @@ public abstract class SQLEditorNested<T extends DBSObject>
         }
     }
 
+    @Override
+    public void doSaveAs() {
+        saveToExternalFile();
+    }
+
     private class EditorPageControl extends ProgressPageControl {
 
         public EditorPageControl(Composite parent, int style)
