@@ -1661,4 +1661,32 @@ public final class DBUtils {
         }
         return null;
     }
+
+    public static DBDPseudoAttribute getPseudoAttribute(DBSEntity entity, String attrName) {
+        if (entity instanceof DBDPseudoAttributeContainer) {
+            try {
+                DBDPseudoAttribute[] pseudoAttributes = ((DBDPseudoAttributeContainer) entity).getPseudoAttributes();
+                if (pseudoAttributes != null && pseudoAttributes.length > 0) {
+                    for (int i = 0; i < pseudoAttributes.length; i++) {
+                        DBDPseudoAttribute pa = pseudoAttributes[i];
+                        String attrId = pa.getAlias();
+                        if (CommonUtils.isEmpty(attrId)) {
+                            attrId = pa.getName();
+                        }
+                        if (pa.getName().equals(attrName)) {
+                            return pa;
+                        }
+                    }
+                }
+            } catch (DBException e) {
+                log.warn("Can't get pseudo attributes for '" + entity.getName() + "'", e);
+            }
+        }
+        return null;
+    }
+
+    public static boolean isPseudoAttribute(DBSAttributeBase attr) {
+        return attr instanceof DBDAttributeBinding && ((DBDAttributeBinding) attr).isPseudoAttribute();
+    }
+
 }

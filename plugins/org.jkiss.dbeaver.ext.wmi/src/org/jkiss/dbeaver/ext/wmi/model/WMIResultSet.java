@@ -22,8 +22,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.utils.CommonUtils;
@@ -297,13 +295,6 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
 
         @Nullable
         @Override
-        public DBDPseudoAttribute getPseudoAttribute()
-        {
-            return null;
-        }
-
-        @Nullable
-        @Override
         public DBCEntityMetaData getEntityMetaData()
         {
             return WMIResultSet.this;
@@ -327,10 +318,6 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
             return false;
         }
 
-        @Override
-        public boolean isPseudoAttribute() {
-            return false;
-        }
     }
 
 }

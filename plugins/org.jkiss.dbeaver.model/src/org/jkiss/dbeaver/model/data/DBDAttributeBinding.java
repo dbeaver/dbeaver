@@ -116,6 +116,10 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         this.presentationAttribute = presentationAttribute;
     }
 
+    public boolean isPseudoAttribute() {
+        return false;
+    }
+
     /**
      * Row identifier (may be null)
      */

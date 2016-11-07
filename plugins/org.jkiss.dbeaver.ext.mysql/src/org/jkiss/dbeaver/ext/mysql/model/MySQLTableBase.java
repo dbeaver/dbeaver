@@ -62,7 +62,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         DBSObjectCache<MySQLTableBase, MySQLTableColumn> colCache = getContainer().getTableCache().getChildrenCache(this);
         // Copy columns
         for (DBSEntityAttribute srcColumn : CommonUtils.safeCollection(source.getAttributes(monitor))) {
-            if (DBUtils.isHiddenObject(srcColumn) || srcColumn.isPseudoAttribute()) {
+            if (DBUtils.isHiddenObject(srcColumn)) {
                 continue;
             }
             MySQLTableColumn column = new MySQLTableColumn(this, srcColumn);

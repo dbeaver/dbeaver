@@ -67,12 +67,6 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
 
     @Nullable
     @Override
-    public DBDPseudoAttribute getPseudoAttribute() {
-        return null;
-    }
-
-    @Nullable
-    @Override
     public DBCEntityMetaData getEntityMetaData() {
         assert parent != null;
         return parent.getMetaAttribute().getEntityMetaData();

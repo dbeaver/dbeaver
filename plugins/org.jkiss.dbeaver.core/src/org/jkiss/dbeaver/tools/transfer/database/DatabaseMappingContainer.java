@@ -181,8 +181,8 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     private void readAttributes(DBRProgressMonitor monitor) throws DBException
     {
         if (source instanceof DBSEntity) {
-            for (DBSEntityAttribute attr : ((DBSEntity) source).getAttributes(monitor)) {
-                if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
+            for (DBSEntityAttribute attr : CommonUtils.safeCollection(((DBSEntity) source).getAttributes(monitor))) {
+                if (DBUtils.isHiddenObject(attr)) {
                     continue;
                 }
                 addAttributeMapping(monitor, attr);
@@ -195,7 +195,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
                 MetadataReceiver receiver = new MetadataReceiver();
                 source.readData(new AbstractExecutionSource(source, session.getExecutionContext(), this), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE);
                 for (DBCAttributeMetaData attr : receiver.attributes) {
-                    if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
+                    if (DBUtils.isHiddenObject(attr)) {
                         continue;
                     }
                     addAttributeMapping(monitor, attr);

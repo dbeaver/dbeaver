@@ -151,7 +151,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (tcm != null) {
             // Aggregate nested column, constraint and index commands
             for (DBSEntityAttribute column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
-                if (column.isPseudoAttribute() || DBUtils.isHiddenObject(column)) {
+                if (DBUtils.isHiddenObject(column)) {
                     continue;
                 }
                 command.aggregateCommand(tcm.makeCreateCommand(column));

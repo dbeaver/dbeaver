@@ -66,7 +66,7 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
 
     @Override
     public boolean isPseudoAttribute() {
-        return attribute.isPseudoAttribute();
+        return false;
     }
 
     @Nullable
