@@ -1673,7 +1673,7 @@ public final class DBUtils {
                         if (CommonUtils.isEmpty(attrId)) {
                             attrId = pa.getName();
                         }
-                        if (pa.getName().equals(attrName)) {
+                        if (attrId.equals(attrName)) {
                             return pa;
                         }
                     }
