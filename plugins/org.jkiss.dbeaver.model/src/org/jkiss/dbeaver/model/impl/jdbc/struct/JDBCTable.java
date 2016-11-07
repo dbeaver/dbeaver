@@ -17,15 +17,13 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -33,9 +31,10 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.data.ExecuteBatchImpl;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
@@ -43,9 +42,6 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
-
-import java.util.List;
 
 /**
  * JDBC abstract table implementation
@@ -188,21 +184,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 DBCResultSet dbResult = dbStat.openResultSet();
                 if (dbResult != null && !monitor.isCanceled()) {
                     try {
-                        if (rowIdAttribute != null) {
-                            String attrId = rowIdAttribute.getAlias();
-                            if (CommonUtils.isEmpty(attrId)) {
-                                attrId = rowIdAttribute.getName();
-                            }
-                            // Annotate last attribute with row id
-                            List<DBCAttributeMetaData> metaAttributes = dbResult.getMeta().getAttributes();
-                            for (int i = metaAttributes.size(); i > 0; i--) {
-                                DBCAttributeMetaData attr = metaAttributes.get(i - 1);
-                                if (attrId.equalsIgnoreCase(attr.getName()) && attr instanceof JDBCColumnMetaData) {
-                                    ((JDBCColumnMetaData) attr).setPseudoAttribute(rowIdAttribute);
-                                    break;
-                                }
-                            }
-                        }
                         dataReceiver.fetchStart(session, dbResult, firstRow, maxRows);
 
                         startTime = System.currentTimeMillis();
@@ -321,7 +302,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 boolean hasKey = false;
                 for (int i = 0; i < attributes.length; i++) {
                     DBSAttributeBase attribute = attributes[i];
-                    if (attribute.isPseudoAttribute() || DBUtils.isNullValue(attributeValues[i])) {
+                    if (DBUtils.isPseudoAttribute(attribute) || DBUtils.isNullValue(attributeValues[i])) {
                         continue;
                     }
                     if (hasKey) query.append(","); //$NON-NLS-1$
@@ -332,7 +313,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 hasKey = false;
                 for (int i = 0; i < attributes.length; i++) {
                     DBSAttributeBase attribute = attributes[i];
-                    if (attribute.isPseudoAttribute() || DBUtils.isNullValue(attributeValues[i])) {
+                    if (DBUtils.isPseudoAttribute(attribute) || DBUtils.isNullValue(attributeValues[i])) {
                         continue;
                     }
                     if (hasKey) query.append(","); //$NON-NLS-1$
@@ -352,7 +333,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 int paramIndex = 0;
                 for (int k = 0; k < handlers.length; k++) {
                     DBSAttributeBase attribute = attributes[k];
-                    if (attribute.isPseudoAttribute() || DBUtils.isNullValue(attributeValues[k])) {
+                    if (DBUtils.isPseudoAttribute(attribute) || DBUtils.isNullValue(attributeValues[k])) {
                         continue;
                     }
                     handlers[k].bindValueObject(statement.getSession(), statement, attribute, paramIndex++, attributeValues[k]);
@@ -507,7 +488,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 //            }
 //        }
         // Do not quote pseudo attribute name
-        return attribute.isPseudoAttribute() ? attribute.getName() : DBUtils.getObjectFullName(getDataSource(), attribute, DBPEvaluationContext.DML);
+        return DBUtils.isPseudoAttribute(attribute) ? attribute.getName() : DBUtils.getObjectFullName(getDataSource(), attribute, DBPEvaluationContext.DML);
     }
 
     private void appendQueryConditions(@NotNull StringBuilder query, @Nullable String tableAlias, @Nullable DBDDataFilter dataFilter)
@@ -531,11 +512,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     private void appendAttributeCriteria(@Nullable String tableAlias, SQLDialect dialect, StringBuilder query, DBSAttributeBase attribute, Object value) {
         DBDPseudoAttribute pseudoAttribute = null;
-        if (attribute.isPseudoAttribute()) {
-            if (attribute instanceof DBDAttributeBinding) {
-                pseudoAttribute = ((DBDAttributeBinding) attribute).getMetaAttribute().getPseudoAttribute();
-            } else if (attribute instanceof DBCAttributeMetaData) {
-                pseudoAttribute = ((DBCAttributeMetaData)attribute).getPseudoAttribute();
+        if (DBUtils.isPseudoAttribute(attribute)) {
+            if (attribute instanceof DBDAttributeBindingMeta) {
+                pseudoAttribute = ((DBDAttributeBindingMeta) attribute).getPseudoAttribute();
             } else {
                 log.error("Unsupported attribute argument: " + attribute);
             }

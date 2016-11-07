@@ -181,7 +181,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             sql.append("\n(");
                             boolean hasAttr = false;
                             for (DBSAttributeBase attr : allAttributes) {
-                                if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
+                                if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
                                     continue;
                                 }
                                 if (hasAttr) sql.append(", ");
@@ -191,7 +191,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             sql.append(")\nVALUES(");
                             hasAttr = false;
                             for (DBSAttributeBase attr : allAttributes) {
-                                if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
+                                if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
                                     continue;
                                 }
                                 if (hasAttr) sql.append(", ");
@@ -508,7 +508,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DML)).append("\n(");
                 boolean hasAttr = false;
                 for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
-                    if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
+                    if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
                         continue;
                     }
                     if (hasAttr) sql.append(", ");
@@ -518,7 +518,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 sql.append(")\nVALUES(");
                 hasAttr = false;
                 for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
-                    if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
+                    if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
                         continue;
                     }
                     if (hasAttr) sql.append(", ");
@@ -541,7 +541,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     .append("\nSET ");
                 boolean hasAttr = false;
                 for (DBSAttributeBase attr : getValueAttributes(monitor, object, keyAttributes)) {
-                    if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
+                    if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
                         continue;
                     }
                     if (hasAttr) sql.append(", ");

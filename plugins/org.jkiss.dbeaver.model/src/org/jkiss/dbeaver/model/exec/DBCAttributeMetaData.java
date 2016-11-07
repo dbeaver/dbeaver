@@ -53,13 +53,6 @@ public interface DBCAttributeMetaData extends DBSAttributeBase
     boolean isReadOnly();
 
     /**
-     * Pseudo attribute information. Null for non-pseudo attributes
-     * @return pseudo attribute information or null
-     */
-    @Nullable
-    DBDPseudoAttribute getPseudoAttribute();
-
-    /**
      * Owner table metadata
      * @return table metadata
      */

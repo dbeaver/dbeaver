@@ -115,11 +115,6 @@ public class PostgreProcedureParameter implements DBSProcedureParameter, DBSAttr
     }
 
     @Override
-    public boolean isPseudoAttribute() {
-        return false;
-    }
-
-    @Override
     public String getTypeName() {
         return dataType.getTypeName();
     }

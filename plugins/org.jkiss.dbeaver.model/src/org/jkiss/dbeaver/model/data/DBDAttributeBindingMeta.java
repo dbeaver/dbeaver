@@ -47,6 +47,8 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     private DBDRowIdentifier rowIdentifier;
     @Nullable
     private List<DBSEntityReferrer> referrers;
+    @Nullable
+    private DBDPseudoAttribute pseudoAttribute;
 
     public DBDAttributeBindingMeta(
         @NotNull DBCSession session,
@@ -100,7 +102,7 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
 
     @Override
     public boolean isPseudoAttribute() {
-        return getAttribute().isPseudoAttribute();
+        return pseudoAttribute != null;
     }
 
     @Override
@@ -222,6 +224,15 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
             referrers = DBUtils.getAttributeReferrers(session.getProgressMonitor(), entityAttribute);
         }
         super.lateBinding(session, rows);
+    }
+
+    @Nullable
+    public DBDPseudoAttribute getPseudoAttribute() {
+        return pseudoAttribute;
+    }
+
+    public void setPseudoAttribute(@Nullable DBDPseudoAttribute pseudoAttribute) {
+        this.pseudoAttribute = pseudoAttribute;
     }
 
     @Override

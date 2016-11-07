@@ -85,7 +85,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 metaColumns[i] = DBUtils.getAttributeBinding(session, rsAttributes.get(i));
             }
 
-            resultSetViewer.setMetaData(metaColumns);
+            resultSetViewer.setMetaData(resultSet, metaColumns);
         }
     }
 

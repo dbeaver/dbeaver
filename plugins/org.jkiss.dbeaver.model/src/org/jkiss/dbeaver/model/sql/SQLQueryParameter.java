@@ -191,8 +191,4 @@ public class SQLQueryParameter implements DBSAttributeBase {
         return false;
     }
 
-    @Override
-    public boolean isPseudoAttribute() {
-        return false;
-    }
 }

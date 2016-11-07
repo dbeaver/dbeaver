@@ -26,9 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -56,6 +54,7 @@ public class ResultSetModel {
     private DBDAttributeBinding documentAttribute = null;
     private DBDDataFilter dataFilter;
     private boolean singleSourceCells;
+    private DBCExecutionSource executionSource;
 
     // Data
     private List<ResultSetRow> curRows = new ArrayList<>();
@@ -432,11 +431,14 @@ public class ResultSetModel {
     /**
      * Sets new metadata of result set
      *
+     * @param resultSet     resultset
      * @param newAttributes attributes metadata
      */
-    public void setMetaData(@NotNull DBDAttributeBinding[] newAttributes) {
+    public void setMetaData(@NotNull DBCResultSet resultSet, @NotNull DBDAttributeBinding[] newAttributes) {
 
         boolean update = false;
+        this.executionSource = resultSet.getSourceStatement().getStatementSource();
+
         if (this.attributes == null || this.attributes.length == 0 || this.attributes.length != newAttributes.length || isDynamicMetadata()) {
             update = true;
         } else {
@@ -799,16 +801,6 @@ public class ResultSetModel {
                 }
             }
         }
-        // Hide pseudo attributes
-        for (Iterator<DBDAttributeBinding> attrIter = visibleAttributes.iterator(); attrIter.hasNext(); ) {
-            final DBDAttributeBinding attr = attrIter.next();
-            if (attr.isPseudoAttribute()) {
-                if (filter.getConstraint(attr, true) == null) {
-                    // There is no explicit filter constraint - just hide it
-                    attrIter.remove();
-                }
-            }
-        }
 
         Collections.sort(this.visibleAttributes, POSITION_SORTER);
 
@@ -865,12 +857,20 @@ public class ResultSetModel {
 
     private void fillVisibleAttributes() {
         this.visibleAttributes.clear();
-        for (DBDAttributeBinding binding : this.attributes) {
-            DBDPseudoAttribute pseudoAttribute = binding.getMetaAttribute().getPseudoAttribute();
-            if (pseudoAttribute == null) {
-                // Make visible "real" attributes
-                this.visibleAttributes.add(binding);
+
+        if (executionSource != null && executionSource.getDataContainer() instanceof DBSEntity) {
+            // Filter pseudo attributes if we query single entity
+            for (DBDAttributeBinding binding : this.attributes) {
+                if (binding instanceof DBDAttributeBindingMeta) {
+                    DBDPseudoAttribute pseudoAttribute = ((DBDAttributeBindingMeta) binding).getPseudoAttribute();
+                    if (pseudoAttribute == null) {
+                        // Make visible "real" attributes
+                        this.visibleAttributes.add(binding);
+                    }
+                }
             }
+        } else {
+            Collections.addAll(this.visibleAttributes, this.attributes);
         }
     }
 

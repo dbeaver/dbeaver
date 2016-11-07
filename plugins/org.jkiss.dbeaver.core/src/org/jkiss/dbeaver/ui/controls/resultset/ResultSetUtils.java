@@ -143,9 +143,14 @@ public class ResultSetUtils
                     attrEntity = entity;
                 }
                 if (attrEntity != null) {
+                    DBDPseudoAttribute pseudoAttribute = DBUtils.getPseudoAttribute(attrEntity, attrMeta.getName());
+                    if (pseudoAttribute != null) {
+                        binding.setPseudoAttribute(pseudoAttribute);
+                    }
+
                     DBSEntityAttribute tableColumn;
-                    if (attrMeta.getPseudoAttribute() != null) {
-                        tableColumn = attrMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
+                    if (binding.getPseudoAttribute() != null) {
+                        tableColumn = binding.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
                     } else {
                         tableColumn = attrEntity.getAttribute(monitor, attrMeta.getName());
                     }
@@ -298,13 +303,13 @@ public class ResultSetUtils
         }
     }
 
-    private static DBSEntityReferrer getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings)
+    private static DBSEntityReferrer getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBindingMeta[] bindings)
         throws DBException
     {
         List<DBSEntityReferrer> identifiers = new ArrayList<>(2);
         // Check for pseudo attrs (ROWID)
-        for (DBDAttributeBinding column : bindings) {
-            DBDPseudoAttribute pseudoAttribute = column.getMetaAttribute().getPseudoAttribute();
+        for (DBDAttributeBindingMeta column : bindings) {
+            DBDPseudoAttribute pseudoAttribute = column.getPseudoAttribute();
             if (pseudoAttribute != null && pseudoAttribute.getType() == DBDPseudoAttributeType.ROWID) {
                 identifiers.add(new DBDPseudoReferrer(table, column));
                 break;

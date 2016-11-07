@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -154,13 +155,13 @@ public class SearchDataQuery implements ISearchQuery {
         try {
 
             List<DBDAttributeConstraint> constraints = new ArrayList<>();
-            for (DBSEntityAttribute attribute : entity.getAttributes(session.getProgressMonitor())) {
+            for (DBSEntityAttribute attribute : CommonUtils.safeCollection(entity.getAttributes(session.getProgressMonitor()))) {
                 if (params.fastSearch) {
                     if (!DBUtils.isIndexedAttribute(session.getProgressMonitor(), attribute)) {
                         continue;
                     }
                 }
-                if (attribute.isPseudoAttribute() || DBUtils.isHiddenObject(attribute)) {
+                if (DBUtils.isPseudoAttribute(attribute) || DBUtils.isHiddenObject(attribute)) {
                     continue;
                 }
                 DBCLogicalOperator[] supportedOperators = DBUtils.getAttributeOperators(attribute);

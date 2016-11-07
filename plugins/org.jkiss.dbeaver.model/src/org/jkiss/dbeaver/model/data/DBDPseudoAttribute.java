@@ -127,11 +127,6 @@ public class DBDPseudoAttribute implements DBPNamedObject {
         }
 
         @Override
-        public boolean isPseudoAttribute() {
-            return true;
-        }
-
-        @Override
         public int getOrdinalPosition()
         {
             return attribute.getOrdinalPosition();

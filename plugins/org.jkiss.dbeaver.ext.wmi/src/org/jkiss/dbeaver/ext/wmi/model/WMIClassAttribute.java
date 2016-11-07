@@ -103,11 +103,6 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
     }
 
     @Override
-    public boolean isPseudoAttribute() {
-        return false;
-    }
-
-    @Override
     public int getOrdinalPosition()
     {
         return 0;

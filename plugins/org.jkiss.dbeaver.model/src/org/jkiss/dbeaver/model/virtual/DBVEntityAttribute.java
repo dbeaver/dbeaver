@@ -138,11 +138,6 @@ public class DBVEntityAttribute implements DBSEntityAttribute
         return false;
     }
 
-    @Override
-    public boolean isPseudoAttribute() {
-        return false;
-    }
-
     @Nullable
     @Override
     public String getDefaultValue() {
