@@ -861,12 +861,9 @@ public class ResultSetModel {
         if (executionSource != null && executionSource.getDataContainer() instanceof DBSEntity) {
             // Filter pseudo attributes if we query single entity
             for (DBDAttributeBinding binding : this.attributes) {
-                if (binding instanceof DBDAttributeBindingMeta) {
-                    DBDPseudoAttribute pseudoAttribute = ((DBDAttributeBindingMeta) binding).getPseudoAttribute();
-                    if (pseudoAttribute == null) {
-                        // Make visible "real" attributes
-                        this.visibleAttributes.add(binding);
-                    }
+                if (!binding.isPseudoAttribute()) {
+                    // Make visible "real" attributes
+                    this.visibleAttributes.add(binding);
                 }
             }
         } else {
