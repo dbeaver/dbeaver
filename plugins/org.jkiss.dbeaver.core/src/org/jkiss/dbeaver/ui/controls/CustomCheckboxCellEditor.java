@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -51,9 +51,9 @@ public class CustomCheckboxCellEditor extends CellEditor {
             // On non-Windows WM extra composite breaks inline editor
             combo = new Button(parent, SWT.CHECK);
             combo.setFont(parent.getFont());
-            combo.addFocusListener(new FocusAdapter() {
+            combo.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void focusLost(FocusEvent e) {
+                public void widgetSelected(SelectionEvent e) {
                     applyEditorValue();
                 }
             });
@@ -73,9 +73,9 @@ public class CustomCheckboxCellEditor extends CellEditor {
             gd.horizontalIndent = 4;
             combo.setLayoutData(gd);
             combo.setFont(parent.getFont());
-            combo.addFocusListener(new FocusAdapter() {
+            combo.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void focusLost(FocusEvent e) {
+                public void widgetSelected(SelectionEvent e) {
                     applyEditorValue();
                 }
             });
