@@ -137,11 +137,13 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
             return "";
         }
 
+/*
         if (log.isDebugEnabled()) {
             for (Map.Entry<Object, Object> entry : command.getProperties().entrySet()) {
                 log.debug(entry.getKey() + "=" + entry.getValue());
             }
         }
+*/
 
         DB2TableColumn column = command.getObject();
 
