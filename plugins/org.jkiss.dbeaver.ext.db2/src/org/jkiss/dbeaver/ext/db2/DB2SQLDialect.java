@@ -20,7 +20,9 @@ package org.jkiss.dbeaver.ext.db2;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 
 /**
@@ -64,5 +66,11 @@ public class DB2SQLDialect extends JDBCSQLDialect {
     @Override
     public String getDualTableName() {
         return "SYSIBM.SYSDUMMY1";
+    }
+
+    @NotNull
+    @Override
+    public DBDBinaryFormatter getNativeBinaryFormatter() {
+        return BinaryFormatterHexString.INSTANCE;
     }
 }

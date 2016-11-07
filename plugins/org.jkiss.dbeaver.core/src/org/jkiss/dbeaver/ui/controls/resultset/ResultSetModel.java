@@ -437,7 +437,12 @@ public class ResultSetModel {
     public void setMetaData(@NotNull DBCResultSet resultSet, @NotNull DBDAttributeBinding[] newAttributes) {
 
         boolean update = false;
-        this.executionSource = resultSet.getSourceStatement().getStatementSource();
+        DBCStatement sourceStatement = resultSet.getSourceStatement();
+        if (sourceStatement != null) {
+            this.executionSource = sourceStatement.getStatementSource();
+        } else {
+            this.executionSource = null;
+        }
 
         if (this.attributes == null || this.attributes.length == 0 || this.attributes.length != newAttributes.length || isDynamicMetadata()) {
             update = true;
