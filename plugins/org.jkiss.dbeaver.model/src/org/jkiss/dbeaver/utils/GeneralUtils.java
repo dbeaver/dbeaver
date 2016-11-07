@@ -130,10 +130,8 @@ public class GeneralUtils {
         char[] chars = new char[length];
         for (int i = offset; i < offset + length; i++) {
             int b = bytes[i];
+            if (b < 0) b = -b + 127;
             if (b < 32) b = 32;
-            else if (b < 0) {
-                b = -b + 127;
-            }
             chars[i - offset] = (char) b;
         }
         return new String(chars);
