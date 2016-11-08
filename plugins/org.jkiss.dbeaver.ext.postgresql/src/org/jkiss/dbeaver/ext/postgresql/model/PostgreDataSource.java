@@ -160,22 +160,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load meta info")) {
-            try {
-                determineDefaultObjects(session);
-            } catch (Exception e) {
-                log.debug(e);
-            }
-
-            String searchPathStr = JDBCUtils.queryString(session, "SHOW search_path");
-            if (searchPathStr != null) {
-                for (String str : searchPathStr.replace("$user", activeUser).split(",")) {
-                    this.searchPath.add(DBUtils.getUnQuotedIdentifier(str, "\""));
-                }
-            } else {
-                this.searchPath.add(PostgreConstants.PUBLIC_SCHEMA_NAME);
-            }
-        } catch (SQLException e) {
-            log.error("Error reading connection meta info");
+            determineDefaultObjects(session);
+        } catch (Exception e) {
+            log.debug(e);
         }
 
         // Read databases
@@ -192,6 +179,16 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                     activeUser = JDBCUtils.safeGetString(rs, 3);
                 }
             }
+        }
+        String searchPathStr = JDBCUtils.queryString(session, "SHOW search_path");
+        this.searchPath.clear();
+        if (searchPathStr != null) {
+            for (String str : searchPathStr.replace("$user", activeUser).split(",")) {
+                str = str.trim();
+                this.searchPath.add(DBUtils.getUnQuotedIdentifier(str, "\""));
+            }
+        } else {
+            this.searchPath.add(PostgreConstants.PUBLIC_SCHEMA_NAME);
         }
     }
 
