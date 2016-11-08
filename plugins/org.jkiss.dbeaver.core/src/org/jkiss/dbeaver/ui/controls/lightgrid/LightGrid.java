@@ -2128,15 +2128,19 @@ public abstract class LightGrid extends Canvas {
                         cellBounds.y = y;
                         cellBounds.width = rowHeaderWidth;
                         cellBounds.height = getItemHeight() + 1;
+
                         gc.setClipping(cellBounds);
-                        rowHeaderRenderer.paint(
-                            gc,
-                            cellBounds,
-                            cellInRowSelected,
-                            parentNode == null ? 0 : parentNode.level,
-                            rowNode == null ? IGridContentProvider.ElementState.NONE : rowNode.state,
-                            rowElements[row]);
-                        gc.setClipping((Rectangle)null);
+                        try {
+                            rowHeaderRenderer.paint(
+                                gc,
+                                cellBounds,
+                                cellInRowSelected,
+                                parentNode == null ? 0 : parentNode.level,
+                                rowNode == null ? IGridContentProvider.ElementState.NONE : rowNode.state,
+                                rowElements[row]);
+                        } finally {
+                            gc.setClipping((Rectangle)null);
+                        }
                     }
                     x += rowHeaderWidth;
                 }
