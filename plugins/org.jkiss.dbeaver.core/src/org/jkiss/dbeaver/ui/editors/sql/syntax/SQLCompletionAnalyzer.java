@@ -236,7 +236,7 @@ class SQLCompletionAnalyzer
                     }
                 }
 
-                if (request.proposals.isEmpty() && !request.simpleMode) {
+                if (!request.simpleMode) {
                     // At last - try to find child tables by pattern
                     DBSStructureAssistant structureAssistant = null;
                     for (DBSObject object = childObject; object != null; object =  object.getParentObject()) {
