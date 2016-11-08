@@ -92,6 +92,7 @@ public final class ExasolTableCache extends JDBCStructCache<ExasolSchema, Exasol
             "		EXA_ALL_CONSTRAINT_COLUMNS cc\r\n" +
             "	on\r\n" +
             "		c.table_name = cc.constraint_table and\r\n" +
+            "       c.table_schem = cc.constraint_schema and\r\n " + 
             "		cc.constraint_type = 'PRIMARY KEY' and\r\n" +
             "		cc.COLUMN_NAME = c.COLUMN_NAME\r\n" +
             "where\r\n" +
@@ -109,6 +110,7 @@ public final class ExasolTableCache extends JDBCStructCache<ExasolSchema, Exasol
         "		EXA_ALL_CONSTRAINT_COLUMNS cc\r\n" +
         "	on\r\n" +
         "		c.table_name = cc.constraint_table and\r\n" +
+        "       c.table_schem = cc.constraint_schema and\r\n " + 
         "		cc.constraint_type = 'PRIMARY KEY' and\r\n" +
         "		cc.COLUMN_NAME = c.COLUMN_NAME\r\n" +
         "where\r\n" +
@@ -157,7 +159,6 @@ public final class ExasolTableCache extends JDBCStructCache<ExasolSchema, Exasol
     @Override
     protected ExasolTable fetchObject(@NotNull JDBCSession session, @NotNull ExasolSchema owner, @NotNull JDBCResultSet resultSet)
         throws SQLException, DBException {
-        // TODO Auto-generated method stub
         return new ExasolTable(session.getProgressMonitor(), owner, resultSet);
     }
 
