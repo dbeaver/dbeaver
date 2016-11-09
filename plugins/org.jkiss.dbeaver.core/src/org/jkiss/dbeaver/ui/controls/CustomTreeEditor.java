@@ -132,6 +132,9 @@ public abstract class CustomTreeEditor implements MouseListener, TraverseListene
                     columnIndex++;
                 } else {
                     item = UIUtils.getNextTreeItem(tree, treeEditor.getItem());
+                    if (item == null && tree.getItemCount() > 0) {
+                        item = tree.getItem(0);
+                    }
                     if (item != null) {
                         columnIndex = firstTraverseIndex > 0 ? firstTraverseIndex : 0;
                     } else {
