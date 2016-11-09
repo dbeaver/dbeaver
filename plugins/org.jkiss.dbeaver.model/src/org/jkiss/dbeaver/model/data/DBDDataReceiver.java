@@ -39,7 +39,7 @@ public interface DBDDataReceiver {
      * Called after entire result set if fetched.
      * @throws DBCException on error
      * @param session execution context
-     * @param resultSet
+     * @param resultSet    result set
      */
     void fetchEnd(DBCSession session, DBCResultSet resultSet)
         throws DBCException;

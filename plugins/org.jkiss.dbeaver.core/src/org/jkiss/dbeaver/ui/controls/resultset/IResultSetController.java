@@ -27,6 +27,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -132,7 +133,7 @@ public interface IResultSetController extends DBPContextProvider {
 
     void navigateHistory(int position);
 
-    void setStatus(String message, boolean error);
+    void setStatus(String message, DBPMessageType messageType);
 
     void updateStatusMessage();
 

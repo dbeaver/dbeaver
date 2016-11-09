@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -404,7 +405,7 @@ class ResultSetPersister {
                                             DataUpdaterJob.this.updateStats.getRowsUpdated()}));
                             } else {
                                 UIUtils.showErrorDialog(viewer.getSite().getShell(), "Data error", "Error synchronizing data with database", error);
-                                viewer.setStatus(GeneralUtils.getFirstMessage(error), true);
+                                viewer.setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
                             }
                         }
                         viewer.fireResultSetChange();

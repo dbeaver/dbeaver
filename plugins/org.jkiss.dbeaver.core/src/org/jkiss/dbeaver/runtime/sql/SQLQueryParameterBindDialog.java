@@ -484,9 +484,9 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
 
         @Override
-        public void showMessage(String message, boolean error)
+        public void showMessage(String message, DBPMessageType messageType)
         {
-            updateStatus(new Status(error ? Status.ERROR : Status.INFO, DBeaverCore.PLUGIN_ID, message));
+            updateStatus(new Status(messageType.getStatusCode(), DBeaverCore.PLUGIN_ID, message));
         }
     }
 

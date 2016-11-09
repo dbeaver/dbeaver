@@ -25,6 +25,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -55,7 +56,7 @@ public class XMLPanelEditor implements IStreamValueEditor<StyledText> {
         try {
             editor.init(subSite, StringEditorInput.EMPTY_INPUT);
         } catch (PartInitException e) {
-            valueController.showMessage(e.getMessage(), true);
+            valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
             return new StyledText(valueController.getEditPlaceholder(), SWT.NONE);
         }
         editor.createPartControl(valueController.getEditPlaceholder());

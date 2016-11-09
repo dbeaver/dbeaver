@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -34,6 +36,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -47,7 +50,7 @@ public class StatusLabel extends Composite {
 
     private final Label statusIcon;
     private final Text statusText;
-    private final Color colorRed;
+    private final Color colorDefault, colorError, colorWarning;
 
     public StatusLabel(@NotNull Composite parent) {
         this(parent, null);
@@ -61,11 +64,13 @@ public class StatusLabel extends Composite {
         layout.marginHeight = 2;
         layout.marginWidth = 2;
         setLayout(layout);
-        
-        colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
+
+        colorDefault = getForeground();
+        colorError = JFaceColors.getErrorText(Display.getDefault());
+        colorWarning = colorDefault;
 
         statusIcon = new Label(this, SWT.NONE);
-        statusIcon.setImage(JFaceResources.getImage(org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_INFO));
+        statusIcon.setImage(JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_INFO));
         statusIcon.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         statusText = new Text(this, SWT.READ_ONLY);
@@ -101,24 +106,35 @@ public class StatusLabel extends Composite {
         });
     }
 
-    public void setStatus(String status, boolean error)
+    public void setStatus(String message, DBPMessageType status)
     {
         if (statusText.isDisposed()) {
             return;
         }
-        if (error) {
-            statusText.setForeground(colorRed);
-        } else if (colorRed.equals(statusText.getForeground())) {
-            statusText.setForeground(this.getForeground());
+        Color fg;
+        String statusIconId;
+        switch (status) {
+            case ERROR:
+                fg = colorError;
+                statusIconId = Dialog.DLG_IMG_MESSAGE_ERROR;
+                break;
+            case WARNING:
+                fg = colorWarning;
+                statusIconId = Dialog.DLG_IMG_MESSAGE_WARNING;
+                break;
+            default:
+                fg = colorDefault;
+                statusIconId = Dialog.DLG_IMG_MESSAGE_INFO;
+                break;
         }
-        if (status == null) {
-            status = "???"; //$NON-NLS-1$
+        statusText.setForeground(fg);
+        if (message == null) {
+            message = "???"; //$NON-NLS-1$
         }
-        String statusIconId = error ? org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_ERROR : org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_INFO;
         statusIcon.setImage(JFaceResources.getImage(statusIconId));
-        statusText.setText(status);
-        if (error) {
-            statusText.setToolTipText(status);
+        statusText.setText(message);
+        if (status != DBPMessageType.INFORMATION) {
+            statusText.setToolTipText(message);
         } else {
             statusText.setToolTipText(null);
         }

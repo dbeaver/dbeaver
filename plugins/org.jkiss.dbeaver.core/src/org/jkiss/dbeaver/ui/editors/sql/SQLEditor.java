@@ -707,7 +707,7 @@ public class SQLEditor extends SQLEditorBase implements
     {
         final SQLQuery sqlQuery = extractActiveQuery();
         if (sqlQuery == null) {
-            setStatus(CoreMessages.editors_sql_status_empty_query_string, true);
+            setStatus(CoreMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
             return;
         }
         final CTabItem planItem = UIUtils.getTabItem(resultTabs, planView);
@@ -733,7 +733,7 @@ public class SQLEditor extends SQLEditorBase implements
     {
         IDocument document = getDocument();
         if (document == null) {
-            setStatus(CoreMessages.editors_sql_status_cant_obtain_document, true);
+            setStatus(CoreMessages.editors_sql_status_cant_obtain_document, DBPMessageType.ERROR);
             return;
         }
         List<SQLQuery> queries;
@@ -749,7 +749,7 @@ public class SQLEditor extends SQLEditorBase implements
             // Execute statement under cursor or selected text (if selection present)
             SQLQuery sqlQuery = extractActiveQuery();
             if (sqlQuery == null) {
-                setStatus(CoreMessages.editors_sql_status_empty_query_string, true);
+                setStatus(CoreMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
                 return;
             } else {
                 queries = Collections.singletonList(sqlQuery);
@@ -825,7 +825,7 @@ public class SQLEditor extends SQLEditorBase implements
             } catch (DBException ex) {
                 ResultSetViewer viewer = getActiveResultSetViewer();
                 if (viewer != null) {
-                    viewer.setStatus(ex.getMessage(), true);
+                    viewer.setStatus(ex.getMessage(), DBPMessageType.ERROR);
                 }
                 UIUtils.showErrorDialog(
                     getSite().getShell(),
@@ -903,11 +903,11 @@ public class SQLEditor extends SQLEditorBase implements
         return queryList;
     }
 
-    private void setStatus(String status, boolean error)
+    private void setStatus(String status, DBPMessageType messageType)
     {
         ResultSetViewer resultsView = getActiveResultSetViewer();
         if (resultsView != null) {
-            resultsView.setStatus(status, error);
+            resultsView.setStatus(status, messageType);
         }
     }
 
@@ -1206,7 +1206,7 @@ public class SQLEditor extends SQLEditorBase implements
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 if (select) {
                     selectAndReveal(query.getOffset(), query.getLength());
-                    setStatus(query.getQuery(), false);
+                    setStatus(query.getQuery(), DBPMessageType.INFORMATION);
                 } else {
                     getSourceViewer().revealRange(query.getOffset(), query.getLength());
                 }
@@ -1725,7 +1725,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             Throwable error = result.getError();
             if (error != null) {
-                setStatus(GeneralUtils.getFirstMessage(error), true);
+                setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
                 if (!scrollCursorToError(session, result, error)) {
                     getSelectionProvider().setSelection(originalSelection);
                 }

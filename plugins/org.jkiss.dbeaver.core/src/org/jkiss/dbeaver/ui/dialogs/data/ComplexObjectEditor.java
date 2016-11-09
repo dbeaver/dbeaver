@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -486,7 +487,7 @@ public class ComplexObjectEditor extends TreeViewer {
         }
 
         @Override
-        public void showMessage(String message, boolean error)
+        public void showMessage(String message, DBPMessageType messageType)
         {
 
         }
