@@ -281,8 +281,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         long startTime = System.currentTimeMillis();
         boolean startQueryAlerted = false;
 
-        Boolean hasParameters = prepareStatementParameters(sqlQuery);
-        if (hasParameters == null) {
+        if (!prepareStatementParameters(sqlQuery)) {
             return false;
         }
 
@@ -326,7 +325,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             final DBCStatement dbcStatement = DBUtils.prepareStatement(
                 source,
                 session,
-                hasParameters ? DBCStatementType.QUERY : DBCStatementType.SCRIPT,
+                DBCStatementType.QUERY,
                 sqlQuery,
                 rsOffset, rsMaxRows);
             curStatement = dbcStatement;
@@ -485,29 +484,40 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         fetchQueryData(session, fakeResultSet, resultInfo, dataReceiver, false);
     }
 
-    private Boolean prepareStatementParameters(SQLQuery sqlStatement) {
+    private boolean prepareStatementParameters(SQLQuery sqlStatement) {
         // Bind parameters
         List<SQLQueryParameter> parameters = sqlStatement.getParameters();
-        if (!CommonUtils.isEmpty(parameters)) {
-            // Resolve parameters
-            if (!fillStatementParameters(parameters)) {
-                return null;
-            }
-            // Set values for all parameters
-            // Replace parameter tokens with parameter values
-            String query = sqlStatement.getQuery();
-            for (int i = parameters.size(); i > 0; i--) {
-                SQLQueryParameter parameter = parameters.get(i - 1);
-                query = query.substring(0, parameter.getTokenOffset()) + parameter.getValue() + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
-            }
-            sqlStatement.setQuery(query);
+        if (CommonUtils.isEmpty(parameters)) {
             return true;
         }
-        return false;
+        // Resolve parameters
+        if (!fillStatementParameters(parameters)) {
+            return false;
+        }
+
+        // Set values for all parameters
+        // Replace parameter tokens with parameter values
+        String query = sqlStatement.getQuery();
+        for (int i = parameters.size(); i > 0; i--) {
+            SQLQueryParameter parameter = parameters.get(i - 1);
+            query = query.substring(0, parameter.getTokenOffset()) + parameter.getValue() + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
+        }
+        sqlStatement.setQuery(query);
+        return true;
     }
 
     private boolean fillStatementParameters(final List<SQLQueryParameter> parameters)
     {
+        boolean allSet = true;
+        for (SQLQueryParameter param : parameters) {
+            if (param.getValue() == null) {
+                allSet = false;
+                break;
+            }
+        }
+        if (allSet) {
+            return true;
+        }
         return new UIConfirmation() {
             @Override
             public Boolean runTask() {
