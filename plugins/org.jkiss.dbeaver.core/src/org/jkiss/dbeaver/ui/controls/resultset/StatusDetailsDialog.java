@@ -17,26 +17,21 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.preference.ColorSelector;
-import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.UIIcon;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
-import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
+import org.jkiss.dbeaver.ui.dialogs.ViewExceptionDialog;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Arrays;
 import java.util.List;
 
 class StatusDetailsDialog extends EditTextDialog {
@@ -45,6 +40,7 @@ class StatusDetailsDialog extends EditTextDialog {
 
     private final ResultSetViewer resultSetViewer;
     private final List<Throwable> warnings;
+    private Table warnTable;
 
     public StatusDetailsDialog(ResultSetViewer resultSetViewer, String message, List<Throwable> warnings) {
         super(resultSetViewer.getControl().getShell(), "Status details", message);
@@ -70,7 +66,7 @@ class StatusDetailsDialog extends EditTextDialog {
         if (!CommonUtils.isEmpty(warnings)) {
             // Create warnings table
             UIUtils.createControlLabel(composite, "Warnings");
-            Table warnTable = new Table(composite, SWT.BORDER);
+            warnTable = new Table(composite, SWT.BORDER);
             warnTable.setLinesVisible(true);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.minimumHeight = 100;
@@ -80,8 +76,33 @@ class StatusDetailsDialog extends EditTextDialog {
                 warnItem.setText(ex.getMessage());
                 warnItem.setData(ex);
             }
+            warnTable.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDoubleClick(MouseEvent e) {
+                    openWarning();
+                }
+            });
+            warnTable.addTraverseListener(new TraverseListener() {
+                @Override
+                public void keyTraversed(TraverseEvent e) {
+                    if (e.detail == SWT.TRAVERSE_RETURN) {
+                        openWarning();
+                        e.doit = false;
+                    }
+                }
+            });
         }
         return composite;
+    }
+
+    private void openWarning() {
+        TableItem[] selection = warnTable.getSelection();
+        if (selection.length == 0) {
+            return;
+        }
+        Throwable error = (Throwable) selection[0].getData();
+        ViewExceptionDialog veDialog = new ViewExceptionDialog(getShell(), error);
+        veDialog.open();
     }
 
 }
