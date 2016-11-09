@@ -1185,37 +1185,40 @@ public class ResultSetViewer extends Viewer
 
     public void setStatus(String status)
     {
-        setStatus(status, false);
+        setStatus(status, DBPMessageType.INFORMATION);
     }
 
-    public void setStatus(String status, boolean error)
+    public void setStatus(String status, DBPMessageType messageType)
     {
         if (statusLabel.isDisposed()) {
             return;
         }
-        statusLabel.setStatus(status, error);
+        statusLabel.setStatus(status, messageType);
     }
 
     public void updateStatusMessage()
     {
+        String statusMessage;
         if (model.getRowCount() == 0) {
             if (model.getVisibleAttributeCount() == 0) {
-                setStatus(CoreMessages.controls_resultset_viewer_status_empty + getExecutionTimeMessage());
+                statusMessage = CoreMessages.controls_resultset_viewer_status_empty + getExecutionTimeMessage();
             } else {
-                setStatus(CoreMessages.controls_resultset_viewer_status_no_data + getExecutionTimeMessage());
+                statusMessage = CoreMessages.controls_resultset_viewer_status_no_data + getExecutionTimeMessage();
             }
         } else {
             if (recordMode) {
-                setStatus(
+                statusMessage =
                     CoreMessages.controls_resultset_viewer_status_row + (curRow == null ? 0 : curRow.getVisualNumber() + 1) +
                         "/" + model.getRowCount() +
-                    (curRow == null ? getExecutionTimeMessage() : ""));
+                    (curRow == null ? getExecutionTimeMessage() : "");
             } else {
-                setStatus(
+                statusMessage =
                     String.valueOf(model.getRowCount()) +
-                    CoreMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage());
+                    CoreMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage();
             }
         }
+        boolean hasWarnings = !dataReceiver.getErrorList().isEmpty();
+        setStatus(statusMessage, hasWarnings ? DBPMessageType.WARNING : DBPMessageType.INFORMATION);
     }
 
     private String getExecutionTimeMessage()
@@ -2203,7 +2206,7 @@ public class ResultSetViewer extends Viewer
                             }
                             final Shell shell = control.getShell();
                             if (error != null) {
-                                setStatus(error.getMessage(), true);
+                                setStatus(error.getMessage(), DBPMessageType.ERROR);
                                 UIUtils.showErrorDialog(
                                     shell,
                                     "Error executing query",

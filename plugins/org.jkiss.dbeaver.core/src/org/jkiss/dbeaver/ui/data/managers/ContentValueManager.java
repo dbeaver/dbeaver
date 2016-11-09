@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBPPropertyManager;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
@@ -85,7 +86,7 @@ public class ContentValueManager extends BaseValueManager {
             DBDContent content = (DBDContent)value;
             return ContentEditor.openEditor(controller, content);
         } else {
-            controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, true);
+            controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, DBPMessageType.ERROR);
             return null;
         }
     }

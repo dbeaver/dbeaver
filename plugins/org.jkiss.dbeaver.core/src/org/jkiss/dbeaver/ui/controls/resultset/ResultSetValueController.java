@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -206,9 +207,9 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     }
 
     @Override
-    public void showMessage(String message, boolean error)
+    public void showMessage(String message, DBPMessageType messageType)
     {
-        controller.setStatus(message, error);
+        controller.setStatus(message, messageType);
     }
 
     @NotNull

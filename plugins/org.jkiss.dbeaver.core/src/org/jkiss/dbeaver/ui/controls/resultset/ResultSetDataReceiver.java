@@ -45,7 +45,10 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     private long offset;
     private long maxRows;
 
-    private Map<DBCAttributeMetaData, List<String>> errors = new HashMap<>();
+    // Attribute fetching errors. Collect them to avoid tons of similar error in log
+    private Map<DBCAttributeMetaData, List<String>> attrErrors = new HashMap<>();
+    // All (unique) errors happened during fetch
+    private List<Throwable> errorList = new ArrayList<>();
 
     ResultSetDataReceiver(ResultSetViewer resultSetViewer)
     {
@@ -64,10 +67,15 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         this.nextSegmentRead = nextSegmentRead;
     }
 
+    public List<Throwable> getErrorList() {
+        return errorList;
+    }
+
     @Override
     public void fetchStart(DBCSession session, final DBCResultSet resultSet, long offset, long maxRows)
         throws DBCException
     {
+        this.errorList.clear();
         this.rows.clear();
         this.offset = offset;
         this.maxRows = maxRows;
@@ -106,18 +114,19 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 // Do not reports the same error multiple times
                 // There are a lot of error could occur during result set fetch
                 // We report certain error only once
-                List<String> errorList = errors.get(metaColumns[i].getMetaAttribute());
-                if (errorList == null) {
-                    errorList = new ArrayList<>();
-                    errors.put(metaColumns[i].getMetaAttribute(), errorList);
+                List<String> attrErrors = this.attrErrors.get(metaColumns[i].getMetaAttribute());
+                if (attrErrors == null) {
+                    attrErrors = new ArrayList<>();
+                    this.attrErrors.put(metaColumns[i].getMetaAttribute(), attrErrors);
                 }
                 String errMessage = e.getClass().getName();
                 if (!errMessage.startsWith("java.lang.")) {
                     errMessage += ":" + e.getMessage();
                 }
-                if (!errorList.contains(errMessage)) {
+                if (!attrErrors.contains(errMessage)) {
                     log.warn("Can't read column '" + metaColumns[i].getName() + "' value", e);
-                    errorList.add(errMessage);
+                    attrErrors.add(errMessage);
+                    errorList.add(e);
                 }
             }
         }
@@ -129,8 +138,12 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         throws DBCException
     {
         if (!nextSegmentRead) {
-            // Read locators' metadata
-            ResultSetUtils.bindAttributes(session, resultSet, metaColumns, rows);
+            try {
+                // Read locators' metadata
+                ResultSetUtils.bindAttributes(session, resultSet, metaColumns, rows);
+            } catch (Throwable e) {
+                errorList.add(e);
+            }
         }
 
         final List<Object[]> tmpRows = rows;
@@ -157,7 +170,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     {
         nextSegmentRead = false;
 
-        errors.clear();
+        attrErrors.clear();
         rows = new ArrayList<>();
     }
 

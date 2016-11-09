@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -89,11 +90,11 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
     {
         final DBDContent content = (DBDContent) valueController.getValue();
         if (content == null) {
-            valueController.showMessage("NULL content value. Must be DBDContent.", true);
+            valueController.showMessage("NULL content value. Must be DBDContent.", DBPMessageType.ERROR);
             return;
         }
         if (streamEditor == null) {
-            valueController.showMessage("NULL content editor.", true);
+            valueController.showMessage("NULL content editor.", DBPMessageType.ERROR);
             return;
         }
         DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), new DBRRunnableWithProgress() {
@@ -102,7 +103,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
                 try {
                     streamEditor.primeEditorValue(monitor, control, content);
                 } catch (DBException e) {
-                    valueController.showMessage(e.getMessage(), true);
+                    valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
                 }
             }
         });
@@ -120,7 +121,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
             try {
                 streamEditor.extractEditorValue(VoidProgressMonitor.INSTANCE, control, content);
             } catch (Exception e) {
-                valueController.showMessage(e.getMessage(), true);
+                valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
             }
         }
         return content;
@@ -173,7 +174,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
                         }
                     }
                 } catch (Exception e) {
-                    valueController.showMessage(e.getMessage(), true);
+                    valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
                 } finally {
                     monitor.done();
                 }

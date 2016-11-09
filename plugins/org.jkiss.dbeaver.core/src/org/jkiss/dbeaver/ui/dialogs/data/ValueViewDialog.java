@@ -34,6 +34,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -161,7 +162,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
             }
 
             @Override
-            public void showMessage(String message, boolean error)
+            public void showMessage(String message, DBPMessageType messageType)
             {
             }
         });

@@ -17,11 +17,11 @@
  */
 package org.jkiss.dbeaver.ui.data;
 
-import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -115,9 +115,9 @@ public interface IValueController
 
     /**
      * Show error/warning message in grid control.
+     * @param messageType status message type
      * @param message error message
-     * @param error true for error, false for informational message
      */
-    void showMessage(String message, boolean error);
+    void showMessage(String message, DBPMessageType messageType);
 
 }
