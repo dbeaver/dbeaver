@@ -21,10 +21,7 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -51,6 +48,7 @@ public class StatusLabel extends Composite {
     private final Label statusIcon;
     private final Text statusText;
     private final Color colorDefault, colorError, colorWarning;
+    private DBPMessageType messageType;
 
     public StatusLabel(@NotNull Composite parent) {
         this(parent, null);
@@ -101,19 +99,33 @@ public class StatusLabel extends Composite {
         detailsIcon.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseUp(MouseEvent e) {
-                EditTextDialog.showText(getShell(), CoreMessages.controls_resultset_viewer_dialog_status_title, statusText.getText());
+                showDetails();
+            }
+        });
+        statusText.addTraverseListener(new TraverseListener() {
+            @Override
+            public void keyTraversed(TraverseEvent e) {
+                if (e.detail == SWT.TRAVERSE_RETURN) {
+                    showDetails();
+                }
             }
         });
     }
 
-    public void setStatus(String message, DBPMessageType status)
+    protected void showDetails() {
+        EditTextDialog.showText(getShell(), CoreMessages.controls_resultset_viewer_dialog_status_title, statusText.getText());
+    }
+
+    public void setStatus(String message, DBPMessageType messageType)
     {
         if (statusText.isDisposed()) {
             return;
         }
+        this.messageType = messageType;
+
         Color fg;
         String statusIconId;
-        switch (status) {
+        switch (messageType) {
             case ERROR:
                 fg = colorError;
                 statusIconId = Dialog.DLG_IMG_MESSAGE_ERROR;
@@ -133,11 +145,18 @@ public class StatusLabel extends Composite {
         }
         statusIcon.setImage(JFaceResources.getImage(statusIconId));
         statusText.setText(message);
-        if (status != DBPMessageType.INFORMATION) {
+        if (messageType != DBPMessageType.INFORMATION) {
             statusText.setToolTipText(message);
         } else {
             statusText.setToolTipText(null);
         }
     }
 
+    public String getMessage() {
+        return statusText.getText();
+    }
+
+    public DBPMessageType getMessageType() {
+        return messageType;
+    }
 }

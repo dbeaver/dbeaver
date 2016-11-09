@@ -1035,9 +1035,14 @@ public class ResultSetViewer extends Viewer
 
         presentationSwitchToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
-        statusLabel = new StatusLabel(statusBar, getSite());
+        statusLabel = new StatusLabel(statusBar, getSite()) {
+            @Override
+            protected void showDetails() {
+                showStatusDetails();
+            }
+        };
         final int fontHeight = statusLabel.getFont().getFontData()[0].getHeight();
-        statusLabel.setLayoutData(new RowData(35 * fontHeight, SWT.DEFAULT));
+        statusLabel.setLayoutData(new RowData(40 * fontHeight, SWT.DEFAULT));
 
         RowData rd = new RowData();
         rd.exclude = true;
@@ -1218,6 +1223,9 @@ public class ResultSetViewer extends Viewer
             }
         }
         boolean hasWarnings = !dataReceiver.getErrorList().isEmpty();
+        if (hasWarnings) {
+            statusMessage += " - " + dataReceiver.getErrorList().size() + " warning(s)";
+        }
         setStatus(statusMessage, hasWarnings ? DBPMessageType.WARNING : DBPMessageType.INFORMATION);
     }
 
@@ -1229,6 +1237,17 @@ public class ResultSetViewer extends Viewer
         }
         return " - " + RuntimeUtils.formatExecutionTime(statistics.getTotalTime());
     }
+
+    private void showStatusDetails() {
+        StatusDetailsDialog dialog = new StatusDetailsDialog(
+            this,
+            statusLabel.getMessage(),
+            dataReceiver.getErrorList());
+        dialog.open();
+    }
+
+    ///////////////////////////////////////
+    // Data & metadata
 
     /**
      * Sets new metadata of result set

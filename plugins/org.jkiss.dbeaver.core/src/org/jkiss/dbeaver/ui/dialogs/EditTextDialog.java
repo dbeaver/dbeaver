@@ -47,7 +47,7 @@ public class EditTextDialog extends BaseDialog {
     protected Composite createDialogArea(Composite parent)
     {
         Composite composite = super.createDialogArea(parent);
-
+        createControlsBeforeText(composite);
         textControl = new Text(composite, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
         textControl.setText(text);
         textControl.setEditable(!readonly);
@@ -62,7 +62,11 @@ public class EditTextDialog extends BaseDialog {
         gd.minimumWidth = 100;
         textControl.setLayoutData(gd);
 
-        return parent;
+        return composite;
+    }
+
+    protected void createControlsBeforeText(Composite composite) {
+
     }
 
     @Override
