@@ -281,6 +281,11 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         long startTime = System.currentTimeMillis();
         boolean startQueryAlerted = false;
 
+        Boolean hasParameters = prepareStatementParameters(sqlQuery);
+        if (hasParameters == null) {
+            return false;
+        }
+
         // Modify query (filters + parameters)
         if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
             String filteredQueryText = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(
@@ -301,11 +306,6 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             if (!connectionInvalidated && dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
                 executionContext.invalidateContext(session.getProgressMonitor());
                 connectionInvalidated = true;
-            }
-
-            Boolean hasParameters = prepareStatementParameters(sqlQuery);
-            if (hasParameters == null) {
-                return false;
             }
 
             statistics.setQueryText(originalQuery.getQuery());
@@ -338,10 +338,6 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                 } catch (Throwable e) {
                     log.debug("Can't set statement timeout:" + e.getMessage());
                 }
-            }
-
-            if (hasParameters) {
-                bindStatementParameters(session, dbcStatement, sqlQuery);
             }
 
             // Execute statement
@@ -404,9 +400,6 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                 if (!keepStatementOpen()) {
                     closeStatement();
                 }
-
-                // Release parameters
-                releaseStatementParameters(sqlQuery);
             }
         }
         catch (Throwable ex) {
@@ -494,20 +487,20 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
 
     private Boolean prepareStatementParameters(SQLQuery sqlStatement) {
         // Bind parameters
-        if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
-            List<SQLQueryParameter> unresolvedParams = new ArrayList<>();
-            for (SQLQueryParameter param : sqlStatement.getParameters()) {
-                if (!param.isResolved()) {
-                    unresolvedParams.add(param);
-                }
-            }
-            if (!CommonUtils.isEmpty(unresolvedParams)) {
-                // Resolve parameters
-                if (!fillStatementParameters(unresolvedParams)) {
-                    return null;
-                }
+        List<SQLQueryParameter> parameters = sqlStatement.getParameters();
+        if (!CommonUtils.isEmpty(parameters)) {
+            // Resolve parameters
+            if (!fillStatementParameters(parameters)) {
+                return null;
             }
             // Set values for all parameters
+            // Replace parameter tokens with parameter values
+            String query = sqlStatement.getQuery();
+            for (int i = parameters.size(); i > 0; i--) {
+                SQLQueryParameter parameter = parameters.get(i - 1);
+                query = query.substring(0, parameter.getTokenOffset()) + parameter.getValue() + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
+            }
+            sqlStatement.setQuery(query);
             return true;
         }
         return false;
@@ -519,39 +512,11 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             @Override
             public Boolean runTask() {
                 SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
-                    partSite,
-                    getExecutionContext(),
+                    partSite.getShell(),
                     parameters);
                 return (dialog.open() == IDialogConstants.OK_ID);
             }
         }.execute();
-    }
-
-    private void bindStatementParameters(DBCSession session, DBCStatement dbcStatement, SQLQuery sqlStatement) throws DBCException {
-        // Bind them
-        for (SQLQueryParameter param : sqlStatement.getParameters()) {
-            if (param.isResolved()) {
-                // convert value to native form
-                Object realValue = param.getValueHandler().getValueFromObject(session, param, param.getValue(), false);
-                // bind
-                param.getValueHandler().bindValueObject(
-                    session,
-                    dbcStatement,
-                    param,
-                    param.getOrdinalPosition(),
-                    realValue);
-            }
-        }
-    }
-
-    private void releaseStatementParameters(SQLQuery sqlStatement) {
-        if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
-            for (SQLQueryParameter param : sqlStatement.getParameters()) {
-                if (param.isResolved()) {
-                    param.getValueHandler().releaseValueObject(param.getValue());
-                }
-            }
-        }
     }
 
     private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, SQLQueryResult result, DBDDataReceiver dataReceiver, boolean updateStatistics)

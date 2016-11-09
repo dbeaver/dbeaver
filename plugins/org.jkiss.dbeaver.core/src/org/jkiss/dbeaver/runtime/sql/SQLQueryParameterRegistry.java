@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.runtime.sql;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -46,12 +46,10 @@ public class SQLQueryParameterRegistry
 
     public static class ParameterInfo {
         public String name;
-        public String type;
         public String value;
 
-        public ParameterInfo(String name, String type, String value) {
+        public ParameterInfo(String name, String value) {
             this.name = name;
-            this.type = type;
             this.value = value;
         }
     }
@@ -74,9 +72,9 @@ public class SQLQueryParameterRegistry
         return parameterMap.get(name.toUpperCase(Locale.ENGLISH));
     }
 
-    public void setParameter(String name, String type, String value)
+    public void setParameter(String name, String value)
     {
-        parameterMap.put(name.toUpperCase(Locale.ENGLISH), new ParameterInfo(name, type, value));
+        parameterMap.put(name.toUpperCase(Locale.ENGLISH), new ParameterInfo(name, value));
     }
 
     private void loadProfiles()
@@ -106,13 +104,10 @@ public class SQLQueryParameterRegistry
             XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             xml.startElement("bindings");
-            for (Map.Entry<String, ParameterInfo> binding : parameterMap.entrySet()) {
+            for (ParameterInfo param : parameterMap.values()) {
                 xml.startElement(TAG_PARAMETER);
-                xml.addAttribute(RegistryConstants.ATTR_NAME, binding.getValue().name);
-                if (binding.getValue().type != null) {
-                    xml.addAttribute(RegistryConstants.ATTR_TYPE, binding.getValue().type);
-                }
-                xml.addText(binding.getValue().value);
+                xml.addAttribute(RegistryConstants.ATTR_NAME, param.name);
+                xml.addAttribute(RegistryConstants.ATTR_VALUE, param.value);
                 xml.endElement();
             }
             xml.endElement();
@@ -125,9 +120,8 @@ public class SQLQueryParameterRegistry
 
     private class ParametersParser implements SAXListener
     {
-        private String curParameterName;
-        private String curParameterType;
-        private StringBuilder curParameterValue = new StringBuilder();
+        private String curParameterName, curParameterValue;
+        private StringBuilder legacyParameterValue = new StringBuilder();
 
         @Override
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
@@ -135,7 +129,7 @@ public class SQLQueryParameterRegistry
         {
             if (localName.equals(TAG_PARAMETER)) {
                 curParameterName = atts.getValue(RegistryConstants.ATTR_NAME);
-                curParameterType = atts.getValue(RegistryConstants.ATTR_TYPE);
+                curParameterValue = atts.getValue(RegistryConstants.ATTR_VALUE);
             }
         }
 
@@ -144,7 +138,7 @@ public class SQLQueryParameterRegistry
             throws XMLException
         {
             if (curParameterName != null) {
-                curParameterValue.append(data);
+                legacyParameterValue.append(data);
             }
         }
 
@@ -153,11 +147,21 @@ public class SQLQueryParameterRegistry
             throws XMLException
         {
             if (localName.equals(TAG_PARAMETER) && curParameterName != null) {
+                if (curParameterValue == null) {
+                    String legacyValue = legacyParameterValue.toString().trim();
+                    if (!legacyValue.isEmpty()) {
+                        if (Character.isLetter(legacyValue.charAt(0))) {
+                            // Quote strings
+                            legacyValue = "'" + legacyValue + "'";
+                        }
+                    }
+                    curParameterValue = legacyValue;
+                }
                 parameterMap.put(
                     curParameterName.toUpperCase(),
-                    new ParameterInfo(curParameterName, curParameterType, curParameterValue.toString()));
+                    new ParameterInfo(curParameterName, curParameterValue));
                 curParameterName = null;
-                curParameterValue.setLength(0);
+                legacyParameterValue.setLength(0);
             }
         }
     }

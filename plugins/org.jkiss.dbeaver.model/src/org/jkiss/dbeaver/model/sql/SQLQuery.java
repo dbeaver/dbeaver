@@ -80,6 +80,7 @@ public class SQLQuery {
     public SQLQuery(@NotNull String query, @NotNull SQLQuery sourceQuery) {
         this(query, sourceQuery, true);
     }
+
     public SQLQuery(@NotNull String query, @NotNull SQLQuery sourceQuery, boolean preserveOriginal) {
         this(query, sourceQuery.offset, sourceQuery.length);
         if (preserveOriginal) {
@@ -257,13 +258,6 @@ public class SQLQuery {
     public void setParameters(List<SQLQueryParameter> parameters)
     {
         this.parameters = parameters;
-        if (parameters != null) {
-            // Replace parameter tokens with "?" symbol
-            for (int i = parameters.size(); i > 0; i--) {
-                SQLQueryParameter parameter = parameters.get(i - 1);
-                query = query.substring(0, parameter.getTokenOffset()) + "?" + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
-            }
-        }
     }
 
     public void reset() {
