@@ -149,7 +149,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             tableEditor.showEditor(paramTable.getItem(0), 2);
         }
 
-        updateStatus(GeneralUtils.makeInfoStatus("Use Tab key to switch parameters"));
+        updateStatus(GeneralUtils.makeInfoStatus("Use Tab to switch. String values must be quoted. You can use expressions in values"));
         return composite;
     }
 
