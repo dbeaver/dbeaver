@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.TextUtils;
@@ -166,6 +167,21 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     @Override
     public void apply(IDocument document) {
         try {
+            boolean insertTrailingSpace = true;
+            if (object instanceof DBSObjectContainer) {
+                // Do not append trailing space after schemas/catalogs/etc.
+            } else {
+                int docLen = document.getLength();
+                if (docLen <= replacementOffset + 2) {
+                    insertTrailingSpace = false;
+                } else {
+                    insertTrailingSpace = document.getChar(replacementOffset + 1) != ' ';
+                }
+                if (insertTrailingSpace) {
+                    replacementString += " ";
+                }
+                cursorPosition++;
+            }
             document.replace(replacementOffset, replacementLength, replacementString);
         } catch (BadLocationException e) {
             // ignore
