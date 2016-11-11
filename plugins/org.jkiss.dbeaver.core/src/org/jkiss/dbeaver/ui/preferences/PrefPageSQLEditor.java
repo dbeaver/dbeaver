@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -45,14 +44,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button saveOnQueryExecution;
     private Button autoSaveOnClose;
 
-    // Auto-close
-    private Button acSingleQuotesCheck;
-    private Button acDoubleQuotesCheck;
-    private Button acBracketsCheck;
-    // Auto-Format
-    private Button afKeywordCase;
-    private Button afExtractFromSource;
-
     private Button autoFoldersCheck;
     private Text scriptTitlePattern;
 
@@ -72,14 +63,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE) ||
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) ||
-    
-            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES) ||
-            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES) ||
-            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS) ||
-            store.contains(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO) ||
-            store.contains(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE) ||
 
-            store.contains(DBeaverPreferences.SCRIPT_TITLE_PATTERN) ||
             store.contains(DBeaverPreferences.SCRIPT_AUTO_FOLDERS)
         ;
     }
@@ -95,12 +79,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Composite composite2 = UIUtils.createPlaceholder(composite, 2);
-        ((GridLayout)composite2.getLayout()).horizontalSpacing = 5;
-        composite2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
         {
-            Group connectionsGroup = UIUtils.createControlGroup(composite2, "Connections", 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+            Group connectionsGroup = UIUtils.createControlGroup(composite, "Connections", 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
             editorSeparateConnectionCheck = UIUtils.createCheckbox(connectionsGroup, "Open separate connection for each editor", false);
 
             connectOnActivationCheck = UIUtils.createCheckbox(connectionsGroup, "Connect on editor activation", false);
@@ -108,37 +88,14 @@ public class PrefPageSQLEditor extends TargetPrefPage
         }
 
         {
-            Group connectionsGroup = UIUtils.createControlGroup(composite2, "Auto-save", 1, GridData.FILL_HORIZONTAL, 0);
+            Group connectionsGroup = UIUtils.createControlGroup(composite, "Auto-save", 1, GridData.FILL_HORIZONTAL, 0);
             autoSaveOnClose = UIUtils.createCheckbox(connectionsGroup, "Auto-save editor on close", false);
             saveOnQueryExecution = UIUtils.createCheckbox(connectionsGroup, "Save editor on query execute", false);
         }
 
-        // Autoclose
-        {
-            Composite acGroup = UIUtils.createControlGroup(composite2, "Auto close", 1, GridData.FILL_BOTH, 0);
-
-            acSingleQuotesCheck = UIUtils.createCheckbox(acGroup, "Single quotes", false);
-            acDoubleQuotesCheck = UIUtils.createCheckbox(acGroup, "Double quotes", false);
-            acBracketsCheck = UIUtils.createCheckbox(acGroup, "Brackets", false);
-        }
-
-        {
-            // Formatting
-            Composite afGroup = UIUtils.createControlGroup(composite2, "Auto format", 1, GridData.FILL_BOTH, 0);
-            afKeywordCase = UIUtils.createCheckbox(
-                afGroup,
-                "Convert keyword case",
-                "Auto-convert keywords to upper/lower case on enter",
-                false, 1);
-            afExtractFromSource = UIUtils.createCheckbox(
-                afGroup,
-                "Extract SQL from source code",
-                "On source code paste will remove all source language elements like quotes, +, \\n, etc", false, 1);
-        }
-
         // Scripts
         {
-            Composite scriptsGroup = UIUtils.createControlGroup(composite2, CoreMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_BOTH, 0);
+            Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_HORIZONTAL, 0);
             ((GridData)scriptsGroup.getLayoutData()).horizontalSpan = 2;
 
             autoFoldersCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, null, false, 2);
@@ -167,12 +124,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             autoSaveOnClose.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE));
             saveOnQueryExecution.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE));
 
-            acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
-            acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
-            acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
-            afKeywordCase.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO));
-            afExtractFromSource.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE));
-
             autoFoldersCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS));
             scriptTitlePattern.setText(store.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN));
 
@@ -192,13 +143,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE, autoSaveOnClose.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE, saveOnQueryExecution.getSelection());
 
-            store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
-            store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
-            store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
-
-            store.setValue(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO, afKeywordCase.getSelection());
-            store.setValue(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE, afExtractFromSource.getSelection());
-
             store.setValue(DBeaverPreferences.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
             store.setValue(DBeaverPreferences.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
         } catch (Exception e) {
@@ -216,12 +160,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE);
-
-        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
-        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
-        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
-        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO);
-        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE);
 
         store.setToDefault(DBeaverPreferences.SCRIPT_AUTO_FOLDERS);
         store.setToDefault(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
