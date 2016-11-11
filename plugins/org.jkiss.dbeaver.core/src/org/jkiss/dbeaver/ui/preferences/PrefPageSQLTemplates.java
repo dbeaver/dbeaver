@@ -28,6 +28,9 @@ import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
  * Templates preference page
  */
 public class PrefPageSQLTemplates extends TemplatePreferencePage implements IWorkbenchPropertyPage {
+
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sql.templates";
+
     public PrefPageSQLTemplates()
     {
         setPreferenceStore(new PreferenceStoreDelegate(DBeaverCore.getGlobalPreferenceStore()));

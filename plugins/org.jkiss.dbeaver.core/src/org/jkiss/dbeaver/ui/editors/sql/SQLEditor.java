@@ -1038,6 +1038,9 @@ public class SQLEditor extends SQLEditorBase implements
         if (sqlFile == null || !sqlFile.exists()) {
             return;
         }
+        if (!getActivePreferenceStore().getBoolean(DBeaverPreferences.SCRIPT_DELETE_EMPTY)) {
+            return;
+        }
         File osFile = sqlFile.getLocation().toFile();
         if (!osFile.exists() || osFile.length() != 0) {
             // Not empty
