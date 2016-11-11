@@ -31,9 +31,9 @@ import java.util.Map;
  */
 public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> extends DBEObjectManager<OBJECT_TYPE> {
 
-    public static final long FEATURE_SAVE_IMMEDIATELY = 1;
-    public static final long FEATURE_CREATE_FROM_PASTE = 2;
-    public static final long FEATURE_EDITOR_ON_CREATE = 4;
+    long FEATURE_SAVE_IMMEDIATELY = 1;
+    long FEATURE_CREATE_FROM_PASTE = 2;
+    long FEATURE_EDITOR_ON_CREATE = 4;
 
     long getMakerOptions();
 
