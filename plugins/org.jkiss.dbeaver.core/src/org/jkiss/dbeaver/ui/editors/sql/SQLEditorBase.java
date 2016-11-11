@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
+import org.jkiss.dbeaver.ui.preferences.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -858,11 +859,12 @@ public abstract class SQLEditorBase extends BaseTextEditor {
 
     protected String[] collectContextMenuPreferencePages() {
         String[] ids = super.collectContextMenuPreferencePages();
-        String[] more = new String[ids.length + 4];
-        more[ids.length] = "org.jkiss.dbeaver.preferences.main.sqleditor";
-        more[ids.length + 1] = "org.jkiss.dbeaver.preferences.main.sql.format";
-        more[ids.length + 2] = "org.jkiss.dbeaver.preferences.main.sqlexecute";
-        more[ids.length + 3] = "org.jkiss.dbeaver.preferences.main.sql.templates";
+        String[] more = new String[ids.length + 5];
+        more[ids.length] = PrefPageSQLEditor.PAGE_ID;
+        more[ids.length + 1] = PrefPageSQLExecute.PAGE_ID;
+        more[ids.length + 2] = PrefPageSQLCompletion.PAGE_ID;
+        more[ids.length + 3] = PrefPageSQLFormat.PAGE_ID;
+        more[ids.length + 4] = PrefPageSQLTemplates.PAGE_ID;
         System.arraycopy(ids, 0, more, 0, ids.length);
         return more;
     }
