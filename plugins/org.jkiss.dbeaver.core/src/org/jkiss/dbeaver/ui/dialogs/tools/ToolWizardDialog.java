@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.dialogs.tools;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.IWizard;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -35,6 +36,8 @@ public class ToolWizardDialog extends ActiveWizardDialog
     public ToolWizardDialog(IWorkbenchWindow window, IWizard wizard)
     {
         super(window, wizard);
+        setShellStyle(SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
+        setHelpAvailable(false);
     }
 
     @Override
