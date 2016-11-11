@@ -42,6 +42,8 @@ public final class DBeaverPreferences
     public static final String SCRIPT_COMMIT_LINES = "script.commit.lines"; //$NON-NLS-1$
     public static final String SCRIPT_ERROR_HANDLING = "script.error.handling"; //$NON-NLS-1$
     public static final String SCRIPT_FETCH_RESULT_SETS = "script.fetch.resultset"; //$NON-NLS-1$
+
+    public static final String SCRIPT_DELETE_EMPTY = "script.delete.empty"; //$NON-NLS-1$
     public static final String SCRIPT_AUTO_FOLDERS = "script.auto.folders"; //$NON-NLS-1$
     public static final String SCRIPT_TITLE_PATTERN = "script.title.pattern"; //$NON-NLS-1$
 
