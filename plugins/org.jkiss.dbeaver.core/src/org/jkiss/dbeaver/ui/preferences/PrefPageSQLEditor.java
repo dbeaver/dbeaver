@@ -44,6 +44,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button saveOnQueryExecution;
     private Button autoSaveOnClose;
 
+    private Button deleteEmptyCheck;
     private Button autoFoldersCheck;
     private Text scriptTitlePattern;
 
@@ -64,6 +65,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE) ||
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) ||
 
+            store.contains(DBeaverPreferences.SCRIPT_DELETE_EMPTY) ||
             store.contains(DBeaverPreferences.SCRIPT_AUTO_FOLDERS)
         ;
     }
@@ -98,6 +100,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_HORIZONTAL, 0);
             ((GridData)scriptsGroup.getLayoutData()).horizontalSpan = 2;
 
+            deleteEmptyCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_delete_empty_scripts, null, false, 2);
             autoFoldersCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, null, false, 2);
             scriptTitlePattern = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_title_pattern, "");
 
@@ -124,6 +127,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             autoSaveOnClose.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE));
             saveOnQueryExecution.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE));
 
+            deleteEmptyCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_DELETE_EMPTY));
             autoFoldersCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS));
             scriptTitlePattern.setText(store.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN));
 
@@ -143,6 +147,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE, autoSaveOnClose.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE, saveOnQueryExecution.getSelection());
 
+            store.setValue(DBeaverPreferences.SCRIPT_DELETE_EMPTY, deleteEmptyCheck.getSelection());
             store.setValue(DBeaverPreferences.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
             store.setValue(DBeaverPreferences.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
         } catch (Exception e) {
@@ -161,6 +166,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE);
 
+        store.setToDefault(DBeaverPreferences.SCRIPT_DELETE_EMPTY);
         store.setToDefault(DBeaverPreferences.SCRIPT_AUTO_FOLDERS);
         store.setToDefault(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
     }
