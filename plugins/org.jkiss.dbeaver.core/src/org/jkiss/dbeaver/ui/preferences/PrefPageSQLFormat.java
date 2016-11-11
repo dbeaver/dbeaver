@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -58,8 +59,16 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
     private final static String FORMAT_FILE_NAME = "format_preview.sql";
 
-    private Combo formatterSelector;
+    // Auto-close
+    private Button acSingleQuotesCheck;
+    private Button acDoubleQuotesCheck;
+    private Button acBracketsCheck;
+    // Auto-Format
+    private Button afKeywordCase;
+    private Button afExtractFromSource;
 
+    // Formatter
+    private Combo formatterSelector;
     private Combo keywordCaseCombo;
 
     private Text externalCmdText;
@@ -80,6 +89,12 @@ public class PrefPageSQLFormat extends TargetPrefPage
     {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
+            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES) ||
+            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES) ||
+            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS) ||
+            store.contains(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO) ||
+            store.contains(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE) ||
+
             store.contains(ModelPreferences.SQL_FORMAT_FORMATTER) ||
             store.contains(ModelPreferences.SQL_FORMAT_KEYWORD_CASE) ||
             store.contains(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD) ||
@@ -97,33 +112,72 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected Control createPreferenceContent(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
-        formatterSelector = UIUtils.createLabelCombo(composite, "Formatter", SWT.DROP_DOWN | SWT.READ_ONLY);
-        formatterSelector.add(capitalizeCaseName(SQLTokenizedFormatter.FORMATTER_ID));
-        formatterSelector.add(capitalizeCaseName(SQLExternalFormatter.FORMATTER_ID));
-        formatterSelector.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                showFormatterSettings();
-            }
-        });
-        formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        // Autoclose
+        {
+            Composite acGroup = UIUtils.createControlGroup(composite, "Auto close", 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+
+            acSingleQuotesCheck = UIUtils.createCheckbox(acGroup, "Single quotes", false);
+            acDoubleQuotesCheck = UIUtils.createCheckbox(acGroup, "Double quotes", false);
+            acBracketsCheck = UIUtils.createCheckbox(acGroup, "Brackets", false);
+        }
+
+        {
+            // Formatting
+            Composite afGroup = UIUtils.createControlGroup(composite, "Auto format", 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            afKeywordCase = UIUtils.createCheckbox(
+                afGroup,
+                "Convert keyword case",
+                "Auto-convert keywords to upper/lower case on enter",
+                false, 1);
+            afExtractFromSource = UIUtils.createCheckbox(
+                afGroup,
+                "Extract SQL from source code",
+                "On source code paste will remove all source language elements like quotes, +, \\n, etc", false, 1);
+        }
+
+        Composite formatterGroup = UIUtils.createControlGroup(composite, "Formatter", 1, GridData.FILL_BOTH, 0);
+        ((GridData)formatterGroup.getLayoutData()).horizontalSpan = 2;
+
+        {
+            Composite formatterPanel = UIUtils.createPlaceholder(formatterGroup, 2);
+            formatterPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            formatterSelector = UIUtils.createLabelCombo(formatterPanel, "Formatter", SWT.DROP_DOWN | SWT.READ_ONLY);
+            formatterSelector.add(capitalizeCaseName(SQLTokenizedFormatter.FORMATTER_ID));
+            formatterSelector.add(capitalizeCaseName(SQLExternalFormatter.FORMATTER_ID));
+            formatterSelector.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    showFormatterSettings();
+                }
+            });
+            formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        }
 
         // Default formatter settings
         {
-            defaultGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
+            defaultGroup = UIUtils.createPlaceholder(formatterGroup, 2, 0);
+            defaultGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             keywordCaseCombo = UIUtils.createLabelCombo(defaultGroup, "Keyword case", SWT.DROP_DOWN | SWT.READ_ONLY);
             keywordCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             keywordCaseCombo.add("Database");
             for (DBPIdentifierCase c :DBPIdentifierCase.values()) {
                 keywordCaseCombo.add(capitalizeCaseName(c.name()));
             }
+            keywordCaseCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    performApply();
+                }
+            });
         }
 
         // External formatter
         {
-            externalGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
+            externalGroup = UIUtils.createPlaceholder(formatterGroup, 2);
+            externalGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             externalCmdText = UIUtils.createLabelText(externalGroup, "Command line", "");
             externalUseFile = UIUtils.createLabelCheckbox(externalGroup,
@@ -137,7 +191,8 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
         {
             // SQL preview
-            Composite previewGroup = UIUtils.createControlGroup(composite, "SQL preview", 2, GridData.FILL_BOTH, 0);
+            Composite previewGroup = new Composite(formatterGroup, SWT.BORDER);
+            previewGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
             previewGroup.setLayout(new FillLayout());
 
             sqlViewer = new SQLEditorBase() {
@@ -183,6 +238,13 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected void loadPreferences(DBPPreferenceStore store)
     {
+        acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
+        acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
+        acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
+        afKeywordCase.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO));
+        afExtractFromSource.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE));
+
+
         UIUtils.setComboSelection(formatterSelector, capitalizeCaseName(store.getString(ModelPreferences.SQL_FORMAT_FORMATTER)));
         final String caseName = store.getString(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
         if (CommonUtils.isEmpty(caseName)) {
@@ -202,6 +264,13 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected void savePreferences(DBPPreferenceStore store)
     {
+        store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
+        store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
+        store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
+
+        store.setValue(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO, afKeywordCase.getSelection());
+        store.setValue(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE, afExtractFromSource.getSelection());
+
         store.setValue(ModelPreferences.SQL_FORMAT_FORMATTER, formatterSelector.getText().toUpperCase(Locale.ENGLISH));
 
         final String caseName;
@@ -222,6 +291,12 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected void clearPreferences(DBPPreferenceStore store)
     {
+        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
+        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
+        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
+        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO);
+        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE);
+
         store.setToDefault(ModelPreferences.SQL_FORMAT_FORMATTER);
         store.setToDefault(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
         store.setToDefault(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD);
