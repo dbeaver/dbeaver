@@ -219,6 +219,19 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
 
     }
 
+    public void clearChildrenOf(DBSObject parent) {
+        synchronized (this) {
+            if (objectList == null) {
+                return;
+            }
+            for (OBJECT object : objectList) {
+                if (object.getParentObject() == parent) {
+                    removeObject(object, true);
+                }
+            }
+        }
+    }
+
     @NotNull
     protected String getObjectName(@NotNull OBJECT object) {
         String name;

@@ -152,5 +152,4 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         return false;
     }
 
-
 }
