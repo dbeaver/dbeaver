@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
@@ -72,6 +73,14 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
 
         this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
+    }
+
+    // Copy constructor
+    public PostgreTable(PostgreSchema container, DBSEntity source, boolean persisted) {
+        super(container, source, persisted);
+        if (source instanceof PostgreTable) {
+            this.hasOids = ((PostgreTable) source).hasOids;
+        }
     }
 
     public SimpleObjectCache<PostgreTable, PostgreTableForeignKey> getForeignKeyCache() {

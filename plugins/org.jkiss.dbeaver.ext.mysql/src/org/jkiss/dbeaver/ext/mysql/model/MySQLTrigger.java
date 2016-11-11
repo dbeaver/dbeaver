@@ -72,6 +72,15 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
         this.body = "";
     }
 
+    public MySQLTrigger(MySQLCatalog catalog, MySQLTable table, MySQLTrigger source) {
+        super(source.name, source.getDescription(), false);
+        this.catalog = catalog;
+        this.table = table;
+        this.body = source.body;
+        this.charsetClient = source.charsetClient;
+        this.sqlMode = source.sqlMode;
+    }
+
     public String getBody()
     {
         return body;
