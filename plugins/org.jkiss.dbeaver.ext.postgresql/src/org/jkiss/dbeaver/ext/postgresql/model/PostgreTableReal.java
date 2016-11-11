@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -63,6 +64,15 @@ public abstract class PostgreTableReal extends PostgreTableBase
         this.rowCountEstimate = JDBCUtils.safeGetLong(dbResult, "reltuples");
     }
 
+    // Copy constructor
+    public PostgreTableReal(PostgreSchema container, DBSEntity source, boolean persisted) {
+        super(container, source, persisted);
+
+        // Copy triggers
+        if (source instanceof PostgreTableReal) {
+
+        }
+    }
 
     @Property(viewable = true, order = 22)
     public long getRowCountEstimate() {

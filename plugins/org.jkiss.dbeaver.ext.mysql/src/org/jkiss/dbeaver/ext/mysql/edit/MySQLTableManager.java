@@ -50,7 +50,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
         MySQLTableColumn.class,
         MySQLTableConstraint.class,
         MySQLTableForeignKey.class,
-        MySQLTableIndex.class
+        MySQLTableIndex.class,
     };
 
     @Nullable

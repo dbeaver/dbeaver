@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -30,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -42,8 +42,6 @@ import java.util.List;
  */
 public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, PostgreSchema> implements PostgreClass, PostgreScriptObject, DBPNamedObject2
 {
-    private static final Log log = Log.getLog(PostgreTableBase.class);
-
     private long oid;
     private String description;
 
@@ -59,6 +57,14 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         super(catalog, JDBCUtils.safeGetString(dbResult, "relname"), true);
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
+    }
+
+    // Copy constructor
+    public PostgreTableBase(PostgreSchema container, DBSEntity source, boolean persisted) {
+        super(container, source, persisted);
+        if (source instanceof PostgreTableBase) {
+            this.description = ((PostgreTableBase) source).description;
+        }
     }
 
     @Override

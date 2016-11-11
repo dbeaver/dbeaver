@@ -111,6 +111,12 @@ public class MySQLTable extends MySQLTableBase
             additionalInfo.charset = sourceAI.charset;
             additionalInfo.collation = sourceAI.collation;
             additionalInfo.engine = sourceAI.engine;
+
+            // Copy triggers
+            for (MySQLTrigger srcTrigger : ((MySQLTable) source).getTriggers(monitor)) {
+                MySQLTrigger trigger = new MySQLTrigger(catalog, this, srcTrigger);
+                getContainer().triggerCache.cacheObject(trigger);
+            }
             // Copy partitions
             for (MySQLPartition partition : ((MySQLTable)source).partitionCache.getCachedObjects()) {
                 partitionCache.cacheObject(new MySQLPartition(monitor, this, partition));
