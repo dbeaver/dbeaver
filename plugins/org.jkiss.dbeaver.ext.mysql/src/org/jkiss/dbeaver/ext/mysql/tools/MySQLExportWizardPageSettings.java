@@ -65,6 +65,13 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
+        SelectionListener changeListener = new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                updateState();
+            }
+        };
+
         Group methodGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_exe_method, 1, GridData.FILL_HORIZONTAL, 0);
         methodCombo = new Combo(methodGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
         methodCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -72,13 +79,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         methodCombo.add(MySQLMessages.tools_db_export_wizard_page_settings_combo_item_lock_tables);
         methodCombo.add(MySQLMessages.tools_db_export_wizard_page_settings_combo_item_normal);
         methodCombo.select(wizard.method.ordinal());
-
-        SelectionListener changeListener = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                updateState();
-            }
-        };
+        methodCombo.addSelectionListener(changeListener);
 
         Group settingsGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_settings, 3, GridData.FILL_HORIZONTAL, 0);
         noCreateStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_no_create, wizard.noCreateStatements);

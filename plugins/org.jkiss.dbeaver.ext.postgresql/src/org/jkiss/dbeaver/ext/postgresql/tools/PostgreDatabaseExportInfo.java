@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 
@@ -30,18 +31,26 @@ import java.util.Collection;
 */
 public class PostgreDatabaseExportInfo {
     @NotNull
-    private PostgreSchema schema;
+    private PostgreDatabase database;
+    @NotNull
+    private Collection<PostgreSchema> schemas;
     @Nullable
     private Collection<PostgreTableBase> tables;
 
-    @NotNull
-    public PostgreSchema getSchema() {
-        return schema;
+    public PostgreDatabaseExportInfo(@NotNull PostgreDatabase database, @NotNull Collection<PostgreSchema> schemas, @Nullable Collection<PostgreTableBase> tables) {
+        this.database = database;
+        this.schemas = schemas;
+        this.tables = tables;
     }
 
-    public PostgreDatabaseExportInfo(@NotNull PostgreSchema schema, @Nullable Collection<PostgreTableBase> tables) {
-        this.schema = schema;
-        this.tables = tables;
+    @NotNull
+    public PostgreDatabase getDatabase() {
+        return database;
+    }
+
+    @NotNull
+    public Collection<PostgreSchema> getSchemas() {
+        return schemas;
     }
 
     @Nullable
@@ -49,8 +58,4 @@ public class PostgreDatabaseExportInfo {
         return tables;
     }
 
-    @Override
-    public String toString() {
-        return schema.getName() + " " + tables;
-    }
 }

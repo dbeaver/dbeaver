@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -36,6 +36,7 @@ class PostgreExportWizardPageSettings extends PostgreWizardPageSettings<PostgreE
 
     private Text outputFolderText;
     private Text outputFileText;
+    private Combo formatCombo;
 
     protected PostgreExportWizardPageSettings(PostgreExportWizard wizard)
     {
@@ -54,6 +55,22 @@ class PostgreExportWizardPageSettings extends PostgreWizardPageSettings<PostgreE
     public void createControl(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
+
+        SelectionListener changeListener = new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                updateState();
+            }
+        };
+
+        Group formatGroup = UIUtils.createControlGroup(composite, "Format", 1, GridData.FILL_HORIZONTAL, 0);
+        formatCombo = new Combo(formatGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+        formatCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        for (PostgreExportWizard.ExportFormat format : PostgreExportWizard.ExportFormat.values()) {
+            formatCombo.add(format.getTitle());
+        }
+        formatCombo.select(wizard.format.ordinal());
+        formatCombo.addSelectionListener(changeListener);
 
         Group outputGroup = UIUtils.createControlGroup(composite, "Output", 2, GridData.FILL_HORIZONTAL, 0);
         outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, "Output folder", new ModifyListener() {

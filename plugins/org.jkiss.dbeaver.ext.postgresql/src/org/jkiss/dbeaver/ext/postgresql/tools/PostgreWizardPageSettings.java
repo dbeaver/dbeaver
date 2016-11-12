@@ -71,8 +71,7 @@ public abstract class PostgreWizardPageSettings<WIZARD extends AbstractToolWizar
             Group securityGroup = UIUtils.createControlGroup(
                 parent, "Security", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
             Label infoLabel = new Label(securityGroup, SWT.NONE);
-            infoLabel.setText("Override user credentials (" + wizard.getConnectionInfo().getUserName() +
-                ") for objects '" + wizard.getObjectsName() + "'.\nExternal tools like 'postgresqldump' may require different set of permissions.");
+            infoLabel.setText("Override user credentials (" + wizard.getConnectionInfo().getUserName() + ") for pg_dump'.");
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             infoLabel.setLayoutData(gd);

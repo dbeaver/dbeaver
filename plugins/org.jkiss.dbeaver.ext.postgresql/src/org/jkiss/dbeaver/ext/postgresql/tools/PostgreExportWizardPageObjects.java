@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.List;
@@ -50,11 +51,13 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
 {
     private static final Log log = Log.getLog(PostgreExportWizardPageObjects.class);
 
-    private Table catalogTable;
+    private Table schemasTable;
     private Table tablesTable;
     private Map<PostgreSchema, Set<PostgreTableBase>> checkedObjects = new HashMap<>();
+    private Map<PostgreSchema, List<PostgreTableBase>> allObjects = new HashMap<>();
 
-    private PostgreSchema curCatalog;
+    private PostgreSchema curSchema;
+    private PostgreDataSource dataSource;
 
     protected PostgreExportWizardPageObjects(PostgreExportWizard wizard)
     {
@@ -80,13 +83,13 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
         SashForm sash = new CustomSashForm(objectsGroup, SWT.VERTICAL);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        catalogTable = new Table(sash, SWT.BORDER | SWT.CHECK);
-        catalogTable.addListener(SWT.Selection, new Listener() {
+        schemasTable = new Table(sash, SWT.BORDER | SWT.CHECK);
+        schemasTable.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
                 TableItem item = (TableItem) event.item;
                 PostgreSchema catalog = (PostgreSchema) item.getData();
                 if (event.detail == SWT.CHECK) {
-                    catalogTable.select(catalogTable.indexOf(item));
+                    schemasTable.select(schemasTable.indexOf(item));
                     checkedObjects.remove(catalog);
                 }
                 loadTables(catalog);
@@ -95,7 +98,7 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
         });
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 50;
-        catalogTable.setLayoutData(gd);
+        schemasTable.setLayoutData(gd);
 
         tablesTable = new Table(sash, SWT.BORDER | SWT.CHECK);
         gd = new GridData(GridData.FILL_BOTH);
@@ -119,7 +122,7 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
             }
         });
 
-        PostgreDataSource dataSource = null;
+        dataSource = null;
         Set<PostgreSchema> activeCatalogs = new LinkedHashSet<>();
         for (DBSObject object : wizard.getDatabaseObjects()) {
             if (object instanceof PostgreSchema) {
@@ -146,16 +149,16 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
         if (dataSource != null) {
             boolean tablesLoaded = false;
             try {
-                for (PostgreSchema catalog : dataSource.getDefaultInstance().getSchemas(VoidProgressMonitor.INSTANCE)) {
-                    TableItem item = new TableItem(catalogTable, SWT.NONE);
+                for (PostgreSchema schema : dataSource.getDefaultInstance().getSchemas(VoidProgressMonitor.INSTANCE)) {
+                    TableItem item = new TableItem(schemasTable, SWT.NONE);
                     item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
-                    item.setText(0, catalog.getName());
-                    item.setData(catalog);
-                    if (activeCatalogs.contains(catalog)) {
+                    item.setText(0, schema.getName());
+                    item.setData(schema);
+                    if (activeCatalogs.contains(schema)) {
                         item.setChecked(true);
-                        catalogTable.select(catalogTable.indexOf(item));
+                        schemasTable.select(schemasTable.indexOf(item));
                         if (!tablesLoaded) {
-                            loadTables(catalog);
+                            loadTables(schema);
                             tablesLoaded = true;
                         }
                     }
@@ -176,17 +179,17 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
                 checkedTables.add((PostgreTableBase) item.getData());
             }
         }
-        TableItem catalogItem = catalogTable.getItem(catalogTable.getSelectionIndex());
+        TableItem catalogItem = schemasTable.getItem(schemasTable.getSelectionIndex());
         catalogItem.setChecked(!checkedTables.isEmpty());
         if (checkedTables.isEmpty() || checkedTables.size() == tableItems.length) {
-            checkedObjects.remove(curCatalog);
+            checkedObjects.remove(curSchema);
         } else {
-            checkedObjects.put(curCatalog, checkedTables);
+            checkedObjects.put(curSchema, checkedTables);
         }
     }
 
     private boolean isChecked(PostgreSchema catalog) {
-        for (TableItem item : catalogTable.getItems()) {
+        for (TableItem item : schemasTable.getItems()) {
             if (item.getData() == catalog) {
                 return item.getChecked();
             }
@@ -196,14 +199,14 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
 
     private void loadTables(final PostgreSchema catalog) {
         if (catalog != null) {
-            curCatalog = catalog;
+            curSchema = catalog;
         }
-        if (curCatalog == null) {
+        if (curSchema == null) {
             return;
         }
-        final boolean isCatalogChecked = isChecked(curCatalog);
-        final Set<PostgreTableBase> checkedObjects = this.checkedObjects.get(curCatalog);
-        new AbstractJob("Load '" + curCatalog.getName() + "' tables") {
+        final boolean isCatalogChecked = isChecked(curSchema);
+        final Set<PostgreTableBase> checkedObjects = this.checkedObjects.get(curSchema);
+        new AbstractJob("Load '" + curSchema.getName() + "' tables") {
             {
                 setUser(true);
             }
@@ -211,10 +214,11 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
                     final List<PostgreTableBase> objects = new ArrayList<>();
-                    objects.addAll(curCatalog.getTables(monitor));
+                    objects.addAll(curSchema.getTables(monitor));
                     if (wizard.showViews) {
-                        objects.addAll(curCatalog.getViews(monitor));
+                        objects.addAll(curSchema.getViews(monitor));
                     }
+                    allObjects.put(curSchema, objects);
                     Collections.sort(objects, DBUtils.nameComparator());
                     DBeaverUI.syncExec(new Runnable() {
                         @Override
@@ -239,13 +243,27 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
 
     public void saveState() {
         wizard.objects.clear();
-        for (TableItem item : catalogTable.getItems()) {
+        List<PostgreSchema> schemas = new ArrayList<>();
+        List<PostgreTableBase> tables = new ArrayList<>();
+        for (TableItem item : schemasTable.getItems()) {
             if (item.getChecked()) {
-                PostgreSchema catalog = (PostgreSchema) item.getData();
-                PostgreDatabaseExportInfo info = new PostgreDatabaseExportInfo(catalog, checkedObjects.get(catalog));
-                wizard.objects.add(info);
+                PostgreSchema schema = (PostgreSchema) item.getData();
+                Set<PostgreTableBase> checkedTables = checkedObjects.get(schema);
+                List<PostgreTableBase> allTables = allObjects.get(schema);
+                if (CommonUtils.isEmpty(checkedTables) || CommonUtils.isEmpty(allTables)) {
+                    continue;
+                }
+                if (checkedTables.size() == allTables.size()) {
+                    // All tables checked
+                    schemas.add(schema);
+                } else {
+                    // Only a few tables checked
+                    tables.addAll(checkedTables);
+                }
             }
         }
+        PostgreDatabaseExportInfo info = new PostgreDatabaseExportInfo(dataSource.getDefaultInstance(), schemas, tables);
+        wizard.objects.add(info);
     }
 
     private void updateState()
@@ -254,7 +272,7 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
         if (!checkedObjects.isEmpty()) {
             complete = true;
         }
-        for (TableItem item : catalogTable.getItems()) {
+        for (TableItem item : schemasTable.getItems()) {
             if (item.getChecked()) {
                 complete = true;
                 break;
