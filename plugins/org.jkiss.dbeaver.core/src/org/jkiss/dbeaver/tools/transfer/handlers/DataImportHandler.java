@@ -18,26 +18,29 @@
 package org.jkiss.dbeaver.tools.transfer.handlers;
 
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.resources.IProject;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-public class DataImportHandler extends DataTransferHandler {
+import java.util.Map;
+
+public class DataImportHandler extends DataTransferHandler implements IElementUpdater {
 
     @Override
     protected IDataTransferNode adaptTransferNode(Object object)
@@ -71,4 +74,14 @@ public class DataImportHandler extends DataTransferHandler {
         }
         return null;
     }
+
+    @Override
+    public void updateElement(UIElement element, Map parameters)
+    {
+        DBNNode node = NavigatorUtils.getSelectedNode(element);
+        if (node != null) {
+            element.setText("Import " + node.getNodeType() + " Data");
+        }
+    }
+
 }
