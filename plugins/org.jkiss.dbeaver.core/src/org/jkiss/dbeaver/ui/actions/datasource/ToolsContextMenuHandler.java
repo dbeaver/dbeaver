@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-public class ToolsMenuHandler extends AbstractDataSourceHandler
+public class ToolsContextMenuHandler extends AbstractDataSourceHandler
 {
     private MenuManager menuManager = new MenuManager();
 
