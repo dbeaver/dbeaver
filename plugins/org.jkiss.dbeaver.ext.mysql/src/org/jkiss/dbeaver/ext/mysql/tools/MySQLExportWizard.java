@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tools;
 
-import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
@@ -37,7 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
+import org.jkiss.dbeaver.ui.dialogs.tools.AbstractExportWizard;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -51,12 +50,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExportInfo> implements IExportWizard {
-
-    public static final String VARIABLE_HOST = "host";
-    public static final String VARIABLE_DATABASE = "database";
-    public static final String VARIABLE_TABLE = "table";
-    public static final String VARIABLE_TIMESTAMP = "timestamp";
+class MySQLExportWizard extends AbstractExportWizard<MySQLDatabaseExportInfo> implements IExportWizard {
 
     public enum DumpMethod {
         ONLINE,
@@ -64,9 +58,6 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
         NORMAL
     }
 
-    private File outputFolder;
-
-    String outputFilePattern;
     DumpMethod method;
     boolean noCreateStatements;
     boolean addDropStatements = true;
@@ -103,41 +94,18 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
         showViews = CommonUtils.getBoolean(store.getString("MySQL.export.showViews"), false);
     }
 
-    public File getOutputFolder()
-    {
-        return outputFolder;
-    }
-
-    public void setOutputFolder(File outputFolder)
-    {
-        if (outputFolder != null) {
-            DialogUtils.setCurDialogFolder(outputFolder.getAbsolutePath());
-        }
-        this.outputFolder = outputFolder;
-    }
-
-    public String getOutputFilePattern() {
-        return outputFilePattern;
-    }
-
-    public void setOutputFilePattern(String outputFilePattern) {
-        this.outputFilePattern = outputFilePattern;
-    }
-
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle(MySQLMessages.tools_db_export_wizard_title);
-        setNeedsProgressMonitor(true);
+        super.init(workbench, selection);
         objectsPage = new MySQLExportWizardPageObjects(this);
         settingsPage = new MySQLExportWizardPageSettings(this);
     }
 
     @Override
     public void addPages() {
-        super.addPages();
         addPage(objectsPage);
         addPage(settingsPage);
-        addPage(logPage);
+        super.addPages();
     }
 
     @Override
@@ -204,14 +172,6 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
 
     @Override
     public boolean performFinish() {
-        final File dir = outputFolder;
-        if (!dir.exists()) {
-            if (!dir.mkdirs()) {
-                logPage.setMessage("Can't create directory '" + dir.getAbsolutePath() + "'", IMessageProvider.ERROR);
-                getContainer().updateMessage();
-                return false;
-            }
-        }
         objectsPage.saveState();
 
         final DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
@@ -267,9 +227,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
     @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, final MySQLDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process)
     {
-        logPage.startLogReader(
-            processBuilder,
-            process.getErrorStream());
+        super.startProcessHandler(monitor, arg, processBuilder, process);
 
         String outFileName = GeneralUtils.replaceVariables(outputFilePattern, new GeneralUtils.IVariableResolver() {
             @Override
@@ -299,63 +257,8 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
         boolean isFiltering = removeDefiner;
         Thread job = isFiltering ?
             new DumpFilterJob(monitor, process.getInputStream(), outFile) :
-            new DumpCopierJob(monitor, process.getInputStream(), outFile);
+            new DumpCopierJob(monitor, MySQLMessages.tools_db_export_wizard_monitor_export_db, process.getInputStream(), outFile);
         job.start();
-    }
-
-    abstract class DumpJob extends Thread {
-        protected DBRProgressMonitor monitor;
-        protected InputStream input;
-        protected File outFile;
-
-        protected DumpJob(String name, DBRProgressMonitor monitor, InputStream stream, File outFile)
-        {
-            super(name);
-            this.monitor = monitor;
-            this.input = stream;
-            this.outFile = outFile;
-        }
-    }
-
-    class DumpCopierJob extends DumpJob {
-        protected DumpCopierJob(DBRProgressMonitor monitor, InputStream stream, File outFile)
-        {
-            super(MySQLMessages.tools_db_export_wizard_job_dump_log_reader, monitor, stream, outFile);
-        }
-
-        @Override
-        public void run()
-        {
-            monitor.beginTask(MySQLMessages.tools_db_export_wizard_monitor_export_db, 100);
-            long totalBytesDumped = 0;
-            long prevStatusUpdateTime = 0;
-            byte[] buffer = new byte[10000];
-            try {
-                NumberFormat numberFormat = NumberFormat.getInstance();
-
-                try (OutputStream output = new FileOutputStream(outFile)){
-                    for (;;) {
-                        int count = input.read(buffer);
-                        if (count <= 0) {
-                            break;
-                        }
-                        totalBytesDumped += count;
-                        long currentTime = System.currentTimeMillis();
-                        if (currentTime - prevStatusUpdateTime > 300) {
-                            monitor.subTask(NLS.bind(MySQLMessages.tools_db_export_wizard_monitor_bytes, numberFormat.format(totalBytesDumped)));
-                            prevStatusUpdateTime = currentTime;
-                        }
-                        output.write(buffer, 0, count);
-                    }
-                    output.flush();
-                }
-            } catch (IOException e) {
-                logPage.appendLog(e.getMessage());
-            }
-            finally {
-                monitor.done();
-            }
-        }
     }
 
     private static Pattern DEFINER_PATTER = Pattern.compile("DEFINER\\s*=\\s*`[^*]*`@`[0-9a-z\\-_\\.%]*`", Pattern.CASE_INSENSITIVE);
@@ -367,8 +270,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
         }
 
         @Override
-        public void run()
-        {
+        public void runDump() throws IOException {
             monitor.beginTask(MySQLMessages.tools_db_export_wizard_monitor_export_db, 100);
             long prevStatusUpdateTime = 0;
             try {
@@ -382,11 +284,9 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
                         if (line == null) {
                             break;
                         }
-                        if (removeDefiner) {
-                            final Matcher matcher = DEFINER_PATTER.matcher(line);
-                            if (matcher.find()) {
-                                line = matcher.replaceFirst("");
-                            }
+                        final Matcher matcher = DEFINER_PATTER.matcher(line);
+                        if (matcher.find()) {
+                            line = matcher.replaceFirst("");
                         }
                         long currentTime = System.currentTimeMillis();
                         if (currentTime - prevStatusUpdateTime > 300) {
@@ -399,8 +299,6 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
                     }
                     writer.flush();
                 }
-            } catch (IOException e) {
-                logPage.appendLog(e.getMessage());
             }
             finally {
                 monitor.done();
