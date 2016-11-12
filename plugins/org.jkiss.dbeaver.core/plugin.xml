@@ -1491,7 +1491,7 @@
         </handler>
 
         <!-- Tools menu -->
-        <handler commandId="org.jkiss.dbeaver.ui.tools.menu" class="org.jkiss.dbeaver.ui.actions.datasource.ToolsMenuHandler">
+        <handler commandId="org.jkiss.dbeaver.ui.tools.menu" class="org.jkiss.dbeaver.ui.actions.datasource.ToolsContextMenuHandler">
             <activeWhen>
                 <or>
                     <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
