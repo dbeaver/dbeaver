@@ -19,10 +19,10 @@
 
 package org.jkiss.dbeaver.ext.mysql.tools;
 
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
-import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
@@ -86,7 +86,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
     @Override
     public void fillProcessParameters(List<String> cmd, MySQLCatalog arg) throws IOException
     {
-        String dumpPath = MySQLUtils.getHomeBinary(getClientHome(), "mysql").getAbsolutePath(); //$NON-NLS-1$
+        String dumpPath = DBUtils.getHomeBinary(getClientHome(), MySQLConstants.BIN_FOLDER, "mysql").getAbsolutePath(); //$NON-NLS-1$
         cmd.add(dumpPath);
         if (logLevel == LogLevel.Debug) {
             cmd.add("--debug-info"); //$NON-NLS-1$

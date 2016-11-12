@@ -77,6 +77,7 @@ public class PostgreConstants {
     public static final String PG_INSTALL_PROP_VERSION = "Version";
     public static final String PG_INSTALL_PROP_BRANDING = "Branding";
     public static final String PG_INSTALL_PROP_DATA_DIRECTORY = "Data Directory";
+    public static final String BIN_FOLDER = "bin";
 
     public static Set<String> SERIAL_TYPES = new HashSet<>();
     public static Map<String, String> DATA_TYPE_ALIASES = new HashMap<>();

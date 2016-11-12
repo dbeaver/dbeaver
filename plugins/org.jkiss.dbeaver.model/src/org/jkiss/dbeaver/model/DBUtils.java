@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -32,8 +33,11 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.SQLException;
@@ -1689,4 +1693,17 @@ public final class DBUtils {
         return attr instanceof DBDAttributeBinding && ((DBDAttributeBinding) attr).isPseudoAttribute();
     }
 
+    public static File getHomeBinary(@NotNull DBPClientHome home, @Nullable String binFolder, @NotNull String binName) throws IOException
+    {
+        binName = RuntimeUtils.getNativeBinaryName(binName);
+        File dumpBinary = new File(home.getHomePath(),
+            binFolder == null ? binName : binFolder + "/" + binName);
+        if (!dumpBinary.exists()) {
+            dumpBinary = new File(home.getHomePath(), binName);
+            if (!dumpBinary.exists()) {
+                throw new IOException("Utility '" + binName + "' not found in client home '" + home.getDisplayName() + "'");
+            }
+        }
+        return dumpBinary;
+    }
 }
