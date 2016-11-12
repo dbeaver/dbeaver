@@ -23,20 +23,23 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptStatusDialog;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.ui.dialogs.sql.GenerateMultiSQLDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptProgressListener;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptStatusDialog;
 
+import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
- * Table truncate
+ * TableToolDialog
  */
 public abstract class TableToolDialog extends GenerateMultiSQLDialog<PostgreTable>
 {
@@ -55,31 +58,30 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<PostgreTabl
             }
 
             @Override
-            public void processObjectResults(PostgreTable object, DBCResultSet resultSet) throws DBCException {
-                Map<String, String> statusMap = new LinkedHashMap<>();
-                while (resultSet.nextRow()) {
-                    statusMap.put(
-                        CommonUtils.toString(resultSet.getAttributeValue("Msg_type")),
-                        CommonUtils.toString(resultSet.getAttributeValue("Msg_text")));
+            public void processObjectResults(@NotNull PostgreTable object, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException {
+                if (statement == null) {
+                    return;
                 }
                 TreeItem treeItem = getTreeItem(object);
-                if (treeItem != null && !statusMap.isEmpty()) {
-                    if (statusMap.size() == 1) {
-                        treeItem.setText(1, statusMap.values().iterator().next());
-                    } else {
-                        String statusText = statusMap.get("status");
-                        if (!CommonUtils.isEmpty(statusText)) {
-                            treeItem.setText(1, statusText);
-                        }
-                        for (Map.Entry<String, String> status : statusMap.entrySet()) {
-                            if (!status.getKey().equals("status")) {
-                                TreeItem subItem = new TreeItem(treeItem, SWT.NONE);
-                                subItem.setText(0, status.getKey());
-                                subItem.setText(1, status.getValue());
+                if (treeItem != null) {
+                    try {
+                        int warnNum = 0;
+                        SQLWarning warning = ((JDBCStatement) statement).getWarnings();
+                        while (warning != null) {
+                            if (warnNum == 0) {
+                                treeItem.setText(1, warning.getMessage());
+                            } else {
+                                TreeItem warnItem = new TreeItem(treeItem, SWT.NONE);
+                                warnItem.setText(0, "");
+                                warnItem.setText(1, warning.getMessage());
                             }
+                            warnNum++;
+                            warning = warning.getNextWarning();
                         }
-                        treeItem.setExpanded(true);
+                    } catch (SQLException e) {
+                        // ignore
                     }
+                    treeItem.setExpanded(true);
                 }
             }
         };

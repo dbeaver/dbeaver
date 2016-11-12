@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -53,6 +54,8 @@ import java.util.*;
  */
 public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends GenerateSQLDialog {
 
+    private static final String DIALOG_ID = "GenerateMultiSQLDialog";
+
     protected final Collection<T> selectedObjects;
     private Table objectsTable;
 
@@ -81,6 +84,11 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             title,
             null);
         this.selectedObjects = objects;
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings() {
+        return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     protected abstract SQLScriptProgressListener<T> getScriptListener();
@@ -181,7 +189,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                         try {
                             final List<String> lines = objectsSQL.get(object);
                             for (String line : lines) {
-                                try (DBCStatement statement = DBUtils.prepareStatement(session, line, false)) {
+                                try (final DBCStatement statement = DBUtils.prepareStatement(session, line, false)) {
                                     if (statement.executeStatement()) {
                                         try (DBCResultSet resultSet = statement.openResultSet()) {
                                             // Run in sync because we need result set
@@ -189,7 +197,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                                                 @Override
                                                 public void run() {
                                                     try {
-                                                        scriptListener.processObjectResults(object, resultSet);
+                                                        scriptListener.processObjectResults(object, statement, resultSet);
                                                     } catch (DBCException e) {
                                                         objectProcessingError = e;
                                                     }
@@ -199,6 +207,17 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                                         if (objectProcessingError != null) {
                                             break;
                                         }
+                                    } else {
+                                        DBeaverUI.syncExec(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                try {
+                                                    scriptListener.processObjectResults(object, statement, null);
+                                                } catch (DBCException e) {
+                                                    objectProcessingError = e;
+                                                }
+                                            }
+                                        });
                                     }
                                 }
                             }

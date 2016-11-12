@@ -24,10 +24,13 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetMetaDataImpl;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.sql.GenerateMultiSQLDialog;
@@ -71,7 +74,7 @@ public abstract class DB2BaseTableToolDialog extends GenerateMultiSQLDialog<DB2T
             }
 
             @Override
-            public void endObjectProcessing(DB2Table db2Table, Exception exception)
+            public void endObjectProcessing(@NotNull DB2Table db2Table, Exception exception)
             {
                 TreeItem treeItem = getTreeItem(db2Table);
                 if (exception == null) {
@@ -84,7 +87,7 @@ public abstract class DB2BaseTableToolDialog extends GenerateMultiSQLDialog<DB2T
 
             // DF: This method is for tools that return resultsets
             @Override
-            public void processObjectResults(DB2Table db2Table, DBCResultSet resultSet) throws DBCException
+            public void processObjectResults(@NotNull DB2Table db2Table, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException
             {
                 // Retrive column names
                 JDBCResultSetMetaDataImpl rsMetaData = (JDBCResultSetMetaDataImpl) resultSet.getMeta();
