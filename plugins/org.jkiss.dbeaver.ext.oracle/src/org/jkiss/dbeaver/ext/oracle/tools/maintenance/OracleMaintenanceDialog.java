@@ -23,8 +23,11 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.sql.GenerateMultiSQLDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptProgressListener;
@@ -53,11 +56,11 @@ public abstract class OracleMaintenanceDialog<T extends DBSObject> extends Gener
             }
 
             @Override
-            public void processObjectResults(T object, DBCResultSet resultSet) throws DBCException {
+            public void processObjectResults(@NotNull T object, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException {
             }
 
             @Override
-            public void endObjectProcessing(T object, Exception error) {
+            public void endObjectProcessing(@NotNull T object, Exception error) {
                 super.endObjectProcessing(object, error);
                 TreeItem treeItem = getTreeItem(object);
                 if (treeItem != null) {

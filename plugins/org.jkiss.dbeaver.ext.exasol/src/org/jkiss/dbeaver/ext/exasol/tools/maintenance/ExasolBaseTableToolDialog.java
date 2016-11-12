@@ -18,16 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol.tools.maintenance;
 
-import java.sql.Statement;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -38,20 +28,16 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableBase;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -62,6 +48,11 @@ import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptProgressListener;
 import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptStatusDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public abstract class ExasolBaseTableToolDialog
 		extends GenerateMultiSQLDialog<ExasolTableBase> {
@@ -125,7 +116,7 @@ public abstract class ExasolBaseTableToolDialog
         	}
         	
             @Override
-            public void endObjectProcessing(ExasolTableBase exasolTable, Exception exception)
+            public void endObjectProcessing(@NotNull ExasolTableBase exasolTable, Exception exception)
             {
                 TreeItem treeItem = getTreeItem(exasolTable);
                 if (exception == null) {
@@ -138,7 +129,7 @@ public abstract class ExasolBaseTableToolDialog
 
             // DF: This method is for tools that return resultsets
             @Override
-            public void processObjectResults(ExasolTableBase exasolTable, DBCResultSet resultSet) throws DBCException
+            public void processObjectResults(@NotNull ExasolTableBase exasolTable, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException
             {
                 // Retrieve column names
             	DBCResultSetMetaData rsMetaData = resultSet.getMeta();
@@ -223,12 +214,12 @@ public abstract class ExasolBaseTableToolDialog
                         try {
                             final List<String> lines = objectsSQL.get(object);
                             for (String line : lines) {
-                                try (Statement statement = ((JDBCSession) session).getOriginal().createStatement()) {
+                                try (final Statement statement = ((JDBCSession) session).getOriginal().createStatement()) {
                                 	int affectedRows = statement.executeUpdate(line);
                                 	
                                 	Integer[] resultSetData = new Integer[] { affectedRows };
                                     	
-                                	final LocalResultSet resultSet = new LocalResultSet<JDBCStatement>(session, (JDBCStatement) new JDBCStatementImpl<Statement>((JDBCSession) session, statement, true));
+                                	final LocalResultSet resultSet = new LocalResultSet<>(session, new JDBCStatementImpl<>((JDBCSession) session, statement, true));
                                 	resultSet.addColumn("ROWS_AFFECTED", DBPDataKind.NUMERIC);
                                 	resultSet.addRow((Object[]) resultSetData );
                                 	
@@ -237,7 +228,7 @@ public abstract class ExasolBaseTableToolDialog
                                         @Override
                                         public void run() {
                                                 try {
-													scriptListener.processObjectResults(object, resultSet);
+													scriptListener.processObjectResults(object, null, resultSet);
 												} catch (DBCException e) {
 													objectProcessingError = e;
 												}

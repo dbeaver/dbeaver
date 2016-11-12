@@ -19,18 +19,21 @@ package org.jkiss.dbeaver.ui.dialogs.sql;
 
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -38,6 +41,8 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import java.util.Collection;
 
 public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDialog implements SQLScriptProgressListener<T> {
+
+    private static final String DIALOG_ID = "SQLScriptStatusDialog";
 
     private Tree objectTree;
     private ProgressBar progressBar;
@@ -53,15 +58,21 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
     }
 
     @Override
+    protected IDialogSettings getDialogBoundsSettings() {
+        return UIUtils.getDialogSettings(DIALOG_ID);
+    }
+
+    @Override
     protected Composite createDialogArea(Composite parent) {
         Composite composite = super.createDialogArea(parent);
-        objectTree = new Tree(composite, SWT.BORDER | SWT.SINGLE);
+        objectTree = new Tree(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
         gd.heightHint = 200;
         objectTree.setLayoutData(gd);
         objectTree.setHeaderVisible(true);
         objectTree.setLinesVisible(true);
+
         TreeColumn nameColumn = new TreeColumn(objectTree, SWT.NONE);
         nameColumn.setText("Object");
         createStatusColumns(objectTree);
@@ -70,7 +81,7 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
             item.setData(object);
             item.setText(0, DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
         }
-        UIUtils.packColumns(objectTree, true, null);
+        UIUtils.packColumns(objectTree, false, null);
 
         Composite progressPanel = UIUtils.createPlaceholder(composite, 2, 5);
         progressPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -146,7 +157,7 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
     }
 
     @Override
-    public void beginObjectProcessing(T object, int objectNumber) {
+    public void beginObjectProcessing(@NotNull T object, int objectNumber) {
         progressBar.setSelection(objectNumber + 1);
         TreeItem item = getTreeItem(object);
         if (item != null) {
@@ -156,12 +167,12 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
     }
 
     @Override
-    public void endObjectProcessing(T object, Exception error) {
-        UIUtils.packColumns(objectTree, true, null);
+    public void endObjectProcessing(@NotNull T object, Exception error) {
+        UIUtils.packColumns(objectTree, false, null);
     }
 
     @Override
-    public void processObjectResults(T object, DBCResultSet resultSet) throws DBCException {
+    public void processObjectResults(@NotNull T object, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException {
 
     }
 

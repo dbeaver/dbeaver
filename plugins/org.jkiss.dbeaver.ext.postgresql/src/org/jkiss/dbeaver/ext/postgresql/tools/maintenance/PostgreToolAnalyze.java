@@ -56,7 +56,7 @@ public class PostgreToolAnalyze implements IExternalTool
 
         @Override
         protected void generateObjectCommand(List<String> lines, PostgreTable object) {
-            lines.add("ANALYZE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL));
+            lines.add("ANALYZE VERBOSE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL));
         }
 
         @Override

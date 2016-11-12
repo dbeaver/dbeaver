@@ -23,9 +23,12 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptStatusDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.GenerateMultiSQLDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptProgressListener;
@@ -55,7 +58,7 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<MySQLTable>
             }
 
             @Override
-            public void processObjectResults(MySQLTable object, DBCResultSet resultSet) throws DBCException {
+            public void processObjectResults(@NotNull MySQLTable object, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException {
                 Map<String, String> statusMap = new LinkedHashMap<>();
                 while (resultSet.nextRow()) {
                     statusMap.put(

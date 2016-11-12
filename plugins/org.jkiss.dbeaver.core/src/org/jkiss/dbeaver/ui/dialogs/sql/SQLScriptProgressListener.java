@@ -18,8 +18,11 @@
 package org.jkiss.dbeaver.ui.dialogs.sql;
 
 import org.eclipse.core.runtime.jobs.Job;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
@@ -33,10 +36,10 @@ public interface SQLScriptProgressListener<T extends DBSObject> {
 
     void endScriptProcessing();
 
-    void beginObjectProcessing(T object, int objectNumber);
+    void beginObjectProcessing(@NotNull T object, int objectNumber);
 
-    void endObjectProcessing(T object, Exception error);
+    void endObjectProcessing(@NotNull T object, Exception error);
 
-    void processObjectResults(T object, DBCResultSet resultSet) throws DBCException;
+    void processObjectResults(@NotNull T object, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException;
 
 }
