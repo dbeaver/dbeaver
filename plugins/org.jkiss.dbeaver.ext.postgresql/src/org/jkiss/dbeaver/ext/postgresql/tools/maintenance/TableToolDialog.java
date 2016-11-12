@@ -25,7 +25,10 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
@@ -36,21 +39,34 @@ import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptStatusDialog;
 
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * TableToolDialog
  */
-public abstract class TableToolDialog extends GenerateMultiSQLDialog<PostgreTable>
+public abstract class TableToolDialog extends GenerateMultiSQLDialog<PostgreObject>
 {
 
-    public TableToolDialog(IWorkbenchPartSite partSite, String title, Collection<PostgreTable> objects) {
-        super(partSite, title, objects, true);
+    public TableToolDialog(IWorkbenchPartSite partSite, String title, Collection<PostgreTableBase> tables) {
+        super(partSite, title, toObjects(tables), true);
+    }
+
+    public TableToolDialog(IWorkbenchPartSite partSite, String title, PostgreDatabase database) {
+        super(partSite, title, Collections.<PostgreObject>singletonList(database), true);
+    }
+
+    private static Collection<PostgreObject> toObjects(Collection<PostgreTableBase> tables) {
+        List<PostgreObject> objectList = new ArrayList<>();
+        objectList.addAll(tables);
+        return objectList;
     }
 
     @Override
-    protected SQLScriptProgressListener<PostgreTable> getScriptListener() {
-        return new SQLScriptStatusDialog<PostgreTable>(getShell(), getTitle() + " progress", null) {
+    protected SQLScriptProgressListener<PostgreObject> getScriptListener() {
+        return new SQLScriptStatusDialog<PostgreObject>(getShell(), getTitle() + " progress", null) {
             @Override
             protected void createStatusColumns(Tree objectTree) {
                 TreeColumn msgColumn = new TreeColumn(objectTree, SWT.NONE);
@@ -58,7 +74,7 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<PostgreTabl
             }
 
             @Override
-            public void processObjectResults(@NotNull PostgreTable object, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException {
+            public void processObjectResults(@NotNull PostgreObject object, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException {
                 if (statement == null) {
                     return;
                 }
@@ -78,10 +94,24 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<PostgreTabl
                             warnNum++;
                             warning = warning.getNextWarning();
                         }
+                        if (warnNum == 0) {
+                            treeItem.setText(1, "Done");
+                        }
                     } catch (SQLException e) {
                         // ignore
                     }
                     treeItem.setExpanded(true);
+                }
+            }
+
+            @Override
+            public void endObjectProcessing(@NotNull PostgreObject object, Exception error) {
+                super.endObjectProcessing(object, error);
+                if (error != null) {
+                    TreeItem treeItem = getTreeItem(object);
+                    if (treeItem != null) {
+                        treeItem.setText(1, error.getMessage());
+                    }
                 }
             }
         };

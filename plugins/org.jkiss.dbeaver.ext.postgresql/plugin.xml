@@ -322,7 +322,8 @@
                     id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolAnalyze"
                     label="Analyze"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolVacuum"
@@ -330,7 +331,8 @@
                     id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolVacuum"
                     label="Vacuum"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTruncate"
@@ -338,7 +340,7 @@
                     id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTruncate"
                     label="Truncate"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
             </tool>
         </tools>
     </extension>
