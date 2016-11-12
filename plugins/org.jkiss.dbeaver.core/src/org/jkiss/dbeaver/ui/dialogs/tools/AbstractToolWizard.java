@@ -36,9 +36,9 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -272,5 +272,69 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     public abstract void fillProcessParameters(List<String> cmd, PROCESS_ARG arg) throws IOException;
 
     protected abstract void startProcessHandler(DBRProgressMonitor monitor, PROCESS_ARG arg, ProcessBuilder processBuilder, Process process);
+
+    public abstract class DumpJob extends Thread {
+        protected DBRProgressMonitor monitor;
+        protected InputStream input;
+        protected File outFile;
+
+        protected DumpJob(String name, DBRProgressMonitor monitor, InputStream stream, File outFile)
+        {
+            super(name);
+            this.monitor = monitor;
+            this.input = stream;
+            this.outFile = outFile;
+        }
+
+        @Override
+        public final void run() {
+            try {
+                runDump();
+            } catch (IOException e) {
+                logPage.appendLog(e.getMessage());
+            }
+        }
+
+        protected abstract void runDump()
+            throws IOException;
+    }
+
+    public class DumpCopierJob extends DumpJob {
+        public DumpCopierJob(DBRProgressMonitor monitor, String name, InputStream stream, File outFile)
+        {
+            super(name, monitor, stream, outFile);
+        }
+
+        @Override
+        public void runDump() throws IOException {
+            monitor.beginTask(getName(), 100);
+            long totalBytesDumped = 0;
+            long prevStatusUpdateTime = 0;
+            byte[] buffer = new byte[10000];
+            try {
+                NumberFormat numberFormat = NumberFormat.getInstance();
+
+                try (OutputStream output = new FileOutputStream(outFile)){
+                    for (;;) {
+                        int count = input.read(buffer);
+                        if (count <= 0) {
+                            break;
+                        }
+                        totalBytesDumped += count;
+                        long currentTime = System.currentTimeMillis();
+                        if (currentTime - prevStatusUpdateTime > 300) {
+                            monitor.subTask(numberFormat.format(totalBytesDumped) + " bytes");
+                            prevStatusUpdateTime = currentTime;
+                        }
+                        output.write(buffer, 0, count);
+                    }
+                    output.flush();
+                }
+            }
+            finally {
+                monitor.done();
+            }
+        }
+    }
 
 }

@@ -114,7 +114,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         outputFileText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                wizard.outputFilePattern = outputFileText.getText();
+                wizard.setOutputFilePattern(outputFileText.getText());
             }
         });
         if (wizard.getOutputFolder() != null) {
