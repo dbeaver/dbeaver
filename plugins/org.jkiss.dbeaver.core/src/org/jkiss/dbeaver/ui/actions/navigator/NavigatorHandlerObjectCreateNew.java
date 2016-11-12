@@ -48,16 +48,20 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (!updateUI) {
             return;
         }
+        element.setText(CoreMessages.actions_navigator_create_new + " " + getObjectTypeName(element));
+    }
+
+    public static String getObjectTypeName(UIElement element) {
         DBNNode node = NavigatorUtils.getSelectedNode(element);
         if (node != null) {
-            String objectName;
             if (node instanceof DBNContainer) {
-                objectName = ((DBNContainer)node).getChildrenType();
+                return ((DBNContainer)node).getChildrenType();
             } else {
-                objectName = node.getNodeType();
+                return node.getNodeType();
             }
-            element.setText(CoreMessages.actions_navigator_create_new + " " + objectName);
         }
+        return null;
     }
+
 
 }
