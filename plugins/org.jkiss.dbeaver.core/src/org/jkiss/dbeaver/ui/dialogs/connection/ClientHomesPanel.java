@@ -102,6 +102,7 @@ public class ClientHomesPanel extends Composite
 
         Composite listGroup = UIUtils.createPlaceholder(this, 1, 5);
         listGroup.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        ((GridData)(listGroup.getLayoutData())).minimumWidth = 200;
         homesTable = new Table(listGroup, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         homesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         homesTable.addSelectionListener(new SelectionAdapter()
@@ -145,7 +146,7 @@ public class ClientHomesPanel extends Composite
         });
 
         Group infoGroup = UIUtils.createControlGroup(this, CoreMessages.controls_client_homes_panel_group_information, 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-        ((GridData)(infoGroup.getLayoutData())).widthHint = 200;
+        ((GridData)(infoGroup.getLayoutData())).minimumWidth = 300;
         idText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_id, null, SWT.BORDER | SWT.READ_ONLY);
         pathText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_path, null, SWT.BORDER | SWT.READ_ONLY);
         nameText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_name, null, SWT.BORDER | SWT.READ_ONLY);
@@ -291,7 +292,7 @@ public class ClientHomesPanel extends Composite
 
             panel = new ClientHomesPanel(parent, SWT.NONE);
             GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.widthHint = 500;
+            //gd.widthHint = 500;
             panel.setLayoutData(gd);
             panel.loadHomes(driver);
 

@@ -42,9 +42,11 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
 
     private static final Log log = Log.getLog(MySQLDataSourceProvider.class);
 
-    private static final String REGISTRY_ROOT_32 = "SOFTWARE\\MySQL AB";
-    private static final String REGISTRY_ROOT_64 = "SOFTWARE\\Wow6432Node\\MYSQL AB";
+    private static final String REGISTRY_ROOT_MYSQL_32 = "SOFTWARE\\MySQL AB";
+    private static final String REGISTRY_ROOT_MYSQL_64 = "SOFTWARE\\Wow6432Node\\MYSQL AB";
+    private static final String REGISTRY_ROOT_MARIADB = "SOFTWARE\\Monty Program AB";
     private static final String SERER_LOCATION_KEY = "Location";
+    private static final String INSTALLDIR_KEY = "INSTALLDIR";
     //private static final String SERER_VERSION_KEY = "Version";
 
     private static Map<String,MySQLServerHome> localServers = null;
@@ -181,18 +183,38 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         OSDescriptor localSystem = DBeaverCore.getInstance().getLocalSystem();
         if (localSystem.isWindows()) {
             try {
-                final String registryRoot = localSystem.is64() ? REGISTRY_ROOT_64 : REGISTRY_ROOT_32;
-                List<String> homeKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE,
-                    registryRoot);
-                if (homeKeys != null) {
-                    for (String homeKey : homeKeys) {
-                        Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, registryRoot + "\\" + homeKey);
-                        if (valuesMap != null) {
-                            for (String key : valuesMap.keySet()) {
-                                if (SERER_LOCATION_KEY.equalsIgnoreCase(key)) {
-                                    String serverPath = CommonUtils.removeTrailingSlash(valuesMap.get(key));
-                                    localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
-                                    break;
+                // Search MySQL entries
+                {
+                    final String registryRoot = localSystem.is64() ? REGISTRY_ROOT_MYSQL_64 : REGISTRY_ROOT_MYSQL_32;
+                    List<String> homeKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, registryRoot);
+                    if (homeKeys != null) {
+                        for (String homeKey : homeKeys) {
+                            Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, registryRoot + "\\" + homeKey);
+                            if (valuesMap != null) {
+                                for (String key : valuesMap.keySet()) {
+                                    if (SERER_LOCATION_KEY.equalsIgnoreCase(key)) {
+                                        String serverPath = CommonUtils.removeTrailingSlash(valuesMap.get(key));
+                                        localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                // Search MariaDB entries
+                {
+                    List<String> homeKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MARIADB);
+                    if (homeKeys != null) {
+                        for (String homeKey : homeKeys) {
+                            Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MARIADB + "\\" + homeKey);
+                            if (valuesMap != null) {
+                                for (String key : valuesMap.keySet()) {
+                                    if (INSTALLDIR_KEY.equalsIgnoreCase(key)) {
+                                        String serverPath = CommonUtils.removeTrailingSlash(valuesMap.get(key));
+                                        localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
+                                        break;
+                                    }
                                 }
                             }
                         }
