@@ -191,4 +191,6 @@ public class MySQLConstants {
     public static final String COL_VIEW_DEFINITION = "VIEW_DEFINITION";
 
     public static final String TYPE_VARCHAR = "varchar";
+
+    public static final String BIN_FOLDER = "bin";
 }

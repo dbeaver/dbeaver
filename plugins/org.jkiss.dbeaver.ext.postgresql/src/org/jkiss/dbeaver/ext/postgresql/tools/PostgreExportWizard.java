@@ -16,21 +16,19 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ext.mysql.tools;
+package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
-import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
-import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
+import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -51,7 +49,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class MySQLExportWizard extends AbstractExportWizard<MySQLDatabaseExportInfo> implements IExportWizard {
+class PostgreExportWizard extends AbstractExportWizard<PostgreDatabaseExportInfo> implements IExportWizard {
 
     public enum DumpMethod {
         ONLINE,
@@ -69,37 +67,37 @@ class MySQLExportWizard extends AbstractExportWizard<MySQLDatabaseExportInfo> im
     boolean removeDefiner;
     boolean binariesInHex;
     boolean showViews;
-    public List<MySQLDatabaseExportInfo> objects = new ArrayList<>();
+    public List<PostgreDatabaseExportInfo> objects = new ArrayList<>();
 
-    private MySQLExportWizardPageObjects objectsPage;
-    private MySQLExportWizardPageSettings settingsPage;
+    private PostgreExportWizardPageObjects objectsPage;
+    private PostgreExportWizardPageSettings settingsPage;
 
-    public MySQLExportWizard(Collection<DBSObject> objects) {
-        super(objects, MySQLMessages.tools_db_export_wizard_task_name);
+    public PostgreExportWizard(Collection<DBSObject> objects) {
+        super(objects, "Database export");
         this.method = DumpMethod.NORMAL;
         this.outputFolder = new File(DialogUtils.getCurDialogFolder()); //$NON-NLS-1$ //$NON-NLS-2$
 
         final DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-        this.outputFilePattern = store.getString("MySQL.export.outputFilePattern");
+        this.outputFilePattern = store.getString("Postgre.export.outputFilePattern");
         if (CommonUtils.isEmpty(this.outputFilePattern)) {
             this.outputFilePattern = "dump-${database}-${timestamp}.sql";
         }
-        noCreateStatements = CommonUtils.getBoolean(store.getString("MySQL.export.noCreateStatements"), false);
-        addDropStatements = CommonUtils.getBoolean(store.getString("MySQL.export.addDropStatements"), true);
-        disableKeys = CommonUtils.getBoolean(store.getString("MySQL.export.disableKeys"), true);
-        extendedInserts = CommonUtils.getBoolean(store.getString("MySQL.export.extendedInserts"), true);
-        dumpEvents = CommonUtils.getBoolean(store.getString("MySQL.export.dumpEvents"), false);
-        comments = CommonUtils.getBoolean(store.getString("MySQL.export.comments"), false);
-        removeDefiner = CommonUtils.getBoolean(store.getString("MySQL.export.removeDefiner"), false);
-        binariesInHex = CommonUtils.getBoolean(store.getString("MySQL.export.binariesInHex"), false);
-        showViews = CommonUtils.getBoolean(store.getString("MySQL.export.showViews"), false);
+        noCreateStatements = CommonUtils.getBoolean(store.getString("Postgre.export.noCreateStatements"), false);
+        addDropStatements = CommonUtils.getBoolean(store.getString("Postgre.export.addDropStatements"), true);
+        disableKeys = CommonUtils.getBoolean(store.getString("Postgre.export.disableKeys"), true);
+        extendedInserts = CommonUtils.getBoolean(store.getString("Postgre.export.extendedInserts"), true);
+        dumpEvents = CommonUtils.getBoolean(store.getString("Postgre.export.dumpEvents"), false);
+        comments = CommonUtils.getBoolean(store.getString("Postgre.export.comments"), false);
+        removeDefiner = CommonUtils.getBoolean(store.getString("Postgre.export.removeDefiner"), false);
+        binariesInHex = CommonUtils.getBoolean(store.getString("Postgre.export.binariesInHex"), false);
+        showViews = CommonUtils.getBoolean(store.getString("Postgre.export.showViews"), false);
     }
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         super.init(workbench, selection);
-        objectsPage = new MySQLExportWizardPageObjects(this);
-        settingsPage = new MySQLExportWizardPageSettings(this);
+        objectsPage = new PostgreExportWizardPageObjects(this);
+        settingsPage = new PostgreExportWizardPageSettings(this);
     }
 
     @Override
@@ -129,16 +127,16 @@ class MySQLExportWizard extends AbstractExportWizard<MySQLDatabaseExportInfo> im
 	public void onSuccess() {
         UIUtils.showMessageBox(
             getShell(),
-            MySQLMessages.tools_db_export_wizard_title,
-            NLS.bind(MySQLMessages.tools_db_export_wizard_message_export_completed, getObjectsName()),
+            "Database export",
+            "Export '" + getObjectsName() + "'",
             SWT.ICON_INFORMATION);
         UIUtils.launchProgram(outputFolder.getAbsolutePath());
 	}
 
     @Override
-    public void fillProcessParameters(List<String> cmd, MySQLDatabaseExportInfo arg) throws IOException
+    public void fillProcessParameters(List<String> cmd, PostgreDatabaseExportInfo arg) throws IOException
     {
-        File dumpBinary = DBUtils.getHomeBinary(getClientHome(), MySQLConstants.BIN_FOLDER, "mysqldump"); //$NON-NLS-1$
+        File dumpBinary = DBUtils.getHomeBinary(getClientHome(), PostgreConstants.BIN_FOLDER, "pg_dump"); //$NON-NLS-1$
         String dumpPath = dumpBinary.getAbsolutePath();
         cmd.add(dumpPath);
         switch (method) {
@@ -176,44 +174,44 @@ class MySQLExportWizard extends AbstractExportWizard<MySQLDatabaseExportInfo> im
         objectsPage.saveState();
 
         final DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-        store.setValue("MySQL.export.outputFilePattern", this.outputFilePattern);
-        store.setValue("MySQL.export.noCreateStatements", noCreateStatements);
-        store.setValue("MySQL.export.addDropStatements", addDropStatements);
-        store.setValue("MySQL.export.disableKeys", disableKeys);
-        store.setValue("MySQL.export.extendedInserts", extendedInserts);
-        store.setValue("MySQL.export.dumpEvents", dumpEvents);
-        store.setValue("MySQL.export.comments", comments);
-        store.setValue("MySQL.export.removeDefiner", removeDefiner);
-        store.setValue("MySQL.export.binariesInHex", binariesInHex);
-        store.setValue("MySQL.export.showViews", showViews);
+        store.setValue("Postgre.export.outputFilePattern", this.outputFilePattern);
+        store.setValue("Postgre.export.noCreateStatements", noCreateStatements);
+        store.setValue("Postgre.export.addDropStatements", addDropStatements);
+        store.setValue("Postgre.export.disableKeys", disableKeys);
+        store.setValue("Postgre.export.extendedInserts", extendedInserts);
+        store.setValue("Postgre.export.dumpEvents", dumpEvents);
+        store.setValue("Postgre.export.comments", comments);
+        store.setValue("Postgre.export.removeDefiner", removeDefiner);
+        store.setValue("Postgre.export.binariesInHex", binariesInHex);
+        store.setValue("Postgre.export.showViews", showViews);
 
         return super.performFinish();
     }
 
     @Override
-    public MySQLServerHome findServerHome(String clientHomeId)
+    public PostgreServerHome findServerHome(String clientHomeId)
     {
-        return MySQLDataSourceProvider.getServerHome(clientHomeId);
+        return PostgreDataSourceProvider.getServerHome(clientHomeId);
     }
 
     @Override
-    public Collection<MySQLDatabaseExportInfo> getRunInfo() {
+    public Collection<PostgreDatabaseExportInfo> getRunInfo() {
         return objects;
     }
 
     @Override
-    protected List<String> getCommandLine(MySQLDatabaseExportInfo arg) throws IOException
+    protected List<String> getCommandLine(PostgreDatabaseExportInfo arg) throws IOException
     {
-        List<String> cmd = MySQLToolScript.getMySQLToolCommandLine(this, arg);
+        List<String> cmd = PostgreToolScript.getPostgreToolCommandLine(this, arg);
         if (objects.isEmpty()) {
             // no dump
         } else if (!CommonUtils.isEmpty(arg.getTables())) {
-            cmd.add(arg.getDatabase().getName());
-            for (MySQLTableBase table : arg.getTables()) {
+            cmd.add(arg.getSchema().getName());
+            for (PostgreTableBase table : arg.getTables()) {
                 cmd.add(table.getName());
             }
         } else {
-            cmd.add(arg.getDatabase().getName());
+            cmd.add(arg.getSchema().getName());
         }
 
         return cmd;
@@ -226,7 +224,7 @@ class MySQLExportWizard extends AbstractExportWizard<MySQLDatabaseExportInfo> im
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, final MySQLDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process)
+    protected void startProcessHandler(DBRProgressMonitor monitor, final PostgreDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process)
     {
         super.startProcessHandler(monitor, arg, processBuilder, process);
 
@@ -235,11 +233,11 @@ class MySQLExportWizard extends AbstractExportWizard<MySQLDatabaseExportInfo> im
             public String get(String name) {
                 switch (name) {
                     case VARIABLE_DATABASE:
-                        return arg.getDatabase().getName();
+                        return arg.getSchema().getName();
                     case VARIABLE_HOST:
-                        return arg.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getHostName();
+                        return arg.getSchema().getDataSource().getContainer().getConnectionConfiguration().getHostName();
                     case VARIABLE_TABLE:
-                        final Iterator<MySQLTableBase> iterator = arg.getTables() == null ? null : arg.getTables().iterator();
+                        final Iterator<PostgreTableBase> iterator = arg.getTables() == null ? null : arg.getTables().iterator();
                         if (iterator != null && iterator.hasNext()) {
                             return iterator.next().getName();
                         } else {
@@ -258,7 +256,7 @@ class MySQLExportWizard extends AbstractExportWizard<MySQLDatabaseExportInfo> im
         boolean isFiltering = removeDefiner;
         Thread job = isFiltering ?
             new DumpFilterJob(monitor, process.getInputStream(), outFile) :
-            new DumpCopierJob(monitor, MySQLMessages.tools_db_export_wizard_monitor_export_db, process.getInputStream(), outFile);
+            new DumpCopierJob(monitor, "Export database", process.getInputStream(), outFile);
         job.start();
     }
 
@@ -267,12 +265,12 @@ class MySQLExportWizard extends AbstractExportWizard<MySQLDatabaseExportInfo> im
     class DumpFilterJob extends DumpJob {
         protected DumpFilterJob(DBRProgressMonitor monitor, InputStream stream, File outFile)
         {
-            super(MySQLMessages.tools_db_export_wizard_job_dump_log_reader, monitor, stream, outFile);
+            super("Export database", monitor, stream, outFile);
         }
 
         @Override
         public void runDump() throws IOException {
-            monitor.beginTask(MySQLMessages.tools_db_export_wizard_monitor_export_db, 100);
+            monitor.beginTask("Export database", 100);
             long prevStatusUpdateTime = 0;
             try {
                 NumberFormat numberFormat = NumberFormat.getInstance();

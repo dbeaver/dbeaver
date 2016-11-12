@@ -129,19 +129,6 @@ public class MySQLUtils {
         return RuntimeUtils.getNativeBinaryName("mysql");
     }
 
-    public static File getHomeBinary(DBPClientHome home, String binName) throws IOException
-    {
-        binName = RuntimeUtils.getNativeBinaryName(binName);
-        File dumpBinary = new File(home.getHomePath(), "bin/" + binName);
-        if (!dumpBinary.exists()) {
-            dumpBinary = new File(home.getHomePath(), binName);
-            if (!dumpBinary.exists()) {
-                throw new IOException("Utility '" + binName + "' not found in MySQL home '" + home.getDisplayName() + "'");
-            }
-        }
-        return dumpBinary;
-    }
-
     public static String determineCurrentDatabase(JDBCSession session) throws DBCException {
         // Get active schema
         try {

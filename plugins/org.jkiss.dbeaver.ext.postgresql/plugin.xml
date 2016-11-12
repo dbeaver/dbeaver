@@ -281,4 +281,66 @@
         </handler>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.tools">
+        <tools>
+            <toolGroup
+                    id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
+                    label="Maintenance"
+                    icon="#tools"/>
+            <tool
+                    class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolExport"
+                    description="Export database"
+                    id="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolExport"
+                    label="Export database"
+                    icon="#export"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolImport"
+                    description="Import database"
+                    id="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolImport"
+                    label="Import database"
+                    icon="#import"
+                    singleton="true">
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolScript"
+                    description="Execute script with native client"
+                    id="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolScript"
+                    label="Execute script"
+                    singleton="true">
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolAnalyze"
+                    description="Analyze table(s)"
+                    id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolAnalyze"
+                    label="Analyze"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolVacuum"
+                    description="Vacuum table(s)"
+                    id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolVacuum"
+                    label="Vacuum"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTruncate"
+                    description="Truncate table(s)"
+                    id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTruncate"
+                    label="Truncate"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
+            </tool>
+        </tools>
+    </extension>
+
 </plugin>
