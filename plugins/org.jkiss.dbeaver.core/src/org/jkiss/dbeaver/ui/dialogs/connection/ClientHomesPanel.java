@@ -231,22 +231,29 @@ public class ClientHomesPanel extends Composite
         allHomes.addAll(driver.getClientHomeIds());
 
         for (String homeId : allHomes) {
-            createHomeItem(clientManager, homeId, providedHomes.contains(homeId));
+            TableItem item = createHomeItem(clientManager, homeId, providedHomes.contains(homeId));
+            if (item != null) {
+                HomeInfo homeInfo = (HomeInfo) item.getData();
+                if (homeInfo.isDefault) {
+                    homesTable.setSelection(homesTable.indexOf(item));
+                    selectHome(homeInfo);
+                }
+            }
         }
     }
 
-    private void createHomeItem(DBPClientManager clientManager, String homeId, boolean provided)
+    private TableItem createHomeItem(DBPClientManager clientManager, String homeId, boolean provided)
     {
         DBPClientHome home;
         try {
             home = clientManager.getClientHome(homeId);
             if (home == null) {
                 log.warn("Home '" + homeId + "' is not supported"); //$NON-NLS-1$ //$NON-NLS-2$
-                return;
+                return null;
             }
         } catch (Exception e) {
             log.error(e);
-            return;
+            return null;
         }
         HomeInfo homeInfo = new HomeInfo(home);
         homeInfo.isProvided = provided;
@@ -262,6 +269,7 @@ public class ClientHomesPanel extends Composite
                 homeItem.setFont(fontBold);
             }
         }
+        return homeItem;
     }
 
     private String getSelectedHome()
