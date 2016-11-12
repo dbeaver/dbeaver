@@ -23,7 +23,8 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
@@ -40,7 +41,7 @@ public class PostgreToolTruncate implements IExternalTool
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        List<PostgreTable> tables = CommonUtils.filterCollection(objects, PostgreTable.class);
+        List<PostgreTableBase> tables = CommonUtils.filterCollection(objects, PostgreTableBase.class);
         if (!tables.isEmpty()) {
             SQLDialog dialog = new SQLDialog(activePart.getSite(), tables);
             dialog.open();
@@ -49,14 +50,16 @@ public class PostgreToolTruncate implements IExternalTool
 
     static class SQLDialog extends TableToolDialog {
 
-        public SQLDialog(IWorkbenchPartSite partSite, Collection<PostgreTable> selectedTables)
+        public SQLDialog(IWorkbenchPartSite partSite, Collection<PostgreTableBase> selectedTables)
         {
             super(partSite, "Truncate table(s)", selectedTables);
         }
 
         @Override
-        protected void generateObjectCommand(List<String> lines, PostgreTable object) {
-            lines.add("TRUNCATE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        protected void generateObjectCommand(List<String> lines, PostgreObject object) {
+            if (object instanceof PostgreTableBase) {
+                lines.add("TRUNCATE TABLE " + ((PostgreTableBase)object).getFullyQualifiedName(DBPEvaluationContext.DDL));
+            }
         }
 
         @Override

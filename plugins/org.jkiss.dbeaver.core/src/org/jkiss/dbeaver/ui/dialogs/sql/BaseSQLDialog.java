@@ -155,6 +155,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
         try {
             this.sqlInput.setText(getSQLText());
             sqlViewer.init(subSite, sqlInput);
+            sqlViewer.reloadSyntaxRules();
         } catch (PartInitException e) {
             UIUtils.showErrorDialog(getShell(), getShell().getText(), null, e);
         }
