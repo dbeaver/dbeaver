@@ -36,7 +36,7 @@ public abstract class AbstractImportExportWizard<PROCESS_ARG> extends AbstractTo
     public static final String VARIABLE_TABLE = "table";
     public static final String VARIABLE_TIMESTAMP = "timestamp";
 
-    protected File outputFolder;
+    protected File outputFolder = new File(DialogUtils.getCurDialogFolder());
     protected String outputFilePattern;
 
     protected AbstractImportExportWizard(Collection<DBSObject> objects, String title) {
