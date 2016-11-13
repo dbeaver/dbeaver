@@ -149,6 +149,9 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
             boolean tablesLoaded = false;
             try {
                 for (PostgreSchema schema : dataSource.getDefaultInstance().getSchemas(VoidProgressMonitor.INSTANCE)) {
+                    if (schema.isSystem() || schema.isUtility()) {
+                        continue;
+                    }
                     TableItem item = new TableItem(schemasTable, SWT.NONE);
                     item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
                     item.setText(0, schema.getName());
