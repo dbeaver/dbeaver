@@ -44,7 +44,6 @@ import java.util.List;
 
 class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBackupInfo> implements IExportWizard {
 
-    ExportFormat format;
     String compression;
     String encoding;
     boolean showViews;
@@ -55,8 +54,6 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
 
     public PostgreBackupWizard(Collection<DBSObject> objects) {
         super(objects, "Database backup");
-        this.format = ExportFormat.CUSTOM;
-        this.outputFolder = new File(DialogUtils.getCurDialogFolder()); //$NON-NLS-1$ //$NON-NLS-2$
 
         final DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         this.outputFilePattern = store.getString("Postgre.export.outputFilePattern");

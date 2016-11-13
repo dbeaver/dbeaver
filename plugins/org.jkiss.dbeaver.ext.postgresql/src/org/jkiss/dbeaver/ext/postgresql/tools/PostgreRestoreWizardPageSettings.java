@@ -23,10 +23,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.utils.CommonUtils;
@@ -36,6 +33,7 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
 {
 
     private TextWithOpenFile inputFileText;
+    private Combo formatCombo;
 
     protected PostgreRestoreWizardPageSettings(PostgreRestoreWizard wizard)
     {
@@ -62,6 +60,15 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
             }
         };
 
+        Group formatGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
+        formatCombo = UIUtils.createLabelCombo(formatGroup, "Format", SWT.DROP_DOWN | SWT.READ_ONLY);
+        formatCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        for (PostgreBackupWizard.ExportFormat format : PostgreBackupWizard.ExportFormat.values()) {
+            formatCombo.add(format.getTitle());
+        }
+        formatCombo.select(wizard.format.ordinal());
+        formatCombo.addListener(SWT.Selection, updateListener);
+
         Group inputGroup = UIUtils.createControlGroup(composite, "Input", 2, GridData.FILL_HORIZONTAL, 0);
         UIUtils.createControlLabel(inputGroup, "Backup file");
         inputFileText = new TextWithOpenFile(inputGroup, "Choose backup file", new String[] {"*.backup","*"});
@@ -75,6 +82,7 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
 
     private void updateState()
     {
+        wizard.format = PostgreBackupWizard.ExportFormat.values()[formatCombo.getSelectionIndex()];
         wizard.inputFile = inputFileText.getText();
 
         getContainer().updateButtons();

@@ -60,6 +60,8 @@ abstract class PostgreBackupRestoreWizard<PROCESS_ARG extends PostgreDatabaseBac
         }
     }
 
+    ExportFormat format = ExportFormat.CUSTOM;
+
     public PostgreBackupRestoreWizard(Collection<DBSObject> objects, String title) {
         super(objects, title);
     }

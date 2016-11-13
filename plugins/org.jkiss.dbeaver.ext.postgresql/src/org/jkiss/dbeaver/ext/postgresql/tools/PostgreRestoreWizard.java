@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -97,6 +98,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     @Override
     protected List<String> getCommandLine(PostgreDatabaseRestoreInfo arg) throws IOException {
         List<String> cmd = super.getCommandLine(arg);
+        cmd.add("--format=" + format.getId());
         cmd.add("--dbname=" + arg.getDatabase().getName());
 
         return cmd;

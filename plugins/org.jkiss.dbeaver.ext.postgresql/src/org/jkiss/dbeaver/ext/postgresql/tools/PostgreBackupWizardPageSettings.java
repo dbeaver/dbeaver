@@ -43,8 +43,8 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
     protected PostgreBackupWizardPageSettings(PostgreBackupWizard wizard)
     {
         super(wizard, "Settings");
-        setTitle("Export settings");
-        setDescription("Database export settings");
+        setTitle("Backup settings");
+        setDescription("Database backup settings");
     }
 
     @Override
