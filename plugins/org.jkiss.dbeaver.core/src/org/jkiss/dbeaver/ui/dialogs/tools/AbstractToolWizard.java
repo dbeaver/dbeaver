@@ -278,6 +278,10 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
 
     protected abstract void startProcessHandler(DBRProgressMonitor monitor, PROCESS_ARG arg, ProcessBuilder processBuilder, Process process);
 
+    public boolean isSecureString(String string) {
+        return string.contains(getToolUserPassword());
+    }
+
     public abstract class DumpJob extends Thread {
         protected DBRProgressMonitor monitor;
         protected InputStream input;
