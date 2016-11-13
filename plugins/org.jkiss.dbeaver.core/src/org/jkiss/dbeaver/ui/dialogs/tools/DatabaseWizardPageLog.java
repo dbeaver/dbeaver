@@ -123,11 +123,10 @@ public class DatabaseWizardPageLog extends WizardPage {
     private class LogReaderJob extends Thread {
         private ProcessBuilder processBuilder;
         private InputStream input;
-        //private BufferedReader in;
         protected LogReaderJob(ProcessBuilder processBuilder, InputStream stream)
         {
             super(NLS.bind(CoreMessages.tools_wizard_page_log_task_log_reader, task));
-            //in = new BufferedReader(new InputStreamReader(stream), 100);
+
             this.processBuilder = processBuilder;
             this.input = stream;
         }
@@ -135,18 +134,23 @@ public class DatabaseWizardPageLog extends WizardPage {
         @Override
         public void run()
         {
-            //clearLog();
+            AbstractToolWizard wizard = (AbstractToolWizard) getWizard();
+
             String lf = GeneralUtils.getDefaultLineSeparator();
             List<String> command = processBuilder.command();
+
+            // Dump command line
             StringBuilder cmdString = new StringBuilder();
-            cmdString.append(command.get(0));
-//            for (String cmd : command) {
-//                if (cmd.startsWith("--password")) continue;
-//                if (cmdString.length() > 0) cmdString.append(' ');
-//                cmdString.append(cmd);
-//            }
+            for (String cmd : command) {
+                if (wizard.isSecureString(cmd)) {
+                    cmd = "******";
+                }
+                if (cmdString.length() > 0) cmdString.append(' ');
+                cmdString.append(cmd);
+            }
             cmdString.append(lf);
             appendLog(cmdString.toString());
+
             appendLog(NLS.bind(CoreMessages.tools_wizard_page_log_task_started_at, task, new Date()) + lf);
 
             try {
