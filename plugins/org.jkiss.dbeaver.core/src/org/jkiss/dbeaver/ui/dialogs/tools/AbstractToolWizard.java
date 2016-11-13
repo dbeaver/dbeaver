@@ -388,6 +388,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                     IOUtils.close(output);
                 }
             } catch (IOException e) {
+                log.debug(e);
                 logPage.appendLog(e.getMessage());
             }
             finally {
@@ -412,27 +413,24 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         @Override
         public void run()
         {
-            try {
-                try (InputStream scriptStream = new ProgressStreamReader(
-                    monitor,
-                    new FileInputStream(inputFile),
-                    inputFile.length()))
-                {
-                    byte[] buffer = new byte[10000];
-                    while (!monitor.isCanceled()) {
-                        int readSize = scriptStream.read(buffer);
-                        if (readSize < 0) {
-                            break;
-                        }
-                        output.write(buffer, 0, readSize);
-                        output.flush();
+            try (InputStream scriptStream = new ProgressStreamReader(
+                monitor,
+                new FileInputStream(inputFile),
+                inputFile.length()))
+            {
+                byte[] buffer = new byte[100000];
+                while (!monitor.isCanceled()) {
+                    int readSize = scriptStream.read(buffer);
+                    if (readSize < 0) {
+                        break;
                     }
+                    output.write(buffer, 0, readSize);
                     output.flush();
-                } finally {
-                    IOUtils.close(output);
                 }
+                output.flush();
             } catch (IOException e) {
-                logPage.appendLog(e.getMessage());
+                log.debug(e);
+                logPage.appendLog(e.getMessage() + "\n");
             }
             finally {
                 monitor.done();

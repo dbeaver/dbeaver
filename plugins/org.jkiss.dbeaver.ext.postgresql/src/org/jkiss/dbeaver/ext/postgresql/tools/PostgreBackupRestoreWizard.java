@@ -89,10 +89,7 @@ abstract class PostgreBackupRestoreWizard<PROCESS_ARG extends PostgreDatabaseBac
     @Override
     protected List<String> getCommandLine(PROCESS_ARG arg) throws IOException
     {
-        List<String> cmd = PostgreToolScript.getPostgreToolCommandLine(this, arg);
-        cmd.add(arg.getDatabase().getName());
-
-        return cmd;
+        return PostgreToolScript.getPostgreToolCommandLine(this, arg);
     }
 
     @Override
