@@ -23,6 +23,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -40,8 +41,14 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
 
     public String inputFile;
 
-    public PostgreRestoreWizard(Collection<DBSObject> objects) {
-        super(objects, "Database restore");
+    public PostgreRestoreWizard(PostgreDatabase database) {
+        super(Collections.<DBSObject>singletonList(database), "Database restore");
+        restoreInfo = new PostgreDatabaseRestoreInfo(database);
+    }
+
+    @Override
+    public boolean isExportWizard() {
+        return false;
     }
 
     @Override
@@ -76,16 +83,23 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
 	public void onSuccess() {
         UIUtils.showMessageBox(
             getShell(),
-            "Database export",
-            "Export '" + getObjectsName() + "'",
+            "Database restore",
+            "Restore '" + getObjectsName() + "'",
             SWT.ICON_INFORMATION);
-        UIUtils.launchProgram(outputFolder.getAbsolutePath());
 	}
 
     @Override
     public void fillProcessParameters(List<String> cmd, PostgreDatabaseRestoreInfo arg) throws IOException
     {
         super.fillProcessParameters(cmd, arg);
+    }
+
+    @Override
+    protected List<String> getCommandLine(PostgreDatabaseRestoreInfo arg) throws IOException {
+        List<String> cmd = super.getCommandLine(arg);
+        cmd.add("--dbname=" + arg.getDatabase().getName());
+
+        return cmd;
     }
 
     @Override
@@ -99,6 +113,5 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
         super.startProcessHandler(monitor, arg, processBuilder, process);
         new BinaryFileTransformerJob(monitor, new File(inputFile), process.getOutputStream()).start();
     }
-
 
 }

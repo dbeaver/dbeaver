@@ -18,27 +18,24 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Listener;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.TextWithOpen;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.utils.CommonUtils;
-
-import java.io.File;
 
 
 class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<PostgreRestoreWizard>
 {
 
-    private TextWithOpen inputFileText;
+    private TextWithOpenFile inputFileText;
 
     protected PostgreRestoreWizardPageSettings(PostgreRestoreWizard wizard)
     {
@@ -50,7 +47,7 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
     @Override
     public boolean isPageComplete()
     {
-        return super.isPageComplete();
+        return super.isPageComplete() && !CommonUtils.isEmpty(wizard.inputFile);
     }
 
     @Override
@@ -58,16 +55,18 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        SelectionListener changeListener = new SelectionAdapter() {
+        Listener updateListener = new Listener() {
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void handleEvent(Event event) {
                 updateState();
             }
         };
 
-        Group outputGroup = UIUtils.createControlGroup(composite, "Input", 2, GridData.FILL_HORIZONTAL, 0);
-        inputFileText = new TextWithOpen(outputGroup);
-        inputFileText.getTextControl().addSelectionListener(changeListener);
+        Group inputGroup = UIUtils.createControlGroup(composite, "Input", 2, GridData.FILL_HORIZONTAL, 0);
+        UIUtils.createControlLabel(inputGroup, "Backup file");
+        inputFileText = new TextWithOpenFile(inputGroup, "Choose backup file", new String[] {"*.backup","*"});
+        inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        inputFileText.getTextControl().addListener(SWT.Modify, updateListener);
 
         createSecurityGroup(composite);
 

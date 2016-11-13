@@ -61,7 +61,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
         final DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         this.outputFilePattern = store.getString("Postgre.export.outputFilePattern");
         if (CommonUtils.isEmpty(this.outputFilePattern)) {
-            this.outputFilePattern = "dump-${database}-${timestamp}.sql";
+            this.outputFilePattern = "dump-${database}-${timestamp}.backup";
         }
         showViews = CommonUtils.getBoolean(store.getString("Postgre.export.showViews"), false);
     }
@@ -133,6 +133,14 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
                 cmd.add(schema.getName());
             }
         }
+    }
+
+    @Override
+    protected List<String> getCommandLine(PostgreDatabaseBackupInfo arg) throws IOException {
+        List<String> cmd = PostgreToolScript.getPostgreToolCommandLine(this, arg);
+        cmd.add(arg.getDatabase().getName());
+
+        return cmd;
     }
 
     @Override
