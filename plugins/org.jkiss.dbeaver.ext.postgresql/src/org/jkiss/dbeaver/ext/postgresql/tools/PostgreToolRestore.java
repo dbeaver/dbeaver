@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
@@ -28,16 +29,20 @@ import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 import java.util.Collection;
 
 /**
- * Database export
+ * Database import
  */
-public class PostgreToolExport implements IExternalTool
+public class PostgreToolRestore implements IExternalTool
 {
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        ToolWizardDialog dialog = new ToolWizardDialog(
-            window,
-            new PostgreExportWizard(objects));
-        dialog.open();
+        for (DBSObject object : objects) {
+            if (object instanceof PostgreSchema) {
+                ToolWizardDialog dialog = new ToolWizardDialog(
+                    window,
+                    new PostgreScriptExecuteWizard((PostgreSchema) object, true));
+                dialog.open();
+            }
+        }
     }
 }

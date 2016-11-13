@@ -28,9 +28,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.IOUtils;
 
-import java.io.*;
+import java.io.File;
 import java.util.Collection;
 
 public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject, PROCESS_ARG>
@@ -79,8 +78,7 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject,
         logPage.startLogReader(
             processBuilder,
             process.getInputStream());
-        new ScriptTransformerJob(monitor, process.getOutputStream()).start();
-        //logPage.startLogReader(processBuilder, process.getInputStream());
+        new TextFileTransformerJob(monitor, inputFile, process.getOutputStream(), getInputCharset(), getOutputCharset()).start();
     }
 
     @Override
@@ -89,136 +87,12 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject,
         return true;
     }
 
-    class ScriptTransformerJob extends Thread {
-        private DBRProgressMonitor monitor;
-        private OutputStream output;
-
-        protected ScriptTransformerJob(DBRProgressMonitor monitor, OutputStream stream)
-        {
-            super(task);
-            this.monitor = monitor;
-            this.output = stream;
-        }
-
-        @Override
-        public void run()
-        {
-            try {
-                try (InputStream scriptStream = new ProgressStreamReader(
-                    monitor,
-                    new FileInputStream(inputFile),
-                    inputFile.length()))
-                {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(scriptStream, getInputCharset()));
-                    PrintWriter writer = new PrintWriter(new OutputStreamWriter(output, getOutputCharset()));
-                    while (!monitor.isCanceled()) {
-//                        int count = scriptStream.read(buffer);
-//                        if (count <= 0) {
-//                            break;
-//                        }
-//                        totalBytes += count;
-//                        output.write(buffer, 0, count);
-//                        output.flush();
-//                        monitor.subTask(numberFormat.format(totalBytes) + " bytes");
-//                        monitor.worked(count / BUFFER_SIZE);
-                        String line = reader.readLine();
-                        if (line == null) {
-                            break;
-                        }
-                        writer.println(line);
-                        writer.flush();
-                        //output.flush();
-                    }
-                    output.flush();
-                } finally {
-                    IOUtils.close(output);
-                }
-            } catch (IOException e) {
-                logPage.appendLog(e.getMessage());
-            }
-            finally {
-                monitor.done();
-            }
-        }
-    }
-
     protected String getInputCharset() {
         return GeneralUtils.UTF8_ENCODING;
     }
 
     protected String getOutputCharset() {
         return GeneralUtils.UTF8_ENCODING;
-    }
-
-    private class ProgressStreamReader extends InputStream {
-
-        static final int BUFFER_SIZE = 10000;
-
-        private final DBRProgressMonitor monitor;
-        private final InputStream original;
-        private final long streamLength;
-        private long totalRead;
-
-        private ProgressStreamReader(DBRProgressMonitor monitor, InputStream original, long streamLength)
-        {
-            this.monitor = monitor;
-            this.original = original;
-            this.streamLength = streamLength;
-            this.totalRead = 0;
-
-            monitor.beginTask(task, (int)streamLength);
-        }
-
-        @Override
-        public int read() throws IOException
-        {
-            int res = original.read();
-            showProgress(res);
-            return res;
-        }
-
-        @Override
-        public int read(byte[] b) throws IOException
-        {
-            int res = original.read(b);
-            showProgress(res);
-            return res;
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException
-        {
-            int res = original.read(b, off, len);
-            showProgress(res);
-            return res;
-        }
-
-        @Override
-        public long skip(long n) throws IOException
-        {
-            long res = original.skip(n);
-            showProgress(res);
-            return res;
-        }
-
-        @Override
-        public int available() throws IOException
-        {
-            return original.available();
-        }
-
-        @Override
-        public void close() throws IOException
-        {
-            monitor.done();
-            original.close();
-        }
-
-        private void showProgress(long length)
-        {
-            totalRead += length;
-            monitor.worked((int)length);
-        }
     }
 
 }

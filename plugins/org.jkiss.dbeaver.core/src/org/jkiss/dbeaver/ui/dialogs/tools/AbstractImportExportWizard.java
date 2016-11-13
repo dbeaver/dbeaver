@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import java.io.File;
 import java.util.Collection;
 
-public abstract class AbstractExportWizard<PROCESS_ARG> extends AbstractToolWizard<DBSObject, PROCESS_ARG> implements IExportWizard {
+public abstract class AbstractImportExportWizard<PROCESS_ARG> extends AbstractToolWizard<DBSObject, PROCESS_ARG> implements IExportWizard {
 
     public static final String VARIABLE_HOST = "host";
     public static final String VARIABLE_DATABASE = "database";
@@ -39,7 +39,7 @@ public abstract class AbstractExportWizard<PROCESS_ARG> extends AbstractToolWiza
     protected File outputFolder;
     protected String outputFilePattern;
 
-    protected AbstractExportWizard(Collection<DBSObject> objects, String title) {
+    protected AbstractImportExportWizard(Collection<DBSObject> objects, String title) {
         super(objects, title);
     }
 
@@ -77,12 +77,14 @@ public abstract class AbstractExportWizard<PROCESS_ARG> extends AbstractToolWiza
 
     @Override
     public boolean performFinish() {
-        final File dir = outputFolder;
-        if (!dir.exists()) {
-            if (!dir.mkdirs()) {
-                logPage.setMessage("Can't create directory '" + dir.getAbsolutePath() + "'", IMessageProvider.ERROR);
-                getContainer().updateMessage();
-                return false;
+        if (isExportWizard()) {
+            final File dir = outputFolder;
+            if (!dir.exists()) {
+                if (!dir.mkdirs()) {
+                    logPage.setMessage("Can't create directory '" + dir.getAbsolutePath() + "'", IMessageProvider.ERROR);
+                    getContainer().updateMessage();
+                    return false;
+                }
             }
         }
 
@@ -95,6 +97,9 @@ public abstract class AbstractExportWizard<PROCESS_ARG> extends AbstractToolWiza
         return true;
     }
 
+    public boolean isExportWizard() {
+        return true;
+    }
     @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, final PROCESS_ARG arg, ProcessBuilder processBuilder, Process process)
     {
