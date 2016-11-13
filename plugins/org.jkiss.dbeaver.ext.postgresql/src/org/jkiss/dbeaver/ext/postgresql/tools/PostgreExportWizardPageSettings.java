@@ -37,6 +37,8 @@ class PostgreExportWizardPageSettings extends PostgreWizardPageSettings<PostgreE
     private Text outputFolderText;
     private Text outputFileText;
     private Combo formatCombo;
+    private Combo compressCombo;
+    private Combo encodingCombo;
 
     protected PostgreExportWizardPageSettings(PostgreExportWizard wizard)
     {
@@ -63,14 +65,27 @@ class PostgreExportWizardPageSettings extends PostgreWizardPageSettings<PostgreE
             }
         };
 
-        Group formatGroup = UIUtils.createControlGroup(composite, "Format", 1, GridData.FILL_HORIZONTAL, 0);
-        formatCombo = new Combo(formatGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
-        formatCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Group formatGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
+        formatCombo = UIUtils.createLabelCombo(formatGroup, "Format", SWT.DROP_DOWN | SWT.READ_ONLY);
+        formatCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         for (PostgreExportWizard.ExportFormat format : PostgreExportWizard.ExportFormat.values()) {
             formatCombo.add(format.getTitle());
         }
         formatCombo.select(wizard.format.ordinal());
         formatCombo.addSelectionListener(changeListener);
+
+        compressCombo = UIUtils.createLabelCombo(formatGroup, "Compression", SWT.DROP_DOWN | SWT.READ_ONLY);
+        compressCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        compressCombo.add("");
+        for (int i = 0; i <= 9; i++) {
+            compressCombo.add(String.valueOf(i));
+        }
+        compressCombo.select(0);
+        compressCombo.addSelectionListener(changeListener);
+
+        UIUtils.createControlLabel(formatGroup, "Encoding");
+        encodingCombo = UIUtils.createEncodingCombo(formatGroup, null);
+        encodingCombo.addSelectionListener(changeListener);
 
         Group outputGroup = UIUtils.createControlGroup(composite, "Output", 2, GridData.FILL_HORIZONTAL, 0);
         outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, "Output folder", new ModifyListener() {
@@ -105,6 +120,10 @@ class PostgreExportWizardPageSettings extends PostgreWizardPageSettings<PostgreE
         String fileName = outputFolderText.getText();
         wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
         wizard.setOutputFilePattern(outputFileText.getText());
+
+        wizard.format = PostgreExportWizard.ExportFormat.values()[formatCombo.getSelectionIndex()];
+        wizard.compression = compressCombo.getText();
+        wizard.encoding = encodingCombo.getText();
 
         getContainer().updateButtons();
     }

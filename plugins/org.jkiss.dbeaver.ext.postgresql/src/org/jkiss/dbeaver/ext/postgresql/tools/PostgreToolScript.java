@@ -59,18 +59,17 @@ public class PostgreToolScript implements IExternalTool
         toolWizard.fillProcessParameters(cmd, arg);
 
         if (toolWizard.isVerbose()) {
-            cmd.add("-v");
+            cmd.add("--verbose");
         }
         DBPConnectionConfiguration connectionInfo = toolWizard.getConnectionInfo();
         cmd.add("--host=" + connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
             cmd.add("--port=" + connectionInfo.getHostPort());
         }
-        cmd.add("-u");
-        cmd.add(toolWizard.getToolUserName());
-        if (!CommonUtils.isEmpty(toolWizard.getToolUserPassword())) {
-            cmd.add("--password=" + toolWizard.getToolUserPassword());
-        }
+        cmd.add("--username=" + toolWizard.getToolUserName());
+//        if (!CommonUtils.isEmpty(toolWizard.getToolUserPassword())) {
+//            cmd.add("--password");
+//        }
 
         return cmd;
     }
