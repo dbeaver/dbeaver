@@ -18,31 +18,28 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tools.IExternalTool;
-import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 
 import java.util.Collection;
 
 /**
- * Database import
- */
-public class PostgreToolImport implements IExternalTool
-{
-    @Override
-    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
-    {
-        for (DBSObject object : objects) {
-            if (object instanceof PostgreSchema) {
-                ToolWizardDialog dialog = new ToolWizardDialog(
-                    window,
-                    new PostgreScriptExecuteWizard((PostgreSchema) object, true));
-                dialog.open();
-            }
-        }
+* PostgreDatabaseBackupRestoreInfo
+*/
+public class PostgreDatabaseBackupRestoreInfo {
+    @NotNull
+    private PostgreDatabase database;
+
+    public PostgreDatabaseBackupRestoreInfo(@NotNull PostgreDatabase database) {
+        this.database = database;
     }
+
+    @NotNull
+    public PostgreDatabase getDatabase() {
+        return database;
+    }
+
 }

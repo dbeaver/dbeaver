@@ -288,20 +288,21 @@
                     label="Maintenance"
                     icon="#tools"/>
             <tool
-                    class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolExport"
+                    class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolBackup"
                     description="Export database"
-                    id="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolExport"
-                    label="Export database"
+                    id="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolBackup"
+                    label="Backup database"
                     icon="#export"
                     singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolImport"
+                    class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolRestore"
                     description="Import database"
-                    id="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolImport"
-                    label="Import database"
+                    id="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolRestore"
+                    label="Restore database"
                     icon="#import"
                     singleton="true">
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>

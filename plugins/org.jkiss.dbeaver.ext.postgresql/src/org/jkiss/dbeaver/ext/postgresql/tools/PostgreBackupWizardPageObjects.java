@@ -47,9 +47,9 @@ import java.util.*;
 import java.util.List;
 
 
-class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreExportWizard>
+class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBackupWizard>
 {
-    private static final Log log = Log.getLog(PostgreExportWizardPageObjects.class);
+    private static final Log log = Log.getLog(PostgreBackupWizardPageObjects.class);
 
     private Table schemasTable;
     private Table tablesTable;
@@ -58,7 +58,7 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
     private PostgreSchema curSchema;
     private PostgreDataSource dataSource;
 
-    protected PostgreExportWizardPageObjects(PostgreExportWizard wizard)
+    protected PostgreBackupWizardPageObjects(PostgreBackupWizard wizard)
     {
         super(wizard, "Schemas/tables");
         setTitle("Choose objects to export");
@@ -256,7 +256,7 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
                 }
             }
         }
-        PostgreDatabaseExportInfo info = new PostgreDatabaseExportInfo(dataSource.getDefaultInstance(), schemas, tables);
+        PostgreDatabaseBackupInfo info = new PostgreDatabaseBackupInfo(dataSource.getDefaultInstance(), schemas, tables);
         wizard.objects.add(info);
     }
 

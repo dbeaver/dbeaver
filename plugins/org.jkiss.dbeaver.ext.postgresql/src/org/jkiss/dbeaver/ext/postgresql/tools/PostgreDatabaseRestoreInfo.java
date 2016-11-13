@@ -27,35 +27,10 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import java.util.Collection;
 
 /**
-* PostgreDatabaseExportInfo
+* PostgreDatabaseRestoreInfo
 */
-public class PostgreDatabaseExportInfo {
-    @NotNull
-    private PostgreDatabase database;
-    @NotNull
-    private Collection<PostgreSchema> schemas;
-    @Nullable
-    private Collection<PostgreTableBase> tables;
-
-    public PostgreDatabaseExportInfo(@NotNull PostgreDatabase database, @NotNull Collection<PostgreSchema> schemas, @Nullable Collection<PostgreTableBase> tables) {
-        this.database = database;
-        this.schemas = schemas;
-        this.tables = tables;
+public class PostgreDatabaseRestoreInfo extends PostgreDatabaseBackupRestoreInfo {
+    public PostgreDatabaseRestoreInfo(@NotNull PostgreDatabase database) {
+        super(database);
     }
-
-    @NotNull
-    public PostgreDatabase getDatabase() {
-        return database;
-    }
-
-    @NotNull
-    public Collection<PostgreSchema> getSchemas() {
-        return schemas;
-    }
-
-    @Nullable
-    public Collection<PostgreTableBase> getTables() {
-        return tables;
-    }
-
 }

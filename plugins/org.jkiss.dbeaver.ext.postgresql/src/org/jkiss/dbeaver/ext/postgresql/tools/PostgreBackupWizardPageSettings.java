@@ -31,7 +31,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 
 
-class PostgreExportWizardPageSettings extends PostgreWizardPageSettings<PostgreExportWizard>
+class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreBackupWizard>
 {
 
     private Text outputFolderText;
@@ -40,7 +40,7 @@ class PostgreExportWizardPageSettings extends PostgreWizardPageSettings<PostgreE
     private Combo compressCombo;
     private Combo encodingCombo;
 
-    protected PostgreExportWizardPageSettings(PostgreExportWizard wizard)
+    protected PostgreBackupWizardPageSettings(PostgreBackupWizard wizard)
     {
         super(wizard, "Settings");
         setTitle("Export settings");
@@ -68,7 +68,7 @@ class PostgreExportWizardPageSettings extends PostgreWizardPageSettings<PostgreE
         Group formatGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
         formatCombo = UIUtils.createLabelCombo(formatGroup, "Format", SWT.DROP_DOWN | SWT.READ_ONLY);
         formatCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        for (PostgreExportWizard.ExportFormat format : PostgreExportWizard.ExportFormat.values()) {
+        for (PostgreBackupWizard.ExportFormat format : PostgreBackupWizard.ExportFormat.values()) {
             formatCombo.add(format.getTitle());
         }
         formatCombo.select(wizard.format.ordinal());
@@ -121,7 +121,7 @@ class PostgreExportWizardPageSettings extends PostgreWizardPageSettings<PostgreE
         wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
         wizard.setOutputFilePattern(outputFileText.getText());
 
-        wizard.format = PostgreExportWizard.ExportFormat.values()[formatCombo.getSelectionIndex()];
+        wizard.format = PostgreBackupWizard.ExportFormat.values()[formatCombo.getSelectionIndex()];
         wizard.compression = compressCombo.getText();
         wizard.encoding = encodingCombo.getText();
 

@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.dbeaver.ui.dialogs.tools.AbstractExportWizard;
+import org.jkiss.dbeaver.ui.dialogs.tools.AbstractImportExportWizard;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class MySQLExportWizard extends AbstractExportWizard<MySQLDatabaseExportInfo> implements IExportWizard {
+class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportInfo> implements IExportWizard {
 
     public enum DumpMethod {
         ONLINE,

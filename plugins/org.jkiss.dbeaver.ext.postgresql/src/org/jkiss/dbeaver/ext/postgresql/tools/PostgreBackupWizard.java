@@ -24,19 +24,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
-import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.dbeaver.ui.dialogs.tools.AbstractExportWizard;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -47,42 +42,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-class PostgreExportWizard extends AbstractExportWizard<PostgreDatabaseExportInfo> implements IExportWizard {
-
-    public enum ExportFormat {
-        PLAIN("p", "Plain"),
-        CUSTOM("c", "Custom"),
-        DIRECTORY("d", "Directory"),
-        TAR("t", "Tar");
-
-        private final String id;
-        private String title;
-
-        ExportFormat(String id, String title) {
-            this.id = id;
-            this.title = title;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-    }
+class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBackupInfo> implements IExportWizard {
 
     ExportFormat format;
     String compression;
     String encoding;
     boolean showViews;
-    public List<PostgreDatabaseExportInfo> objects = new ArrayList<>();
+    public List<PostgreDatabaseBackupInfo> objects = new ArrayList<>();
 
-    private PostgreExportWizardPageObjects objectsPage;
-    private PostgreExportWizardPageSettings settingsPage;
+    private PostgreBackupWizardPageObjects objectsPage;
+    private PostgreBackupWizardPageSettings settingsPage;
 
-    public PostgreExportWizard(Collection<DBSObject> objects) {
-        super(objects, "Database export");
+    public PostgreBackupWizard(Collection<DBSObject> objects) {
+        super(objects, "Database backup");
         this.format = ExportFormat.CUSTOM;
         this.outputFolder = new File(DialogUtils.getCurDialogFolder()); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -97,8 +69,8 @@ class PostgreExportWizard extends AbstractExportWizard<PostgreDatabaseExportInfo
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         super.init(workbench, selection);
-        objectsPage = new PostgreExportWizardPageObjects(this);
-        settingsPage = new PostgreExportWizardPageSettings(this);
+        objectsPage = new PostgreBackupWizardPageObjects(this);
+        settingsPage = new PostgreBackupWizardPageSettings(this);
     }
 
     @Override
@@ -135,11 +107,9 @@ class PostgreExportWizard extends AbstractExportWizard<PostgreDatabaseExportInfo
 	}
 
     @Override
-    public void fillProcessParameters(List<String> cmd, PostgreDatabaseExportInfo arg) throws IOException
+    public void fillProcessParameters(List<String> cmd, PostgreDatabaseBackupInfo arg) throws IOException
     {
-        File dumpBinary = DBUtils.getHomeBinary(getClientHome(), PostgreConstants.BIN_FOLDER, "pg_dump"); //$NON-NLS-1$
-        String dumpPath = dumpBinary.getAbsolutePath();
-        cmd.add(dumpPath);
+        super.fillProcessParameters(cmd, arg);
 
         cmd.add("--format=" + format.getId());
         if (!CommonUtils.isEmpty(compression)) {
@@ -163,15 +133,6 @@ class PostgreExportWizard extends AbstractExportWizard<PostgreDatabaseExportInfo
                 cmd.add(schema.getName());
             }
         }
-
-//        if (comments) cmd.add("--comments"); //$NON-NLS-1$
-    }
-
-    @Override
-    protected void setupProcessParameters(ProcessBuilder process) {
-        if (!CommonUtils.isEmpty(getToolUserPassword())) {
-            process.environment().put("PGPASSWORD", getToolUserPassword());
-        }
     }
 
     @Override
@@ -186,33 +147,12 @@ class PostgreExportWizard extends AbstractExportWizard<PostgreDatabaseExportInfo
     }
 
     @Override
-    public PostgreServerHome findServerHome(String clientHomeId)
-    {
-        return PostgreDataSourceProvider.getServerHome(clientHomeId);
-    }
-
-    @Override
-    public Collection<PostgreDatabaseExportInfo> getRunInfo() {
+    public Collection<PostgreDatabaseBackupInfo> getRunInfo() {
         return objects;
     }
 
     @Override
-    protected List<String> getCommandLine(PostgreDatabaseExportInfo arg) throws IOException
-    {
-        List<String> cmd = PostgreToolScript.getPostgreToolCommandLine(this, arg);
-        cmd.add(arg.getDatabase().getName());
-
-        return cmd;
-    }
-
-    @Override
-    public boolean isVerbose()
-    {
-        return true;
-    }
-
-    @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, final PostgreDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process)
+    protected void startProcessHandler(DBRProgressMonitor monitor, final PostgreDatabaseBackupInfo arg, ProcessBuilder processBuilder, Process process)
     {
         super.startProcessHandler(monitor, arg, processBuilder, process);
 
