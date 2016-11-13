@@ -160,7 +160,7 @@ public class DatabaseWizardPageLog extends WizardPage {
 //                        appendLog(e.getMessage() + lf);
 //                    }
 //                }
-                try (Reader reader = new InputStreamReader(in)) {
+                try (Reader reader = new InputStreamReader(in, GeneralUtils.getDefaultConsoleEncoding())) {
                     StringBuilder buf = new StringBuilder();
                     for (; ; ) {
                         int b = reader.read();

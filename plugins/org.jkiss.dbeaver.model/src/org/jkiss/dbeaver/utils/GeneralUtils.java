@@ -93,6 +93,9 @@ public class GeneralUtils {
     {
         String consoleEncoding = System.getProperty("console.encoding");
         if (CommonUtils.isEmpty(consoleEncoding)) {
+            consoleEncoding = System.getProperty("file.encoding");
+        }
+        if (CommonUtils.isEmpty(consoleEncoding)) {
             consoleEncoding = getDefaultFileEncoding();
         }
         return consoleEncoding;

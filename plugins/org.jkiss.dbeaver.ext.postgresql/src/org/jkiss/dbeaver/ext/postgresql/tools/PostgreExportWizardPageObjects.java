@@ -54,7 +54,6 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
     private Table schemasTable;
     private Table tablesTable;
     private Map<PostgreSchema, Set<PostgreTableBase>> checkedObjects = new HashMap<>();
-    private Map<PostgreSchema, List<PostgreTableBase>> allObjects = new HashMap<>();
 
     private PostgreSchema curSchema;
     private PostgreDataSource dataSource;
@@ -218,7 +217,6 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
                     if (wizard.showViews) {
                         objects.addAll(curSchema.getViews(monitor));
                     }
-                    allObjects.put(curSchema, objects);
                     Collections.sort(objects, DBUtils.nameComparator());
                     DBeaverUI.syncExec(new Runnable() {
                         @Override
@@ -249,11 +247,7 @@ class PostgreExportWizardPageObjects extends PostgreWizardPageSettings<PostgreEx
             if (item.getChecked()) {
                 PostgreSchema schema = (PostgreSchema) item.getData();
                 Set<PostgreTableBase> checkedTables = checkedObjects.get(schema);
-                List<PostgreTableBase> allTables = allObjects.get(schema);
-                if (CommonUtils.isEmpty(checkedTables) || CommonUtils.isEmpty(allTables)) {
-                    continue;
-                }
-                if (checkedTables.size() == allTables.size()) {
+                if (CommonUtils.isEmpty(checkedTables)) {
                     // All tables checked
                     schemas.add(schema);
                 } else {
