@@ -18,21 +18,21 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.tools;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -220,9 +220,11 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             if (this.isMergeProcessStreams()) {
                 processBuilder.redirectErrorStream(true);
             }
+            setupProcessParameters(processBuilder);
             Process process = processBuilder.start();
 
             startProcessHandler(monitor, arg, processBuilder, process);
+
             Thread.sleep(100);
 
             for (;;) {
@@ -233,7 +235,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                 try {
                     final int exitCode = process.exitValue();
                     if (exitCode != 0) {
-                        logPage.appendLog(NLS.bind(CoreMessages.tools_wizard_log_process_exit_code, exitCode), true);
+                        logPage.appendLog(NLS.bind(CoreMessages.tools_wizard_log_process_exit_code, exitCode) + "\n", true);
                         return false;
                     }
                 } catch (IllegalThreadStateException e) {
@@ -245,7 +247,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             //process.waitFor();
         } catch (IOException e) {
             log.error(e);
-            logPage.appendLog(NLS.bind(CoreMessages.tools_wizard_log_io_error, e.getMessage()), true);
+            logPage.appendLog(NLS.bind(CoreMessages.tools_wizard_log_io_error, e.getMessage()) + "\n", true);
             return false;
         }
 
@@ -270,6 +272,9 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     abstract protected java.util.List<String> getCommandLine(PROCESS_ARG arg) throws IOException;
 
     public abstract void fillProcessParameters(List<String> cmd, PROCESS_ARG arg) throws IOException;
+
+    protected void setupProcessParameters(ProcessBuilder process) {
+    }
 
     protected abstract void startProcessHandler(DBRProgressMonitor monitor, PROCESS_ARG arg, ProcessBuilder processBuilder, Process process);
 

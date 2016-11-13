@@ -777,11 +777,13 @@ public class UIUtils {
         return false;
     }
 
-    public static Combo createEncodingCombo(Composite parent, String curCharset)
+//    public static Combo createEncodingCombo(Composite parent, String curCharset)
+//    {
+//
+//    }
+
+    public static Combo createEncodingCombo(Composite parent, @Nullable String curCharset)
     {
-        if (curCharset == null) {
-            curCharset = GeneralUtils.getDefaultFileEncoding();
-        }
         Combo encodingCombo = new Combo(parent, SWT.DROP_DOWN);
         encodingCombo.setVisibleItemCount(30);
         SortedMap<String, Charset> charsetMap = Charset.availableCharsets();
@@ -790,13 +792,15 @@ public class UIUtils {
         for (String csName : charsetMap.keySet()) {
             Charset charset = charsetMap.get(csName);
             encodingCombo.add(charset.displayName());
-            if (charset.displayName().equalsIgnoreCase(curCharset)) {
-                defIndex = index;
-            }
-            if (defIndex < 0) {
-                for (String alias : charset.aliases()) {
-                    if (alias.equalsIgnoreCase(curCharset)) {
-                        defIndex = index;
+            if (curCharset != null) {
+                if (charset.displayName().equalsIgnoreCase(curCharset)) {
+                    defIndex = index;
+                }
+                if (defIndex < 0) {
+                    for (String alias : charset.aliases()) {
+                        if (alias.equalsIgnoreCase(curCharset)) {
+                            defIndex = index;
+                        }
                     }
                 }
             }
@@ -804,7 +808,7 @@ public class UIUtils {
         }
         if (defIndex >= 0) {
             encodingCombo.select(defIndex);
-        } else {
+        } else if (curCharset != null) {
             log.warn("Charset '" + curCharset + "' is not recognized"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         return encodingCombo;

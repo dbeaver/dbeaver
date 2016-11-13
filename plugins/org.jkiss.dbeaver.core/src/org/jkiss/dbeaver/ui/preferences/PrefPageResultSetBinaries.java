@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
@@ -122,7 +123,7 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
             memoryContentSize.setIncrement(1);
 
             UIUtils.createControlLabel(binaryGroup, CoreMessages.pref_page_content_editor_hex_encoding);
-            encodingCombo = UIUtils.createEncodingCombo(binaryGroup, null);
+            encodingCombo = UIUtils.createEncodingCombo(binaryGroup, GeneralUtils.getDefaultFileEncoding());
 
             contentCacheClob = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_content_cache_clob, true);
             contentCacheBlob = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_content_cache_blob, true);

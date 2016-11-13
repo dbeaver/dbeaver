@@ -73,6 +73,8 @@ class PostgreExportWizard extends AbstractExportWizard<PostgreDatabaseExportInfo
     }
 
     ExportFormat format;
+    String compression;
+    String encoding;
     boolean showViews;
     public List<PostgreDatabaseExportInfo> objects = new ArrayList<>();
 
@@ -140,8 +142,36 @@ class PostgreExportWizard extends AbstractExportWizard<PostgreDatabaseExportInfo
         cmd.add(dumpPath);
 
         cmd.add("--format=" + format.getId());
+        if (!CommonUtils.isEmpty(compression)) {
+            cmd.add("--compress=" + compression);
+        }
+        if (!CommonUtils.isEmpty(encoding)) {
+            cmd.add("--encoding=" + encoding);
+        }
+
+        // Objects
+        if (objects.isEmpty()) {
+            // no dump
+        } else if (!CommonUtils.isEmpty(arg.getTables())) {
+            for (PostgreTableBase table : arg.getTables()) {
+                cmd.add("-t");
+                cmd.add(table.getFullyQualifiedName(DBPEvaluationContext.DDL));
+            }
+        } else if (!CommonUtils.isEmpty(arg.getSchemas())) {
+            for (PostgreSchema schema : arg.getSchemas()) {
+                cmd.add("-n");
+                cmd.add(schema.getName());
+            }
+        }
 
 //        if (comments) cmd.add("--comments"); //$NON-NLS-1$
+    }
+
+    @Override
+    protected void setupProcessParameters(ProcessBuilder process) {
+        if (!CommonUtils.isEmpty(getToolUserPassword())) {
+            process.environment().put("PGPASSWORD", getToolUserPassword());
+        }
     }
 
     @Override
@@ -170,19 +200,7 @@ class PostgreExportWizard extends AbstractExportWizard<PostgreDatabaseExportInfo
     protected List<String> getCommandLine(PostgreDatabaseExportInfo arg) throws IOException
     {
         List<String> cmd = PostgreToolScript.getPostgreToolCommandLine(this, arg);
-        if (objects.isEmpty()) {
-            // no dump
-        } else if (!CommonUtils.isEmpty(arg.getTables())) {
-            for (PostgreTableBase table : arg.getTables()) {
-                cmd.add("-t");
-                cmd.add(table.getFullyQualifiedName(DBPEvaluationContext.DDL));
-            }
-        } else if (!CommonUtils.isEmpty(arg.getSchemas())) {
-            for (PostgreSchema schema : arg.getSchemas()) {
-                cmd.add("-n");
-                cmd.add(schema.getName());
-            }
-        }
+        cmd.add(arg.getDatabase().getName());
 
         return cmd;
     }
