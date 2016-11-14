@@ -71,7 +71,7 @@ public class URLAttributeTransformer implements DBDAttributeTransformer {
         public URLValueHandler(DBDValueHandler target, String pattern) {
             super(target);
             this.pattern = pattern.replace("${value}", "{0}");
-            messageFormat = new MessageFormat(this.pattern);
+            this.messageFormat = new MessageFormat(this.pattern);
         }
 
         @NotNull
@@ -88,14 +88,14 @@ public class URLAttributeTransformer implements DBDAttributeTransformer {
         @Override
         public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
             if (pattern == null) {
-                return target.getValueFromObject(session, type, object, copy);
+                return super.getValueFromObject(session, type, object, copy);
             } else if (DBUtils.isNullValue(object)) {
                 return null;
             } else {
                 try {
                     Object[] parsedValues = messageFormat.parse(object.toString());
                     if (parsedValues.length > 0) {
-                        return target.getValueFromObject(session, type, parsedValues[0], copy);
+                        return super.getValueFromObject(session, type, parsedValues[0], copy);
                     }
                     return object;
                 } catch (ParseException e) {
