@@ -836,7 +836,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }.schedule();
         } else {
             // Navigate hyperlink
-            UIUtils.launchProgram(value.toString());
+            String strValue = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
+            UIUtils.launchProgram(strValue);
         }
     }
 
@@ -1254,13 +1255,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
                 state |= STATE_LINK;
             } else {
-                if (value instanceof CharSequence) {
-                    try {
-                        new URL(value.toString());
-                        state |= STATE_HYPER_LINK;
-                    } catch (MalformedURLException e) {
-                        // Not a hyperlink
-                    }
+                String strValue = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
+                try {
+                    new URL(strValue);
+                    state |= STATE_HYPER_LINK;
+                } catch (MalformedURLException e) {
+                    // Not a hyperlink
                 }
             }
             return state;
