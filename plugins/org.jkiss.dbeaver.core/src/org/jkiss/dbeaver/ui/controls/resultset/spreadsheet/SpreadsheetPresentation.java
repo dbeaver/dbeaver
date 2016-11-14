@@ -135,7 +135,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color backgroundReadOnly;
     private Color foregroundDefault;
     private Color foregroundNull;
-    private Font boldFont;
+    private Font boldFont, italicFont, bolItalicFont;
 
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
@@ -160,6 +160,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         super.createPresentation(controller, parent);
 
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
+        this.italicFont = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
+
         this.foregroundNull = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
         this.spreadsheet = new Spreadsheet(
@@ -225,6 +227,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         themeManager.removePropertyChangeListener(themeChangeListener);
 
+        UIUtils.dispose(this.italicFont);
         UIUtils.dispose(this.boldFont);
     }
 
@@ -1262,6 +1265,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     // Not a hyperlink
                 }
             }
+
+            if (attr.isTransformed()) {
+                state |= STATE_TRANSFORMED;
+            }
             return state;
         }
 
@@ -1470,6 +1477,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 DBDAttributeConstraint constraint = controller.getModel().getDataFilter().getConstraint(attributeBinding);
                 if (constraint != null && constraint.hasCondition()) {
                     return boldFont;
+                }
+                if (attributeBinding.isTransformed()) {
+                    return italicFont;
                 }
             }
             return null;

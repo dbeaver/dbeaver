@@ -32,9 +32,10 @@ public interface IGridContentProvider extends IContentProvider {
         COLLAPSED
     }
 
-    int STATE_NONE  = 0;
-    int STATE_LINK  = 1;
-    int STATE_HYPER_LINK  = 2;
+    int STATE_NONE          = 0;
+    int STATE_LINK          = 1;
+    int STATE_HYPER_LINK    = 2;
+    int STATE_TRANSFORMED   = 4;
 
     @NotNull
     Object[] getElements(boolean horizontal);
