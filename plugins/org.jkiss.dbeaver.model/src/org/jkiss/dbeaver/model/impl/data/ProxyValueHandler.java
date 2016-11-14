@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public class ProxyValueHandler implements DBDValueHandler {
 
-    private final DBDValueHandler target;
+    protected final DBDValueHandler target;
 
     public ProxyValueHandler(DBDValueHandler target) {
         this.target = target;
