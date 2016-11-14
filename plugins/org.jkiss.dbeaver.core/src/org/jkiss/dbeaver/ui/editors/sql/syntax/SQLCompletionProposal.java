@@ -172,10 +172,10 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
                 // Do not append trailing space after schemas/catalogs/etc.
             } else {
                 int docLen = document.getLength();
-                if (docLen <= replacementOffset + 2) {
+                if (docLen <= replacementOffset + replacementLength + 2) {
                     insertTrailingSpace = false;
                 } else {
-                    insertTrailingSpace = document.getChar(replacementOffset + 1) != ' ';
+                    insertTrailingSpace = document.getChar(replacementOffset + replacementLength) != ' ';
                 }
                 if (insertTrailingSpace) {
                     replacementString += " ";
