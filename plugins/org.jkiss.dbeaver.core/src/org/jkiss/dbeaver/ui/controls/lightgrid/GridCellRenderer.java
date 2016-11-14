@@ -96,8 +96,8 @@ class GridCellRenderer extends AbstractRenderer
             gc.fillRectangle(bounds.x, bounds.y, bounds.width,
                 bounds.height);
 
-
-        int state = grid.getContentProvider().getCellState(col, row);
+        String text = grid.getCellText(col, row);
+        final int state = grid.getContentProvider().getCellState(col, row, text);
         int x = LEFT_MARGIN;
 
 /*
@@ -144,7 +144,6 @@ class GridCellRenderer extends AbstractRenderer
 //        }
 
         // Get cell text
-        String text = grid.getCellText(col, row);
         if (text != null && !text.isEmpty()) {
             // Get shortern version of string
             text = TextUtils.getShortString(grid.fontMetrics, text, width);
@@ -184,7 +183,7 @@ class GridCellRenderer extends AbstractRenderer
     }
 
     public boolean isOverLink(GridColumn column, int row, int x, int y) {
-        int state = grid.getContentProvider().getCellState(column.getElement(), grid.getRowElement(row));
+        int state = grid.getContentProvider().getCellState(column.getElement(), grid.getRowElement(row), null);
 
         if (isLinkState(state)) {
             Point origin = grid.getOrigin(column, row);

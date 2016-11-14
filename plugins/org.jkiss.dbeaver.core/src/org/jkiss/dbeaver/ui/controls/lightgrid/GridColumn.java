@@ -219,7 +219,8 @@ class GridColumn {
 
         x += leftMargin;
 
-        int state = grid.getContentProvider().getCellState(col, row);
+        String cellText = grid.getCellText(col, row);
+        int state = grid.getContentProvider().getCellState(col, row, cellText);
         Rectangle imageBounds;
         if (GridCellRenderer.isLinkState(state)) {
             imageBounds = GridCellRenderer.LINK_IMAGE_BOUNDS;
@@ -231,7 +232,7 @@ class GridColumn {
             x += imageBounds.width + insideMargin;
         }
 
-        x += grid.sizingGC.textExtent(grid.getCellText(col, row)).x + rightMargin;
+        x += grid.sizingGC.textExtent(cellText).x + rightMargin;
         return x;
     }
 
