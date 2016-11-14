@@ -48,7 +48,7 @@ public class URLPreviewEditor extends BaseValueEditor<Browser> {
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
         final String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
-        control.setText("");
+        control.setText("<div>Loading " + strValue + "...</div>");
         control.setUrl(strValue);
     }
 

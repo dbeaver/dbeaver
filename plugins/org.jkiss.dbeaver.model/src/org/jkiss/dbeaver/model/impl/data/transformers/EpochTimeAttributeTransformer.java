@@ -68,7 +68,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
                 log.error("Bad unit option", e);
             }
         }
-        attribute.setValueHandler(new EpochValueHandler(attribute.getValueHandler(), unit));
+        attribute.setTransformHandler(new EpochValueHandler(attribute.getValueHandler(), unit));
     }
 
     private class EpochValueHandler extends ProxyValueHandler {

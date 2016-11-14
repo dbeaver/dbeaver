@@ -61,7 +61,7 @@ public class URLAttributeTransformer implements DBDAttributeTransformer {
                 log.error("Bad unit option", e);
             }
         }
-        attribute.setValueHandler(new URLValueHandler(attribute.getValueHandler(), pattern));
+        attribute.setTransformHandler(new URLValueHandler(attribute.getValueHandler(), pattern));
     }
 
     private class URLValueHandler extends ProxyValueHandler {
