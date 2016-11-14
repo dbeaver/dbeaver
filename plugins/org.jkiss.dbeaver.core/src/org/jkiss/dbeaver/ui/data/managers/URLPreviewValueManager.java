@@ -21,31 +21,19 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
-import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
+import org.jkiss.dbeaver.ui.data.editors.URLPreviewEditor;
 
 /**
  * URL preview value manager
  */
-public class URLPreviewValueManager extends BaseValueManager {
-
-    @NotNull
-    @Override
-    public IValueController.EditType[] getSupportedEditTypes() {
-        return new IValueController.EditType[] {IValueController.EditType.INLINE, IValueController.EditType.PANEL, IValueController.EditType.EDITOR};
-    }
+public class URLPreviewValueManager extends StringValueManager {
 
     @Override
     public IValueEditor createEditor(@NotNull IValueController controller) throws DBException {
-        switch (controller.getEditType()) {
-            case INLINE:
-            case PANEL:
-                return new StringInlineEditor(controller);
-            case EDITOR:
-                return new TextViewDialog(controller);
-            default:
-                return null;
+        if (controller.getEditType() == IValueController.EditType.PANEL) {
+            return new URLPreviewEditor(controller);
         }
+        return super.createEditor(controller);
     }
 
 }
