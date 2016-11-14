@@ -191,12 +191,14 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
     protected boolean determinePageCompletion()
     {
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
-
+/*
         int selectionIndex = encodingCombo.getSelectionIndex();
+
         String encoding = null;
         if (selectionIndex >= 0) {
             encoding = encodingCombo.getItem(selectionIndex);
         }
+
         if (settings.isOutputClipboard() || encoding == null || GeneralUtils.getCharsetBOM(encoding) == null) {
             encodingBOMLabel.setEnabled(false);
             encodingBOMCheckbox.setEnabled(false);
@@ -204,6 +206,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             encodingBOMLabel.setEnabled(true);
             encodingBOMCheckbox.setEnabled(true);
         }
+*/
 
         if (settings.isOutputClipboard()) {
             return true;
