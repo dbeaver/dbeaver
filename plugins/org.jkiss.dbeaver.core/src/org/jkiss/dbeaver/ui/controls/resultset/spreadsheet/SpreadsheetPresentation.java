@@ -98,9 +98,12 @@ import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -817,19 +820,24 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             log.warn("Can't navigate to NULL value");
             return;
         }
-
-        new AbstractJob("Navigate association") {
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                try {
-                    boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
-                    controller.navigateAssociation(monitor, attr, row, ctrlPressed);
-                } catch (DBException e) {
-                    return GeneralUtils.makeExceptionStatus(e);
+        if (!CommonUtils.isEmpty(attr.getReferrers())) {
+            // Navigate association
+            new AbstractJob("Navigate association") {
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    try {
+                        boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
+                        controller.navigateAssociation(monitor, attr, row, ctrlPressed);
+                    } catch (DBException e) {
+                        return GeneralUtils.makeExceptionStatus(e);
+                    }
+                    return Status.OK_STATUS;
                 }
-                return Status.OK_STATUS;
-            }
-        }.schedule();
+            }.schedule();
+        } else {
+            // Navigate hyperlink
+            UIUtils.launchProgram(value.toString());
+        }
     }
 
     ///////////////////////////////////////////////
@@ -1245,6 +1253,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             Object value = controller.getModel().getCellValue(attr, row);
             if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
                 state |= STATE_LINK;
+            } else {
+                if (value instanceof CharSequence) {
+                    try {
+                        new URL(value.toString());
+                        state |= STATE_HYPER_LINK;
+                    } catch (MalformedURLException e) {
+                        // Not a hyperlink
+                    }
+                }
             }
             return state;
         }
