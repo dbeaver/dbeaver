@@ -221,7 +221,7 @@ class GridColumn {
 
         int state = grid.getContentProvider().getCellState(col, row);
         Rectangle imageBounds;
-        if ((state & IGridContentProvider.STATE_LINK) != 0) {
+        if (GridCellRenderer.isLinkState(state)) {
             imageBounds = GridCellRenderer.LINK_IMAGE_BOUNDS;
         } else {
             DBPImage image = grid.getContentProvider().getCellImage(col, row);

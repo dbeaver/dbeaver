@@ -150,6 +150,7 @@ public class UIIcon {
     public static final DBIcon CONFIGURATION = new DBIcon("configuration", "configuration.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon LINK_TO_EDITOR = new DBIcon("link_to_editor", "link_to_editor.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon LINK = new DBIcon("link", "misc/link.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LINK2 = new DBIcon("link2", "misc/link2.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CURSOR = new DBIcon("cursor", "misc/cursor.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon APACHE = new DBIcon("apache", "misc/apache.png"); //$NON-NLS-1$ //$NON-NLS-2$
 

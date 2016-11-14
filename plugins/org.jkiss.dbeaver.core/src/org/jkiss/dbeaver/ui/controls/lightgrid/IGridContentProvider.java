@@ -34,6 +34,7 @@ public interface IGridContentProvider extends IContentProvider {
 
     int STATE_NONE  = 0;
     int STATE_LINK  = 1;
+    int STATE_HYPER_LINK  = 2;
 
     @NotNull
     Object[] getElements(boolean horizontal);

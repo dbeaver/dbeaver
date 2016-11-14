@@ -40,7 +40,8 @@ class GridCellRenderer extends AbstractRenderer
     private static final int INSIDE_MARGIN = 3;
 
     static final Image LINK_IMAGE = DBeaverIcons.getImage(UIIcon.LINK);
-    static final Rectangle LINK_IMAGE_BOUNDS = LINK_IMAGE.getBounds();
+    static final Image LINK2_IMAGE = DBeaverIcons.getImage(UIIcon.LINK2);
+    static final Rectangle LINK_IMAGE_BOUNDS = new Rectangle(0, 0, 13, 13);
 
     protected Color colorSelected;
     protected Color colorSelectedText;
@@ -113,8 +114,8 @@ class GridCellRenderer extends AbstractRenderer
         Image image;
         Rectangle imageBounds = null;
 
-        if ((state & IGridContentProvider.STATE_LINK) != 0) {
-            image = LINK_IMAGE;
+        if (isLinkState(state)) {
+            image = ((state & IGridContentProvider.STATE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
             imageBounds = LINK_IMAGE_BOUNDS;
         } else {
             DBPImage cellImage = grid.getCellImage(col, row);
@@ -185,7 +186,7 @@ class GridCellRenderer extends AbstractRenderer
     public boolean isOverLink(GridColumn column, int row, int x, int y) {
         int state = grid.getContentProvider().getCellState(column.getElement(), grid.getRowElement(row));
 
-        if ((state & IGridContentProvider.STATE_LINK) != 0) {
+        if (isLinkState(state)) {
             Point origin = grid.getOrigin(column, row);
             int verMargin = (grid.getItemHeight() - LINK_IMAGE_BOUNDS.height) / 2;
             if (x >= origin.x + LEFT_MARGIN && x <= origin.x + LEFT_MARGIN + LINK_IMAGE_BOUNDS.width &&
@@ -197,4 +198,9 @@ class GridCellRenderer extends AbstractRenderer
         return false;
     }
 
+    public static boolean isLinkState(int state) {
+        return
+            (state & IGridContentProvider.STATE_LINK) != 0 ||
+            (state & IGridContentProvider.STATE_HYPER_LINK) != 0;
+    }
 }
