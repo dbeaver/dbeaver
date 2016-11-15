@@ -1129,6 +1129,7 @@ public class CoreMessages extends NLS {
 	public static String model_ssh_configurator_label_user_name;
 
     public static String model_ssh_configurator_label_keep_alive;
+	public static String model_ssh_configurator_label_tunnel_timeout;
 
 	public static String pref_page_confirmations_combo_always;
 	public static String pref_page_confirmations_combo_never;
