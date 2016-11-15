@@ -47,6 +47,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     protected DBSAttributeBase presentationAttribute;
     @Nullable
     private List<DBDAttributeBinding> nestedBindings;
+    private boolean transformed;
 
     protected DBDAttributeBinding(@NotNull DBDValueHandler valueHandler)
     {
@@ -141,8 +142,13 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         return valueHandler;
     }
 
-    public void setValueHandler(@NotNull DBDValueHandler valueHandler) {
+    public void setTransformHandler(@NotNull DBDValueHandler valueHandler) {
         this.valueHandler = valueHandler;
+        this.transformed = true;
+    }
+
+    public boolean isTransformed() {
+        return transformed;
     }
 
     @NotNull
