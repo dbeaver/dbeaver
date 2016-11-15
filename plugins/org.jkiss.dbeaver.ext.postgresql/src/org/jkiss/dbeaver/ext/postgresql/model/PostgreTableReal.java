@@ -44,6 +44,7 @@ import java.util.Collection;
 public abstract class PostgreTableReal extends PostgreTableBase
 {
     private static final Log log = Log.getLog(PostgreTableReal.class);
+    public static final String CAT_STATISTICS = "Statistics";
 
     private long rowCountEstimate;
     private Long rowCount;
@@ -74,12 +75,12 @@ public abstract class PostgreTableReal extends PostgreTableBase
         }
     }
 
-    @Property(viewable = true, order = 22)
+    @Property(category = CAT_STATISTICS, viewable = true, order = 22)
     public long getRowCountEstimate() {
         return rowCountEstimate;
     }
 
-    @Property(viewable = false, expensive = true, order = 23)
+    @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 23)
     public synchronized Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {
@@ -103,7 +104,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
         return rowCount;
     }
 
-    @Property(viewable = false, expensive = true, order = 24)
+    @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 24)
     public synchronized Long getDiskSpace(DBRProgressMonitor monitor)
     {
         if (diskSpace != null) {
