@@ -725,7 +725,7 @@ public class TabbedFolderList extends Composite {
         ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
 
         listBackground = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND);
-        widgetBackground = display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+        widgetBackground = getBackground();//display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         widgetForeground = display.getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
         widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);

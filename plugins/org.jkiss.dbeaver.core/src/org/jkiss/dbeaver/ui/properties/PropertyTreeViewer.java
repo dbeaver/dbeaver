@@ -90,8 +90,9 @@ public class PropertyTreeViewer extends TreeViewer {
             gd.grabExcessHorizontalSpace = true;
             gd.grabExcessVerticalSpace = true;
             gd.minimumHeight = 120;
-            gd.heightHint = 120;
-            gd.widthHint = 300;
+            gd.minimumWidth = 120;
+//            gd.heightHint = 120;
+//            gd.widthHint = 300;
             treeControl.setLayoutData(gd);
         }
         treeControl.setHeaderVisible(true);
