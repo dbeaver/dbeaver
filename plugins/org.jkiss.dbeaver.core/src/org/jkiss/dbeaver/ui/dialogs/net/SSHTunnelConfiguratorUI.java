@@ -51,6 +51,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private Label privateKeyLabel;
     private Composite pkControlGroup;
     private Spinner keepAliveText;
+    private Spinner tunnelTimeout;
 
     @Override
     public void createControl(Composite parent)
@@ -97,6 +98,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         savePasswordCheckbox = UIUtils.createCheckbox(pwdControlGroup, CoreMessages.model_ssh_configurator_checkbox_save_pass, false);
 
         keepAliveText = UIUtils.createLabelSpinner(composite, CoreMessages.model_ssh_configurator_label_keep_alive, 0, 0, Integer.MAX_VALUE);
+        tunnelTimeout = UIUtils.createLabelSpinner(composite, CoreMessages.model_ssh_configurator_label_tunnel_timeout, SSHConstants.DEFAULT_CONNECT_TIMEOUT, 0, 300000);
 
         authMethodCombo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -133,6 +135,10 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             keepAliveText.setSelection(Integer.parseInt(kaString));
         }
 
+        String timeoutString = configuration.getProperties().get(SSHConstants.PROP_CONNECT_TIMEOUT);
+        if (!CommonUtils.isEmpty(timeoutString)) {
+            tunnelTimeout.setSelection(CommonUtils.toInt(timeoutString));
+        }
         updatePrivateKeyVisibility();
     }
 
@@ -157,6 +163,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         } else {
             properties.put(SSHConstants.PROP_ALIVE_INTERVAL, String.valueOf(kaInterval));
         }
+        properties.put(SSHConstants.PROP_CONNECT_TIMEOUT, tunnelTimeout.getText());
     }
 
     private void updatePrivateKeyVisibility()

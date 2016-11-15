@@ -41,6 +41,7 @@ public class HTTPTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBW
     private Text passwordText;
     private Button savePasswordCheckbox;
     private Spinner keepAliveText;
+    private Spinner tunnelTimeout;
 
     @Override
     public void createControl(Composite parent)
@@ -62,6 +63,7 @@ public class HTTPTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBW
         savePasswordCheckbox = UIUtils.createCheckbox(composite, CoreMessages.model_ssh_configurator_checkbox_save_pass, false);
 
         keepAliveText = UIUtils.createLabelSpinner(composite, CoreMessages.model_ssh_configurator_label_keep_alive, 0, 0, Integer.MAX_VALUE);
+        tunnelTimeout = UIUtils.createLabelSpinner(composite, CoreMessages.model_ssh_configurator_label_tunnel_timeout, SSHConstants.DEFAULT_CONNECT_TIMEOUT, 0, 300000);
     }
 
     @Override
@@ -85,6 +87,11 @@ public class HTTPTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBW
         if (!CommonUtils.isEmpty(kaString)) {
             keepAliveText.setSelection(Integer.parseInt(kaString));
         }
+
+        String timeoutString = configuration.getProperties().get(SSHConstants.PROP_CONNECT_TIMEOUT);
+        if (!CommonUtils.isEmpty(timeoutString)) {
+            tunnelTimeout.setSelection(CommonUtils.toInt(timeoutString));
+        }
     }
 
     @Override
@@ -103,6 +110,7 @@ public class HTTPTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBW
         } else {
             properties.put(SSHConstants.PROP_ALIVE_INTERVAL, String.valueOf(kaInterval));
         }
+        properties.put(SSHConstants.PROP_CONNECT_TIMEOUT, tunnelTimeout.getText());
     }
 
     @Override
