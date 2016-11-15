@@ -59,13 +59,18 @@ import java.util.List;
  */
 public class PropertyTreeViewer extends TreeViewer {
 
+    public enum ExpandMode {
+        NONE,
+        FIRST,
+        ALL,
+    }
+
     private static final String CATEGORY_GENERAL = CoreMessages.ui_properties_tree_viewer_category_general;
 
     private boolean expandSingleRoot = true;
     private TreeEditor treeEditor;
 
     private Font boldFont;
-    //private Color colorBlue;
     private int selectedColumn = -1;
     private CellEditor curCellEditor;
     private DBPPropertyDescriptor selectedProperty;
@@ -73,15 +78,11 @@ public class PropertyTreeViewer extends TreeViewer {
     private String[] customCategories;
     private IBaseLabelProvider extraLabelProvider;
     private ObjectViewerRenderer renderer;
+    private ExpandMode expandMode = ExpandMode.ALL;
 
     public PropertyTreeViewer(Composite parent, int style)
     {
         super(parent, style | SWT.SINGLE | SWT.FULL_SELECTION);
-
-        //colorBlue = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);
-        //this.setLayout(new GridLayout(1, false));
-        //GridData gd = new GridData(GridData.FILL_BOTH);
-        //this.setLayoutData(gd);
 
         super.setContentProvider(new PropsContentProvider());
         final Tree treeControl = super.getTree();
@@ -91,8 +92,6 @@ public class PropertyTreeViewer extends TreeViewer {
             gd.grabExcessVerticalSpace = true;
             gd.minimumHeight = 120;
             gd.minimumWidth = 120;
-//            gd.heightHint = 120;
-//            gd.widthHint = 300;
             treeControl.setLayoutData(gd);
         }
         treeControl.setHeaderVisible(true);
@@ -107,8 +106,6 @@ public class PropertyTreeViewer extends TreeViewer {
                 if (!packing) {
                     packing = true;
                     UIUtils.packColumns(treeControl, true, new float[]{0.1f, 0.9f});
-                    //packing = false;
-                    //treeControl.removeControlListener(this);
                 }
             }
         });
@@ -207,7 +204,22 @@ public class PropertyTreeViewer extends TreeViewer {
         }
 
         super.setInput(root);
-        super.expandAll();
+        switch (expandMode) {
+            case ALL:
+                this.expandAll();
+                break;
+            case FIRST:
+                if (root instanceof Collection) {
+                    Collection rootItems = (Collection) root;
+                    if (!rootItems.isEmpty()) {
+                        Object first = rootItems.iterator().next();
+                        this.expandToLevel(first, ALL_LEVELS);
+                    }
+                } else {
+                    this.expandAll();
+                }
+                break;
+        }
 
         disposeOldEditor();
         UIUtils.packColumns(getTree(), true, new float[]{0.1f, 0.9f});
@@ -259,6 +271,10 @@ public class PropertyTreeViewer extends TreeViewer {
             }
         }
         return categories;
+    }
+
+    public DBPPropertyDescriptor getSelectedProperty() {
+        return selectedProperty;
     }
 
     public void clearProperties()
@@ -575,8 +591,11 @@ public class PropertyTreeViewer extends TreeViewer {
         super.refresh(prop.parent);
     }
 
-    public void setExpandSingleRoot(boolean expandSingleRoot)
-    {
+    public void setExpandMode(ExpandMode expandMode) {
+        this.expandMode = expandMode;
+    }
+
+    public void setExpandSingleRoot(boolean expandSingleRoot) {
         this.expandSingleRoot = expandSingleRoot;
     }
 

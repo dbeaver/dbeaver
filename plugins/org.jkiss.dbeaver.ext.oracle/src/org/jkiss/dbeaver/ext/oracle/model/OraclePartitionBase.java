@@ -42,24 +42,26 @@ public abstract class OraclePartitionBase<PARENT extends DBSObject> extends Orac
         LIST,
     }
 
+    public static final String CAT_PARTITIONING = "Partitioning";
+
     public static class PartitionInfoBase {
         private PartitionType partitionType;
         private PartitionType subpartitionType;
         private Object partitionTablespace;
 
-        @Property(category = "Partitioning", order = 120)
+        @Property(category = CAT_PARTITIONING, order = 120)
         public PartitionType getPartitionType()
         {
             return partitionType;
         }
 
-        @Property(category = "Partitioning", order = 121)
+        @Property(category = CAT_PARTITIONING, order = 121)
         public PartitionType getSubpartitionType()
         {
             return subpartitionType;
         }
 
-        @Property(category = "Partitioning", order = 122)
+        @Property(category = CAT_PARTITIONING, order = 122)
         public Object getPartitionTablespace()
         {
             return partitionTablespace;
