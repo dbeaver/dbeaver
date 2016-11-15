@@ -67,7 +67,7 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
             showPrefix = CommonUtils.getBoolean(options.get(PROP_PREFIX), showPrefix);
         }
 
-        attribute.setValueHandler(new RadixValueHandler(attribute.getValueHandler(), radix, bits, showPrefix));
+        attribute.setTransformHandler(new RadixValueHandler(attribute.getValueHandler(), radix, bits, showPrefix));
         attribute.setPresentationAttribute(
             new TransformerPresentationAttribute(attribute, "StringNumber", -1, DBPDataKind.STRING));
     }

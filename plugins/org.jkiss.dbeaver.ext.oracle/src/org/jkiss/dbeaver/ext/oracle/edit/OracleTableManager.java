@@ -84,13 +84,24 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "COMMENT ON TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS '" + SQLUtils.escapeString(command.getObject().getDescription()) + "'"));
+                    " IS '" + SQLUtils.escapeString(command.getObject().getComment()) + "'"));
         }
     }
 
     @Override
     protected void appendTableModifiers(OracleTable table, NestedObjectCommand tableProps, StringBuilder ddl)
     {
+        // ALTER
+        if (tableProps.getProperty("tablespace") != null) { //$NON-NLS-1$
+            Object tablespace = table.getTablespace();
+            if (tablespace instanceof OracleTablespace) {
+                if (table.isPersisted()) {
+                    ddl.append("\nMOVE TABLESPACE ").append(((OracleTablespace) tablespace).getName()); //$NON-NLS-1$
+                } else {
+                    ddl.append("\nTABLESPACE ").append(((OracleTablespace) tablespace).getName()); //$NON-NLS-1$
+                }
+            }
+        }
     }
 
     @Override

@@ -77,7 +77,12 @@ class TransformerSettingsDialog extends BaseDialog {
         if (transformer != null) {
             final Composite placeholder = UIUtils.createControlGroup(composite, "Transformer", 2, GridData.FILL_HORIZONTAL, -1);
             UIUtils.createLabelText(placeholder, "Name", transformer.getName(), SWT.READ_ONLY);
-            final Text infoText = UIUtils.createLabelText(placeholder, "Info", transformer.getDescription(), SWT.READ_ONLY | SWT.WRAP);
+            Label infoLabel = UIUtils.createControlLabel(placeholder, "Info");
+            infoLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            final Text infoText = new Text(placeholder, SWT.READ_ONLY | SWT.WRAP);
+            if (transformer.getDescription() != null) {
+                infoText.setText(transformer.getDescription());
+            }
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 300;
             infoText.setLayoutData(gd);

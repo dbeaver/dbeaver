@@ -2652,6 +2652,19 @@
                 <property id="prefix" label="Show prefix" type="boolean" description="Shows radix prefix (0x for hex)" defaultValue="false" required="true"/>
             </propertyGroup>
         </transformer>
+        <transformer
+                class="org.jkiss.dbeaver.model.impl.data.transformers.URLAttributeTransformer"
+                id="org.jkiss.dbeaver.core.URLAttributeTransformer"
+                name="URL"
+                description="Represents value as URL. Provides preview panel with inline web browser."
+                applyByDefault="false"
+                custom="true">
+            <type kind="NUMERIC"/>
+            <type kind="STRING"/>
+            <propertyGroup label="Properties">
+                <property id="pattern" label="URL pattern" type="string" description="URL pattern. Variable ${value} will be replaced with real value." defaultValue="http://${value}" required="false"/>
+            </propertyGroup>
+        </transformer>
 
     </extension>
 
@@ -2734,6 +2747,9 @@
         </manager>
         <manager class="org.jkiss.dbeaver.ui.data.managers.UUIDValueManager" id="org.jkiss.dbeaver.ui.data.managers.UUIDValueManager">
             <supports type="java.util.UUID"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.URLPreviewValueManager" id="org.jkiss.dbeaver.ui.data.managers.URLPreviewValueManager">
+            <supports typeName="URL.Preview"/>
         </manager>
 <!--
         <manager class="org.jkiss.dbeaver.ui.data.managers.RowIdValueManager" id="org.jkiss.dbeaver.ui.data.managers.RowIdValueManager">

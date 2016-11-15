@@ -21,7 +21,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -33,76 +32,76 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.text.MessageFormat;
+import java.text.ParseException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
- * Transforms numeric attribute value into epoch time
+ * Transforms string/numeric value into URL
  */
-public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
+public class URLAttributeTransformer implements DBDAttributeTransformer {
 
-    private static final Log log = Log.getLog(EpochTimeAttributeTransformer.class);
-    private static final String PROP_UNIT = "unit";
+    private static final Log log = Log.getLog(URLAttributeTransformer.class);
 
-    private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT, Locale.ENGLISH);
+    private static final String PROP_PATTERN = "pattern";
 
-    enum EpochUnit {
-        seconds,
-        milliseconds,
-        nanoseconds
-    }
+    public static final String URL_TYPE_NAME = "URL.Preview";
 
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
         attribute.setPresentationAttribute(
-            new TransformerPresentationAttribute(attribute, "EpochTime", -1, DBPDataKind.DATETIME));
+            new TransformerPresentationAttribute(attribute, URL_TYPE_NAME, -1, DBPDataKind.STRING));
 
-        EpochUnit unit = EpochUnit.milliseconds;
-        if (options.containsKey(PROP_UNIT)) {
+        String pattern = null;
+        if (options.containsKey(PROP_PATTERN)) {
             try {
-                unit = EpochUnit.valueOf(options.get(PROP_UNIT));
+                pattern = options.get(PROP_PATTERN);
             } catch (IllegalArgumentException e) {
                 log.error("Bad unit option", e);
             }
         }
-        attribute.setTransformHandler(new EpochValueHandler(attribute.getValueHandler(), unit));
+        attribute.setTransformHandler(new URLValueHandler(attribute.getValueHandler(), pattern));
     }
 
-    private class EpochValueHandler extends ProxyValueHandler {
-        private final EpochUnit unit;
-        public EpochValueHandler(DBDValueHandler target, EpochUnit unit) {
+    private class URLValueHandler extends ProxyValueHandler {
+        private final String pattern;
+        private final MessageFormat messageFormat;
+
+        public URLValueHandler(DBDValueHandler target, String pattern) {
             super(target);
-            this.unit = unit;
+            this.pattern = pattern.replace("${value}", "{0}");
+            this.messageFormat = new MessageFormat(this.pattern);
         }
 
         @NotNull
         @Override
         public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
-            if (value instanceof Number) {
-                long dateValue = ((Number) value).longValue();
-                switch (unit) {
-                    case seconds: dateValue *= 1000; break;
-                    case nanoseconds: dateValue /= 1000; break;
-                }
-                return DEFAULT_TIME_FORMAT.format(new Date(dateValue));
+            if (pattern == null) {
+                return DBUtils.getDefaultValueDisplayString(value, format);
+            } else {
+                return messageFormat.format(new Object[] { value } );
             }
-            return DBUtils.getDefaultValueDisplayString(value, format);
         }
 
         @Nullable
         @Override
         public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
-            if (object instanceof String) {
+            if (pattern == null) {
+                return super.getValueFromObject(session, type, object, copy);
+            } else if (DBUtils.isNullValue(object)) {
+                return null;
+            } else {
                 try {
-                    return DEFAULT_TIME_FORMAT.parse((String) object).getTime();
-                } catch (Exception e) {
-                    log.debug("Error parsing time value", e);
+                    Object[] parsedValues = messageFormat.parse(object.toString());
+                    if (parsedValues.length > 0) {
+                        return super.getValueFromObject(session, type, parsedValues[0], copy);
+                    }
+                    return object;
+                } catch (ParseException e) {
+                    return object;
                 }
             }
-            return super.getValueFromObject(session, type, object, copy);
         }
     }
 }

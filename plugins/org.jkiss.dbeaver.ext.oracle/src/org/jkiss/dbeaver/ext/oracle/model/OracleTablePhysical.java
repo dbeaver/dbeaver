@@ -33,12 +33,16 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Oracle physical table
@@ -109,11 +113,19 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return tablespace;
     }
 
-    @Property(viewable = true, order = 22)
+    @Property(viewable = true, order = 22, editable = true, updatable = true, listProvider = TablespaceListProvider.class)
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
     public Object getTablespace(DBRProgressMonitor monitor) throws DBException
     {
         return OracleTablespace.resolveTablespaceReference(monitor, this, null);
+    }
+
+    public Object getTablespace() {
+        return tablespace;
+    }
+
+    public void setTablespace(OracleTablespace tablespace) {
+        this.tablespace = tablespace;
     }
 
     @Override
@@ -245,4 +257,25 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         }
     }
 
+    public static class TablespaceListProvider implements IPropertyValueListProvider<OracleTablePhysical> {
+        @Override
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+        @Override
+        public Object[] getPossibleValues(OracleTablePhysical object)
+        {
+            final List<OracleTablespace> tablespaces = new ArrayList<>();
+            try {
+                for (OracleTablespace ts : object.getDataSource().getTablespaces(VoidProgressMonitor.INSTANCE)) {
+                    tablespaces.add(ts);
+                }
+            } catch (DBException e) {
+                log.error(e);
+            }
+            Collections.sort(tablespaces, DBUtils.<OracleTablespace>nameComparator());
+            return tablespaces.toArray(new OracleTablespace[tablespaces.size()]);
+        }
+    }
 }

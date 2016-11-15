@@ -32,8 +32,10 @@ public interface IGridContentProvider extends IContentProvider {
         COLLAPSED
     }
 
-    int STATE_NONE  = 0;
-    int STATE_LINK  = 1;
+    int STATE_NONE          = 0;
+    int STATE_LINK          = 1;
+    int STATE_HYPER_LINK    = 2;
+    int STATE_TRANSFORMED   = 4;
 
     @NotNull
     Object[] getElements(boolean horizontal);
@@ -45,7 +47,11 @@ public interface IGridContentProvider extends IContentProvider {
 
     ElementState getDefaultState(@NotNull Object element);
 
-    int getCellState(Object colElement, Object rowElement);
+    /**
+     *
+     * @param cellText    pre-rendered cell text. Used for cache purposes.
+     */
+    int getCellState(Object colElement, Object rowElement, @Nullable String cellText);
 
     Object getCellValue(Object colElement, Object rowElement, boolean formatString);
 
