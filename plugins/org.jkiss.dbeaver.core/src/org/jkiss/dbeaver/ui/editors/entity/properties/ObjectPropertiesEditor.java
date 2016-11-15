@@ -178,7 +178,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 }
 
             });
-
+            sashForm.setVisible(false);
             DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
@@ -192,8 +192,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         if (sashForm.isDisposed()) {
             return;
         }
+        sashForm.setVisible(true);
         Control[] children = sashForm.getChildren();
-        if (children.length != 2) {
+        if (children.length < 2) {
             // Unexpected
             return;
         }
@@ -201,7 +202,10 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         //Point foldersSize = children[1].computeSize(SWT.DEFAULT, SWT.DEFAULT);
         Point sashSize = sashForm.getSize();
         if (propsSize.y < sashSize.y / 2) {
-            sashForm.setWeights(new int[] { propsSize.y, sashSize.y - propsSize.y} );
+            int[] weights = new int[] {
+                propsSize.y,
+                (sashSize.y - propsSize.y)};
+            sashForm.setWeights(weights);
         }
     }
 
@@ -243,6 +247,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 selectedPage.setFocus();
                 //            IEditorActionBarContributor contributor = pageContributors.get(selectedPage);
             }
+        } else if (pageControl != null) {
+            pageControl.setFocus();
         }
     }
 

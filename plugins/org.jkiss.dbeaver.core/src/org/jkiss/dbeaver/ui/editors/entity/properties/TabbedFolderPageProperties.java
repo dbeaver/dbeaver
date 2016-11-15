@@ -59,6 +59,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements ILaz
 
 		propertyTree = new PropertyTreeViewer(parent, SWT.NONE);
         propertyTree.setExtraLabelProvider(new PropertyLabelProvider());
+        propertyTree.setExpandMode(PropertyTreeViewer.ExpandMode.FIRST);
         PropertiesContributor.getInstance().addLazyListener(this);
 
         curPropertySource = input.getPropertySource();
