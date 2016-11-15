@@ -23,6 +23,7 @@ package org.jkiss.dbeaver.model.impl.net;
 public class SSHConstants {
     
     public static final int DEFAULT_SSH_PORT = 22;
+    public static final int DEFAULT_CONNECT_TIMEOUT = 10000;
 
     public static final String PROP_HOST = "host";
     public static final String PROP_PORT = "port";
@@ -30,6 +31,7 @@ public class SSHConstants {
     public static final String PROP_KEY_PATH = "keyPath";
     public static final String PROP_ALIVE_INTERVAL = "aliveInterval";
     public static final String PROP_ALIVE_COUNT = "aliveCount";
+    public static final String PROP_CONNECT_TIMEOUT = "sshConnectTimeout";
 
     public static enum AuthType {
         PASSWORD,
