@@ -101,6 +101,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -133,7 +135,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color backgroundReadOnly;
     private Color foregroundDefault;
     private Color foregroundNull;
-    private Font boldFont;
+    private Font boldFont, italicFont, bolItalicFont;
 
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
@@ -158,6 +160,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         super.createPresentation(controller, parent);
 
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
+        this.italicFont = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
+
         this.foregroundNull = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
         this.spreadsheet = new Spreadsheet(
@@ -223,6 +227,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         themeManager.removePropertyChangeListener(themeChangeListener);
 
+        UIUtils.dispose(this.italicFont);
         UIUtils.dispose(this.boldFont);
     }
 
@@ -817,19 +822,25 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             log.warn("Can't navigate to NULL value");
             return;
         }
-
-        new AbstractJob("Navigate association") {
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                try {
-                    boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
-                    controller.navigateAssociation(monitor, attr, row, ctrlPressed);
-                } catch (DBException e) {
-                    return GeneralUtils.makeExceptionStatus(e);
+        if (!CommonUtils.isEmpty(attr.getReferrers())) {
+            // Navigate association
+            new AbstractJob("Navigate association") {
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    try {
+                        boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
+                        controller.navigateAssociation(monitor, attr, row, ctrlPressed);
+                    } catch (DBException e) {
+                        return GeneralUtils.makeExceptionStatus(e);
+                    }
+                    return Status.OK_STATUS;
                 }
-                return Status.OK_STATUS;
-            }
-        }.schedule();
+            }.schedule();
+        } else {
+            // Navigate hyperlink
+            String strValue = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
+            UIUtils.launchProgram(strValue);
+        }
     }
 
     ///////////////////////////////////////////////
@@ -1237,7 +1248,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
-        public int getCellState(Object colElement, Object rowElement) {
+        public int getCellState(Object colElement, Object rowElement, String cellText) {
             int state = STATE_NONE;
             boolean recordMode = controller.isRecordMode();
             DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
@@ -1245,6 +1256,18 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             Object value = controller.getModel().getCellValue(attr, row);
             if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
                 state |= STATE_LINK;
+            } else {
+                String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
+                try {
+                    new URL(strValue);
+                    state |= STATE_HYPER_LINK;
+                } catch (MalformedURLException e) {
+                    // Not a hyperlink
+                }
+            }
+
+            if (attr.isTransformed()) {
+                state |= STATE_TRANSFORMED;
             }
             return state;
         }
@@ -1454,6 +1477,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 DBDAttributeConstraint constraint = controller.getModel().getDataFilter().getConstraint(attributeBinding);
                 if (constraint != null && constraint.hasCondition()) {
                     return boldFont;
+                }
+                if (attributeBinding.isTransformed()) {
+                    return italicFont;
                 }
             }
             return null;
