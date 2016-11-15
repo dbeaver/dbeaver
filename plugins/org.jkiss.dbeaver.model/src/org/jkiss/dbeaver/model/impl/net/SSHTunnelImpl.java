@@ -41,7 +41,7 @@ public class SSHTunnelImpl implements DBWTunnel {
 
     private static final Log log = Log.getLog(SSHTunnelImpl.class);
 
-    private static final int CONNECT_TIMEOUT = 10000;
+    //private static final int CONNECT_TIMEOUT = 10000;
     public static final String LOCALHOST_NAME = "127.0.0.1";
     private static transient JSch jsch;
     private transient Session session;
@@ -65,6 +65,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         String sshPort = properties.get(SSHConstants.PROP_PORT);
         String sshUser = configuration.getUserName();
         String aliveInterval = properties.get(SSHConstants.PROP_ALIVE_INTERVAL);
+        String connectTimeoutString = properties.get(SSHConstants.PROP_CONNECT_TIMEOUT);
         //String aliveCount = properties.get(SSHConstants.PROP_ALIVE_COUNT);
         if (CommonUtils.isEmpty(sshHost)) {
             throw new DBException("SSH host not specified");
@@ -97,6 +98,13 @@ public class SSHTunnelImpl implements DBWTunnel {
                 throw new DBException("Private key file '" + privKeyFile.getAbsolutePath() + "' doesn't exist");
             }
         }
+        int connectTimeout;
+        try {
+            connectTimeout = Integer.parseInt(connectTimeoutString);
+        }
+        catch (NumberFormatException e) {
+            connectTimeout = SSHConstants.DEFAULT_CONNECT_TIMEOUT;
+        }
 
         monitor.subTask("Initiating tunnel at '" + sshHost + "'");
         UserInfo ui = new UIUserInfo(configuration);
@@ -126,10 +134,10 @@ public class SSHTunnelImpl implements DBWTunnel {
             //session.setConfig("PreferredAuthentications", "password,publickey,keyboard-interactive");
             session.setConfig("PreferredAuthentications",
                 privKeyFile != null ? "publickey" : "password");
-            session.setConfig("ConnectTimeout", String.valueOf(CONNECT_TIMEOUT));
+            session.setConfig("ConnectTimeout", String.valueOf(connectTimeout));
             session.setUserInfo(ui);
             log.debug("Connect to tunnel host");
-            session.connect(CONNECT_TIMEOUT);
+            session.connect(connectTimeout);
             try {
                 session.setPortForwardingL(localPort, dbHost, dbPort);
                 if (!CommonUtils.isEmpty(aliveInterval)) {
