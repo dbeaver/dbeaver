@@ -45,6 +45,8 @@ public class URLAttributeTransformer implements DBDAttributeTransformer {
     private static final Log log = Log.getLog(URLAttributeTransformer.class);
 
     private static final String PROP_PATTERN = "pattern";
+    private static final String PROP_VIEW_INLINE = "view.inline";
+    private static final String PROP_VIEW_PANEL = "view.panel";
 
     public static final String URL_TYPE_NAME = "URL.Preview";
 

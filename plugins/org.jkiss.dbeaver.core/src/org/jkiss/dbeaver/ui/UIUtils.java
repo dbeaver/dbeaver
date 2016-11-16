@@ -431,12 +431,18 @@ public class UIUtils {
         DBeaverUI.syncExec(runnable);
     }
 
+    public static boolean confirmAction(final String title, final String question)
+    {
+        return confirmAction(null, title, question);
+    }
+
     public static boolean confirmAction(final Shell shell, final String title, final String question)
     {
         return new UIConfirmation() {
             @Override
             public Boolean runTask() {
-                MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+                Shell activeShell = shell != null ? shell : DBeaverUI.getActiveWorkbenchShell();
+                MessageBox messageBox = new MessageBox(activeShell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
                 messageBox.setMessage(question);
                 messageBox.setText(title);
                 int response = messageBox.open();

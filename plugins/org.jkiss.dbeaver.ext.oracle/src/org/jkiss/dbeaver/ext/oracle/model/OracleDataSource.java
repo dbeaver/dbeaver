@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -517,7 +518,6 @@ public class OracleDataSource extends JDBCDataSource
                 final String newPlanTableName = candidateNames[0];
                 // Plan table not found - try to create new one
                 if (!UIUtils.confirmAction(
-                    DBeaverUI.getActiveWorkbenchShell(),
                     "Oracle PLAN_TABLE missing",
                     "PLAN_TABLE not found in current user's session. " +
                         "Do you want DBeaver to create new PLAN_TABLE (" + newPlanTableName + ")?")) {
