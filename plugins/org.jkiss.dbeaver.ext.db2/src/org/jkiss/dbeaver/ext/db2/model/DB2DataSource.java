@@ -480,7 +480,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
         // No valid explain tables found, propose to create them in current authId
         String msg = String.format(DB2Messages.dialog_explain_ask_to_create, sessionUserSchema);
-        if (!UIUtils.confirmAction(DBeaverUI.getActiveWorkbenchShell(), DB2Messages.dialog_explain_no_tables, msg)) {
+        if (!UIUtils.confirmAction(DB2Messages.dialog_explain_no_tables, msg)) {
             return null;
         }
 
