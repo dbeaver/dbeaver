@@ -51,6 +51,8 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
 {
     private static final Log log = Log.getLog(OracleTablePhysical.class);
 
+    public static final String CAT_STATISTICS = "Statistics";
+
     //private boolean valid;
     private long rowCount;
     private Long realRowCount;
@@ -77,13 +79,13 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         this.partitionCache = partitioned ? new PartitionCache() : null;
     }
 
-    @Property(viewable = true, order = 20)
+    @Property(category = CAT_STATISTICS, viewable = true, order = 20)
     public long getRowCount()
     {
         return rowCount;
     }
 
-    @Property(viewable = false, expensive = true, order = 21)
+    @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 21)
     public synchronized Long getRealRowCount(DBRProgressMonitor monitor)
     {
         if (realRowCount != null) {
