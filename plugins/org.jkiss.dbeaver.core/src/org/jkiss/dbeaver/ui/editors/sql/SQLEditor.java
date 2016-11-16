@@ -472,7 +472,7 @@ public class SQLEditor extends SQLEditorBase implements
         });
         resultTabs.setSimple(true);
 
-        resultTabs.setMRUVisible(true);
+        //resultTabs.setMRUVisible(true);
         {
             ToolBar rsToolbar = new ToolBar(resultTabs, SWT.HORIZONTAL | SWT.RIGHT | SWT.WRAP);
 
@@ -796,19 +796,32 @@ public class SQLEditor extends SQLEditorBase implements
 //        if (planItem != null) {
 //            resultTabs.setSelection(planItem);
 //        }
+        ExplainPlanViewer planView = null;
+        for (CTabItem item : resultTabs.getItems()) {
+            if (item.getData() instanceof ExplainPlanViewer) {
+                ExplainPlanViewer pv = (ExplainPlanViewer) item.getData();
+                if (pv.getQuery() != null && pv.getQuery().equals(sqlQuery)) {
+                    resultTabs.setSelection(item);
+                    planView = pv;
+                    break;
+                }
+            }
+        }
 
-        ExplainPlanViewer planView = new ExplainPlanViewer(this, resultTabs);
+        if (planView == null) {
+            planView = new ExplainPlanViewer(this, resultTabs);
 
-        CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
-        item.setControl(planView.getControl());
-        item.setText(CoreMessages.editors_sql_explain_plan);
-        item.setImage(IMG_EXPLAIN_PLAN);
-        item.setData(planView);
-        resultTabs.setSelection(item);
+            CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
+            item.setControl(planView.getControl());
+            item.setText("Exec. Plan");
+            item.setToolTipText("Execution plan for\n" + sqlQuery.getQuery());
+            item.setImage(IMG_EXPLAIN_PLAN);
+            item.setData(planView);
+            resultTabs.setSelection(item);
+        }
 
         try {
-            planView.refresh(getExecutionContext());
-            planView.explainQueryPlan(sqlQuery.getQuery());
+            planView.explainQueryPlan(getExecutionContext(), sqlQuery);
         } catch (DBCException e) {
             UIUtils.showErrorDialog(
                 sashForm.getShell(),
