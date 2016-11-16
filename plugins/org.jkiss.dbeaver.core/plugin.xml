@@ -284,9 +284,9 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.export.data" icon="icons/file/export.png"/>
-        <image commandId="org.jkiss.dbeaver.core.export.data" icon="icons/file/export.png"/>
-        <image commandId="org.jkiss.dbeaver.core.import.data" icon="icons/file/import.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.export.data" icon="icons/sql/table_export.png"/>
+        <image commandId="org.jkiss.dbeaver.core.export.data" icon="icons/sql/table_export.png"/>
+        <image commandId="org.jkiss.dbeaver.core.import.data" icon="icons/sql/table_import.png"/>
         <image commandId="org.jkiss.dbeaver.core.compare.objects" icon="icons/file/compare.png"/>
         <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="icons/driver_manager.png"/>
         <image commandId="org.jkiss.dbeaver.core.new.connection" icon="icons/database_connect.png"/>
