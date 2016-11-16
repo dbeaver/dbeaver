@@ -83,6 +83,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private final List<ISaveablePart> nestedSaveable = new ArrayList<>();
     private final Map<ITabbedFolder, IEditorActionBarContributor> pageContributors = new HashMap<>();
     private SashForm sashForm;
+    private boolean activated = false;
+    private Composite propsPlaceholder;
 
     public ObjectPropertiesEditor()
     {
@@ -178,13 +180,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 }
 
             });
-            sashForm.setVisible(false);
-            DBeaverUI.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    updateSashWidths();
-                }
-            });
         }
     }
 
@@ -192,7 +187,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         if (sashForm.isDisposed()) {
             return;
         }
-        sashForm.setVisible(true);
+
         Control[] children = sashForm.getChildren();
         if (children.length < 2) {
             // Unexpected
@@ -211,14 +206,33 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private void createPropertiesPanel(Composite container) {
         // Main panel
-        Composite mainPlaceholder = UIUtils.createPlaceholder(container, 2, 0);
-        TabbedFolderPageProperties props = new TabbedFolderPageProperties(getEditorInput());
-        props.createControl(mainPlaceholder);
+        propsPlaceholder = UIUtils.createPlaceholder(container, 2, 0);
     }
 
     @Override
     public void activatePart()
     {
+        if (activated) {
+            return;
+        }
+        activated = true;
+        TabbedFolderPageProperties props = new TabbedFolderPageProperties(getEditorInput());
+
+        props.createControl(propsPlaceholder);
+
+        pageControl.layout();
+
+        Runnable sashUpdater = new Runnable() {
+            @Override
+            public void run() {
+                updateSashWidths();
+            }
+        };
+        if (sashForm.getSize().y > 0) {
+            sashUpdater.run();
+        } else {
+            DBeaverUI.asyncExec(sashUpdater);
+        }
         //getSite().setSelectionProvider();
     }
 
