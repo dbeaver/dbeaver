@@ -333,4 +333,8 @@ public class SQLQuery {
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof SQLQuery && query.equals(((SQLQuery) obj).query);
+    }
 }

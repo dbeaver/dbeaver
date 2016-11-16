@@ -42,8 +42,12 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
@@ -59,6 +63,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
     private PropertyTreeViewer planProperties;
 
     private DBCExecutionContext executionContext;
+    private SQLQuery query;
     private DBCQueryPlanner planner;
     private RefreshPlanAction refreshPlanAction;
     private ToggleViewAction toggleViewAction;
@@ -96,10 +101,10 @@ public class ExplainPlanViewer implements IPropertyChangeListener
             gd.verticalIndent = 0;
             planTree.setLayoutData(gd);
 
-            sqlText = new Text(leftPanel, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+            sqlText = new Text(leftPanel, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
 
             leftPanel.setWeights(new int[] {80, 20});
-            leftPanel.setMaximizedControl(planTree);
+            //leftPanel.setMaximizedControl(planTree);
         }
         {
             planProperties = new PropertyTreeViewer(planPanel, SWT.H_SCROLL | SWT.V_SCROLL);
@@ -151,6 +156,10 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         });
     }
 
+    public SQLQuery getQuery() {
+        return query;
+    }
+
     private void showPlanNode()
     {
         ISelection selection = planTree.getItemsViewer().getSelection();
@@ -183,25 +192,24 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         return planTree.getItemsViewer();
     }
 
-    public void refresh(DBCExecutionContext executionContext)
-    {
-        // Refresh plan
-        this.executionContext = executionContext;
-        if (this.executionContext != null) {
-            DBPDataSource dataSource = executionContext.getDataSource();
-            planner = DBUtils.getAdapter(DBCQueryPlanner.class, dataSource);
-        }
-        planTree.clearListData();
-        refreshPlanAction.setEnabled(false);
-    }
-
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
     }
 
-    public void explainQueryPlan(String query) throws DBCException
+    public void explainQueryPlan(DBCExecutionContext executionContext, SQLQuery query) throws DBCException
     {
+        this.executionContext = executionContext;
+        this.query = query;
+        if (this.executionContext != null) {
+            DBPDataSource dataSource = executionContext.getDataSource();
+            planner = DBUtils.getAdapter(DBCQueryPlanner.class, dataSource);
+        } else {
+            planner = null;
+        }
+        planTree.clearListData();
+        refreshPlanAction.setEnabled(false);
+
         if (planner == null) {
             throw new DBCException("This datasource doesn't support execution plans");
         }
@@ -213,8 +221,8 @@ public class ExplainPlanViewer implements IPropertyChangeListener
                 SWT.ICON_ERROR);
             return;
         }
-        sqlText.setText(query);
-        planTree.init(this.executionContext, planner, query);
+        sqlText.setText(query.getQuery());
+        planTree.init(this.executionContext, planner, query.getQuery());
         planTree.loadData();
 
         refreshPlanAction.setEnabled(true);
@@ -231,11 +239,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         public void run()
         {
             if (planTree != null) {
-                try {
-                    explainQueryPlan(sqlText.getText());
-                } catch (DBCException e) {
-                    UIUtils.showErrorDialog(getControl().getShell(), "Explain plan", "Can't explain execution plan", e);
-                }
+                planTree.loadData();
             }
         }
     }
