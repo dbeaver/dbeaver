@@ -21,7 +21,8 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
@@ -42,6 +43,7 @@ import java.util.Collection;
  */
 public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
 
+    private DBCExecutionContext context;
     private DBCQueryPlanner planner;
     private String query;
 
@@ -70,8 +72,9 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
         return planner != null;
     }
 
-    public void init(DBCQueryPlanner planner, String query)
+    public void init(DBCExecutionContext context, DBCQueryPlanner planner, String query)
     {
+        this.context = context;
         this.planner = planner;
         this.query = query;
     }
@@ -135,7 +138,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                try (DBCSession session = DBUtils.openUtilSession(getProgressMonitor(), planner.getDataSource(), "Explain '" + query + "'")) {
+                try (DBCSession session = context.openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
                     DBCPlan plan = planner.planQueryExecution(session, query);
                     return (Collection<DBCPlanNode>) plan.getPlanNodes();
                 }
