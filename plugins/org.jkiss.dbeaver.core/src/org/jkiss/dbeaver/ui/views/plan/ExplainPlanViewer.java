@@ -58,6 +58,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
     private PlanNodesTree planTree;
     private PropertyTreeViewer planProperties;
 
+    private DBCExecutionContext executionContext;
     private DBCQueryPlanner planner;
     private RefreshPlanAction refreshPlanAction;
     private ToggleViewAction toggleViewAction;
@@ -185,7 +186,8 @@ public class ExplainPlanViewer implements IPropertyChangeListener
     public void refresh(DBCExecutionContext executionContext)
     {
         // Refresh plan
-        if (executionContext != null) {
+        this.executionContext = executionContext;
+        if (this.executionContext != null) {
             DBPDataSource dataSource = executionContext.getDataSource();
             planner = DBUtils.getAdapter(DBCQueryPlanner.class, dataSource);
         }
@@ -212,7 +214,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
             return;
         }
         sqlText.setText(query);
-        planTree.init(planner, query);
+        planTree.init(this.executionContext, planner, query);
         planTree.loadData();
 
         refreshPlanAction.setEnabled(true);

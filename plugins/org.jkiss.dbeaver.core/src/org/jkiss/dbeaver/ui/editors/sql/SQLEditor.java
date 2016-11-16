@@ -130,7 +130,7 @@ public class SQLEditor extends SQLEditorBase implements
     private Control editorControl;
     private CTabFolder resultTabs;
 
-    private ExplainPlanViewer planView;
+    private SQLLogPanel logViewer;
     private SQLEditorOutputViewer outputViewer;
 
     private volatile QueryProcessor curQueryProcessor;
@@ -145,6 +145,7 @@ public class SQLEditor extends SQLEditorBase implements
     private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<>();
     private QueryResultsContainer curResultsContainer;
+    private Image editorImage;
 
     public SQLEditor()
     {
@@ -470,10 +471,52 @@ public class SQLEditor extends SQLEditorBase implements
             }
         });
         resultTabs.setSimple(true);
-        //resultTabs.getItem(0).addListener();
 
-        planView = new ExplainPlanViewer(this, resultTabs);
-        final SQLLogPanel logViewer = new SQLLogPanel(resultTabs, this);
+        resultTabs.setMRUVisible(true);
+        {
+            ToolBar rsToolbar = new ToolBar(resultTabs, SWT.HORIZONTAL | SWT.RIGHT | SWT.WRAP);
+
+            ToolItem planItem = new ToolItem(rsToolbar, SWT.NONE);
+            planItem.setText("Plan");
+            planItem.setImage(IMG_EXPLAIN_PLAN);
+            planItem.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (curResultsContainer != null && curResultsContainer.query != null) {
+                        explainQueryPlan(curResultsContainer.query);
+                    } else {
+                        UIUtils.showErrorDialog(
+                            sashForm.getShell(),
+                            CoreMessages.editors_sql_error_execution_plan_title,
+                            "Select tab with SQL query results");
+                    }
+                }
+            });
+
+            final ToolItem logItem = new ToolItem(rsToolbar, SWT.CHECK);
+            logItem.setText("Log");
+            logItem.setToolTipText("Query execution log");
+            logItem.setImage(IMG_LOG);
+            logItem.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    showExtraView(logItem, CoreMessages.editors_sql_execution_log, "SQL query execution log", IMG_LOG, logViewer);
+                }
+            });
+
+            final ToolItem outputItem = new ToolItem(rsToolbar, SWT.CHECK);
+            outputItem.setText("Output");
+            outputItem.setImage(IMG_OUTPUT);
+            outputItem.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    showExtraView(outputItem, CoreMessages.editors_sql_output, "Database server output log", IMG_OUTPUT, outputViewer);
+                }
+            });
+
+            resultTabs.setTopRight(rsToolbar);
+        }
+        //resultTabs.getItem(0).addListener();
 
         resultTabs.addListener(SWT.MouseDoubleClick, new Listener() {
             @Override
@@ -489,28 +532,36 @@ public class SQLEditor extends SQLEditorBase implements
             }
         });
 
-        // Create tabs
-        createQueryProcessor(true);
-
+        // Extra views
+        //planView = new ExplainPlanViewer(this, resultTabs);
+        logViewer = new SQLLogPanel(resultTabs, this);
         outputViewer = new SQLEditorOutputViewer(getSite(), resultTabs, SWT.NONE);
 
-        CTabItem item = new CTabItem(resultTabs, SWT.NONE);
-        item.setControl(planView.getControl());
-        item.setText(CoreMessages.editors_sql_explain_plan);
-        item.setImage(IMG_EXPLAIN_PLAN);
-        item.setData(planView);
+        // Create results tab
+        createQueryProcessor(true);
 
-        item = new CTabItem(resultTabs, SWT.NONE);
-        item.setControl(logViewer);
-        item.setText(CoreMessages.editors_sql_execution_log);
-        item.setImage(IMG_LOG);
-        item.setData(logViewer);
+/*
+        {
+            // Create extra tabs
+            CTabItem item = new CTabItem(resultTabs, SWT.NONE);
+            item.setControl(planView.getControl());
+            item.setText(CoreMessages.editors_sql_explain_plan);
+            item.setImage(IMG_EXPLAIN_PLAN);
+            item.setData(planView);
 
-        item = new CTabItem(resultTabs, SWT.NONE);
-        item.setControl(outputViewer);
-        item.setText(CoreMessages.editors_sql_output);
-        item.setImage(IMG_OUTPUT);
-        item.setData(outputViewer);
+            item = new CTabItem(resultTabs, SWT.NONE);
+            item.setControl(logViewer);
+            item.setText(CoreMessages.editors_sql_execution_log);
+            item.setImage(IMG_LOG);
+            item.setData(logViewer);
+
+            item = new CTabItem(resultTabs, SWT.NONE);
+            item.setControl(outputViewer);
+            item.setText(CoreMessages.editors_sql_output);
+            item.setImage(IMG_OUTPUT);
+            item.setData(outputViewer);
+        }
+*/
 
         {
             MenuManager menuMgr = new MenuManager();
@@ -575,6 +626,31 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    private void showExtraView(final ToolItem toolItem, String name, String toolTip, Image image, Control view) {
+        if (toolItem.getSelection()) {
+            CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
+            item.setControl(view);
+            item.setText(name);
+            item.setToolTipText(toolTip);
+            item.setImage(image);
+            item.setData(view);
+            // De-select tool item on tab close
+            item.addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e) {
+                    toolItem.setSelection(false);
+                }
+            });
+            resultTabs.setSelection(item);
+        } else {
+            for (CTabItem item : resultTabs.getItems()) {
+                if (item.getData() == view) {
+                    item.dispose();
+                }
+            }
+        }
+    }
+
     private void toggleEditorMaximize()
     {
         if (sashForm.getMaximizedControl() == null) {
@@ -626,6 +702,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (isNonPersistentEditor()) {
             setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_CONSOLE));
         }
+        editorImage = getTitleImage();
     }
 
     @Override
@@ -710,11 +787,27 @@ public class SQLEditor extends SQLEditorBase implements
             setStatus(CoreMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
             return;
         }
-        final CTabItem planItem = UIUtils.getTabItem(resultTabs, planView);
-        if (planItem != null) {
-            resultTabs.setSelection(planItem);
-        }
+        explainQueryPlan(sqlQuery);
+    }
+
+    public void explainQueryPlan(SQLQuery sqlQuery)
+    {
+//        final CTabItem planItem = UIUtils.getTabItem(resultTabs, planView);
+//        if (planItem != null) {
+//            resultTabs.setSelection(planItem);
+//        }
+
+        ExplainPlanViewer planView = new ExplainPlanViewer(this, resultTabs);
+
+        CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
+        item.setControl(planView.getControl());
+        item.setText(CoreMessages.editors_sql_explain_plan);
+        item.setImage(IMG_EXPLAIN_PLAN);
+        item.setData(planView);
+        resultTabs.setSelection(item);
+
         try {
+            planView.refresh(getExecutionContext());
             planView.explainQueryPlan(sqlQuery.getQuery());
         } catch (DBCException e) {
             UIUtils.showErrorDialog(
@@ -975,10 +1068,6 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         }
-        if (planView != null) {
-            // Refresh plan view
-            planView.refresh(executionContext);
-        }
 
         // Update command states
         SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
@@ -1022,7 +1111,9 @@ public class SQLEditor extends SQLEditorBase implements
             dsContainer.getRegistry().removeDataSourceListener(this);
         }
 
-        planView = null;
+        logViewer = null;
+        outputViewer = null;
+
         queryProcessors.clear();
         curResultsContainer = null;
         curQueryProcessor = null;
@@ -1269,6 +1360,7 @@ public class SQLEditor extends SQLEditorBase implements
             resultContainers.add(resultsProvider);
             return resultsProvider;
         }
+
         @NotNull
         QueryResultsContainer getFirstResults()
         {
@@ -1472,7 +1564,7 @@ public class SQLEditor extends SQLEditorBase implements
             viewer = new ResultSetViewer(resultTabs, getSite(), this);
 
             //boolean firstResultSet = queryProcessors.isEmpty();
-            int tabIndex = Math.max(resultTabs.getItemCount() - 3, 0);
+            int tabIndex = resultTabs.getItemCount();
             tabItem = new CTabItem(resultTabs, SWT.NONE, tabIndex);
             int queryIndex = queryProcessors.indexOf(queryProcessor);
             String tabName = getResultsTabName(resultSetNumber, queryIndex, null);
@@ -1658,7 +1750,6 @@ public class SQLEditor extends SQLEditorBase implements
         private long lastUIUpdateTime;
         private final ITextSelection originalSelection = (ITextSelection) getSelectionProvider().getSelection();
         private int topOffset, visibleLength;
-        private Image editorImage;
 
         private SQLEditorQueryListener(QueryProcessor queryProcessor) {
             this.queryProcessor = queryProcessor;
@@ -1678,7 +1769,6 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void onStartQuery(DBCSession session, final SQLQuery query) {
-            editorImage = getTitleImage();
             setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
             queryProcessor.curJobRunning.incrementAndGet();
             synchronized (runningQueries) {
