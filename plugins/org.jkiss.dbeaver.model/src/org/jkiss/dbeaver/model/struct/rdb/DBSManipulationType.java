@@ -30,6 +30,7 @@ public class DBSManipulationType implements DBPNamedObject
     public static final DBSManipulationType INSERT = new DBSManipulationType("INSERT");
     public static final DBSManipulationType DELETE = new DBSManipulationType("DELETE");
     public static final DBSManipulationType UPDATE = new DBSManipulationType("UPDATE");
+    public static final DBSManipulationType TRUNCATE = new DBSManipulationType("TRUNCATE");
     public static final DBSManipulationType UNKNOWN = new DBSManipulationType("UNKNOWN");
 
     private final String name;

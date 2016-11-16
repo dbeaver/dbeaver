@@ -27,6 +27,9 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractTrigger;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSActionTiming;
+import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,9 +39,21 @@ import java.sql.SQLException;
  */
 public class PostgreTrigger extends AbstractTrigger implements PostgreObject, PostgreScriptObject
 {
+
+    /* Bits within tgtype */
+    public static final int TRIGGER_TYPE_ROW        = (1 << 0);
+    public static final int TRIGGER_TYPE_BEFORE     = (1 << 1);
+    public static final int TRIGGER_TYPE_INSERT     = (1 << 2);
+    public static final int TRIGGER_TYPE_DELETE     = (1 << 3);
+    public static final int TRIGGER_TYPE_UPDATE     = (1 << 4);
+    public static final int TRIGGER_TYPE_TRUNCATE   = (1 << 5);
+    public static final int TRIGGER_TYPE_INSTEAD    = (1 << 6);
+
     private PostgreTableBase table;
     private long objectId;
     private String whenExpression;
+    private long functionSchemaId;
+    private long functionId;
     private String body;
 
     public PostgreTrigger(
@@ -49,6 +64,29 @@ public class PostgreTrigger extends AbstractTrigger implements PostgreObject, Po
         this.table = table;
         this.objectId = JDBCUtils.safeGetLong(dbResult, "oid");
         this.whenExpression = JDBCUtils.safeGetString(dbResult, "tgqual");
+
+        // Get procedure
+        this.functionSchemaId = JDBCUtils.safeGetLong(dbResult, "func_schema_id");
+        this.functionId = JDBCUtils.safeGetLong(dbResult, "tgfoid");
+
+        // Parse trigger type bits
+        int tgType = JDBCUtils.safeGetInt(dbResult, "tgtype");
+        if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_BEFORE)) {
+            setActionTiming(DBSActionTiming.BEFORE);
+        } else if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_INSTEAD)) {
+            setActionTiming(DBSActionTiming.INSTEAD);
+        } else {
+            setActionTiming(DBSActionTiming.AFTER);
+        }
+        if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_INSERT)) {
+            setManipulationType(DBSManipulationType.INSERT);
+        } else if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_DELETE)) {
+            setManipulationType(DBSManipulationType.DELETE);
+        } else if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_UPDATE)) {
+            setManipulationType(DBSManipulationType.UPDATE);
+        } else if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_TRUNCATE)) {
+            setManipulationType(DBSManipulationType.TRUNCATE);
+        }
     }
 
     @Override
@@ -68,6 +106,14 @@ public class PostgreTrigger extends AbstractTrigger implements PostgreObject, Po
     public String getWhenExpression()
     {
         return whenExpression;
+    }
+
+    @Property(viewable = true, order = 7)
+    public PostgreProcedure getFunction(DBRProgressMonitor monitor) throws DBException {
+        if (functionId == 0) {
+            return null;
+        }
+        return getDatabase().getProcedure(monitor, functionSchemaId, functionId);
     }
 
     @Override

@@ -29,6 +29,7 @@ public class DBSActionTiming implements DBPNamedObject
 {
     public static final DBSActionTiming BEFORE = new DBSActionTiming("BEFORE");
     public static final DBSActionTiming AFTER = new DBSActionTiming("AFTER");
+    public static final DBSActionTiming INSTEAD = new DBSActionTiming("INSTEAD");
     public static final DBSActionTiming UNKNOWN = new DBSActionTiming("UNKNOWN");
 
     private final String name;

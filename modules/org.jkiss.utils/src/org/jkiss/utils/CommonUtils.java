@@ -396,6 +396,10 @@ public class CommonUtils {
         return str == null || str.length() == 0 || str.trim().length() == 0;
     }
 
+    public static boolean isBitSet(int value, int mask) {
+        return (value & mask) == mask;
+    }
+
     @Nullable
     public static <T extends Enum<T>> T valueOf(@NotNull Class<T> type, @Nullable String name) {
         return valueOf(type, name, false);
