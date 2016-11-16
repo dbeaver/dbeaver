@@ -485,6 +485,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
             if (defEditorPage != null) {
                 setActiveEditor(defEditorPage);
             }
+        } else {
+            setActiveEditor(getEditor(0));
         }
         this.activeEditor = getActiveEditor();
         if (activeEditor instanceof ITabbedFolderContainer) {
