@@ -49,9 +49,8 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
     public static final String POSITION_START = IActionConstants.MB_ADDITIONS_START;
     public static final String POSITION_MIDDLE = IActionConstants.MB_ADDITIONS_MIDDLE;
     public static final String POSITION_END = IActionConstants.MB_ADDITIONS_END;
-    private boolean embeddable;
 
-    public static enum Type {
+    public enum Type {
         editor,
         folder
     }
@@ -66,6 +65,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
     private String position;
     private DBPImage icon;
     private Type type;
+    private boolean embeddable;
 
     EntityEditorDescriptor()
     {
