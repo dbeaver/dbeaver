@@ -23,13 +23,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProcessController;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -150,10 +149,6 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
     private void writeProcessLog(final String line)
     {
         if (line.isEmpty()) {
-            return;
-        }
-        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
-        if (shell == null) {
             return;
         }
         final String logLine = line + GeneralUtils.getDefaultLineSeparator();

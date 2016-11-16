@@ -55,12 +55,12 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -486,28 +486,30 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
         // Ask the user in what tablespace to create the Explain tables
         try {
-            List<String> listTablespaces = DB2Utils.getListOfUsableTsForExplain(monitor, (JDBCSession) session);
+            final List<String> listTablespaces = DB2Utils.getListOfUsableTsForExplain(monitor, (JDBCSession) session);
 
             // NO Usable Tablespace found: End of the game..
             if (listTablespaces.isEmpty()) {
-                UIUtils.showErrorDialog(DBeaverUI.getActiveWorkbenchShell(), DB2Messages.dialog_explain_no_tablespace_found_title,
+                UIUtils.showErrorDialog(null, DB2Messages.dialog_explain_no_tablespace_found_title,
                     DB2Messages.dialog_explain_no_tablespace_found_title);
                 return null;
             }
 
             // Build a dialog with the list of usable tablespaces for the user to choose
-            final DB2TablespaceChooser tsChooserDialog = new DB2TablespaceChooser(DBeaverUI.getActiveWorkbenchShell(),
-                listTablespaces);
-            String tablespaceName = DBeaverUI.syncExec(new RunnableWithResult<String>() {
+            String tablespaceName = new UITask<String>() {
                 @Override
-                public String runWithResult() {
+                protected String runTask() {
+                    final DB2TablespaceChooser tsChooserDialog = new DB2TablespaceChooser(
+                        DBeaverUI.getActiveWorkbenchShell(),
+                        listTablespaces);
                     if (tsChooserDialog.open() == IDialogConstants.OK_ID) {
                         return tsChooserDialog.getSelectedTablespace();
                     } else {
                         return null;
                     }
                 }
-            });
+            }.execute();
+
             if (tablespaceName == null) {
                 return null;
             }

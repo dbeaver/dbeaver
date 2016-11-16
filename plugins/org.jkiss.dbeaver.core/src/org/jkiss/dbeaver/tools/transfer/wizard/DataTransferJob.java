@@ -72,16 +72,11 @@ public class DataTransferJob extends AbstractJob {
 
     private void showResult(final long time, final boolean hasErrors)
     {
-        DBeaverUI.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                UIUtils.showMessageBox(
-                    DBeaverUI.getActiveWorkbenchShell(),
-                    "Data transfer",
-                    "Data transfer completed " + (hasErrors ? "with errors " : "") + "(" + RuntimeUtils.formatExecutionTime(time) + ")",
-                    hasErrors ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
-            }
-        });
+        UIUtils.showMessageBox(
+            null,
+            "Data transfer",
+            "Data transfer completed " + (hasErrors ? "with errors " : "") + "(" + RuntimeUtils.formatExecutionTime(time) + ")",
+            hasErrors ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
     }
 
     private boolean transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe)

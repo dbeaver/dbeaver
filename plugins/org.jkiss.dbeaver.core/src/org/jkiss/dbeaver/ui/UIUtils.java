@@ -422,7 +422,8 @@ public class UIUtils {
             @Override
             public void run()
             {
-                MessageBox messageBox = new MessageBox(shell, messageType | SWT.OK);
+                Shell activeShell = shell != null ? shell : DBeaverUI.getActiveWorkbenchShell();
+                MessageBox messageBox = new MessageBox(activeShell, messageType | SWT.OK);
                 messageBox.setMessage(info);
                 messageBox.setText(title);
                 messageBox.open();
