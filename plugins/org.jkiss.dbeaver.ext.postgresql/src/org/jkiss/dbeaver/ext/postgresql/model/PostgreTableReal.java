@@ -170,7 +170,9 @@ public abstract class PostgreTableReal extends PostgreTableBase
             throws SQLException
         {
             return session.prepareStatement(
-                "SELECT x.oid,x.* FROM pg_catalog.pg_trigger x" +
+                "SELECT x.oid,x.*,p.pronamespace as func_schema_id" +
+                "\nFROM pg_catalog.pg_trigger x" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_proc p ON p.oid=x.tgfoid " +
                 "\nWHERE x.tgrelid=" + owner.getObjectId() +
                 (getDataSource().isServerVersionAtLeast(9, 0) ? " AND NOT x.tgisinternal" : ""));
         }

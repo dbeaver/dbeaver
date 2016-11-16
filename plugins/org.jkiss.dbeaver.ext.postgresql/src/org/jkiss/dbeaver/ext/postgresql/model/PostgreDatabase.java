@@ -584,7 +584,8 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
             throws SQLException
         {
             return session.prepareStatement(
-                "SELECT l.oid,l.*,p.pronamespace as handler_schema_id FROM pg_catalog.pg_foreign_data_wrapper l" +
+                "SELECT l.oid,l.*,p.pronamespace as handler_schema_id " +
+                "\nFROM pg_catalog.pg_foreign_data_wrapper l" +
                 "\nLEFT OUTER JOIN pg_catalog.pg_proc p ON p.oid=l.fdwhandler " +
                 "\nORDER BY l.fdwname"
             );
