@@ -19,9 +19,10 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
+import org.jkiss.dbeaver.model.DBPScriptObjectExt;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -47,7 +48,7 @@ import java.util.*;
  * GenericProcedure
  */
 public class OraclePackage extends OracleSchemaObject
-    implements OracleSourceObjectEx, DBSObjectContainer, DBPRefreshableObject, DBSProcedureContainer
+    implements OracleSourceObject, DBPScriptObjectExt, DBSObjectContainer, DBPRefreshableObject, DBSProcedureContainer
 {
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private boolean valid;
@@ -96,7 +97,7 @@ public class OraclePackage extends OracleSchemaObject
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectBodyDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getExtendedDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDefinition == null && monitor != null) {
             sourceDefinition = OracleUtils.getSource(monitor, this, true, true);
@@ -104,8 +105,7 @@ public class OraclePackage extends OracleSchemaObject
         return sourceDefinition;
     }
 
-    @Override
-    public void setObjectBodyDefinitionText(String source)
+    public void setExtendedDefinitionText(String source)
     {
         this.sourceDefinition = source;
     }

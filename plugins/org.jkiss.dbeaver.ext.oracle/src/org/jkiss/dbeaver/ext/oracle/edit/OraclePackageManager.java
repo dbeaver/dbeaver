@@ -106,7 +106,7 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
                         "Create package header",
                         header)); //$NON-NLS-1$
             }
-            String body = pack.getObjectBodyDefinitionText(VoidProgressMonitor.INSTANCE);
+            String body = pack.getExtendedDefinitionText(VoidProgressMonitor.INSTANCE);
             if (!CommonUtils.isEmpty(body)) {
                 actionList.add(
                     new SQLDatabasePersistAction(

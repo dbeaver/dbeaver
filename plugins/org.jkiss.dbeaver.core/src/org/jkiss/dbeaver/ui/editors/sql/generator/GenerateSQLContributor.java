@@ -125,6 +125,15 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
                 }
                 sql.append("\n");
+                if (object instanceof DBPScriptObjectExt) {
+                    String definition2 = CommonUtils.notEmpty(((DBPScriptObjectExt) object).getExtendedDefinitionText(monitor)).trim();
+                    sql.append("\n");
+                    sql.append(definition2);
+                    if (!definition2.endsWith(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
+                        sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
+                    }
+                    sql.append("\n");
+                }
             }
         }));
     }

@@ -20,14 +20,15 @@ package org.jkiss.dbeaver.ext.oracle.editors;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
+import org.jkiss.dbeaver.model.DBPScriptObjectExt;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
 
 /**
  * Oracle source definition editor
  */
-public class OracleSourceDefinitionEditor extends SQLEditorNested<OracleSourceObjectEx> {
+public class OracleSourceDefinitionEditor extends SQLEditorNested<OracleSourceObject> {
 
     @Override
     protected String getCompileCommandId()
@@ -37,7 +38,7 @@ public class OracleSourceDefinitionEditor extends SQLEditorNested<OracleSourceOb
 
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException {
-        return getSourceObject().getObjectBodyDefinitionText(monitor);
+        return ((DBPScriptObjectExt)getSourceObject()).getExtendedDefinitionText(monitor);
     }
 
     @Override
