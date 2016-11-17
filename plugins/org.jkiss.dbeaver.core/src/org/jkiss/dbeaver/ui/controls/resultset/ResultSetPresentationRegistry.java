@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 
 import java.util.ArrayList;
@@ -110,13 +111,19 @@ public class ResultSetPresentationRegistry {
         return panels;
     }
 
-    public List<ResultSetPanelDescriptor> getSupportedPanels(ResultSetPresentationDescriptor presentation) {
+    public List<ResultSetPanelDescriptor> getSupportedPanels(DBPDataSource dataSource, ResultSetPresentationDescriptor presentation) {
         List<ResultSetPanelDescriptor> result = new ArrayList<>();
         for (ResultSetPanelDescriptor panel : panels) {
-            if (panel.supportedBy(presentation)) {
+            if (panel.supportedBy(dataSource, presentation)) {
                 result.add(panel);
             }
         }
+        Collections.sort(result, new Comparator<ResultSetPanelDescriptor>() {
+            @Override
+            public int compare(ResultSetPanelDescriptor o1, ResultSetPanelDescriptor o2) {
+                return o1.getLabel().compareTo(o2.getLabel());
+            }
+        });
         return result;
     }
 

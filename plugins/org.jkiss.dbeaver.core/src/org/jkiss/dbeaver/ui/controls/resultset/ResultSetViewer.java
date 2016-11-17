@@ -482,7 +482,7 @@ public class ResultSetViewer extends Viewer
         availablePanels.clear();
         activePanels.clear();
         if (activePresentationDescriptor != null) {
-            availablePanels.addAll(ResultSetPresentationRegistry.getInstance().getSupportedPanels(activePresentationDescriptor));
+            availablePanels.addAll(ResultSetPresentationRegistry.getInstance().getSupportedPanels(getDataSource(), activePresentationDescriptor));
         }
         activePresentation.createPresentation(this, presentationPanel);
 
@@ -1429,7 +1429,7 @@ public class ResultSetViewer extends Viewer
     @Override
     public void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row)
     {
-        final DBPDataSource dataSource = getDataContainer() == null ? null : getDataContainer().getDataSource();
+        final DBPDataSource dataSource = getDataSource();
 
         // Custom oldValue items
         final ResultSetValueController valueController;
@@ -1626,6 +1626,11 @@ public class ResultSetViewer extends Viewer
 
         manager.add(new Separator());
         manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+    }
+
+    @Nullable
+    private DBPDataSource getDataSource() {
+        return getDataContainer() == null ? null : getDataContainer().getDataSource();
     }
 
     private class TransformerAction extends Action {
