@@ -28,6 +28,7 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -40,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -50,6 +52,7 @@ import java.util.Locale;
 public class SQLCompletionProposal implements ICompletionProposal, ICompletionProposalExtension2 {
 
     private static final Log log = Log.getLog(SQLCompletionProposal.class);
+    private final DBPDataSource dataSource;
 
     private SQLSyntaxManager syntaxManager;
 
@@ -85,6 +88,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         String additionalProposalInfo,
         DBPNamedObject object)
     {
+        this.dataSource = request.editor.getDataSource();
         this.syntaxManager = request.editor.getSyntaxManager();
         this.displayString = displayString;
         this.replacementString = replacementString;
@@ -167,20 +171,24 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     @Override
     public void apply(IDocument document) {
         try {
-            boolean insertTrailingSpace = true;
-            if (object instanceof DBSObjectContainer) {
-                // Do not append trailing space after schemas/catalogs/etc.
-            } else {
-                int docLen = document.getLength();
-                if (docLen <= replacementOffset + replacementLength + 2) {
-                    insertTrailingSpace = false;
-                } else {
-                    insertTrailingSpace = document.getChar(replacementOffset + replacementLength) != ' ';
+            if (dataSource != null) {
+                if (dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS)) {
+                    boolean insertTrailingSpace = true;
+                    if (object instanceof DBSObjectContainer) {
+                        // Do not append trailing space after schemas/catalogs/etc.
+                    } else {
+                        int docLen = document.getLength();
+                        if (docLen <= replacementOffset + replacementLength + 2) {
+                            insertTrailingSpace = false;
+                        } else {
+                            insertTrailingSpace = document.getChar(replacementOffset + replacementLength) != ' ';
+                        }
+                        if (insertTrailingSpace) {
+                            replacementString += " ";
+                        }
+                        cursorPosition++;
+                    }
                 }
-                if (insertTrailingSpace) {
-                    replacementString += " ";
-                }
-                cursorPosition++;
             }
             document.replace(replacementOffset, replacementLength, replacementString);
         } catch (BadLocationException e) {

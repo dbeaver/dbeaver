@@ -27,6 +27,7 @@ public class SQLPreferenceConstants
     public static final String PROPOSAL_INSERT_CASE                    = "SQLEditor.ContentAssistant.insert.case";
     public static final String HIDE_DUPLICATE_PROPOSALS                = "SQLEditor.ContentAssistant.hide.duplicates";
     public static final String PROPOSAL_SHORT_NAME                     = "SQLEditor.ContentAssistant.proposals.short.name";
+    public static final String INSERT_SPACE_AFTER_PROPOSALS            = "SQLEditor.ContentAssistant.insert.space.after.proposal";
 
     // Auto-save
     public static final String AUTO_SAVE_ON_CLOSE                      = "SQLEditor.autoSaveOnClose";
