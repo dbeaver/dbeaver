@@ -207,6 +207,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private void createPropertiesPanel(Composite container) {
         // Main panel
         propsPlaceholder = UIUtils.createPlaceholder(container, 2, 0);
+        propsPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
     @Override
@@ -221,19 +222,19 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         props.createControl(propsPlaceholder);
 
         pageControl.layout();
-
-        Runnable sashUpdater = new Runnable() {
-            @Override
-            public void run() {
-                updateSashWidths();
+        if (sashForm != null) {
+            Runnable sashUpdater = new Runnable() {
+                @Override
+                public void run() {
+                    updateSashWidths();
+                }
+            };
+            if (sashForm.getSize().y > 0) {
+                sashUpdater.run();
+            } else {
+                DBeaverUI.asyncExec(sashUpdater);
             }
-        };
-        if (sashForm.getSize().y > 0) {
-            sashUpdater.run();
-        } else {
-            DBeaverUI.asyncExec(sashUpdater);
         }
-        //getSite().setSelectionProvider();
     }
 
     @Override
