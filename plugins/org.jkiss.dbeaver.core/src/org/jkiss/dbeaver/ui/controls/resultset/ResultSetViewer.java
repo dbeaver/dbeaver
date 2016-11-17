@@ -431,8 +431,10 @@ public class ResultSetViewer extends Viewer
                 // Update combo
                 statusBar.setRedraw(false);
                 try {
-                    ((RowData)presentationSwitchToolbar.getLayoutData()).exclude = (activePresentationDescriptor == null);
-                    if (activePresentationDescriptor == null) {
+                    boolean pVisible = activePresentationDescriptor != null;
+                    ((RowData)presentationSwitchToolbar.getLayoutData()).exclude = !pVisible;
+                    presentationSwitchToolbar.setVisible(pVisible);
+                    if (!pVisible) {
                         presentationSwitchToolbar.setEnabled(false);
                     } else {
                         presentationSwitchToolbar.setEnabled(true);
