@@ -63,7 +63,7 @@ public class SQLEditorPropertyTester extends PropertyTester
                 // Do not check hasActiveQuery - sometimes jface don't update action enablement after cursor change/typing
                 return hasConnection;/* && (!"statement".equals(expectedValue) || editor.hasActiveQuery())*/
             case PROP_CAN_EXPLAIN:
-                return hasConnection && editor.hasActiveQuery() && DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
+                return hasConnection && DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
             case PROP_CAN_NAVIGATE: {
                 // Check whether some word is under cursor
                 ISelectionProvider selectionProvider = editor.getSelectionProvider();
