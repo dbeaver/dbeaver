@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
-import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
+import org.jkiss.dbeaver.model.DBPScriptObjectExt;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -142,7 +142,7 @@ public class OracleUtils {
     {
         try {
             String source = body ?
-                ((OracleSourceObjectEx)object).getObjectBodyDefinitionText(null) :
+                ((DBPScriptObjectExt)object).getExtendedDefinitionText(null) :
                 object.getObjectDefinitionText(null);
             if (source == null) {
                 return null;

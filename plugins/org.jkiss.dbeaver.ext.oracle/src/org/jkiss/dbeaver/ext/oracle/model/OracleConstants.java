@@ -98,7 +98,7 @@ public class OracleConstants {
     public static final DBSIndexType INDEX_TYPE_DOMAIN = new DBSIndexType("DOMAIN", "Domain");
 
     public static final String PROP_OBJECT_DEFINITION = "objectDefinitionText";
-    public static final String PROP_OBJECT_BODY_DEFINITION = "objectBodyDefinitionText";
+    public static final String PROP_OBJECT_BODY_DEFINITION = "extendedDefinitionText";
 
     public static final String COL_OWNER = "OWNER";
     public static final String COL_TABLE_NAME = "TABLE_NAME";

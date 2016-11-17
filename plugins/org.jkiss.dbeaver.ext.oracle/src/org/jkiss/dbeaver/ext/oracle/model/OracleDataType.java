@@ -21,7 +21,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
+import org.jkiss.dbeaver.model.DBPScriptObjectExt;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
@@ -53,7 +54,7 @@ import java.util.Map;
  * Oracle data type
  */
 public class OracleDataType extends OracleObject<DBSObject>
-    implements DBSDataType, DBSEntity, DBPQualifiedObject, OracleSourceObjectEx {
+    implements DBSDataType, DBSEntity, DBPQualifiedObject, OracleSourceObject, DBPScriptObjectExt {
 
     private static final Log log = Log.getLog(OracleTableForeignKey.class);
     public static final String TYPE_CODE_COLLECTION = "COLLECTION";
@@ -281,7 +282,7 @@ public class OracleDataType extends OracleObject<DBSObject>
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectBodyDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getExtendedDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDefinition == null && monitor != null) {
             sourceDefinition = OracleUtils.getSource(monitor, this, true, false);
@@ -289,8 +290,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         return sourceDefinition;
     }
 
-    @Override
-    public void setObjectBodyDefinitionText(String source)
+    public void setExtendedDefinitionText(String source)
     {
         this.sourceDefinition = source;
     }

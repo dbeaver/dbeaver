@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.actions;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
-import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
+import org.jkiss.dbeaver.model.DBPScriptObjectExt;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
@@ -53,6 +53,6 @@ public class OracleObjectAdapter implements IAdapterFactory {
 
     @Override
     public Class[] getAdapterList() {
-        return new Class[] { OracleSourceObject.class, OracleSourceObjectEx.class };
+        return new Class[] { OracleSourceObject.class, DBPScriptObjectExt.class };
     }
 }
