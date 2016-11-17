@@ -476,6 +476,7 @@ public class SQLEditor extends SQLEditorBase implements
         {
             ToolBar rsToolbar = new ToolBar(resultTabs, SWT.HORIZONTAL | SWT.RIGHT | SWT.WRAP);
 
+/*
             ToolItem planItem = new ToolItem(rsToolbar, SWT.NONE);
             planItem.setText("Plan");
             planItem.setImage(IMG_EXPLAIN_PLAN);
@@ -492,6 +493,7 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
             });
+*/
 
             final ToolItem logItem = new ToolItem(rsToolbar, SWT.CHECK);
             logItem.setText("Log");
@@ -539,29 +541,6 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Create results tab
         createQueryProcessor(true);
-
-/*
-        {
-            // Create extra tabs
-            CTabItem item = new CTabItem(resultTabs, SWT.NONE);
-            item.setControl(planView.getControl());
-            item.setText(CoreMessages.editors_sql_explain_plan);
-            item.setImage(IMG_EXPLAIN_PLAN);
-            item.setData(planView);
-
-            item = new CTabItem(resultTabs, SWT.NONE);
-            item.setControl(logViewer);
-            item.setText(CoreMessages.editors_sql_execution_log);
-            item.setImage(IMG_LOG);
-            item.setData(logViewer);
-
-            item = new CTabItem(resultTabs, SWT.NONE);
-            item.setControl(outputViewer);
-            item.setText(CoreMessages.editors_sql_output);
-            item.setImage(IMG_OUTPUT);
-            item.setData(outputViewer);
-        }
-*/
 
         {
             MenuManager menuMgr = new MenuManager();
@@ -1576,8 +1555,14 @@ public class SQLEditor extends SQLEditorBase implements
             this.resultSetNumber = resultSetNumber;
             viewer = new ResultSetViewer(resultTabs, getSite(), this);
 
-            //boolean firstResultSet = queryProcessors.isEmpty();
-            int tabIndex = resultTabs.getItemCount();
+            int tabCount = resultTabs.getItemCount();
+            int tabIndex = 0;
+            for (int i = tabCount; i > 0; i--) {
+                if (resultTabs.getItem(i - 1).getData() instanceof QueryResultsContainer) {
+                    tabIndex = i;
+                    break;
+                }
+            }
             tabItem = new CTabItem(resultTabs, SWT.NONE, tabIndex);
             int queryIndex = queryProcessors.indexOf(queryProcessor);
             String tabName = getResultsTabName(resultSetNumber, queryIndex, null);
