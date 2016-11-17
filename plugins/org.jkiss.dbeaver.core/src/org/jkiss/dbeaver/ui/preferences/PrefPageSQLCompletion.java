@@ -42,6 +42,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     private Combo csInsertCase;
     private Button csHideDuplicates;
     private Button csShortName;
+    private Button csInsertSpace;
 
     public PrefPageSQLCompletion()
     {
@@ -59,7 +60,8 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.contains(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO) ||
             store.contains(SQLPreferenceConstants.PROPOSAL_INSERT_CASE) ||
             store.contains(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) ||
-            store.contains(SQLPreferenceConstants.PROPOSAL_SHORT_NAME)
+            store.contains(SQLPreferenceConstants.PROPOSAL_SHORT_NAME) ||
+            store.contains(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS)
         ;
     }
 
@@ -114,6 +116,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
 
             csHideDuplicates = UIUtils.createCheckbox(assistGroup, "Hide duplicate names from non-active schemas", null, false, 2);
             csShortName = UIUtils.createCheckbox(assistGroup, "Use short object names (omit schema/catalog)", null, false, 2);
+            csInsertSpace = UIUtils.createCheckbox(assistGroup, "Insert space after table/column names", null, false, 2);
         }
 
         return composite;
@@ -131,6 +134,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
 
             csHideDuplicates.setSelection(store.getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS));
             csShortName.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_SHORT_NAME));
+            csInsertSpace.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS));
 
         } catch (Exception e) {
             log.warn(e);
@@ -148,6 +152,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.PROPOSAL_INSERT_CASE, csInsertCase.getSelectionIndex());
             store.setValue(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, csHideDuplicates.getSelection());
             store.setValue(SQLPreferenceConstants.PROPOSAL_SHORT_NAME, csShortName.getSelection());
+            store.setValue(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS, csInsertSpace.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -164,6 +169,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
         store.setToDefault(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS);
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_SHORT_NAME);
+        store.setToDefault(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
     }
 
     @Override
