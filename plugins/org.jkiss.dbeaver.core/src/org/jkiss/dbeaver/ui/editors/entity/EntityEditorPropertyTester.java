@@ -52,7 +52,7 @@ public class EntityEditorPropertyTester extends PropertyTester
                 case PROP_CAN_REDO:
                     return commandContext.getRedoCommand() != null;
                 case PROP_DIRTY:
-                    return commandContext.isDirty();
+                    return editor.isDirty();
             }
         }
 
