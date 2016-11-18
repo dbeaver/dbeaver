@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -66,8 +67,8 @@ public class ResultSetModel {
     // Coloring
     private Map<DBDAttributeBinding, AttributeColorSettings> colorMapping = new HashMap<>();
 
-    // Edited rows and cells
     private DBCStatistics statistics;
+    private DBCTrace trace;
     private transient boolean metadataChanged;
     private transient boolean metadataDynamic;
 
@@ -442,6 +443,11 @@ public class ResultSetModel {
             this.executionSource = sourceStatement.getStatementSource();
         } else {
             this.executionSource = null;
+        }
+        if (resultSet instanceof DBCResultSetTrace) {
+            this.trace = ((DBCResultSetTrace) resultSet).getExecutionTrace();
+        } else {
+            this.trace = null;
         }
 
         if (this.attributes == null || this.attributes.length == 0 || this.attributes.length != newAttributes.length || isDynamicMetadata()) {
@@ -882,5 +888,9 @@ public class ResultSetModel {
 
     public void setStatistics(DBCStatistics statistics) {
         this.statistics = statistics;
+    }
+
+    public DBCTrace getTrace() {
+        return trace;
     }
 }
