@@ -152,7 +152,7 @@ public abstract class AbstractJob extends Job
                 cancelJob.schedule(cancelTimeout);
             } catch (Exception e) {
                 // If this happens during shutdown and job manager is not active
-                log.debug(e);
+                //log.debug(e);
             }
         }
     }
