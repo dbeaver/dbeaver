@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.runtime.feature"
         label="%featureName"
-        version="3.7.8"
+        version="3.8.0"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.core.eclipse">
 
