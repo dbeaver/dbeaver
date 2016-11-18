@@ -29,7 +29,7 @@ You can download prebuilt binaries from http://dbeaver.jkiss.org/download/
 ```sh
 git clone https://github.com/serge-rider/dbeaver.git dbeaver
 cd dbeaver
-mvn install
+mvn package
 ```
 Binaries are in `product/standalone/target/products`
 
