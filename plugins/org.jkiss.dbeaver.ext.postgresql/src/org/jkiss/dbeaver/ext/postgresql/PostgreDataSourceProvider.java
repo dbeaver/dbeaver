@@ -129,7 +129,8 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
     public static PostgreServerHome getServerHome(String homeId)
     {
         findLocalClients();
-        return localServers.get(homeId);
+        PostgreServerHome home = localServers.get(homeId);
+        return home == null ? new PostgreServerHome(homeId, homeId, null, null, null) : home;
     }
 
     public synchronized static void findLocalClients()
