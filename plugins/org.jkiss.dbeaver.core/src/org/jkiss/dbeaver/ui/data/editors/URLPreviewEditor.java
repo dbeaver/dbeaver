@@ -47,13 +47,15 @@ public class URLPreviewEditor extends BaseValueEditor<Browser> {
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        final String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
-        control.setText("<div>Loading " + strValue + "...</div>");
-        control.setUrl(strValue);
+        if (control != null) {
+            final String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
+            control.setText("<div>Loading " + strValue + "...</div>");
+            control.setUrl(strValue);
+        }
     }
 
     @Override
     public Object extractEditorValue() throws DBCException {
-        return control.getUrl();
+        return control == null? null : control.getUrl();
     }
 }

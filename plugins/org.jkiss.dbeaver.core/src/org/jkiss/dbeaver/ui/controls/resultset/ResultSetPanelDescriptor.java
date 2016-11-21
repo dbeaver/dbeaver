@@ -20,9 +20,11 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -46,6 +48,7 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
     private final boolean showByDefault;
     private final List<IResultSetPresentation.PresentationType> supportedPresentationTypes = new ArrayList<>();
     private final List<String> supportedPresentations = new ArrayList<>();
+    private final List<String> supportedDataSources = new ArrayList<>();
 
     protected ResultSetPanelDescriptor(IConfigurationElement config) {
         super(config);
@@ -65,6 +68,13 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
             String id = supports.getAttribute(RegistryConstants.ATTR_ID);
             if (!CommonUtils.isEmpty(id)) {
                 supportedPresentations.add(id);
+            }
+        }
+
+        for (IConfigurationElement dsElement : config.getChildren(RegistryConstants.TAG_DATASOURCE)) {
+            String dsId = dsElement.getAttribute(RegistryConstants.ATTR_ID);
+            if (dsId != null) {
+                supportedDataSources.add(dsId);
             }
         }
     }
@@ -89,7 +99,17 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
         return showByDefault;
     }
 
-    public boolean supportedBy(ResultSetPresentationDescriptor presentation) {
+    public boolean supportedBy(DBPDataSource dataSource, ResultSetPresentationDescriptor presentation) {
+        if (!supportedDataSources.isEmpty()) {
+            if (dataSource == null) {
+                return false;
+            }
+            DriverDescriptor driver = (DriverDescriptor) dataSource.getContainer().getDriver();
+            if (!supportedDataSources.contains(driver.getProviderDescriptor().getId())) {
+                return false;
+            }
+        }
+        //if (.getId())
         if (supportedPresentations.isEmpty() && supportedPresentationTypes.isEmpty()) {
             return true;
         }
