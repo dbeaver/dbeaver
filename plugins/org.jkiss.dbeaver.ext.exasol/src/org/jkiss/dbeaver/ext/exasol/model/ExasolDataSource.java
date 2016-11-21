@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.exasol.model;
 import org.eclipse.core.runtime.IAdaptable;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolViewGrant;
 import org.jkiss.dbeaver.ext.exasol.model.plan.ExasolPlanAnalyser;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -68,7 +70,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ExasolDataSource extends JDBCDataSource
 		implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
@@ -244,6 +249,37 @@ public class ExasolDataSource extends JDBCDataSource
 		}
 
 	}
+	
+    private Pattern ERROR_POSITION_PATTERN = Pattern.compile("(.+)\\[line ([0-9]+), column ([0-9]+)\\]");
+
+    
+    @Nullable
+    @Override
+    public ErrorPosition[] getErrorPosition(@NotNull DBCSession session, @NotNull String query, @NotNull Throwable error) {
+        while (error instanceof DBException) {
+            if (error.getCause() == null) {
+                return null;
+            }
+            error = error.getCause();
+        }
+        String message = error.getMessage();
+        if (!CommonUtils.isEmpty(message)) {
+            Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);
+            List<ErrorPosition> positions = new ArrayList<>();
+            while (matcher.find()) {
+                DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
+                pos.info = matcher.group(1);
+                pos.line = Integer.parseInt(matcher.group(2)) - 1;
+                pos.position = Integer.parseInt(matcher.group(3)) - 1;
+                positions.add(pos);
+            }
+            if (!positions.isEmpty()) {
+                return positions.toArray(new ErrorPosition[positions.size()]);
+            }
+        }
+        return null;
+    }
+	
 
 	protected void initializeContextState(@NotNull DBRProgressMonitor monitor,
 			@NotNull JDBCExecutionContext context, boolean setActiveObject)
