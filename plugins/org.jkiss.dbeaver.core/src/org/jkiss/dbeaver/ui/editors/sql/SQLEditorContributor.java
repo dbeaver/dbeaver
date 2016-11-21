@@ -158,17 +158,16 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
     {
         if (!isNestedEditor()) {
             super.contributeToToolBar(manager);
-            // TODO: move it to config
-            // We contribute execute commands here but not in plugin.xml
-            // because in plugin version it is not visible for some reason
-            manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXECUTE_STATEMENT));
-            manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXECUTE_STATEMENT_NEW));
-            manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXECUTE_SCRIPT));
-            manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXECUTE_SCRIPT_NEW));
-            //manager.add(new Separator());
-            manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXPLAIN_PLAN));
-            //manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_ANALYSE_STATEMENT));
-            //manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_VALIDATE_STATEMENT));
+            if (manager.find(CoreCommands.CMD_EXECUTE_STATEMENT) == null) {
+                manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXECUTE_STATEMENT));
+                manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXECUTE_STATEMENT_NEW));
+                manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXECUTE_SCRIPT));
+                manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXECUTE_SCRIPT_NEW));
+                //manager.add(new Separator());
+                manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXPLAIN_PLAN));
+                //manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_ANALYSE_STATEMENT));
+                //manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_VALIDATE_STATEMENT));
+            }
         }
     }
 
