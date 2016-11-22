@@ -104,13 +104,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                         scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
                         updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
                 }
-                catch (SQLFeatureNotSupportedException e) {
-                    return prepareCall(sqlQuery);
-                }
-                catch (UnsupportedOperationException e) {
-                    return prepareCall(sqlQuery);
-                }
-                catch (IncompatibleClassChangeError e) {
+                catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError e) {
                     return prepareCall(sqlQuery);
                 }
             } else if (type == DBCStatementType.SCRIPT) {
@@ -149,13 +143,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                         sqlQuery,
                         Statement.RETURN_GENERATED_KEYS);
                 }
-                catch (SQLFeatureNotSupportedException e) {
-                    return prepareStatement(sqlQuery);
-                }
-                catch (UnsupportedOperationException e) {
-                    return prepareStatement(sqlQuery);
-                }
-                catch (IncompatibleClassChangeError e) {
+                catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError e) {
                     return prepareStatement(sqlQuery);
                 }
             } else {
@@ -166,10 +154,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                         scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
                         updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
                 }
-                catch (UnsupportedOperationException e) {
-                    return prepareStatement(sqlQuery);
-                }
-                catch (IncompatibleClassChangeError e) {
+                catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError e) {
                     return prepareStatement(sqlQuery);
                 }
             }
