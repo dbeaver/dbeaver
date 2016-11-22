@@ -129,6 +129,7 @@ public class SQLEditor extends SQLEditorBase implements
     private SashForm sashForm;
     private Control editorControl;
     private CTabFolder resultTabs;
+    private ToolItem toolOutputItem;
 
     private SQLLogPanel logViewer;
     private SQLEditorOutputViewer outputViewer;
@@ -506,13 +507,14 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             });
 
-            final ToolItem outputItem = new ToolItem(rsToolbar, SWT.CHECK);
-            outputItem.setText("Output");
-            outputItem.setImage(IMG_OUTPUT);
-            outputItem.addSelectionListener(new SelectionAdapter() {
+            toolOutputItem = new ToolItem(rsToolbar, SWT.CHECK);
+            toolOutputItem.setText("Output");
+            toolOutputItem.setImage(IMG_OUTPUT);
+            toolOutputItem.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    showExtraView(outputItem, CoreMessages.editors_sql_output, "Database server output log", IMG_OUTPUT, outputViewer);
+                    toolOutputItem.setImage(IMG_OUTPUT);
+                    showExtraView(toolOutputItem, CoreMessages.editors_sql_output, "Database server output log", IMG_OUTPUT, outputViewer);
                 }
             });
 
@@ -2014,26 +2016,31 @@ public class SQLEditor extends SQLEditorBase implements
                 final StringWriter dump = new StringWriter();
                 try {
                     outputReader.readServerOutput(monitor, executionContext, new PrintWriter(dump, true));
-                    DBeaverUI.asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (outputViewer.isDisposed()) {
-                                return;
-                            }
-                            try {
-                                IOUtils.copyText(new StringReader(dump.toString()), outputViewer.getOutputWriter());
-                            } catch (IOException e) {
-                                log.error(e);
-                            }
-                            if (outputViewer.isHasNewOutput()) {
-                                outputViewer.scrollToEnd();
-                                CTabItem outputItem = UIUtils.getTabItem(resultTabs, outputViewer);
-                                if (outputItem != null && outputItem != resultTabs.getSelection()) {
-                                    outputItem.setImage(IMG_OUTPUT_ALERT);
+                    final String dumpString = dump.toString();
+                    if (!dumpString.isEmpty()) {
+                        DBeaverUI.asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (outputViewer.isDisposed()) {
+                                    return;
+                                }
+                                try {
+                                    IOUtils.copyText(new StringReader(dumpString), outputViewer.getOutputWriter());
+                                } catch (IOException e) {
+                                    log.error(e);
+                                }
+                                if (outputViewer.isHasNewOutput()) {
+                                    outputViewer.scrollToEnd();
+                                    CTabItem outputItem = UIUtils.getTabItem(resultTabs, outputViewer);
+                                    if (outputItem != null && outputItem != resultTabs.getSelection()) {
+                                        outputItem.setImage(IMG_OUTPUT_ALERT);
+                                    } else {
+                                        toolOutputItem.setImage(IMG_OUTPUT_ALERT);
+                                    }
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
                 } catch (Exception e) {
                     log.error(e);
                 }
