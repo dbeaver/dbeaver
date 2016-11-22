@@ -46,6 +46,7 @@ public abstract class SQLContextTypeAbstract extends TemplateContextType {
         addResolver(new SQLContainerResolver<>(
             SQLContainerResolver.VAR_NAME_CATALOG, "Catalog", DBSCatalog.class));
         addResolver(new SQLAttributeResolver());
+        addResolver(new SQLDataTypeResolver());
     }
 
     @Override
