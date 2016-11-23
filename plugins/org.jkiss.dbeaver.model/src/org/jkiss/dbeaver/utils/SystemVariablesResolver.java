@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -50,7 +51,7 @@ public class SystemVariablesResolver implements GeneralUtils.IVariableResolver {
     }
 
     public static String getUserHome() {
-        return System.getenv("user.home");
+        return System.getProperty(StandardConstants.ENV_USER_HOME);
     }
 
     private static String getPlainPath(URL url) {

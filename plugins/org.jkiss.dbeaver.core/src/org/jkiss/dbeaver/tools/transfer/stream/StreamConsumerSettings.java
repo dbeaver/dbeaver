@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferSettings;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
 /**
  * Stream transfer settings
@@ -53,7 +54,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private LobExtractType lobExtractType = LobExtractType.SKIP;
     private LobEncoding lobEncoding = LobEncoding.HEX;
 
-    private String outputFolder = System.getProperty("user.home");
+    private String outputFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
     private String outputFilePattern = PATTERN_TABLE + "_" + PATTERN_TIMESTAMP;
     private String outputEncoding = GeneralUtils.getDefaultFileEncoding();
     private boolean outputEncodingBOM = true;

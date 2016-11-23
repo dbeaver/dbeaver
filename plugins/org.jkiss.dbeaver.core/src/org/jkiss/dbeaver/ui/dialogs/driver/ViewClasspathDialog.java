@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.utils.StandardConstants;
 
 import java.util.StringTokenizer;
 
@@ -61,7 +62,7 @@ public class ViewClasspathDialog extends Dialog
             ListViewer libsTable = new ListViewer(group, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
             libsTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            String classPath = System.getProperty("java.class.path"); //$NON-NLS-1$
+            String classPath = System.getProperty(StandardConstants.ENV_JAVA_CLASSPATH); //$NON-NLS-1$
             StringTokenizer st = new StringTokenizer(classPath, ";"); //$NON-NLS-1$
             while (st.hasMoreTokens()) {
                 libsTable.getList().add(st.nextToken());
