@@ -130,7 +130,7 @@ public class XMLUtils
 
 	// Get list of all child elements of specified node
 	@NotNull
-	public static Collection<Element> getChildElementList(
+	public static List<Element> getChildElementList(
         Element parent,
         String nodeName)
 	{
