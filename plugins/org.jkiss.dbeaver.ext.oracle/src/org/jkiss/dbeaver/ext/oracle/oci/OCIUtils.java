@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.utils.WinRegistry;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.io.*;
 import java.util.*;
@@ -137,7 +138,7 @@ public class OCIUtils
         // read system environment variables
         String path = System.getenv(OracleConstants.VAR_PATH);
         if (path != null) {
-            for (String token : path.split(System.getProperty("path.separator"))) {
+            for (String token : path.split(System.getProperty(StandardConstants.ENV_PATH_SEPARATOR))) {
                 if (token.toLowerCase().contains("oracle")) {
                     token = CommonUtils.removeTrailingSlash(token);
                     if (token.toLowerCase().endsWith("bin")) {

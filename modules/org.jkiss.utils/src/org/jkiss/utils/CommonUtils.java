@@ -201,7 +201,7 @@ public class CommonUtils {
 
     @NotNull
     public static String getLineSeparator() {
-        String lineSeparator = System.getProperty("line.separator");
+        String lineSeparator = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
         return lineSeparator == null ? "\n" : lineSeparator;
     }
 

@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 
@@ -370,11 +371,11 @@ public class DBeaverCore implements DBPApplication {
                 final java.nio.file.Path tempDirectory = Files.createTempDirectory(TEMP_PROJECT_NAME);
                 tempFolder = tempDirectory.toFile();
             } catch (IOException e) {
-                final String sysTempFolder = System.getProperty("java.io.tmpdir");
+                final String sysTempFolder = System.getProperty(StandardConstants.ENV_TMP_DIR);
                 if (!CommonUtils.isEmpty(sysTempFolder)) {
                     tempFolder = new File(sysTempFolder, TEMP_PROJECT_NAME);
                     if (!tempFolder.mkdirs()){
-                        final String sysUserFolder = System.getProperty("user.home");
+                        final String sysUserFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
                         if (!CommonUtils.isEmpty(sysUserFolder)) {
                             tempFolder = new File(sysUserFolder, TEMP_PROJECT_NAME);
                             if (!tempFolder.mkdirs()){

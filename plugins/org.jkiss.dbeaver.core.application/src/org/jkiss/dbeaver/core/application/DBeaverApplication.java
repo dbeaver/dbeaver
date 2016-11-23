@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -79,7 +80,7 @@ public class DBeaverApplication implements IApplication {
     static {
         // Explicitly set UTF-8 as default file encoding
         // In some places Eclipse reads this property directly.
-        //System.setProperty("file.encoding", GeneralUtils.UTF8_ENCODING);
+        //System.setProperty(StandardConstants.ENV_FILE_ENCODING, GeneralUtils.UTF8_ENCODING);
     }
 
     /**
@@ -354,7 +355,7 @@ public class DBeaverApplication implements IApplication {
 
     private static File getDefaultWorkspaceLocation() {
         return new File(
-            System.getProperty("user.home"),
+            System.getProperty(StandardConstants.ENV_USER_HOME),
             DBEAVER_DEFAULT_DIR);
     }
 

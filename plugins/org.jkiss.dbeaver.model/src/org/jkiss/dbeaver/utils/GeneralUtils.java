@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -85,15 +86,15 @@ public class GeneralUtils {
 
     public static String getDefaultLocalFileEncoding()
     {
-        return System.getProperty("file.encoding", getDefaultFileEncoding());
+        return System.getProperty(StandardConstants.ENV_FILE_ENCODING, getDefaultFileEncoding());
     }
 
 
     public static String getDefaultConsoleEncoding()
     {
-        String consoleEncoding = System.getProperty("console.encoding");
+        String consoleEncoding = System.getProperty(StandardConstants.ENV_CONSOLE_ENCODING);
         if (CommonUtils.isEmpty(consoleEncoding)) {
-            consoleEncoding = System.getProperty("file.encoding");
+            consoleEncoding = System.getProperty(StandardConstants.ENV_FILE_ENCODING);
         }
         if (CommonUtils.isEmpty(consoleEncoding)) {
             consoleEncoding = getDefaultFileEncoding();
@@ -103,7 +104,7 @@ public class GeneralUtils {
 
     public static String getDefaultLineSeparator()
     {
-        return System.getProperty("line.separator", "\n");
+        return System.getProperty(StandardConstants.ENV_LINE_SEPARATOR, "\n");
     }
 
     public static byte[] getCharsetBOM(String charsetName)

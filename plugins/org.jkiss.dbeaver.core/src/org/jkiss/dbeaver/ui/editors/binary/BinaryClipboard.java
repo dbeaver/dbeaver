@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -172,7 +173,7 @@ public class BinaryClipboard {
     }
 
 
-    private static final File clipboardDir = new File(System.getProperty("java.io.tmpdir", "."));
+    private static final File clipboardDir = new File(System.getProperty(StandardConstants.ENV_TMP_DIR, "."));
     private static final File clipboardFile = new File(clipboardDir, "dbeaver-binary-clipboard.tmp");
     private static final long maxClipboardDataInMemory = 4 * 1024 * 1024;  // 4 Megs for byte[], 4 Megs for text
 

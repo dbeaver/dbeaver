@@ -18,6 +18,8 @@
 
 package org.jkiss.dbeaver.utils;
 
+import org.jkiss.utils.StandardConstants;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -386,7 +388,7 @@ public class WinRegistry {
     }
 
     public static void main(String[] args) throws InvocationTargetException, IllegalAccessException {
-        System.out.println(System.getProperty("os.name"));
+        System.out.println(System.getProperty(StandardConstants.ENV_OS_NAME));
 //        System.out.println(Platform.getOS());
         System.out.println(WinRegistry.readString(HKEY_LOCAL_MACHINE, "SOFTWARE\\ORACLE", "VOBHOME2.0"));
         System.out.println(WinRegistry.readStringSubKeys(HKEY_LOCAL_MACHINE, "SOFTWARE\\ORACLE"));

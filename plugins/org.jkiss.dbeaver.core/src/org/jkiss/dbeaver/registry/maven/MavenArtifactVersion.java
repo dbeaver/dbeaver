@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.StandardConstants;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
@@ -322,7 +323,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                 }
                 String jdk = XMLUtils.getChildElementBody(activationElement, "jdk");
                 if (!CommonUtils.isEmpty(jdk)) {
-                    profile.active = MavenArtifact.versionMatches(System.getProperty("java.version"), jdk);
+                    profile.active = MavenArtifact.versionMatches(System.getProperty(StandardConstants.ENV_JAVA_VERSION), jdk);
                 }
                 Element osElement = XMLUtils.getChildElement(activationElement, "os");
                 if (osElement != null) {

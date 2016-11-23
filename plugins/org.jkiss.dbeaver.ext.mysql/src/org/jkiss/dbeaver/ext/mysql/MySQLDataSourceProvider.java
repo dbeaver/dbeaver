@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.WinRegistry;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
 import java.util.*;
@@ -92,7 +93,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
 /*
-        String trustStorePath = System.getProperty("user.home") + "/.keystore";
+        String trustStorePath = System.getProperty(StandardConstants.ENV_USER_HOME) + "/.keystore";
 
         System.setProperty("javax.net.ssl.keyStore", trustStorePath);
         System.setProperty("javax.net.ssl.keyStorePassword", "changeit");
@@ -166,7 +167,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         // read from path
         String path = System.getenv("PATH");
         if (path != null) {
-            for (String token : path.split(System.getProperty("path.separator"))) {
+            for (String token : path.split(System.getProperty(StandardConstants.ENV_PATH_SEPARATOR))) {
                 token = CommonUtils.removeTrailingSlash(token);
                 File mysqlFile = new File(token, MySQLUtils.getMySQLConsoleBinaryName());
                 if (mysqlFile.exists()) {

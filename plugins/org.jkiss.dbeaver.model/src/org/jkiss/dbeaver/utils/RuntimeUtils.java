@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,7 +68,7 @@ public class RuntimeUtils {
 
     public static File getUserHomeDir()
     {
-        String userHome = System.getProperty("user.home"); //$NON-NLS-1$
+        String userHome = System.getProperty(StandardConstants.ENV_USER_HOME); //$NON-NLS-1$
         if (userHome == null) {
             userHome = ".";
         }
