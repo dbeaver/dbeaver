@@ -162,7 +162,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         if (endOffset != -1) {
             endOffset += wordDetector.getStartOffset();
         } else {
-            endOffset = wordDetector.getEndOffset();
+            endOffset = wordDetector.getCursorOffset();//wordDetector.getEndOffset();
         }
         replacementOffset = startOffset;
         replacementLength = endOffset - startOffset;
