@@ -113,7 +113,7 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
                 return null;
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, dataSource);
+            throw new DBException("Error loading object metadata from database", ex, dataSource);
         }
     }
 
