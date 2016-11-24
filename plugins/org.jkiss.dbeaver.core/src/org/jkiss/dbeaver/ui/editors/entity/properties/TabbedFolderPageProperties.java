@@ -23,6 +23,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
@@ -67,6 +69,12 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements ILaz
         if (input.getDatabaseObject() != null) {
             DBUtils.getRegistry((DBSObject) curPropertySource.getEditableValue()).addDataSourceListener(this);
         }
+        propertyTree.getControl().addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                dispose();
+            }
+        });
 	}
 
     @Override
