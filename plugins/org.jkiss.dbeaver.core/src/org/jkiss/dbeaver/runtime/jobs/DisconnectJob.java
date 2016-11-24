@@ -51,7 +51,6 @@ public class DisconnectJob extends EventProcessorJob
         try {
             processEvents(DBPConnectionEventType.BEFORE_DISCONNECT);
             container.disconnect(monitor);
-            Thread.sleep(200);  // Let UI to update actions
             processEvents(DBPConnectionEventType.AFTER_DISCONNECT);
 
             connectStatus = Status.OK_STATUS;
