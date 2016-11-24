@@ -241,7 +241,13 @@ public class DataSourceHandler
                     }
                 }
             });
-            disconnectJob.schedule();
+            // Run in UI thread to update actions (some Eclipse magic)
+            DBeaverUI.asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    disconnectJob.schedule();
+                }
+            });
         }
     }
 
