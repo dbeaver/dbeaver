@@ -680,10 +680,6 @@ public class SQLEditor extends SQLEditorBase implements
         if (dsContainer != null) {
             dsContainer.getRegistry().addDataSourceListener(this);
         }
-        if (isNonPersistentEditor()) {
-            setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_CONSOLE));
-        }
-        editorImage = getTitleImage();
     }
 
     @Override
@@ -693,6 +689,10 @@ public class SQLEditor extends SQLEditorBase implements
         syntaxLoaded = false;
         setDataSourceContainer(EditorUtils.getInputDataSource(editorInput));
         setPartName(getEditorName());
+        if (isNonPersistentEditor()) {
+            setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_CONSOLE));
+        }
+        editorImage = getTitleImage();
     }
 
     @Override
