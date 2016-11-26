@@ -37,6 +37,8 @@ public final class DBeaverPreferences
     public static final String NAVIGATOR_CONNECTION_DOUBLE_CLICK = "navigator.connection.doubleClick"; //$NON-NLS-1$
 
     public static final String SECURITY_USE_SECURE_PASSWORDS_STORAGE = "security.secure.password.storage"; //$NON-NLS-1$
+    public static final String SECURITY_USE_MASTER_PASSWORD = "security.master.password.enabled"; //$NON-NLS-1$
+    public static final String SECURITY_MASTER_PASSWORD_VALUE = "security.master.password.value"; //$NON-NLS-1$
 
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
 

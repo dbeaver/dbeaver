@@ -93,7 +93,8 @@ public class PrefPageDatabaseSecurity extends AbstractPrefPage implements IWorkb
             final Label label = new Label(masterPasswordGroup, SWT.NONE);
             label.setText(
                 "Master password can be used to prevent usage of DBeaver by unauthorized users.\n" +
-                    "This password will be asked during DBeaver startup.");
+                "This password will be asked during DBeaver startup.\n" +
+                "Usually users enable secure storage OR master password. Having both might be 'over-secured'.");
             gd = new GridData();
             gd.horizontalSpan = 2;
             label.setLayoutData(gd);
@@ -117,6 +118,8 @@ public class PrefPageDatabaseSecurity extends AbstractPrefPage implements IWorkb
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         useSecurePreferences.setSelection(store.getBoolean(DBeaverPreferences.SECURITY_USE_SECURE_PASSWORDS_STORAGE));
+        useMasterPassword.setSelection(store.getBoolean(DBeaverPreferences.SECURITY_USE_MASTER_PASSWORD));
+        masterPasswordText.setEnabled(useMasterPassword.getSelection());
     }
 
     @Override
@@ -125,6 +128,11 @@ public class PrefPageDatabaseSecurity extends AbstractPrefPage implements IWorkb
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         store.setValue(DBeaverPreferences.SECURITY_USE_SECURE_PASSWORDS_STORAGE, useSecurePreferences.getSelection());
+        final boolean hasMasterPassword = useMasterPassword.getSelection();
+        store.setValue(DBeaverPreferences.SECURITY_USE_MASTER_PASSWORD, hasMasterPassword);
+        if (hasMasterPassword) {
+            // Update master password hash
+        }
 
         PrefUtils.savePreferenceStore(store);
 
