@@ -36,6 +36,8 @@ public final class DBeaverPreferences
     public static final String NAVIGATOR_EDITOR_FULL_NAME = "navigator.editor.full-name"; //$NON-NLS-1$
     public static final String NAVIGATOR_CONNECTION_DOUBLE_CLICK = "navigator.connection.doubleClick"; //$NON-NLS-1$
 
+    public static final String SECURITY_USE_SECURE_PASSWORDS_STORAGE = "security.secure.password.storage"; //$NON-NLS-1$
+
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
 
     public static final String SCRIPT_COMMIT_TYPE = "script.commit.type"; //$NON-NLS-1$

@@ -2101,15 +2101,6 @@
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
-        <page id="org.jkiss.dbeaver.preferences.main.common" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral" name="Common Settings">
-           <enabledWhen>
-               <or>
-                   <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                   <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
-                   <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
-               </or>
-           </enabledWhen>
-        </page>
         <page id="org.jkiss.dbeaver.preferences.main.resultset" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetMain" name="Result Sets">
             <enabledWhen>
                 <or>
@@ -2209,14 +2200,6 @@
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.connectionTypes" name="Connection Types">
             <enabledWhen>
                 <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
-            </enabledWhen>
-        </page>
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseNavigator" id="org.jkiss.dbeaver.preferences.navigator" name="Navigator">
-            <enabledWhen>
-                <or>
-                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
-                </or>
             </enabledWhen>
         </page>
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectSettings" id="org.jkiss.dbeaver.preferences.projectSettings" name="DBeaver Settings">
