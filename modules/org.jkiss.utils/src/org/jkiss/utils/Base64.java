@@ -173,6 +173,10 @@ public final class Base64 {
         return encode(data, 0, data.length);
     }
 
+    public static String splitLines(String bigString, int lineLength) {
+        return bigString.replaceAll("(.{" + lineLength + "})", "$1\n");
+    }
+
     /**
      * Returns base64 representation of specified byte array.
      */
