@@ -75,6 +75,8 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
         // Security
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SECURITY_USE_SECURE_PASSWORDS_STORAGE, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SECURITY_USE_MASTER_PASSWORD, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SECURITY_MASTER_PASSWORD_VALUE, "");
 
         // Common
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.KEEP_STATEMENT_OPEN, false);
