@@ -64,6 +64,7 @@ Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.core.expressions,
+ org.eclipse.equinox.security,
  org.jkiss.utils;visibility:=reexport,
  com.jcraft.jsch,
  com.github.jsqlparser;visibility:=reexport,

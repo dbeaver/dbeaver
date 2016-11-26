@@ -95,6 +95,14 @@
         <plugin id="org.eclipse.ui.ide" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
         <plugin id="org.eclipse.ui.editors" download-size="0" install-size="0" version="0.0.0"/>
 
+        <!-- Security -->
+
+        <plugin id="org.eclipse.equinox.security" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+        <plugin id="org.eclipse.equinox.security.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+        <plugin id="org.eclipse.equinox.security.win32.x86" os="win32" arch="x86" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+        <plugin id="org.eclipse.equinox.security.win32.x86_64" os="win32" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+        <plugin id="org.eclipse.equinox.security.macosx" os="macosx" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+
         <!-- Eclipse Mars additions -->
 
         <plugin id="org.eclipse.e4.core.di.annotations" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
