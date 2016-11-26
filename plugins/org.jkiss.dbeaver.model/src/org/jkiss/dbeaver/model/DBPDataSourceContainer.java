@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -175,4 +176,6 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     void persistConfiguration();
 
+    @NotNull
+    ISecurePreferences getSecurePreferences();
 }

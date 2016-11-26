@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -1092,6 +1093,12 @@ public class DataSourceDescriptor
             }
         }
         return result;
+    }
+
+    @Override
+    @NotNull
+    public ISecurePreferences getSecurePreferences() {
+        return registry.getSecurePreferences().node(id);
     }
 
     @Override

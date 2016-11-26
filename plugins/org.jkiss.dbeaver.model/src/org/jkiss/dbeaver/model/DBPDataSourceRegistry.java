@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
@@ -67,4 +68,6 @@ public interface DBPDataSourceRegistry {
 
     void notifyDataSourceListeners(final DBPEvent event);
 
+    @NotNull
+    ISecurePreferences getSecurePreferences();
 }

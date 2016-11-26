@@ -21,6 +21,8 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.equinox.security.storage.ISecurePreferences;
+import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -282,6 +284,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
+    @Override
+    @NotNull
+    public ISecurePreferences getSecurePreferences() {
+        return SecurePreferencesFactory.getDefault().node("dbeaver").node("datasources");
+    }
+
     private void loadDataSources(boolean refresh) {
         if (!project.isOpen()) {
             return;
@@ -397,6 +405,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     configFile.setContents(ifs, true, false, progressMonitor);
                 }
             }
+            try {
+                getSecurePreferences().flush();
+            } catch (IOException e) {
+                log.error("Error saving secured preferences", e);
+            }
         } catch (CoreException ex) {
             log.error("Error saving datasources configuration", ex);
         } finally {
@@ -479,6 +492,18 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             xml.addAttribute(RegistryConstants.ATTR_URL, CommonUtils.notEmpty(connectionInfo.getUrl()));
             xml.addAttribute(RegistryConstants.ATTR_USER, CommonUtils.notEmpty(connectionInfo.getUserName()));
             if (dataSource.isSavePassword() && !CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
+/*
+                try {
+                    final ISecurePreferences dsNode = dataSource.getSecurePreferences();
+                    if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
+                        dsNode.put(RegistryConstants.ATTR_PASSWORD, connectionInfo.getUserPassword(), true);
+                    } else {
+                        dsNode.remove(RegistryConstants.ATTR_PASSWORD);
+                    }
+                } catch (StorageException e) {
+                    log.error("Can't save password in secure storage", e);
+                }
+*/
                 String encPassword = connectionInfo.getUserPassword();
                 if (!CommonUtils.isEmpty(encPassword)) {
                     try {
@@ -808,6 +833,19 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         config.setDatabaseName(atts.getValue(RegistryConstants.ATTR_DATABASE));
                         config.setUrl(atts.getValue(RegistryConstants.ATTR_URL));
                         config.setUserName(atts.getValue(RegistryConstants.ATTR_USER));
+
+/*
+                        final ISecurePreferences dsNode = curDataSource.getSecurePreferences();
+                        try {
+                            final String password = dsNode.get(RegistryConstants.ATTR_PASSWORD, null);
+                            if (password != null) {
+                                config.setUserPassword(password);
+                            }
+                        } catch (StorageException e) {
+                            log.error("Can't get password in secure storage", e);
+                        }
+*/
+
                         config.setUserPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
                         config.setClientHomeId(atts.getValue(RegistryConstants.ATTR_HOME));
                         config.setConnectionType(
