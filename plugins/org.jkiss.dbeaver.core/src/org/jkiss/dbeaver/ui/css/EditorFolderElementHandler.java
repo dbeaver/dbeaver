@@ -30,12 +30,16 @@ public class EditorFolderElementHandler extends CSSPropertySelectedTabsSWTHandle
 				//Object cssId = control.getData(CSSSWTConstants.CSS_ID_KEY);
 				if (PROP_BACKGROUND.equalsIgnoreCase(property) && (value.getCssValueType() == CSSValue.CSS_VALUE_LIST)) {
 					Color newColor = null;
-					IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-					if (activeEditor instanceof DBPContextProvider) {
-						DBCExecutionContext context = ((DBPContextProvider) activeEditor).getExecutionContext();
-						if (context != null) {
-							newColor = UIUtils.getConnectionColor(context.getDataSource().getContainer().getConnectionConfiguration());
-						}
+					try {
+						IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+						if (activeEditor instanceof DBPContextProvider) {
+                            DBCExecutionContext context = ((DBPContextProvider) activeEditor).getExecutionContext();
+                            if (context != null) {
+                                newColor = UIUtils.getConnectionColor(context.getDataSource().getContainer().getConnectionConfiguration());
+                            }
+                        }
+					} catch (Exception e) {
+						// Some UI issues. Probably workbench window or page wasn't yet created
 					}
 					if (newColor == null) {
 						super.applyCSSProperty(control, property, value, pseudo, engine);
