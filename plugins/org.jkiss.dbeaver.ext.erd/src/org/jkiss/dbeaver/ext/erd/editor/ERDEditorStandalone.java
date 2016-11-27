@@ -88,7 +88,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
     {
         super.createPartControl(parent);
 
-        loadDiagram();
+        loadDiagram(false);
     }
 
     @Override
@@ -117,7 +117,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
 */
 
     @Override
-    protected synchronized void loadDiagram()
+    protected synchronized void loadDiagram(boolean refreshMetadata)
     {
         if (diagramLoadingJob != null) {
             // Do not start new one while old is running

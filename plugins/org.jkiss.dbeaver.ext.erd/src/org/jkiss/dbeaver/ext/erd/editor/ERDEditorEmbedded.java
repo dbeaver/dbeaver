@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.*;
@@ -76,7 +78,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         if (isLoaded()) {
             return;
         }
-        loadDiagram();
+        loadDiagram(false);
     }
 
     @Override
@@ -113,9 +115,9 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     }
 
     @Override
-    protected synchronized void loadDiagram()
+    protected synchronized void loadDiagram(final boolean refreshMetadata)
     {
-        DBSObject object = getRootObject();
+        final DBSObject object = getRootObject();
         if (object == null) {
             return;
         }
@@ -127,11 +129,19 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
                 @Override
                 public EntityDiagram evaluate()
-                    throws InvocationTargetException, InterruptedException {
+                    throws InvocationTargetException, InterruptedException
+                {
+                    if (refreshMetadata && object instanceof DBPRefreshableObject) {
+                        try {
+                            getEditorInput().getNavigatorNode().refreshNode(getProgressMonitor(), ERDEditorEmbedded.this);
+                        } catch (DBException e) {
+                            log.warn("Error refreshing database metadata", e);
+                        }
+                    }
                     try {
                         return loadFromDatabase(getProgressMonitor());
                     } catch (DBException e) {
-                        log.error(e);
+                        log.error("Error loading ER diagram", e);
                     }
 
                     return null;
@@ -149,7 +159,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     }
 
     @Override
-    public org.jkiss.dbeaver.model.exec.DBCExecutionContext getExecutionContext()
+    public DBCExecutionContext getExecutionContext()
     {
         return getEditorInput().getExecutionContext();
     }
