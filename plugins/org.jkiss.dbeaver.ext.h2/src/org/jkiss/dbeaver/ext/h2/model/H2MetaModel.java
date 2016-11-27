@@ -104,6 +104,14 @@ public class H2MetaModel extends GenericMetaModel
     @Override
     public String getAutoIncrementClause(GenericTableColumn column) {
         return "AUTO_INCREMENT";
+/*
+        if (!column.isPersisted()) {
+            return "AUTO_INCREMENT";
+        } else {
+            // For existing columns auto-increment will in DEFAULT clause
+            return null;
+        }
+*/
     }
 
 }
