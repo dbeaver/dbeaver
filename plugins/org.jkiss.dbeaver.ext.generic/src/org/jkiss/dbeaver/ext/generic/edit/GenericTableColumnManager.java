@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -58,6 +59,20 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
         column.setOrdinalPosition(-1);
         return column;
+    }
+
+    @Override
+    public StringBuilder getNestedDeclaration(GenericTable owner, DBECommandAbstract<GenericTableColumn> command)
+    {
+        StringBuilder decl = super.getNestedDeclaration(owner, command);
+        final GenericTableColumn column = command.getObject();
+        if (column.isAutoIncrement()) {
+            final String autoIncrementClause = column.getDataSource().getMetaModel().getAutoIncrementClause(column);
+            if (autoIncrementClause != null && !autoIncrementClause.isEmpty()) {
+                decl.append(" ").append(autoIncrementClause); //$NON-NLS-1$
+            }
+        }
+        return decl;
     }
 
     @Override
