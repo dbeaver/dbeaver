@@ -629,7 +629,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     public void refreshDiagram(boolean force)
     {
         if (isLoaded && force) {
-            loadDiagram();
+            loadDiagram(true);
         }
     }
 
@@ -777,7 +777,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return progressControl != null && progressControl.performSearch(searchType);
     }
 
-    protected abstract void loadDiagram();
+    protected abstract void loadDiagram(boolean refreshMetadata);
 
     private class ChangeAttributePresentationAction extends Action {
         private final ERDAttributeStyle style;
