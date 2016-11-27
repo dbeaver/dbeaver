@@ -124,4 +124,9 @@ public class DerbyMetaModel extends GenericMetaModel
         return null;
     }
 
+    @Override
+    public String getAutoIncrementClause(GenericTableColumn column) {
+        return "GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1)";
+    }
+
 }

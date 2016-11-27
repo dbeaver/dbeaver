@@ -186,6 +186,11 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
+    public String getAutoIncrementClause(GenericTableColumn column) {
+        return "IDENTITY(1,1)";
+    }
+
+    @Override
     public boolean useCatalogInObjectNames() {
         return false;
     }

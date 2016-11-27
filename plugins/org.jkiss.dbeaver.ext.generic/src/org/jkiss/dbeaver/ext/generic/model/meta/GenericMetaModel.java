@@ -323,6 +323,14 @@ public class GenericMetaModel {
             persisted);
     }
 
+    /**
+     * Returns SQL clause for table column auto-increment.
+     * Null if auto-increment is not supported.
+     */
+    public String getAutoIncrementClause(GenericTableColumn column) {
+        return null;
+    }
+
     public boolean useCatalogInObjectNames() {
         return true;
     }

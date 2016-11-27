@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -82,6 +83,11 @@ public class TeradataMetaModel extends GenericMetaModel
         } catch (SQLException e) {
             throw new DBException(e, dataSource);
         }
+    }
+
+    @Override
+    public String getAutoIncrementClause(GenericTableColumn column) {
+        return "GENERATED ALWAYS AS IDENTITY";
     }
 
 }
