@@ -241,7 +241,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Association
-    public Collection<OracleTrigger> getTriggers(DBRProgressMonitor monitor)
+    public Collection<OracleSchemaTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
         return triggerCache.getAllObjects(monitor, this);
@@ -814,87 +814,24 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
     }
 
-    static class TriggerCache extends JDBCStructCache<OracleSchema, OracleTrigger, OracleTriggerColumn> {
-        protected TriggerCache()
-        {
-            super("TRIGGER_NAME");
-        }
-
-        public Collection<OracleTrigger> getObjects(DBRProgressMonitor monitor, OracleSchema oracleSchema, OracleTableBase table) throws DBException
-        {
-            final Collection<OracleTrigger> allTriggers = super.getAllObjects(monitor, oracleSchema);
-            if (CommonUtils.isEmpty(allTriggers)) {
-                return Collections.emptyList();
-            }
-            List<OracleTrigger> tableTriggers = new ArrayList<>();
-            for (OracleTrigger trigger : allTriggers) {
-                if (trigger.getTable() == table) {
-                    tableTriggers.add(trigger);
-                }
-            }
-            return tableTriggers;
-        }
+    static class TriggerCache extends JDBCObjectCache<OracleSchema, OracleSchemaTrigger> {
 
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema schema) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT *\n" +
-                "FROM " + OracleUtils.getAdminAllViewPrefix(schema.getDataSource()) + "TRIGGERS WHERE OWNER=?\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(schema.getDataSource()) + "TRIGGERS WHERE OWNER=? AND TRIM(BASE_OBJECT_TYPE) IN ('DATABASE','SCHEMA')\n" +
                 "ORDER BY TRIGGER_NAME");
             dbStat.setString(1, schema.getName());
             return dbStat;
         }
 
         @Override
-        protected OracleTrigger fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema oracleSchema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
+        protected OracleSchemaTrigger fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema oracleSchema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
-            OracleTableBase table = null;
-            String tableName = JDBCUtils.safeGetString(resultSet, "TABLE_NAME");
-            if (!CommonUtils.isEmpty(tableName)) {
-                table = OracleTableBase.findTable(
-                    session.getProgressMonitor(),
-                    oracleSchema.getDataSource(),
-                    JDBCUtils.safeGetString(resultSet, "TABLE_OWNER"),
-                    tableName);
-            }
-            return new OracleTrigger(oracleSchema, table, resultSet);
+            return new OracleSchemaTrigger(oracleSchema, resultSet);
         }
-
-        @Override
-        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull OracleSchema oracleSchema, @Nullable OracleTrigger forObject) throws SQLException
-        {
-            JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT TRIGGER_NAME,TABLE_OWNER,TABLE_NAME,COLUMN_NAME,COLUMN_LIST,COLUMN_USAGE\n" +
-                "FROM SYS.ALL_TRIGGER_COLS WHERE TRIGGER_OWNER=?" +
-                (forObject == null ? "" : " AND TRIGGER_NAME=?") +
-                "\nORDER BY TRIGGER_NAME");
-            dbStat.setString(1, oracleSchema.getName());
-            if (forObject != null) {
-                dbStat.setString(2, forObject.getName());
-            }
-            return dbStat;
-        }
-
-        @Override
-        protected OracleTriggerColumn fetchChild(@NotNull JDBCSession session, @NotNull OracleSchema oracleSchema, @NotNull OracleTrigger parent, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-        {
-            OracleTableBase refTable = OracleTableBase.findTable(
-                session.getProgressMonitor(),
-                oracleSchema.getDataSource(),
-                JDBCUtils.safeGetString(dbResult, "TABLE_OWNER"),
-                JDBCUtils.safeGetString(dbResult, "TABLE_NAME"));
-            if (refTable != null) {
-                final String columnName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
-                OracleTableColumn tableColumn = refTable.getAttribute(session.getProgressMonitor(), columnName);
-                if (tableColumn == null) {
-                    log.debug("Column '" + columnName + "' not found in table '" + refTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "' for trigger '" + parent.getName() + "'");
-                }
-                return new OracleTriggerColumn(session.getProgressMonitor(), parent, tableColumn, dbResult);
-            }
-            return null;
-        }
-
     }
 
     static class JavaCache extends JDBCObjectCache<OracleSchema, OracleJavaClass> {

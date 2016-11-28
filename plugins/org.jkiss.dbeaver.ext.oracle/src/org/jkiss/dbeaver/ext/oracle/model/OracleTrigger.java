@@ -23,24 +23,25 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.util.Collection;
 import java.util.List;
 
 /**
- * GenericProcedure
+ * OracleTrigger
  */
-public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, OracleSourceObject
+public abstract class OracleTrigger<PARENT extends DBSObject> extends OracleObject<PARENT> implements DBSTrigger, DBPQualifiedObject, OracleSourceObject
 {
     public enum BaseObjectType {
         TABLE,
@@ -68,7 +69,6 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         }
     }
 
-    private OracleTableBase table;
     private BaseObjectType objectType;
     private String triggerType;
     private String triggeringEvent;
@@ -78,21 +78,18 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
     private OracleObjectStatus status;
     private String description;
     private ActionType actionType;
-    private List<OracleTriggerColumn> columns;
     private String sourceDeclaration;
 
-    public OracleTrigger(OracleSchema schema, OracleTableBase table, String name)
+    public OracleTrigger(PARENT parent, String name)
     {
-        super(schema, name, false);
-        this.table = table;
+        super(parent, name, false);
     }
 
     public OracleTrigger(
-        OracleSchema schema,
-        OracleTableBase table,
+        PARENT parent,
         ResultSet dbResult)
     {
-        super(schema, JDBCUtils.safeGetString(dbResult, "TRIGGER_NAME"), true);
+        super(parent, JDBCUtils.safeGetString(dbResult, "TRIGGER_NAME"), true);
         this.objectType = CommonUtils.valueOf(BaseObjectType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "BASE_OBJECT_TYPE"));
         this.triggerType = JDBCUtils.safeGetString(dbResult, "TRIGGER_TYPE");
         this.triggeringEvent = JDBCUtils.safeGetString(dbResult, "TRIGGERING_EVENT");
@@ -102,7 +99,6 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         this.status = CommonUtils.valueOf(OracleObjectStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS"));
         this.description = JDBCUtils.safeGetString(dbResult, "DESCRIPTION");
         this.actionType = "CALL".equals(JDBCUtils.safeGetString(dbResult, "ACTION_TYPE")) ? ActionType.CALL : ActionType.PLSQL;
-        this.table = table;
     }
 
     @NotNull
@@ -111,13 +107,6 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
     public String getName()
     {
         return super.getName();
-    }
-
-    @Override
-    @Property(viewable = true, order = 4)
-    public OracleTableBase getTable()
-    {
-        return table;
     }
 
     @Property(viewable = true, order = 5)
@@ -176,25 +165,6 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         return actionType;
     }
 
-    @Association
-    public Collection<OracleTriggerColumn> getColumns(DBRProgressMonitor monitor) throws DBException
-    {
-        if (columns == null) {
-            getSchema().triggerCache.loadChildren(monitor, getSchema(), this);
-        }
-        return columns;
-    }
-
-    boolean isColumnsCached()
-    {
-        return columns != null;
-    }
-
-    void setColumns(List<OracleTriggerColumn> columns)
-    {
-        this.columns = columns;
-    }
-
     @Override
     public OracleSourceType getSourceType()
     {
@@ -238,6 +208,13 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
                 "Compile trigger",
                 "ALTER TRIGGER " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE"
             )};
+    }
+
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            getSchema(),
+            this);
     }
 
 }
