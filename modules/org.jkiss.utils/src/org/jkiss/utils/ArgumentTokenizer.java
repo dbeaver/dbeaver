@@ -84,6 +84,10 @@ public abstract class ArgumentTokenizer {
             if (escaped) {
                 // Escaped state: just append the next character to the current arg.
                 escaped = false;
+                if (c != 'n' && c != 't' && c != '\\') {
+                    // This was just a regular slash
+                    currArg.append('\\');
+                }
                 currArg.append(c);
             } else {
                 switch (state) {

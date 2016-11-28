@@ -181,6 +181,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
             externalGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             externalCmdText = UIUtils.createLabelText(externalGroup, "Command line", "");
+            externalCmdText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             externalUseFile = UIUtils.createLabelCheckbox(externalGroup,
                 "Use temp file",
                 "Use temporary file to pass SQL text.\nTo pass file name in command line use parameter ${file}", false);
