@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.SimpleObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -79,6 +80,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
             return;
         }
         if (forObject == null) {
+            clearChildrenCache(null);
             super.loadObjects(monitor, owner);
         }
 
@@ -142,7 +144,11 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
 
                         // All children are read. Now assign them to parents
                         for (Map.Entry<OBJECT, List<CHILD>> colEntry : objectMap.entrySet()) {
-                            cacheChildren(colEntry.getKey(), colEntry.getValue());
+                            if (!isChildrenCached(colEntry.getKey())) {
+                                // isChildrenCached may return true if the same cache was read in other thread
+                                // just skip
+                                cacheChildren(colEntry.getKey(), colEntry.getValue());
+                            }
                         }
                         if (forObject == null) {
                             if (objectMap.isEmpty()) {
@@ -243,6 +249,8 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     {
         synchronized (childrenCache) {
             return childrenCache.containsKey(parent);
+//            SimpleObjectCache<OBJECT, CHILD> chCache = childrenCache.get(parent);
+//            return chCache != null && !CommonUtils.isEmpty(chCache.getCachedObjects());
         }
     }
 
