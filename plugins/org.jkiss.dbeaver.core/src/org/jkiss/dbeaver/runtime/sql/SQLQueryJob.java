@@ -325,7 +325,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             final DBCStatement dbcStatement = DBUtils.prepareStatement(
                 source,
                 session,
-                DBCStatementType.QUERY,
+                DBCStatementType.SCRIPT,
                 sqlQuery,
                 rsOffset, rsMaxRows);
             curStatement = dbcStatement;

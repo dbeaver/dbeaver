@@ -23,8 +23,8 @@ package org.jkiss.dbeaver.model.exec;
  */
 public enum DBCStatementType {
 
-    QUERY,
-    EXEC,
-    SCRIPT
+    QUERY,  // Single query. Supports parameters binding
+    EXEC,   // Stored procedure or other dynamic execution
+    SCRIPT  // Any other SQL. including multiple queries.
 
 }
