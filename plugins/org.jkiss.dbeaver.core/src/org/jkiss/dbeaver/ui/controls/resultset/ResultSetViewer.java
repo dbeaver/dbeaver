@@ -2309,18 +2309,23 @@ public class ResultSetViewer extends Viewer
     {
         try {
             final ResultSetPersister persister = createDataPersister(false);
-            return persister.applyChanges(monitor, false, new ResultSetPersister.DataUpdateListener() {
+            final ResultSetPersister.DataUpdateListener applyListener = new ResultSetPersister.DataUpdateListener() {
                 @Override
                 public void onUpdate(boolean success) {
-                    if (listener != null) listener.onUpdate(success);
-                    try {
-                        persister.refreshInsertedRows(monitor);
-                    } catch (Throwable e) {
-                        log.error("Error refreshing rows after update", e);
+                    if (listener != null) {
+                        listener.onUpdate(success);
                     }
-
+                    if (success) {
+                        // Refresh updated rows
+                        try {
+                            persister.refreshInsertedRows();
+                        } catch (Throwable e) {
+                            log.error("Error refreshing rows after update", e);
+                        }
+                    }
                 }
-            });
+            };
+            return persister.applyChanges(monitor, false, applyListener);
         } catch (DBException e) {
             UIUtils.showErrorDialog(null, "Apply changes error", "Error saving changes in database", e);
             return false;
