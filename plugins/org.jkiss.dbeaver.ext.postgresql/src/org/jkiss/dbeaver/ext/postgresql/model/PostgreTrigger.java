@@ -89,7 +89,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
         } else {
             actionTiming = DBSActionTiming.AFTER;
         }
-        List<DBSManipulationType> mt = new ArrayList<>();
+        List<DBSManipulationType> mt = new ArrayList<>(1);
         if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_INSERT)) {
             mt.add(DBSManipulationType.INSERT);
         }
