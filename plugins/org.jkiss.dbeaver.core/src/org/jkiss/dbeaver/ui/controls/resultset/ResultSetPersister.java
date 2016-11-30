@@ -129,6 +129,21 @@ class ResultSetPersister {
         return execute(monitor, generateScript, listener);
     }
 
+    public boolean refreshInsertedRows(@Nullable DBRProgressMonitor monitor) {
+        if (!viewer.getModel().isSingleSource()) {
+            return false;
+        }
+        if (addedRows.isEmpty()) {
+            return false;
+        }
+        final DBDRowIdentifier rowIdentifier = getDefaultRowIdentifier();
+        if (rowIdentifier == null) {
+            return false;
+        }
+
+        return true;
+    }
+
     public List<DBEPersistAction> getScript() {
         return script;
     }
@@ -168,6 +183,9 @@ class ResultSetPersister {
     {
         // Make delete statements
         DBDRowIdentifier rowIdentifier = getDefaultRowIdentifier();
+        if (rowIdentifier == null) {
+            throw new DBCException("Internal error: can't find entity identifier, delete is not possible");
+        }
         for (ResultSetRow row : deletedRows) {
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, row, rowIdentifier.getEntity());
             List<DBDAttributeBinding> keyColumns = rowIdentifier.getAttributes();
@@ -185,7 +203,10 @@ class ResultSetPersister {
         throws DBException
     {
         // Make insert statements
-        DBSEntity table = getDefaultRowIdentifier().getEntity();
+        final DBSEntity table = viewer.getModel().getSingleSource();
+        if (table == null) {
+            throw new DBCException("Internal error: can't get single entity metadata, insert is not possible");
+        }
         for (ResultSetRow row : addedRows) {
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, row, table);
             DBDAttributeBinding docAttr = model.getDocumentAttribute();
@@ -330,13 +351,15 @@ class ResultSetPersister {
         }
     }
 
-    @NotNull
-    private DBDRowIdentifier getDefaultRowIdentifier() throws DBCException {
-        DBDRowIdentifier rowIdentifier = columns[0].getRowIdentifier();
-        if (rowIdentifier == null) {
-            throw new DBCException("Internal error: can't obtain entity identifier");
+    @Nullable
+    private DBDRowIdentifier getDefaultRowIdentifier() {
+        for (int i = 0; i < columns.length; i++) {
+            DBDRowIdentifier rowIdentifier = columns[0].getRowIdentifier();
+            if (rowIdentifier != null) {
+                return rowIdentifier;
+            }
         }
-        return rowIdentifier;
+        return null;
     }
 
     @NotNull
