@@ -2305,11 +2305,22 @@ public class ResultSetViewer extends Viewer
      * @param monitor monitor. If null then save will be executed in async job
      * @param listener finish listener (may be null)
      */
-    public boolean applyChanges(@Nullable DBRProgressMonitor monitor, @Nullable ResultSetPersister.DataUpdateListener listener)
+    public boolean applyChanges(@Nullable final DBRProgressMonitor monitor, @Nullable final ResultSetPersister.DataUpdateListener listener)
     {
         try {
-            ResultSetPersister persister = createDataPersister(false);
-            return persister.applyChanges(monitor, false, listener);
+            final ResultSetPersister persister = createDataPersister(false);
+            return persister.applyChanges(monitor, false, new ResultSetPersister.DataUpdateListener() {
+                @Override
+                public void onUpdate(boolean success) {
+                    if (listener != null) listener.onUpdate(success);
+                    try {
+                        persister.refreshInsertedRows(monitor);
+                    } catch (Throwable e) {
+                        log.error("Error refreshing rows after update", e);
+                    }
+
+                }
+            });
         } catch (DBException e) {
             UIUtils.showErrorDialog(null, "Apply changes error", "Error saving changes in database", e);
             return false;
