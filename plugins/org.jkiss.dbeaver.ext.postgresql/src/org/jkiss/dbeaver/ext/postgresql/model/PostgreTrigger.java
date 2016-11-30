@@ -18,26 +18,30 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.struct.AbstractTrigger;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * PostgreTrigger
  */
-public class PostgreTrigger extends AbstractTrigger implements PostgreObject, PostgreScriptObject
+public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreObject, PostgreScriptObject
 {
 
     /* Bits within tgtype */
@@ -56,11 +60,18 @@ public class PostgreTrigger extends AbstractTrigger implements PostgreObject, Po
     private long functionId;
     private String body;
 
+    protected String name;
+    private DBSActionTiming actionTiming;
+    private DBSManipulationType[] manipulationTypes;
+    private PostgreTriggerType type;
+    private boolean persisted;
+
     public PostgreTrigger(
         PostgreTableBase table,
         ResultSet dbResult)
     {
-        super(JDBCUtils.safeGetString(dbResult, "tgname"), null, true);
+        this.persisted = true;
+        this.name = JDBCUtils.safeGetString(dbResult, "tgname");
         this.table = table;
         this.objectId = JDBCUtils.safeGetLong(dbResult, "oid");
         this.whenExpression = JDBCUtils.safeGetString(dbResult, "tgqual");
@@ -72,25 +83,62 @@ public class PostgreTrigger extends AbstractTrigger implements PostgreObject, Po
         // Parse trigger type bits
         int tgType = JDBCUtils.safeGetInt(dbResult, "tgtype");
         if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_BEFORE)) {
-            setActionTiming(DBSActionTiming.BEFORE);
+            actionTiming = DBSActionTiming.BEFORE;
         } else if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_INSTEAD)) {
-            setActionTiming(DBSActionTiming.INSTEAD);
+            actionTiming = DBSActionTiming.INSTEAD;
         } else {
-            setActionTiming(DBSActionTiming.AFTER);
+            actionTiming = DBSActionTiming.AFTER;
         }
+        List<DBSManipulationType> mt = new ArrayList<>();
         if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_INSERT)) {
-            setManipulationType(DBSManipulationType.INSERT);
-        } else if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_DELETE)) {
-            setManipulationType(DBSManipulationType.DELETE);
-        } else if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_UPDATE)) {
-            setManipulationType(DBSManipulationType.UPDATE);
-        } else if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_TRUNCATE)) {
-            setManipulationType(DBSManipulationType.TRUNCATE);
+            mt.add(DBSManipulationType.INSERT);
+        }
+        if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_DELETE)) {
+            mt.add(DBSManipulationType.DELETE);
+        }
+        if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_UPDATE)) {
+            mt.add(DBSManipulationType.UPDATE);
+        }
+        if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_TRUNCATE)) {
+            mt.add(DBSManipulationType.TRUNCATE);
+        }
+        this.manipulationTypes = mt.toArray(new DBSManipulationType[mt.size()]);
+
+        if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_ROW)) {
+            type = PostgreTriggerType.ROW;
+        } else {
+            type = PostgreTriggerType.STATEMENT;
         }
     }
 
+    @NotNull
     @Override
+    public String getName() {
+        return name;
+    }
+
+    @Property(viewable = true, order = 2)
+    public DBSActionTiming getActionTiming()
+    {
+        return actionTiming;
+    }
+
+    @Property(viewable = true, order = 3)
+    public DBSManipulationType[] getManipulationTypes() {
+        return manipulationTypes;
+    }
+
     @Property(viewable = true, order = 4)
+    public PostgreTriggerType getType() {
+        return type;
+    }
+
+    @Override
+    public boolean isPersisted() {
+        return persisted;
+    }
+
+    @Override
     public PostgreTableBase getTable()
     {
         return table;
@@ -114,6 +162,12 @@ public class PostgreTrigger extends AbstractTrigger implements PostgreObject, Po
             return null;
         }
         return getDatabase().getProcedure(monitor, functionSchemaId, functionId);
+    }
+
+    @Nullable
+    @Override
+    public String getDescription() {
+        return null;
     }
 
     @Override
