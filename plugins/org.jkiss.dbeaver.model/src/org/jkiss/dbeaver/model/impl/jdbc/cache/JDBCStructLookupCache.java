@@ -79,11 +79,16 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
             if (isChildrenCached(oldObject)) {
                 clearChildrenCache(oldObject);
             }
-            removeObject(oldObject, false);
             if (newObject != null) {
-                cacheObject(newObject);
+                deepCopyCachedObject(newObject, oldObject);
+            } else {
+                removeObject(oldObject, false);
             }
-            return newObject;
+//            removeObject(oldObject, false);
+//            if (newObject != null) {
+//                cacheObject(newObject);
+//            }
+            return oldObject;
         }
         return getCachedObject(objectName);
     }
