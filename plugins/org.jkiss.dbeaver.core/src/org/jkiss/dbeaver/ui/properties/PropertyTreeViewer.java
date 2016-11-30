@@ -640,6 +640,28 @@ public class PropertyTreeViewer extends TreeViewer {
                 return false;
             }
         }
+
+        @Override
+        public String toString() {
+            return
+                property == null ?
+                    category :
+                    property.getId() + " (" + property.getDisplayName() + ")";
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof TreeNode) {
+                final TreeNode node = (TreeNode) obj;
+                if (this == node) return true;
+                return
+                    propertySource.getEditableValue() == node.propertySource.getEditableValue() &&
+                    (category != null ? CommonUtils.equalObjects(category, node.category) :
+                        property != null && node.property != null &&
+                            CommonUtils.equalObjects(property.getId(), node.property.getId()));
+            }
+            return super.equals(obj);
+        }
     }
 
     class PropsContentProvider implements IStructuredContentProvider, ITreeContentProvider {
