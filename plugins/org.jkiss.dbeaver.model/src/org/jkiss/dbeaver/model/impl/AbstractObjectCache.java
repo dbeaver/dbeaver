@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -244,6 +246,46 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
             return name.toUpperCase();
         }
         return name;
+    }
+
+    /**
+     * Performs a deep copy of srcObject into dstObject.
+     * Copies all fields (recursively) and clears all nested caches
+     */
+    protected void deepCopyCachedObject(@NotNull Object srcObject, @NotNull Object dstObject) {
+        if (srcObject.getClass() != dstObject.getClass()) {
+            log.error("Can't make object opy: src class " + srcObject.getClass().getName() + "' != dest class '" + dstObject.getClass().getName() + "'");
+            return;
+        }
+        try {
+            for (Class theClass = srcObject.getClass(); theClass != Object.class; theClass = theClass.getSuperclass()) {
+                final Field[] fields = theClass.getDeclaredFields();
+                for (Field field : fields) {
+                    final int modifiers = field.getModifiers();
+                    if (Modifier.isStatic(modifiers)) {
+                        continue;
+                    }
+                    field.setAccessible(true);
+                    final Object srcValue = field.get(srcObject);
+                    final Object dstValue = field.get(dstObject);
+                    if (DBSObjectCache.class.isAssignableFrom(field.getType())) {
+                        ((DBSObjectCache)dstValue).clearCache();
+                    } else {
+                        if (Modifier.isFinal(modifiers)) {
+                            // Can't copy final. Let's try to make recursive copy
+                            // Just in case check that values not null and have the same type
+                            if (dstValue != null && srcValue != null && dstValue.getClass() == srcValue.getClass()) {
+                                deepCopyCachedObject(srcValue, dstValue);
+                            }
+                        } else {
+                            field.set(dstObject, srcValue);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            log.error("Error copying object state", e);
+        }
     }
 
     protected class CacheIterator implements Iterator<OBJECT> {

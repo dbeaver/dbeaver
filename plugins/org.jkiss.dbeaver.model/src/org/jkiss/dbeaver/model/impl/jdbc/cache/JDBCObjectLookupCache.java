@@ -74,11 +74,13 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
             this.loadObjects(monitor, owner);
         } else {
             OBJECT newObject = this.reloadObject(monitor, owner, oldObject, null);
-            removeObject(oldObject, false);
             if (newObject != null) {
-                cacheObject(newObject);
+                deepCopyCachedObject(newObject, oldObject);
+                //cacheObject(newObject);
+            } else {
+                removeObject(oldObject, false);
             }
-            return newObject;
+            return oldObject;
         }
         return getCachedObject(objectName);
     }

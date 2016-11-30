@@ -91,7 +91,7 @@ public class MySQLTable extends MySQLTableBase
         }
     }
 
-    private SimpleObjectCache<MySQLTable, MySQLTableForeignKey> foreignKeys = new SimpleObjectCache<>();
+    private final SimpleObjectCache<MySQLTable, MySQLTableForeignKey> foreignKeys = new SimpleObjectCache<>();
     private final PartitionCache partitionCache = new PartitionCache();
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
