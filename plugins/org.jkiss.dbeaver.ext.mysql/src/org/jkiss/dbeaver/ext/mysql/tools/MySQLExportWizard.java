@@ -172,6 +172,13 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
     }
 
     @Override
+    protected void setupProcessParameters(ProcessBuilder process) {
+        if (!CommonUtils.isEmpty(getToolUserPassword())) {
+            process.environment().put(MySQLConstants.ENV_VARIABLE_MYSQL_PWD, getToolUserPassword());
+        }
+    }
+
+    @Override
     public boolean performFinish() {
         objectsPage.saveState();
 

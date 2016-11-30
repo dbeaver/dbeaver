@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
@@ -280,7 +281,8 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     protected abstract void startProcessHandler(DBRProgressMonitor monitor, PROCESS_ARG arg, ProcessBuilder processBuilder, Process process);
 
     public boolean isSecureString(String string) {
-        return string.contains(getToolUserPassword());
+        String password = getToolUserPassword();
+        return !CommonUtils.isEmpty(password) && string.contains(password);
     }
 
     public abstract class DumpJob extends Thread {
