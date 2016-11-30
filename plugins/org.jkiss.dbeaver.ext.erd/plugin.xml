@@ -139,6 +139,14 @@
                 </with>
             </activeWhen>
         </handler>
+        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerRefresh">
+            <activeWhen>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
+                </with>
+            </activeWhen>
+        </handler>
+
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
