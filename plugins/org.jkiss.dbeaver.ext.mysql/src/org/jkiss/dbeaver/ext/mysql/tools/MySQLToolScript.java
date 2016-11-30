@@ -68,9 +68,10 @@ public class MySQLToolScript implements IExternalTool
         }
         cmd.add("-u");
         cmd.add(toolWizard.getToolUserName());
-        if (!CommonUtils.isEmpty(toolWizard.getToolUserPassword())) {
-            cmd.add("--password=" + toolWizard.getToolUserPassword());
-        }
+        // Password is passed in env variable (#1004)
+//        if (!CommonUtils.isEmpty(toolWizard.getToolUserPassword())) {
+//            cmd.add("--password=" + toolWizard.getToolUserPassword());
+//        }
 
         return cmd;
     }

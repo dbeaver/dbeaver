@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -93,6 +94,13 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
         }
         if (noBeep) {
             cmd.add("--no-beep"); //$NON-NLS-1$
+        }
+    }
+
+    @Override
+    protected void setupProcessParameters(ProcessBuilder process) {
+        if (!CommonUtils.isEmpty(getToolUserPassword())) {
+            process.environment().put(MySQLConstants.ENV_VARIABLE_MYSQL_PWD, getToolUserPassword());
         }
     }
 

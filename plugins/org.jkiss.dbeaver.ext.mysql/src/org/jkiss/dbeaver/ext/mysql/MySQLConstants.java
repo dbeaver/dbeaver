@@ -193,4 +193,5 @@ public class MySQLConstants {
     public static final String TYPE_VARCHAR = "varchar";
 
     public static final String BIN_FOLDER = "bin";
+    public static final String ENV_VARIABLE_MYSQL_PWD = "MYSQL_PWD";
 }
