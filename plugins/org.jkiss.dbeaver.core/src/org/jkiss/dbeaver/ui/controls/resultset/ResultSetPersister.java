@@ -827,12 +827,15 @@ class ResultSetPersister {
                 DBeaverUI.syncExec(new Runnable() {
                     @Override
                     public void run() {
-                        for (int i = 0; i < rows.size(); i++) {
-                            if (refreshValues[i] != null) {
-                                rows.get(i).values = refreshValues[i];
+                        // Update only if metadata wasn't changed
+                        if (!viewer.getControl().isDisposed() && viewer.getModel().getAttributes() == curAttributes) {
+                            for (int i = 0; i < rows.size(); i++) {
+                                if (refreshValues[i] != null) {
+                                    rows.get(i).values = refreshValues[i];
+                                }
                             }
+                            viewer.redrawData(true);
                         }
-                        viewer.redrawData(true);
                     }
                 });
                 return Status.OK_STATUS;

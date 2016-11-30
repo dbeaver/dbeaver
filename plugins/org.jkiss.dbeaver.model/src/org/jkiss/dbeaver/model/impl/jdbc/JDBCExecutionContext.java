@@ -344,7 +344,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     {
         try {
             if (savepoint != null) {
-                if (savepoint instanceof Savepoint) {
+                if (savepoint instanceof JDBCSavepointImpl) {
+                    getConnection().rollback(((JDBCSavepointImpl) savepoint).getOriginal());
+                } else if (savepoint instanceof Savepoint) {
                     getConnection().rollback((Savepoint) savepoint);
                 } else {
                     throw new SQLFeatureNotSupportedException(ModelMessages.model_jdbc_exception_bad_savepoint_object);
