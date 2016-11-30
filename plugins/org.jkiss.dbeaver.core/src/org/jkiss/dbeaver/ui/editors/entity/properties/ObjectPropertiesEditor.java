@@ -85,6 +85,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private SashForm sashForm;
     private boolean activated = false;
     private Composite propsPlaceholder;
+    private TabbedFolderPageProperties propertiesPanel;
 
     public ObjectPropertiesEditor()
     {
@@ -215,9 +216,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             return;
         }
         activated = true;
-        TabbedFolderPageProperties props = new TabbedFolderPageProperties(getEditorInput());
+        propertiesPanel = new TabbedFolderPageProperties(getEditorInput());
 
-        props.createControl(propsPlaceholder);
+        propertiesPanel.createControl(propsPlaceholder);
 
         pageControl.layout();
         if (sashForm != null) {
@@ -382,6 +383,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     @Override
     public void refreshPart(Object source, boolean force) {
+        propertiesPanel.refreshPart(source, force);
         if (folderComposite != null && folderComposite.getFolders() != null) {
             for (TabbedFolderInfo folder : folderComposite.getFolders()) {
                 if (folder.getContents() instanceof IRefreshablePart) {
