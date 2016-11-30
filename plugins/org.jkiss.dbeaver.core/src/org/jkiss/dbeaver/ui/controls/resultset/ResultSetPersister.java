@@ -130,15 +130,17 @@ class ResultSetPersister {
         return execute(monitor, generateScript, listener);
     }
 
-    public boolean refreshInsertedRows(@Nullable DBRProgressMonitor monitor) throws DBCException {
+    public boolean refreshInsertedRows() throws DBCException {
         if (!viewer.getModel().isSingleSource()) {
             return false;
         }
         if (addedRows.isEmpty()) {
+            // Nothing to refresh
             return false;
         }
         final DBDRowIdentifier rowIdentifier = getDefaultRowIdentifier();
-        if (rowIdentifier == null) {
+        if (rowIdentifier == null || rowIdentifier.getAttributes().isEmpty()) {
+            // No key - can't refresh
             return false;
         }
 
@@ -147,15 +149,7 @@ class ResultSetPersister {
             throw new DBCException("No execution context");
         }
         RowRefreshJob job = new RowRefreshJob(executionContext, viewer.getDataContainer(), rowIdentifier, addedRows);
-        if (monitor == null) {
-            job.schedule();
-            return true;
-        } else {
-            IStatus result = job.run(monitor);
-            if (!result.isOK()) {
-                return false;
-            }
-        }
+        job.schedule();
         return true;
     }
 
