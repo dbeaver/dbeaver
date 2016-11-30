@@ -216,7 +216,7 @@ public abstract class JDBCCompositeCache<
                 List<OBJECT> parentObjects = objectCache.get(parent);
                 if (parentObjects == null) {
                     parentObjects = new ArrayList<>();
-                    objectCache.put(parent, objects);
+                    objectCache.put(parent, parentObjects);
                 }
                 parentObjects.add(object);
             }
