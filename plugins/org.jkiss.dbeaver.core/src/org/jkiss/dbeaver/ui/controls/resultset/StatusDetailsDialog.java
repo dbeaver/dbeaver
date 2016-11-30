@@ -26,6 +26,7 @@ import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
@@ -46,6 +47,7 @@ class StatusDetailsDialog extends EditTextDialog {
         super(resultSetViewer.getControl().getShell(), "Status details", message);
         this.resultSetViewer = resultSetViewer;
         this.warnings = warnings;
+        textHeight = 100;
         setReadonly(true);
     }
 
@@ -66,16 +68,21 @@ class StatusDetailsDialog extends EditTextDialog {
         if (!CommonUtils.isEmpty(warnings)) {
             // Create warnings table
             UIUtils.createControlLabel(composite, "Warnings");
-            warnTable = new Table(composite, SWT.BORDER);
+            warnTable = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION);
+            TableColumn exColumn = UIUtils.createTableColumn(warnTable, SWT.NONE, "Exception");
+            TableColumn msgColumn = UIUtils.createTableColumn(warnTable, SWT.NONE, "Message");
             warnTable.setLinesVisible(true);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.minimumHeight = 100;
             warnTable.setLayoutData(gd);
             for (Throwable ex : warnings) {
                 TableItem warnItem = new TableItem(warnTable, SWT.NONE);
-                warnItem.setText(ex.getMessage());
+                warnItem.setText(0, ex.getClass().getName());
+                warnItem.setText(1, ex.getMessage());
                 warnItem.setData(ex);
             }
+            exColumn.pack();
+            msgColumn.pack();
             warnTable.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseDoubleClick(MouseEvent e) {

@@ -110,7 +110,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                     metaColumns[i].getAttribute(),
                     metaColumns[i].getOrdinalPosition());
             }
-            catch (Exception e) {
+            catch (Throwable e) {
                 // Do not reports the same error multiple times
                 // There are a lot of error could occur during result set fetch
                 // We report certain error only once
