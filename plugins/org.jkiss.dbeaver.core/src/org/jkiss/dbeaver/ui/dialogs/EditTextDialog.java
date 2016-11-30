@@ -28,8 +28,8 @@ public class EditTextDialog extends BaseDialog {
 
     private String text;
     private Text textControl;
-    private int textWidth = 300;
-    private int textHeight = 200;
+    protected int textWidth = 300;
+    protected int textHeight = 200;
     private boolean readonly = false;
 
     public EditTextDialog(Shell parentShell, String title, String text)
