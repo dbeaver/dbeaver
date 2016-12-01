@@ -234,7 +234,7 @@ public class ViewValuePanel implements IResultSetPanel {
             valueManager = previewController.getValueManager();
             try {
                 valueEditor = valueManager.createEditor(previewController);
-            } catch (DBException e) {
+            } catch (Throwable e) {
                 UIUtils.showErrorDialog(viewPlaceholder.getShell(), "Value preview", "Can't create value viewer", e);
                 return;
             }
@@ -288,7 +288,15 @@ public class ViewValuePanel implements IResultSetPanel {
                     // Do not check for difference
                     valueEditor.primeEditorValue(newValue);
                 } else {
-                    Object oldValue = valueEditor.extractEditorValue();
+                    Object oldValue = null;
+                    try {
+                        if (previewController.getExecutionContext() != null) {
+                            oldValue = valueEditor.extractEditorValue();
+                        }
+                    } catch (Throwable e) {
+                        // Some error extracting current value
+                        // This may happen if we were disconnected
+                    }
                     if (!CommonUtils.equalObjects(oldValue, newValue)) {
                         valueEditor.primeEditorValue(newValue);
                     }
