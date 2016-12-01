@@ -24,7 +24,7 @@ import org.eclipse.core.runtime.IPath;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPApplication;
+import org.jkiss.dbeaver.model.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -61,13 +61,13 @@ public class ContentUtils {
     }
 
 
-    public static File getLobFolder(DBRProgressMonitor monitor, DBPApplication application)
+    public static File getLobFolder(DBRProgressMonitor monitor, DBPPlatform application)
         throws IOException
     {
         return application.getTempFolder(monitor, LOB_DIR);
     }
 
-    public static File createTempContentFile(DBRProgressMonitor monitor, DBPApplication application, String fileName)
+    public static File createTempContentFile(DBRProgressMonitor monitor, DBPPlatform application, String fileName)
         throws IOException
     {
         return makeTempFile(

@@ -33,9 +33,9 @@ public interface DBPDataSourceProvider extends DBPObject
 
     /**
      * Initializes data source provider
-     * @param application application
+     * @param platform application
      */
-    void init(@NotNull DBPApplication application);
+    void init(@NotNull DBPPlatform platform);
 
     /**
      * Supported features

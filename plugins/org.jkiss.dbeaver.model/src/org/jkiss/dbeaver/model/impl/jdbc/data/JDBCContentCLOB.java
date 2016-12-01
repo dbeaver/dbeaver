@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPApplication;
+import org.jkiss.dbeaver.model.DBPPlatform;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
@@ -85,8 +85,8 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     {
         if (storage == null && clob != null) {
             long contentLength = getContentLength();
-            DBPApplication application = dataSource.getContainer().getApplication();
-            if (contentLength < application.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
+            DBPPlatform platform = dataSource.getContainer().getPlatform();
+            if (contentLength < platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                 try {
                     storage = StringContentStorage.createFromReader(clob.getCharacterStream(), contentLength);
                 }
@@ -99,7 +99,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 // Create new local storage
                 File tempFile;
                 try {
-                    tempFile = ContentUtils.createTempContentFile(monitor, application, "clob" + clob.hashCode());
+                    tempFile = ContentUtils.createTempContentFile(monitor, platform, "clob" + clob.hashCode());
                 }
                 catch (IOException e) {
                     throw new DBCException("Can't create temp file", e);
@@ -113,7 +113,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                     ContentUtils.deleteTempFile(tempFile);
                     throw new DBCException(e, dataSource);
                 }
-                this.storage = new TemporaryContentStorage(application, tempFile);
+                this.storage = new TemporaryContentStorage(platform, tempFile);
             }
             // Free lob - we don't need it anymore
             releaseClob();

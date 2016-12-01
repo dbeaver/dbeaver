@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.model.qm;
 
-import org.jkiss.dbeaver.model.DBPApplication;
+import org.jkiss.dbeaver.model.DBPPlatform;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,10 +28,10 @@ import java.util.List;
  */
 public class QMUtils {
 
-    private static DBPApplication application;
+    private static DBPPlatform application;
     private static QMExecutionHandler defaultHandler; 
     
-    public static void initApplication(DBPApplication application) {
+    public static void initApplication(DBPPlatform application) {
         QMUtils.application = application;
     }
     

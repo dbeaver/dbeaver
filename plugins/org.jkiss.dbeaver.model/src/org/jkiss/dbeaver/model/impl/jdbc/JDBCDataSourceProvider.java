@@ -41,7 +41,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
     static final protected Log log = Log.getLog(JDBCDataSourceProvider.class);
 
     @Override
-    public void init(@NotNull DBPApplication application) {
+    public void init(@NotNull DBPPlatform platform) {
 
     }
 

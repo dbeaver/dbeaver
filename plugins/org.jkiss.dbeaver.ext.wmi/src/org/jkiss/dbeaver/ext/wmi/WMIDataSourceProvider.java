@@ -35,7 +35,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
     private boolean libLoaded = false;
 
     @Override
-    public void init(@NotNull DBPApplication application)
+    public void init(@NotNull DBPPlatform platform)
     {
     }
 

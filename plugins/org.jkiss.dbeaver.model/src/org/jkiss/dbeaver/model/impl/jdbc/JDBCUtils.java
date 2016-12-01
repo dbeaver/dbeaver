@@ -761,7 +761,7 @@ public class JDBCUtils {
     }
 
     public static String generateTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull JDBCTable table, boolean addComments) throws DBException {
-        final DBERegistry editorsRegistry = table.getDataSource().getContainer().getApplication().getEditorsRegistry();
+        final DBERegistry editorsRegistry = table.getDataSource().getContainer().getPlatform().getEditorsRegistry();
         final SQLObjectEditor entityEditor = editorsRegistry.getObjectManager(table.getClass(), SQLObjectEditor.class);
         if (entityEditor instanceof SQLTableManager) {
             DBEPersistAction[] ddlActions = ((SQLTableManager) entityEditor).getTableDDL(monitor, table);

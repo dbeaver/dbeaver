@@ -1520,7 +1520,7 @@ public class ResultSetViewer extends Viewer
                     "view"); //$NON-NLS-1$
 
                 List<? extends DBDAttributeTransformerDescriptor> transformers =
-                    dataSource.getContainer().getApplication().getValueHandlerRegistry().findTransformers(
+                    dataSource.getContainer().getPlatform().getValueHandlerRegistry().findTransformers(
                         dataSource, attr, null);
                 if (!CommonUtils.isEmpty(transformers)) {
                     MenuManager transformersMenu = new MenuManager("View as");
@@ -1660,7 +1660,7 @@ public class ResultSetViewer extends Viewer
             return;
         }
         final DBPDataSource dataSource = dataContainer.getDataSource();
-        final DBDRegistry registry = dataSource.getContainer().getApplication().getValueHandlerRegistry();
+        final DBDRegistry registry = dataSource.getContainer().getPlatform().getValueHandlerRegistry();
         final DBVTransformSettings transformSettings = DBVUtils.getTransformSettings(attr, false);
         DBDAttributeTransformerDescriptor customTransformer = null;
         if (transformSettings != null && transformSettings.getCustomTransformer() != null) {
@@ -1876,7 +1876,7 @@ public class ResultSetViewer extends Viewer
         if (dataSource == null) {
             return;
         }
-        final DBNDatabaseNode targetNode = dataSource.getContainer().getApplication().getNavigatorModel().getNodeByObject(monitor, targetEntity, false);
+        final DBNDatabaseNode targetNode = dataSource.getContainer().getPlatform().getNavigatorModel().getNodeByObject(monitor, targetEntity, false);
         if (targetNode == null) {
             UIUtils.showMessageBox(null, "Open link", "Can't navigate to '" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "' - navigator node not found", SWT.ICON_ERROR);
             return;

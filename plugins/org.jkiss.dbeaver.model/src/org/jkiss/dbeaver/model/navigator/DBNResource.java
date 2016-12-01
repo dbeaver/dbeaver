@@ -201,7 +201,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
                 // Sub folder
                 return handler.makeNavigatorNode(this, resource);
             }
-            DBPResourceHandler resourceHandler = getModel().getApplication().getProjectManager().getResourceHandler(resource);
+            DBPResourceHandler resourceHandler = getModel().getPlatform().getProjectManager().getResourceHandler(resource);
             if (resourceHandler == null) {
                 log.debug("Skip resource '" + resource.getName() + "'");
                 return null;

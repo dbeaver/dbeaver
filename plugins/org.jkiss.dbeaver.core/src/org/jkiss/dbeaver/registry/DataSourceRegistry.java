@@ -79,16 +79,16 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private static PasswordEncrypter ENCRYPTOR = new SimpleStringEncrypter();
 
-    private final DBPApplication application;
+    private final DBPPlatform platform;
     private final IProject project;
 
     private final List<DataSourceDescriptor> dataSources = new ArrayList<>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
     private volatile boolean saveInProgress = false;
 
-    public DataSourceRegistry(DBPApplication application, IProject project)
+    public DataSourceRegistry(DBPPlatform platform, IProject project)
     {
-        this.application = application;
+        this.platform = platform;
         this.project = project;
         loadDataSources(false);
         DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
@@ -141,8 +141,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     }
 
     @NotNull
-    public DBPApplication getApplication() {
-        return application;
+    public DBPPlatform getPlatform() {
+        return platform;
     }
 
     ////////////////////////////////////////////////////

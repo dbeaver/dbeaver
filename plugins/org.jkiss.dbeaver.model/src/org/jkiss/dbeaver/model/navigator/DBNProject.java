@@ -42,7 +42,7 @@ public class DBNProject extends DBNResource
     public DBNProject(DBNNode parentNode, IProject project, DBPResourceHandler handler)
     {
         super(parentNode, project, handler);
-        getModel().getApplication().getProjectManager().addProject(project);
+        getModel().getPlatform().getProjectManager().addProject(project);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class DBNProject extends DBNResource
     {
         IProject project = getProject();
         super.dispose(reflect);
-        getModel().getApplication().getProjectManager().removeProject(project);
+        getModel().getPlatform().getProjectManager().removeProject(project);
     }
 
     public IProject getProject()
@@ -108,7 +108,7 @@ public class DBNProject extends DBNResource
     public boolean supportsRename()
     {
         // Do not rename active projects
-        return getModel().getApplication().getProjectManager().getActiveProject() != getProject();
+        return getModel().getPlatform().getProjectManager().getActiveProject() != getProject();
     }
 
     @Override
@@ -135,7 +135,7 @@ public class DBNProject extends DBNResource
                 throw new DBException("Can't open project '" + project.getName() + "'", e);
             }
         }
-        DBPDataSourceRegistry dataSourceRegistry = getModel().getApplication().getProjectManager().getDataSourceRegistry(project);
+        DBPDataSourceRegistry dataSourceRegistry = getModel().getPlatform().getProjectManager().getDataSourceRegistry(project);
         DBNNode[] children = super.readChildNodes(monitor);
         if (dataSourceRegistry != null) {
             children = ArrayUtils.insertArea(DBNNode.class, children, 0, new Object[] {new DBNProjectDatabases(this, dataSourceRegistry)});

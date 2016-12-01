@@ -21,7 +21,7 @@ import com.jcraft.jsch.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPApplication;
+import org.jkiss.dbeaver.model.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -47,7 +47,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     private transient Session session;
 
     @Override
-    public DBPConnectionConfiguration initializeTunnel(DBRProgressMonitor monitor, DBPApplication application, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
+    public DBPConnectionConfiguration initializeTunnel(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException
     {
         String dbPortString = connectionInfo.getHostPort();
@@ -114,7 +114,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         } catch (NumberFormatException e) {
             throw new DBException("Bad database port number: " + dbPortString);
         }
-        int localPort = findFreePort(application);
+        int localPort = findFreePort(platform);
         try {
             if (jsch == null) {
                 jsch = new JSch();
@@ -162,9 +162,9 @@ public class SSHTunnelImpl implements DBWTunnel {
         return connectionInfo;
     }
 
-    private int findFreePort(DBPApplication application)
+    private int findFreePort(DBPPlatform platform)
     {
-        DBPPreferenceStore store = application.getPreferenceStore();
+        DBPPreferenceStore store = platform.getPreferenceStore();
         int minPort = store.getInt(ModelPreferences.NET_TUNNEL_PORT_MIN);
         int maxPort = store.getInt(ModelPreferences.NET_TUNNEL_PORT_MAX);
         return IOUtils.findFreePort(minPort, maxPort);

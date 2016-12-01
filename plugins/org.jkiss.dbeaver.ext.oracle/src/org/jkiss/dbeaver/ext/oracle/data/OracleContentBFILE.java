@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPApplication;
+import org.jkiss.dbeaver.model.DBPPlatform;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -137,14 +137,14 @@ public class OracleContentBFILE extends JDBCContentLOB {
             try {
                 openFile();
                 long contentLength = getContentLength();
-                DBPApplication application = dataSource.getContainer().getApplication();
-                if (contentLength < application.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
+                DBPPlatform platform = dataSource.getContainer().getPlatform();
+                if (contentLength < platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                     try {
                         try (InputStream bs = getInputStream()) {
                             storage = BytesContentStorage.createFromStream(
                                 bs,
                                 contentLength,
-                                application.getPreferenceStore().getString(ModelPreferences.CONTENT_HEX_ENCODING));
+                                platform.getPreferenceStore().getString(ModelPreferences.CONTENT_HEX_ENCODING));
                         }
                     } catch (IOException e) {
                         throw new DBCException("IO error while reading content", e);
@@ -153,7 +153,7 @@ public class OracleContentBFILE extends JDBCContentLOB {
                     // Create new local storage
                     File tempFile;
                     try {
-                        tempFile = ContentUtils.createTempContentFile(monitor, application, "blob" + bfile.hashCode());
+                        tempFile = ContentUtils.createTempContentFile(monitor, platform, "blob" + bfile.hashCode());
                     } catch (IOException e) {
                         throw new DBCException("Can't create temporary file", e);
                     }
@@ -168,7 +168,7 @@ public class OracleContentBFILE extends JDBCContentLOB {
                         ContentUtils.deleteTempFile(tempFile);
                         throw new DBCException(e, dataSource);
                     }
-                    this.storage = new TemporaryContentStorage(application, tempFile);
+                    this.storage = new TemporaryContentStorage(platform, tempFile);
                 }
                 // Free blob - we don't need it anymore
                 releaseBlob();
