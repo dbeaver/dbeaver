@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.model.qm;
 
-import org.jkiss.dbeaver.model.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 
 import java.util.Collections;
 import java.util.List;

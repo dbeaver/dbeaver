@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.utils;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;

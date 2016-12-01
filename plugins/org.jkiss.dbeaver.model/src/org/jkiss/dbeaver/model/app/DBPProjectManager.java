@@ -16,24 +16,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.model.admin;
+package org.jkiss.dbeaver.model.app;
 
-import org.jkiss.dbeaver.DBException;
-
-import java.io.File;
-import java.io.InputStream;
-import java.security.KeyStore;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 
 /**
- * Certificate storage
+ * ProjectManager
  */
-public interface DBACertificateStorage
+public interface DBPProjectManager
 {
-    KeyStore getKeyStore(String ksId) throws DBException;
+    DBPResourceHandler getResourceHandler(IResource resource);
 
-    void addCertificate(String ksId, String certId, InputStream certStream) throws DBException;
+    IProject getActiveProject();
+    void setActiveProject(IProject project);
+    void addProject(IProject project);
+    void removeProject(IProject project);
+    void addProjectListener(DBPProjectListener listener);
+    void removeProjectListener(DBPProjectListener listener);
 
-    void deleteCertificate(String ksId, String certId) throws DBException;
-
-    File getKeyStorePath(String ksId);
+    DBPDataSourceRegistry getDataSourceRegistry(IProject project);
 }

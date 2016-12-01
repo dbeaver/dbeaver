@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ui.properties;
 
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource2;
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.DBPPropertySource;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 
 /**
  * PropertySourceDelegate

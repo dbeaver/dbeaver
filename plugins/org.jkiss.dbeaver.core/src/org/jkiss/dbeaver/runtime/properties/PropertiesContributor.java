@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.runtime.properties;
 
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;

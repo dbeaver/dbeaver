@@ -15,11 +15,11 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.impl.security;
+package org.jkiss.dbeaver.model.impl.app;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.admin.DBACertificateStorage;
+import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 
 import java.io.*;
 import java.security.KeyStore;

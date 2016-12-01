@@ -1,8 +1,8 @@
 package org.jkiss.dbeaver.model.impl.preferences;
 
 import org.eclipse.core.commands.common.EventManager;
-import org.jkiss.dbeaver.model.DBPPreferenceListener;
-import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
 public abstract class AbstractPreferenceStore extends EventManager implements DBPPreferenceStore {
 

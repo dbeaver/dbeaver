@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.runtime.properties;
 
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 
 /**
  * Lazy properties listener

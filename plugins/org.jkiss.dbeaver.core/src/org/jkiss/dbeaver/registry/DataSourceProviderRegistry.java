@@ -24,7 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
-import org.jkiss.dbeaver.model.DBPRegistryListener;
+import org.jkiss.dbeaver.model.app.DBPRegistryListener;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;

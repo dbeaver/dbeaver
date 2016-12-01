@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.model.net;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 

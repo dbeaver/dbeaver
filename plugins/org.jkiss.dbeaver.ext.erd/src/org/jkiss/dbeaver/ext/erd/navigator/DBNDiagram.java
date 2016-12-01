@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.project.DBPResourceHandler;
+import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 
 /**
  * DBNDiagram

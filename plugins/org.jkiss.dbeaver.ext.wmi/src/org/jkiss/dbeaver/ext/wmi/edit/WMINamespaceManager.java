@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ext.wmi.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.wmi.model.WMINamespace;
 import org.jkiss.dbeaver.model.edit.DBECommand;
