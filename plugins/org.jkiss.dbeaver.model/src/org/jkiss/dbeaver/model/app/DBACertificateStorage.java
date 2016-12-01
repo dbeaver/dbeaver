@@ -16,17 +16,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.model.admin;
+package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.equinox.security.storage.ISecurePreferences;
+import org.jkiss.dbeaver.DBException;
+
+import java.io.File;
+import java.io.InputStream;
+import java.security.KeyStore;
 
 /**
- * Client security manager
+ * Certificate storage
  */
-public interface DBAClientSecurity
+public interface DBACertificateStorage
 {
+    KeyStore getKeyStore(String ksId) throws DBException;
 
-    boolean useSecurePreferences();
+    void addCertificate(String ksId, String certId, InputStream certStream) throws DBException;
 
-    ISecurePreferences getSecurePreferences();
+    void deleteCertificate(String ksId, String certId) throws DBException;
+
+    File getKeyStorePath(String ksId);
 }

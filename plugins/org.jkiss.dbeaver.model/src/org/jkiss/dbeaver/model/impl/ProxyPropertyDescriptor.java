@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 
 /**
  * ProxyPropertyDescriptor

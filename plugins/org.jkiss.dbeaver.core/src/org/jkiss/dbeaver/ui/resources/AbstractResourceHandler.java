@@ -28,8 +28,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.project.DBPResourceHandler;
-import org.jkiss.dbeaver.registry.ResourceHandlerDescriptor;
+import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 
 import java.util.Collection;
 

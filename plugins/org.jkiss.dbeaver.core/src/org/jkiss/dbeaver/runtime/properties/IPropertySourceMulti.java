@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.runtime.properties;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPPropertySource;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**

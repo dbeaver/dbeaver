@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPRegistryDescriptor;
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.app.DBPRegistryDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 
 import java.util.List;
 

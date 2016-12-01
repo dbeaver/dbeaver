@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.jkiss.dbeaver.model.DBPPreferenceListener;
-import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
 import java.util.*;
 

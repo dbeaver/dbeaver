@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 
 /**

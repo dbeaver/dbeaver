@@ -23,7 +23,7 @@ package org.jkiss.dbeaver.ext.erd.action;
 import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
-import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
