@@ -269,7 +269,9 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                     final Object srcValue = field.get(srcObject);
                     final Object dstValue = field.get(dstObject);
                     if (DBSObjectCache.class.isAssignableFrom(field.getType())) {
-                        ((DBSObjectCache)dstValue).clearCache();
+                        if (dstValue != null) {
+                            ((DBSObjectCache) dstValue).clearCache();
+                        }
                     } else {
                         if (Modifier.isFinal(modifiers)) {
                             // Can't copy final. Let's try to make recursive copy

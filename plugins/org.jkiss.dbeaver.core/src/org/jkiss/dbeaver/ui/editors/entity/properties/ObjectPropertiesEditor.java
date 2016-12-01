@@ -383,7 +383,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     @Override
     public void refreshPart(Object source, boolean force) {
-        propertiesPanel.refreshPart(source, force);
+        if (propertiesPanel != null) {
+            propertiesPanel.refreshPart(source, force);
+        }
         if (folderComposite != null && folderComposite.getFolders() != null) {
             for (TabbedFolderInfo folder : folderComposite.getFolders()) {
                 if (folder.getContents() instanceof IRefreshablePart) {
