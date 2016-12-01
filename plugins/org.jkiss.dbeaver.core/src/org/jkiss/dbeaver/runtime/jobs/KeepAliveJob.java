@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.runtime.jobs;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -63,16 +62,8 @@ public class KeepAliveJob extends AbstractJob
         if (projectRegistry == null) {
             return Status.OK_STATUS;
         }
-        for (IProject project : core.getLiveProjects()) {
-            if (!project.isOpen()) {
-                continue;
-            }
-            final DataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
-            if (dataSourceRegistry != null) {
-                for (DataSourceDescriptor ds : dataSourceRegistry.getDataSources()) {
-                    checkDataSourceAlive(monitor, ds);
-                }
-            }
+        for (DataSourceDescriptor ds : DataSourceRegistry.getAllDataSources()) {
+            checkDataSourceAlive(monitor, ds);
         }
         if (!DBeaverCore.isClosing()) {
             scheduleMonitor();

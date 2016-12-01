@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ui.perspective;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -31,7 +30,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.menus.CommandContributionItem;
@@ -54,7 +56,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
@@ -251,7 +252,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (dataSourceContainer != null) {
             return dataSourceContainer.getRegistry().getDataSources();
         } else {
-            return DataSourceDescriptor.getAllDataSources();
+            return DataSourceRegistry.getAllDataSources();
         }
     }
 
@@ -704,13 +705,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         // We need it because at this moment there could be come already loaded registries (on startup)
         final DBeaverCore core = DBeaverCore.getInstance();
         DataSourceProviderRegistry.getInstance().addDataSourceRegistryListener(DataSourceManagementToolbar.this);
-        for (IProject project : core.getLiveProjects()) {
-            if (project.isOpen()) {
-                DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);
-                if (registry != null) {
-                    handleRegistryLoad(registry);
-                }
-            }
+        for (DataSourceRegistry registry : DataSourceRegistry.getAllRegistries()) {
+            handleRegistryLoad(registry);
         }
 
         Composite comboGroup = new Composite(parent, SWT.NONE);

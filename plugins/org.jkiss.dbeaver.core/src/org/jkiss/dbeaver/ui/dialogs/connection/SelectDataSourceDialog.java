@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
@@ -145,7 +146,7 @@ public class SelectDataSourceDialog extends Dialog {
 
     public static DBPDataSourceContainer selectDataSource(@NotNull Shell parentShell, @Nullable IProject project)
     {
-        List<DataSourceDescriptor> datasources = DataSourceDescriptor.getAllDataSources();
+        List<DataSourceDescriptor> datasources = DataSourceRegistry.getAllDataSources();
         if (datasources.size() == 1) {
             return datasources.get(0);
         } else {

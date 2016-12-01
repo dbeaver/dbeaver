@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 
 public class DataSourceDisconnectAllHandler extends AbstractDataSourceHandler
@@ -27,7 +28,7 @@ public class DataSourceDisconnectAllHandler extends AbstractDataSourceHandler
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        for (final DataSourceDescriptor dataSourceContainer : DataSourceDescriptor.getAllDataSources()) {
+        for (final DataSourceDescriptor dataSourceContainer : DataSourceRegistry.getAllDataSources()) {
             if (dataSourceContainer.isConnected()) {
                 DataSourceHandler.disconnectDataSource(dataSourceContainer, null);
             }

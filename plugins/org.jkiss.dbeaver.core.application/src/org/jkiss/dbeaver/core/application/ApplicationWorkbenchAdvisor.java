@@ -29,6 +29,7 @@ import org.eclipse.ui.ide.IDE;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
@@ -145,7 +146,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     }
 
     private boolean closeActiveTransactions() {
-        for (DataSourceDescriptor dataSourceDescriptor : DataSourceDescriptor.getAllDataSources()) {
+        for (DataSourceDescriptor dataSourceDescriptor : DataSourceRegistry.getAllDataSources()) {
             if (!DataSourceHandler.checkAndCloseActiveTransaction(dataSourceDescriptor)) {
                 return false;
             }

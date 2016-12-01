@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
@@ -126,7 +126,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         log.debug("Finish initialization");
         super.postWindowOpen();
 
-        if (DataSourceDescriptor.getAllDataSources().isEmpty()) {
+        if (DataSourceRegistry.getAllDataSources().isEmpty()) {
             // Open New Connection wizard
             DBeaverUI.asyncExec(new Runnable() {
                 @Override
