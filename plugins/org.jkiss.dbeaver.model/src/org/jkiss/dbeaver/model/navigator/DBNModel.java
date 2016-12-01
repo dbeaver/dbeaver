@@ -27,7 +27,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIconComposite;
-import org.jkiss.dbeaver.model.DBPApplication;
+import org.jkiss.dbeaver.model.DBPPlatform;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
@@ -54,18 +54,18 @@ import java.util.Map;
 public class DBNModel implements IResourceChangeListener {
     private static final Log log = Log.getLog(DBNModel.class);
 
-    private final DBPApplication application;
+    private final DBPPlatform platform;
     private DBNRoot root;
     private final List<INavigatorListener> listeners = new ArrayList<>();
     private transient INavigatorListener[] listenersCopy = null;
     private final Map<DBSObject, Object> nodeMap = new HashMap<>();
 
-    public DBNModel(DBPApplication application) {
-        this.application = application;
+    public DBNModel(DBPPlatform platform) {
+        this.platform = platform;
     }
 
-    public DBPApplication getApplication() {
-        return application;
+    public DBPPlatform getPlatform() {
+        return platform;
     }
 
     public void initialize()
@@ -76,16 +76,16 @@ public class DBNModel implements IResourceChangeListener {
         this.root = new DBNRoot(this);
 
         // Add all existing projects to root node
-        for (IProject project : application.getLiveProjects()) {
+        for (IProject project : platform.getLiveProjects()) {
             root.addProject(project, false);
         }
 
-        application.getWorkspace().addResourceChangeListener(this);
+        platform.getWorkspace().addResourceChangeListener(this);
     }
 
     public void dispose()
     {
-        application.getWorkspace().removeResourceChangeListener(this);
+        platform.getWorkspace().removeResourceChangeListener(this);
         this.root.dispose(false);
         synchronized (nodeMap) {
             this.nodeMap.clear();
@@ -484,8 +484,8 @@ public class DBNModel implements IResourceChangeListener {
                             // New projectNode
                             getRoot().addProject(project, true);
 
-                            if (application.getProjectManager().getActiveProject() == null) {
-                                application.getProjectManager().setActiveProject(project);
+                            if (platform.getProjectManager().getActiveProject() == null) {
+                                platform.getProjectManager().setActiveProject(project);
                             }
                         } else {
                             // Project not found - report an error
@@ -495,8 +495,8 @@ public class DBNModel implements IResourceChangeListener {
                         if (childDelta.getKind() == IResourceDelta.REMOVED) {
                             // Project deleted
                             getRoot().removeProject(project);
-                            if (project == application.getProjectManager().getActiveProject()) {
-                                application.getProjectManager().setActiveProject(null);
+                            if (project == platform.getProjectManager().getActiveProject()) {
+                                platform.getProjectManager().setActiveProject(null);
                             }
                         } else {
                             if (childDelta.getFlags() == IResourceDelta.OPEN) {

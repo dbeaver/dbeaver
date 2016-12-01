@@ -321,7 +321,7 @@ public class DBVModel extends DBVContainer {
                 case TAG_EXCLUDE:
                     String transformerId = atts.getValue(ATTR_ID);
                     if (curTransformSettings != null && !CommonUtils.isEmpty(transformerId)) {
-                        final DBDAttributeTransformerDescriptor transformer = dataSourceContainer.getApplication().getValueHandlerRegistry().getTransformer(transformerId);
+                        final DBDAttributeTransformerDescriptor transformer = dataSourceContainer.getPlatform().getValueHandlerRegistry().getTransformer(transformerId);
                         if (transformer == null) {
                             log.warn("Transformer '" + transformerId + "' not found");
                         } else {

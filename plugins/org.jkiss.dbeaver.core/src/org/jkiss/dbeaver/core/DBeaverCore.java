@@ -65,7 +65,7 @@ import java.util.List;
 /**
  * DBeaverCore
  */
-public class DBeaverCore implements DBPApplication {
+public class DBeaverCore implements DBPPlatform {
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$

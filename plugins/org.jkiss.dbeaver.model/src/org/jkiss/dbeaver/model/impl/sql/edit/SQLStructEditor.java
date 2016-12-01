@@ -78,7 +78,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
     protected void createObjectReferences(DBRProgressMonitor monitor, DBECommandContext commandContext, ObjectCreateCommand createCommand) throws DBException {
         OBJECT_TYPE object = createCommand.getObject();
-        final DBERegistry editorsRegistry = object.getDataSource().getContainer().getApplication().getEditorsRegistry();
+        final DBERegistry editorsRegistry = object.getDataSource().getContainer().getPlatform().getEditorsRegistry();
         for (Class childType : getChildTypes()) {
             Collection<? extends DBSObject> children = getChildObjects(monitor, object, childType);
             if (!CommonUtils.isEmpty(children)) {

@@ -504,7 +504,7 @@ public final class DBUtils {
     {
         DBDValueHandler typeHandler = null;
 
-        DBDValueHandlerProvider typeProvider = dataSource.getContainer().getApplication().getValueHandlerRegistry().getDataTypeProvider(
+        DBDValueHandlerProvider typeProvider = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getDataTypeProvider(
             dataSource, column);
         if (typeProvider != null) {
             typeHandler = typeProvider.getHandler(dataSource, preferences, column);

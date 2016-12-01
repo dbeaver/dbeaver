@@ -67,7 +67,7 @@ class TransformerSettingsDialog extends BaseDialog {
         Collection<? extends DBPPropertyDescriptor> properties = Collections.emptyList();
         final DBDAttributeTransformerDescriptor transformer;
         if (dataSource != null && !CommonUtils.isEmpty(settings.getCustomTransformer())) {
-            transformer = dataSource.getContainer().getApplication().getValueHandlerRegistry().getTransformer(settings.getCustomTransformer());
+            transformer = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getTransformer(settings.getCustomTransformer());
             if (transformer != null) {
                 properties = transformer.getProperties();
             }

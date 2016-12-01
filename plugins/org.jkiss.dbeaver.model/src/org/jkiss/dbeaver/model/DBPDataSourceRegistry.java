@@ -35,7 +35,7 @@ public interface DBPDataSourceRegistry {
     String CONFIG_FILE_NAME = CONFIG_FILE_PREFIX + CONFIG_FILE_EXT;
 
     @NotNull
-    DBPApplication getApplication();
+    DBPPlatform getPlatform();
     /**
      * Owner project.
      */

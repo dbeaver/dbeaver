@@ -329,7 +329,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private DBPImage getActiveObjectImage() {
         DBSDataContainer dataContainer = viewer.getDataContainer();
         if (dataContainer instanceof DBSEntity) {
-            DBNDatabaseNode dcNode = viewer.getDataContainer().getDataSource().getContainer().getApplication().getNavigatorModel().findNode(dataContainer);
+            DBNDatabaseNode dcNode = viewer.getDataContainer().getDataSource().getContainer().getPlatform().getNavigatorModel().findNode(dataContainer);
             if (dcNode != null) {
                 return dcNode.getNodeIcon();
             }

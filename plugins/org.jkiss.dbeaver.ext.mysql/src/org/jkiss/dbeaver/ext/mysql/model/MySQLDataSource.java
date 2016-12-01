@@ -110,7 +110,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     private void initSSL(DBRProgressMonitor monitor, Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
         monitor.subTask("Install SSL certificates");
-        final DBACertificateStorage securityManager = getContainer().getApplication().getCertificateStorage();
+        final DBACertificateStorage securityManager = getContainer().getPlatform().getCertificateStorage();
 
         props.put("useSSL", "true");
         props.put("verifyServerCertificate", String.valueOf(CommonUtils.toBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_VERIFY_SERVER_SERT))));

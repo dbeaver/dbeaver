@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.jkiss.dbeaver.model.DBPApplication;
+import org.jkiss.dbeaver.model.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -29,18 +29,18 @@ import java.io.*;
  */
 public class ExternalContentStorage implements DBDContentStorage {
 
-    private final DBPApplication application;
+    private final DBPPlatform platform;
     private File file;
     private String charset;
 
-    public ExternalContentStorage(DBPApplication application, File file)
+    public ExternalContentStorage(DBPPlatform platform, File file)
     {
-        this(application, file, null);
+        this(platform, file, null);
     }
 
-    public ExternalContentStorage(DBPApplication application, File file, String charset)
+    public ExternalContentStorage(DBPPlatform platform, File file, String charset)
     {
-        this.application = application;
+        this.platform = platform;
         this.file = file;
         this.charset = charset;
     }
@@ -76,7 +76,7 @@ public class ExternalContentStorage implements DBDContentStorage {
         throws IOException
     {
         // Create new local storage
-        File tempFile = ContentUtils.createTempContentFile(monitor, application, "copy" + this.hashCode());
+        File tempFile = ContentUtils.createTempContentFile(monitor, platform, "copy" + this.hashCode());
         try {
             try (InputStream is = new FileInputStream(file)) {
                 try (OutputStream os = new FileOutputStream(tempFile)) {
@@ -87,7 +87,7 @@ public class ExternalContentStorage implements DBDContentStorage {
             ContentUtils.deleteTempFile(tempFile);
             throw new IOException(e);
         }
-        return new TemporaryContentStorage(application, tempFile);
+        return new TemporaryContentStorage(platform, tempFile);
     }
 
     @Override

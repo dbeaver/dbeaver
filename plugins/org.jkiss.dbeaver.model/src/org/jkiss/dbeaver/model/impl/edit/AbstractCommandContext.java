@@ -542,7 +542,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                 }
             }
             if (queue == null) {
-                DBEObjectManager<?> objectManager = executionContext.getDataSource().getContainer().getApplication().getEditorsRegistry().getObjectManager(object.getClass());
+                DBEObjectManager<?> objectManager = executionContext.getDataSource().getContainer().getPlatform().getEditorsRegistry().getObjectManager(object.getClass());
                 if (objectManager == null) {
                     throw new IllegalStateException("Can't find object manager for '" + object.getClass().getName() + "'");
                 }

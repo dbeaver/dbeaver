@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
@@ -25,7 +24,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -196,8 +194,8 @@ public class DataSourceDescriptor
 
     @NotNull
     @Override
-    public DBPApplication getApplication() {
-        return registry.getApplication();
+    public DBPPlatform getPlatform() {
+        return registry.getPlatform();
     }
 
     public void setDriver(@NotNull DriverDescriptor driver)
@@ -639,7 +637,7 @@ public class DataSourceDescriptor
                 monitor.subTask("Initialize tunnel");
                 tunnel = tunnelConfiguration.createHandler(DBWTunnel.class);
                 try {
-                    tunnelConnectionInfo = tunnel.initializeTunnel(monitor, registry.getApplication(), tunnelConfiguration, connectionInfo);
+                    tunnelConnectionInfo = tunnel.initializeTunnel(monitor, registry.getPlatform(), tunnelConfiguration, connectionInfo);
                 } catch (Exception e) {
                     throw new DBCException("Can't initialize tunnel", e);
                 }
