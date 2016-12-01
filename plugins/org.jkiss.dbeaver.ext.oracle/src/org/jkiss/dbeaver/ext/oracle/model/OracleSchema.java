@@ -402,7 +402,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             StringBuilder sql = new StringBuilder(500);
             sql
-                .append("SELECT c.*\n" +
+                .append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append("\nc.* " +
                     "FROM SYS.ALL_TAB_COLS c\n" +
 //                    "LEFT OUTER JOIN SYS.ALL_COL_COMMENTS cc ON CC.OWNER=c.OWNER AND cc.TABLE_NAME=c.TABLE_NAME AND cc.COLUMN_NAME=c.COLUMN_NAME\n" +
                     "WHERE c.OWNER=?");
@@ -455,7 +455,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             StringBuilder sql = new StringBuilder(500);
             sql
-                .append("SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + "\n" +
+                .append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append("\n" +
                     "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.SEARCH_CONDITION," +
                     "col.COLUMN_NAME,col.POSITION\n" +
                     "FROM SYS.ALL_CONSTRAINTS c\n" +
