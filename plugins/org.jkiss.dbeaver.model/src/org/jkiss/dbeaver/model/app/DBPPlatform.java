@@ -38,6 +38,9 @@ import java.util.List;
 public interface DBPPlatform
 {
     @NotNull
+    DBPApplication getApplication();
+
+    @NotNull
     DBNModel getNavigatorModel();
 
     @NotNull

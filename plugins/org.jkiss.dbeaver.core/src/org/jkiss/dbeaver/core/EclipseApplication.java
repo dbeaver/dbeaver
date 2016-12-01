@@ -15,19 +15,26 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
-package org.jkiss.dbeaver.model.app;
+package org.jkiss.dbeaver.core;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.app.DBAClientSecurity;
+import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.impl.app.DefaultClientSecurity;
 
 /**
- * DBPApplication
+ * EclipseApplication
  */
-public interface DBPApplication
-{
-    boolean isStandalone();
+class EclipseApplication implements DBPApplication {
+
+    @Override
+    public boolean isStandalone() {
+        return false;
+    }
 
     @NotNull
-    DBAClientSecurity getClientSecurity();
-
+    @Override
+    public DBAClientSecurity getClientSecurity() {
+        return DefaultClientSecurity.INSTANCE;
+    }
 }
