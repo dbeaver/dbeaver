@@ -817,34 +817,39 @@ public class PropertyTreeViewer extends TreeViewer {
         {
             disposeOldEditor();
 
-            Collator collator = Collator.getInstance(Locale.getDefault());
-            TreeColumn column = (TreeColumn) e.widget;
-            Tree tree = getTree();
-            if (prevColumn == column) {
-                // Set reverse order
-                sortDirection = (sortDirection == SWT.UP ? SWT.DOWN : SWT.UP);
-            }
-            prevColumn = column;
-            tree.setSortColumn(column);
-            tree.setSortDirection(sortDirection);
-
-            PropertyTreeViewer.this.setSorter(new ViewerSorter(collator) {
-                @Override
-                public int compare(Viewer viewer, Object e1, Object e2)
-                {
-                    int mul = (sortDirection == SWT.UP ? 1 : -1);
-                    int result;
-                    TreeNode n1 = (TreeNode) e1, n2 = (TreeNode) e2;
-                    if (n1.property != null && n2.property != null) {
-                        result = n1.property.getDisplayName().compareTo(n2.property.getDisplayName());
-                    } else if (n1.category != null && n2.category != null) {
-                        result = n1.category.compareTo(n2.category);
-                    } else {
-                        result = 0;
-                    }
-                    return result * mul;
+            getTree().setRedraw(false);
+            try {
+                Collator collator = Collator.getInstance(Locale.getDefault());
+                TreeColumn column = (TreeColumn) e.widget;
+                Tree tree = getTree();
+                if (prevColumn == column) {
+                    // Set reverse order
+                    sortDirection = (sortDirection == SWT.UP ? SWT.DOWN : SWT.UP);
                 }
-            });
+                prevColumn = column;
+                tree.setSortColumn(column);
+                tree.setSortDirection(sortDirection);
+
+                PropertyTreeViewer.this.setSorter(new ViewerSorter(collator) {
+                    @Override
+                    public int compare(Viewer viewer, Object e1, Object e2)
+                    {
+                        int mul = (sortDirection == SWT.UP ? 1 : -1);
+                        int result;
+                        TreeNode n1 = (TreeNode) e1, n2 = (TreeNode) e2;
+                        if (n1.property != null && n2.property != null) {
+                            result = n1.property.getDisplayName().compareTo(n2.property.getDisplayName());
+                        } else if (n1.category != null && n2.category != null) {
+                            result = n1.category.compareTo(n2.category);
+                        } else {
+                            result = 0;
+                        }
+                        return result * mul;
+                    }
+                });
+            } finally {
+                getTree().setRedraw(true);
+            }
         }
     }
 
