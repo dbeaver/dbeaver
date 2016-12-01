@@ -41,6 +41,9 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
 import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
+import org.jkiss.dbeaver.model.app.DBAClientSecurity;
+import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.impl.app.DefaultClientSecurity;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
@@ -63,7 +66,7 @@ import java.util.List;
 /**
  * This class controls all aspects of the application's execution
  */
-public class DBeaverApplication implements IApplication {
+public class DBeaverApplication implements IApplication, DBPApplication {
 
     public static final String APPLICATION_PLUGIN_ID = "org.jkiss.dbeaver.core.application";
     public static final String DBEAVER_DEFAULT_DIR = ".dbeaver"; //$NON-NLS-1$
@@ -176,7 +179,7 @@ public class DBeaverApplication implements IApplication {
         final Runtime runtime = Runtime.getRuntime();
 
         // Init Core plugin and mark it as standalone version
-        DBeaverCore.setStandalone(true);
+        DBeaverCore.setApplication(this);
 
         initDebugWriter();
 
@@ -366,6 +369,17 @@ public class DBeaverApplication implements IApplication {
             log.error("Error parsing command line: " + e.getMessage());
             return null;
         }
+    }
+
+    @Override
+    public boolean isStandalone() {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public DBAClientSecurity getClientSecurity() {
+        return DefaultClientSecurity.INSTANCE;
     }
 
     private class ProxyPrintStream extends OutputStream {

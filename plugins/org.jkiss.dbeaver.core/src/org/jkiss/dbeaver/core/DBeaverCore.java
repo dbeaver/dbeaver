@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
+import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
@@ -77,8 +78,12 @@ public class DBeaverCore implements DBPPlatform {
 
     public static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
 
+    private static final DBPApplication DEFAULT_APPLICATION = new EclipseApplication();
+
     static DBeaverCore instance;
-    private static boolean standalone = false;
+
+    @NotNull
+    private static DBPApplication application = DEFAULT_APPLICATION;
     private static volatile boolean isClosing = false;
 
     private File tempFolder;
@@ -140,12 +145,12 @@ public class DBeaverCore implements DBPPlatform {
 
     public static boolean isStandalone()
     {
-        return standalone;
+        return application.isStandalone();
     }
 
-    public static void setStandalone(boolean flag)
+    public static void setApplication(@NotNull DBPApplication app)
     {
-        standalone = flag;
+        application = app;
     }
 
     public static boolean isClosing()
@@ -295,9 +300,10 @@ public class DBeaverCore implements DBPPlatform {
             tempFolder = null;
         }
 
+        DBeaverCore.application = DEFAULT_APPLICATION;
         DBeaverCore.instance = null;
         DBeaverCore.disposed = true;
-
+        System.gc();
         log.debug("Shutdown completed in " + (System.currentTimeMillis() - startTime) + "ms");
     }
 
@@ -317,6 +323,12 @@ public class DBeaverCore implements DBPPlatform {
     public OSDescriptor getLocalSystem()
     {
         return localSystem;
+    }
+
+    @NotNull
+    @Override
+    public DBPApplication getApplication() {
+        return application;
     }
 
     @NotNull
