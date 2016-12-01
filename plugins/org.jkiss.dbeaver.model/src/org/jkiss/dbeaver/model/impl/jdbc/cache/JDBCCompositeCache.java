@@ -235,7 +235,7 @@ public abstract class JDBCCompositeCache<
         }
     }
 
-    protected void loadObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+    protected synchronized void loadObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException
     {
         synchronized (objectCache) {
