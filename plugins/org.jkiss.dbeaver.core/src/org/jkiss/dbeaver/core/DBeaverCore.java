@@ -29,9 +29,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.admin.DBACertificateStorage;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
-import org.jkiss.dbeaver.model.impl.security.DefaultSecurityManager;
+import org.jkiss.dbeaver.model.impl.security.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -86,7 +87,7 @@ public class DBeaverCore implements DBPApplication {
     private QMControllerImpl queryManager;
     private QMLogFileWriter qmLogWriter;
     private ProjectRegistry projectRegistry;
-    private DefaultSecurityManager securityManager;
+    private DefaultCertificateStorage certificateStorage;
 
     private final List<IPluginService> activatedServices = new ArrayList<>();
 
@@ -194,7 +195,7 @@ public class DBeaverCore implements DBPApplication {
         Authenticator.setDefault(new GlobalProxyAuthenticator());
         ProxySelector.setDefault(new GlobalProxySelector(ProxySelector.getDefault()));
 
-        this.securityManager = new DefaultSecurityManager(
+        this.certificateStorage = new DefaultCertificateStorage(
             new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "security"));
 
         // Init project registry
@@ -349,8 +350,8 @@ public class DBeaverCore implements DBPApplication {
 
     @NotNull
     @Override
-    public DBPSecurityManager getSecurityManager() {
-        return securityManager;
+    public DBACertificateStorage getCertificateStorage() {
+        return certificateStorage;
     }
 
     public ProjectRegistry getProjectRegistry()

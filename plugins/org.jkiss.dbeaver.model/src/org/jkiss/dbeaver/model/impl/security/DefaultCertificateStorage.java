@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.impl.security;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPSecurityManager;
+import org.jkiss.dbeaver.model.admin.DBACertificateStorage;
 
 import java.io.*;
 import java.security.KeyStore;
@@ -27,17 +27,17 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 
 /**
- * DefaultSecurityManager
+ * DefaultCertificateStorage
  */
-public class DefaultSecurityManager implements DBPSecurityManager {
+public class DefaultCertificateStorage implements DBACertificateStorage {
 
-    private static final Log log = Log.getLog(DefaultSecurityManager.class);
+    private static final Log log = Log.getLog(DefaultCertificateStorage.class);
     private static final char[] DEFAULT_PASSWORD = "".toCharArray();
     public static final String JKS_EXTENSION = ".jks";
 
     private final File localPath;
 
-    public DefaultSecurityManager(File localPath) {
+    public DefaultCertificateStorage(File localPath) {
         this.localPath = localPath;
         if (localPath.exists()) {
             // Cleanup old keystores
