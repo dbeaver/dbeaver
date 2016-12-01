@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.DBPSecurityManager;
+import org.jkiss.dbeaver.model.admin.DBACertificateStorage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.*;
@@ -110,7 +110,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     private void initSSL(DBRProgressMonitor monitor, Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
         monitor.subTask("Install SSL certificates");
-        final DBPSecurityManager securityManager = getContainer().getApplication().getSecurityManager();
+        final DBACertificateStorage securityManager = getContainer().getApplication().getCertificateStorage();
 
         props.put("useSSL", "true");
         props.put("verifyServerCertificate", String.valueOf(CommonUtils.toBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_VERIFY_SERVER_SERT))));

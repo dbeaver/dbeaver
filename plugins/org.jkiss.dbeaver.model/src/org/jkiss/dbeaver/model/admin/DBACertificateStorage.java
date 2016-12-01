@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.admin;
 
 import org.jkiss.dbeaver.DBException;
 
@@ -25,9 +25,9 @@ import java.io.InputStream;
 import java.security.KeyStore;
 
 /**
- * Security manager
+ * Certificate storage
  */
-public interface DBPSecurityManager
+public interface DBACertificateStorage
 {
     KeyStore getKeyStore(String ksId) throws DBException;
 
