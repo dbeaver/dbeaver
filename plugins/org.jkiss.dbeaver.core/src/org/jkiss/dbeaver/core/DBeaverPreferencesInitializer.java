@@ -73,11 +73,6 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK, NavigatorViewBase.DoubleClickBehavior.SQL_EDITOR.name());
 
-        // Security
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SECURITY_USE_SECURE_PASSWORDS_STORAGE, false);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SECURITY_USE_MASTER_PASSWORD, false);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SECURITY_MASTER_PASSWORD_VALUE, "");
-
         // Common
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.KEEP_STATEMENT_OPEN, false);
 
