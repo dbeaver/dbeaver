@@ -82,7 +82,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         return getCachedObject(name);
     }
 
-    protected void loadObjects(DBRProgressMonitor monitor, OWNER owner)
+    protected synchronized void loadObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
         if (isFullyCached() || monitor.isCanceled()) {
@@ -140,11 +140,9 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             Collections.sort(tmpObjectList, comparator);
         }
 
-        synchronized (this) {
-            detectCaseSensitivity(owner);
-            mergeCache(tmpObjectList);
-            this.invalidateObjects(monitor, owner, new CacheIterator());
-        }
+        detectCaseSensitivity(owner);
+        mergeCache(tmpObjectList);
+        this.invalidateObjects(monitor, owner, new CacheIterator());
     }
 
     // Can be implemented to provide custom cache error handler

@@ -73,14 +73,16 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
      * @throws org.jkiss.dbeaver.DBException
      *             on error
      */
-    public void loadChildren(DBRProgressMonitor monitor, OWNER owner, @Nullable final OBJECT forObject) throws DBException
+    public synchronized void loadChildren(DBRProgressMonitor monitor, OWNER owner, @Nullable final OBJECT forObject) throws DBException
     {
         if ((forObject == null && this.childrenCached)
             || (forObject != null && (!forObject.isPersisted() || isChildrenCached(forObject))) || monitor.isCanceled()) {
             return;
         }
         if (forObject == null) {
-            clearChildrenCache(null);
+            // If we have some child objects read before that - do not clear them.
+            // We have to reuse them because there could be some references in cached model
+            //clearChildrenCache(null);
             super.loadObjects(monitor, owner);
         }
 
