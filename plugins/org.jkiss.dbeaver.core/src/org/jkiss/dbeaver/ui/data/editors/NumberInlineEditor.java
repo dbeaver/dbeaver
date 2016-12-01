@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.utils.CommonUtils;
@@ -46,7 +47,11 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
 
     public NumberInlineEditor(IValueController controller) {
         super(controller);
-        this.formatterProfile = valueController.getExecutionContext().getDataSource().getContainer().getDataFormatterProfile();
+        if (valueController.getExecutionContext() != null) {
+            this.formatterProfile = valueController.getExecutionContext().getDataSource().getContainer().getDataFormatterProfile();
+        } else {
+            this.formatterProfile = DataFormatterRegistry.getInstance().getGlobalProfile();
+        }
     }
 
     @Override

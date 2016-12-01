@@ -227,7 +227,11 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
         } else {
             valueId = valueController.getValueName();
         }
-        return valueController.getExecutionContext().getDataSource().getContainer().getId() + ":" + valueId;
+        String dsId = "unknown";
+        if (valueController.getExecutionContext() != null) {
+            dsId = valueController.getExecutionContext().getDataSource().getContainer().getId();
+        }
+        return dsId + ":" + valueId;
     }
 
     public static void setEditorSettings(Control control) {
