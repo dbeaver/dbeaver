@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.PluginServiceRegistry;
@@ -87,7 +86,7 @@ public class DBeaverCore implements DBPApplication {
     private QMControllerImpl queryManager;
     private QMLogFileWriter qmLogWriter;
     private ProjectRegistry projectRegistry;
-    private DefaultCertificateStorage certificateStorage;
+    private DBACertificateStorage certificateStorage;
 
     private final List<IPluginService> activatedServices = new ArrayList<>();
 
@@ -392,12 +391,6 @@ public class DBeaverCore implements DBPApplication {
             }
         }
         return tempFolder;
-    }
-
-    @NotNull
-    @Override
-    public DBRRunnableContext getRunnableContext() {
-        return DBeaverUI.getDefaultRunnableContext();
     }
 
     @NotNull

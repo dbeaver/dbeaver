@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverNature;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.DBPProjectManager;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
@@ -172,11 +171,6 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         synchronized (projectListeners) {
             projectListeners.remove(listener);
         }
-    }
-
-    @Override
-    public DBPApplication geApplication() {
-        return DBeaverCore.getInstance();
     }
 
     @Override

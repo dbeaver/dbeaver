@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +45,7 @@ public interface DBPApplication
 
     @NotNull
     DBPProjectManager getProjectManager();
+
     @NotNull
     Collection<IProject> getLiveProjects();
 
@@ -67,6 +67,4 @@ public interface DBPApplication
     @NotNull
     File getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
 
-    @NotNull
-    DBRRunnableContext getRunnableContext();
 }

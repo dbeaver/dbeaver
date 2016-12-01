@@ -30,10 +30,10 @@ import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
-import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
@@ -106,7 +106,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         job.schedule();
     }
 
-    static class CreateJob<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> extends AbstractUIJob {
+    static class CreateJob<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> extends AbstractJob {
         private final CommandTarget commandTarget;
         private final DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker;
         private final CONTAINER_TYPE parentObject;
@@ -122,7 +122,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         }
 
         @Override
-        protected IStatus runInUIThread(DBRProgressMonitor monitor) {
+        protected IStatus run(DBRProgressMonitor monitor) {
             try {
                 newObject = objectMaker.createNewObject(monitor, commandTarget.getContext(), parentObject, sourceObject);
                 if (newObject == null) {
@@ -141,39 +141,49 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                     }
                 }
 
-                IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
-                try {
-                    final boolean openEditor = (objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_EDITOR_ON_CREATE) != 0;
-
-                    final DBNDatabaseNode newChild = DBeaverCore.getInstance().getNavigatorModel().findNode(newObject);
-                    if (newChild != null) {
-                        DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
-                        if (view != null) {
-                            view.showNode(newChild);
-                        }
-                        IDatabaseEditor editor = commandTarget.getEditor();
-                        if (editor != null) {
-                            // Just activate existing editor
-                            workbenchWindow.getActivePage().activate(editor);
-                        } else if (openEditor) {
-                            // Open new one with existing context
-                            EntityEditorInput editorInput = new EntityEditorInput(
-                                newChild,
-                                commandTarget.getContext());
-                            workbenchWindow.getActivePage().openEditor(
-                                editorInput,
-                                EntityEditor.class.getName());
-                        }
-                    } else {
-                        throw new DBException("Can't find node corresponding to new object");
+                // Open object in UI thread
+                DBeaverUI.syncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        openNewObject();
                     }
-                } catch (Throwable e) {
-                    UIUtils.showErrorDialog(workbenchWindow.getShell(), "Create object", null, e);
-                }
+                });
 
                 return Status.OK_STATUS;
             } catch (Exception e) {
                 return GeneralUtils.makeExceptionStatus(e);
+            }
+        }
+
+        private void openNewObject() {
+            IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
+            try {
+                final boolean openEditor = (objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_EDITOR_ON_CREATE) != 0;
+
+                final DBNDatabaseNode newChild = DBeaverCore.getInstance().getNavigatorModel().findNode(newObject);
+                if (newChild != null) {
+                    DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
+                    if (view != null) {
+                        view.showNode(newChild);
+                    }
+                    IDatabaseEditor editor = commandTarget.getEditor();
+                    if (editor != null) {
+                        // Just activate existing editor
+                        workbenchWindow.getActivePage().activate(editor);
+                    } else if (openEditor) {
+                        // Open new one with existing context
+                        EntityEditorInput editorInput = new EntityEditorInput(
+                            newChild,
+                            commandTarget.getContext());
+                        workbenchWindow.getActivePage().openEditor(
+                            editorInput,
+                            EntityEditor.class.getName());
+                    }
+                } else {
+                    throw new DBException("Can't find node corresponding to new object");
+                }
+            } catch (Throwable e) {
+                UIUtils.showErrorDialog(workbenchWindow.getShell(), "Create object", null, e);
             }
         }
 
