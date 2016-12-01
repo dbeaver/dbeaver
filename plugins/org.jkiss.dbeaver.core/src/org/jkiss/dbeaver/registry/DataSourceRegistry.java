@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
+import org.eclipse.equinox.security.storage.StorageException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -75,6 +76,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private static final Log log = Log.getLog(DataSourceRegistry.class);
 
     public static final String OLD_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
+
+    private static PasswordEncrypter ENCRYPTOR = new SimpleStringEncrypter();
 
     private final DBPApplication application;
     private final IProject project;
@@ -347,7 +350,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         if (file.exists()) {
                             File dsFile = file.getLocation().toFile();
                             if (dsFile.exists()) {
-                                loadDataSources(dsFile, new SimpleStringEncrypter(), refresh, parseResults);
+                                loadDataSources(dsFile, refresh, parseResults);
                             }
                         }
                     }
@@ -380,14 +383,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    private void loadDataSources(File fromFile, PasswordEncrypter encrypter, boolean refresh, ParseResults parseResults)
+    private void loadDataSources(File fromFile, boolean refresh, ParseResults parseResults)
     {
         if (!fromFile.exists()) {
             return;
         }
         boolean extraConfig = !fromFile.getName().equalsIgnoreCase(CONFIG_FILE_NAME);
         try (InputStream is = new FileInputStream(fromFile)) {
-            loadDataSources(is, encrypter, extraConfig, refresh, parseResults);
+            loadDataSources(is, extraConfig, refresh, parseResults);
         } catch (DBException ex) {
             log.warn("Error loading datasource config from " + fromFile.getAbsolutePath(), ex);
         } catch (IOException ex) {
@@ -395,12 +398,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    private void loadDataSources(InputStream is, PasswordEncrypter encrypter, boolean extraConfig, boolean refresh, ParseResults parseResults)
+    private void loadDataSources(InputStream is, boolean extraConfig, boolean refresh, ParseResults parseResults)
         throws DBException, IOException
     {
         SAXReader parser = new SAXReader(is);
         try {
-            final DataSourcesParser dsp = new DataSourcesParser(extraConfig, refresh, parseResults, encrypter);
+            final DataSourcesParser dsp = new DataSourcesParser(extraConfig, refresh, parseResults);
             parser.parse(dsp);
         }
         catch (XMLException ex) {
@@ -417,7 +420,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
         updateProjectNature();
         final IProgressMonitor progressMonitor = new NullProgressMonitor();
-        PasswordEncrypter encrypter = new SimpleStringEncrypter();
         IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
         saveInProgress = true;
         try {
@@ -432,7 +434,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     xml.startElement("data-sources");
                     for (DataSourceDescriptor dataSource : localDataSources) {
                         if (!dataSource.isProvided()) {
-                            saveDataSource(xml, dataSource, encrypter);
+                            saveDataSource(xml, dataSource);
                         }
                     }
                     xml.endElement();
@@ -490,7 +492,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    private void saveDataSource(XMLBuilder xml, DataSourceDescriptor dataSource, PasswordEncrypter encrypter)
+    private void saveDataSource(XMLBuilder xml, DataSourceDescriptor dataSource)
         throws IOException
     {
         xml.startElement(RegistryConstants.TAG_DATA_SOURCE);
@@ -535,29 +537,16 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             xml.addAttribute(RegistryConstants.ATTR_DATABASE, CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
             xml.addAttribute(RegistryConstants.ATTR_URL, CommonUtils.notEmpty(connectionInfo.getUrl()));
             xml.addAttribute(RegistryConstants.ATTR_USER, CommonUtils.notEmpty(connectionInfo.getUserName()));
+
+            clearSecuredPassword(dataSource, null);
             if (dataSource.isSavePassword() && !CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-/*
-                try {
-                    final ISecurePreferences dsNode = dataSource.getSecurePreferences();
-                    if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-                        dsNode.put(RegistryConstants.ATTR_PASSWORD, connectionInfo.getUserPassword(), true);
-                    } else {
-                        dsNode.remove(RegistryConstants.ATTR_PASSWORD);
-                    }
-                } catch (StorageException e) {
-                    log.error("Can't save password in secure storage", e);
-                }
-*/
-                String encPassword = connectionInfo.getUserPassword();
-                if (!CommonUtils.isEmpty(encPassword)) {
+                if (!saveSecuredPassword(dataSource, null, connectionInfo.getUserPassword())) {
                     try {
-                        encPassword = encrypter.encrypt(encPassword);
-                    }
-                    catch (EncryptionException e) {
-                        log.error("Can't encrypt password. Save it as is", e);
+                        xml.addAttribute(RegistryConstants.ATTR_PASSWORD, ENCRYPTOR.encrypt(connectionInfo.getUserPassword()));
+                    } catch (EncryptionException e) {
+                        log.error("Error encrypting password", e);
                     }
                 }
-                xml.addAttribute(RegistryConstants.ATTR_PASSWORD, encPassword);
             }
             if (!CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
                 xml.addAttribute(RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
@@ -604,7 +593,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     String encPassword = configuration.getPassword();
                     if (!CommonUtils.isEmpty(encPassword)) {
                         try {
-                            encPassword = encrypter.encrypt(encPassword);
+                            encPassword = ENCRYPTOR.encrypt(encPassword);
                         }
                         catch (EncryptionException e) {
                             log.error("Can't encrypt password. Save it as is", e);
@@ -696,6 +685,28 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         xml.endElement();
     }
 
+    private boolean saveSecuredPassword(DataSourceDescriptor dataSource, String subNode, String password) {
+        try {
+            ISecurePreferences prefNode = dataSource.getSecurePreferences();
+            if (subNode != null) {
+                prefNode = prefNode.node(subNode);
+            }
+            if (!CommonUtils.isEmpty(password)) {
+                prefNode.put(RegistryConstants.ATTR_PASSWORD, password, true);
+            } else {
+                prefNode.remove(RegistryConstants.ATTR_PASSWORD);
+            }
+        } catch (StorageException e) {
+            log.error("Can't save password in secure storage", e);
+        }
+
+        return false;
+    }
+
+    private void clearSecuredPassword(DataSourceDescriptor dataSource, String subNode) {
+
+    }
+
     private void saveObjectFiler(XMLBuilder xml, String typeName, String objectID, DBSObjectFilter filter) throws IOException
     {
         xml.startElement(RegistryConstants.TAG_FILTER);
@@ -741,7 +752,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         DataSourceDescriptor curDataSource;
         boolean extraConfig;
         boolean refresh;
-        PasswordEncrypter encrypter;
         boolean isDescription = false;
         DBRShellCommand curCommand = null;
         private DBWHandlerConfiguration curNetworkHandler;
@@ -749,12 +759,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         private StringBuilder curQuery;
         private ParseResults parseResults;
 
-        private DataSourcesParser(boolean extraConfig, boolean refresh, ParseResults parseResults, PasswordEncrypter encrypter)
+        private DataSourcesParser(boolean extraConfig, boolean refresh, ParseResults parseResults)
         {
             this.extraConfig = extraConfig;
             this.refresh = refresh;
             this.parseResults = parseResults;
-            this.encrypter = encrypter;
         }
 
         @Override
@@ -1049,7 +1058,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         {
             if (!CommonUtils.isEmpty(encPassword)) {
                 try {
-                    encPassword = encrypter.decrypt(encPassword);
+                    encPassword = ENCRYPTOR.decrypt(encPassword);
                 }
                 catch (Throwable e) {
                     // could not decrypt - use as is

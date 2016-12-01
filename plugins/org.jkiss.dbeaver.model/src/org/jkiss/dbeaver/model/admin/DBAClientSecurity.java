@@ -18,11 +18,15 @@
 
 package org.jkiss.dbeaver.model.admin;
 
+import org.eclipse.equinox.security.storage.ISecurePreferences;
+
 /**
- * Secure preferences.
- * Used to store passwords.
+ * Client security manager
  */
-public interface DBASecurePreferences
+public interface DBAClientSecurity
 {
 
+    boolean useSecurePreferences();
+
+    ISecurePreferences getSecurePreferences();
 }

@@ -17,14 +17,16 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -245,22 +247,25 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                         if (parentNode.getChildNodes() == null && parentNode.allowsChildren()) {
                             final DBNDatabaseNode nodeToLoad = parentNode;
                             // We have to load children here
-                            try {
-                                model.getApplication().getRunnableContext().run(true, true, new DBRRunnableWithProgress() {
-                                    @Override
-                                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                                    {
-                                        try {
-                                            nodeToLoad.getChildren(monitor);
-                                        } catch (Exception e) {
-                                            throw new InvocationTargetException(e);
-                                        }
+                            final AbstractJob loaderJob = new AbstractJob("Load sibling nodes of new database object") {
+                                {
+                                    setUser(true);
+                                }
+                                @Override
+                                protected IStatus run(DBRProgressMonitor monitor) {
+                                    try {
+                                        nodeToLoad.getChildren(monitor);
+                                    } catch (Exception e) {
+                                        return GeneralUtils.makeExceptionStatus(e);
                                     }
-                                });
-                            } catch (InvocationTargetException e) {
-                                log.error(e.getTargetException());
+                                    return Status.OK_STATUS;
+                                }
+                            };
+                            loaderJob.schedule();
+                            try {
+                                loaderJob.join();
                             } catch (InterruptedException e) {
-                                // do nothing
+                                // That's ok
                             }
                         }
                         if (!parentFound) {

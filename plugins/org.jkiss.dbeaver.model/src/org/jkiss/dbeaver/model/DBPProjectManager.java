@@ -28,8 +28,6 @@ import org.jkiss.dbeaver.model.project.DBPResourceHandler;
  */
 public interface DBPProjectManager
 {
-    DBPApplication geApplication();
-
     DBPResourceHandler getResourceHandler(IResource resource);
 
     IProject getActiveProject();

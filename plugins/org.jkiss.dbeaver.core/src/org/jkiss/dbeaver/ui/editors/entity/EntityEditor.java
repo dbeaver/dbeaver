@@ -417,7 +417,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
             @Override
             public void onCommandChange(DBECommand command)
             {
-                firePropertyChange(IEditorPart.PROP_DIRTY);
+                DBeaverUI.syncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        firePropertyChange(IEditorPart.PROP_DIRTY);
+                    }
+                });
             }
         };
         DBECommandContext commandContext = getCommandContext();
