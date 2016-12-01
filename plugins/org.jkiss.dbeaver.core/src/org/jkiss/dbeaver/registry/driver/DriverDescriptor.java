@@ -36,10 +36,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
@@ -335,7 +332,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public List<DataSourceDescriptor> getUsedBy()
     {
         List<DataSourceDescriptor> usedBy = new ArrayList<>();
-        for (DataSourceDescriptor ds : DataSourceDescriptor.getAllDataSources()) {
+        for (DataSourceDescriptor ds : DataSourceRegistry.getAllDataSources()) {
             if (ds.getDriver() == this) {
                 usedBy.add(ds);
             }

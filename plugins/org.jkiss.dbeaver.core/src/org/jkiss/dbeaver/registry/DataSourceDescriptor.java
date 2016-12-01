@@ -1082,19 +1082,6 @@ public class DataSourceDescriptor
         folderPath = descriptor.folderPath;
     }
 
-    public static List<DataSourceDescriptor> getAllDataSources() {
-        List<DataSourceDescriptor> result = new ArrayList<>();
-        for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
-            if (project.isOpen()) {
-                DataSourceRegistry registry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
-                if (registry != null) {
-                    result.addAll(registry.getDataSources());
-                }
-            }
-        }
-        return result;
-    }
-
     @Override
     @NotNull
     public ISecurePreferences getSecurePreferences() {
