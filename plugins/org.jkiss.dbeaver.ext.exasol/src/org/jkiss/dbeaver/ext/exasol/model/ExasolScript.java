@@ -136,7 +136,7 @@ public class ExasolScript extends ExasolObject<DBSObject> implements DBSProcedur
     }
 
     @NotNull
-    @Property(viewable = false, order = 15)
+    @Property(hidden = true)
     public String getSql() {
         return this.scriptSQL;
     }
