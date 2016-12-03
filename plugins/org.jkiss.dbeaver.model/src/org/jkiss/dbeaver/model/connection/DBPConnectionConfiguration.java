@@ -41,6 +41,8 @@ public class DBPConnectionConfiguration implements DBPObject
     @NotNull
     private final Map<Object, Object> properties;
     @NotNull
+    private final Map<Object, Object> providerProperties;
+    @NotNull
     private final Map<DBPConnectionEventType, DBRShellCommand> events;
     @NotNull
     private final List<DBWHandlerConfiguration> handlers;
@@ -53,6 +55,7 @@ public class DBPConnectionConfiguration implements DBPObject
     {
         this.connectionType = DBPConnectionType.DEFAULT_TYPE;
         this.properties = new HashMap<>();
+        this.providerProperties = new HashMap<>();
         this.events = new HashMap<>();
         this.handlers = new ArrayList<>();
         this.bootstrap = new DBPConnectionBootstrap();
@@ -71,6 +74,7 @@ public class DBPConnectionConfiguration implements DBPObject
         this.clientHomeId = info.clientHomeId;
         this.connectionType = info.connectionType;
         this.properties = new HashMap<>(info.properties);
+        this.providerProperties = new HashMap<>(info.properties);
         this.events = new HashMap<>(info.events.size());
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : info.events.entrySet()) {
             this.events.put(entry.getKey(), new DBRShellCommand(entry.getValue()));
@@ -163,6 +167,9 @@ public class DBPConnectionConfiguration implements DBPObject
         this.userPassword = userPassword;
     }
 
+    ////////////////////////////////////////////////////
+    // Properties (connection properties, usually used by driver)
+
     public Object getProperty(Object name)
     {
         return properties.get(name);
@@ -185,6 +192,33 @@ public class DBPConnectionConfiguration implements DBPObject
         this.properties.putAll(properties);
     }
 
+    ////////////////////////////////////////////////////
+    // Provider properties (extra configuration parameters)
+
+    public Object getProviderProperty(Object name)
+    {
+        return providerProperties.get(name);
+    }
+
+    public void setProviderProperty(Object name, Object value)
+    {
+        providerProperties.put(name, value);
+    }
+
+    @NotNull
+    public Map<Object, Object> getProviderProperties() {
+        return providerProperties;
+    }
+
+    public void setProviderProperties(@NotNull Map<Object, Object> properties)
+    {
+        this.providerProperties.clear();
+        this.providerProperties.putAll(properties);
+    }
+
+    ////////////////////////////////////////////////////
+    // Events
+
     public DBRShellCommand getEvent(DBPConnectionEventType eventType)
     {
         return events.get(eventType);
@@ -204,6 +238,9 @@ public class DBPConnectionConfiguration implements DBPObject
         Set<DBPConnectionEventType> eventTypes = events.keySet();
         return eventTypes.toArray(new DBPConnectionEventType[eventTypes.size()]);
     }
+
+    ////////////////////////////////////////////////////
+    // Network handlers
 
     public List<DBWHandlerConfiguration> getDeclaredHandlers()
     {
@@ -245,6 +282,9 @@ public class DBPConnectionConfiguration implements DBPObject
         }
         return null;
     }
+
+    ////////////////////////////////////////////////////
+    // Misc
 
     public DBPConnectionType getConnectionType()
     {
