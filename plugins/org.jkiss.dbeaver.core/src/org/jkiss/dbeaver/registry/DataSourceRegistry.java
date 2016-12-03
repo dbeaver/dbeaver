@@ -596,6 +596,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     saveSecuredPassword(xml, dataSource, "network/" + configuration.getId(), configuration.getPassword());
                 }
                 for (Map.Entry<String, String> entry : configuration.getProperties().entrySet()) {
+                    if (CommonUtils.isEmpty(entry.getValue())) {
+                        continue;
+                    }
                     xml.startElement(RegistryConstants.TAG_PROPERTY);
                     xml.addAttribute(RegistryConstants.ATTR_NAME, entry.getKey());
                     xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.notEmpty(entry.getValue()));
