@@ -118,7 +118,7 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> imple
         return owner;
     }
 
-    @Property(viewable = false, editable = false)
+    @Property(viewable = true, editable = false)
     public Boolean getEnabled() {
         return enabled;
     }
