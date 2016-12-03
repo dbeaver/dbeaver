@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.utils.CommonUtils;
 
@@ -81,93 +82,35 @@ public class DatabaseEditorInputFactory implements IElementFactory
         final String activePageId = memento.getString(TAG_ACTIVE_PAGE);
         final String activeFolderId = memento.getString(TAG_ACTIVE_FOLDER);
 
-        DBPDataSourceContainer dataSourceContainer = DataSourceRegistry.findDataSource(dataSourceId);
+        final DBPDataSourceContainer dataSourceContainer = DataSourceRegistry.findDataSource(dataSourceId);
         if (dataSourceContainer == null) {
             log.error("Can't find data source '" + dataSourceId + "'"); //$NON-NLS-2$
             return null;
         }
-        final DBPDataSourceContainer dsObject = dataSourceContainer;
-        if (lookupEditor && !dsObject.isConnected()) {
+        if (lookupEditor && !dataSourceContainer.isConnected()) {
             // Do not instantiate editor input if we are just looking for opened editor
             //. for some object. Connection must be instantiated.
             return null;
         }
-        final IProject project = dsObject.getRegistry().getProject();
+        final IProject project = dataSourceContainer.getRegistry().getProject();
         final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
         navigatorModel.ensureProjectLoaded(project);
 
-        DBRRunnableWithResult<IEditorInput> opener = new DBRRunnableWithResult<IEditorInput>() {
-            private IStatus errorStatus;
-            @Override
-            public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-            {
-                DBNDataSource dsNode = null;
-                try {
-                    if (!dsObject.isConnected()) {
-                        dsObject.connect(monitor, true, true);
-                    }
-                    dsNode = (DBNDataSource) navigatorModel.getNodeByObject(monitor, dsObject, true);
-                    if (dsNode != null) {
-                        dsNode.initializeNode(monitor, new DBRProgressListener() {
-                            @Override
-                            public void onTaskFinished(IStatus status)
-                            {
-                                if (!status.isOK()) {
-                                    errorStatus = status;
-                                    return;
-                                }
-                                try {
-                                    final DBNNode node = navigatorModel.getNodeByPath(
-                                        monitor, project, nodePath);
-                                    if (node == null) {
-                                        throw new DBException("Node '" + nodePath + "' not found");
-                                    }
-                                    Class<?> aClass = Class.forName(inputClass);
-                                    if (aClass == ErrorEditorInput.class) {
-                                        aClass = EntityEditorInput.class;
-                                    }
-                                    Constructor<?> constructor = null;
-                                    for (Class nodeType = node.getClass(); nodeType != null; nodeType = nodeType.getSuperclass()) {
-                                        try {
-                                            constructor = aClass.getConstructor(nodeType);
-                                            break;
-                                        } catch (NoSuchMethodException e) {
-                                            // No such constructor
-                                        }
-                                    }
-                                    if (constructor != null) {
-                                        final DatabaseEditorInput input = DatabaseEditorInput.class.cast(constructor.newInstance(node));
-                                        input.setDefaultPageId(activePageId);
-                                        input.setDefaultFolderId(activeFolderId);
-                                        result = input;
-                                    } else {
-                                        throw new DBException("Can't create object instance [" + inputClass + "]");
-                                    }
-                                } catch (Exception e) {
-                                    errorStatus = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), e.getMessage(), e);
-                                    log.error(e);
-                                }
-                            }
-                        });
-                    }
-                } catch (Exception e) {
-                    errorStatus = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), e.getMessage(), e);
-                }
-                if (result == null && errorStatus != null) {
-                    if (dsNode == null) {
-                        log.error("Can't find navigator node for datasource '" + dsObject.getName() + "'");
-                    } else {
-                        result = new ErrorEditorInput(errorStatus, dsNode);
-                    }
-                }
-            }
-        };
+        final EditorOpener opener = new EditorOpener(dataSourceContainer, navigatorModel, project, nodePath, inputClass, activePageId, activeFolderId);
         try {
             DBeaverUI.runInProgressService(opener);
         } catch (InvocationTargetException e) {
             log.error("Error initializing database editor input", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
+        }
+        if (opener.errorStatus != null) {
+            DBeaverUI.asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    UIUtils.showErrorDialog(null, "Editor open", "Can't open saved editor of '" + dataSourceContainer.getName() + "'\nNode path=" + nodePath, opener.errorStatus);
+                }
+            });
         }
         return opener.getResult();
     }
@@ -198,4 +141,88 @@ public class DatabaseEditorInputFactory implements IElementFactory
         }
     }
 
+    private static class EditorOpener extends DBRRunnableWithResult<IEditorInput> {
+        private final DBPDataSourceContainer dataSource;
+        private final DBNModel navigatorModel;
+        private final IProject project;
+        private final String nodePath;
+        private final String inputClass;
+        private final String activePageId;
+        private final String activeFolderId;
+        private IStatus errorStatus;
+
+        public EditorOpener(DBPDataSourceContainer dataSource, DBNModel navigatorModel, IProject project, String nodePath, String inputClass, String activePageId, String activeFolderId) {
+            this.dataSource = dataSource;
+            this.navigatorModel = navigatorModel;
+            this.project = project;
+            this.nodePath = nodePath;
+            this.inputClass = inputClass;
+            this.activePageId = activePageId;
+            this.activeFolderId = activeFolderId;
+        }
+
+        @Override
+        public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+        {
+            DBNDataSource dsNode = null;
+            try {
+                if (!dataSource.isConnected()) {
+                    dataSource.connect(monitor, true, true);
+                }
+                dsNode = (DBNDataSource) navigatorModel.getNodeByObject(monitor, dataSource, true);
+                if (dsNode != null) {
+                    dsNode.initializeNode(monitor, new DBRProgressListener() {
+                        @Override
+                        public void onTaskFinished(IStatus status)
+                        {
+                            if (!status.isOK()) {
+                                errorStatus = status;
+                                return;
+                            }
+                            try {
+                                final DBNNode node = navigatorModel.getNodeByPath(
+                                    monitor, project, nodePath);
+                                if (node == null) {
+                                    throw new DBException("Node '" + nodePath + "' not found");
+                                }
+                                Class<?> aClass = Class.forName(inputClass);
+                                if (aClass == ErrorEditorInput.class) {
+                                    aClass = EntityEditorInput.class;
+                                }
+                                Constructor<?> constructor = null;
+                                for (Class nodeType = node.getClass(); nodeType != null; nodeType = nodeType.getSuperclass()) {
+                                    try {
+                                        constructor = aClass.getConstructor(nodeType);
+                                        break;
+                                    } catch (NoSuchMethodException e) {
+                                        // No such constructor
+                                    }
+                                }
+                                if (constructor != null) {
+                                    final DatabaseEditorInput input = DatabaseEditorInput.class.cast(constructor.newInstance(node));
+                                    input.setDefaultPageId(activePageId);
+                                    input.setDefaultFolderId(activeFolderId);
+                                    result = input;
+                                } else {
+                                    throw new DBException("Can't create object instance [" + inputClass + "]");
+                                }
+                            } catch (Exception e) {
+                                errorStatus = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), e.getMessage(), e);
+                                log.error(e);
+                            }
+                        }
+                    });
+                }
+            } catch (Exception e) {
+                errorStatus = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), e.getMessage(), e);
+            }
+            if (result == null && errorStatus != null) {
+                if (dsNode == null) {
+                    log.error("Can't find navigator node for datasource '" + dataSource.getName() + "'");
+                } else {
+                    result = new ErrorEditorInput(errorStatus, dsNode);
+                }
+            }
+        }
+    }
 }
