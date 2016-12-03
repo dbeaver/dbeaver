@@ -50,8 +50,13 @@ public class ExasolConstants {
     public static final String DRV_USE_BACKUP_HOST_LIST = DBConstants.INTERNAL_PROP_PREFIX + "useBackupHostList";
 
 
-    public static final DBDPseudoAttribute PSEUDO_ATTR_RID_BIT = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID,
-        "ROWID", "ROWID", "row_id", "Unique physical row identifier", true);
+    public static final DBDPseudoAttribute PSEUDO_ATTR_ROWID = new DBDPseudoAttribute(
+            DBDPseudoAttributeType.ROWID,
+            "ROWID",
+            "$alias.ROWID",
+            null,
+            "Unique row identifier",
+            true);
 
     public static final Map<String,String> encoding = new HashMap<String, String>();
     public static final ArrayList<String> encodings = new ArrayList<String>();
