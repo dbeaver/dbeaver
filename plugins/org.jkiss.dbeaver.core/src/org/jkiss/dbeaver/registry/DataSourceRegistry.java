@@ -565,6 +565,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(entry.getValue()));
                 xml.endElement();
             }
+            for (Map.Entry<Object, Object> entry : connectionInfo.getProviderProperties().entrySet()) {
+                xml.startElement(RegistryConstants.TAG_PROVIDER_PROPERTY);
+                xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(entry.getKey()));
+                xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(entry.getValue()));
+                xml.endElement();
+            }
 
             // Save events
             for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
@@ -670,7 +676,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             }
         }
 
-        //xml.addText(CommonUtils.getString(dataSource.getDescription()));
+        if (!CommonUtils.isEmpty(dataSource.getDescription())) {
+            xml.startElement(RegistryConstants.TAG_DESCRIPTION);
+            xml.addText(dataSource.getDescription());
+            xml.endElement();
+        }
         xml.endElement();
     }
 
@@ -931,6 +941,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             atts.getValue(RegistryConstants.ATTR_VALUE));
                     } else if (curDataSource != null) {
                         curDataSource.getConnectionConfiguration().setProperty(
+                            atts.getValue(RegistryConstants.ATTR_NAME),
+                            atts.getValue(RegistryConstants.ATTR_VALUE));
+                    }
+                    break;
+                case RegistryConstants.TAG_PROVIDER_PROPERTY:
+                    if (curDataSource != null) {
+                        curDataSource.getConnectionConfiguration().setProviderProperty(
                             atts.getValue(RegistryConstants.ATTR_NAME),
                             atts.getValue(RegistryConstants.ATTR_VALUE));
                     }
