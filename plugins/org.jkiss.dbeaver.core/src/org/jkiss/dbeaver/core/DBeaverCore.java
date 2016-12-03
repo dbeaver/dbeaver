@@ -29,10 +29,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBACertificateStorage;
-import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPProjectManager;
+import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
@@ -366,6 +363,12 @@ public class DBeaverCore implements DBPPlatform {
     @Override
     public DBACertificateStorage getCertificateStorage() {
         return certificateStorage;
+    }
+
+    @NotNull
+    @Override
+    public DBASecureStorage getSecureStorage() {
+        return application.getSecureStorage();
     }
 
     public ProjectRegistry getProjectRegistry()

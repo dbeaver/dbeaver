@@ -28,6 +28,6 @@ public interface DBPApplication
     boolean isStandalone();
 
     @NotNull
-    DBAClientSecurity getClientSecurity();
+    DBASecureStorage getSecureStorage();
 
 }

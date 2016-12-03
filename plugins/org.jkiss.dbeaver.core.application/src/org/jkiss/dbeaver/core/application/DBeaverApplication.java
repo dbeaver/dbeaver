@@ -41,9 +41,9 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
 import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
-import org.jkiss.dbeaver.model.app.DBAClientSecurity;
+import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.impl.app.DefaultClientSecurity;
+import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
@@ -378,8 +378,8 @@ public class DBeaverApplication implements IApplication, DBPApplication {
 
     @NotNull
     @Override
-    public DBAClientSecurity getClientSecurity() {
-        return DefaultClientSecurity.INSTANCE;
+    public DBASecureStorage getSecureStorage() {
+        return DefaultSecureStorage.INSTANCE;
     }
 
     private class ProxyPrintStream extends OutputStream {

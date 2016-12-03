@@ -18,9 +18,9 @@
 package org.jkiss.dbeaver.core;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBAClientSecurity;
+import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.impl.app.DefaultClientSecurity;
+import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 
 /**
  * EclipseApplication
@@ -34,7 +34,7 @@ class EclipseApplication implements DBPApplication {
 
     @NotNull
     @Override
-    public DBAClientSecurity getClientSecurity() {
-        return DefaultClientSecurity.INSTANCE;
+    public DBASecureStorage getSecureStorage() {
+        return DefaultSecureStorage.INSTANCE;
     }
 }

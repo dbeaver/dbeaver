@@ -19,22 +19,14 @@ package org.jkiss.dbeaver.model.impl.app;
 
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBACertificateStorage;
-import org.jkiss.dbeaver.model.app.DBAClientSecurity;
-
-import java.io.*;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
+import org.jkiss.dbeaver.model.app.DBASecureStorage;
 
 /**
- * DefaultClientSecurity
+ * DefaultSecureStorage
  */
-public class DefaultClientSecurity implements DBAClientSecurity {
+public class DefaultSecureStorage implements DBASecureStorage {
 
-    public static DefaultClientSecurity INSTANCE = new DefaultClientSecurity();
+    public static DefaultSecureStorage INSTANCE = new DefaultSecureStorage();
 
     @Override
     public boolean useSecurePreferences() {

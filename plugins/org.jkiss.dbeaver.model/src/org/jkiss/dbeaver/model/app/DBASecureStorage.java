@@ -23,7 +23,7 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 /**
  * Client security manager
  */
-public interface DBAClientSecurity
+public interface DBASecureStorage
 {
 
     boolean useSecurePreferences();

@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.utils.CommonUtils;
+
 import java.util.*;
 
 /**
@@ -87,4 +89,12 @@ public class DBPConnectionBootstrap
         this.ignoreErrors = ignoreErrors;
     }
 
+    public boolean hasData() {
+        return
+            defaultAutoCommit != null ||
+            defaultTransactionIsolation != null ||
+            !CommonUtils.isEmpty(defaultObjectName) ||
+            ignoreErrors ||
+            !CommonUtils.isEmpty(initQueries);
+    }
 }
