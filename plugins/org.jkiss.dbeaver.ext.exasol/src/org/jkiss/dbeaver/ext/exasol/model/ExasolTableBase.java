@@ -46,7 +46,6 @@ import java.util.Collections;
 public abstract class ExasolTableBase extends JDBCTable<ExasolDataSource, ExasolSchema> implements DBPNamedObject2, DBPRefreshableObject, ExasolStatefulObject {
 
 
-    private String owner;
     private String remarks;
     private String objectType;
 
@@ -58,9 +57,8 @@ public abstract class ExasolTableBase extends JDBCTable<ExasolDataSource, Exasol
     public ExasolTableBase(DBRProgressMonitor monitor, ExasolSchema schema, ResultSet dbResult) {
         super(schema, true);
         setName(JDBCUtils.safeGetString(dbResult, "TABLE_NAME"));
-        this.owner = JDBCUtils.safeGetString(dbResult, "TABLE_OWNER");
-        this.remarks = JDBCUtils.safeGetString(dbResult, "TABLE_COMMENT");
-        this.objectType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
+        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.objectType = JDBCUtils.safeGetString(dbResult, "TABLE_TYPE");
     }
 
 
@@ -138,12 +136,6 @@ public abstract class ExasolTableBase extends JDBCTable<ExasolDataSource, Exasol
     public ExasolSchema getSchema() {
         return super.getContainer();
     }
-
-    @Property(viewable = true, editable = false, order = 3)
-    public String getOwner() {
-        return owner;
-    }
-
 
     // -----------------
     // Associations (Imposed from DBSTable). In Exasol, Most of objects "derived"

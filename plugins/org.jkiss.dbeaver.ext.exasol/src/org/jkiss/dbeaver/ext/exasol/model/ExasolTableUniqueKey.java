@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -38,7 +39,7 @@ import java.util.List;
 /**
  * @author Karl Griesser
  */
-public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> {
+public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> implements DBSEntityReferrer {
 
     private String owner;
     private Boolean enabled;
@@ -117,10 +118,22 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> {
         return owner;
     }
 
-    @Property(viewable = false, editable = false)
+    @Property(viewable = true, editable = false)
     public Boolean getEnabled() {
         return enabled;
     }
+
+	public boolean hasColumn(ExasolTableColumn column)
+	{
+        if (this.columns != null) {
+            for (ExasolTableKeyColumn constColumn : columns) {
+                if (constColumn.getAttribute() == column) {
+                    return true;
+                }
+            }
+        }
+        return false;
+	}
 
 
 }

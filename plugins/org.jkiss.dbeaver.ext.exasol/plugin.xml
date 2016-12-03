@@ -357,22 +357,6 @@
     </extension>
     <extension
             point="org.jkiss.dbeaver.databaseEditor">
-        <editor id="source.declaration"
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                label="%editor.source.declaration.name"
-                description="%editor.source.declaration.description"
-                icon="#sql_text"
-                position="additions_middle"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
-                type="folder"
-                embeddable="true">
-            <objectType
-                    name="org.jkiss.dbeaver.ext.exasol.model.ExasolScript">
-            </objectType>
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolView">
-            </objectType>
-        </editor>
         <editor
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
@@ -390,6 +374,9 @@
            </objectType>
            <objectType
                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema">
+           </objectType>
+           <objectType
+                 name="org.jkiss.dbeaver.ext.exasol.model.ExasolScript">
            </objectType>
         </editor>
         <manager
