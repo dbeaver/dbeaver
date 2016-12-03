@@ -115,9 +115,18 @@ public final class ExasolTableUniqueKeyCache
             log.debug("Column '" + columnName + "' not found in table '" + exasolTable.getFullyQualifiedName(DBPEvaluationContext.UI) + "' ??");
             return null;
         } else {
+            /* verify that the column is not null -> even though it is not in the meta data
+             * Exasol always verify not null for columns in a PK
+             * this is necessary for the automatic unique identifiers detection to work
+             */
+            tableColumn.setRequired(true);
             return new ExasolTableKeyColumn[]{
                 new ExasolTableKeyColumn(object, tableColumn, JDBCUtils.safeGetInteger(dbResult, "ORDINAL_POSITION"))
             };
+            
+            
+            
+            
         }
 
     }
