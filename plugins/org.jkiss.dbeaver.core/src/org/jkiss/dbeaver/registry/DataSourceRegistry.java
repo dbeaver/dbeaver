@@ -498,6 +498,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private void saveDataSource(XMLBuilder xml, DataSourceDescriptor dataSource)
         throws IOException
     {
+        clearSecuredPasswords(dataSource);
+
         xml.startElement(RegistryConstants.TAG_DATA_SOURCE);
         xml.addAttribute(RegistryConstants.ATTR_ID, dataSource.getId());
         xml.addAttribute(RegistryConstants.ATTR_PROVIDER, dataSource.getDriver().getProviderDescriptor().getId());
@@ -541,7 +543,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             xml.addAttribute(RegistryConstants.ATTR_URL, CommonUtils.notEmpty(connectionInfo.getUrl()));
             xml.addAttribute(RegistryConstants.ATTR_USER, CommonUtils.notEmpty(connectionInfo.getUserName()));
 
-            clearSecuredPassword(dataSource, null);
             if (dataSource.isSavePassword() && !CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
                 saveSecuredPassword(xml, dataSource, null, connectionInfo.getUserPassword());
             }
@@ -592,7 +593,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.addAttribute(RegistryConstants.ATTR_ENABLED, configuration.isEnabled());
                 xml.addAttribute(RegistryConstants.ATTR_USER, CommonUtils.notEmpty(configuration.getUserName()));
                 xml.addAttribute(RegistryConstants.ATTR_SAVE_PASSWORD, configuration.isSavePassword());
-                if (configuration.isSavePassword()) {
+                if (configuration.isSavePassword() && !CommonUtils.isEmpty(configuration.getPassword())) {
                     saveSecuredPassword(xml, dataSource, "network/" + configuration.getId(), configuration.getPassword());
                 }
                 for (Map.Entry<String, String> entry : configuration.getProperties().entrySet()) {
@@ -701,6 +702,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             prefNode = prefNode.node(nodeName);
                         }
                     }
+                    prefNode.put("name", dataSource.getName(), false);
                     if (!CommonUtils.isEmpty(password)) {
                         prefNode.put(RegistryConstants.ATTR_PASSWORD, password, true);
                         saved = true;
@@ -721,8 +723,23 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    private void clearSecuredPassword(DataSourceDescriptor dataSource, String subNode) {
+    private void clearSecuredPasswords(DataSourceDescriptor dataSource) {
+        dataSource.getSecurePreferences().removeNode();
+    }
 
+    @Nullable
+    private static String decryptPassword(String encPassword)
+    {
+        if (!CommonUtils.isEmpty(encPassword)) {
+            try {
+                encPassword = ENCRYPTOR.decrypt(encPassword);
+            }
+            catch (Throwable e) {
+                // could not decrypt - use as is
+                encPassword = null;
+            }
+        }
+        return encPassword;
     }
 
     private void saveObjectFiler(XMLBuilder xml, String typeName, String objectID, DBSObjectFilter filter) throws IOException
@@ -776,6 +793,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         private DBSObjectFilter curFilter;
         private StringBuilder curQuery;
         private ParseResults parseResults;
+        private boolean passwordReadCanceled = false;
 
         private DataSourcesParser(boolean extraConfig, boolean refresh, ParseResults parseResults)
         {
@@ -887,20 +905,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         config.setDatabaseName(atts.getValue(RegistryConstants.ATTR_DATABASE));
                         config.setUrl(atts.getValue(RegistryConstants.ATTR_URL));
                         config.setUserName(atts.getValue(RegistryConstants.ATTR_USER));
-
-/*
-                        final ISecurePreferences dsNode = curDataSource.getSecurePreferences();
-                        try {
-                            final String password = dsNode.get(RegistryConstants.ATTR_PASSWORD, null);
-                            if (password != null) {
-                                config.setUserPassword(password);
-                            }
-                        } catch (StorageException e) {
-                            log.error("Can't get password in secure storage", e);
+                        if (!passwordReadCanceled) {
+                            config.setUserPassword(readSecuredPassword(atts, curDataSource, null));
                         }
-*/
-
-                        config.setUserPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
                         config.setClientHomeId(atts.getValue(RegistryConstants.ATTR_HOME));
                         config.setConnectionType(
                             DataSourceProviderRegistry.getInstance().getConnectionType(
@@ -1008,6 +1015,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         curNetworkHandler.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
                         curNetworkHandler.setUserName(CommonUtils.notEmpty(atts.getValue(RegistryConstants.ATTR_USER)));
                         curNetworkHandler.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
+                        if (!passwordReadCanceled) {
+                            curNetworkHandler.setPassword(readSecuredPassword(atts, curDataSource, "network/" + handlerId));
+                        }
+
                         curNetworkHandler.setPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
                         curDataSource.getConnectionConfiguration().addHandler(curNetworkHandler);
                     }
@@ -1085,19 +1096,32 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             isDescription = false;
         }
 
-        @Nullable
-        private String decryptPassword(String encPassword)
-        {
-            if (!CommonUtils.isEmpty(encPassword)) {
+        private String readSecuredPassword(Attributes xmlAttrs, DataSourceDescriptor dataSource, String subNode) {
+            final DBASecureStorage secureStorage = getPlatform().getSecureStorage();
+            {
                 try {
-                    encPassword = ENCRYPTOR.decrypt(encPassword);
-                }
-                catch (Throwable e) {
-                    // could not decrypt - use as is
-                    encPassword = null;
+                    if (secureStorage.useSecurePreferences()) {
+                        ISecurePreferences prefNode = dataSource.getSecurePreferences();
+                        if (subNode != null) {
+                            for (String nodeName : subNode.split("/")) {
+                                prefNode = prefNode.node(nodeName);
+                            }
+                        }
+                        final String password = prefNode.get(RegistryConstants.ATTR_PASSWORD, null);
+                        if (password != null) {
+                            return password;
+                        }
+                    }
+                } catch (StorageException e) {
+                    // Most likely user canceled master password enter of failed by some other reason.
+                    // Anyhow we won't try it again
+                    log.error("Can't read password from secure storage", e);
+                    passwordReadCanceled = true;
                 }
             }
-            return encPassword;
+
+            final String encPassword = xmlAttrs.getValue(RegistryConstants.ATTR_PASSWORD);
+            return CommonUtils.isEmpty(encPassword) ? null : decryptPassword(encPassword);
         }
 
     }
