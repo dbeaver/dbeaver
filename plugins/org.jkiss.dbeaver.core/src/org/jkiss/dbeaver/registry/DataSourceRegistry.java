@@ -660,7 +660,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             for (String propName : prefStore.preferenceNames()) {
                 String propValue = prefStore.getString(propName);
                 String defValue = prefStore.getDefaultString(propName);
-                if (propValue == null) {
+                if (propValue == null || CommonUtils.equalObjects(propValue, defValue)) {
                     continue;
                 }
                 xml.startElement(RegistryConstants.TAG_CUSTOM_PROPERTY);
