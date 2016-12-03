@@ -1015,7 +1015,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         curNetworkHandler.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
                         curNetworkHandler.setUserName(CommonUtils.notEmpty(atts.getValue(RegistryConstants.ATTR_USER)));
                         curNetworkHandler.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
-                        if (!passwordReadCanceled) {
+                        if (!passwordReadCanceled && curNetworkHandler.isSavePassword()) {
                             curNetworkHandler.setPassword(readSecuredPassword(atts, curDataSource, "network/" + handlerId));
                         }
 
