@@ -131,8 +131,9 @@ public class RegistryConstants {
 
     public static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$
     public static final String TAG_EVENT = "event"; //$NON-NLS-1$
-    public static final String TAG_NETWORK_HANDLER = "network-handler"; //$NON-NLS-1$
+    public static final String TAG_PROVIDER_PROPERTY = "provider-property"; //$NON-NLS-1$
     public static final String TAG_CUSTOM_PROPERTY = "custom-property"; //$NON-NLS-1$
+    public static final String TAG_NETWORK_HANDLER = "network-handler"; //$NON-NLS-1$
     public static final String TAG_DESCRIPTION = "description"; //$NON-NLS-1$
     public static final String TAG_CONNECTION = "connection"; //$NON-NLS-1$
     public static final String TAG_BOOTSTRAP = "bootstrap"; //$NON-NLS-1$
