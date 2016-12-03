@@ -68,6 +68,9 @@ public interface DBPPlatform
     DBACertificateStorage getCertificateStorage();
 
     @NotNull
+    DBASecureStorage getSecureStorage();
+
+    @NotNull
     File getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
 
 }

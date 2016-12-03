@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverNature;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
@@ -542,13 +543,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
             clearSecuredPassword(dataSource, null);
             if (dataSource.isSavePassword() && !CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-                if (!saveSecuredPassword(dataSource, null, connectionInfo.getUserPassword())) {
-                    try {
-                        xml.addAttribute(RegistryConstants.ATTR_PASSWORD, ENCRYPTOR.encrypt(connectionInfo.getUserPassword()));
-                    } catch (EncryptionException e) {
-                        log.error("Error encrypting password", e);
-                    }
-                }
+                saveSecuredPassword(xml, dataSource, null, connectionInfo.getUserPassword());
             }
             if (!CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
                 xml.addAttribute(RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
@@ -591,17 +586,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.addAttribute(RegistryConstants.ATTR_ENABLED, configuration.isEnabled());
                 xml.addAttribute(RegistryConstants.ATTR_USER, CommonUtils.notEmpty(configuration.getUserName()));
                 xml.addAttribute(RegistryConstants.ATTR_SAVE_PASSWORD, configuration.isSavePassword());
-                if (configuration.isSavePassword() && !CommonUtils.isEmpty(configuration.getPassword())) {
-                    String encPassword = configuration.getPassword();
-                    if (!CommonUtils.isEmpty(encPassword)) {
-                        try {
-                            encPassword = ENCRYPTOR.encrypt(encPassword);
-                        }
-                        catch (EncryptionException e) {
-                            log.error("Can't encrypt password. Save it as is", e);
-                        }
-                    }
-                    xml.addAttribute(RegistryConstants.ATTR_PASSWORD, encPassword);
+                if (configuration.isSavePassword()) {
+                    saveSecuredPassword(xml, dataSource, "network/" + configuration.getId(), configuration.getPassword());
                 }
                 for (Map.Entry<String, String> entry : configuration.getProperties().entrySet()) {
                     xml.startElement(RegistryConstants.TAG_PROPERTY);
@@ -615,27 +601,28 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             // Save bootstrap info
             {
                 DBPConnectionBootstrap bootstrap = connectionInfo.getBootstrap();
-                xml.startElement(RegistryConstants.TAG_BOOTSTRAP);
-                if (bootstrap.getDefaultAutoCommit() != null) {
-                    xml.addAttribute(RegistryConstants.ATTR_AUTOCOMMIT, bootstrap.getDefaultAutoCommit());
-                }
-                if (bootstrap.getDefaultTransactionIsolation() != null) {
-                    xml.addAttribute(RegistryConstants.ATTR_TXN_ISOLATION, bootstrap.getDefaultTransactionIsolation());
-                }
-                if (!CommonUtils.isEmpty(bootstrap.getDefaultObjectName())) {
-                    xml.addAttribute(RegistryConstants.ATTR_DEFAULT_OBJECT, bootstrap.getDefaultObjectName());
-                }
-                if (bootstrap.isIgnoreErrors()) {
-                    xml.addAttribute(RegistryConstants.ATTR_IGNORE_ERRORS, true);
-                }
-                for (String query : bootstrap.getInitQueries()) {
-                    xml.startElement(RegistryConstants.TAG_QUERY);
-                    xml.addText(query);
+                if (bootstrap.hasData()) {
+                    xml.startElement(RegistryConstants.TAG_BOOTSTRAP);
+                    if (bootstrap.getDefaultAutoCommit() != null) {
+                        xml.addAttribute(RegistryConstants.ATTR_AUTOCOMMIT, bootstrap.getDefaultAutoCommit());
+                    }
+                    if (bootstrap.getDefaultTransactionIsolation() != null) {
+                        xml.addAttribute(RegistryConstants.ATTR_TXN_ISOLATION, bootstrap.getDefaultTransactionIsolation());
+                    }
+                    if (!CommonUtils.isEmpty(bootstrap.getDefaultObjectName())) {
+                        xml.addAttribute(RegistryConstants.ATTR_DEFAULT_OBJECT, bootstrap.getDefaultObjectName());
+                    }
+                    if (bootstrap.isIgnoreErrors()) {
+                        xml.addAttribute(RegistryConstants.ATTR_IGNORE_ERRORS, true);
+                    }
+                    for (String query : bootstrap.getInitQueries()) {
+                        xml.startElement(RegistryConstants.TAG_QUERY);
+                        xml.addText(query);
+                        xml.endElement();
+                    }
                     xml.endElement();
                 }
-                xml.endElement();
             }
-
 
             xml.endElement();
         }
@@ -687,22 +674,34 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         xml.endElement();
     }
 
-    private boolean saveSecuredPassword(DataSourceDescriptor dataSource, String subNode, String password) {
-        try {
-            ISecurePreferences prefNode = dataSource.getSecurePreferences();
-            if (subNode != null) {
-                prefNode = prefNode.node(subNode);
+    private void saveSecuredPassword(XMLBuilder xml, DataSourceDescriptor dataSource, String subNode, String password) throws IOException {
+        boolean saved = false;
+        final DBASecureStorage secureStorage = getPlatform().getSecureStorage();
+        if (secureStorage.useSecurePreferences()) {
+            try {
+                ISecurePreferences prefNode = dataSource.getSecurePreferences();
+                if (subNode != null) {
+                    for (String nodeName : subNode.split("/")) {
+                        prefNode = prefNode.node(nodeName);
+                    }
+                }
+                if (!CommonUtils.isEmpty(password)) {
+                    prefNode.put(RegistryConstants.ATTR_PASSWORD, password, true);
+                } else {
+                    prefNode.remove(RegistryConstants.ATTR_PASSWORD);
+                }
+                saved = true;
+            } catch (StorageException e) {
+                log.error("Can't save password in secure storage", e);
             }
-            if (!CommonUtils.isEmpty(password)) {
-                prefNode.put(RegistryConstants.ATTR_PASSWORD, password, true);
-            } else {
-                prefNode.remove(RegistryConstants.ATTR_PASSWORD);
-            }
-        } catch (StorageException e) {
-            log.error("Can't save password in secure storage", e);
         }
-
-        return false;
+        if (!saved && !CommonUtils.isEmpty(password)) {
+            try {
+                xml.addAttribute(RegistryConstants.ATTR_PASSWORD, ENCRYPTOR.encrypt(password));
+            } catch (EncryptionException e) {
+                log.error("Error encrypting password", e);
+            }
+        }
     }
 
     private void clearSecuredPassword(DataSourceDescriptor dataSource, String subNode) {
