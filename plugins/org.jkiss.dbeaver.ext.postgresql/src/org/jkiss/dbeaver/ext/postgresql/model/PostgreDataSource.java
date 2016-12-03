@@ -446,7 +446,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataSource owner) throws SQLException
         {
-            final boolean showNDD = CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
+            final boolean showNDD = CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
             StringBuilder catalogQuery = new StringBuilder(
                 "SELECT db.oid,db.*" +
                 "\nFROM pg_catalog.pg_database db WHERE NOT datistemplate AND datallowconn");

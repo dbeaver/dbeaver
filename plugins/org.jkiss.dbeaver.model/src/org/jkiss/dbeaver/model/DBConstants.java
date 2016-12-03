@@ -42,7 +42,11 @@ public class DBConstants {
     public static final String PROP_ID_NOT_NULL = "notNull"; //NON-NLS-1
     public static final String PARAM_INIT_ON_TEST = "initOnTest"; //NON-NLS-1
 
+    // Internal properties prefix. This is a legacy properties marker (used to divide driver properties from provider properties)
+    // Left for backward compatibility. Do not use it for new provider property names
     public static final String INTERNAL_PROP_PREFIX = "@dbeaver-"; //NON-NLS-1
+
+    // Used for default driver property values redefine
     public static final String DEFAULT_DRIVER_PROP_PREFIX = INTERNAL_PROP_PREFIX + "default-"; //NON-NLS-1
 
     public static final String[] DEFAULT_DATATYPE_NAMES = {

@@ -181,6 +181,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
 
         DBPConnectionConfiguration config = new DBPConnectionConfiguration();
         config.setProperties(connectionInfo.getProperties());
+        config.setProviderProperties(connectionInfo.getProviderProperties());
         config.setUrl(connectionInfo.getUrl());
         config.setUserName(connectionInfo.getUser());
         config.setUserPassword(connectionInfo.getPassword());

@@ -24,11 +24,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -160,9 +159,6 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         // Find prop values which are not from driver
         for (Object propId : properties.keySet()) {
             final String propName = propId.toString();
-            if (propName.startsWith(DBConstants.INTERNAL_PROP_PREFIX)) {
-                continue;
-            }
             if (!propNames.contains(propName)) {
                 customProperties.add(new PropertyDescriptor(
                     USER_PROPERTIES_CATEGORY,

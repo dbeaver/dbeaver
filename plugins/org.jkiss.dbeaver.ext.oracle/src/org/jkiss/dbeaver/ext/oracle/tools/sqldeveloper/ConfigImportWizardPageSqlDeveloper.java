@@ -136,15 +136,15 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
                 String dbName = CommonUtils.isEmpty(sid) ? serviceName : sid;
                 ImportConnectionInfo connectionInfo = new ImportConnectionInfo(oraDriver, null, conName, url, host, port, dbName, user, null);
                 if (!CommonUtils.isEmpty(sid)) {
-                    connectionInfo.setProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SID.name());
+                    connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SID.name());
                 } else if (!CommonUtils.isEmpty(serviceName)) {
-                    connectionInfo.setProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SERVICE.name());
+                    connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SERVICE.name());
                 }
                 if (CommonUtils.toBoolean(osAuth)) {
                     connectionInfo.setUser(OracleConstants.OS_AUTH_USER_NAME);
                 }
                 if (!CommonUtils.isEmpty(role)) {
-                    connectionInfo.setProperty(OracleConstants.PROP_INTERNAL_LOGON, role);
+                    connectionInfo.setProviderProperty(OracleConstants.PROP_INTERNAL_LOGON, role);
                 }
                 importData.addConnection(connectionInfo);
             }

@@ -203,7 +203,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
 
-        Object backupHostText = connectionInfo.getProperties().get(ExasolConstants.DRV_BACKUP_HOST_LIST);
+        Object backupHostText = connectionInfo.getProviderProperty(ExasolConstants.DRV_BACKUP_HOST_LIST);
 
         if (backupHostText != null) {
             this.backupHostText.setText(backupHostText.toString());
@@ -212,7 +212,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             this.useBackupHostList.setSelection(true);
         }
 
-        Object encryptComm = connectionInfo.getProperties().get(ExasolConstants.DRV_ENCRYPT);
+        Object encryptComm = connectionInfo.getProviderProperty(ExasolConstants.DRV_ENCRYPT);
 
         if (encryptComm != null) {
             if (encryptComm.toString().equals("1"))
@@ -241,10 +241,10 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
         }
 
         if (backupHostText.getText() != null) {
-            connectionInfo.setProperty(ExasolConstants.DRV_BACKUP_HOST_LIST, backupHostText.getText());
+            connectionInfo.setProviderProperty(ExasolConstants.DRV_BACKUP_HOST_LIST, backupHostText.getText());
         }
         if (this.encryptCommunication.getSelection())
-            connectionInfo.setProperty(ExasolConstants.DRV_ENCRYPT, "1");
+            connectionInfo.setProviderProperty(ExasolConstants.DRV_ENCRYPT, "1");
 
         super.saveSettings(dataSource);
     }

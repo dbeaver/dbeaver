@@ -136,11 +136,6 @@ public abstract class JDBCDataSource
         if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
             connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, getConnectionUserPassword(connectionInfo));
         }
-        for (Iterator<Object> iter = connectProps.keySet().iterator(); iter.hasNext(); ) {
-            if (CommonUtils.toString(iter.next()).startsWith(DBConstants.INTERNAL_PROP_PREFIX)) {
-                iter.remove();
-            }
-        }
         // Obtain connection
         try {
             final String url = getConnectionURL(connectionInfo);

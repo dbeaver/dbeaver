@@ -130,66 +130,66 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
-        Map<Object,Object> connectionProperties = connectionInfo.getProperties();
+        Map<Object,Object> providerProperties = connectionInfo.getProviderProperties();
 
         // Settings
-        final Object nlsLanguage = connectionProperties.get(OracleConstants.PROP_SESSION_LANGUAGE);
+        final Object nlsLanguage = providerProperties.get(OracleConstants.PROP_SESSION_LANGUAGE);
         if (nlsLanguage != null) {
             languageCombo.setText(nlsLanguage.toString());
         }
 
-        final Object nlsTerritory = connectionProperties.get(OracleConstants.PROP_SESSION_TERRITORY);
+        final Object nlsTerritory = providerProperties.get(OracleConstants.PROP_SESSION_TERRITORY);
         if (nlsTerritory != null) {
             territoryCombo.setText(nlsTerritory.toString());
         }
 
-        final Object dateFormat = connectionProperties.get(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
+        final Object dateFormat = providerProperties.get(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
         if (dateFormat != null) {
             nlsDateFormat.setText(dateFormat.toString());
         }
 
-        final Object checkSchemaContent = connectionProperties.get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT);
+        final Object checkSchemaContent = providerProperties.get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT);
         if (checkSchemaContent != null) {
             hideEmptySchemasCheckbox.setSelection(CommonUtils.getBoolean(checkSchemaContent, false));
         }
 
-        showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(connectionProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA), false));
-        useRuleHint.setSelection(CommonUtils.getBoolean(connectionProperties.get(OracleConstants.PROP_USE_RULE_HINT), false));
+        showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA), false));
+        useRuleHint.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_USE_RULE_HINT), false));
     }
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
-        Map<Object, Object> connectionProperties = dataSource.getConnectionConfiguration().getProperties();
+        Map<Object, Object> providerProperties = dataSource.getConnectionConfiguration().getProviderProperties();
 
         {
             // Settings
             if (!OracleConstants.NLS_DEFAULT_VALUE.equals(languageCombo.getText())) {
-                connectionProperties.put(OracleConstants.PROP_SESSION_LANGUAGE, languageCombo.getText());
+                providerProperties.put(OracleConstants.PROP_SESSION_LANGUAGE, languageCombo.getText());
             } else {
-                connectionProperties.remove(OracleConstants.PROP_SESSION_LANGUAGE);
+                providerProperties.remove(OracleConstants.PROP_SESSION_LANGUAGE);
             }
 
             if (!OracleConstants.NLS_DEFAULT_VALUE.equals(territoryCombo.getText())) {
-                connectionProperties.put(OracleConstants.PROP_SESSION_TERRITORY, territoryCombo.getText());
+                providerProperties.put(OracleConstants.PROP_SESSION_TERRITORY, territoryCombo.getText());
             } else {
-                connectionProperties.remove(OracleConstants.PROP_SESSION_TERRITORY);
+                providerProperties.remove(OracleConstants.PROP_SESSION_TERRITORY);
             }
 
             String dateFormat = nlsDateFormat.getText();
             if (!dateFormat.isEmpty()) {
-                connectionProperties.put(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT, dateFormat);
+                providerProperties.put(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT, dateFormat);
             } else {
-                connectionProperties.remove(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
+                providerProperties.remove(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
             }
 
-            connectionProperties.put(
+            providerProperties.put(
                 OracleConstants.PROP_CHECK_SCHEMA_CONTENT,
                 String.valueOf(hideEmptySchemasCheckbox.getSelection()));
-            connectionProperties.put(
+            providerProperties.put(
                 OracleConstants.PROP_ALWAYS_SHOW_DBA,
                 String.valueOf(showDBAAlwaysCheckbox.getSelection()));
-            connectionProperties.put(
+            providerProperties.put(
                 OracleConstants.PROP_USE_RULE_HINT,
                 String.valueOf(useRuleHint.getSelection()));
         }
