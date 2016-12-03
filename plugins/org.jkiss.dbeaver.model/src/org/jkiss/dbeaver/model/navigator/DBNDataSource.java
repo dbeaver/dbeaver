@@ -217,15 +217,22 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
         String folderPath = dataSource.getFolderPath();
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource) {
-                ((DBNDataSource) node).setFolderPath(folderPath);
+                if (!((DBNDataSource) node).setFolderPath(folderPath)) {
+                    return;
+                }
             }
         }
         DBNModel.updateConfigAndRefreshDatabases(this);
     }
 
-    public void setFolderPath(String folder)
+    public boolean setFolderPath(String folder)
     {
+        final String oldPath = dataSource.getFolderPath();
+        if (CommonUtils.equalObjects(oldPath, folder)) {
+            return false;
+        }
         dataSource.setFolderPath(folder);
+        return true;
     }
 
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
