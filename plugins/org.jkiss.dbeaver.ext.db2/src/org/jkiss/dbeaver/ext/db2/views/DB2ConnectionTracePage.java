@@ -146,30 +146,30 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
     {
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
-        Map<Object,Object> connectionProperties = connectionInfo.getProperties();
+        Map<Object,Object> providerProperties = connectionInfo.getProviderProperties();
 
         // Settings
         enableTraceCheck.setSelection(
             CommonUtils.getBoolean(
-                connectionProperties.get(DB2Constants.PROP_TRACE_ENABLED), false));
+                providerProperties.get(DB2Constants.PROP_TRACE_ENABLED), false));
         if (!enableTraceCheck.getSelection()) {
             traceEnableState = ControlEnableState.disable(traceGroup);
         }
-        if (connectionProperties.containsKey(DB2Constants.PROP_TRACE_FOLDER)) {
+        if (providerProperties.containsKey(DB2Constants.PROP_TRACE_FOLDER)) {
             folderText.setText(
                 CommonUtils.toString(
-                    connectionProperties.get(DB2Constants.PROP_TRACE_FOLDER)));
+                    providerProperties.get(DB2Constants.PROP_TRACE_FOLDER)));
         }
-        if (connectionProperties.containsKey(DB2Constants.PROP_TRACE_FILE)) {
+        if (providerProperties.containsKey(DB2Constants.PROP_TRACE_FILE)) {
             fileNameText.setText(
                 CommonUtils.toString(
-                    connectionProperties.get(DB2Constants.PROP_TRACE_FILE)));
+                    providerProperties.get(DB2Constants.PROP_TRACE_FILE)));
         }
         traceAppendCheck.setSelection(
             CommonUtils.getBoolean(
-                connectionProperties.get(DB2Constants.PROP_TRACE_APPEND), false));
+                providerProperties.get(DB2Constants.PROP_TRACE_APPEND), false));
         int traceLevel = CommonUtils.toInt(
-            connectionProperties.get(DB2Constants.PROP_TRACE_LEVEL));
+            providerProperties.get(DB2Constants.PROP_TRACE_LEVEL));
         for (LevelConfig level : levels) {
             level.checkbox.setSelection((traceLevel & level.level) != 0);
         }
@@ -179,20 +179,20 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
         super.saveSettings(dataSource);
-        Map<Object, Object> connectionProperties = dataSource.getConnectionConfiguration().getProperties();
+        Map<Object, Object> providerProperties = dataSource.getConnectionConfiguration().getProviderProperties();
 
         {
-            connectionProperties.put(DB2Constants.PROP_TRACE_ENABLED, enableTraceCheck.getSelection());
-            connectionProperties.put(DB2Constants.PROP_TRACE_FOLDER, folderText.getText());
-            connectionProperties.put(DB2Constants.PROP_TRACE_FILE, fileNameText.getText());
-            connectionProperties.put(DB2Constants.PROP_TRACE_APPEND, traceAppendCheck.getSelection());
+            providerProperties.put(DB2Constants.PROP_TRACE_ENABLED, enableTraceCheck.getSelection());
+            providerProperties.put(DB2Constants.PROP_TRACE_FOLDER, folderText.getText());
+            providerProperties.put(DB2Constants.PROP_TRACE_FILE, fileNameText.getText());
+            providerProperties.put(DB2Constants.PROP_TRACE_APPEND, traceAppendCheck.getSelection());
             int traceLevel = 0;
             for (LevelConfig level : levels) {
                 if (level.checkbox.getSelection()) {
                     traceLevel |= level.level;
                 }
             }
-            connectionProperties.put(DB2Constants.PROP_TRACE_LEVEL, traceLevel);
+            providerProperties.put(DB2Constants.PROP_TRACE_LEVEL, traceLevel);
         }
         saveConnectionURL(dataSource.getConnectionConfiguration());
     }

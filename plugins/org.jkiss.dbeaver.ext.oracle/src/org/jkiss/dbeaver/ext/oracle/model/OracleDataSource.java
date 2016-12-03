@@ -112,7 +112,7 @@ public class OracleDataSource extends JDBCDataSource
 /*
         // Set tns admin directory
         DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
-        String tnsPathProp = CommonUtils.toString(connectionInfo.getProperty(OracleConstants.PROP_TNS_PATH));
+        String tnsPathProp = CommonUtils.toString(connectionInfo.getProviderProperty(OracleConstants.PROP_TNS_PATH));
         if (!CommonUtils.isEmpty(tnsPathProp)) {
             System.setProperty(OracleConstants.VAR_ORACLE_NET_TNS_ADMIN, tnsPathProp);
         } else {
@@ -153,7 +153,7 @@ public class OracleDataSource extends JDBCDataSource
 
             try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Set connection parameters")) {
                 // Set session settings
-                Object sessionLanguage = connectionInfo.getProperty(OracleConstants.PROP_SESSION_LANGUAGE);
+                Object sessionLanguage = connectionInfo.getProviderProperty(OracleConstants.PROP_SESSION_LANGUAGE);
                 if (sessionLanguage != null) {
                     try {
                         JDBCUtils.executeSQL(
@@ -163,7 +163,7 @@ public class OracleDataSource extends JDBCDataSource
                         log.warn("Can't set session language", e);
                     }
                 }
-                Object sessionTerritory = connectionInfo.getProperty(OracleConstants.PROP_SESSION_TERRITORY);
+                Object sessionTerritory = connectionInfo.getProviderProperty(OracleConstants.PROP_SESSION_TERRITORY);
                 if (sessionTerritory != null) {
                     try {
                         JDBCUtils.executeSQL(
@@ -173,7 +173,7 @@ public class OracleDataSource extends JDBCDataSource
                         log.warn("Can't set session territory", e);
                     }
                 }
-                Object nlsDateFormat = connectionInfo.getProperty(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
+                Object nlsDateFormat = connectionInfo.getProviderProperty(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
                 if (nlsDateFormat != null) {
                     try {
                         JDBCUtils.executeSQL(
@@ -189,7 +189,7 @@ public class OracleDataSource extends JDBCDataSource
 
     @Override
     protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
-        final Object role = connectionInfo.getProperty(OracleConstants.PROP_INTERNAL_LOGON);
+        final Object role = connectionInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
         return role == null ? connectionInfo.getUserName() : connectionInfo.getUserName() + " AS " + role;
     }
 
@@ -287,7 +287,7 @@ public class OracleDataSource extends JDBCDataSource
         DBPConnectionConfiguration connectionInfo = getContainer().getConnectionConfiguration();
 
         {
-            Object useRuleHintProp = connectionInfo.getProperty(OracleConstants.PROP_USE_RULE_HINT);
+            Object useRuleHintProp = connectionInfo.getProviderProperty(OracleConstants.PROP_USE_RULE_HINT);
             if (useRuleHintProp != null) {
                 useRuleHint = CommonUtils.getBoolean(useRuleHintProp, false);
             }
@@ -304,7 +304,7 @@ public class OracleDataSource extends JDBCDataSource
                         "SELECT 'YES' FROM USER_ROLE_PRIVS WHERE GRANTED_ROLE='DBA'"));
                 this.isAdminVisible = isAdmin;
                 if (!isAdminVisible) {
-                    Object showAdmin = connectionInfo.getProperty(OracleConstants.PROP_ALWAYS_SHOW_DBA);
+                    Object showAdmin = connectionInfo.getProviderProperty(OracleConstants.PROP_ALWAYS_SHOW_DBA);
                     if (showAdmin != null) {
                         isAdminVisible = CommonUtils.getBoolean(showAdmin, false);
                     }
@@ -651,7 +651,7 @@ public class OracleDataSource extends JDBCDataSource
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
             StringBuilder schemasQuery = new StringBuilder();
-            boolean manyObjects = "false".equals(owner.getContainer().getConnectionConfiguration().getProperty(OracleConstants.PROP_CHECK_SCHEMA_CONTENT));
+            boolean manyObjects = "false".equals(owner.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_CHECK_SCHEMA_CONTENT));
             schemasQuery.append("SELECT U.* FROM SYS.ALL_USERS U\n");
 
 //                if (owner.isAdmin() && false) {

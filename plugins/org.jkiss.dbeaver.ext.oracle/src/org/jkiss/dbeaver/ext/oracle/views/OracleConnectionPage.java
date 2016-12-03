@@ -46,7 +46,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * OracleConnectionPage
@@ -106,7 +105,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             public void widgetSelected(SelectionEvent e)
             {
                 connectionType = (OracleConstants.ConnectionType) connectionTypeFolder.getSelection()[0].getData();
-                site.getActiveDataSource().getConnectionConfiguration().setProperty(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
+                site.getActiveDataSource().getConnectionConfiguration().setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
                 updateUI();
             }
         });
@@ -356,9 +355,8 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
-        Map<Object,Object> connectionProperties = connectionInfo.getProperties();
 
-        final Object sidService = connectionProperties.get(OracleConstants.PROP_SID_SERVICE);
+        final Object sidService = connectionInfo.getProviderProperty(OracleConstants.PROP_SID_SERVICE);
         if (sidService != null) {
             sidServiceCombo.setText(OracleConnectionType.valueOf(sidService.toString()).getTitle());
         }
@@ -377,7 +375,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             }
         }
 
-        Object conTypeProperty = connectionProperties.get(OracleConstants.PROP_CONNECTION_TYPE);
+        Object conTypeProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE);
         if (conTypeProperty != null) {
             connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
         } else {
@@ -400,7 +398,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
                 break;
             case TNS: {
                 tnsNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
-                Object tnsPathProperty = connectionProperties.get(OracleConstants.PROP_TNS_PATH);
+                Object tnsPathProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_TNS_PATH);
 //                if (tnsPathProperty == null) {
 //                    tnsPathProperty = System.getenv(OracleConstants.VAR_TNS_ADMIN);
 //                }
@@ -424,7 +422,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             osAuthCheck.setSelection(false);
         }
 
-        final Object roleName = connectionProperties.get(OracleConstants.PROP_INTERNAL_LOGON);
+        final Object roleName = connectionInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
         if (roleName != null) {
             userRoleCombo.setText(roleName.toString().toUpperCase(Locale.ENGLISH));
         }
@@ -434,17 +432,9 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-        //super.saveSettings(dataSource);
-        Map<Object, Object> connectionProperties = connectionInfo.getProperties();
-        //if (isOCI) {
-            connectionInfo.setClientHomeId(oraHomeSelector.getSelectedHome());
-        //}
+        connectionInfo.setClientHomeId(oraHomeSelector.getSelectedHome());
 
-        connectionProperties.put(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
-//        connectionProperties.put(
-//                OracleConstants.PROP_DRIVER_TYPE, isOCI ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
-//            connectionInfo.getProperties().put(OracleConstants.PROP_DRIVER_TYPE,
-//                ociDriverCheck.getSelection() ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
+        connectionInfo.setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
         switch (connectionType) {
             case BASIC:
                 connectionInfo.setHostName(hostText.getText().trim());
@@ -453,7 +443,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
                 break;
             case TNS:
                 connectionInfo.setDatabaseName(tnsNameCombo.getText().trim());
-                connectionProperties.put(OracleConstants.PROP_TNS_PATH, tnsPathText.getText());
+                connectionInfo.setProviderProperty(OracleConstants.PROP_TNS_PATH, tnsPathText.getText());
                 break;
             case CUSTOM:
                 connectionInfo.setUrl(connectionUrlText.getText());
@@ -467,12 +457,12 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             connectionInfo.setUserPassword(passwordText.getText());
         }
 
-        connectionProperties.put(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.getTypeForTitle(sidServiceCombo.getText()).name());
+        connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.getTypeForTitle(sidServiceCombo.getText()).name());
 
         if (userRoleCombo.getSelectionIndex() > 0) {
-            connectionProperties.put(OracleConstants.PROP_INTERNAL_LOGON, userRoleCombo.getText().toLowerCase(Locale.ENGLISH));
+            connectionInfo.setProviderProperty(OracleConstants.PROP_INTERNAL_LOGON, userRoleCombo.getText().toLowerCase(Locale.ENGLISH));
         } else {
-            connectionProperties.remove(OracleConstants.PROP_INTERNAL_LOGON);
+            connectionInfo.getProviderProperties().remove(OracleConstants.PROP_INTERNAL_LOGON);
         }
 
         saveConnectionURL(connectionInfo);

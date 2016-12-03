@@ -940,9 +940,16 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             atts.getValue(RegistryConstants.ATTR_NAME),
                             atts.getValue(RegistryConstants.ATTR_VALUE));
                     } else if (curDataSource != null) {
-                        curDataSource.getConnectionConfiguration().setProperty(
-                            atts.getValue(RegistryConstants.ATTR_NAME),
-                            atts.getValue(RegistryConstants.ATTR_VALUE));
+                        final String propName = atts.getValue(RegistryConstants.ATTR_NAME);
+                        final String propValue = atts.getValue(RegistryConstants.ATTR_VALUE);
+                        if (propName != null) {
+                            if (propName.startsWith(DBConstants.INTERNAL_PROP_PREFIX)) {
+                                // Backward compatibility - internal properties are provider properties
+                                curDataSource.getConnectionConfiguration().setProviderProperty(propName, propValue);
+                            } else {
+                                curDataSource.getConnectionConfiguration().setProperty(propName, propValue);
+                            }
+                        }
                     }
                     break;
                 case RegistryConstants.TAG_PROVIDER_PROPERTY:

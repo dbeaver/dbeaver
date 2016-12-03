@@ -74,7 +74,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
     {
         //boolean isOCI = OCIUtils.isOciDriver(driver);
         OracleConstants.ConnectionType connectionType;
-        Object conTypeProperty = connectionInfo.getProperty(OracleConstants.PROP_CONNECTION_TYPE);
+        Object conTypeProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE);
         if (conTypeProperty != null) {
             connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
         } else {
@@ -90,7 +90,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             // Try to get description from TNSNAMES
             File oraHomePath;
             boolean checkTnsAdmin;
-            String tnsPathProp = CommonUtils.toString(connectionInfo.getProperty(OracleConstants.PROP_TNS_PATH));
+            String tnsPathProp = CommonUtils.toString(connectionInfo.getProviderProperty(OracleConstants.PROP_TNS_PATH));
             if (!CommonUtils.isEmpty(tnsPathProp)) {
                 oraHomePath = new File(tnsPathProp);
                 checkTnsAdmin = false;
@@ -116,7 +116,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             }
         } else {
             // Basic connection info specified
-            boolean isSID = OracleConnectionType.SID.name().equals(connectionInfo.getProperty(OracleConstants.PROP_SID_SERVICE));
+            boolean isSID = OracleConnectionType.SID.name().equals(connectionInfo.getProviderProperty(OracleConstants.PROP_SID_SERVICE));
             if (!isSID) {
                 url.append("//"); //$NON-NLS-1$
             }

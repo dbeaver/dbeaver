@@ -208,7 +208,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         }
         homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
 
-        final boolean showNDD = CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
+        final boolean showNDD = CommonUtils.toBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
         hideNonDefault.setSelection(showNDD);
 
         activated = true;
@@ -237,7 +237,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
         }
 
-        connectionInfo.setProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, hideNonDefault.getSelection());
+        connectionInfo.setProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, hideNonDefault.getSelection());
         super.saveSettings(dataSource);
     }
 
