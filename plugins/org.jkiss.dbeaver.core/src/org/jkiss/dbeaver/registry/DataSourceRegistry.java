@@ -690,20 +690,24 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private void saveSecuredPassword(XMLBuilder xml, DataSourceDescriptor dataSource, String subNode, String password) throws IOException {
         boolean saved = false;
         final DBASecureStorage secureStorage = getPlatform().getSecureStorage();
-        if (secureStorage.useSecurePreferences()) {
+        {
             try {
                 ISecurePreferences prefNode = dataSource.getSecurePreferences();
-                if (subNode != null) {
-                    for (String nodeName : subNode.split("/")) {
-                        prefNode = prefNode.node(nodeName);
+                if (!secureStorage.useSecurePreferences()) {
+                    prefNode.removeNode();
+                } else {
+                    if (subNode != null) {
+                        for (String nodeName : subNode.split("/")) {
+                            prefNode = prefNode.node(nodeName);
+                        }
+                    }
+                    if (!CommonUtils.isEmpty(password)) {
+                        prefNode.put(RegistryConstants.ATTR_PASSWORD, password, true);
+                        saved = true;
+                    } else {
+                        prefNode.remove(RegistryConstants.ATTR_PASSWORD);
                     }
                 }
-                if (!CommonUtils.isEmpty(password)) {
-                    prefNode.put(RegistryConstants.ATTR_PASSWORD, password, true);
-                } else {
-                    prefNode.remove(RegistryConstants.ATTR_PASSWORD);
-                }
-                saved = true;
             } catch (StorageException e) {
                 log.error("Can't save password in secure storage", e);
             }
