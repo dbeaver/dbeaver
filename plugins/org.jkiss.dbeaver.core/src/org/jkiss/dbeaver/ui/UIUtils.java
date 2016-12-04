@@ -1085,14 +1085,16 @@ public class UIUtils {
         }
     }
 
-    public static void enableWithChildren(Composite composite, boolean enable)
+    public static void enableWithChildren(Control control, boolean enable)
     {
-        composite.setEnabled(enable);
-        for (Control child : composite.getChildren()) {
-            if (child instanceof Composite) {
-                enableWithChildren((Composite) child, enable);
-            } else {
-                child.setEnabled(enable);
+        control.setEnabled(enable);
+        if (control instanceof Composite) {
+            for (Control child : ((Composite)control).getChildren()) {
+                if (child instanceof Composite) {
+                    enableWithChildren(child, enable);
+                } else {
+                    child.setEnabled(enable);
+                }
             }
         }
     }
