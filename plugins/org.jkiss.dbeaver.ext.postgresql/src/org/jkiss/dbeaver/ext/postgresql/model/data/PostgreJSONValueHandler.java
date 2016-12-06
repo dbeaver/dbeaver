@@ -46,7 +46,9 @@ public class PostgreJSONValueHandler extends JDBCContentValueHandler {
         if (object == null) {
             return new PostgreContentJSON(session.getDataSource(), null);
         } else if (object instanceof PostgreContentJSON) {
-            return copy ? (PostgreContentJSON)((PostgreContentJSON) object).cloneValue(session.getProgressMonitor()) : (PostgreContentJSON) object;
+            return copy ? ((PostgreContentJSON) object).cloneValue(session.getProgressMonitor()) : (PostgreContentJSON) object;
+        } else if (object instanceof String) {
+            return new PostgreContentJSON(session.getDataSource(), (String) object);
         }
         return super.getValueFromObject(session, type, object, copy);
     }
