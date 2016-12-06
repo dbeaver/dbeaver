@@ -6,3 +6,7 @@ jdk:
 notifications:
   email:
     - serge@jkiss.org
+    
+cache:
+  directories:
+  - $HOME/.m2
