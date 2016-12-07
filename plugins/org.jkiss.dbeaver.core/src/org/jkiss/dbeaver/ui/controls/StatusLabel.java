@@ -23,12 +23,10 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -45,20 +43,20 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
  */
 public class StatusLabel extends Composite {
 
+    @Nullable
     private final Label statusIcon;
     private final Text statusText;
     private final Color colorDefault, colorError, colorWarning;
     private DBPMessageType messageType;
 
-    public StatusLabel(@NotNull Composite parent) {
-        this(parent, null);
-    }
-
-    public StatusLabel(@NotNull Composite parent, @Nullable final IWorkbenchPartSite site) {
+    public StatusLabel(@NotNull Composite parent, int style, @Nullable final IWorkbenchPartSite site) {
         super(parent, SWT.BORDER);
+
+        boolean isSimple = (style & SWT.SIMPLE) != 0;
+
         setBackgroundMode(SWT.INHERIT_FORCE);
 
-        GridLayout layout = new GridLayout(3, false);
+        GridLayout layout = new GridLayout(isSimple ? 1 : 3, false);
         layout.marginHeight = 2;
         layout.marginWidth = 2;
         setLayout(layout);
@@ -67,9 +65,14 @@ public class StatusLabel extends Composite {
         colorError = JFaceColors.getErrorText(Display.getDefault());
         colorWarning = colorDefault;
 
-        statusIcon = new Label(this, SWT.NONE);
-        statusIcon.setImage(JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_INFO));
-        statusIcon.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        Image statusImage = JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_INFO);
+        if (!isSimple) {
+            statusIcon = new Label(this, SWT.NONE);
+            statusIcon.setImage(statusImage);
+            statusIcon.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        } else {
+            statusIcon = null;
+        }
 
         statusText = new Text(this, SWT.READ_ONLY);
         if (RuntimeUtils.isPlatformWindows()) {
@@ -77,7 +80,11 @@ public class StatusLabel extends Composite {
         } else {
             statusText.setBackground(parent.getBackground());
         }
-        statusText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        if (isSimple) {
+            gd.minimumHeight = statusImage.getBounds().height;
+        }
+        statusText.setLayoutData(gd);
 
         if (site != null) {
             UIUtils.enableHostEditorKeyBindingsSupport(site, this.statusText);
@@ -91,29 +98,35 @@ public class StatusLabel extends Composite {
             });
         }
 
-        Label detailsIcon = new Label(this, SWT.NONE);
-        detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
-        detailsIcon.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        if (!isSimple) {
+            Label detailsIcon = new Label(this, SWT.NONE);
+            detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
+            detailsIcon.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-        detailsIcon.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-        detailsIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseUp(MouseEvent e) {
-                showDetails();
-            }
-        });
-        statusText.addTraverseListener(new TraverseListener() {
-            @Override
-            public void keyTraversed(TraverseEvent e) {
-                if (e.detail == SWT.TRAVERSE_RETURN) {
+            detailsIcon.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+            detailsIcon.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseUp(MouseEvent e) {
                     showDetails();
                 }
-            }
-        });
+            });
+            statusText.addTraverseListener(new TraverseListener() {
+                @Override
+                public void keyTraversed(TraverseEvent e) {
+                    if (e.detail == SWT.TRAVERSE_RETURN) {
+                        showDetails();
+                    }
+                }
+            });
+        }
     }
 
     protected void showDetails() {
         EditTextDialog.showText(getShell(), CoreMessages.controls_resultset_viewer_dialog_status_title, statusText.getText());
+    }
+
+    public void setStatus(String message) {
+        this.setStatus(message, DBPMessageType.INFORMATION);
     }
 
     public void setStatus(String message, DBPMessageType messageType)
@@ -143,7 +156,9 @@ public class StatusLabel extends Composite {
         if (message == null) {
             message = "???"; //$NON-NLS-1$
         }
-        statusIcon.setImage(JFaceResources.getImage(statusIconId));
+        if (statusIcon != null) {
+            statusIcon.setImage(JFaceResources.getImage(statusIconId));
+        }
         statusText.setText(message);
         if (messageType != DBPMessageType.INFORMATION) {
             statusText.setToolTipText(message);
@@ -158,5 +173,9 @@ public class StatusLabel extends Composite {
 
     public DBPMessageType getMessageType() {
         return messageType;
+    }
+
+    public void setUpdateListener(Runnable runnable) {
+
     }
 }
