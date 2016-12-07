@@ -59,6 +59,7 @@ public class ResultSetModel {
 
     // Data
     private List<ResultSetRow> curRows = new ArrayList<>();
+    private Long totalRowCount = null;
     private int changesCount = 0;
     private volatile boolean hasData = false;
     // Flag saying that edited values update is in progress
@@ -296,6 +297,14 @@ public class ResultSetModel {
     @NotNull
     public ResultSetRow getRow(int index) {
         return curRows.get(index);
+    }
+
+    public Long getTotalRowCount() {
+        return totalRowCount;
+    }
+
+    public void setTotalRowCount(Long totalRowCount) {
+        this.totalRowCount = totalRowCount;
     }
 
     @Nullable

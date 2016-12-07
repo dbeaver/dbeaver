@@ -93,6 +93,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 
@@ -114,6 +115,8 @@ public class ResultSetViewer extends Viewer
     private static final Log log = Log.getLog(ResultSetViewer.class);
     public static final String SETTINGS_SECTION_PRESENTATIONS = "presentations";
 
+    private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
+
     @NotNull
     private static IResultSetFilterManager filterManager = new SimpleFilterManager();
 
@@ -131,6 +134,7 @@ public class ResultSetViewer extends Viewer
     private final List<ToolBarManager> toolbarList = new ArrayList<>();
     private Composite statusBar;
     private StatusLabel statusLabel;
+    private StatusLabel rowCountLabel;
 
     private final DynamicFindReplaceTarget findReplaceTarget;
 
@@ -158,7 +162,7 @@ public class ResultSetViewer extends Viewer
 
     private final List<IResultSetListener> listeners = new ArrayList<>();
 
-    private volatile ResultSetDataPumpJob dataPumpJob;
+    private volatile ResultSetJobDataRead dataPumpJob;
 
     private final ResultSetModel model = new ResultSetModel();
     private HistoryStateItem curState = null;
@@ -1038,14 +1042,18 @@ public class ResultSetViewer extends Viewer
 
         presentationSwitchToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
-        statusLabel = new StatusLabel(statusBar, getSite()) {
+        final int fontHeight = statusBar.getFont().getFontData()[0].getHeight();
+        statusLabel = new StatusLabel(statusBar, SWT.NONE, getSite()) {
             @Override
             protected void showDetails() {
                 showStatusDetails();
             }
         };
-        final int fontHeight = statusLabel.getFont().getFontData()[0].getHeight();
         statusLabel.setLayoutData(new RowData(40 * fontHeight, SWT.DEFAULT));
+
+        rowCountLabel = new StatusLabel(statusBar, SWT.SIMPLE, getSite());
+        rowCountLabel.setLayoutData(new RowData(9 * fontHeight, SWT.DEFAULT));
+        rowCountLabel.setStatus("Row Count", DBPMessageType.INFORMATION);
 
         RowData rd = new RowData();
         rd.exclude = true;
@@ -1230,6 +1238,29 @@ public class ResultSetViewer extends Viewer
             statusMessage += " - " + dataReceiver.getErrorList().size() + " warning(s)";
         }
         setStatus(statusMessage, hasWarnings ? DBPMessageType.WARNING : DBPMessageType.INFORMATION);
+
+        // Update row count label
+        if (!hasData()) {
+            rowCountLabel.setStatus("No Data");
+            rowCountLabel.setUpdateListener(null);
+        } else if (!isHasMoreData()) {
+            rowCountLabel.setStatus(ROW_COUNT_FORMAT.format(model.getRowCount()));
+            rowCountLabel.setUpdateListener(null);
+        } else {
+            if (model.getTotalRowCount() == null) {
+                rowCountLabel.setStatus(ROW_COUNT_FORMAT.format(model.getRowCount()) + "+");
+                rowCountLabel.setUpdateListener(new Runnable() {
+                    @Override
+                    public void run() {
+                        readRowCount();
+                    }
+                });
+            } else {
+                // We know actual row count
+                rowCountLabel.setStatus(ROW_COUNT_FORMAT.format(model.getTotalRowCount()));
+                rowCountLabel.setUpdateListener(null);
+            }
+        }
     }
 
     private String getExecutionTimeMessage()
@@ -1254,7 +1285,7 @@ public class ResultSetViewer extends Viewer
 
     /**
      * Sets new metadata of result set
-     * @param resultSet
+     * @param resultSet  resultset
      * @param attributes attributes metadata
      */
     void setMetaData(@NotNull DBCResultSet resultSet, @NotNull DBDAttributeBinding[] attributes)
@@ -1576,6 +1607,12 @@ public class ResultSetViewer extends Viewer
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_NEXT));
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_PREVIOUS));
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_LAST));
+                navigateMenu.add(new Separator());
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_PAGE));
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_ALL));
+                if (isHasMoreData() && getDataContainer() != null &&  (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
+                    navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_COUNT));
+                }
 
                 manager.add(navigateMenu);
             }
@@ -2164,6 +2201,13 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    /**
+     * Reads row count and sets value in status label
+     */
+    private void readRowCount() {
+
+    }
+
     int getSegmentMaxRows()
     {
         if (getDataContainer() == null) {
@@ -2194,7 +2238,7 @@ public class ResultSetViewer extends Viewer
             progressControl = (Composite) activePresentation.getControl();
         }
         final Object presentationState = savePresentationState();
-        dataPumpJob = new ResultSetDataPumpJob(
+        dataPumpJob = new ResultSetJobDataRead(
             dataContainer,
             useDataFilter,
             this,
@@ -2215,7 +2259,7 @@ public class ResultSetViewer extends Viewer
 
             @Override
             public void done(IJobChangeEvent event) {
-                ResultSetDataPumpJob job = (ResultSetDataPumpJob)event.getJob();
+                ResultSetJobDataRead job = (ResultSetJobDataRead)event.getJob();
                 final Throwable error = job.getError();
                 if (job.getStatistics() != null) {
                     model.setStatistics(job.getStatistics());

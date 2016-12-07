@@ -21,6 +21,7 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -40,6 +41,7 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String PROP_CAN_TOGGLE = "canToggle";
     public static final String PROP_CAN_SWITCH_PRESENTATION = "canSwitchPresentation";
     public static final String PROP_CAN_NAVIGATE_LINK = "canNavigateLink";
+    public static final String PROP_SUPPORTS_COUNT = "supportsCount";
     public static final String PROP_CAN_NAVIGATE_HISTORY = "canNavigateHistory";
     public static final String PROP_EDITABLE = "editable";
     public static final String PROP_CHANGED = "changed";
@@ -114,6 +116,9 @@ public class ResultSetPropertyTester extends PropertyTester
                         !rsv.isRefreshInProgress() &&
                         rsv.getAvailablePresentations() != null &&
                         rsv.getAvailablePresentations().size() > 1;
+            case PROP_SUPPORTS_COUNT:
+                return rsv.hasData() && rsv.isHasMoreData() &&
+                    (rsv.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0;
             case PROP_CAN_NAVIGATE_LINK:
                 if (!actionsDisabled && rsv.getModel().hasData()) {
                     final ResultSetRow row = rsv.getCurrentRow();

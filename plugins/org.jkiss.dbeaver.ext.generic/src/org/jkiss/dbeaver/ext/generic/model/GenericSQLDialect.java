@@ -34,6 +34,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private static String[] EXEC_KEYWORDS =  { "EXEC", "CALL" };
 
     private final String scriptDelimiter;
+    private final String scriptDelimiterRedefiner;
     private final boolean legacySQLDialect;
     private final boolean suportsUpsert;
     private final boolean quoteReservedWords;
@@ -45,6 +46,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         super("Generic", metaData);
         DBPDriver driver = dataSource.getContainer().getDriver();
         this.scriptDelimiter = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
+        this.scriptDelimiterRedefiner = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER_REDEFINER));
         this.legacySQLDialect = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_LEGACY_DIALECT));
         this.suportsUpsert = dataSource.getMetaModel().supportsUpsertStatement();
         if (this.suportsUpsert) {
@@ -66,6 +68,11 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     public String getScriptDelimiter()
     {
         return CommonUtils.isEmpty(scriptDelimiter) ? super.getScriptDelimiter() : scriptDelimiter;
+    }
+
+    @Override
+    public String getScriptDelimiterRedefiner() {
+        return scriptDelimiterRedefiner;
     }
 
     @NotNull

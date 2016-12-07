@@ -1626,6 +1626,7 @@ public class SQLEditor extends SQLEditorBase implements
         public int getSupportedFeatures()
         {
             int features = DATA_SELECT;
+            features |= DATA_COUNT;
 
             if (getQueryResultCounts() <= 1) {
                 features |= DATA_FILTER;
