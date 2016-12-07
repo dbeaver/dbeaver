@@ -276,15 +276,16 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                             ((DBSObjectCache) dstValue).clearCache();
                         }
                     } else {
-                        if (Modifier.isFinal(modifiers)) {
-                            if (isPropertyGroupField(field)) {
-                                // This is a group of properties. Copy recursively
-                                // Just in case check that values not null and have the same type
-                                if (dstValue != null && srcValue != null && dstValue.getClass() == srcValue.getClass()) {
-                                    deepCopyCachedObject(srcValue, dstValue);
-                                }
+                        if (isPropertyGroupField(field)) {
+                            // This is a group of properties. Copy recursively
+                            // Just in case check that values not null and have the same type
+                            if (dstValue != null && srcValue != null && dstValue.getClass() == srcValue.getClass()) {
+                                deepCopyCachedObject(srcValue, dstValue);
                             }
+                        } else if (Modifier.isFinal(modifiers)) {
+                            // Ignore final fields
                         } else {
+                            // Just copy value
                             field.set(dstObject, srcValue);
                         }
                     }
