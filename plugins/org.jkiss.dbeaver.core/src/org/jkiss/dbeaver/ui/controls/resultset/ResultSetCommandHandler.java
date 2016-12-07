@@ -75,6 +75,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_ROW_LAST = "org.jkiss.dbeaver.core.resultset.row.last";
     public static final String CMD_FETCH_PAGE = "org.jkiss.dbeaver.core.resultset.fetch.page";
     public static final String CMD_FETCH_ALL = "org.jkiss.dbeaver.core.resultset.fetch.all";
+    public static final String CMD_COUNT = "org.jkiss.dbeaver.core.resultset.count";
     public static final String CMD_ROW_EDIT = "org.jkiss.dbeaver.core.resultset.row.edit";
     public static final String CMD_ROW_EDIT_INLINE = "org.jkiss.dbeaver.core.resultset.row.edit.inline";
     public static final String CMD_ROW_ADD = "org.jkiss.dbeaver.core.resultset.row.add";

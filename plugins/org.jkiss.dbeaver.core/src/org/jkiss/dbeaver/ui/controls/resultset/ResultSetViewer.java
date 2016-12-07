@@ -1006,6 +1006,7 @@ public class ResultSetViewer extends Viewer
             navToolbar.add(new ToolbarVerticalSeparator());
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_PAGE));
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_ALL));
+            navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_COUNT));
             navToolbar.createControl(statusBar);
             toolbarList.add(navToolbar);
         }
@@ -1576,6 +1577,9 @@ public class ResultSetViewer extends Viewer
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_NEXT));
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_PREVIOUS));
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_LAST));
+                navigateMenu.add(new Separator());
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_PAGE));
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_ALL));
 
                 manager.add(navigateMenu);
             }
@@ -1618,6 +1622,9 @@ public class ResultSetViewer extends Viewer
                     dialog.open();
                 }
             });
+            if (isHasMoreData() && (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
+                manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_COUNT));
+            }
         }
         manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
         if (dataContainer != null && model.hasData()) {
