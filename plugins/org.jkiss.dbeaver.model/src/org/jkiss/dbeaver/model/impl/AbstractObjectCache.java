@@ -22,11 +22,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.BeanUtils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
@@ -274,10 +277,12 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                         }
                     } else {
                         if (Modifier.isFinal(modifiers)) {
-                            // Can't copy final. Let's try to make recursive copy
-                            // Just in case check that values not null and have the same type
-                            if (dstValue != null && srcValue != null && dstValue.getClass() == srcValue.getClass()) {
-                                deepCopyCachedObject(srcValue, dstValue);
+                            if (isPropertyGroupField(field)) {
+                                // This is a group of properties. Copy recursively
+                                // Just in case check that values not null and have the same type
+                                if (dstValue != null && srcValue != null && dstValue.getClass() == srcValue.getClass()) {
+                                    deepCopyCachedObject(srcValue, dstValue);
+                                }
                             }
                         } else {
                             field.set(dstObject, srcValue);
@@ -318,4 +323,26 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
             }
         }
     }
+
+    public static boolean isPropertyGroupField(Field field) {
+        String getterName = "get" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1);
+        for (Method getter : field.getDeclaringClass().getMethods()) {
+            if (getter.getName().equals(getterName) &&
+                isPropertyGetter(getter) &&
+                getter.getAnnotation(PropertyGroup.class) != null)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isPropertyGetter(Method method) {
+        if (BeanUtils.isGetterName(method.getName())) {
+            return method.getParameterTypes().length == 0 ||
+                (method.getParameterTypes().length == 1 && method.getParameterTypes()[0] == DBRProgressMonitor.class);
+        }
+        return false;
+    }
+
 }
