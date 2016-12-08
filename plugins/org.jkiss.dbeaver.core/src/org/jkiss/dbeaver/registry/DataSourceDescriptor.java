@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
+import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
@@ -475,6 +476,14 @@ public class DataSourceDescriptor
             this.clientHome = driver.getClientHome(connectionInfo.getClientHomeId());
         }
         return clientHome;
+    }
+
+    @Override
+    public DBWNetworkHandler[] getActiveNetworkHandlers() {
+        if (tunnel == null) {
+            return new DBWNetworkHandler[0];
+        }
+        return new DBWNetworkHandler[] { tunnel };
     }
 
     @Override

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -111,6 +112,8 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
     DBVModel getVirtualModel();
 
     DBPClientHome getClientHome();
+
+    DBWNetworkHandler[] getActiveNetworkHandlers();
 
     /**
      * Checks this data source is connected.

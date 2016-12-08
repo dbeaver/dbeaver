@@ -179,6 +179,26 @@ public class SSHTunnelImpl implements DBWTunnel {
         }
     }
 
+    @Override
+    public void invalidateHandler(DBRProgressMonitor monitor) throws DBException, IOException {
+        boolean isAlive = session.isConnected();
+        if (isAlive) {
+            try {
+                session.sendKeepAliveMsg();
+            } catch (Exception e) {
+                isAlive = false;
+            }
+        }
+        if (!isAlive) {
+            session.disconnect();
+            try {
+                session.connect();
+            } catch (JSchException e) {
+                throw new DBException("Cannot initiate SSH connection", e);
+            }
+        }
+    }
+
     private class UIUserInfo implements UserInfo {
         DBWHandlerConfiguration configuration;
         private UIUserInfo(DBWHandlerConfiguration configuration)

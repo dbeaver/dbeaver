@@ -17,9 +17,17 @@
  */
 package org.jkiss.dbeaver.model.net;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.io.IOException;
+
 /**
  * Network handler
  */
 public interface DBWNetworkHandler {
+
+    void invalidateHandler(DBRProgressMonitor monitor)
+        throws DBException, IOException;
 
 }
