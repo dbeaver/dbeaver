@@ -26,10 +26,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPMessageType;
@@ -56,7 +53,7 @@ class StatusLabel extends Composite {
         setBackgroundMode(SWT.INHERIT_FORCE);
 
         GridLayout layout = new GridLayout(3, false);
-        layout.marginHeight = 3;
+        layout.marginHeight = 0;
         layout.marginWidth = 2;
         layout.horizontalSpacing = 3;
         setLayout(layout);
@@ -68,6 +65,7 @@ class StatusLabel extends Composite {
         Image statusImage = JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_INFO);
         statusIcon = new Label(this, SWT.NONE);
         statusIcon.setImage(statusImage);
+        statusIcon.setToolTipText("Status information");
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         statusIcon.setLayoutData(gd);
 
@@ -91,14 +89,16 @@ class StatusLabel extends Composite {
             }
         });
 
-        Label detailsIcon = new Label(this, SWT.NONE);
+        ToolBar tb = new ToolBar(this, SWT.HORIZONTAL);
+        ToolItem detailsIcon = new ToolItem(tb, SWT.NONE);
         detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
-        detailsIcon.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        tb.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-        detailsIcon.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-        detailsIcon.addMouseListener(new MouseAdapter() {
+        //detailsIcon.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+        //detailsIcon.addMouseListener(new MouseAdapter() {
+        detailsIcon.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void mouseUp(MouseEvent e) {
+            public void widgetSelected(SelectionEvent e) {
                 showDetails();
             }
         });

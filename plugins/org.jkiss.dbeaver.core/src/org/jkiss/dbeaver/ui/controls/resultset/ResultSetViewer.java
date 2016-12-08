@@ -1053,9 +1053,14 @@ public class ResultSetViewer extends Viewer
             statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
             statusLabel.setLayoutData(new RowData(40 * fontHeight, SWT.DEFAULT));
 
-            rowCountLabel = new ActiveStatusMessage(statusBar, SWT.SIMPLE, this) {
+            rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.SQL_EXECUTE), "Calculate total row count", this) {
                 @Override
-                protected ILoadService createLoadService() {
+                protected boolean isActionEnabled() {
+                    return hasData() && isHasMoreData();
+                }
+
+                @Override
+                protected ILoadService<String> createLoadService() {
                     return new DatabaseLoadService<String>("Load row count", getExecutionContext()) {
                         @Override
                         public String evaluate() throws InvocationTargetException, InterruptedException {
@@ -1069,8 +1074,8 @@ public class ResultSetViewer extends Viewer
                     };
                 }
             };
-            rowCountLabel.setLayoutData(new RowData(9 * fontHeight, SWT.DEFAULT));
-            rowCountLabel.setStatus("Row Count");
+            rowCountLabel.setLayoutData(new RowData(10 * fontHeight, SWT.DEFAULT));
+            rowCountLabel.setMessage("Row Count");
         }
     }
 
@@ -1255,17 +1260,18 @@ public class ResultSetViewer extends Viewer
 
         // Update row count label
         if (!hasData()) {
-            rowCountLabel.setStatus("No Data");
+            rowCountLabel.setMessage("No Data");
         } else if (!isHasMoreData()) {
-            rowCountLabel.setStatus(ROW_COUNT_FORMAT.format(model.getRowCount()));
+            rowCountLabel.setMessage(ROW_COUNT_FORMAT.format(model.getRowCount()));
         } else {
             if (model.getTotalRowCount() == null) {
-                rowCountLabel.setStatus(ROW_COUNT_FORMAT.format(model.getRowCount()) + "+");
+                rowCountLabel.setMessage(ROW_COUNT_FORMAT.format(model.getRowCount()) + "+");
             } else {
                 // We know actual row count
-                rowCountLabel.setStatus(ROW_COUNT_FORMAT.format(model.getTotalRowCount()));
+                rowCountLabel.setMessage(ROW_COUNT_FORMAT.format(model.getTotalRowCount()));
             }
         }
+        rowCountLabel.updateActionState();
     }
 
     private String getExecutionTimeMessage()
