@@ -87,11 +87,11 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             {
                 // Run default node action
                 DBNNode dbmNode = NavigatorUtils.getSelectedNode(getItemsViewer());
-                if (!(dbmNode instanceof DBNDatabaseNode) || !dbmNode.allowsOpen()) {
+                if (dbmNode == null || !dbmNode.allowsOpen()) {
                     return;
                 }
                 NavigatorHandlerObjectOpen.openEntityEditor(
-                    (DBNDatabaseNode)dbmNode,
+                    dbmNode,
                     null,
                     workbenchSite != null ?
                         workbenchSite.getWorkbenchWindow() :

@@ -26,10 +26,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -109,10 +106,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         EditorActivationStrategy editorActivationStrategy;
-        final SelectionAdapter enterListener = new SelectionAdapter() {
+        final KeyListener enterListener = new KeyAdapter() {
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                if (doubleClickHandler != null) {
+            public void keyReleased(KeyEvent e) {
+                if (e.keyCode == SWT.CR && doubleClickHandler != null) {
                     doubleClickHandler.doubleClick(new DoubleClickEvent(itemsViewer, itemsViewer.getSelection()));
                 }
             }
@@ -132,7 +129,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 public void handleEvent(Event event) {
                     // Just do nothing
                 }});
-            tree.addSelectionListener(enterListener);
+            tree.addKeyListener(enterListener);
         } else {
             TableViewer tableViewer = new TableViewer(this, viewerStyle);
             final Table table = tableViewer.getTable();
@@ -143,7 +140,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             //itemsEditor = new TableEditor(table);
             editorActivationStrategy = new EditorActivationStrategy(tableViewer);
             TableViewerEditor.create(tableViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
-            table.addSelectionListener(enterListener);
+            table.addKeyListener(enterListener);
         }
         //editorActivationStrategy.setEnableEditorActivationWithKeyboard(true);
         renderer = createRenderer();

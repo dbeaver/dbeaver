@@ -170,7 +170,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     @Override
     public boolean allowsOpen()
     {
-        return false;
+        return true;
     }
 
     public DBNLocalFolder getLocalFolder(String name)

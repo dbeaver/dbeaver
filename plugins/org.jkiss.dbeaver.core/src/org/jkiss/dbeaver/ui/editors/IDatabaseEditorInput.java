@@ -31,7 +31,7 @@ import java.util.Collection;
 /**
  * IDatabaseEditorInput
  */
-public interface IDatabaseEditorInput extends IEditorInput, DBPContextProvider {
+public interface IDatabaseEditorInput extends INavigatorEditorInput, DBPContextProvider {
 
     DBNDatabaseNode getNavigatorNode();
 
