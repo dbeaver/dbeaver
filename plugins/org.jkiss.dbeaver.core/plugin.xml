@@ -692,14 +692,7 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <or>
-                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNDatabaseNode">
-                                <test property="org.jkiss.dbeaver.core.object.canOpen"/>
-                            </adapt>
-                            <adapt type="org.eclipse.core.resources.IResource">
-                                <test property="org.jkiss.dbeaver.core.resource.canOpen"/>
-                            </adapt>
-                        </or>
+                        <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNode"/>
                     </iterate>
                 </with>
             </enabledWhen>

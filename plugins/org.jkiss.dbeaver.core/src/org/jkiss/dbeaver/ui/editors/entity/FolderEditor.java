@@ -17,24 +17,29 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.part.EditorPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
-import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 
 /**
  * FolderEditor
  */
-public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> implements INavigatorModelView, ISearchContextProvider
+public class FolderEditor extends EditorPart implements INavigatorModelView, IRefreshablePart, ISearchContextProvider
 {
-    //static final Log log = Log.getLog(FolderEditor.class);
-
     private ItemListControl itemControl;
 
     @Override
@@ -44,6 +49,47 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
         itemControl.createProgressPanel();
         itemControl.loadData();
         getSite().setSelectionProvider(itemControl.getSelectionProvider());
+    }
+
+    @Override
+    public void setFocus() {
+        itemControl.setFocus();
+    }
+
+    @Override
+    public void doSave(IProgressMonitor monitor) {
+
+    }
+
+    @Override
+    public void doSaveAs() {
+
+    }
+
+    @Override
+    public INavigatorEditorInput getEditorInput() {
+        return (INavigatorEditorInput) super.getEditorInput();
+    }
+
+    @Override
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+        setSite(site);
+        setInput(input);
+        if (input != null) {
+            final DBNNode navigatorNode = getEditorInput().getNavigatorNode();
+            setTitleImage(DBeaverIcons.getImage(navigatorNode.getNodeIcon()));
+            setPartName(navigatorNode.getNodeName());
+        }
+    }
+
+    @Override
+    public boolean isDirty() {
+        return false;
+    }
+
+    @Override
+    public boolean isSaveAsAllowed() {
+        return false;
     }
 
     @Override
@@ -64,11 +110,9 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
         DBeaverUI.asyncExec(new Runnable() {
             @Override
             public void run() {
-
                 if (!itemControl.isDisposed()) {
                     itemControl.loadData(false);
                 }
-
             }
         });
     }

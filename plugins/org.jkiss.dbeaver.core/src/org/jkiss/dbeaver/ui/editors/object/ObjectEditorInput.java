@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 
 /**
- * FolderEditorInput
+ * ObjectEditorInput
  */
 public class ObjectEditorInput extends DatabaseEditorInput<DBNDatabaseObject>
 {

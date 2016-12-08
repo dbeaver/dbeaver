@@ -17,10 +17,12 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -46,6 +48,13 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     void dispose(boolean reflect)
     {
         super.dispose(reflect);
+    }
+
+    @NotNull
+    @Property(viewable = true, order = 1)
+    public String getName()
+    {
+        return getNodeName();
     }
 
     @Override

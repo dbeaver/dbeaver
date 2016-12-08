@@ -115,8 +115,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
                 if (selection.size() == 1) {
                     Object node = selection.getFirstElement();
-                    if (node instanceof DBNLocalFolder ||
-                        (node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFolder) ||
+                    if ((node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFolder) ||
                         (node instanceof DBNDataSource &&
                             DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK)) == DoubleClickBehavior.EXPAND))
                     {
@@ -153,9 +152,9 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                                 }
                                 break;
                         }
-                    } else if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode)node).allowsOpen()) {
+                    } else if (node instanceof DBNNode && ((DBNNode) node).allowsOpen()) {
                         NavigatorHandlerObjectOpen.openEntityEditor(
-                            (DBNDatabaseNode) node,
+                            (DBNNode) node,
                             null,
                             getSite().getWorkbenchWindow());
                     }
