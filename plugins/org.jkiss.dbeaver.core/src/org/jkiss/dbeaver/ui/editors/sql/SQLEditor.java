@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
+import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -1679,8 +1680,35 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter)
+            throws DBCException
         {
-            return -1;
+            DBPDataSource dataSource = getDataSource();
+            if (!(dataSource instanceof SQLDataSource)) {
+                throw new DBCException("Query transform is not supported by datasource");
+            }
+            try {
+                SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery((SQLDataSource) dataSource, query);
+                try (DBCStatement dbStatement = DBUtils.prepareStatement(source, session, DBCStatementType.QUERY, countQuery, 0, 0)) {
+                    if (dbStatement.executeStatement()) {
+                        try (DBCResultSet rs = dbStatement.openResultSet()) {
+                            if (rs.nextRow()) {
+                                Object countValue = rs.getAttributeValue(0);
+                                if (countValue instanceof Number) {
+                                    return ((Number) countValue).longValue();
+                                } else {
+                                    throw new DBCException("Unexpected row count value: " + countValue);
+                                }
+                            } else {
+                                throw new DBCException("Row count result is empty");
+                            }
+                        }
+                    } else {
+                        throw new DBCException("Row count query didn't return any value");
+                    }
+                }
+            } catch (DBException e) {
+                throw new DBCException("Error executing row count", e);
+            }
         }
 
         @Nullable

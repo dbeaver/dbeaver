@@ -1069,6 +1069,7 @@ public class ResultSetViewer extends Viewer
                                 long rowCount = readRowCount(getProgressMonitor());
                                 return ROW_COUNT_FORMAT.format(rowCount);
                             } catch (DBException e) {
+                                log.error(e);
                                 return e.getMessage();
                             }
                         }
