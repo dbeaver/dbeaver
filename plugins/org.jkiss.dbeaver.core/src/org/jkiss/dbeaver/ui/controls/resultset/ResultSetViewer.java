@@ -2207,6 +2207,10 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    public void updateRowCount() {
+        rowCountLabel.executeAction();
+    }
+
     /**
      * Reads row count and sets value in status label
      */

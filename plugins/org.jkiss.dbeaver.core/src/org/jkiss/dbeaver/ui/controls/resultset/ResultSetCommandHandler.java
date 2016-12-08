@@ -314,6 +314,9 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     }.schedule();
                 }
                 break;
+            case CMD_COUNT:
+                rsv.updateRowCount();
+                break;
             case IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY: {
                 final int hp = rsv.getHistoryPosition();
                 if (hp > 0) {
