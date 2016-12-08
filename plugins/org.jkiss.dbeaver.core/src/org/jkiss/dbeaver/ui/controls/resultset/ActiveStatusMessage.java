@@ -35,7 +35,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -49,6 +51,7 @@ abstract class ActiveStatusMessage extends Composite {
     private static final Log log = Log.getLog(ActiveStatusMessage.class);
 
     private final ResultSetViewer viewer;
+    private final Image actionImage;
     private final Text messageText;
     private final ToolItem actionItem;
 
@@ -58,6 +61,7 @@ abstract class ActiveStatusMessage extends Composite {
         super(parent, SWT.BORDER);
 
         this.viewer = viewer;
+        this.actionImage = actionImage;
 
         GridLayout layout = new GridLayout(2, false);
         layout.marginHeight = 0;
@@ -68,7 +72,7 @@ abstract class ActiveStatusMessage extends Composite {
         // Toolbar
         ToolBar tb = new ToolBar(this, SWT.HORIZONTAL);
         actionItem = new ToolItem(tb, SWT.NONE);
-        actionItem.setImage(actionImage);
+        actionItem.setImage(this.actionImage);
         if (actionText != null) {
             actionItem.setToolTipText(actionText);
         }
@@ -148,13 +152,14 @@ abstract class ActiveStatusMessage extends Composite {
 
         @Override
         public void visualizeLoading() {
-
+            actionItem.setImage(DBeaverIcons.getImage(UIIcon.CLOSE));
         }
 
         @Override
         public void completeLoading(String message) {
             completed = true;
             setMessage(message);
+            actionItem.setImage(actionImage);
             loadService = null;
         }
     }
