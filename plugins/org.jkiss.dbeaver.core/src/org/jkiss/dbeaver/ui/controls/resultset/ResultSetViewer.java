@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -1065,10 +1066,10 @@ public class ResultSetViewer extends Viewer
                         @Override
                         public String evaluate() throws InvocationTargetException, InterruptedException {
                             try {
-                                readRowCount(getProgressMonitor());
-                                return "" + getModel().getTotalRowCount();
+                                long rowCount = readRowCount(getProgressMonitor());
+                                return ROW_COUNT_FORMAT.format(rowCount);
                             } catch (DBException e) {
-                                throw new InvocationTargetException(e);
+                                return e.getMessage();
                             }
                         }
                     };
@@ -2207,8 +2208,20 @@ public class ResultSetViewer extends Viewer
     /**
      * Reads row count and sets value in status label
      */
-    private void readRowCount(DBRProgressMonitor monitor) throws DBException {
-
+    private long readRowCount(DBRProgressMonitor monitor) throws DBException {
+        DBSDataContainer dataContainer = getDataContainer();
+        try (DBCSession session = getExecutionContext().openSession(
+            monitor,
+            DBCExecutionPurpose.USER,
+            "Read total row count"))
+        {
+            long rowCount = dataContainer.countData(
+                new AbstractExecutionSource(dataContainer, getExecutionContext(), this),
+                session,
+                model.getDataFilter());
+            model.setTotalRowCount(rowCount);
+            return rowCount;
+        }
     }
 
     int getSegmentMaxRows()

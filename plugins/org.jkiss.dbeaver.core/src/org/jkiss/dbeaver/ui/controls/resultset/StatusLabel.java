@@ -52,7 +52,7 @@ class StatusLabel extends Composite {
 
         setBackgroundMode(SWT.INHERIT_FORCE);
 
-        GridLayout layout = new GridLayout(3, false);
+        final GridLayout layout = new GridLayout(3, false);
         layout.marginHeight = 0;
         layout.marginWidth = 2;
         layout.horizontalSpacing = 3;
@@ -62,7 +62,7 @@ class StatusLabel extends Composite {
         colorError = JFaceColors.getErrorText(Display.getDefault());
         colorWarning = colorDefault;
 
-        Image statusImage = JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_INFO);
+        final Image statusImage = JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_INFO);
         statusIcon = new Label(this, SWT.NONE);
         statusIcon.setImage(statusImage);
         statusIcon.setToolTipText("Status information");
@@ -89,13 +89,11 @@ class StatusLabel extends Composite {
             }
         });
 
-        ToolBar tb = new ToolBar(this, SWT.HORIZONTAL);
-        ToolItem detailsIcon = new ToolItem(tb, SWT.NONE);
+        final ToolBar tb = new ToolBar(this, SWT.HORIZONTAL);
+        final ToolItem detailsIcon = new ToolItem(tb, SWT.NONE);
         detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
         tb.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-        //detailsIcon.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-        //detailsIcon.addMouseListener(new MouseAdapter() {
         detailsIcon.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

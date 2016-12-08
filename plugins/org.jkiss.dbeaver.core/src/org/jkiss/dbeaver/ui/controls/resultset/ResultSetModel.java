@@ -303,7 +303,7 @@ public class ResultSetModel {
         return totalRowCount;
     }
 
-    public void setTotalRowCount(Long totalRowCount) {
+    void setTotalRowCount(Long totalRowCount) {
         this.totalRowCount = totalRowCount;
     }
 
@@ -736,6 +736,8 @@ public class ResultSetModel {
     private void releaseAll() {
         final List<ResultSetRow> oldRows = curRows;
         this.curRows = new ArrayList<>();
+        this.totalRowCount = null;
+
         // Cleanup in separate job.
         // Sometimes model cleanup takes much time (e.g. freeing LOB values)
         // So let's do it in separate job to avoid UI locking
