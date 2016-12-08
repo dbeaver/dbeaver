@@ -17,33 +17,16 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.handlers;
 
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
+import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
+import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerExpression;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 
 public class ExecuteHandler extends AbstractHandler
@@ -73,10 +56,10 @@ public class ExecuteHandler extends AbstractHandler
                 editor.processSQL(true, true);
                 break;
             case CoreCommands.CMD_EXECUTE_ROW_COUNT:
-                editor.processSQL(false, false, new CountQueryTransformer());
+                editor.processSQL(false, false, new SQLQueryTransformerCount());
                 break;
             case CoreCommands.CMD_EXECUTE_EXPRESSION:
-                editor.processSQL(false, false, new ExpressionQueryTransformer());
+                editor.processSQL(false, false, new SQLQueryTransformerExpression());
                 break;
             case CoreCommands.CMD_EXPLAIN_PLAN:
                 editor.explainQueryPlan();
@@ -87,42 +70,6 @@ public class ExecuteHandler extends AbstractHandler
         }
 
         return null;
-    }
-
-    private static class CountQueryTransformer implements SQLQueryTransformer {
-        @Override
-        public SQLQuery transformQuery(SQLDataSource dataSource, SQLQuery query) throws DBException {
-            try {
-                Statement statement = CCJSqlParserUtil.parse(query.getQuery());
-                if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
-                    PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
-                    List<SelectItem> selectItems = new ArrayList<>();
-                    Function countFunc = new Function();
-                    countFunc.setName("count");
-                    countFunc.setParameters(new ExpressionList(Collections.<Expression>singletonList(new Column("*"))));
-                    SelectItem countItem = new SelectExpressionItem(countFunc);
-                    selectItems.add(countItem);
-                    select.setSelectItems(selectItems);
-                    return new SQLQuery(select.toString(), query, false);
-                } else {
-                    throw new DBException("Query [" + query.getQuery() + "] can't be modified");
-                }
-            } catch (JSQLParserException e) {
-                throw new DBException("Can't transform query to SELECT count(*)", e);
-            }
-        }
-    }
-
-    private class ExpressionQueryTransformer implements SQLQueryTransformer {
-        @Override
-        public SQLQuery transformQuery(SQLDataSource dataSource, SQLQuery query) throws DBException {
-            String dualTableName = dataSource.getSQLDialect().getDualTableName();
-            String newQuery = "SELECT " + query.getQuery();
-            if (dualTableName != null) {
-                newQuery += " FROM " + dualTableName;
-            }
-            return new SQLQuery(newQuery, query, false);
-        }
     }
 
 }

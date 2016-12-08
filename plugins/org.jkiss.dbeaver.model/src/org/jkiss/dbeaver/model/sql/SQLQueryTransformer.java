@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.model.sql;
 import org.jkiss.dbeaver.DBException;
 
 /**
- * SQLQuery transformer callback
+ * SQLQuery transformer.
  */
 public interface SQLQueryTransformer {
 
