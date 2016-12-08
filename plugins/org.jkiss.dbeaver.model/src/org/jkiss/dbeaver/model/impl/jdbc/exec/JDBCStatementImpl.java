@@ -780,4 +780,8 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         return getOriginal().isWrapperFor(iface);
     }
 
+    @Override
+    public String toString() {
+        return "JDBC Statement [" + query + "]";
+    }
 }

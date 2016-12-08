@@ -121,7 +121,6 @@ public class PropertyTreeViewer extends TreeViewer {
         column.setLabelProvider(new PropsLabelProvider(true));
         column.getColumn().addListener(SWT.Selection, new SortListener());
 
-
         column = new TreeViewerColumn(this, SWT.NONE);
         column.getColumn().setWidth(120);
         column.getColumn().setMoveable(true);
