@@ -68,6 +68,8 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
@@ -76,7 +78,6 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.controls.StatusLabel;
 import org.jkiss.dbeaver.ui.controls.ToolbarVerticalSeparator;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
@@ -134,7 +135,7 @@ public class ResultSetViewer extends Viewer
     private final List<ToolBarManager> toolbarList = new ArrayList<>();
     private Composite statusBar;
     private StatusLabel statusLabel;
-    private StatusLabel rowCountLabel;
+    private ActiveStatusMessage rowCountLabel;
 
     private final DynamicFindReplaceTarget findReplaceTarget;
 
@@ -1040,24 +1041,37 @@ public class ResultSetViewer extends Viewer
             toolbarList.add(configToolbar);
         }
 
-        presentationSwitchToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+        {
+            presentationSwitchToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            RowData rd = new RowData();
+            rd.exclude = true;
+            presentationSwitchToolbar.setLayoutData(rd);
+        }
 
-        final int fontHeight = statusBar.getFont().getFontData()[0].getHeight();
-        statusLabel = new StatusLabel(statusBar, SWT.NONE, getSite()) {
-            @Override
-            protected void showDetails() {
-                showStatusDetails();
-            }
-        };
-        statusLabel.setLayoutData(new RowData(40 * fontHeight, SWT.DEFAULT));
+        {
+            final int fontHeight = statusBar.getFont().getFontData()[0].getHeight();
+            statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
+            statusLabel.setLayoutData(new RowData(40 * fontHeight, SWT.DEFAULT));
 
-        rowCountLabel = new StatusLabel(statusBar, SWT.SIMPLE, getSite());
-        rowCountLabel.setLayoutData(new RowData(9 * fontHeight, SWT.DEFAULT));
-        rowCountLabel.setStatus("Row Count", DBPMessageType.INFORMATION);
-
-        RowData rd = new RowData();
-        rd.exclude = true;
-        presentationSwitchToolbar.setLayoutData(rd);
+            rowCountLabel = new ActiveStatusMessage(statusBar, SWT.SIMPLE, this) {
+                @Override
+                protected ILoadService createLoadService() {
+                    return new DatabaseLoadService<String>("Load row count", getExecutionContext()) {
+                        @Override
+                        public String evaluate() throws InvocationTargetException, InterruptedException {
+                            try {
+                                readRowCount(getProgressMonitor());
+                                return "" + getModel().getTotalRowCount();
+                            } catch (DBException e) {
+                                throw new InvocationTargetException(e);
+                            }
+                        }
+                    };
+                }
+            };
+            rowCountLabel.setLayoutData(new RowData(9 * fontHeight, SWT.DEFAULT));
+            rowCountLabel.setStatus("Row Count");
+        }
     }
 
     @Nullable
@@ -1242,23 +1256,14 @@ public class ResultSetViewer extends Viewer
         // Update row count label
         if (!hasData()) {
             rowCountLabel.setStatus("No Data");
-            rowCountLabel.setUpdateListener(null);
         } else if (!isHasMoreData()) {
             rowCountLabel.setStatus(ROW_COUNT_FORMAT.format(model.getRowCount()));
-            rowCountLabel.setUpdateListener(null);
         } else {
             if (model.getTotalRowCount() == null) {
                 rowCountLabel.setStatus(ROW_COUNT_FORMAT.format(model.getRowCount()) + "+");
-                rowCountLabel.setUpdateListener(new Runnable() {
-                    @Override
-                    public void run() {
-                        readRowCount();
-                    }
-                });
             } else {
                 // We know actual row count
                 rowCountLabel.setStatus(ROW_COUNT_FORMAT.format(model.getTotalRowCount()));
-                rowCountLabel.setUpdateListener(null);
             }
         }
     }
@@ -1270,14 +1275,6 @@ public class ResultSetViewer extends Viewer
             return "";
         }
         return " - " + RuntimeUtils.formatExecutionTime(statistics.getTotalTime());
-    }
-
-    private void showStatusDetails() {
-        StatusDetailsDialog dialog = new StatusDetailsDialog(
-            this,
-            statusLabel.getMessage(),
-            dataReceiver.getErrorList());
-        dialog.open();
     }
 
     ///////////////////////////////////////
@@ -2035,7 +2032,7 @@ public class ResultSetViewer extends Viewer
 
     @NotNull
     @Override
-    public DBDDataReceiver getDataReceiver() {
+    public ResultSetDataReceiver getDataReceiver() {
         return dataReceiver;
     }
 
@@ -2204,7 +2201,7 @@ public class ResultSetViewer extends Viewer
     /**
      * Reads row count and sets value in status label
      */
-    private void readRowCount() {
+    private void readRowCount(DBRProgressMonitor monitor) throws DBException {
 
     }
 

@@ -549,7 +549,7 @@
                     sampleURL="jdbc:linter:linapid:{host}:{port}:{database}"
                     defaultPort="1070"
                     webURL="http://linter.ru/"
-                    description="Linter (????????????) Database">
+                    description="Linter Database">
                 </driver>
                 <driver
                     id="firebird_jaybird"
