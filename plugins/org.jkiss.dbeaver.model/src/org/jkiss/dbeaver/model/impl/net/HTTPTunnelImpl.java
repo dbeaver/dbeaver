@@ -43,4 +43,9 @@ public class HTTPTunnelImpl implements DBWTunnel {
     {
     }
 
+    @Override
+    public void invalidateHandler(DBRProgressMonitor monitor) throws DBException, IOException {
+
+    }
+
 }

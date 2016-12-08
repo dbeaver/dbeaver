@@ -19,10 +19,14 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,18 +69,35 @@ public class InvalidateJob extends DataSourceJob
     protected IStatus run(DBRProgressMonitor monitor)
     {
         DBPDataSource dataSource = getExecutionContext().getDataSource();
-        // Invalidate datasource
-        monitor.subTask("Invalidate datasource [" + dataSource.getContainer().getName() + "]");
-        DBCExecutionContext[] allContexts = dataSource.getAllContexts();
-        for (DBCExecutionContext context : allContexts) {
-            long startTime = System.currentTimeMillis();
-            try {
-                final DBCExecutionContext.InvalidateResult result = context.invalidateContext(monitor);
-                invalidateResults.add(new ContextInvalidateResult(result, null));
-            } catch (Exception e) {
-                invalidateResults.add(new ContextInvalidateResult(DBCExecutionContext.InvalidateResult.ERROR, e));
-            } finally {
-                timeSpent += (System.currentTimeMillis() - startTime);
+        DBPDataSourceContainer container = dataSource.getContainer();
+        DBWNetworkHandler[] activeHandlers = container.getActiveNetworkHandlers();
+        boolean networkOK = true;
+        if (activeHandlers != null && activeHandlers.length > 0) {
+            for (DBWNetworkHandler nh : activeHandlers) {
+                monitor.subTask("Invalidate network [" + container.getName() + "]");
+                try {
+                    nh.invalidateHandler(monitor);
+                } catch (Exception e) {
+                    invalidateResults.add(new ContextInvalidateResult(DBCExecutionContext.InvalidateResult.ERROR, e));
+                    networkOK = false;
+                    break;
+                }
+            }
+        }
+        if (networkOK) {
+            // Invalidate datasource
+            monitor.subTask("Invalidate connections of [" + container.getName() + "]");
+            DBCExecutionContext[] allContexts = dataSource.getAllContexts();
+            for (DBCExecutionContext context : allContexts) {
+                long startTime = System.currentTimeMillis();
+                try {
+                    final DBCExecutionContext.InvalidateResult result = context.invalidateContext(monitor);
+                    invalidateResults.add(new ContextInvalidateResult(result, null));
+                } catch (Exception e) {
+                    invalidateResults.add(new ContextInvalidateResult(DBCExecutionContext.InvalidateResult.ERROR, e));
+                } finally {
+                    timeSpent += (System.currentTimeMillis() - startTime);
+                }
             }
         }
 
