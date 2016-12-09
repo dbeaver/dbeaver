@@ -19,9 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
-import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
-import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
+import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -99,7 +97,7 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
         if (source == null) {
             return;
         }
-        actionList.add(new SQLDatabasePersistAction("Create procedure", source, true)); //$NON-NLS-2$
+        actionList.add(new OracleObjectValidateAction(procedure, OracleObjectType.PROCEDURE, "Create procedure", source)); //$NON-NLS-2$
         OracleUtils.addSchemaChangeActions(actionList, procedure);
     }
 
