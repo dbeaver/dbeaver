@@ -533,7 +533,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         } catch (BadLocationException e) {
             log.warn(e);
         }
-        return parseQuery(document, startPos, document.getLength() - 1, currentPos);
+        return parseQuery(document, startPos, document.getLength(), currentPos);
     }
 
     public SQLQuery extractNextQuery(boolean next) {
