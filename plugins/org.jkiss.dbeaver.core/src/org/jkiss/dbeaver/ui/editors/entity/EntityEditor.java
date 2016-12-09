@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -76,7 +77,7 @@ import java.util.List;
  * EntityEditor
  */
 public class EntityEditor extends MultiPageDatabaseEditor
-    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, ITabbedFolderContainer
+    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, ITabbedFolderContainer, IDataSourceContainerProvider
 {
     private static final Log log = Log.getLog(EntityEditor.class);
 
@@ -765,6 +766,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
 
         return breadcrumbsPanel;
+    }
+
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return getDatabaseObject().getDataSource().getContainer();
     }
 
     private static final int MAX_BREADCRUMBS_MENU_ITEM = 300;

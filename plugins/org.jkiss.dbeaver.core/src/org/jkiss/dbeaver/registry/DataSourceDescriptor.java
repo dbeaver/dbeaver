@@ -312,7 +312,6 @@ public class DataSourceDescriptor
                         } catch (DBCException e) {
                             throw new InvocationTargetException(e);
                         } finally {
-                            RuntimeUtils.pause(100);
                             monitor.done();
                             if (onFinish != null) {
                                 onFinish.run();
