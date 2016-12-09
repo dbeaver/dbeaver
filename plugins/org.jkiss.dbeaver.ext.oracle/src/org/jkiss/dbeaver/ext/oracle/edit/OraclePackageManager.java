@@ -59,9 +59,21 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
                 if (!editPage.edit()) {
                     return null;
                 }
-                return new OraclePackage(
+                String packName = editPage.getEntityName();
+                OraclePackage oraclePackage = new OraclePackage(
                     parent,
-                    editPage.getEntityName());
+                    packName);
+                oraclePackage.setObjectDefinitionText(
+                    "CREATE OR REPLACE PACKAGE " + packName + "\n" +
+                    "AS\n" +
+                    "-- Package header\n" +
+                    "END " + packName +";");
+                oraclePackage.setExtendedDefinitionText(
+                    "CREATE OR REPLACE PACKAGE BODY " + packName + "\n" +
+                        "AS\n" +
+                        "-- Package body\n" +
+                        "END " + packName +";");
+                return oraclePackage;
             }
         }.execute();
     }
