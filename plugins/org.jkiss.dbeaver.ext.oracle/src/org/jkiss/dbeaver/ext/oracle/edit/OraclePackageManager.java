@@ -20,9 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
-import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
-import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
+import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -102,17 +100,18 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
             String header = pack.getObjectDefinitionText(VoidProgressMonitor.INSTANCE);
             if (!CommonUtils.isEmpty(header)) {
                 actionList.add(
-                    new SQLDatabasePersistAction(
+                    new OracleObjectValidateAction(
+                        pack, OracleObjectType.PACKAGE,
                         "Create package header",
                         header)); //$NON-NLS-1$
             }
             String body = pack.getExtendedDefinitionText(VoidProgressMonitor.INSTANCE);
             if (!CommonUtils.isEmpty(body)) {
                 actionList.add(
-                    new SQLDatabasePersistAction(
+                    new OracleObjectValidateAction(
+                        pack, OracleObjectType.PACKAGE_BODY,
                         "Create package body",
-                        body,
-                        true)); //$NON-NLS-1$
+                        body));
             } else {
                 actionList.add(
                     new SQLDatabasePersistAction(
