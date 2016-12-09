@@ -43,6 +43,10 @@ public class BasicSQLDialect implements SQLDialect {
     private static final String[] DEFAULT_LINE_COMMENTS = {SQLConstants.SL_COMMENT};
     private static final String[] EXEC_KEYWORDS = new String[0];
 
+    public static final String[][] DEFAULT_BEGIN_END_BLOCK = new String[][]{
+        {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END}
+    };
+
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
 
@@ -235,6 +239,11 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public String getScriptDelimiterRedefiner() {
         return null;
+    }
+
+    @Override
+    public String[][] getBlockBoundStrings() {
+        return DEFAULT_BEGIN_END_BLOCK;
     }
 
     @Nullable

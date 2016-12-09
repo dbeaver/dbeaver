@@ -25,8 +25,10 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
@@ -60,8 +62,13 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
                         public void run() {
                             // Save config
                             container.persistConfiguration();
-                            // Update actions
-                            DataSourcePropertyTester.fireCommandRefresh(CoreCommands.CMD_TOGGLE_AUTOCOMMIT);
+                            DBeaverUI.syncExec(new Runnable() {
+                                @Override
+                                public void run() {
+                                    // Update actions
+                                    DataSourcePropertyTester.fireCommandRefresh(CoreCommands.CMD_TOGGLE_AUTOCOMMIT);
+                                }
+                            });
                         }
                     });
                 } catch (DBException e) {
@@ -83,24 +90,31 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
         if (activeEditor == null) {
             return;
         }
+
+        boolean autoCommit = true;
+        DBPTransactionIsolation isolation = null;
         DBCExecutionContext context = getExecutionContext(activeEditor);
         if (context != null && context.isConnected()) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
             if (txnManager != null) {
                 try {
                     // Change auto-commit mode
-                    boolean autoCommit = txnManager.isAutoCommit();
-                    element.setChecked(autoCommit);
-                    // Update command image
-                    element.setIcon(DBeaverIcons.getImageDescriptor(autoCommit ? UIIcon.TXN_COMMIT_AUTO : UIIcon.TXN_COMMIT_MANUAL));
-                    DBPTransactionIsolation isolation = txnManager.getTransactionIsolation();
-                    String isolationName = isolation == null ? "?" : isolation.getTitle();
-                    element.setText(autoCommit ? "Switch to manual commit (" + isolationName + ")" : "Switch to auto-commit");
-                    element.setTooltip(autoCommit ? "Auto-commit" : "Manual commit (" + isolationName + ")");
+                    autoCommit = txnManager.isAutoCommit();
+                    isolation = txnManager.getTransactionIsolation();
                 } catch (DBCException e) {
                     log.warn(e);
                 }
             }
+        } else if (activeEditor instanceof IDataSourceContainerProvider) {
+            DBPDataSourceContainer container = ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
+            autoCommit = container.isDefaultAutoCommit();
+            isolation = container.getActiveTransactionsIsolation();
         }
+        element.setChecked(autoCommit);
+        // Update command image
+        element.setIcon(DBeaverIcons.getImageDescriptor(autoCommit ? UIIcon.TXN_COMMIT_AUTO : UIIcon.TXN_COMMIT_MANUAL));
+        String isolationName = isolation == null ? "?" : isolation.getTitle();
+        element.setText(autoCommit ? "Switch to manual commit (" + isolationName + ")" : "Switch to auto-commit");
+        element.setTooltip(autoCommit ? "Manual commit (" + isolationName + ")" : "Auto-commit");
     }
 }

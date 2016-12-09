@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.model.impl.edit;
 
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 
 /**
  * Object persist action implementation
@@ -70,7 +72,8 @@ public class SQLDatabasePersistAction implements DBEPersistAction {
     }
 
     @Override
-    public void handleExecute(Throwable error)
+    public void handleExecute(DBCSession session, Throwable error)
+        throws DBCException
     {
         // do nothing
     }

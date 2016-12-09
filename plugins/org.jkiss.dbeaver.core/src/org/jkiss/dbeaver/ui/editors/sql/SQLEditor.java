@@ -1922,9 +1922,11 @@ public class SQLEditor extends SQLEditorBase implements
             boolean scrolled = false;
             DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, context.getDataSource());
             if (errorAssistant != null) {
-                DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(session, result.getStatement().getQuery(), error);
+                SQLQuery query = result.getStatement();
+                DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(session, query.getQuery(), error);
                 if (positions != null && positions.length > 0) {
-                    int queryStartOffset = result.getStatement().getOffset();
+                    int queryStartOffset = query.getOffset();
+                    int queryLength = query.getLength();
 
                     DBPErrorAssistant.ErrorPosition pos = positions[0];
                     if (pos.line < 0) {
@@ -1946,6 +1948,8 @@ public class SQLEditor extends SQLEditorBase implements
                             } else {
                                 errorLength = document.getLineLength(startLine + pos.line);
                             }
+                            if (errorOffset < queryStartOffset) errorOffset = queryStartOffset;
+                            if (errorLength > queryLength) errorLength = queryLength;
                             getSelectionProvider().setSelection(new TextSelection(errorOffset, errorLength));
                             scrolled = true;
                         }

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
@@ -76,7 +77,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
             actions.add(
                 new SQLDatabasePersistAction(MySQLMessages.edit_command_change_user_action_create_new_user, "CREATE USER " + getObject().getFullName()) { //$NON-NLS-2$
                     @Override
-                    public void handleExecute(Throwable error)
+                    public void handleExecute(DBCSession session, Throwable error)
                     {
                         if (error == null) {
                             getObject().setPersisted(true);
