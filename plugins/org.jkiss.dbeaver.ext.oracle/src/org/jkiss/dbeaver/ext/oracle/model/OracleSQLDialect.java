@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 
 import java.util.Arrays;
 
@@ -32,6 +33,11 @@ import java.util.Arrays;
 class OracleSQLDialect extends JDBCSQLDialect {
 
     public static final String[] EXEC_KEYWORDS = new String[]{ "call" };
+
+    public static final String[][] ORACLE_BEGIN_END_BLOCK = new String[][]{
+        {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
+        {"IF", SQLConstants.BLOCK_END}
+    };
 
     public OracleSQLDialect(JDBCDatabaseMetaData metaData) {
         super("Oracle", metaData);
@@ -251,6 +257,11 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
             ));
         removeSQLKeyword("SYSTEM");
+    }
+
+    @Override
+    public String[][] getBlockBoundStrings() {
+        return ORACLE_BEGIN_END_BLOCK;
     }
 
     @Override
