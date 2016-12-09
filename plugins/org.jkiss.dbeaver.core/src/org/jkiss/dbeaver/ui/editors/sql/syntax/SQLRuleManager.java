@@ -218,8 +218,16 @@ public class SQLRuleManager extends RuleBasedScanner {
         if (!CommonUtils.isEmpty(blockHeaderString)) {
             wordRule.addWord(blockHeaderString, blockHeaderToken);
         }
-        wordRule.addWord(SQLConstants.BLOCK_BEGIN, blockBeginToken);
-        wordRule.addWord(SQLConstants.BLOCK_END, blockEndToken);
+        String[][] blockBounds = dialect.getBlockBoundStrings();
+        if (blockBounds != null) {
+            for (String[] block : blockBounds) {
+                if (block.length != 2) {
+                    continue;
+                }
+                wordRule.addWord(block[0], blockBeginToken);
+                wordRule.addWord(block[1], blockEndToken);
+            }
+        }
         rules.add(wordRule);
 
         final String blockToggleString = dialect.getBlockToggleString();

@@ -150,6 +150,9 @@ public interface SQLDialect {
     @Nullable
     String getScriptDelimiterRedefiner();
 
+    @Nullable
+    String[][] getBlockBoundStrings();
+
     /**
      * Script block header string.
      * Begins SQL block header (most typical: DECLARE).
