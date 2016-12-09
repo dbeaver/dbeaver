@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
@@ -120,7 +121,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
             return new DBEPersistAction[] {
                 new SQLDatabasePersistAction(MySQLMessages.edit_user_manager_command_drop_user, "DROP USER " + getObject().getFullName()) { //$NON-NLS-2$
                     @Override
-                    public void handleExecute(Throwable error)
+                    public void handleExecute(DBCSession session, Throwable error)
                     {
                         if (error == null) {
                             getObject().setPersisted(false);
