@@ -46,9 +46,9 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
@@ -497,18 +497,19 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 currentPos++;
             }
         }
-        //document.get
         // Extract part of document between empty lines
         int startPos = 0;
-        int endPos = docLength;
         boolean useBlankLines = syntaxManager.isBlankLineDelimiter();
         final String[] statementDelimiters = syntaxManager.getStatementDelimiters();
 
         try {
             int currentLine = document.getLineOfOffset(currentPos);
             int lineOffset = document.getLineOffset(currentLine);
-            int linesCount = document.getNumberOfLines();
-            int firstLine = currentLine, lastLine = currentLine;
+            if (TextUtils.isEmptyLine(document, currentLine)) {
+                return null;
+            }
+
+            int firstLine = currentLine;
             while (firstLine > 0) {
                 if (useBlankLines) {
                     if (TextUtils.isEmptyLine(document, firstLine) &&
@@ -525,34 +526,14 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 }
                 firstLine--;
             }
-            while (lastLine < linesCount) {
-                if (useBlankLines) {
-                    if (TextUtils.isEmptyLine(document, lastLine) &&
-                        isDefaultPartition(partitioner, document.getLineOffset(lastLine))) {
-                        break;
-                    }
-                } else {
-                    for (String delim : statementDelimiters) {
-                        final int offset = TextUtils.getOffsetOf(document, lastLine, delim);
-                        if (offset >= 0 && isDefaultPartition(partitioner, offset)) {
-                            break;
-                        }
-                    }
-                }
-                lastLine++;
-            }
-            if (lastLine >= linesCount) {
-                lastLine = linesCount - 1;
-            }
             startPos = document.getLineOffset(firstLine);
-            endPos = document.getLineOffset(lastLine) + document.getLineLength(lastLine);
 
             // Move currentPos at line begin
             currentPos = lineOffset;
         } catch (BadLocationException e) {
             log.warn(e);
         }
-        return parseQuery(document, startPos, endPos, currentPos);
+        return parseQuery(document, startPos, document.getLength() - 1, currentPos);
     }
 
     public SQLQuery extractNextQuery(boolean next) {
@@ -631,6 +612,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         SQLDialect dialect = getSQLDialect();
 
         // Parse range
+        boolean useBlankLines = syntaxManager.isBlankLineDelimiter();
         ruleManager.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
         int bracketDepth = 0;
@@ -649,6 +631,24 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 } catch (BadLocationException e) {
                     log.debug(e);
                     delimiterText = "";
+                }
+            }
+            if (!isDelimiter) {
+                if (useBlankLines && token.isWhitespace() && tokenLength >= 2) {
+                    // Check for blank line delimiter
+                    try {
+                        int lfCount = 0;
+                        for (int i = tokenOffset; i < tokenOffset + tokenLength; i++) {
+                            if (document.getChar(i) == '\n') {
+                                lfCount++;
+                            }
+                        }
+                        if (lfCount >= 2) {
+                            isDelimiter = true;
+                        }
+                    } catch (BadLocationException e) {
+                        log.error(e);
+                    }
                 }
             }
             if (tokenLength == 1) {
@@ -696,11 +696,9 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             }
 
             if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
-                // get position before last token start
                 if (tokenOffset > endPos) {
                     tokenOffset = endPos;
                 }
-
                 if (tokenOffset >= document.getLength()) {
                     // Sometimes (e.g. when comment finishing script text)
                     // last token offset is beyond document range
