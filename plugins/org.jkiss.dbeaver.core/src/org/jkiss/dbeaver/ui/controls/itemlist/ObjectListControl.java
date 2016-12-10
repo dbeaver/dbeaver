@@ -106,11 +106,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         EditorActivationStrategy editorActivationStrategy;
-        final KeyListener enterListener = new KeyAdapter() {
+        final TraverseListener traverseListener = new TraverseListener() {
             @Override
-            public void keyReleased(KeyEvent e) {
-                if (e.keyCode == SWT.CR && doubleClickHandler != null) {
+            public void keyTraversed(TraverseEvent e) {
+                if (e.detail == SWT.TRAVERSE_RETURN && doubleClickHandler != null) {
                     doubleClickHandler.doubleClick(new DoubleClickEvent(itemsViewer, itemsViewer.getSelection()));
+                    e.doit = false;
                 }
             }
         };
@@ -129,7 +130,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 public void handleEvent(Event event) {
                     // Just do nothing
                 }});
-            tree.addKeyListener(enterListener);
+            tree.addTraverseListener(traverseListener);
         } else {
             TableViewer tableViewer = new TableViewer(this, viewerStyle);
             final Table table = tableViewer.getTable();
@@ -140,7 +141,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             //itemsEditor = new TableEditor(table);
             editorActivationStrategy = new EditorActivationStrategy(tableViewer);
             TableViewerEditor.create(tableViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
-            table.addKeyListener(enterListener);
+            table.addTraverseListener(traverseListener);
         }
         //editorActivationStrategy.setEnableEditorActivationWithKeyboard(true);
         renderer = createRenderer();
