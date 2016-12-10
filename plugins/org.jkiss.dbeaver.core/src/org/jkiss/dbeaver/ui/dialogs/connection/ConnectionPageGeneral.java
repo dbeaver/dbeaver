@@ -381,28 +381,45 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 isolationLevel = UIUtils.createLabelCombo(txnGroup, "Isolation level", "Default transaction isolation level.", SWT.DROP_DOWN | SWT.READ_ONLY);
                 defaultSchema = UIUtils.createLabelCombo(txnGroup, "Default schema", "Name of schema or catalog which will be set as default.", SWT.DROP_DOWN);
 
-                String bootstrapTooltip = "SQL queries to execute right after connection establishment";
-                UIUtils.createControlLabel(txnGroup, "Bootstrap queries").setToolTipText(bootstrapTooltip);
-                final Button queriesConfigButton = UIUtils.createPushButton(txnGroup, "Configure ...", DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
-                queriesConfigButton.setToolTipText(bootstrapTooltip);
-                if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
-                    queriesConfigButton.setFont(boldFont);
-                }
-                queriesConfigButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        EditBootstrapQueriesDialog dialog = new EditBootstrapQueriesDialog(
-                            getShell(),
-                            bootstrapQueries,
-                            ignoreBootstrapErrors);
-                        if (dialog.open() == IDialogConstants.OK_ID) {
-                            bootstrapQueries = dialog.getQueries();
-                            ignoreBootstrapErrors = dialog.isIgnoreErrors();
-                        }
-                    }
-                });
-
                 keepAliveInterval = UIUtils.createLabelSpinner(txnGroup, "Keep-Alive", "Keep-alive interval (in seconds). Zero turns keep-alive off", 0, 0, Short.MAX_VALUE);
+
+                {
+                    String bootstrapTooltip = "SQL queries to execute right after connection establishment";
+                    UIUtils.createControlLabel(txnGroup, "Bootstrap queries").setToolTipText(bootstrapTooltip);
+                    final Button queriesConfigButton = UIUtils.createPushButton(txnGroup, "Configure ...", DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
+                    queriesConfigButton.setToolTipText(bootstrapTooltip);
+                    if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
+                        queriesConfigButton.setFont(boldFont);
+                    }
+                    queriesConfigButton.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            EditBootstrapQueriesDialog dialog = new EditBootstrapQueriesDialog(
+                                getShell(),
+                                bootstrapQueries,
+                                ignoreBootstrapErrors);
+                            if (dialog.open() == IDialogConstants.OK_ID) {
+                                bootstrapQueries = dialog.getQueries();
+                                ignoreBootstrapErrors = dialog.isIgnoreErrors();
+                            }
+                        }
+                    });
+                }
+
+                if (getWizard().isNew()) {
+                    UIUtils.createControlLabel(txnGroup, "Shell Commands");
+                    eventsButton = new Button(txnGroup, SWT.PUSH);
+                    eventsButton.setText("Configure ...");
+                    eventsButton.setImage(DBeaverIcons.getImage(UIIcon.EVENT));
+                    eventsButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                    eventsButton.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e)
+                        {
+                            configureEvents();
+                        }
+                    });
+                }
             }
 
             {
@@ -459,34 +476,6 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                         }
                     });
                 }
-            }
-        }
-
-        {
-            Composite buttonsGroup = new Composite(group, SWT.NONE);
-            gl = new GridLayout(1, false);
-            gl.verticalSpacing = 0;
-            gl.horizontalSpacing = 10;
-            gl.marginHeight = 0;
-            gl.marginWidth = 0;
-            buttonsGroup.setLayout(gl);
-
-            //buttonsGroup.setLayout(new GridLayout(2, true));
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            buttonsGroup.setLayoutData(gd);
-
-            if (getWizard().isNew()) {
-                eventsButton = new Button(buttonsGroup, SWT.PUSH);
-                eventsButton.setText("Shell Commands");
-                eventsButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-                eventsButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        configureEvents();
-                    }
-                });
             }
         }
 
