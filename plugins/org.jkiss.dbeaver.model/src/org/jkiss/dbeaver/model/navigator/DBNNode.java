@@ -29,6 +29,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * DBNNode
@@ -250,4 +253,15 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject, IAd
     public <T> T getAdapter(Class<T> adapter) {
         return null;
     }
+
+
+    static void sortNodes(List<? extends DBNNode> nodes) {
+        Collections.sort(nodes, new Comparator<DBNNode>() {
+            @Override
+            public int compare(DBNNode o1, DBNNode o2) {
+                return o1.getName().compareToIgnoreCase(o2.getName());
+            }
+        });
+    }
+
 }

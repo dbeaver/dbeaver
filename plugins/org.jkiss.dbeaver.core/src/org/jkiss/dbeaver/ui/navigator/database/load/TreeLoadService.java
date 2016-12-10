@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.utils.ArrayUtils;
 
@@ -53,8 +54,8 @@ public class TreeLoadService extends DatabaseLoadService<Object[]> {
         throws InvocationTargetException, InterruptedException
     {
         try {
-            DBNNode[] children = filterNavigableChildren(
-                parentNode.getChildren(getProgressMonitor()));
+            DBNNode[] children = parentNode.getChildren(getProgressMonitor());
+            children = filterNavigableChildren(children);
             return children == null ? new Object[0] : children;
         } catch (Throwable ex) {
             throw new InvocationTargetException(ex);
@@ -87,18 +88,36 @@ public class TreeLoadService extends DatabaseLoadService<Object[]> {
 
     public static void sortChildren(DBNNode[] children)
     {
+        final DBPPreferenceStore prefStore = DBeaverCore.getGlobalPreferenceStore();
+
         // Sort children is we have this feature on in preferences
         // and if children are not folders
-        if (children.length > 0 && DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
+        if (children.length > 0 && prefStore.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
             if (!(children[0] instanceof DBNContainer)) {
-                Arrays.sort(children, new Comparator<DBNNode>() {
-                    @Override
-                    public int compare(DBNNode node1, DBNNode node2) {
-                        return node1.getNodeName().compareToIgnoreCase(node2.getNodeName());
-                    }
-                });
+                Arrays.sort(children, NodeNameComparator.INSTANCE);
             }
+        }
+
+        if (children.length > 0 && prefStore.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)) {
+            Arrays.sort(children, NodeFolderComparator.INSTANCE);
         }
     }
 
+    private static class NodeNameComparator implements Comparator<DBNNode> {
+        static NodeNameComparator INSTANCE = new NodeNameComparator();
+        @Override
+        public int compare(DBNNode node1, DBNNode node2) {
+            return node1.getNodeName().compareToIgnoreCase(node2.getNodeName());
+        }
+    }
+
+    private static class NodeFolderComparator implements Comparator<DBNNode> {
+        static NodeFolderComparator INSTANCE = new NodeFolderComparator();
+        @Override
+        public int compare(DBNNode node1, DBNNode node2) {
+            int first = node1 instanceof DBNContainer ? -1 : 1;
+            int second = node2 instanceof DBNContainer ? -1 : 1;
+            return first - second;
+        }
+    }
 }
