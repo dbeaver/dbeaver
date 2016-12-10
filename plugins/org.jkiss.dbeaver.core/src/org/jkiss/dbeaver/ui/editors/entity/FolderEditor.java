@@ -27,6 +27,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.navigator.DBNContainer;
+import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
@@ -45,7 +47,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     @Override
     public void createPartControl(Composite parent)
     {
-        itemControl = new ItemListControl(parent, SWT.NONE, this.getSite(), getEditorInput().getNavigatorNode(), null);
+        itemControl = new FolderListControl(parent);
         itemControl.createProgressPanel();
         itemControl.loadData();
         getSite().setSelectionProvider(itemControl.getSelectionProvider());
@@ -133,5 +135,23 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     public boolean performSearch(SearchType searchType)
     {
         return itemControl.performSearch(searchType);
+    }
+
+    private class FolderListControl extends ItemListControl {
+        public FolderListControl(Composite parent) {
+            super(parent, SWT.NONE, FolderEditor.this.getSite(), FolderEditor.this.getEditorInput().getNavigatorNode(), null);
+        }
+
+        @Override
+        protected void openNodeEditor(DBNNode node) {
+            if (getRootNode() instanceof DBNContainer && node instanceof DBNLocalFolder) {
+                setRootNode(node);
+                loadData();
+                setPartName(node.getNodeName());
+                setTitleImage(DBeaverIcons.getImage(node.getNodeIcon()));
+            } else {
+                super.openNodeEditor(node);
+            }
+        }
     }
 }

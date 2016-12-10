@@ -170,6 +170,9 @@ class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implements IFon
                 if (!CommonUtils.isEmpty(cfg.getUserName())) {
                     info.append("User: ").append(cfg.getUserName()).append("\n");
                 }
+                if (!CommonUtils.isEmpty(ds.getDescription())) {
+                    info.append("Description: ").append(ds.getDescription()).append("\n");
+                }
 /*
                 if (cfg.getConnectionType() != null) {
                     info.append("Type: ").append(cfg.getConnectionType().getName()).append("\n");

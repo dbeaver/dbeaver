@@ -31,10 +31,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.INavigatorListener;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -66,7 +63,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     static final Log log = Log.getLog(NodeListControl.class);
 
     private final IWorkbenchSite workbenchSite;
-    private final DBNNode rootNode;
+    private DBNNode rootNode;
     private DBXTreeNode nodeMeta;
     private final NodeSelectionProvider selectionProvider;
 
@@ -86,16 +83,11 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             public void doubleClick(DoubleClickEvent event)
             {
                 // Run default node action
-                DBNNode dbmNode = NavigatorUtils.getSelectedNode(getItemsViewer());
-                if (dbmNode == null || !dbmNode.allowsOpen()) {
+                DBNNode node = NavigatorUtils.getSelectedNode(getItemsViewer());
+                if (node == null || !node.allowsOpen()) {
                     return;
                 }
-                NavigatorHandlerObjectOpen.openEntityEditor(
-                    dbmNode,
-                    null,
-                    workbenchSite != null ?
-                        workbenchSite.getWorkbenchWindow() :
-                        DBeaverUI.getActiveWorkbenchWindow());
+                openNodeEditor(node);
             }
         });
 
@@ -103,6 +95,15 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         NavigatorUtils.addDragAndDropSupport(getItemsViewer());
 
         DBeaverCore.getInstance().getNavigatorModel().addListener(this);
+    }
+
+    protected void openNodeEditor(DBNNode node) {
+        NavigatorHandlerObjectOpen.openEntityEditor(
+            node,
+            null,
+            workbenchSite != null ?
+                workbenchSite.getWorkbenchWindow() :
+                DBeaverUI.getActiveWorkbenchWindow());
     }
 
     public NodeListControl(
@@ -238,6 +239,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     @Override
     public DBNNode getRootNode() {
         return rootNode;
+    }
+
+    protected void setRootNode(DBNNode rootNode) {
+        this.rootNode = rootNode;
     }
 
     protected DBXTreeNode getNodeMeta()

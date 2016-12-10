@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -94,6 +95,10 @@ public class SelectDataSourceDialog extends Dialog {
 
         DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, rootNode, SWT.SINGLE | SWT.BORDER, false);
         dataSourceTree.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        final Text descriptionText = new Text(group, SWT.READ_ONLY);
+        descriptionText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
         dataSourceTree.getViewer().addFilter(new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element)
@@ -111,6 +116,11 @@ public class SelectDataSourceDialog extends Dialog {
                     if (selNode instanceof DBNDataSource) {
                         dataSource = ((DBNDataSource) selNode).getObject();
                         getButton(IDialogConstants.OK_ID).setEnabled(true);
+                        String description = dataSource.getDescription();
+                        if (description == null) {
+                            description = dataSource.getName();
+                        }
+                        descriptionText.setText(description);
                     } else {
                         dataSource = null;
                         getButton(IDialogConstants.OK_ID).setEnabled(false);
@@ -127,6 +137,7 @@ public class SelectDataSourceDialog extends Dialog {
                 }
             }
         });
+
 
         return group;
     }
