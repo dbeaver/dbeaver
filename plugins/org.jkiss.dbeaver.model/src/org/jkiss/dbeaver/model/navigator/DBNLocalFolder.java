@@ -126,6 +126,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
             nodes.add(((DBNProjectDatabases) parentNode).getFolderNode(childFolder));
         }
         nodes.addAll(getDataSources());
+        sortNodes(nodes);
         return ArrayUtils.toArray(DBNNode.class, nodes);
     }
 

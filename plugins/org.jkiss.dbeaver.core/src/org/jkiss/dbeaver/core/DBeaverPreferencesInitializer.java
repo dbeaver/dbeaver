@@ -66,6 +66,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         // Navigator
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, false);
 

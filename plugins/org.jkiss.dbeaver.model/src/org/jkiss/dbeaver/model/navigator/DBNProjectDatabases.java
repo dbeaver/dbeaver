@@ -151,13 +151,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 }
                 childNodes.add(dataSource);
             }
-            Collections.sort(childNodes, new Comparator<DBNNode>() {
-                @Override
-                public int compare(DBNNode o1, DBNNode o2)
-                {
-                    return o1.getName().compareToIgnoreCase(o2.getName());
-                }
-            });
+            sortNodes(childNodes);
             this.children = childNodes.toArray(new DBNNode[childNodes.size()]);
         }
         return children;

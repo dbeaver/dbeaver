@@ -44,6 +44,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
 
     private Button expandOnConnectCheck;
     private Button sortCaseInsensitiveCheck;
+    private Button sortFoldersFirstCheck;
     private Button groupByDriverCheck;
     private Button editorFullName;
     private Combo doubleClickBehavior;
@@ -74,6 +75,9 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             sortCaseInsensitiveCheck = UIUtils.createCheckbox(navigatorGroup, "Order elements alphabetically", false);
             sortCaseInsensitiveCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
 
+            sortFoldersFirstCheck = UIUtils.createCheckbox(navigatorGroup, "Folders first", "Show folders before regular elements", false, 1);
+            sortFoldersFirstCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
+
             groupByDriverCheck = UIUtils.createCheckbox(navigatorGroup, "Group databases by driver", false);
             groupByDriverCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
             groupByDriverCheck.setEnabled(false);
@@ -100,6 +104,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
 
         expandOnConnectCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT));
         sortCaseInsensitiveCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY));
+        sortFoldersFirstCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_FOLDERS_FIRST));
         groupByDriverCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER));
         editorFullName.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
         doubleClickBehavior.select(
@@ -113,6 +118,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
 
         store.setValue(DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT, expandOnConnectCheck.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY, sortCaseInsensitiveCheck.getSelection());
+        store.setValue(DBeaverPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, sortFoldersFirstCheck.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK,
