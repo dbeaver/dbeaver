@@ -107,8 +107,10 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
             }
         } else if (activeEditor instanceof IDataSourceContainerProvider) {
             DBPDataSourceContainer container = ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
-            autoCommit = container.isDefaultAutoCommit();
-            isolation = container.getActiveTransactionsIsolation();
+            if (container != null) {
+                autoCommit = container.isDefaultAutoCommit();
+                isolation = container.getActiveTransactionsIsolation();
+            }
         }
         element.setChecked(autoCommit);
         // Update command image
