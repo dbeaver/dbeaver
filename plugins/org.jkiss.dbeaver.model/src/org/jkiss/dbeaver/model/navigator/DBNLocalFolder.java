@@ -21,11 +21,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,18 +38,26 @@ import java.util.List;
  */
 public class DBNLocalFolder extends DBNNode implements DBNContainer
 {
-    private String name;
+    private DBPDataSourceFolder folder;
 
-    public DBNLocalFolder(DBNProjectDatabases parentNode, String name)
+    public DBNLocalFolder(DBNProjectDatabases parentNode, DBPDataSourceFolder folder)
     {
         super(parentNode);
-        this.name = name;
+        this.folder = folder;
     }
 
     @Override
     void dispose(boolean reflect)
     {
         super.dispose(reflect);
+    }
+
+    public DBPDataSourceFolder getFolder() {
+        return folder;
+    }
+
+    public DBPDataSourceRegistry getDataSourceRegistry() {
+        return ((DBNProjectDatabases)parentNode).getDataSourceRegistry();
     }
 
     @NotNull
@@ -78,13 +88,13 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public String getNodeName()
     {
-        return name;
+        return folder.getName();
     }
 
     @Override
     public String getNodeDescription()
     {
-        return null;
+        return folder.getDescription();
     }
 
     @Override
@@ -106,10 +116,17 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     }
 
     @Override
-    public DBNDataSource[] getChildren(DBRProgressMonitor monitor) throws DBException
+    public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException
     {
-        final List<DBNDataSource> dataSources = getDataSources();
-        return dataSources.toArray(new DBNDataSource[dataSources.size()]);
+        if (ArrayUtils.isEmpty(folder.getChildren())) {
+            return ArrayUtils.toArray(DBNDataSource.class, getDataSources());
+        }
+        final List<DBNNode> nodes = new ArrayList<>();
+        for (DBPDataSourceFolder childFolder : folder.getChildren()) {
+            nodes.add(((DBNProjectDatabases) parentNode).getFolderNode(childFolder));
+        }
+        nodes.addAll(getDataSources());
+        return ArrayUtils.toArray(DBNNode.class, nodes);
     }
 
     public List<DBNDataSource> getDataSources()
@@ -117,7 +134,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         List<DBNDataSource> children = new ArrayList<>();
         DBNProjectDatabases parent = (DBNProjectDatabases) getParentNode();
         for (DBNDataSource dataSource : parent.getDataSources()) {
-            if (getName().equals(dataSource.getDataSourceContainer().getFolderPath())) {
+            if (folder == dataSource.getDataSourceContainer().getFolder()) {
                 children.add(dataSource);
             }
         }
@@ -141,7 +158,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     {
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource) {
-                ((DBNDataSource) node).setFolderPath(getName());
+                ((DBNDataSource) node).setFolder(folder);
             }
         }
         DBNModel.updateConfigAndRefreshDatabases(this);
@@ -156,14 +173,8 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
-        if (CommonUtils.isEmpty(newName)) {
-            return;
-        }
-        List<DBNDataSource> dataSources = getDataSources();
-        for (DBNDataSource dataSource : dataSources) {
-            dataSource.setFolderPath(newName);
-        }
-        name = newName;
+        folder.setName(newName);
         DBNModel.updateConfigAndRefreshDatabases(this);
     }
+
 }

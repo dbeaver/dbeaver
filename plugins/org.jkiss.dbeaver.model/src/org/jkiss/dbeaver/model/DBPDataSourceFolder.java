@@ -22,6 +22,8 @@ package org.jkiss.dbeaver.model;
  */
 public interface DBPDataSourceFolder extends DBPNamedObject2 {
 
+    String getFolderPath();
+
     String getDescription();
 
     DBPDataSourceFolder getParent();

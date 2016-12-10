@@ -63,6 +63,8 @@ public interface DBPDataSourceRegistry {
 
     void updateDataSource(DBPDataSourceContainer dataSource);
 
+    List<? extends DBPDataSourceFolder> getAllFolders();
+
     List<? extends DBPDataSourceFolder> getRootFolders();
 
     DBPDataSourceFolder addFolder(DBPDataSourceFolder parent, String name);

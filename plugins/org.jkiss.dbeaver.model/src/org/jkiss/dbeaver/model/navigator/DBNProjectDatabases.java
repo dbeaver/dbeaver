@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -40,7 +39,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     private List<DBNDataSource> dataSources = new ArrayList<>();
     private DBPDataSourceRegistry dataSourceRegistry;
     private volatile DBNNode[] children;
-    private final List<DBNLocalFolder> folders = new ArrayList<>();
+    private final IdentityHashMap<DBPDataSourceFolder, DBNLocalFolder> folderNodes = new IdentityHashMap<>();
 
     public DBNProjectDatabases(DBNProject parentNode, DBPDataSourceRegistry dataSourceRegistry)
     {
@@ -61,7 +60,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
             dataSource.dispose(reflect);
         }
         dataSources.clear();
-        folders.clear();
+        folderNodes.clear();
         children = null;
         if (dataSourceRegistry != null) {
             dataSourceRegistry.removeDataSourceListener(this);
@@ -134,20 +133,20 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     {
         if (children == null) {
             List<DBNNode> childNodes = new ArrayList<>();
-            for (DBNDataSource dataSource : dataSources) {
-                String folderPath = dataSource.getDataSourceContainer().getFolderPath();
-                if (CommonUtils.isEmpty(folderPath)) {
-                    childNodes.add(dataSource);
-                } else {
-                    DBNLocalFolder folder = getLocalFolder(folderPath);
-                    if (folder == null) {
-                        folder = new DBNLocalFolder(this, folderPath);
-                        folders.add(folder);
-                    }
-                    if (!childNodes.contains(folder)) {
-                        childNodes.add(folder);
-                    }
+            // Add root folders
+            for (DBPDataSourceFolder folder : dataSourceRegistry.getAllFolders()) {
+                DBNLocalFolder folderNode = new DBNLocalFolder(this, folder);
+                folderNodes.put(folder, folderNode);
+                if (folder.getParent() == null) {
+                    childNodes.add(folderNode);
                 }
+            }
+            // Add only root datasources
+            for (DBNDataSource dataSource : dataSources) {
+                if (dataSource.getDataSourceContainer().getFolder() != null) {
+                    continue;
+                }
+                childNodes.add(dataSource);
             }
             Collections.sort(childNodes, new Comparator<DBNNode>() {
                 @Override
@@ -173,16 +172,17 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return true;
     }
 
-    public DBNLocalFolder getLocalFolder(String name)
+    public DBNLocalFolder getFolderNode(DBPDataSourceFolder folder)
     {
-        synchronized (folders) {
-            for (DBNLocalFolder folder : folders) {
-                if (folder.getName().equals(name)) {
-                    return folder;
-                }
+        synchronized (folderNodes) {
+            DBNLocalFolder folderNode = folderNodes.get(folder);
+            if (folderNode == null) {
+                log.warn("Folder node '" + folder.getFolderPath() + "' not found");
+                folderNode = new DBNLocalFolder(this, folder);
+                folderNodes.put(folder, folderNode);
             }
+            return folderNode;
         }
-        return null;
     }
 
     public List<DBNDataSource> getDataSources()

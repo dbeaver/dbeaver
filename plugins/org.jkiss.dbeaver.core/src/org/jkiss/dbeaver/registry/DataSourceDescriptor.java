@@ -600,16 +600,6 @@ public class DataSourceDescriptor
         return registry;
     }
 
-    public String getFolderPath()
-    {
-        return folder == null ? null : folder.getFolderPath();
-    }
-
-    public void setFolderPath(String folderPath)
-    {
-        this.folderPath = folderPath;
-    }
-
     @Override
     public void persistConfiguration()
     {

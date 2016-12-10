@@ -212,6 +212,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     }
 
     @Override
+    public List<? extends DBPDataSourceFolder> getAllFolders() {
+        return dataSourceFolders;
+    }
+
+    @Override
     public List<DataSourceFolder> getRootFolders() {
         List<DataSourceFolder> rootFolders = new ArrayList<>();
         for (DataSourceFolder folder : dataSourceFolders) {
@@ -902,8 +907,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     String description = atts.getValue(RegistryConstants.ATTR_DESCRIPTION);
                     String parentFolder = atts.getValue(RegistryConstants.ATTR_PARENT);
                     DataSourceFolder parent = parentFolder == null ? null : findFolderByPath(parentFolder, true);
-                    DataSourceFolder folder = new DataSourceFolder(parent, name, description);
-                    dataSourceFolders.add(folder);
+                    DataSourceFolder folder = parent == null ? findFolderByPath(name, true) : parent.getChild(name);
+                    if (folder == null) {
+                        folder = new DataSourceFolder(parent, name, description);
+                        dataSourceFolders.add(folder);
+                    } else {
+                        folder.setDescription(description);
+                    }
                     break;
                 }
                 case RegistryConstants.TAG_DATA_SOURCE: {

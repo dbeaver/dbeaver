@@ -104,10 +104,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         if (confirmResult == ConfirmResult.NO) {
             return;
         }
-        List<DBNDataSource> dataSources = localFolder.getDataSources();
-        for (DBNDataSource dataSource : dataSources) {
-            dataSource.setFolderPath(null);
-        }
+        localFolder.getDataSourceRegistry().removeFolder(localFolder.getFolder(), false);
         DBNModel.updateConfigAndRefreshDatabases(localFolder);
     }
 

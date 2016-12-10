@@ -537,7 +537,7 @@ public class DBNModel implements IResourceChangeListener {
 
     public static void updateConfigAndRefreshDatabases(DBNNode node)
     {
-        for (DBNNode parentNode = node.getParentNode(); parentNode != null; parentNode = parentNode.getParentNode()) {
+        for (DBNNode parentNode = node; parentNode != null; parentNode = parentNode.getParentNode()) {
             if (parentNode instanceof DBNProjectDatabases) {
                 DBNProjectDatabases projectDatabases = (DBNProjectDatabases) parentNode;
                 projectDatabases.getDataSourceRegistry().flushConfig();
