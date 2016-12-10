@@ -27,9 +27,10 @@ import org.jkiss.dbeaver.model.*;
 import java.util.List;
 
 /**
- * DBPDataSourceRegistry
+ * Datasource registry.
+ * Extends DBPObject to support datasources ObjectManager
  */
-public interface DBPDataSourceRegistry {
+public interface DBPDataSourceRegistry extends DBPObject {
 
     String CONFIG_FILE_PREFIX = ".dbeaver-data-sources"; //$NON-NLS-1$
     String CONFIG_FILE_EXT = ".xml"; //$NON-NLS-1$

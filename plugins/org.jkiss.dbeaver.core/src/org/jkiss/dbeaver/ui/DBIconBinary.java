@@ -22,6 +22,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Image with binary data
@@ -48,6 +49,19 @@ public class DBIconBinary implements DBPImage
 
     @Override
     public String getLocation() {
+        return location;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof DBIconBinary) {
+            return CommonUtils.equalObjects(location, ((DBIconBinary) obj).location);
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
         return location;
     }
 }

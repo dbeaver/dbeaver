@@ -229,7 +229,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     @Override
     public DataSourceFolder addFolder(DBPDataSourceFolder parent, String name) {
-        DataSourceFolder folder = new DataSourceFolder((DataSourceFolder) parent, name, null);
+        DataSourceFolder folder = new DataSourceFolder(this, (DataSourceFolder) parent, name, null);
         dataSourceFolders.add(folder);
         return folder;
     }
@@ -909,7 +909,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     DataSourceFolder parent = parentFolder == null ? null : findFolderByPath(parentFolder, true);
                     DataSourceFolder folder = parent == null ? findFolderByPath(name, true) : parent.getChild(name);
                     if (folder == null) {
-                        folder = new DataSourceFolder(parent, name, description);
+                        folder = new DataSourceFolder(DataSourceRegistry.this, parent, name, description);
                         dataSourceFolders.add(folder);
                     } else {
                         folder.setDescription(description);
