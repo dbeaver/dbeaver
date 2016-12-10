@@ -37,12 +37,15 @@ import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -59,6 +62,7 @@ import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -530,5 +534,72 @@ public class NavigatorUtils {
             }
         }
         return null;
+    }
+
+    public static DBNNode[] getNodeChildrenFiltered(DBRProgressMonitor monitor, DBNNode node) throws DBException {
+        DBNNode[] children = node.getChildren(monitor);
+        if (children != null && children.length > 0) {
+            children = filterNavigableChildren(children);
+        }
+        return children;
+    }
+
+    public static DBNNode[] filterNavigableChildren(DBNNode[] children)
+    {
+        if (ArrayUtils.isEmpty(children)) {
+            return children;
+        }
+        List<DBNNode> filtered = null;
+        for (int i = 0; i < children.length; i++) {
+            DBNNode node = children[i];
+            if (node instanceof DBNDatabaseNode && !((DBNDatabaseNode) node).getMeta().isNavigable()) {
+                if (filtered == null) {
+                    filtered = new ArrayList<>(children.length);
+                    for (int k = 0; k < i; k++) {
+                        filtered.add(children[k]);
+                    }
+                }
+            } else if (filtered != null) {
+                filtered.add(node);
+            }
+        }
+        DBNNode[] result = filtered == null ? children : filtered.toArray(new DBNNode[filtered.size()]);
+        sortNodes(result);
+        return result;
+    }
+
+    private static void sortNodes(DBNNode[] children)
+    {
+        final DBPPreferenceStore prefStore = DBeaverCore.getGlobalPreferenceStore();
+
+        // Sort children is we have this feature on in preferences
+        // and if children are not folders
+        if (children.length > 0 && prefStore.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
+            if (!(children[0] instanceof DBNContainer)) {
+                Arrays.sort(children, NodeNameComparator.INSTANCE);
+            }
+        }
+
+        if (children.length > 0 && prefStore.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)) {
+            Arrays.sort(children, NodeFolderComparator.INSTANCE);
+        }
+    }
+
+    private static class NodeNameComparator implements Comparator<DBNNode> {
+        static NodeNameComparator INSTANCE = new NodeNameComparator();
+        @Override
+        public int compare(DBNNode node1, DBNNode node2) {
+            return node1.getNodeName().compareToIgnoreCase(node2.getNodeName());
+        }
+    }
+
+    private static class NodeFolderComparator implements Comparator<DBNNode> {
+        static NodeFolderComparator INSTANCE = new NodeFolderComparator();
+        @Override
+        public int compare(DBNNode node1, DBNNode node2) {
+            int first = node1 instanceof DBNContainer ? -1 : 1;
+            int second = node2 instanceof DBNContainer ? -1 : 1;
+            return first - second;
+        }
     }
 }

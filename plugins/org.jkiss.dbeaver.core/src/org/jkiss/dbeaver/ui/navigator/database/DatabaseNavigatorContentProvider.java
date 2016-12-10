@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadNode;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadService;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadVisualizer;
@@ -116,8 +117,8 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
             try {
                 // Read children with null monitor cos' it's not a lazy node
                 // and no blocking process will occur
-                DBNNode[] children = TreeLoadService.filterNavigableChildren(
-                    parentNode.getChildren(VoidProgressMonitor.INSTANCE));
+                DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(
+                    VoidProgressMonitor.INSTANCE, parentNode);
                 if (ArrayUtils.isEmpty(children)) {
                     return EMPTY_CHILDREN;
                 } else {

@@ -17,20 +17,12 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database.load;
 
-import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
-import org.jkiss.utils.ArrayUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * TreeLoadService
@@ -54,70 +46,11 @@ public class TreeLoadService extends DatabaseLoadService<Object[]> {
         throws InvocationTargetException, InterruptedException
     {
         try {
-            DBNNode[] children = parentNode.getChildren(getProgressMonitor());
-            children = filterNavigableChildren(children);
+            DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(getProgressMonitor(), parentNode);
             return children == null ? new Object[0] : children;
         } catch (Throwable ex) {
             throw new InvocationTargetException(ex);
         }
     }
 
-    public static DBNNode[] filterNavigableChildren(DBNNode[] children)
-    {
-        if (ArrayUtils.isEmpty(children)) {
-            return children;
-        }
-        List<DBNNode> filtered = null;
-        for (int i = 0; i < children.length; i++) {
-            DBNNode node = children[i];
-            if (node instanceof DBNDatabaseNode && !((DBNDatabaseNode) node).getMeta().isNavigable()) {
-                if (filtered == null) {
-                    filtered = new ArrayList<>(children.length);
-                    for (int k = 0; k < i; k++) {
-                        filtered.add(children[k]);
-                    }
-                }
-            } else if (filtered != null) {
-                filtered.add(node);
-            }
-        }
-        DBNNode[] result = filtered == null ? children : filtered.toArray(new DBNNode[filtered.size()]);
-        sortChildren(result);
-        return result;
-    }
-
-    public static void sortChildren(DBNNode[] children)
-    {
-        final DBPPreferenceStore prefStore = DBeaverCore.getGlobalPreferenceStore();
-
-        // Sort children is we have this feature on in preferences
-        // and if children are not folders
-        if (children.length > 0 && prefStore.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
-            if (!(children[0] instanceof DBNContainer)) {
-                Arrays.sort(children, NodeNameComparator.INSTANCE);
-            }
-        }
-
-        if (children.length > 0 && prefStore.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)) {
-            Arrays.sort(children, NodeFolderComparator.INSTANCE);
-        }
-    }
-
-    private static class NodeNameComparator implements Comparator<DBNNode> {
-        static NodeNameComparator INSTANCE = new NodeNameComparator();
-        @Override
-        public int compare(DBNNode node1, DBNNode node2) {
-            return node1.getNodeName().compareToIgnoreCase(node2.getNodeName());
-        }
-    }
-
-    private static class NodeFolderComparator implements Comparator<DBNNode> {
-        static NodeFolderComparator INSTANCE = new NodeFolderComparator();
-        @Override
-        public int compare(DBNNode node1, DBNNode node2) {
-            int first = node1 instanceof DBNContainer ? -1 : 1;
-            int second = node2 instanceof DBNContainer ? -1 : 1;
-            return first - second;
-        }
-    }
 }
