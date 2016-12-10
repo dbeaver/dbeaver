@@ -561,7 +561,10 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                        <or>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNLocalFolder"/>
+                        </or>
                     </iterate>
                 </with>
             </enabledWhen>

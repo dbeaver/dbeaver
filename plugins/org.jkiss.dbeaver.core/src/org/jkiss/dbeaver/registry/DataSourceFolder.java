@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
@@ -90,11 +89,17 @@ public class DataSourceFolder implements DBPDataSourceFolder
         return null;
     }
 
+    @Override
     public String getFolderPath() {
         String path = null;
         for (DataSourceFolder folder = this; folder != null; folder = folder.getParent()) {
             path = path == null ? folder.getName() : folder.getName() + "/" + path;
         }
         return path;
+    }
+
+    @Override
+    public String toString() {
+        return getFolderPath();
     }
 }

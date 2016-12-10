@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 
@@ -51,9 +50,9 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     @Override
     public DBNNode getParentNode()
     {
-        String folderPath = dataSource.getFolderPath();
-        if (!CommonUtils.isEmpty(folderPath)) {
-            DBNLocalFolder localFolder = ((DBNProjectDatabases) super.getParentNode()).getLocalFolder(folderPath);
+        DBPDataSourceFolder folder = dataSource.getFolder();
+        if (folder != null) {
+            DBNLocalFolder localFolder = ((DBNProjectDatabases) super.getParentNode()).getFolderNode(folder);
             if (localFolder != null) {
                 return localFolder;
             }
@@ -214,10 +213,10 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     @Override
     public void dropNodes(Collection<DBNNode> nodes) throws DBException
     {
-        String folderPath = dataSource.getFolderPath();
+        DBPDataSourceFolder folder = dataSource.getFolder();
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource) {
-                if (!((DBNDataSource) node).setFolderPath(folderPath)) {
+                if (!((DBNDataSource) node).setFolder(folder)) {
                     return;
                 }
             }
@@ -225,13 +224,13 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
         DBNModel.updateConfigAndRefreshDatabases(this);
     }
 
-    public boolean setFolderPath(String folder)
+    public boolean setFolder(DBPDataSourceFolder folder)
     {
-        final String oldPath = dataSource.getFolderPath();
-        if (CommonUtils.equalObjects(oldPath, folder)) {
+        final DBPDataSourceFolder oldFolder = dataSource.getFolder();
+        if (oldFolder == folder) {
             return false;
         }
-        dataSource.setFolderPath(folder);
+        dataSource.setFolder(folder);
         return true;
     }
 
