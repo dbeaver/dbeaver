@@ -237,7 +237,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
                         try {
-                            result = finaActiveNode(monitor, node);
+                            result = findActiveNode(monitor, node);
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);
                         }
@@ -256,13 +256,13 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
     }
 
-    private DBNNode finaActiveNode(DBRProgressMonitor monitor, DBNNode node) throws DBException
+    private DBNNode findActiveNode(DBRProgressMonitor monitor, DBNNode node) throws DBException
     {
         DBNNode[] children = node.getChildren(monitor);
         if (!ArrayUtils.isEmpty(children)) {
             if (children[0] instanceof DBNContainer) {
                 // Use only first folder to search
-                return finaActiveNode(monitor, children[0]);
+                return findActiveNode(monitor, children[0]);
             }
             for (DBNNode child : children) {
                 if (NavigatorUtils.isDefaultElement(child)) {

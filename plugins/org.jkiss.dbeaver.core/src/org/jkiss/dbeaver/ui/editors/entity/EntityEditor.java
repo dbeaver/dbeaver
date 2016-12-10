@@ -66,7 +66,9 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.ErrorEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -798,22 +800,25 @@ public class EntityEditor extends MultiPageDatabaseEditor
                         }
                         breadcrumbsMenu = new Menu(item.getParent().getShell());
                         try {
-                            for (final DBNDatabaseNode folderItem : databaseNode.getChildren(VoidProgressMonitor.INSTANCE)) {
-                                MenuItem childItem = new MenuItem(breadcrumbsMenu, SWT.NONE);
-                                childItem.setText(folderItem.getName());
-//                                childItem.setImage(DBeaverIcons.getImage(folderItem.getNodeIconDefault()));
-                                if (folderItem == curNode) {
-                                    childItem.setEnabled(false);
-                                }
-                                childItem.addSelectionListener(new SelectionAdapter() {
-                                    @Override
-                                    public void widgetSelected(SelectionEvent e) {
-                                        NavigatorHandlerObjectOpen.openEntityEditor(folderItem, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                            final DBNNode[] childNodes = NavigatorUtils.getNodeChildrenFiltered(VoidProgressMonitor.INSTANCE, databaseNode);
+                            if (!ArrayUtils.isEmpty(childNodes)) {
+                                for (final DBNNode folderItem : childNodes) {
+                                    MenuItem childItem = new MenuItem(breadcrumbsMenu, SWT.NONE);
+                                    childItem.setText(folderItem.getName());
+                                    //                                childItem.setImage(DBeaverIcons.getImage(folderItem.getNodeIconDefault()));
+                                    if (folderItem == curNode) {
+                                        childItem.setEnabled(false);
                                     }
-                                });
-                                itemCount++;
-                                if (itemCount >= MAX_BREADCRUMBS_MENU_ITEM) {
-                                    break;
+                                    childItem.addSelectionListener(new SelectionAdapter() {
+                                        @Override
+                                        public void widgetSelected(SelectionEvent e) {
+                                            NavigatorHandlerObjectOpen.openEntityEditor(folderItem, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                                        }
+                                    });
+                                    itemCount++;
+                                    if (itemCount >= MAX_BREADCRUMBS_MENU_ITEM) {
+                                        break;
+                                    }
                                 }
                             }
                         } catch (Throwable e1) {

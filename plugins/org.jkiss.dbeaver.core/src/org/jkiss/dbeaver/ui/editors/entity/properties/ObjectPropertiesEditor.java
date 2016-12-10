@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorContributorUser;
 import org.jkiss.dbeaver.ui.editors.entity.GlobalContributorManager;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -488,7 +489,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             // Do not add children tabs
         } else if (node != null) {
             try {
-                DBNNode[] children = node.getChildren(monitor);
+                DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(monitor, node);
                 if (children != null) {
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {

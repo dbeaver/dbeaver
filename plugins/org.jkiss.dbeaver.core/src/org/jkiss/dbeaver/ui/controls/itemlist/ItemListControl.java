@@ -165,7 +165,7 @@ public class ItemListControl extends NodeListControl
         {
             try {
                 List<DBNNode> items = new ArrayList<>();
-                DBNNode[] children = getRootNode().getChildren(getProgressMonitor());
+                DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(getProgressMonitor(), getRootNode());
                 if (ArrayUtils.isEmpty(children)) {
                     return items;
                 }
