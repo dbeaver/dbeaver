@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
@@ -29,12 +30,14 @@ import java.util.List;
  */
 public class DataSourceFolder implements DBPDataSourceFolder
 {
+    private final DataSourceRegistry registry;
     private DataSourceFolder parent;
     private List<DataSourceFolder> children = new ArrayList<>();
     private String name;
     private String description;
 
-    public DataSourceFolder(DataSourceFolder parent, String name, String description) {
+    public DataSourceFolder(DataSourceRegistry registry, DataSourceFolder parent, String name, String description) {
+        this.registry = registry;
         this.name = name;
         this.description = description;
         setParent(parent);
@@ -78,6 +81,11 @@ public class DataSourceFolder implements DBPDataSourceFolder
     @Override
     public DataSourceFolder[] getChildren() {
         return ArrayUtils.toArray(DataSourceFolder.class, children);
+    }
+
+    @Override
+    public DBPDataSourceRegistry getDataSourceRegistry() {
+        return registry;
     }
 
     public DataSourceFolder getChild(String name) {

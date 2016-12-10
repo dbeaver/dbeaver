@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+
 /**
  * Datasource folder
  */
@@ -30,4 +32,5 @@ public interface DBPDataSourceFolder extends DBPNamedObject2 {
 
     DBPDataSourceFolder[] getChildren();
 
+    DBPDataSourceRegistry getDataSourceRegistry();
 }

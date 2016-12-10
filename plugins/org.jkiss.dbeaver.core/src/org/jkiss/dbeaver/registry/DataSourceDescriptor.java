@@ -961,7 +961,6 @@ public class DataSourceDescriptor
         return null;
     }
 
-    @Nullable
     @Override
     @NotNull
     public DBPImage getObjectImage()

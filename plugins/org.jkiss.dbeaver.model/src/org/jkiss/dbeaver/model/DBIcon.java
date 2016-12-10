@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
@@ -132,6 +133,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon OVER_LOCK = new DBIcon("over_lock", "over/lock_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_EXTERNAL = new DBIcon("over_external", "over/external_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_REFERENCE = new DBIcon("over_reference", "over/reference_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_FOLDER = new DBIcon("over_folder", "over/folder_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     private static Map<String, DBPImage> iconMap = new HashMap<>();
 
@@ -208,4 +210,18 @@ public class DBIcon implements DBPImage
         return path;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof DBIcon) {
+            return CommonUtils.equalObjects(token, ((DBIcon) obj).token) &&
+                CommonUtils.equalObjects(path, ((DBIcon) obj).path);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return token + ":" + path;
+    }
 }

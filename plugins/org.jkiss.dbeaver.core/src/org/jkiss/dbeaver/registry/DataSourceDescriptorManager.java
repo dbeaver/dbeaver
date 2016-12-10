@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -36,7 +38,7 @@ import java.util.Map;
 /**
  * DataSourceDescriptorManager
  */
-public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourceDescriptor> implements DBEObjectMaker<DataSourceDescriptor, DataSourceRegistry> {
+public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourceDescriptor> implements DBEObjectMaker<DataSourceDescriptor, DBPObject> {
 
     @Override
     public long getMakerOptions()
@@ -52,7 +54,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     }
 
     @Override
-    public boolean canCreateObject(DataSourceRegistry parent)
+    public boolean canCreateObject(DBPObject parent)
     {
         return true;
     }
@@ -64,17 +66,29 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     }
 
     @Override
-    public DataSourceDescriptor createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, DataSourceRegistry parent, Object copyFrom)
+    public DataSourceDescriptor createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, DBPObject parent, Object copyFrom)
     {
         if (copyFrom != null) {
             DataSourceDescriptor dsTpl = (DataSourceDescriptor)copyFrom;
-            DBPDataSourceRegistry registry = parent != null ? parent : dsTpl.getRegistry();
+            DBPDataSourceRegistry registry;
+            DBPDataSourceFolder folder = null;
+            if (parent instanceof DataSourceRegistry) {
+                registry = (DBPDataSourceRegistry) parent;
+            } else if (parent instanceof DBPDataSourceFolder) {
+                folder = (DBPDataSourceFolder)parent;
+                registry = folder.getDataSourceRegistry();
+            } else {
+                registry = dsTpl.getRegistry();
+            }
             DataSourceDescriptor dataSource = new DataSourceDescriptor(
                 registry,
                 DataSourceDescriptor.generateNewId(dsTpl.getDriver()),
                 dsTpl.getDriver(),
                 new DBPConnectionConfiguration(dsTpl.getConnectionConfiguration()));
             dataSource.copyFrom(dsTpl);
+            if (folder != null) {
+                dataSource.setFolder(folder);
+            }
             // Generate new name
             String origName = dsTpl.getName();
             String newName = origName;

@@ -19,15 +19,13 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceFolder;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,7 +68,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public Object getValueObject()
     {
-        return null;
+        return folder;
     }
 
     @Override
@@ -100,7 +98,32 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public DBPImage getNodeIcon()
     {
+        DBPImage dsIcon = null;
+        for (DBNDataSource ds : getDataSources()) {
+            final DBPImage icon = DBUtils.getObjectImage(ds.getDataSourceContainer());
+            if (dsIcon == null) {
+                dsIcon = icon;
+            } else if (!CommonUtils.equalObjects(dsIcon, icon)) {
+                dsIcon = null;
+                break;
+            }
+        }
         return DBIcon.TREE_DATABASE_CATEGORY;
+/*
+        if (dsIcon == null) {
+            return DBIcon.TREE_DATABASE_CATEGORY;
+        } else {
+            // All datasources have the same icon.
+            // Make it a folder
+            return new DBIconComposite(
+                dsIcon,
+                false,
+                null,
+                null,
+                null,
+                DBIcon.OVER_FOLDER);
+        }
+*/
     }
 
     @Override
