@@ -53,15 +53,10 @@ public class NavigatorHandlerLocalFolderCreate extends AbstractHandler {
             for (Iterator iter = structSelection.iterator(); iter.hasNext(); ) {
                 Object element = iter.next();
                 if (element instanceof DBNDataSource) {
-                    final DBNProjectDatabases databases = (DBNProjectDatabases) ((DBNDataSource) element).getParentNode();
-                    if (databasesNode == null) {
-                        databasesNode = databases;
-                    } else if (databasesNode != databases) {
-                        // Can't do this for different projects
-                        continue;
-                    }
                     dataSources.add((DBNDataSource) element);
-                } else if (element instanceof DBNLocalFolder) {
+                    element = ((DBNDataSource) element).getParentNode();
+                }
+                if (element instanceof DBNLocalFolder) {
                     parentFolder = (DBNLocalFolder) element;
                     databasesNode = (DBNProjectDatabases) parentFolder.getParentNode();
                 } else if (element instanceof DBNProjectDatabases) {

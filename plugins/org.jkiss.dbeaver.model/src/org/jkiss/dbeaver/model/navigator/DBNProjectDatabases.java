@@ -135,8 +135,11 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
             List<DBNNode> childNodes = new ArrayList<>();
             // Add root folders
             for (DBPDataSourceFolder folder : dataSourceRegistry.getAllFolders()) {
-                DBNLocalFolder folderNode = new DBNLocalFolder(this, folder);
-                folderNodes.put(folder, folderNode);
+                DBNLocalFolder folderNode = folderNodes.get(folder);
+                if (folderNode == null) {
+                    folderNode = new DBNLocalFolder(this, folder);
+                    folderNodes.put(folder, folderNode);
+                }
                 if (folder.getParent() == null) {
                     childNodes.add(folderNode);
                 }
