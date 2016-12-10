@@ -22,10 +22,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.*;
 
 import java.util.List;
 
@@ -65,6 +62,12 @@ public interface DBPDataSourceRegistry {
     void removeDataSource(DBPDataSourceContainer dataSource);
 
     void updateDataSource(DBPDataSourceContainer dataSource);
+
+    List<? extends DBPDataSourceFolder> getRootFolders();
+
+    DBPDataSourceFolder addFolder(DBPDataSourceFolder parent, String name);
+
+    void removeFolder(DBPDataSourceFolder folder, boolean dropContents);
 
     void flushConfig();
 

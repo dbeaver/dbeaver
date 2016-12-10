@@ -158,6 +158,11 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
     @Nullable
     DBPDataSource getDataSource();
 
+    @Nullable
+    DBPDataSourceFolder getFolder();
+
+    void setFolder(@Nullable DBPDataSourceFolder folder);
+
     String getFolderPath();
 
     void setFolderPath(String folderPath);

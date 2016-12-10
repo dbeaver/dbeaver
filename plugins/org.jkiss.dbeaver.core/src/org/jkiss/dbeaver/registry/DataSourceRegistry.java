@@ -87,6 +87,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private final List<DataSourceDescriptor> dataSources = new ArrayList<>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
+    private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
     private volatile boolean saveInProgress = false;
 
     public DataSourceRegistry(DBPPlatform platform, IProject project)
@@ -208,6 +209,74 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             }
         });
         return dsCopy;
+    }
+
+    @Override
+    public List<DataSourceFolder> getRootFolders() {
+        List<DataSourceFolder> rootFolders = new ArrayList<>();
+        for (DataSourceFolder folder : dataSourceFolders) {
+            if (folder.getParent() == null) {
+                rootFolders.add(folder);
+            }
+        }
+        return rootFolders;
+    }
+
+    @Override
+    public DataSourceFolder addFolder(DBPDataSourceFolder parent, String name) {
+        DataSourceFolder folder = new DataSourceFolder((DataSourceFolder) parent, name, null);
+        dataSourceFolders.add(folder);
+        return folder;
+    }
+
+    @Override
+    public void removeFolder(DBPDataSourceFolder folder, boolean dropContents) {
+        final DataSourceFolder folderImpl = (DataSourceFolder) folder;
+
+        for (DataSourceFolder child : folderImpl.getChildren()) {
+            removeFolder(child, dropContents);
+        }
+
+        final DBPDataSourceFolder parent = folder.getParent();
+        if (parent != null) {
+            folderImpl.setParent(null);
+        }
+        for (DataSourceDescriptor ds : dataSources) {
+            if (ds.getFolder() == folder) {
+                if (dropContents) {
+                    removeDataSource(ds);
+                } else {
+                    ds.setFolder(parent);
+                }
+            }
+        }
+        dataSourceFolders.remove(folderImpl);
+    }
+
+    DataSourceFolder findRootFolder(String name) {
+        for (DataSourceFolder root : getRootFolders()) {
+            if (root.getName().equals(name)) {
+                return root;
+            }
+        }
+        return null;
+    }
+
+    DataSourceFolder findFolderByPath(String path, boolean create) {
+        DataSourceFolder parent = null;
+        for (String name : path.split("/")) {
+            DataSourceFolder folder = parent == null ? findRootFolder(name) : parent.getChild(name);
+            if (folder == null) {
+                if (!create) {
+                    log.warn("Folder '" + path + "' not found");
+                    break;
+                } else {
+                    folder = addFolder(parent, name);
+                }
+            }
+            parent = folder;
+        }
+        return parent;
     }
 
     public void addDataSource(DBPDataSourceContainer dataSource)
@@ -435,6 +504,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
                     xml.setButify(true);
                     xml.startElement("data-sources");
+                    // Folder
+                    for (DataSourceFolder folder : dataSourceFolders) {
+                        saveFolder(xml, folder);
+                    }
+                    // Datasources
                     for (DataSourceDescriptor dataSource : localDataSources) {
                         if (!dataSource.isProvided()) {
                             saveDataSource(xml, dataSource);
@@ -495,6 +569,20 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
+    private void saveFolder(XMLBuilder xml, DataSourceFolder folder)
+        throws IOException
+    {
+        xml.startElement(RegistryConstants.TAG_FOLDER);
+        if (folder.getParent() != null) {
+            xml.addAttribute(RegistryConstants.ATTR_PARENT, folder.getParent().getFolderPath());
+        }
+        xml.addAttribute(RegistryConstants.ATTR_NAME, folder.getName());
+        if (!CommonUtils.isEmpty(folder.getDescription())) {
+            xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, folder.getDescription());
+        }
+        xml.endElement();
+    }
+
     private void saveDataSource(XMLBuilder xml, DataSourceDescriptor dataSource)
         throws IOException
     {
@@ -520,8 +608,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             xml.addAttribute(RegistryConstants.ATTR_SHOW_UTIL_OBJECTS, dataSource.isShowUtilityObjects());
         }
         xml.addAttribute(RegistryConstants.ATTR_READ_ONLY, dataSource.isConnectionReadOnly());
-        if (!CommonUtils.isEmpty(dataSource.getFolderPath())) {
-            xml.addAttribute(RegistryConstants.ATTR_FOLDER, dataSource.getFolderPath());
+        if (dataSource.getFolder() != null) {
+            xml.addAttribute(RegistryConstants.ATTR_FOLDER, dataSource.getFolder().getFolderPath());
         }
         final String lockPasswordHash = dataSource.getLockPasswordHash();
         if (!CommonUtils.isEmpty(lockPasswordHash)) {
@@ -809,6 +897,15 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             isDescription = false;
             curCommand = null;
             switch (localName) {
+                case RegistryConstants.TAG_FOLDER: {
+                    String name = atts.getValue(RegistryConstants.ATTR_NAME);
+                    String description = atts.getValue(RegistryConstants.ATTR_DESCRIPTION);
+                    String parentFolder = atts.getValue(RegistryConstants.ATTR_PARENT);
+                    DataSourceFolder parent = parentFolder == null ? null : findFolderByPath(parentFolder, true);
+                    DataSourceFolder folder = new DataSourceFolder(parent, name, description);
+                    dataSourceFolders.add(folder);
+                    break;
+                }
                 case RegistryConstants.TAG_DATA_SOURCE: {
                     String name = atts.getValue(RegistryConstants.ATTR_NAME);
                     String id = atts.getValue(RegistryConstants.ATTR_ID);
@@ -869,7 +966,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     curDataSource.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS)));
                     curDataSource.setShowUtilityObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_UTIL_OBJECTS)));
                     curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_READ_ONLY)));
-                    curDataSource.setFolderPath(atts.getValue(RegistryConstants.ATTR_FOLDER));
+                    final String folderPath = atts.getValue(RegistryConstants.ATTR_FOLDER);
+                    if (folderPath != null) {
+                        curDataSource.setFolder(findFolderByPath(folderPath, true));
+                    }
                     curDataSource.setLockPasswordHash(atts.getValue(RegistryConstants.ATTR_LOCK_PASSWORD));
                     {
                         // Legacy filter settings
