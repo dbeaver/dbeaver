@@ -91,6 +91,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private List<DBPTransactionIsolation> supportedLevels = new ArrayList<>();
     private List<String> bootstrapQueries;
     private boolean ignoreBootstrapErrors;
+    private Text descriptionText;
 
     private static class FilterInfo {
         final Class<?> type;
@@ -173,7 +174,9 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 newName = wizard.getSelectedDriver().getName();
             }
             if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {
-                connectionNameText.setText(newName);
+                if (newName != null) {
+                    connectionNameText.setText(newName);
+                }
                 connectionNameChanged = false;
             }
         }
@@ -210,6 +213,9 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 defaultSchema.setText(CommonUtils.notEmpty(
                     conConfig.getBootstrap().getDefaultObjectName()));
                 keepAliveInterval.setSelection(conConfig.getKeepAliveInterval());
+                if (dataSourceDescriptor.getDescription() != null) {
+                    descriptionText.setText(dataSourceDescriptor.getDescription());
+                }
                 activated = true;
             }
         } else {
@@ -479,6 +485,15 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             }
         }
 
+        {
+            final Group descGroup = UIUtils.createControlGroup(group, "Description", 1, GridData.FILL_HORIZONTAL, 0);
+            ((GridData) descGroup.getLayoutData()).horizontalSpan = 2;
+            descriptionText = new Text(descGroup, SWT.BORDER | SWT.V_SCROLL | SWT.WRAP | SWT.MULTI);
+            final GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = descriptionText.getLineHeight() * 3;
+            descriptionText.setLayoutData(gd);
+        }
+
         setControl(group);
 
         UIUtils.setHelp(group, IHelpContextIds.CTX_CON_WIZARD_FINAL);
@@ -544,6 +559,13 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         bootstrap.setInitQueries(bootstrapQueries);
 
         confConfig.setKeepAliveInterval(keepAliveInterval.getSelection());
+
+        final String description = descriptionText.getText();
+        if (description.isEmpty()) {
+            dataSource.setDescription(null);
+        } else {
+            dataSource.setDescription(description);
+        }
     }
 
     private void configureEvents()
