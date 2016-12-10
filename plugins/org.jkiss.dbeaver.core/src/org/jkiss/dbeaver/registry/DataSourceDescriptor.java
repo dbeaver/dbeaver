@@ -241,6 +241,7 @@ public class DataSourceDescriptor
 
     @Nullable
     @Override
+    @Property(viewable = true, order = 2)
     public String getDescription()
     {
         return description;
@@ -994,7 +995,7 @@ public class DataSourceDescriptor
         return driver.getId() + "-" + Long.toHexString(System.currentTimeMillis()) + "-" + Long.toHexString(rnd);
     }
 
-    @Property(viewable = true, order = 2, category = "Driver")
+    @Property(viewable = true, order = 20, category = "Driver")
     public String getPropertyDriverType()
     {
         return driver.getName();
@@ -1040,7 +1041,7 @@ public class DataSourceDescriptor
     }
 
     @Nullable
-    @Property(order = 7, category = "Driver")
+    @Property(order = 21, category = "Driver")
     public String getPropertyDriver()
     {
         if (dataSource != null) {
