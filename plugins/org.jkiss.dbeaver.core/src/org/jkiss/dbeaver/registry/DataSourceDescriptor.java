@@ -53,7 +53,6 @@ import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -148,6 +147,7 @@ public class DataSourceDescriptor
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWTunnel tunnel;
     private String folderPath;
+    private DataSourceFolder folder;
     @NotNull
     private final DBVModel virtualModel;
 
@@ -576,6 +576,17 @@ public class DataSourceDescriptor
         return dataSource;
     }
 
+    @Nullable
+    @Override
+    public DataSourceFolder getFolder() {
+        return folder;
+    }
+
+    @Override
+    public void setFolder(@Nullable DBPDataSourceFolder folder) {
+        this.folder = (DataSourceFolder) folder;
+    }
+
     @Override
     public boolean isPersisted()
     {
@@ -591,7 +602,7 @@ public class DataSourceDescriptor
 
     public String getFolderPath()
     {
-        return folderPath;
+        return folder == null ? null : folder.getFolderPath();
     }
 
     public void setFolderPath(String folderPath)

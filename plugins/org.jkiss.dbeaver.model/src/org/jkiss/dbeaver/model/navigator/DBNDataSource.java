@@ -160,11 +160,11 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     }
 
     @Override
-    public Object getAdapter(Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBNDataSource.class) {
-            return this;
+            return adapter.cast(this);
         } else if (DBPDataSourceContainer.class.isAssignableFrom(adapter)) {
-            return dataSource;
+            return adapter.cast(dataSource);
         }
         return null;
     }
