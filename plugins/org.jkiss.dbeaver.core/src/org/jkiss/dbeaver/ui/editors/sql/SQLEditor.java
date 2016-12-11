@@ -1836,7 +1836,7 @@ public class SQLEditor extends SQLEditorBase implements
                     if (!result.hasError() && topOffset >= 0) {
                         final TextViewer textViewer = getTextViewer();
                         if (textViewer != null) {
-                            textViewer.revealRange(topOffset, visibleLength);
+                            //textViewer.revealRange(topOffset, visibleLength);
                         }
                     }
                 }
