@@ -20,18 +20,17 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleView;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -69,7 +68,8 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
     @Override
     protected OracleView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
-        OracleView newView = new OracleView(parent, "NewView"); //$NON-NLS-1$
+        OracleView newView = new OracleView(parent, "NEW_VIEW"); //$NON-NLS-1$
+        newView.getAdditionalInfo().setText("CREATE OR REPLACE VIEW " + newView.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\nSELECT");
         return newView;
     }
 
@@ -98,11 +98,7 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
         final OracleView view = command.getObject();
         boolean hasComment = command.getProperty("comment") != null;
         if (!hasComment || command.getProperties().size() > 1) {
-            StringBuilder decl = new StringBuilder(200);
-            final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
-            decl.append("CREATE OR REPLACE VIEW ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(lineSeparator) //$NON-NLS-1$
-                .append("AS ").append(view.getAdditionalInfo().getText()); //$NON-NLS-1$
-            actions.add(new SQLDatabasePersistAction("Create view", decl.toString()));
+            actions.add(new SQLDatabasePersistAction("Create view", view.getAdditionalInfo().getText()));
         }
         if (hasComment) {
             actions.add(new SQLDatabasePersistAction(
