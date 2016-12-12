@@ -87,6 +87,7 @@ import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
+import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
@@ -692,6 +693,10 @@ public class SQLEditor extends SQLEditorBase implements
             super.doSetInput(editorInput);
         } catch (Throwable e) {
             // Something bas may happend. E.g. OutOfMemory error in case of rtoo big input file.
+            StringWriter out = new StringWriter();
+            e.printStackTrace(new PrintWriter(out, true));
+            editorInput = new StringEditorInput("Error", CommonUtils.truncateString(out.toString(), 10000), true, GeneralUtils.UTF8_ENCODING);
+            doSetInput(editorInput);
             log.error("Error loading input SQL file", e);
         }
         syntaxLoaded = false;
