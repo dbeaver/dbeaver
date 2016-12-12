@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
@@ -61,15 +60,23 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
             @Override
             public void searchResultChanged(SearchResultEvent e)
             {
-                if (e.getSearchResult() instanceof AbstractSearchResult) {
+                List objects = null;
+                if (e instanceof AbstractSearchResult.DatabaseSearchResultEvent) {
+                    objects = ((AbstractSearchResult.DatabaseSearchResultEvent) e).getObjects();
+                } else if (e.getSearchResult() instanceof AbstractSearchResult) {
                     final AbstractSearchResult result = (AbstractSearchResult) e.getSearchResult();
+                    objects = result.getObjects();
+                }
+                if (objects != null) {
+                    final List newObjects = objects;
                     DBeaverUI.syncExec(new Runnable() {
                         @Override
                         public void run() {
-                            populateObjects(VoidProgressMonitor.INSTANCE, result.getObjects());
+                            populateObjects(VoidProgressMonitor.INSTANCE, newObjects);
                         }
                     });
                 }
+
             }
         };
     }

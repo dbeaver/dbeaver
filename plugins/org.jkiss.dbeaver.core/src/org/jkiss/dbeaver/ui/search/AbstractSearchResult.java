@@ -86,7 +86,7 @@ public abstract class AbstractSearchResult<OBJECT_TYPE> implements ISearchResult
         }
     }
 
-    private class DatabaseSearchResultEvent extends SearchResultEvent {
+    public class DatabaseSearchResultEvent extends SearchResultEvent {
         private final List<OBJECT_TYPE> objects;
         public DatabaseSearchResultEvent(List<OBJECT_TYPE> objects)
         {
