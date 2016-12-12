@@ -688,7 +688,12 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     protected void doSetInput(IEditorInput editorInput) throws CoreException
     {
-        super.doSetInput(editorInput);
+        try {
+            super.doSetInput(editorInput);
+        } catch (Throwable e) {
+            // Something bas may happend. E.g. OutOfMemory error in case of rtoo big input file.
+            log.error("Error loading input SQL file", e);
+        }
         syntaxLoaded = false;
         setDataSourceContainer(EditorUtils.getInputDataSource(editorInput));
         setPartName(getEditorName());
