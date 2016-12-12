@@ -37,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 
 /**
  * OracleView
@@ -168,6 +169,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
             additionalInfo.loaded = true;
             return;
         }
+        String viewText = null;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE,SUPERVIEW_NAME\n" +
@@ -176,7 +178,8 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        additionalInfo.setText(JDBCUtils.safeGetString(dbResult, "TEXT"));
+                        viewText = JDBCUtils.safeGetString(dbResult, "TEXT");
+                        additionalInfo.setText(viewText);
                         additionalInfo.setTypeText(JDBCUtils.safeGetStringTrimmed(dbResult, "TYPE_TEXT"));
                         additionalInfo.setOidText(JDBCUtils.safeGetStringTrimmed(dbResult, "OID_TEXT"));
                         additionalInfo.typeOwner = JDBCUtils.safeGetStringTrimmed(dbResult, "VIEW_TYPE_OWNER");
@@ -194,6 +197,10 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         catch (SQLException e) {
             throw new DBCException(e, getDataSource());
         }
+        if (viewText != null) {
+            viewText = "CREATE OR REPLACE VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" + viewText;
+        }
+        additionalInfo.setText(viewText);
     }
 
     @Override
