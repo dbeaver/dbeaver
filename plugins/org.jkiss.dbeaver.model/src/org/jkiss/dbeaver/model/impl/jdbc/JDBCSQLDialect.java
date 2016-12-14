@@ -312,24 +312,27 @@ public class JDBCSQLDialect extends BasicSQLDialect {
     public TreeSet<String> getDataTypes(@NotNull DBPDataSource dataSource) {
         if (!typesLoaded && dataSource instanceof JDBCDataSource) {
             types.clear();
-
-            Collection<? extends DBSDataType> supportedDataTypes = ((JDBCDataSource) dataSource).getLocalDataTypes();
-            if (supportedDataTypes != null) {
-                for (DBSDataType dataType : supportedDataTypes) {
-                    if (!dataType.getDataKind().isComplex()) {
-                        types.add(dataType.getName().toUpperCase(Locale.ENGLISH));
-                    }
-                }
-            }
-
-            if (types.isEmpty()) {
-                // Add default types
-                Collections.addAll(types, SQLConstants.DEFAULT_TYPES);
-            }
-            addKeywords(types, DBPKeywordType.TYPE);
+            loadDataTypesFromDatabase((JDBCDataSource) dataSource);
             typesLoaded = true;
         }
         return types;
+    }
+
+    protected void loadDataTypesFromDatabase(JDBCDataSource dataSource) {
+        Collection<? extends DBSDataType> supportedDataTypes = dataSource.getLocalDataTypes();
+        if (supportedDataTypes != null) {
+            for (DBSDataType dataType : supportedDataTypes) {
+                if (!dataType.getDataKind().isComplex()) {
+                    types.add(dataType.getName().toUpperCase(Locale.ENGLISH));
+                }
+            }
+        }
+
+        if (types.isEmpty()) {
+            // Add default types
+            Collections.addAll(types, SQLConstants.DEFAULT_TYPES);
+        }
+        addKeywords(types, DBPKeywordType.TYPE);
     }
 
     private void loadDriverKeywords(JDBCDatabaseMetaData metaData)
