@@ -190,10 +190,10 @@ public class TabbedFolderPageEditor extends TabbedFolderPage implements IDatabas
     }
 
     @Override
-    public Object getAdapter(Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (editor != null) {
             if (adapter.isAssignableFrom(editor.getClass())) {
-                return editor;
+                return adapter.cast(editor);
             } else {
                 return editor.getAdapter(adapter);
             }

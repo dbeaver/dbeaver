@@ -84,13 +84,13 @@ public class ProxyPageSite implements IPageSite {
     }
 
     @Override
-    public Object getAdapter(Class adapter)
+    public <T> T getAdapter(Class<T> adapter)
     {
         return partSite.getAdapter(adapter);
     }
 
     @Override
-    public Object getService(Class api)
+    public <T> T getService(Class<T> api)
     {
         return partSite.getService(api);
     }

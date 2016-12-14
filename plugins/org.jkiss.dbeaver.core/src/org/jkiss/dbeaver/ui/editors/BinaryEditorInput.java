@@ -35,7 +35,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
 /**
  * BinaryEditorInput
@@ -114,9 +113,9 @@ public class BinaryEditorInput implements IEditorInput, IStorageEditorInput {
     }
 
     @Override
-    public Object getAdapter(Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == IStorage.class) {
-            return getStorage();
+            return adapter.cast(getStorage());
         }
 		return null;
 	}
@@ -147,7 +146,7 @@ public class BinaryEditorInput implements IEditorInput, IStorageEditorInput {
         }
 
         @Override
-        public Object getAdapter(Class adapter)
+        public <T> T getAdapter(Class<T> adapter)
         {
             return null;
         }

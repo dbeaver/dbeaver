@@ -585,12 +585,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    public Object getAdapter(Class adapter)
+    public <T> T getAdapter(Class<T> adapter)
     {
         if (adapter == DBSStructureAssistant.class) {
-            return new MySQLStructureAssistant(this);
+            return adapter.cast(new MySQLStructureAssistant(this));
         } else if (adapter == DBAServerSessionManager.class) {
-            return new MySQLSessionManager(this);
+            return adapter.cast(new MySQLSessionManager(this));
         }
         return super.getAdapter(adapter);
     }

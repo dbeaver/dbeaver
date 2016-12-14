@@ -181,10 +181,10 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
     }
 
     @Override
-    public Object getAdapter(Class adapter)
+    public <T> T getAdapter(Class<T> adapter)
     {
         if (adapter == DBSObjectContainer.class) {
-            return rootNamespace;
+            return adapter.cast(rootNamespace);
         }
         return null;
     }

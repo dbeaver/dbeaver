@@ -261,7 +261,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
             return;
         }
         try {
-            for (Class theClass = srcObject.getClass(); theClass != Object.class; theClass = theClass.getSuperclass()) {
+            for (Class<?> theClass = srcObject.getClass(); theClass != Object.class; theClass = theClass.getSuperclass()) {
                 final Field[] fields = theClass.getDeclaredFields();
                 for (Field field : fields) {
                     final int modifiers = field.getModifiers();

@@ -61,16 +61,16 @@ public class QueryManagerView extends ViewPart
     }
 
     @Override
-    public Object getAdapter(Class adapter)
+    public <T> T getAdapter(Class<T> adapter)
     {
         if (adapter == IWorkbenchAdapter.class) {
-            return new WorkbenchAdapter() {
+            return adapter.cast(new WorkbenchAdapter() {
                 @Override
                 public String getLabel(Object o)
                 {
                     return "Query Manager";
                 }
-            };
+            });
         }
         return super.getAdapter(adapter);
     }

@@ -47,8 +47,8 @@ public class BrowseObjectDialog extends Dialog {
     private DBNNode rootNode;
     private DBNNode selectedNode;
     private boolean singleSelection;
-    private Class[] allowedTypes;
-    private Class[] resultTypes;
+    private Class<?>[] allowedTypes;
+    private Class<?>[] resultTypes;
     private List<DBNNode> selectedObjects = new ArrayList<>();
     private DatabaseNavigatorTree navigatorTree;
 
@@ -58,8 +58,8 @@ public class BrowseObjectDialog extends Dialog {
         DBNNode rootNode,
         DBNNode selectedNode,
         boolean singleSelection,
-        Class[] allowedTypes,
-        Class[] resultTypes)
+        Class<?>[] allowedTypes,
+        Class<?>[] resultTypes)
     {
         super(parentShell);
         this.title = title;
@@ -142,7 +142,7 @@ public class BrowseObjectDialog extends Dialog {
 
     private boolean matchesType(Class<?> nodeType, boolean result)
     {
-        for (Class ot : result ? resultTypes : allowedTypes) {
+        for (Class<?> ot : result ? resultTypes : allowedTypes) {
             if (ot.isAssignableFrom(nodeType)) {
                 return true;
             }
@@ -181,7 +181,7 @@ public class BrowseObjectDialog extends Dialog {
     }
 */
 
-    public static DBNNode selectObject(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class[] allowedTypes, Class[] resultTypes)
+    public static DBNNode selectObject(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes)
     {
         BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, true, allowedTypes, resultTypes);
         if (scDialog.open() == IDialogConstants.OK_ID) {

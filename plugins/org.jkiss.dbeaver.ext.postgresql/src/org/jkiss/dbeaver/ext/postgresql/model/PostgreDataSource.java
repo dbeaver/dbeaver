@@ -378,10 +378,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
-    public Object getAdapter(Class adapter)
+    public <T> T getAdapter(Class<T> adapter)
     {
         if (adapter == DBSStructureAssistant.class) {
-            return new PostgreStructureAssistant(this);
+            return adapter.cast(new PostgreStructureAssistant(this));
         }
 /*
         else if (adapter == DBAServerSessionManager.class) {

@@ -464,9 +464,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     }
 
     @Override
-    public Object getAdapter(Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == IFindReplaceTarget.class) {
-            return findReplaceTarget;
+            return adapter.cast(findReplaceTarget);
         }
         return null;
     }

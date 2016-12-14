@@ -215,10 +215,10 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     }
 
     @Override
-    public Object getAdapter(Class adapter)
+    public <T> T getAdapter(Class<T> adapter)
     {
         if (adapter == IPropertySheetPage.class) {
-            return new PropertyPageStandard();
+            return adapter.cast(new PropertyPageStandard());
         }
         return super.getAdapter(adapter);
     }

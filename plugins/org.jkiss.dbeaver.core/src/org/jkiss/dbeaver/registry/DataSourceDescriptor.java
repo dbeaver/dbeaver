@@ -943,10 +943,10 @@ public class DataSourceDescriptor
 
     @Nullable
     @Override
-    public Object getAdapter(Class adapter)
+    public <T> T getAdapter(Class<T> adapter)
     {
         if (DBPDataSourceContainer.class.isAssignableFrom(adapter)) {
-            return this;
+            return adapter.cast(this);
         } else if (adapter == DBPPropertySource.class) {
             PropertyCollector coll = new PropertyCollector(this, true);
             coll.collectProperties();
@@ -957,7 +957,7 @@ public class DataSourceDescriptor
                     coll.addProperty("Connections", conIndex, String.valueOf(conIndex), new ContextInfo(context));
                 }
             }
-            return coll;
+            return adapter.cast(coll);
         }
         return null;
     }

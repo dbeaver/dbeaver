@@ -948,7 +948,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     @Override
-    public Object getAdapter(Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == IPropertySheetPage.class) {
             // Show cell properties
             PropertyPageStandard page = new PropertyPageStandard();
@@ -975,9 +975,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     return null;
                 }
             });
-            return page;
+            return adapter.cast(page);
         } else if (adapter == IFindReplaceTarget.class) {
-            return findReplaceTarget;
+            return adapter.cast(findReplaceTarget);
         }
         return null;
     }

@@ -177,7 +177,7 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
     }
 
     @Override
-    public Object getAdapter(Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         return null;
     }
 }

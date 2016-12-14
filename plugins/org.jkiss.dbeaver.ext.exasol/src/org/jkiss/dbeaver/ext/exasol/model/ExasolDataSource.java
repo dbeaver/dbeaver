@@ -303,11 +303,10 @@ public class ExasolDataSource extends JDBCDataSource
 	}
 
 	@Override
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Object getAdapter(Class adapter)
+	public <T> T getAdapter(Class<T> adapter)
 	{
 		if (adapter == DBSStructureAssistant.class) {
-			return new ExasolStructureAssistant(this);
+			return adapter.cast(new ExasolStructureAssistant(this));
 		}
 		return super.getAdapter(adapter);
 	}
