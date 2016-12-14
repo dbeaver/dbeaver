@@ -131,6 +131,9 @@ public abstract class ExasolBaseTableToolDialog
             @Override
             public void processObjectResults(@NotNull ExasolTableBase exasolTable, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException
             {
+                if (resultSet == null) {
+                    return;
+                }
                 // Retrieve column names
             	DBCResultSetMetaData rsMetaData = resultSet.getMeta();
 
