@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.postgresql.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
@@ -88,8 +87,8 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
                 return copy ? ((JDBCCompositeStatic) object).cloneValue(session.getProgressMonitor()) : object;
             } else {
                 Object value;
-                if (object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
-                    value = PostgreUtils.extractValue(object);
+                if (PostgreUtils.isPGObject(object)) {
+                    value = PostgreUtils.extractPGObjectValue(object);
                 } else {
                     value = object.toString();
                 }

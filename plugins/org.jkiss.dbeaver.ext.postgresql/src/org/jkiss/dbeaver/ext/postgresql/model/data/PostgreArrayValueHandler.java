@@ -55,7 +55,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 }
                 if (itemType != null) {
                     if (className.equals(PostgreConstants.PG_OBJECT_CLASS)) {
-                        final Object value = PostgreUtils.extractValue(object);
+                        final Object value = PostgreUtils.extractPGObjectValue(object);
                         if (value == null) {
                             return null;
                         } else if (value instanceof String) {
