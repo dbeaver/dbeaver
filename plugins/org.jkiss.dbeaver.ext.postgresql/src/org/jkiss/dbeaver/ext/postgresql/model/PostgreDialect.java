@@ -19,10 +19,16 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
 * PostgreSQL dialect
@@ -35,6 +41,10 @@ class PostgreDialect extends JDBCSQLDialect {
         addSQLKeyword("TYPE");
         addSQLKeyword("USER");
         addSQLKeyword("COMMENT");
+        addSQLKeyword("MATERIALIZED");
+
+        addFunctions(Collections.singleton("current_database"));
+
         removeSQLKeyword("PUBLIC");
         removeSQLKeyword("LENGTH");
         removeSQLKeyword("LANGUAGE");
@@ -68,5 +78,11 @@ class PostgreDialect extends JDBCSQLDialect {
     @Override
     public DBDBinaryFormatter getNativeBinaryFormatter() {
         return PostgreBinaryFormatter.INSTANCE;
+    }
+
+    @Override
+    protected void loadDataTypesFromDatabase(JDBCDataSource dataSource) {
+        super.loadDataTypesFromDatabase(dataSource);
+        addDataTypes(PostgreConstants.DATA_TYPE_ALIASES.keySet());
     }
 }

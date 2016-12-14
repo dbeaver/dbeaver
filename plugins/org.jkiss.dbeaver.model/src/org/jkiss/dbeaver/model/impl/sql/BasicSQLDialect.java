@@ -101,6 +101,11 @@ public class BasicSQLDialect implements SQLDialect {
         addKeywords(allFunctions, DBPKeywordType.FUNCTION);
     }
 
+    protected void addDataTypes(Collection<String> allTypes) {
+        types.addAll(allTypes);
+        addKeywords(allTypes, DBPKeywordType.TYPE);
+    }
+
     /**
      * Add keywords.
      * @param set     keywords. Must be in upper case.
