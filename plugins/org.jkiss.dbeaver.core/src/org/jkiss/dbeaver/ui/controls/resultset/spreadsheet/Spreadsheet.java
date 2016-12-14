@@ -37,6 +37,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 
 /**
@@ -247,8 +248,9 @@ public class Spreadsheet extends LightGrid implements Listener {
                     if (editorControl == null || editorControl.isDisposed()) {
                         editorControl = presentation.openValueEditor(true);
                     }
-
-                    if (editorControl != null && event.keyCode != SWT.CR) {
+                    final SpreadsheetPresentation presentation = getPresentation();
+                    final DBDAttributeBinding attribute = presentation.getCurrentAttribute();
+                    if (editorControl != null && attribute != null && !presentation.getController().isAttributeReadOnly(attribute) && event.keyCode != SWT.CR) {
                         if (!editorControl.isDisposed()) {
                             // We used to forward key even to control but it worked poorly.
                             // So let's just insert first letter (it will remove old value which must be selected for inline controls)
