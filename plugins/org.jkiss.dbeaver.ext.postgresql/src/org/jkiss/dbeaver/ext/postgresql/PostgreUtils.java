@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -37,9 +36,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -98,7 +95,11 @@ public class PostgreUtils {
         return null;
     }
 
-    public static <T> T extractValue(Object pgObject) {
+    public static boolean isPGObject(Object object) {
+        return object != null && object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS);
+    }
+
+    public static <T> T extractPGObjectValue(Object pgObject) {
         if (pgObject == null) {
             return null;
         }
@@ -136,7 +137,7 @@ public class PostgreUtils {
     }
 
     public static long[] getIdVector(Object pgObject) {
-        Object pgVector = extractValue(pgObject);
+        Object pgVector = extractPGObjectValue(pgObject);
         if (pgVector == null) {
             return null;
         }

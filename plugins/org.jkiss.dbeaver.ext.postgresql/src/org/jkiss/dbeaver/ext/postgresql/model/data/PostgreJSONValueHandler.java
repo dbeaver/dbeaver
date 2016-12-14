@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -43,6 +44,9 @@ public class PostgreJSONValueHandler extends JDBCContentValueHandler {
     @Override
     public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
+        if (PostgreUtils.isPGObject(object)) {
+            object = PostgreUtils.extractPGObjectValue(object);
+        }
         if (object == null) {
             return new PostgreContentJSON(session.getDataSource(), null);
         } else if (object instanceof PostgreContentJSON) {
