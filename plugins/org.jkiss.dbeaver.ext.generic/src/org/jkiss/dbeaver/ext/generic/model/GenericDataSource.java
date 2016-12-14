@@ -822,15 +822,15 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public Object getAdapter(Class adapter)
+    public <T> T getAdapter(Class<T> adapter)
     {
         if (adapter == DBSStructureAssistant.class) {
-            return new GenericStructureAssistant(this);
+            return adapter.cast(new GenericStructureAssistant(this));
         } else if (adapter == DBCQueryPlanner.class) {
             if (queryPlanner == null) {
                 queryPlanner = metaModel.getQueryPlanner(this);
             }
-            return queryPlanner;
+            return adapter.cast(queryPlanner);
         } else {
             return super.getAdapter(adapter);
         }

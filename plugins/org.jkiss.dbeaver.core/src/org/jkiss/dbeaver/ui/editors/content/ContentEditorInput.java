@@ -145,10 +145,10 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
 
     @Nullable
     @Override
-    public Object getAdapter(Class adapter)
+    public <T> T getAdapter(Class<T> adapter)
     {
         if (adapter == IStorage.class) {
-            return new LocalFileStorage(contentFile);
+            return adapter.cast(new LocalFileStorage(contentFile));
         }
         return null;
     }

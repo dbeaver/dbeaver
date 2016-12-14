@@ -121,10 +121,10 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     }
 
     @Override
-    public Object getAdapter(Class adapter)
+    public <T> T getAdapter(Class<T> adapter)
     {
         if (IWorkbenchAdapter.class.equals(adapter)) {
-            return new WorkbenchAdapter() {
+            return adapter.cast(new WorkbenchAdapter() {
                 @Override
                 public ImageDescriptor getImageDescriptor(Object object) {
                     return DBeaverIcons.getImageDescriptor(node.getNodeIconDefault());
@@ -137,7 +137,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
                 public Object getParent(Object o) {
                     return node.getParentNode();
                 }
-            };
+            });
         }
 
         return null;

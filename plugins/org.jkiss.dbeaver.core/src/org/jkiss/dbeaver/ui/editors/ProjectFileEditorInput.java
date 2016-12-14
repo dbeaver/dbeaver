@@ -54,7 +54,7 @@ public class ProjectFileEditorInput extends FileEditorInput implements IFileEdit
     }
 
     @Override
-    public Object getAdapter(Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         return super.getAdapter(adapter);
     }
 

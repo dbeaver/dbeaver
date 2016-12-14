@@ -165,18 +165,18 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     }
 
     @Override
-    public Object getAdapter(Class required)
+    public <T> T getAdapter(Class<T> adapter)
     {
         if (resultSetView != null) {
-            if (required == ResultSetViewer.class) {
-                return resultSetView;
+            if (adapter == ResultSetViewer.class) {
+                return adapter.cast(resultSetView);
             }
-            Object adapter = resultSetView.getAdapter(required);
-            if (adapter != null) {
-                return adapter;
+            T res = resultSetView.getAdapter(adapter);
+            if (res != null) {
+                return res;
             }
         }
-        return super.getAdapter(required);
+        return super.getAdapter(adapter);
     }
 
     @Override

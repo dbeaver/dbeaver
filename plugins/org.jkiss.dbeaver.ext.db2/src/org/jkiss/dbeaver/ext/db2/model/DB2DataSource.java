@@ -205,10 +205,10 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Object getAdapter(Class adapter)
+    public <T> T getAdapter(Class<T> adapter)
     {
         if (adapter == DBSStructureAssistant.class) {
-            return new DB2StructureAssistant(this);
+            return adapter.cast(new DB2StructureAssistant(this));
         }
         return super.getAdapter(adapter);
     }
