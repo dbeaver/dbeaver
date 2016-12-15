@@ -17,22 +17,26 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.IRefreshablePart;
-import org.jkiss.dbeaver.ui.ISearchContextProvider;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
@@ -139,12 +143,15 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
 
     private class FolderListControl extends ItemListControl {
         public FolderListControl(Composite parent) {
-            super(parent, SWT.NONE, FolderEditor.this.getSite(), FolderEditor.this.getEditorInput().getNavigatorNode(), null);
+            super(parent, SWT.SHEET, FolderEditor.this.getSite(), FolderEditor.this.getEditorInput().getNavigatorNode(), null);
         }
 
         @Override
         protected void openNodeEditor(DBNNode node) {
-            if (getRootNode() instanceof DBNContainer && node instanceof DBNLocalFolder) {
+            DBNNode rootNode = getRootNode();
+            if ((rootNode instanceof DBNContainer && node instanceof DBNLocalFolder) ||
+                (rootNode instanceof DBNResource && node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IContainer))
+            {
                 setRootNode(node);
                 loadData();
                 setPartName(node.getNodeName());
@@ -153,5 +160,17 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
                 super.openNodeEditor(node);
             }
         }
+
+        @Override
+        protected void fillCustomActions(IContributionManager contributionManager) {
+            contributionManager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_BACK));
+            contributionManager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_FORWARD));
+            contributionManager.add(new Separator());
+            super.fillCustomActions(contributionManager);
+        }
+    }
+
+    public static String getNodePath(DBNNode node) {
+        return node.getNodeFullName();
     }
 }
