@@ -473,4 +473,9 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
         return null;
     }
 */
+
+    @Override
+    public String toString() {
+        return resource == null ? super.toString() : resource.toString();
+    }
 }

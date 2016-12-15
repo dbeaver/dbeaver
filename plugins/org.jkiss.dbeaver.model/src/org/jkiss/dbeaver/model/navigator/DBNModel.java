@@ -54,6 +54,20 @@ import java.util.Map;
 public class DBNModel implements IResourceChangeListener {
     private static final Log log = Log.getLog(DBNModel.class);
 
+    private static class NodePath {
+        DBNNode.NodePathType type;
+        List<String> pathItems;
+
+        public NodePath(DBNNode.NodePathType type, List<String> pathItems) {
+            this.type = type;
+            this.pathItems = pathItems;
+        }
+
+        public String first() {
+            return pathItems.isEmpty() ? null : pathItems.get(0);
+        }
+    }
+
     private final DBPPlatform platform;
     private DBNRoot root;
     private final List<INavigatorListener> listeners = new ArrayList<>();
@@ -183,10 +197,24 @@ public class DBNModel implements IResourceChangeListener {
         return getNodeByObject(object);
     }
 
+    @NotNull
+    private NodePath getNodePath(@NotNull String path) {
+        DBNNode.NodePathType nodeType = DBNNode.NodePathType.database;
+        for (DBNNode.NodePathType type : DBNNode.NodePathType.values()) {
+            final String prefix = type.getPrefix();
+            if (path.startsWith(prefix)) {
+                path = path.substring(prefix.length());
+                nodeType = type;
+                break;
+            }
+        }
+        return new NodePath(nodeType, CommonUtils.splitString(path, '/'));
+    }
+
     @Nullable
     public DBNDataSource getDataSourceByPath(String path) throws DBException
     {
-        String dsId = CommonUtils.splitString(path, '/').get(0);
+        String dsId = getNodePath(path).first();
         for (DBNProject projectNode : getRoot().getProjects()) {
             DBNDataSource dataSource = projectNode.getDatabases().getDataSource(dsId);
             if (dataSource != null) {
@@ -202,13 +230,21 @@ public class DBNModel implements IResourceChangeListener {
      * @throws DBException
      */
     @Nullable
-    @Deprecated
     public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
-        List<String> items = CommonUtils.splitString(path, '/');
-        for (DBNProject projectNode : getRoot().getProjects()) {
-            DBNDataSource curNode = projectNode.getDatabases().getDataSource(items.get(0));
-            if (curNode != null) {
-                return findNodeByPath(monitor, items, curNode, 1);
+        final NodePath nodePath = getNodePath(path);
+        if (nodePath.type == DBNNode.NodePathType.database) {
+            for (DBNProject projectNode : getRoot().getProjects()) {
+                DBNDataSource curNode = projectNode.getDatabases().getDataSource(nodePath.first());
+                if (curNode != null) {
+                    return findNodeByPath(monitor, nodePath, curNode, 1);
+                }
+            }
+        } else {
+            for (DBNProject projectNode : getRoot().getProjects()) {
+                if (projectNode.getName().equals(nodePath.first())) {
+                    return findNodeByPath(monitor, nodePath,
+                        nodePath.type == DBNNode.NodePathType.folder ? projectNode.getDatabases() : projectNode, 1);
+                }
             }
         }
         return null;
@@ -222,12 +258,23 @@ public class DBNModel implements IResourceChangeListener {
             log.debug("Project node not found");
             return null;
         }
-        List<String> items = CommonUtils.splitString(path, '/');
-        DBNNode curNode = projectNode.getDatabases().getDataSource(items.get(0));
+        final NodePath nodePath = getNodePath(path);
+        DBNNode curNode;
+        switch (nodePath.type) {
+            case database:
+                curNode = projectNode.getDatabases().getDataSource(nodePath.first());
+                break;
+            case folder:
+                curNode = projectNode.getDatabases();
+                break;
+            default:
+                curNode = projectNode;
+                break;
+        }
         if (curNode == null) {
             return null;
         }
-        return findNodeByPath(monitor, items, curNode, 1);
+        return findNodeByPath(monitor, nodePath, curNode, 1);
     }
 
     public DBNResource getNodeByResource(IResource resource) {
@@ -253,25 +300,35 @@ public class DBNModel implements IResourceChangeListener {
         return curResNode;
     }
 
-    private DBNNode findNodeByPath(DBRProgressMonitor monitor, List<String> items, DBNNode curNode, int firstItem) throws DBException {
-        for (int i = firstItem, itemsSize = items.size(); i < itemsSize; i++) {
-            String item = items.get(i);
+    private DBNNode findNodeByPath(DBRProgressMonitor monitor, NodePath nodePath, DBNNode curNode, int firstItem) throws DBException {
+        for (int i = firstItem, itemsSize = nodePath.pathItems.size(); i < itemsSize; i++) {
+            String item = nodePath.pathItems.get(i);
             DBNNode[] children = curNode.getChildren(monitor);
             DBNNode nextChild = null;
             if (children != null && children.length > 0) {
                 for (DBNNode child : children) {
-                    if (child instanceof DBNDatabaseFolder) {
-                        DBXTreeFolder meta = ((DBNDatabaseFolder) child).getMeta();
-                        if (meta != null && !CommonUtils.isEmpty(meta.getType()) && meta.getType().equals(item)) {
+                    if (nodePath.type == DBNNode.NodePathType.resource) {
+                        if (child instanceof DBNResource && ((DBNResource) child).getResource().getName().equals(item)) {
+                            nextChild = child;
+                        }
+                    } else if (nodePath.type == DBNNode.NodePathType.folder) {
+                        if (child instanceof DBNLocalFolder && child.getName().equals(item)) {
+                            nextChild = child;
+                        }
+                    } else {
+                        if (child instanceof DBNDatabaseFolder) {
+                            DBXTreeFolder meta = ((DBNDatabaseFolder) child).getMeta();
+                            if (meta != null && !CommonUtils.isEmpty(meta.getType()) && meta.getType().equals(item)) {
+                                nextChild = child;
+                            }
+                        }
+                        if (child.getNodeName().equals(item)) {
                             nextChild = child;
                         }
                     }
-                    if (child.getNodeName().equals(item)) {
-                        nextChild = child;
-                    }
                     if (nextChild != null) {
                         if (i < itemsSize - 1) {
-                            nextChild = findNodeByPath(monitor, items, nextChild, i + 1);
+                            nextChild = findNodeByPath(monitor, nodePath, nextChild, i + 1);
                             if (nextChild != null) {
                                 return nextChild;
                             }
