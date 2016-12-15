@@ -59,6 +59,9 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<MySQLTable>
 
             @Override
             public void processObjectResults(@NotNull MySQLTable object, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException {
+                if (resultSet == null) {
+                    return;
+                }
                 Map<String, String> statusMap = new LinkedHashMap<>();
                 while (resultSet.nextRow()) {
                     statusMap.put(
