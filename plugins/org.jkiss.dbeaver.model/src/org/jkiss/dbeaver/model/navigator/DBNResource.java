@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -41,6 +43,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
 {
     private static final Log log = Log.getLog(DBNResource.class);
     private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
+    private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
     private IResource resource;
     private DBPResourceHandler handler;
@@ -425,7 +428,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
         return resource == null ? "" : resource.getFullPath().toOSString();
     }
 
-    @Property(viewable = true, order = 11)
+    @Property(viewable = false, order = 11)
     public String getResourceLocation() {
         return resource == null ? "" : resource.getLocation().toOSString();
     }
@@ -437,7 +440,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
 
     @Property(viewable = true, order = 11)
     public String getResourceLastModified() {
-        return resource == null ? null : new Date(resource.getLocation().toFile().lastModified()).toString();
+        return resource == null ? null : DATE_FORMAT.format(resource.getLocation().toFile().lastModified());
     }
 
     @Override

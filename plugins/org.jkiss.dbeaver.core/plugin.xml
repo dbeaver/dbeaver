@@ -127,6 +127,12 @@
                 properties="dirty,canUndo,canRedo"
                 type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
         <propertyTester
+            class="org.jkiss.dbeaver.ui.editors.entity.FolderEditorPropertyTester"
+            id="org.jkiss.dbeaver.ui.editors.entity.FolderEditorPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.editors.folder"
+            properties="canNavigate"
+            type="org.jkiss.dbeaver.ui.editors.entity.FolderEditor"/>
+        <propertyTester
                 class="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
                 id="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
                 namespace="org.jkiss.dbeaver.runtime.process"
@@ -1061,15 +1067,6 @@
                 </with>
             </enabledWhen>
         </handler>
-        <!--handler commandId="org.eclipse.ui.file.save" class="org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler">
-            <activeWhen>
-                <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.entity.dirty"/>
-                    </adapt>
-                </with>
-            </activeWhen>
-        </handler-->
         <handler commandId="org.eclipse.ui.edit.text.contentAssist.proposals" class="org.jkiss.dbeaver.ui.editors.entity.handlers.PreviewChangesHandler">
             <activeWhen>
                 <with variable="activeEditor">
@@ -1096,6 +1093,26 @@
                     </adapt>
                 </with>
             </enabledWhen>
+        </handler>
+
+        <!-- Folder editor -->
+        <handler commandId="org.eclipse.ui.navigate.backwardHistory" class="org.jkiss.dbeaver.ui.editors.entity.handlers.FolderNavigateHandler">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.FolderEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.folder.canNavigate" value="-1"/>
+                    </adapt>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.navigate.forwardHistory" class="org.jkiss.dbeaver.ui.editors.entity.handlers.FolderNavigateHandler">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.FolderEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.folder.canNavigate" value="1"/>
+                    </adapt>
+                </with>
+            </activeWhen>
         </handler>
 
         <!-- ResultSet handlers -->
