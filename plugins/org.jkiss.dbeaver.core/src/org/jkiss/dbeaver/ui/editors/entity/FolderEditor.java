@@ -160,14 +160,14 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         return history.size();
     }
 
-    public void navigateHistory(int offset) {
-        historyPosition += offset;
+    public void navigateHistory(int position) {
+        historyPosition = position;
         if (historyPosition >= history.size()) {
             historyPosition = history.size() - 1;
         } else if (historyPosition < 0) {
             historyPosition = -1;
         }
-        if (historyPosition <0 || historyPosition >= history.size()) {
+        if (historyPosition < 0 || historyPosition >= history.size()) {
             return;
         }
         String nodePath = history.get(historyPosition);

@@ -44,7 +44,7 @@ public class FolderEditorPropertyTester extends PropertyTester
         switch (property) {
             case PROP_CAN_NAVIGATE:
                 if (expectedValue instanceof Number && ((Number)expectedValue).intValue() == 1 || "1".equals(expectedValue)) {
-                    return editor.getHistoryPosition() < editor.getHistorySize();
+                    return editor.getHistoryPosition() < editor.getHistorySize() - 1;
                 } else {
                     return editor.getHistoryPosition() > 0;
                 }
