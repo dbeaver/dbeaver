@@ -243,6 +243,19 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     }
 
     @Override
+    public String getNodeItemPath() {
+        StringBuilder pathName = new StringBuilder();
+
+        for (DBNNode node = this; node instanceof DBNResource; node = node.getParentNode()) {
+            if (pathName.length() > 0) {
+                pathName.insert(0, '/');
+            }
+            pathName.insert(0, ((DBNResource) node).getResource().getName());
+        }
+        return NodePathType.resource.getPrefix() + pathName.toString();
+    }
+
+    @Override
     public boolean supportsRename()
     {
         return (getFeatures() & DBPResourceHandler.FEATURE_RENAME) != 0;
