@@ -81,10 +81,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ) {
                 Object element = iter.next();
                 DBNNode node = null;
-                if (element instanceof DBNResource) {
-                    openResource(((DBNResource)element).getResource(), HandlerUtil.getActiveWorkbenchWindow(event));
-                    continue;
-                } else if (element instanceof IResource) {
+                if (element instanceof IResource) {
                     openResource((IResource)element, HandlerUtil.getActiveWorkbenchWindow(event));
                     continue;
                 } else if (element instanceof DBNNode) {
@@ -96,7 +93,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     }
                 }
                 if (node != null) {
-                    openEntityEditor(node, null, HandlerUtil.getActiveWorkbenchWindow(event));
+                    NavigatorUtils.openNavigatorNode(node, HandlerUtil.getActiveWorkbenchWindow(event));
                 }
             }
         }

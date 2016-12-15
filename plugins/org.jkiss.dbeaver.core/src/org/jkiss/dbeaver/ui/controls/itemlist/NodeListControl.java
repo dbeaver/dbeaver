@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -98,12 +99,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
     protected void openNodeEditor(DBNNode node) {
-        NavigatorHandlerObjectOpen.openEntityEditor(
-            node,
-            null,
-            workbenchSite != null ?
-                workbenchSite.getWorkbenchWindow() :
-                DBeaverUI.getActiveWorkbenchWindow());
+        IWorkbenchWindow workbenchWindow = workbenchSite != null ?
+            workbenchSite.getWorkbenchWindow() :
+            DBeaverUI.getActiveWorkbenchWindow();
+        NavigatorUtils.openNavigatorNode(node, workbenchWindow);
     }
 
     public NodeListControl(
