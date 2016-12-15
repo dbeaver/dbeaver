@@ -17,32 +17,47 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.IRefreshablePart;
-import org.jkiss.dbeaver.ui.ISearchContextProvider;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * FolderEditor
  */
 public class FolderEditor extends EditorPart implements INavigatorModelView, IRefreshablePart, ISearchContextProvider
 {
-    private ItemListControl itemControl;
+    private static final Log log = Log.getLog(FolderEditor.class);
+
+    private FolderListControl itemControl;
+    private List<String> history = new ArrayList<>();
+    private int historyPosition = 0;
 
     @Override
     public void createPartControl(Composite parent)
@@ -137,21 +152,79 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         return itemControl.performSearch(searchType);
     }
 
+    public int getHistoryPosition() {
+        return historyPosition;
+    }
+
+    public int getHistorySize() {
+        return history.size();
+    }
+
+    public void navigateHistory(int position) {
+        historyPosition = position;
+        if (historyPosition >= history.size()) {
+            historyPosition = history.size() - 1;
+        } else if (historyPosition < 0) {
+            historyPosition = -1;
+        }
+        if (historyPosition < 0 || historyPosition >= history.size()) {
+            return;
+        }
+        String nodePath = history.get(historyPosition);
+        try {
+            DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(VoidProgressMonitor.INSTANCE, nodePath);
+            if (node != null) {
+                itemControl.changeCurrentNode(node);
+            }
+        } catch (DBException e) {
+            log.error(e);
+        }
+
+    }
+
     private class FolderListControl extends ItemListControl {
         public FolderListControl(Composite parent) {
-            super(parent, SWT.NONE, FolderEditor.this.getSite(), FolderEditor.this.getEditorInput().getNavigatorNode(), null);
+            super(parent, SWT.SHEET, FolderEditor.this.getSite(), FolderEditor.this.getEditorInput().getNavigatorNode(), null);
         }
 
         @Override
         protected void openNodeEditor(DBNNode node) {
-            if (getRootNode() instanceof DBNContainer && node instanceof DBNLocalFolder) {
-                setRootNode(node);
-                loadData();
-                setPartName(node.getNodeName());
-                setTitleImage(DBeaverIcons.getImage(node.getNodeIcon()));
+            final DBNNode rootNode = getRootNode();
+            if ((rootNode instanceof DBNContainer && node instanceof DBNLocalFolder) ||
+                (rootNode instanceof DBNResource && node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IContainer))
+            {
+
+                if (historyPosition >= 0) {
+                    while (historyPosition < history.size() - 1) {
+                        history.remove(historyPosition + 1);
+                    }
+                }
+                historyPosition++;
+                history.add(rootNode.getNodeItemPath());
+                changeCurrentNode(node);
             } else {
                 super.openNodeEditor(node);
             }
         }
+
+        private void changeCurrentNode(DBNNode node) {
+            setRootNode(node);
+            loadData();
+            setPartName(node.getNodeName());
+            setTitleImage(DBeaverIcons.getImage(node.getNodeIcon()));
+            updateActions();
+        }
+
+        @Override
+        protected void fillCustomActions(IContributionManager contributionManager) {
+            contributionManager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_BACK));
+            contributionManager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_FORWARD));
+            contributionManager.add(new Separator());
+            super.fillCustomActions(contributionManager);
+        }
+    }
+
+    public static String getNodePath(DBNNode node) {
+        return node.getNodeFullName();
     }
 }

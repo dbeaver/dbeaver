@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ViewerColumnController;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
@@ -582,6 +583,19 @@ public class NavigatorUtils {
 
         if (children.length > 0 && prefStore.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)) {
             Arrays.sort(children, NodeFolderComparator.INSTANCE);
+        }
+    }
+
+    public static void openNavigatorNode(Object node, IWorkbenchWindow window) {
+        if (node instanceof DBNResource) {
+            NavigatorHandlerObjectOpen.openResource(
+                ((DBNResource) node).getResource(),
+                window);
+        } else if (node instanceof DBNNode && ((DBNNode) node).allowsOpen()) {
+            NavigatorHandlerObjectOpen.openEntityEditor(
+                (DBNNode) node,
+                null,
+                window);
         }
     }
 

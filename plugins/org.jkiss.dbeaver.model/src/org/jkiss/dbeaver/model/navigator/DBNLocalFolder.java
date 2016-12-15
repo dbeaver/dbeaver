@@ -127,6 +127,11 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     }
 
     @Override
+    public String getNodeItemPath() {
+        return NodePathType.folder.getPrefix() + folder.getFolderPath();
+    }
+
+    @Override
     public boolean allowsChildren()
     {
         return true;

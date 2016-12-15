@@ -95,7 +95,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
                 sqlInput,
                 SQLEditor.class.getName());
         } else {
-            log.warn("Cannot open folder resource: " + resource.getName());
+            super.openResource(resource);
         }
     }
 

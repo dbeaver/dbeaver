@@ -169,6 +169,11 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return true;
     }
 
+    @Override
+    public String getNodeItemPath() {
+        return getParentNode().getNodeItemPath();
+    }
+
     public DBNLocalFolder getFolderNode(DBPDataSourceFolder folder)
     {
         synchronized (folderNodes) {

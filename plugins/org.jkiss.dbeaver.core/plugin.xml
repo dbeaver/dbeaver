@@ -55,83 +55,89 @@
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
-                class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
-                id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
-                namespace="org.jkiss.dbeaver.core.global"
-                properties="standalone,hasActiveProject,hasMultipleProjects"
-                type="java.lang.Object"/>
+            class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
+            namespace="org.jkiss.dbeaver.core.global"
+            properties="standalone,hasActiveProject,hasMultipleProjects"
+            type="java.lang.Object"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
-                id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
-                namespace="org.jkiss.dbeaver.core.datasource"
-                properties="connected,transactional,transactionActive"
-                type="org.jkiss.dbeaver.model.DBPContextProvider"/>
+            class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
+            namespace="org.jkiss.dbeaver.core.datasource"
+            properties="connected,transactional,transactionActive"
+            type="org.jkiss.dbeaver.model.DBPContextProvider"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
-                id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
-                namespace="org.jkiss.dbeaver.core.object"
-                properties="canOpen,canCreate,canPaste,canDelete,canRename,canFilter,canFilterObject,hasFilter"
-                type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+            class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
+            namespace="org.jkiss.dbeaver.core.object"
+            properties="canOpen,canCreate,canPaste,canDelete,canRename,canFilter,canFilterObject,hasFilter"
+            type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
-                id="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
-                namespace="org.jkiss.dbeaver.core.resource"
-                properties="canOpen,canDelete,canCreateFolder,canCreateLink,canSetActive,type"
-                type="org.eclipse.core.resources.IResource"/>
+            class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
+            namespace="org.jkiss.dbeaver.core.resource"
+            properties="canOpen,canDelete,canCreateFolder,canCreateLink,canSetActive,type"
+            type="org.eclipse.core.resources.IResource"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
-                id="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
-                namespace="org.jkiss.dbeaver.database.editor"
-                properties="active"
-                type="org.jkiss.dbeaver.ui.editors.IDatabaseEditor"/>
+            class="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
+            id="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
+            namespace="org.jkiss.dbeaver.database.editor"
+            properties="active"
+            type="org.jkiss.dbeaver.ui.editors.IDatabaseEditor"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
-                id="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
-                namespace="org.jkiss.dbeaver.ui.editors.text"
-                properties="available,canComment,canLoad,canSave"
-                type="org.eclipse.ui.IEditorPart"/>
+            class="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
+            id="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.editors.text"
+            properties="available,canComment,canLoad,canSave"
+            type="org.eclipse.ui.IEditorPart"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
-                id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
-                namespace="org.jkiss.dbeaver.ui.editors.sql"
-                properties="active,canExecute,canExplain,canNavigate,canValidate,canExport,hasSelection"
-                type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+            class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
+            id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.editors.sql"
+            properties="active,canExecute,canExplain,canNavigate,canValidate,canExport,hasSelection"
+            type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
-                id="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
-                namespace="org.jkiss.dbeaver.ui.editors.sql.util"
-                properties="canGenerate,hasTools"
-                type="org.eclipse.ui.IWorkbenchPart"/>
+            class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
+            id="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.editors.sql.util"
+            properties="canGenerate,hasTools"
+            type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
-                id="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
-                namespace="org.jkiss.dbeaver.core.resultset"
-                properties="active,hasData,hasMoreData,canCopy,canPaste,canCut,canMove,editable,changed,canToggle,canSwitchPresentation,canNavigateLink,canNavigateHistory,supportsCount"
-                type="org.eclipse.ui.IWorkbenchPart"/>
+            class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
+            id="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
+            namespace="org.jkiss.dbeaver.core.resultset"
+            properties="active,hasData,hasMoreData,canCopy,canPaste,canCut,canMove,editable,changed,canToggle,canSwitchPresentation,canNavigateLink,canNavigateHistory,supportsCount"
+            type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewPropertyTester"
-                id="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewPropertyTester"
-                namespace="org.jkiss.dbeaver.core.resultset.panel.valueView"
-                properties="active"
-                type="org.eclipse.ui.IWorkbenchPart"/>
+            class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewPropertyTester"
+            id="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewPropertyTester"
+            namespace="org.jkiss.dbeaver.core.resultset.panel.valueView"
+            properties="active"
+            type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
-                id="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
-                namespace="org.jkiss.dbeaver.core.navigator"
-                properties="active"
-                type="org.eclipse.ui.IWorkbenchPart"/>
+            class="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
+            id="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
+            namespace="org.jkiss.dbeaver.core.navigator"
+            properties="active"
+            type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
-                id="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
-                namespace="org.jkiss.dbeaver.ui.editors.entity"
-                properties="dirty,canUndo,canRedo"
-                type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
+            class="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
+            id="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.editors.entity"
+            properties="dirty,canUndo,canRedo"
+            type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
-                id="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
-                namespace="org.jkiss.dbeaver.runtime.process"
-                properties="running"
-                type="org.jkiss.dbeaver.model.runtime.DBRProcessController"/>
+            class="org.jkiss.dbeaver.ui.editors.entity.FolderEditorPropertyTester"
+            id="org.jkiss.dbeaver.ui.editors.entity.FolderEditorPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.editors.folder"
+            properties="canNavigate"
+            type="org.jkiss.dbeaver.ui.editors.entity.FolderEditor"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
+            id="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
+            namespace="org.jkiss.dbeaver.runtime.process"
+            properties="running"
+            type="org.jkiss.dbeaver.model.runtime.DBRProcessController"/>
     </extension>
 
     <extension point="org.eclipse.ui.views">
@@ -411,6 +417,11 @@
         <definition id="org.jkiss.dbeaver.core.ui.datasource.editor">
             <with variable="activeEditor">
                 <instanceof value="org.jkiss.dbeaver.model.DBPContextProvider"/>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.folder.editor">
+            <with variable="activeEditor">
+                <instanceof value="org.jkiss.dbeaver.ui.editors.entity.FolderEditor"/>
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.resultset.part">
@@ -1061,15 +1072,6 @@
                 </with>
             </enabledWhen>
         </handler>
-        <!--handler commandId="org.eclipse.ui.file.save" class="org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler">
-            <activeWhen>
-                <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.entity.dirty"/>
-                    </adapt>
-                </with>
-            </activeWhen>
-        </handler-->
         <handler commandId="org.eclipse.ui.edit.text.contentAssist.proposals" class="org.jkiss.dbeaver.ui.editors.entity.handlers.PreviewChangesHandler">
             <activeWhen>
                 <with variable="activeEditor">
@@ -1093,6 +1095,28 @@
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.entity.canRedo"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+
+        <!-- Folder editor -->
+        <handler commandId="org.eclipse.ui.navigate.backwardHistory" class="org.jkiss.dbeaver.ui.editors.entity.handlers.FolderNavigateHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.folder.editor"/></activeWhen>
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.FolderEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.folder.canNavigate" value="-1"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.navigate.forwardHistory" class="org.jkiss.dbeaver.ui.editors.entity.handlers.FolderNavigateHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.folder.editor"/></activeWhen>
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.FolderEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.folder.canNavigate" value="1"/>
                     </adapt>
                 </with>
             </enabledWhen>

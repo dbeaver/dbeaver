@@ -92,8 +92,8 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             if (ch == '"') {
                 quoteStart = i;
                 break;
-            } else if (Character.isUnicodeIdentifierPart(ch)) {
-                // Letter before quote
+            } else if (Character.isUnicodeIdentifierPart(ch) || ch == '{' || ch == '<' || ch == '[') {
+                // Letter or bracket before quote
                 return false;
             }
         }

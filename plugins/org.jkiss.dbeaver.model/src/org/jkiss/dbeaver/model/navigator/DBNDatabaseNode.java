@@ -623,6 +623,39 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         return filtered;
     }
 
+    @Override
+    public String getNodeItemPath() {
+        StringBuilder pathName = new StringBuilder(100);
+
+        for (DBNNode node = this; node instanceof DBNDatabaseNode; node = node.getParentNode()) {
+            if (node instanceof DBNDataSource) {
+                if (pathName.length() > 0) {
+                    pathName.insert(0, '/');
+                }
+                pathName.insert(0, ((DBNDataSource) node).getDataSourceContainer().getId());
+            } else if (node instanceof DBNDatabaseFolder) {
+                if (pathName.length() > 0) {
+                    pathName.insert(0, '/');
+                }
+                String type = ((DBNDatabaseFolder) node).getMeta().getType();
+                if (CommonUtils.isEmpty(type)) {
+                    type = node.getName();
+                }
+                pathName.insert(0, type);
+            }
+            if (!(node instanceof DBNDatabaseItem) && !(node instanceof DBNDatabaseObject)) {
+                // skip folders
+                continue;
+            }
+
+            if (pathName.length() > 0) {
+                pathName.insert(0, '/');
+            }
+            pathName.insert(0, node.getNodeName().replace('/', '_'));
+        }
+        return pathName.toString();
+    }
+
     protected void reloadChildren(DBRProgressMonitor monitor)
         throws DBException
     {

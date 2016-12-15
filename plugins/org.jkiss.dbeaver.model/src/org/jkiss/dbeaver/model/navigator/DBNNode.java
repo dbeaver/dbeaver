@@ -40,6 +40,18 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject, IAd
 {
     static final Log log = Log.getLog(DBNNode.class);
 
+    public enum NodePathType {
+        resource,
+        folder,
+        database;
+
+        public String getPrefix() {
+            return name() + "://";
+        }
+
+
+    }
+
     protected final DBNNode parentNode;
 
     protected DBNNode()
@@ -207,47 +219,17 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject, IAd
     }
 
     /**
-     * Node item path in form type1=name1/type2=name2/...[/typeX]
+     * Node item path in form [nodeType://]<path>
+     * nodeType can be 'resource', 'folder' or 'database'.
+     * If missing then 'database' will be used (backward compatibility).
+     *
+     * For resources and folders path is just a hierarchy path divided with / (slash).
+     *
+     * For database nodes path has form: type1=name1/type2=name2/...[/typeX]
      * Where typeN is path element for particular database item, name is database object name.
      * @return full item node path
      */
-    public String getNodeItemPath()
-    {
-        StringBuilder pathName = new StringBuilder(100);
-
-//        DBXTreeItem metaChildren = this instanceof DBNDatabaseNode ? ((DBNDatabaseNode)this).getItemsMeta() : null;
-//        if (metaChildren != null) {
-//            pathName.append(metaChildren.getPath());
-//        }
-
-        for (DBNNode node = this; node instanceof DBNDatabaseNode; node = node.getParentNode()) {
-            if (node instanceof DBNDataSource) {
-                if (pathName.length() > 0) {
-                    pathName.insert(0, '/');
-                }
-                pathName.insert(0, ((DBNDataSource) node).getDataSourceContainer().getId());
-            } else if (node instanceof DBNDatabaseFolder) {
-                if (pathName.length() > 0) {
-                    pathName.insert(0, '/');
-                }
-                String type = ((DBNDatabaseFolder) node).getMeta().getType();
-                if (CommonUtils.isEmpty(type)) {
-                    type = node.getName();
-                }
-                pathName.insert(0, type);
-            }
-            if (!(node instanceof DBNDatabaseItem) && !(node instanceof DBNDatabaseObject)) {
-                // skip folders
-                continue;
-            }
-
-            if (pathName.length() > 0) {
-                pathName.insert(0, '/');
-            }
-            pathName.insert(0, node.getNodeName().replace('/', '_'));
-        }
-        return pathName.toString();
-    }
+    public abstract String getNodeItemPath();
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
