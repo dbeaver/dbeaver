@@ -141,6 +141,18 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         return itemControl.performSearch(searchType);
     }
 
+    public int getHistoryPosition() {
+        return 0;
+    }
+
+    public int getHistorySize() {
+        return 10;
+    }
+
+    public void navigateHistory(int offset) {
+
+    }
+
     private class FolderListControl extends ItemListControl {
         public FolderListControl(Composite parent) {
             super(parent, SWT.SHEET, FolderEditor.this.getSite(), FolderEditor.this.getEditorInput().getNavigatorNode(), null);
