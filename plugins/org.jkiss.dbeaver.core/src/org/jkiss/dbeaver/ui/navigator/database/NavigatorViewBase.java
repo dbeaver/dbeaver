@@ -124,18 +124,13 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                         } else {
                             viewer.expandToLevel(node, 1);
                         }
-
-                    } else if (node instanceof DBNResource) {
-                        NavigatorHandlerObjectOpen.openResource(
-                            ((DBNResource) node).getResource(),
-                            getSite().getWorkbenchWindow());
                     } else if (node instanceof DBNDataSource) {
                         DBPDataSourceContainer dataSource = ((DBNDataSource) node).getObject();
                         NavigatorViewBase.DoubleClickBehavior doubleClickBehavior =
                             NavigatorViewBase.DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
                         switch (doubleClickBehavior) {
                             case EDIT:
-                                NavigatorHandlerObjectOpen.openEntityEditor((DBNDataSource)node, null, DBeaverUI.getActiveWorkbenchWindow());
+                                NavigatorHandlerObjectOpen.openEntityEditor((DBNDataSource) node, null, DBeaverUI.getActiveWorkbenchWindow());
                                 break;
                             case CONNECT:
                                 if (dataSource.isConnected()) {
@@ -148,15 +143,12 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                                 try {
                                     OpenHandler.openRecentScript(getSite().getWorkbenchWindow(), dataSource, null);
                                 } catch (CoreException e) {
-                                    UIUtils.showErrorDialog(navigatorTree.getShell(), "Open SQL editor", "Can't open SQL editor", e);
+                                    UIUtils.showErrorDialog(getSite().getShell(), "Open SQL editor", "Can't open SQL editor", e);
                                 }
                                 break;
                         }
-                    } else if (node instanceof DBNNode && ((DBNNode) node).allowsOpen()) {
-                        NavigatorHandlerObjectOpen.openEntityEditor(
-                            (DBNNode) node,
-                            null,
-                            getSite().getWorkbenchWindow());
+                    } else {
+                        NavigatorUtils.openNavigatorNode(node, getSite().getWorkbenchWindow());
                     }
                 }
             }

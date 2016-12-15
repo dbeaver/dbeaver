@@ -226,6 +226,11 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         }
     }
 
+    protected void updateActions() {
+        UIUtils.updateContributionItems(defaultToolbarManager);
+        UIUtils.updateContributionItems(customToolbarManager);
+    }
+
     private void hideControls(boolean showDefaultControls)
     {
         if (searchControlsComposite == null || searchControlsComposite.isDisposed()) {
