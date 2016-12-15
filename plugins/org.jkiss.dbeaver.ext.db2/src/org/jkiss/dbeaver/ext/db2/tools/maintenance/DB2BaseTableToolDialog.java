@@ -89,6 +89,9 @@ public abstract class DB2BaseTableToolDialog extends GenerateMultiSQLDialog<DB2T
             @Override
             public void processObjectResults(@NotNull DB2Table db2Table, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException
             {
+                if (resultSet == null) {
+                    return;
+                }
                 // Retrive column names
                 JDBCResultSetMetaDataImpl rsMetaData = (JDBCResultSetMetaDataImpl) resultSet.getMeta();
 
