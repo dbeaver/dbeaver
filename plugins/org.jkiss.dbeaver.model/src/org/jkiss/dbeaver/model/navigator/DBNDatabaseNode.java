@@ -653,6 +653,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             }
             pathName.insert(0, node.getNodeName().replace('/', '_'));
         }
+        pathName.insert(0, NodePathType.database.getPrefix());
         return pathName.toString();
     }
 
