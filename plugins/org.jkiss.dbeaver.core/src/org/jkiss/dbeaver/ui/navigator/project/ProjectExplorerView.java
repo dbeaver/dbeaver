@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.navigator.project;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.*;
@@ -139,7 +140,11 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
         columnController.addColumn("Preview", "Script content preview", SWT.LEFT, false, false, new LazyLabelProvider(shadowColor) {
             @Override
             public String getLazyText(Object element) {
-                return ((DBNNode)element).getNodeDescription();
+                if (element instanceof DBNNode) {
+                    return ((DBNNode) element).getNodeDescription();
+                } else {
+                    return null;
+                }
             }
         });
         columnController.addColumn("Size", "File size", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
@@ -163,7 +168,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 DBNNode node = (DBNNode) element;
                 if (node instanceof DBNResource) {
                     IResource resource = ((DBNResource) node).getResource();
-                    if (resource instanceof IFile) {
+                    if (resource instanceof IFile || resource instanceof IFolder) {
                         return sdf.format(new Date(resource.getLocation().toFile().lastModified()));
                     }
                 }

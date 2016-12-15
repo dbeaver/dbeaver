@@ -610,6 +610,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             this.addMouseListener(new MouseAdapter() {
                 @Override
+                public void mouseDoubleClick(MouseEvent e) {
+                    openEditorForActiveQuery();
+                }
+
+                @Override
                 public void mouseDown(MouseEvent e) {
                     showObjectInfoPopup(e);
                 }
