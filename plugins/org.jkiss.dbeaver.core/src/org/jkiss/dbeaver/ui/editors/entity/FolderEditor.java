@@ -66,6 +66,8 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         itemControl.createProgressPanel();
         itemControl.loadData();
         getSite().setSelectionProvider(itemControl.getSelectionProvider());
+
+        history.add(getRootNode().getNodeItemPath());
     }
 
     @Override
@@ -161,19 +163,19 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     }
 
     public void navigateHistory(int position) {
-        historyPosition = position;
-        if (historyPosition >= history.size()) {
-            historyPosition = history.size() - 1;
-        } else if (historyPosition < 0) {
-            historyPosition = -1;
+        if (position >= history.size()) {
+            position = history.size() - 1;
+        } else if (position < 0) {
+            position = -1;
         }
-        if (historyPosition < 0 || historyPosition >= history.size()) {
+        if (position < 0 || position >= history.size()) {
             return;
         }
-        String nodePath = history.get(historyPosition);
+        String nodePath = history.get(position);
         try {
             DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(VoidProgressMonitor.INSTANCE, nodePath);
             if (node != null) {
+                historyPosition = position;
                 itemControl.changeCurrentNode(node);
             }
         } catch (DBException e) {
@@ -200,7 +202,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
                     }
                 }
                 historyPosition++;
-                history.add(rootNode.getNodeItemPath());
+                history.add(node.getNodeItemPath());
                 changeCurrentNode(node);
             } else {
                 super.openNodeEditor(node);
