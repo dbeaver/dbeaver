@@ -126,6 +126,11 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         return false;
     }
 
+    @Override
+    public String getNodeItemPath() {
+        return null;
+    }
+
     public DBNProject getProject(IProject project)
     {
         for (DBNProject node : projects) {

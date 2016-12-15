@@ -196,7 +196,13 @@ public class DBNModel implements IResourceChangeListener {
         return null;
     }
 
+    /**
+     * Find node by path.
+     * Deprecated - use getNodeByPath with project parameter
+     * @throws DBException
+     */
     @Nullable
+    @Deprecated
     public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
         List<String> items = CommonUtils.splitString(path, '/');
         for (DBNProject projectNode : getRoot().getProjects()) {

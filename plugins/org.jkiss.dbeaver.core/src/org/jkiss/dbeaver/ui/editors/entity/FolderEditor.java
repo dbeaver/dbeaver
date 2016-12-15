@@ -31,22 +31,33 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * FolderEditor
  */
 public class FolderEditor extends EditorPart implements INavigatorModelView, IRefreshablePart, ISearchContextProvider
 {
-    private ItemListControl itemControl;
+    private static final Log log = Log.getLog(FolderEditor.class);
+
+    private FolderListControl itemControl;
+    private List<String> history = new ArrayList<>();
+    private int historyPosition = 0;
 
     @Override
     public void createPartControl(Composite parent)
@@ -142,14 +153,32 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     }
 
     public int getHistoryPosition() {
-        return 0;
+        return historyPosition;
     }
 
     public int getHistorySize() {
-        return 10;
+        return history.size();
     }
 
     public void navigateHistory(int offset) {
+        historyPosition += offset;
+        if (historyPosition >= history.size()) {
+            historyPosition = history.size() - 1;
+        } else if (historyPosition < 0) {
+            historyPosition = -1;
+        }
+        if (historyPosition <0 || historyPosition >= history.size()) {
+            return;
+        }
+        String nodePath = history.get(historyPosition);
+        try {
+            DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(VoidProgressMonitor.INSTANCE, nodePath);
+            if (node != null) {
+                itemControl.changeCurrentNode(node);
+            }
+        } catch (DBException e) {
+            log.error(e);
+        }
 
     }
 
@@ -160,17 +189,30 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
 
         @Override
         protected void openNodeEditor(DBNNode node) {
-            DBNNode rootNode = getRootNode();
+            final DBNNode rootNode = getRootNode();
             if ((rootNode instanceof DBNContainer && node instanceof DBNLocalFolder) ||
                 (rootNode instanceof DBNResource && node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IContainer))
             {
-                setRootNode(node);
-                loadData();
-                setPartName(node.getNodeName());
-                setTitleImage(DBeaverIcons.getImage(node.getNodeIcon()));
+
+                if (historyPosition >= 0) {
+                    while (historyPosition < history.size() - 1) {
+                        history.remove(historyPosition + 1);
+                    }
+                }
+                historyPosition++;
+                history.add(rootNode.getNodeItemPath());
+                changeCurrentNode(node);
             } else {
                 super.openNodeEditor(node);
             }
+        }
+
+        private void changeCurrentNode(DBNNode node) {
+            setRootNode(node);
+            loadData();
+            setPartName(node.getNodeName());
+            setTitleImage(DBeaverIcons.getImage(node.getNodeIcon()));
+            updateActions();
         }
 
         @Override
