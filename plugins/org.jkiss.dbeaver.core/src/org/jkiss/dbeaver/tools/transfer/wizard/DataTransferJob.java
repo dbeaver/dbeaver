@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -30,6 +29,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Data transfer job
@@ -87,7 +87,7 @@ public class DataTransferJob extends AbstractJob {
         IDataTransferSettings consumerSettings = settings.getNodeSettings(consumer);
 
         setName(NLS.bind(CoreMessages.data_transfer_wizard_job_container_name,
-            producer.getSourceObject().getName()));
+            CommonUtils.truncateString(producer.getSourceObject().getName(), 200)));
 
         IDataTransferSettings nodeSettings = settings.getNodeSettings(producer);
         try {
