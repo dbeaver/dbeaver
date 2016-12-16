@@ -203,7 +203,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput
                 } else if (result == IDialogConstants.RETRY_ID) {
                     continue;
                 } else {
-                    connected = false;
+                    return new ErrorEditorInput(GeneralUtils.makeExceptionStatus(e), navigatorModel.getNodeByObject(dataSource));
                 }
             }
             if (!connected) {

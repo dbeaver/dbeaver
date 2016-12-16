@@ -405,6 +405,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             try {
                 addPage(new ProgressEditorPart(this), editorInput);
                 setPageText(0, "Initializing ...");
+                setActivePage(0);
             } catch (PartInitException e) {
                 log.error(e);
             }
@@ -415,6 +416,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 addPage(new ErrorEditorPartEx(errorInput.getError()), errorInput);
                 setPageImage(0, UIUtils.getShardImage(ISharedImages.IMG_OBJS_ERROR_TSK));
                 setPageText(0, "Error");
+                setActivePage(0);
             } catch (PartInitException e) {
                 log.error(e);
             }
