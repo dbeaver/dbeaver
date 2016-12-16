@@ -89,6 +89,15 @@ public final class SQLUtils {
             dialect.getSingleLineComments());
     }
 
+    public static boolean isCommentLine(SQLDialect dialect, String line) {
+        for (String slc : dialect.getSingleLineComments()) {
+            if (line.startsWith(slc)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static String stripComments(@NotNull String query, @Nullable String mlCommentStart, @Nullable String mlCommentEnd, String[] slComments)
     {
         String leading = "", trailing = "";

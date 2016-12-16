@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -38,12 +39,20 @@ class SQLTokensParser {
     private char structSeparator;
     private String catalogSeparator;
     private Set<String> commands = new HashSet<>();
+    private String[] singleLineComments;
+    private char[] singleLineCommentStart;
 
     public SQLTokensParser(SQLFormatterConfiguration configuration) {
         this.configuration = configuration;
         this.structSeparator = configuration.getSyntaxManager().getStructSeparator();
         this.catalogSeparator = configuration.getSyntaxManager().getCatalogSeparator();
         this.quoteSymbol = configuration.getSyntaxManager().getQuoteSymbol();
+        this.singleLineComments = configuration.getSyntaxManager().getDialect().getSingleLineComments();
+        this.singleLineCommentStart = new char[this.singleLineComments.length];
+        for (int i = 0; i < singleLineComments.length; i++) {
+            if (singleLineComments[i].isEmpty()) singleLineCommentStart[i] = 0;
+            else singleLineCommentStart[i] = singleLineComments[i].charAt(0);
+        }
 
         String delimiterRedefiner = configuration.getSyntaxManager().getDialect().getScriptDelimiterRedefiner();
         if (!CommonUtils.isEmpty(delimiterRedefiner)) {
@@ -132,7 +141,31 @@ class SQLTokensParser {
                 fChar = fBefore.charAt(fPos);
             }
             return new FormatterToken(TokenType.VALUE, s.toString(), start_pos);
-        } else if (isLetter(fChar)) {
+        }
+        // single line comment
+        else if (ArrayUtils.contains(singleLineCommentStart, fChar)) {
+            fPos++;
+            String commentString = null;
+            for (String slc : singleLineComments) {
+                if (fBefore.length() >= start_pos + slc.length() && slc.equals(fBefore.substring(start_pos, start_pos + slc.length()))) {
+                    commentString = slc;
+                    break;
+                }
+            }
+            if (commentString == null) {
+                return new FormatterToken(TokenType.SYMBOL, String.valueOf(fChar), start_pos);
+            }
+            fPos += commentString.length() - 1;
+            while (fPos < fBefore.length()) {
+                fPos++;
+                if (fBefore.charAt(fPos - 1) == '\n') {
+                    break;
+                }
+            }
+            commentString = fBefore.substring(start_pos, fPos);
+            return new FormatterToken(TokenType.COMMENT, commentString, start_pos);
+        }
+        else if (isLetter(fChar)) {
             StringBuilder s = new StringBuilder();
             while (isLetter(fChar) || isDigit(fChar) || fChar == '*' || structSeparator == fChar || catalogSeparator.indexOf(fChar) != -1) {
                 s.append(fChar);
@@ -160,24 +193,6 @@ class SQLTokensParser {
                 return new FormatterToken(TokenType.KEYWORD, word, start_pos);
             }
             return new FormatterToken(TokenType.NAME, word, start_pos);
-        }
-        // single line comment
-        else if (fChar == '-') {
-            fPos++;
-            char ch2 = fBefore.charAt(fPos);
-            if (ch2 != '-') {
-                return new FormatterToken(TokenType.SYMBOL, "-", start_pos);
-            }
-            fPos++;
-            StringBuilder s = new StringBuilder("--");
-            for (;;) {
-                fChar = fBefore.charAt(fPos);
-                s.append(fChar);
-                fPos++;
-                if (fChar == '\n' || fPos >= fBefore.length()) {
-                    return new FormatterToken(TokenType.COMMENT, s.toString(), start_pos);
-                }
-            }
         }
         else if (fChar == '/') {
             fPos++;
