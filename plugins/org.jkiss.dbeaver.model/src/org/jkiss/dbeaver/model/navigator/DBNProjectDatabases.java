@@ -19,10 +19,12 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -96,6 +98,13 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     public Class<DBPDataSourceContainer> getChildrenClass()
     {
         return DBPDataSourceContainer.class;
+    }
+
+    @NotNull
+    @Property(viewable = true, order = 1)
+    public String getName()
+    {
+        return getNodeName();
     }
 
     @Override

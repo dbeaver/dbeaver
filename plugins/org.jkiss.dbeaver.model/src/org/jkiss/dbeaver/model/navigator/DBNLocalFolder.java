@@ -211,4 +211,8 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         DBNModel.updateConfigAndRefreshDatabases(this);
     }
 
+    @Override
+    public String toString() {
+        return folder.getFolderPath();
+    }
 }
