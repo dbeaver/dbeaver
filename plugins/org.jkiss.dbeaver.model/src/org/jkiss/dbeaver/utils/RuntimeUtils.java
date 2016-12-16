@@ -20,7 +20,9 @@ package org.jkiss.dbeaver.utils;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -114,6 +116,20 @@ public class RuntimeUtils {
     public static String getNativeBinaryName(String binName)
     {
         return Platform.getOS().equals("win32") ? binName + ".exe" : binName;
+    }
+
+    public static File getHomeBinary(@NotNull DBPClientHome home, @Nullable String binFolder, @NotNull String binName) throws IOException
+    {
+        binName = getNativeBinaryName(binName);
+        File dumpBinary = new File(home.getHomePath(),
+            binFolder == null ? binName : binFolder + "/" + binName);
+        if (!dumpBinary.exists()) {
+            dumpBinary = new File(home.getHomePath(), binName);
+            if (!dumpBinary.exists()) {
+                throw new IOException("Utility '" + binName + "' not found in client home '" + home.getDisplayName() + "'");
+            }
+        }
+        return dumpBinary;
     }
 
     @NotNull

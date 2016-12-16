@@ -322,7 +322,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
 
             startTime = System.currentTimeMillis();
             DBCExecutionSource source = new AbstractExecutionSource(dataContainer, executionContext, partSite.getPart(), sqlQuery);
-            final DBCStatement dbcStatement = DBUtils.prepareStatement(
+            final DBCStatement dbcStatement = DBUtils.makeStatement(
                 source,
                 session,
                 DBCStatementType.SCRIPT,

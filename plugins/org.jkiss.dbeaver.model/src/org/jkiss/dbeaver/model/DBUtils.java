@@ -25,10 +25,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -36,18 +34,12 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * DBUtils
@@ -55,10 +47,6 @@ import java.util.regex.Pattern;
 public final class DBUtils {
 
     private static final Log log = Log.getLog(DBUtils.class);
-
-    private static final Pattern EXEC_PATTERN = Pattern.compile("[a-z]+\\s+([^(]+)\\s*\\(");
-    private static final String BAD_DOUBLE_VALUE = "2.2250738585072012e-308"; //$NON-NLS-1$
-    //public static final DateFormat DEFAULT_ new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
 
     public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparator()
     {
@@ -862,7 +850,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBCStatement prepareStatement(
+    public static DBCStatement makeStatement(
         @NotNull DBCExecutionSource executionSource,
         @NotNull DBCSession session,
         @NotNull DBCStatementType statementType,
@@ -871,7 +859,7 @@ public final class DBUtils {
         long maxRows) throws DBCException
     {
         SQLQuery sqlQuery = new SQLQuery(query);
-        return prepareStatement(
+        return makeStatement(
             executionSource,
             session,
             statementType,
@@ -881,7 +869,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBCStatement prepareStatement(
+    public static DBCStatement makeStatement(
         @NotNull DBCExecutionSource executionSource,
         @NotNull DBCSession session,
         @NotNull DBCStatementType statementType,
@@ -922,7 +910,7 @@ public final class DBUtils {
 
         DBCStatement dbStat = statementType == DBCStatementType.SCRIPT ?
             createStatement(session, queryText, hasLimits) :
-            prepareStatement(session, queryText, hasLimits);
+            makeStatement(session, queryText, hasLimits);
         dbStat.setStatementSource(executionSource);
 
         if (hasLimits || offset > 0) {
@@ -959,7 +947,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBCStatement prepareStatement(
+    public static DBCStatement makeStatement(
         @NotNull DBCSession session,
         @NotNull String query,
         boolean scrollable) throws DBCException
@@ -968,13 +956,6 @@ public final class DBUtils {
         // Normalize query
         query = SQLUtils.makeUnifiedLineFeeds(query);
 
-/*
-        // Check for output parameters
-        String outParamName = SQLUtils.getQueryOutputParameter(context, query);
-        if (outParamName != null) {
-            statementType = DBCStatementType.EXEC;
-        }
-*/
         if (SQLUtils.isExecQuery(SQLUtils.getDialectFromObject(session.getDataSource()), query)) {
             statementType = DBCStatementType.EXEC;
         }
@@ -1032,16 +1013,6 @@ public final class DBUtils {
         }
     }
 
-    @Nullable
-    public static DBPDataSourceContainer getContainer(@Nullable DBSObject object)
-    {
-        if (object == null) {
-            log.warn("Null object passed");
-            return null;
-        }
-        return object.getDataSource().getContainer();
-    }
-
     @NotNull
     public static String getObjectUniqueName(@NotNull DBSObject object)
     {
@@ -1077,11 +1048,7 @@ public final class DBUtils {
             // NoSuchElementException data type provider
             return null;
         }
-        DBSDataType dataType = dataTypeProvider.resolveDataType(monitor, fullTypeName);
-        if (dataType == null) {
-            //log.debug("Data type '" + fullTypeName + "' can't be resolved by '" + dataSource + "'");
-        }
-        return dataType;
+        return dataTypeProvider.resolveDataType(monitor, fullTypeName);
     }
 
     public static <T extends DBPNamedObject> void orderObjects(@NotNull List<T> objects)
@@ -1149,8 +1116,21 @@ public final class DBUtils {
         }
     }
 
+    @Nullable
+    public static DBPDataSourceContainer getContainer(@Nullable DBSObject object)
+    {
+        if (object == null) {
+            log.warn("Null object passed");
+            return null;
+        }
+        if (object instanceof DBPDataSourceContainer) {
+            return (DBPDataSourceContainer) object;
+        }
+        return object.getDataSource().getContainer();
+    }
+
     @NotNull
-    public static DBPDataSourceRegistry getRegistry(@NotNull DBSObject object)
+    public static DBPDataSourceRegistry getObjectRegistry(@NotNull DBSObject object)
     {
         DBPDataSourceContainer container;
         if (object instanceof DBPDataSourceContainer) {
@@ -1160,6 +1140,12 @@ public final class DBUtils {
             container = dataSource.getContainer();
         }
         return container.getRegistry();
+    }
+
+
+    @NotNull
+    public static IProject getObjectOwnerProject(DBSObject object) {
+        return getObjectRegistry(object).getProject();
     }
 
     @NotNull
@@ -1202,31 +1188,6 @@ public final class DBUtils {
         String typeName = typedObject.getTypeName();
         String typeModifiers = SQLUtils.getColumnTypeModifiers(typedObject, typeName, typedObject.getDataKind());
         return typeModifiers == null ? typeName : (typeName + CommonUtils.notEmpty(typeModifiers));
-    }
-
-    @NotNull
-    public static String getFullParametrizedName(@NotNull DBRProgressMonitor monitor, @NotNull DBSParametrizedObject typedObject)
-    {
-        String simpleName = typedObject.getName();
-        try {
-            Collection<? extends DBSParameter> parameters = typedObject.getParameters(monitor);
-            if (CommonUtils.isEmpty(parameters)) {
-                return simpleName;
-            }
-            StringBuilder buf = new StringBuilder(simpleName);
-            buf.append(" (");
-            boolean first = true;
-            for (DBSParameter parameter : parameters) {
-                if (!first) buf.append(",");
-                first = false;
-                buf./*append(parameter.getName()).append(" ").*/append(parameter.getParameterType().getTypeName());
-            }
-            buf.append(")");
-            return buf.toString();
-        } catch (DBException e) {
-            log.warn(e);
-        }
-        return simpleName;
     }
 
     @NotNull
@@ -1409,69 +1370,10 @@ public final class DBUtils {
         return false;
     }
 
-    /**
-     * Puts list of linked SQL exceptions into a list.
-     * This function exists to avoid infinite cycles in SQLException linking.
-     */
-    @NotNull
-    public static List<SQLException> getExceptionsChain(@NotNull SQLException ex) {
-        if (ex.getNextException() == null) {
-            return Collections.singletonList(ex);
-        }
-        List<SQLException> chain = new ArrayList<>();
-        for (SQLException e = ex; e != null; e = e.getNextException()) {
-            if (chain.contains(e)) {
-                break;
-            }
-            chain.add(e);
-        }
-        return chain;
-    }
-
     @Nullable
     public static DBCTransactionManager getTransactionManager(@Nullable DBCExecutionContext executionContext) {
         if (executionContext != null && executionContext.isConnected()) {
             return getAdapter(DBCTransactionManager.class, executionContext);
-        }
-        return null;
-    }
-
-    public static DBSProcedure findProcedure(DBCSession session, String queryString) throws DBException {
-        DBPDataSource dataSource = session.getDataSource();
-        if (!CommonUtils.isEmpty(queryString)) {
-            Matcher matcher = EXEC_PATTERN.matcher(queryString);
-            if (matcher.find()) {
-                String procName = matcher.group(1);
-                char divChar = 0;
-                if (dataSource instanceof SQLDataSource) {
-                    divChar = ((SQLDataSource) dataSource).getSQLDialect().getStructSeparator();
-                }
-                if (procName.indexOf(divChar) != -1) {
-                    return findProcedureByNames(session, procName.split("\\" + divChar));
-                } else {
-                    return findProcedureByNames(session, procName);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private static DBSProcedure findProcedureByNames(@NotNull DBCSession session, @NotNull String... names) throws DBException {
-        if (!(session.getDataSource() instanceof DBSObjectContainer)) {
-            return null;
-        }
-        DBSObjectContainer container = (DBSObjectContainer) session.getDataSource();
-        for (int i = 0; i < names.length - 1; i++) {
-            DBSObject child = container.getChild(session.getProgressMonitor(), DBObjectNameCaseTransformer.transformName(session.getDataSource(), names[i]));
-            if (child instanceof DBSObjectContainer) {
-                container = (DBSObjectContainer) child;
-            } else {
-                return null;
-            }
-        }
-        if (container instanceof DBSProcedureContainer) {
-            return ((DBSProcedureContainer) container).getProcedure(session.getProgressMonitor(), DBObjectNameCaseTransformer.transformName(session.getDataSource(), names[names.length - 1]));
         }
         return null;
     }
@@ -1508,7 +1410,7 @@ public final class DBUtils {
             } else if (hintType == Float.class) {
                 return Float.valueOf(text);
             } else if (hintType == Double.class) {
-                return toDouble(text);
+                return Double.valueOf(text);
             } else if (hintType == BigInteger.class) {
                 return new BigInteger(text);
             } else {
@@ -1522,15 +1424,6 @@ public final class DBUtils {
                 return null;
             }
         }
-    }
-
-    @NotNull
-    private static Number toDouble(@NotNull String text)
-    {
-        if (text.equals(BAD_DOUBLE_VALUE)) {
-            return Double.MIN_VALUE;
-        }
-        return Double.valueOf(text);
     }
 
     @SuppressWarnings("unchecked")
@@ -1644,18 +1537,6 @@ public final class DBUtils {
         return object instanceof DBPHiddenObject && ((DBPHiddenObject) object).isHidden();
     }
 
-/*
-    // Helper function - updates copied object name by replacing old parent name with new parent name
-    public static String generateObjectCopyName(DBPNamedObject object, DBPNamedObject originalParent, DBPNamedObject newParent) {
-        String name = object.getName();
-        if (name.contains(originalParent.getName())) {
-            name = name.replace(originalParent.getName(), newParent.getName());
-        } else {
-            name = name + "_1";
-        }
-        return name;
-    }
-*/
     public static DBDPseudoAttribute getRowIdAttribute(DBSEntity entity) {
         if (entity instanceof DBDPseudoAttributeContainer) {
             try {
@@ -1696,26 +1577,4 @@ public final class DBUtils {
         return attr instanceof DBDAttributeBinding && ((DBDAttributeBinding) attr).isPseudoAttribute();
     }
 
-    @Nullable
-    public static IProject getObjectOwnerProject(DBSObject object) {
-        final DBPDataSource dataSource = object.getDataSource();
-        if (dataSource != null) {
-            return dataSource.getContainer().getRegistry().getProject();
-        }
-        return null;
-    }
-
-    public static File getHomeBinary(@NotNull DBPClientHome home, @Nullable String binFolder, @NotNull String binName) throws IOException
-    {
-        binName = RuntimeUtils.getNativeBinaryName(binName);
-        File dumpBinary = new File(home.getHomePath(),
-            binFolder == null ? binName : binFolder + "/" + binName);
-        if (!dumpBinary.exists()) {
-            dumpBinary = new File(home.getHomePath(), binName);
-            if (!dumpBinary.exists()) {
-                throw new IOException("Utility '" + binName + "' not found in client home '" + home.getDisplayName() + "'");
-            }
-        }
-        return dumpBinary;
-    }
 }

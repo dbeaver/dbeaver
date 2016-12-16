@@ -1698,7 +1698,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             try {
                 SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery((SQLDataSource) dataSource, query);
-                try (DBCStatement dbStatement = DBUtils.prepareStatement(source, session, DBCStatementType.QUERY, countQuery, 0, 0)) {
+                try (DBCStatement dbStatement = DBUtils.makeStatement(source, session, DBCStatementType.QUERY, countQuery, 0, 0)) {
                     if (dbStatement.executeStatement()) {
                         try (DBCResultSet rs = dbStatement.openResultSet()) {
                             if (rs.nextRow()) {

@@ -22,11 +22,8 @@ import org.eclipse.ui.IExportWizard;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractImportExportWizard;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -69,7 +66,7 @@ abstract class PostgreBackupRestoreWizard<PROCESS_ARG extends PostgreDatabaseBac
     @Override
     public void fillProcessParameters(List<String> cmd, PROCESS_ARG arg) throws IOException
     {
-        File dumpBinary = DBUtils.getHomeBinary(getClientHome(), PostgreConstants.BIN_FOLDER,
+        File dumpBinary = RuntimeUtils.getHomeBinary(getClientHome(), PostgreConstants.BIN_FOLDER,
             isExportWizard() ? "pg_dump" : "pg_restore"); //$NON-NLS-1$
         String dumpPath = dumpBinary.getAbsolutePath();
         cmd.add(dumpPath);

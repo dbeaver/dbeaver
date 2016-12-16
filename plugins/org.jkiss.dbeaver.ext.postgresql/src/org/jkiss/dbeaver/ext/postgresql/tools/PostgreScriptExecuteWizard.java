@@ -22,10 +22,9 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -86,7 +85,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreSche
     @Override
     public void fillProcessParameters(List<String> cmd, PostgreSchema arg) throws IOException
     {
-        String dumpPath = DBUtils.getHomeBinary(getClientHome(), PostgreConstants.BIN_FOLDER, "psql").getAbsolutePath(); //$NON-NLS-1$
+        String dumpPath = RuntimeUtils.getHomeBinary(getClientHome(), PostgreConstants.BIN_FOLDER, "psql").getAbsolutePath(); //$NON-NLS-1$
         cmd.add(dumpPath);
         if (logLevel == LogLevel.Debug) {
             cmd.add("--debug-info"); //$NON-NLS-1$

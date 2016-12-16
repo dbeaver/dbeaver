@@ -154,7 +154,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_data);
 
-        try (DBCStatement dbStat = DBUtils.prepareStatement(
+        try (DBCStatement dbStat = DBUtils.makeStatement(
             source,
             session,
             DBCStatementType.SCRIPT,

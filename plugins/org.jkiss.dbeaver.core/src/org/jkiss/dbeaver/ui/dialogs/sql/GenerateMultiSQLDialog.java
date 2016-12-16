@@ -189,7 +189,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                         try {
                             final List<String> lines = objectsSQL.get(object);
                             for (String line : lines) {
-                                try (final DBCStatement statement = DBUtils.prepareStatement(session, line, false)) {
+                                try (final DBCStatement statement = DBUtils.makeStatement(session, line, false)) {
                                     if (statement.executeStatement()) {
                                         try (DBCResultSet resultSet = statement.openResultSet()) {
                                             // Run in sync because we need result set
