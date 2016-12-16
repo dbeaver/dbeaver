@@ -21,13 +21,19 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
@@ -40,6 +46,8 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Managable base statement.
@@ -48,6 +56,8 @@ import java.util.Map;
 public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl implements JDBCCallableStatement {
 
     private static final Log log = Log.getLog(JDBCCallableStatementImpl.class);
+    private static final Pattern EXEC_PATTERN = Pattern.compile("[a-z]+\\s+([^(]+)\\s*\\(");
+
     private DBSProcedure procedure;
 
     public JDBCCallableStatementImpl(
@@ -60,7 +70,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
 
         // Find procedure definition
         try {
-            procedure = DBUtils.findProcedure(connection, query);
+            procedure = findProcedure(connection, query);
         } catch (Throwable e) {
             log.debug(e);
         }
@@ -82,6 +92,46 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                 log.debug(e1);
             }
         }
+    }
+
+    private static DBSProcedure findProcedure(DBCSession session, String queryString) throws DBException {
+        DBPDataSource dataSource = session.getDataSource();
+        if (!CommonUtils.isEmpty(queryString)) {
+            Matcher matcher = EXEC_PATTERN.matcher(queryString);
+            if (matcher.find()) {
+                String procName = matcher.group(1);
+                char divChar = 0;
+                if (dataSource instanceof SQLDataSource) {
+                    divChar = ((SQLDataSource) dataSource).getSQLDialect().getStructSeparator();
+                }
+                if (procName.indexOf(divChar) != -1) {
+                    return findProcedureByNames(session, procName.split("\\" + divChar));
+                } else {
+                    return findProcedureByNames(session, procName);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static DBSProcedure findProcedureByNames(@NotNull DBCSession session, @NotNull String... names) throws DBException {
+        if (!(session.getDataSource() instanceof DBSObjectContainer)) {
+            return null;
+        }
+        DBSObjectContainer container = (DBSObjectContainer) session.getDataSource();
+        for (int i = 0; i < names.length - 1; i++) {
+            DBSObject child = container.getChild(session.getProgressMonitor(), DBObjectNameCaseTransformer.transformName(session.getDataSource(), names[i]));
+            if (child instanceof DBSObjectContainer) {
+                container = (DBSObjectContainer) child;
+            } else {
+                return null;
+            }
+        }
+        if (container instanceof DBSProcedureContainer) {
+            return ((DBSProcedureContainer) container).getProcedure(session.getProgressMonitor(), DBObjectNameCaseTransformer.transformName(session.getDataSource(), names[names.length - 1]));
+        }
+        return null;
     }
 
     @Override

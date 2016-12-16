@@ -69,7 +69,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements ILaz
         propertyTree.loadProperties(curPropertySource);
 
         if (input.getDatabaseObject() != null) {
-            DBUtils.getRegistry((DBSObject) curPropertySource.getEditableValue()).addDataSourceListener(this);
+            DBUtils.getObjectRegistry((DBSObject) curPropertySource.getEditableValue()).addDataSourceListener(this);
         }
         propertyTree.getControl().addDisposeListener(new DisposeListener() {
             @Override
@@ -87,7 +87,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements ILaz
     @Override
     public void dispose() {
         if (curPropertySource.getEditableValue() instanceof DBSObject) {
-            DBUtils.getRegistry((DBSObject) curPropertySource.getEditableValue()).removeDataSourceListener(this);
+            DBUtils.getObjectRegistry((DBSObject) curPropertySource.getEditableValue()).removeDataSourceListener(this);
         }
         UIUtils.dispose(boldFont);
         PropertiesContributor.getInstance().removeLazyListener(this);

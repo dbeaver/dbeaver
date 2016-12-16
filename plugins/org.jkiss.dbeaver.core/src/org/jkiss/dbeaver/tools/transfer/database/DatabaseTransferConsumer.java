@@ -406,7 +406,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private void executeDDL(DBCSession  session, String sql)
         throws DBCException
     {
-        DBCStatement dbStat = DBUtils.prepareStatement(session, sql, false);
+        DBCStatement dbStat = DBUtils.makeStatement(session, sql, false);
         try {
             dbStat.executeStatement();
         } finally {
