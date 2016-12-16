@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.navigator.database.load;
 
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
@@ -42,11 +43,11 @@ public class TreeLoadService extends DatabaseLoadService<Object[]> {
     }
 
     @Override
-    public Object[] evaluate()
+    public Object[] evaluate(DBRProgressMonitor monitor)
         throws InvocationTargetException, InterruptedException
     {
         try {
-            DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(getProgressMonitor(), parentNode);
+            DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(monitor, parentNode);
             return children == null ? new Object[0] : children;
         } catch (Throwable ex) {
             throw new InvocationTargetException(ex);

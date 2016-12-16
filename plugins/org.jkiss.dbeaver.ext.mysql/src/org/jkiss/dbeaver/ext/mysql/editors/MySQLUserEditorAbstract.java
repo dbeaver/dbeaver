@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
@@ -43,9 +44,9 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
         LoadingJob.createService(
             new DatabaseLoadService<List<MySQLGrant>>(MySQLMessages.editors_user_editor_abstract_load_grants, getDatabaseObject().getDataSource()) {
                 @Override
-                public java.util.List<MySQLGrant> evaluate() throws InvocationTargetException, InterruptedException {
+                public java.util.List<MySQLGrant> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        return getDatabaseObject().getGrants(getProgressMonitor());
+                        return getDatabaseObject().getGrants(monitor);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }

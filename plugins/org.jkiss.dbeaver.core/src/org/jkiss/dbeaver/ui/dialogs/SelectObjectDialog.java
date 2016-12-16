@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -91,7 +92,7 @@ public class SelectObjectDialog<T> extends Dialog {
                 return LoadingJob.createService(
                     new AbstractLoadService<Collection<T>>() {
                         @Override
-                        public Collection<T> evaluate() throws InvocationTargetException, InterruptedException {
+                        public Collection<T> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                             return objects;
                         }
 

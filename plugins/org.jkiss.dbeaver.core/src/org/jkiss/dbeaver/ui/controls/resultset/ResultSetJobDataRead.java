@@ -113,17 +113,7 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
     }
 
     @Override
-    public DBRProgressMonitor getProgressMonitor() {
-        return progressMonitor;
-    }
-
-    @Override
-    public void setProgressMonitor(DBRProgressMonitor monitor) {
-        progressMonitor = monitor;
-    }
-
-    @Override
-    public Object evaluate() throws InvocationTargetException, InterruptedException {
+    public Object evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         // It is not a real service so just return nothing
         return null;
     }

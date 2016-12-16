@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.runtime.load;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -30,6 +31,7 @@ import java.lang.reflect.InvocationTargetException;
 public abstract class AbstractLoadService<RESULT> implements ILoadService<RESULT> {
     private String serviceName;
     private DBRProgressMonitor progressMonitor;
+    private AbstractJob ownerJob;
 
     protected AbstractLoadService(String serviceName)
     {
@@ -47,30 +49,27 @@ public abstract class AbstractLoadService<RESULT> implements ILoadService<RESULT
         return serviceName;
     }
 
-    @Override
-    public DBRProgressMonitor getProgressMonitor()
-    {
-        return progressMonitor;
-    }
-
-    @Override
-    public void setProgressMonitor(DBRProgressMonitor monitor)
+    public void initService(DBRProgressMonitor monitor, AbstractJob ownerJob)
     {
         this.progressMonitor = monitor;
+        this.ownerJob = ownerJob;
     }
 
     @Override
     public boolean cancel() throws InvocationTargetException
     {
-        // Invoke nested service cancel
-        DBRBlockingObject block = progressMonitor.getActiveBlock();
-        if (block != null) {
-            try {
-                block.cancelBlock();
-                return true;
-            }
-            catch (DBException e) {
-                throw new InvocationTargetException(e);
+        if (this.ownerJob != null) {
+            return this.ownerJob.cancel();
+        } else if (progressMonitor != null) {
+            // Invoke nested service cancel
+            DBRBlockingObject block = progressMonitor.getActiveBlock();
+            if (block != null) {
+                try {
+                    block.cancelBlock();
+                    return true;
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
             }
         }
         return false;

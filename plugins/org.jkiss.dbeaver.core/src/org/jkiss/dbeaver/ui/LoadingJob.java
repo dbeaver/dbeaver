@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 
@@ -73,14 +74,16 @@ public class LoadingJob<RESULT>  extends AbstractJob {
     private IStatus run(DBRProgressMonitor monitor, boolean lazy)
     {
         monitor = visualizer.overwriteMonitor(monitor);
+        if (this.loadingService instanceof AbstractLoadService) {
+            ((AbstractLoadService) this.loadingService).initService(monitor, this);
+        }
 
         LoadingUIJob<RESULT> updateUIJob = new LoadingUIJob<>(this, monitor);
         updateUIJob.schedule();
-        this.loadingService.setProgressMonitor(monitor);
         Throwable error = null;
         RESULT result = null;
         try {
-            result = this.loadingService.evaluate();
+            result = this.loadingService.evaluate(monitor);
         }
         catch (InvocationTargetException e) {
             error = e.getTargetException();

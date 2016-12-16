@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.edit.MySQLCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -248,13 +249,13 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         LoadingJob.createService(
             new DatabaseLoadService<Collection<MySQLTableBase>>(MySQLMessages.editors_user_editor_privileges_service_load_tables, getExecutionContext()) {
                 @Override
-                public Collection<MySQLTableBase> evaluate()
+                public Collection<MySQLTableBase> evaluate(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException {
                     if (selectedCatalog == null) {
                         return Collections.emptyList();
                     }
                     try {
-                        return selectedCatalog.getTableCache().getAllObjects(getProgressMonitor(), selectedCatalog);
+                        return selectedCatalog.getTableCache().getAllObjects(monitor, selectedCatalog);
                     } catch (DBException e) {
                         log.error(e);
                     }
@@ -290,9 +291,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         LoadingJob.createService(
             new DatabaseLoadService<java.util.List<MySQLPrivilege>>(MySQLMessages.editors_user_editor_privileges_service_load_privileges, getExecutionContext()) {
                 @Override
-                public java.util.List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException {
+                public java.util.List<MySQLPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        return getDatabaseObject().getDataSource().getPrivileges(getProgressMonitor());
+                        return getDatabaseObject().getDataSource().getPrivileges(monitor);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
