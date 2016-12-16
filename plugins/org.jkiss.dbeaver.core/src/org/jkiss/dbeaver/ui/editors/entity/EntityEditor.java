@@ -62,10 +62,7 @@ import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderListener;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
-import org.jkiss.dbeaver.ui.editors.ErrorEditorInput;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -404,7 +401,14 @@ public class EntityEditor extends MultiPageDatabaseEditor
     protected void createPages()
     {
         final IDatabaseEditorInput editorInput = getEditorInput();
-        if (editorInput instanceof ErrorEditorInput) {
+        if (editorInput instanceof DatabaseLazyEditorInput) {
+            try {
+                addPage(new ProgressEditorPart(), editorInput);
+            } catch (PartInitException e) {
+                log.error(e);
+            }
+            return;
+        } else if (editorInput instanceof ErrorEditorInput) {
             ErrorEditorInput errorInput = (ErrorEditorInput) editorInput;
             try {
                 addPage(new ErrorEditorPartEx(errorInput.getError()), errorInput);
@@ -413,8 +417,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
             } catch (PartInitException e) {
                 log.error(e);
             }
-//            return;
+            return;
         }
+
         // Command listener
         commandListener = new DBECommandAdapter() {
             @Override
