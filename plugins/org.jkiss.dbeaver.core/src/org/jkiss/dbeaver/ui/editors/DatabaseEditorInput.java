@@ -56,15 +56,15 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     private String defaultFolderId;
     private Map<String, Object> attributes = new LinkedHashMap<>();
 
-    protected DatabaseEditorInput(@NotNull NODE node)
+    protected DatabaseEditorInput(@Nullable NODE node)
     {
         this(node, null);
     }
 
-    protected DatabaseEditorInput(@NotNull NODE node, @Nullable DBECommandContext commandContext)
+    protected DatabaseEditorInput(@Nullable NODE node, @Nullable DBECommandContext commandContext)
     {
         this.node = node;
-        DBPDataSource dataSource = node.getDataSource();
+        DBPDataSource dataSource = node == null ? null : node.getDataSource();
         if (dataSource != null) {
             this.executionContext = dataSource.getDefaultContext(false);
             this.commandContext = commandContext != null ?

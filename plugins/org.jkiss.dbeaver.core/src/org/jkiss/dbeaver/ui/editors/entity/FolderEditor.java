@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
