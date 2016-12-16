@@ -708,22 +708,22 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     public boolean isAuthorisedForApplications()
     {
-        return db2CurrentUserPrivileges.userIsAuthorisedForApplications();
+        return db2CurrentUserPrivileges != null && db2CurrentUserPrivileges.userIsAuthorisedForApplications();
     }
 
     public boolean isAuthorisedForContainers()
     {
-        return db2CurrentUserPrivileges.userIsAuthorisedForContainers();
+        return db2CurrentUserPrivileges != null && db2CurrentUserPrivileges.userIsAuthorisedForContainers();
     }
 
     public boolean isAuthorisedForDBCFG()
     {
-        return db2CurrentUserPrivileges.userIsAuthorisedForDBCFG();
+        return db2CurrentUserPrivileges != null && db2CurrentUserPrivileges.userIsAuthorisedForDBCFG();
     }
 
     public boolean isAuthorisedForAdminister()
     {
-        return db2CurrentUserPrivileges.userIsAuthorisedForAdminister();
+        return db2CurrentUserPrivileges != null && db2CurrentUserPrivileges.userIsAuthorisedForAdminister();
     }
 
     // -------------------------

@@ -215,6 +215,12 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
             setPartName(node.getNodeName());
             setTitleImage(DBeaverIcons.getImage(node.getNodeIcon()));
             updateActions();
+
+            // Update editor input
+            final INavigatorEditorInput editorInput = getEditorInput();
+            if (editorInput instanceof NodeEditorInput) {
+                ((NodeEditorInput) editorInput).setNavigatorNode(node);
+            }
         }
 
         @Override
@@ -226,7 +232,4 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         }
     }
 
-    public static String getNodePath(DBNNode node) {
-        return node.getNodeFullName();
-    }
 }
