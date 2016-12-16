@@ -138,7 +138,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private void createFoldersPanel(Composite parent, TabbedFolderInfo[] folders) {
         // Properties
-        Composite foldersPlaceholder = UIUtils.createPlaceholder(this.sashForm, 1, 0);
+        Composite foldersPlaceholder = UIUtils.createPlaceholder(parent, 1, 0);
         foldersPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         boolean single = folders.length < 4;
