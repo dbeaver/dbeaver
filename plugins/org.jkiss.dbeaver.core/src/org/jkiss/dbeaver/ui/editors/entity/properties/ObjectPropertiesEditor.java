@@ -126,61 +126,70 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             createPropertiesPanel(sashForm);
-
-            // Properties
-            Composite propsPlaceholder = UIUtils.createPlaceholder(sashForm, 1, 0);
-            propsPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            boolean single = folders.length < 4;
-            if (single) {
-                for (TabbedFolderInfo fi : folders) {
-                    if (!fi.isEmbeddable()) {
-                        single = false;
-                    }
-                }
-            }
-
-            folderComposite = new TabbedFolderComposite(propsPlaceholder, SWT.LEFT | (single ? SWT.SINGLE : SWT.MULTI));
-            folderComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            // Load properties
-            folderComposite.setFolders(folders);
-
-            // Collect section contributors
-            GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
-            for (TabbedFolderInfo folder : folders) {
-                ITabbedFolder page = folder.getContents();
-                if (page instanceof IDatabaseEditorContributorUser) {
-                    IEditorActionBarContributor contributor = ((IDatabaseEditorContributorUser) page).getContributor(contributorManager);
-                    if (contributor != null) {
-                        contributorManager.addContributor(contributor, this);
-                        pageContributors.put(page, contributor);
-                    }
-                }
-                if (page instanceof ISaveablePart) {
-                    nestedSaveable.add((ISaveablePart) page);
-                }
-            }
-
-            final String folderId = getEditorInput().getDefaultFolderId();
-            folderComposite.switchFolder(folderId);
-
-            folderComposite.addFolderListener(new ITabbedFolderListener() {
-                @Override
-                public void folderSelected(String folderId) {
-                    if (CommonUtils.equalObjects(curFolderId, folderId)) {
-                        return;
-                    }
-                    synchronized (folderListeners) {
-                        curFolderId = folderId;
-                        for (ITabbedFolderListener listener : folderListeners) {
-                            listener.folderSelected(folderId);
-                        }
-                    }
-                }
-
-            });
+            createFoldersPanel(sashForm, folders);
         }
+    }
+
+    private void createPropertiesPanel(Composite container) {
+        // Main panel
+        propsPlaceholder = UIUtils.createPlaceholder(container, 2, 0);
+        propsPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+    }
+
+    private void createFoldersPanel(Composite parent, TabbedFolderInfo[] folders) {
+        // Properties
+        Composite foldersPlaceholder = UIUtils.createPlaceholder(this.sashForm, 1, 0);
+        foldersPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        boolean single = folders.length < 4;
+        if (single) {
+            for (TabbedFolderInfo fi : folders) {
+                if (!fi.isEmbeddable()) {
+                    single = false;
+                }
+            }
+        }
+
+        folderComposite = new TabbedFolderComposite(foldersPlaceholder, SWT.LEFT | (single ? SWT.SINGLE : SWT.MULTI));
+        folderComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        // Load properties
+        folderComposite.setFolders(folders);
+
+        // Collect section contributors
+        GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
+        for (TabbedFolderInfo folder : folders) {
+            ITabbedFolder page = folder.getContents();
+            if (page instanceof IDatabaseEditorContributorUser) {
+                IEditorActionBarContributor contributor = ((IDatabaseEditorContributorUser) page).getContributor(contributorManager);
+                if (contributor != null) {
+                    contributorManager.addContributor(contributor, this);
+                    pageContributors.put(page, contributor);
+                }
+            }
+            if (page instanceof ISaveablePart) {
+                nestedSaveable.add((ISaveablePart) page);
+            }
+        }
+
+        final String folderId = getEditorInput().getDefaultFolderId();
+        folderComposite.switchFolder(folderId);
+
+        folderComposite.addFolderListener(new ITabbedFolderListener() {
+            @Override
+            public void folderSelected(String folderId) {
+                if (CommonUtils.equalObjects(curFolderId, folderId)) {
+                    return;
+                }
+                synchronized (folderListeners) {
+                    curFolderId = folderId;
+                    for (ITabbedFolderListener listener : folderListeners) {
+                        listener.folderSelected(folderId);
+                    }
+                }
+            }
+
+        });
     }
 
     private void updateSashWidths() {
@@ -201,13 +210,10 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 propsSize.y,
                 (sashSize.y - propsSize.y)};
             sashForm.setWeights(weights);
+        } else {
+            sashForm.setWeights(new int[] { 400, 600 });
         }
-    }
-
-    private void createPropertiesPanel(Composite container) {
-        // Main panel
-        propsPlaceholder = UIUtils.createPlaceholder(container, 2, 0);
-        propsPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+        sashForm.layout();
     }
 
     @Override
@@ -222,6 +228,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         propertiesPanel.createControl(propsPlaceholder);
 
         pageControl.layout();
+        propsPlaceholder.redraw();
         if (sashForm != null) {
             Runnable sashUpdater = new Runnable() {
                 @Override
