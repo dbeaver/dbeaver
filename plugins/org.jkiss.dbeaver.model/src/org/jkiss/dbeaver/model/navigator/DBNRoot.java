@@ -123,7 +123,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
     @Override
     public boolean allowsOpen()
     {
-        return false;
+        return true;
     }
 
     @Override

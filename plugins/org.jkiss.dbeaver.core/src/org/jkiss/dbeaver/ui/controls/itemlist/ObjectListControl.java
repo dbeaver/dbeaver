@@ -592,7 +592,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     @Nullable
-    private Object getCellValue(Object element, int columnIndex)
+    protected Object getCellValue(Object element, int columnIndex)
     {
         OBJECT_TYPE object = (OBJECT_TYPE)element;
 
