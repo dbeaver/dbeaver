@@ -24,12 +24,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.editors.DatabaseLazyEditorInput;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -93,13 +95,13 @@ public class ProgressEditorPart extends EditorPart {
         progressCanvas = new Canvas(parent, SWT.NONE);
 
         InitNodeService loadingService = new InitNodeService();
-        LoadingJob<EntityEditorInput> loadJob = LoadingJob.createService(
+        LoadingJob<IDatabaseEditorInput> loadJob = LoadingJob.createService(
             loadingService,
             new InitNodeVisualizer(loadingService));
         loadJob.schedule();
     }
 
-    private void initEntityEditor(EntityEditorInput result) {
+    private void initEntityEditor(IDatabaseEditorInput result) {
         if (result == null) {
             return;
         }
@@ -111,7 +113,7 @@ public class ProgressEditorPart extends EditorPart {
         }
     }
 
-    private class InitNodeService extends AbstractLoadService<EntityEditorInput> {
+    private class InitNodeService extends AbstractLoadService<IDatabaseEditorInput> {
 
         protected InitNodeService()
         {
@@ -119,7 +121,7 @@ public class ProgressEditorPart extends EditorPart {
         }
 
         @Override
-        public EntityEditorInput evaluate(DBRProgressMonitor monitor)
+        public IDatabaseEditorInput evaluate(DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             try {
@@ -135,16 +137,25 @@ public class ProgressEditorPart extends EditorPart {
         }
     }
 
-    private class InitNodeVisualizer extends ProgressLoaderVisualizer<EntityEditorInput> {
+    private class InitNodeVisualizer extends ProgressLoaderVisualizer<IDatabaseEditorInput> {
         public InitNodeVisualizer(InitNodeService loadingService) {
             super(loadingService, ProgressEditorPart.this.progressCanvas);
         }
 
         @Override
-        public void completeLoading(EntityEditorInput result) {
+        public void completeLoading(IDatabaseEditorInput result) {
             super.completeLoading(result);
             super.visualizeLoading();
             initEntityEditor(result);
+            if (result == null) {
+                // Close editor
+                DBeaverUI.asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        entityEditor.getSite().getWorkbenchWindow().getActivePage().closeEditor(entityEditor, false);
+                    }
+                });
+            }
         }
     }
 

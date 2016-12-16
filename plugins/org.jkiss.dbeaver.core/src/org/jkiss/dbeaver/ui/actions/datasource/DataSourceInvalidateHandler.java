@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -37,8 +36,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.dialogs.ConnectionLostDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -57,7 +56,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
     }
 
     public static void execute(final Shell shell, final DBCExecutionContext context) {
-        if (context != null && context.isConnected()) {
+        if (context != null) {
             //final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) context;
             if (!ArrayUtils.isEmpty(Job.getJobManager().find(context.getDataSource().getContainer()))) {
                 // Already connecting/disconnecting - just return
@@ -109,7 +108,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                         final Integer result = new UITask<Integer>() {
                             @Override
                             protected Integer runTask() {
-                                ConnectionLostDialog clDialog = new ConnectionLostDialog(shell, container, dialogError);
+                                ConnectionLostDialog clDialog = new ConnectionLostDialog(shell, container, dialogError, "Disconnect");
                                 return clDialog.open();
                             }
                         }.execute();
@@ -181,36 +180,6 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                 super.buttonPressed(IDialogConstants.OK_ID);
             }
             super.buttonPressed(id);
-        }
-    }
-
-    static class ConnectionLostDialog extends ErrorDialog {
-        public ConnectionLostDialog(Shell parentShell, DBPDataSourceContainer container, Throwable error)
-        {
-            super(
-                parentShell,
-                "Connection lost",
-                "Connection to '" + container.getName() + "' was lost and cannot be re-established.\nWhat to you want to do?",
-                GeneralUtils.makeExceptionStatus(error),
-                IStatus.INFO | IStatus.WARNING | IStatus.ERROR);
-        }
-
-        @Override
-        protected void createButtonsForButtonBar(Composite parent) {
-            createButton(parent, IDialogConstants.STOP_ID, "Disconnect", true);
-            createButton(parent, IDialogConstants.RETRY_ID, IDialogConstants.RETRY_LABEL, false);
-            createButton(parent, IDialogConstants.IGNORE_ID, IDialogConstants.IGNORE_LABEL, false);
-            createDetailsButton(parent);
-        }
-
-        @Override
-        protected void buttonPressed(int buttonId) {
-            if (buttonId == IDialogConstants.DETAILS_ID) {
-                super.buttonPressed(buttonId);
-                return;
-            }
-            setReturnCode(buttonId);
-            close();
         }
     }
 

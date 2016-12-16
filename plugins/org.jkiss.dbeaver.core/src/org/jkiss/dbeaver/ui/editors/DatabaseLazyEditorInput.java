@@ -18,11 +18,13 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -33,9 +35,13 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.dialogs.ConnectionLostDialog;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -174,34 +180,60 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput
         return false;
     }
 
-    public EntityEditorInput initializeRealInput(final DBRProgressMonitor monitor) throws DBException
+    public IDatabaseEditorInput initializeRealInput(final DBRProgressMonitor monitor) throws DBException
     {
         final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
 
-        if (!dataSource.isConnected()) {
-            if (!dataSource.connect(monitor, true, true)) {
+        while (!dataSource.isConnected()) {
+            boolean connected;
+            try {
+                connected = dataSource.connect(monitor, true, true);
+            } catch (final DBException e) {
+                // Connection error
+                final Integer result = new UITask<Integer>() {
+                    @Override
+                    protected Integer runTask() {
+                        ConnectionLostDialog clDialog = new ConnectionLostDialog(DBeaverUI.getActiveWorkbenchShell(), dataSource, e, "Close");
+                        return clDialog.open();
+                    }
+                }.execute();
+                if (result == IDialogConstants.STOP_ID) {
+                    // Close editor
+                    return null;
+                } else if (result == IDialogConstants.RETRY_ID) {
+                    continue;
+                } else {
+                    connected = false;
+                }
+            }
+            if (!connected) {
                 throw new DBException("Connection to '" + dataSource.getName() + "' canceled");
             }
+            break;
         }
-        DBNDataSource dsNode = (DBNDataSource) navigatorModel.getNodeByObject(monitor, dataSource, true);
-        if (dsNode == null) {
-            throw new DBException("Datasource '" + dataSource.getName() + "' navigator node not found");
-        }
+        try {
+            DBNDataSource dsNode = (DBNDataSource) navigatorModel.getNodeByObject(monitor, dataSource, true);
+            if (dsNode == null) {
+                throw new DBException("Datasource '" + dataSource.getName() + "' navigator node not found");
+            }
 
-        dsNode.initializeNode(monitor, null);
+            dsNode.initializeNode(monitor, null);
 
-        final DBNNode node = navigatorModel.getNodeByPath(
-            monitor, project, nodePath);
-        if (node == null) {
-            throw new DBException("Navigator node '" + nodePath + "' not found");
-        }
-        if (node instanceof DBNDatabaseNode) {
-            EntityEditorInput realInput = new EntityEditorInput((DBNDatabaseNode) node);
-            realInput.setDefaultFolderId(activeFolderId);
-            realInput.setDefaultPageId(activePageId);
-            return realInput;
-        } else {
-            throw new DBException("Database node has bad type: " + node.getClass().getName());
+            final DBNNode node = navigatorModel.getNodeByPath(
+                monitor, project, nodePath);
+            if (node == null) {
+                throw new DBException("Navigator node '" + nodePath + "' not found");
+            }
+            if (node instanceof DBNDatabaseNode) {
+                EntityEditorInput realInput = new EntityEditorInput((DBNDatabaseNode) node);
+                realInput.setDefaultFolderId(activeFolderId);
+                realInput.setDefaultPageId(activePageId);
+                return realInput;
+            } else {
+                throw new DBException("Database node has bad type: " + node.getClass().getName());
+            }
+        } catch (DBException e) {
+            return new ErrorEditorInput(GeneralUtils.makeExceptionStatus(e), navigatorModel.getNodeByObject(dataSource));
         }
     }
 
