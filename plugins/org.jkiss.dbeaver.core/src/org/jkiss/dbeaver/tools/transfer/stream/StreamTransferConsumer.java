@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -62,6 +63,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     public static final String VARIABLE_TABLE = "table";
     public static final String VARIABLE_TIMESTAMP = "timestamp";
+    public static final String VARIABLE_PROJECT = "project";
 
     private IStreamDataExporter processor;
     private StreamConsumerSettings settings;
@@ -339,7 +341,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public String getOutputFileName()
     {
         Object extension = processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
-        String fileName = processTemplate(stripObjectName(sourceObject.getName()));
+        String fileName = processTemplate(DBUtils.getObjectOwnerProject(sourceObject), stripObjectName(sourceObject.getName()));
         if (extension != null) {
             return fileName + "." + extension;
         } else {
@@ -360,7 +362,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return new File(dir, fileName);
     }
 
-    private String processTemplate(final String tableName)
+    private String processTemplate(final IProject project, final String tableName)
     {
         final String timeStamp = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
         String fileName = settings.getOutputFilePattern();
@@ -372,6 +374,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                         return tableName;
                     case VARIABLE_TIMESTAMP:
                         return timeStamp;
+                    case VARIABLE_PROJECT:
+                        return project == null ? "" : project.getName();
 
                 }
                 return null;

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -171,7 +172,7 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
     private void addVariableLegend(Composite group, String varName, String description) {
         Text nameText = new Text(group, SWT.READ_ONLY);
         nameText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        nameText.setText("${" + varName + "}");
+        nameText.setText(GeneralUtils.variablePattern(varName));
 
         Label descText = new Label(group, SWT.READ_ONLY);
         descText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

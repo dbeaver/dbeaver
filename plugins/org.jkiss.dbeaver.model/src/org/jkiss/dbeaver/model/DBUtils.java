@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -1693,6 +1694,15 @@ public final class DBUtils {
 
     public static boolean isPseudoAttribute(DBSAttributeBase attr) {
         return attr instanceof DBDAttributeBinding && ((DBDAttributeBinding) attr).isPseudoAttribute();
+    }
+
+    @Nullable
+    public static IProject getObjectOwnerProject(DBSObject object) {
+        final DBPDataSource dataSource = object.getDataSource();
+        if (dataSource != null) {
+            return dataSource.getContainer().getRegistry().getProject();
+        }
+        return null;
     }
 
     public static File getHomeBinary(@NotNull DBPClientHome home, @Nullable String binFolder, @NotNull String binName) throws IOException

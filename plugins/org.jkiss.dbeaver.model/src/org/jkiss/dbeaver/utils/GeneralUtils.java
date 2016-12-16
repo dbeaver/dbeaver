@@ -276,6 +276,10 @@ public class GeneralUtils {
         }
     }
 
+    public static String variablePattern(String name) {
+        return "${" + name + "}";
+    }
+
     public static String replaceVariables(String string, IVariableResolver resolver) {
         try {
             Matcher matcher = VAR_PATTERN.matcher(string);

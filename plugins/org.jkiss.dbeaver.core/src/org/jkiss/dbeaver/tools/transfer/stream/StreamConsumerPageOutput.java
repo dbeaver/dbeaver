@@ -91,7 +91,11 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             fileNameText = new Text(generalSettings, SWT.BORDER);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
-            fileNameText.setToolTipText("Output file name pattern. Allowed variables: ${table} and ${timestamp}.");
+            fileNameText.setToolTipText("Output file name pattern. Allowed variables: " +
+                GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE) + ", " +
+                GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP) + ", " +
+                GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT) +
+                ".");
             fileNameText.setLayoutData(gd);
             fileNameText.addModifyListener(new ModifyListener() {
                 @Override
@@ -103,7 +107,11 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             UIUtils.installContentProposal(
                 fileNameText,
                 new TextContentAdapter(),
-                new SimpleContentProposalProvider(new String[] { "${table}", "${timestamp}"} ));
+                new SimpleContentProposalProvider(new String[] {
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT)
+                }));
 
             {
                 UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_output_label_encoding);
