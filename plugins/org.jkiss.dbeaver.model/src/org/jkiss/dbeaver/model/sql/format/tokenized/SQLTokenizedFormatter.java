@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -400,7 +401,9 @@ public class SQLTokenizedFormatter implements SQLFormatter {
             String s = GeneralUtils.getDefaultLineSeparator();
             if (argIndex > 0) {
                 final FormatterToken prevToken = argList.get(argIndex - 1);
-                if (prevToken.getType() == TokenType.COMMENT && prevToken.getString().startsWith("--")) { //$NON-NLS-1$
+                if (prevToken.getType() == TokenType.COMMENT &&
+                    SQLUtils.isCommentLine(formatterCfg.getSyntaxManager().getDialect(), prevToken.getString()))
+                {
                     s = ""; //$NON-NLS-1$
                 }
             }
