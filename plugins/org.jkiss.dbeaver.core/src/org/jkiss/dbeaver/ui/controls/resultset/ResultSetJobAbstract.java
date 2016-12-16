@@ -20,9 +20,6 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -31,14 +28,6 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 
 abstract class ResultSetJobAbstract extends DataSourceJob implements DBCExecutionSource {
-
-    protected static final int PROGRESS_VISUALIZE_PERIOD = 100;
-
-    static final DBIcon[] PROGRESS_IMAGES = {
-            UIIcon.PROGRESS0, UIIcon.PROGRESS1, UIIcon.PROGRESS2, UIIcon.PROGRESS3,
-            UIIcon.PROGRESS4, UIIcon.PROGRESS5, UIIcon.PROGRESS6, UIIcon.PROGRESS7,
-            UIIcon.PROGRESS8, UIIcon.PROGRESS9
-    };
 
     protected final DBSDataContainer dataContainer;
     protected final ResultSetViewer controller;
