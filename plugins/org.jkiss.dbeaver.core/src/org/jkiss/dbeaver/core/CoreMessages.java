@@ -1274,6 +1274,7 @@ public class CoreMessages extends NLS {
     public static String pref_page_sql_editor_label_invalidate_before_execute;
 	public static String pref_page_sql_editor_label_sql_timeout;
 	public static String pref_page_sql_editor_label_sound_on_query_end;
+	public static String pref_page_sql_editor_label_refresh_defaults_after_execute;
 
 	public static String pref_page_target_button_use_datasource_settings;
 

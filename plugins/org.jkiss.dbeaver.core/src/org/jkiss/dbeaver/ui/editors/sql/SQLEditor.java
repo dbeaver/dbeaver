@@ -2035,13 +2035,13 @@ public class SQLEditor extends SQLEditorBase implements
                 dumpServerOutput(executionContext, outputReader);
             }
             // Refresh active object
-            if (result == null || !result.hasError()) {
+            if (result == null || !result.hasError() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)) {
                 final DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
                 if (objectSelector != null) {
                     new AbstractJob("Refresh default object") {
                         @Override
                         protected IStatus run(DBRProgressMonitor monitor) {
-                            try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Refresh default object")) {
+                            try (DBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Refresh default object")) {
                                 objectSelector.refreshDefaultObject(session);
                             } catch (Exception e) {
                                 log.error(e);
@@ -2055,7 +2055,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void dumpServerOutput(@NotNull final DBCExecutionContext executionContext, @NotNull final DBCServerOutputReader outputReader) {
-        new AbstractJob("Refresh default object") {
+        new AbstractJob("Dump server output") {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 final StringWriter dump = new StringWriter();

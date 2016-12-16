@@ -54,4 +54,5 @@ public class SQLPreferenceConstants
     public final static String SQL_FORMAT_EXTRACT_FROM_SOURCE           = "SQLEditor.format.extractFromSource";
 
     public final static String BEEP_ON_QUERY_END                        = "SQLEditor.beepOnQueryEnd";
+    public final static String REFRESH_DEFAULTS_AFTER_EXECUTE           = "SQLEditor.refreshDefaultsAfterExecute";
 }

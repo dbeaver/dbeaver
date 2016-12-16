@@ -43,6 +43,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Button invalidateBeforeExecuteCheck;
     private Spinner executeTimeoutText;
     private Button soundOnQueryEnd;
+    private Button updateDefaultAfterExecute;
 
     private Combo commitTypeCombo;
     private Combo errorHandlingCombo;
@@ -82,7 +83,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK) ||
             store.contains(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX) ||
             store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE) ||
-            store.contains(SQLPreferenceConstants.BEEP_ON_QUERY_END)
+            store.contains(SQLPreferenceConstants.BEEP_ON_QUERY_END) ||
+            store.contains(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
         ;
     }
 
@@ -102,7 +104,9 @@ public class PrefPageSQLExecute extends TargetPrefPage
             Composite commonGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_common, 2, GridData.FILL_HORIZONTAL, 0);
             UIUtils.setGridSpan(commonGroup, 2, 1);
             {
-                invalidateBeforeExecuteCheck = UIUtils.createLabelCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_invalidate_before_execute, false);
+                invalidateBeforeExecuteCheck = UIUtils.createCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_invalidate_before_execute, null, false, 2);
+                soundOnQueryEnd = UIUtils.createCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_sound_on_query_end, null, false, 2);
+                updateDefaultAfterExecute = UIUtils.createCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_refresh_defaults_after_execute, null, false, 2);
 
                 UIUtils.createControlLabel(commonGroup, CoreMessages.pref_page_sql_editor_label_sql_timeout);
                 executeTimeoutText = new Spinner(commonGroup, SWT.BORDER);
@@ -113,7 +117,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
                 executeTimeoutText.setMaximum(100000);
                 executeTimeoutText.setToolTipText("Query execute timeout (in seconds). 0 means no timeout");
 
-                soundOnQueryEnd = UIUtils.createLabelCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_sound_on_query_end, false);
             }
         }
 
@@ -150,14 +153,14 @@ public class PrefPageSQLExecute extends TargetPrefPage
                 errorHandlingCombo.add(CoreMessages.pref_page_sql_editor_combo_item_ignore, SQLScriptErrorHandling.IGNORE.ordinal());
             }
 
-            fetchResultSetsCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_fetch_resultsets, false);
-            resetCursorCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_reset_cursor, false);
+            fetchResultSetsCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_fetch_resultsets, null, false, 2);
+            resetCursorCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_reset_cursor, null, false, 2);
         }
         // Parameters
         {
             Composite paramsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_parameters, 2, GridData.FILL_HORIZONTAL, 0);
-            enableSQLParameters = UIUtils.createLabelCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_parameters, true);
-            enableSQLAnonymousParameters = UIUtils.createLabelCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters, false);
+            enableSQLParameters = UIUtils.createCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_parameters, null, false, 2);
+            enableSQLAnonymousParameters = UIUtils.createCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters, null, false, 2);
             anonymousParameterMarkText = UIUtils.createLabelText(paramsGroup, CoreMessages.pref_page_sql_editor_text_anonymous_parameter_mark, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
             anonymousParameterMarkText.setTextLimit(1);
             namedParameterPrefixText = UIUtils.createLabelText(paramsGroup, CoreMessages.pref_page_sql_editor_text_named_parameter_prefix, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
@@ -169,8 +172,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             Composite delimGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_delimiters, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
             statementDelimiterText = UIUtils.createLabelText(delimGroup, CoreMessages.pref_page_sql_editor_text_statement_delimiter, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
             //statementDelimiterText.setTextLimit(1);
-            ignoreNativeDelimiter = UIUtils.createLabelCheckbox(delimGroup, CoreMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter, false);
-            blankLineDelimiter = UIUtils.createLabelCheckbox(delimGroup, CoreMessages.pref_page_sql_editor_checkbox_blank_line_delimiter, false);
+            ignoreNativeDelimiter = UIUtils.createCheckbox(delimGroup, CoreMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter, null, false, 2);
+            blankLineDelimiter = UIUtils.createCheckbox(delimGroup, CoreMessages.pref_page_sql_editor_checkbox_blank_line_delimiter, null, false, 2);
         }
 
         return composite;
@@ -183,6 +186,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             invalidateBeforeExecuteCheck.setSelection(store.getBoolean(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE));
             executeTimeoutText.setSelection(store.getInt(DBeaverPreferences.STATEMENT_TIMEOUT));
             soundOnQueryEnd.setSelection(store.getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END));
+            updateDefaultAfterExecute.setSelection(store.getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE));
 
             commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(DBeaverPreferences.SCRIPT_COMMIT_TYPE)).ordinal());
             errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(DBeaverPreferences.SCRIPT_ERROR_HANDLING)).ordinal());
@@ -209,6 +213,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, invalidateBeforeExecuteCheck.getSelection());
             store.setValue(DBeaverPreferences.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
             store.setValue(SQLPreferenceConstants.BEEP_ON_QUERY_END, soundOnQueryEnd.getSelection());
+            store.setValue(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, updateDefaultAfterExecute.getSelection());
 
             store.setValue(DBeaverPreferences.SCRIPT_COMMIT_TYPE, CommonUtils.fromOrdinal(SQLScriptCommitType.class, commitTypeCombo.getSelectionIndex()).name());
             store.setValue(DBeaverPreferences.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
