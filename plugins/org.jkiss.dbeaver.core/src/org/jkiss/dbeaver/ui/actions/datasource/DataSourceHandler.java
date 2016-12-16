@@ -79,23 +79,6 @@ public class DataSourceHandler
                 // Already connecting/disconnecting - just return
                 return;
             }
-            final String oldName = dataSourceDescriptor.getConnectionConfiguration().getUserName();
-            final String oldPassword = dataSourceDescriptor.getConnectionConfiguration().getUserPassword();
-            if (!dataSourceDescriptor.isSavePassword()) {
-                // Ask for password
-                if (!askForPassword(dataSourceDescriptor, null)) {
-                    updateDataSourceObject(dataSourceDescriptor);
-                    return;
-                }
-            }
-            for (DBWHandlerConfiguration handler : dataSourceDescriptor.getConnectionConfiguration().getDeclaredHandlers()) {
-                if (handler.isEnabled() && handler.isSecured() && !handler.isSavePassword()) {
-                    if (!askForPassword(dataSourceDescriptor, handler)) {
-                        updateDataSourceObject(dataSourceDescriptor);
-                        return;
-                    }
-                }
-            }
 
             final ConnectJob connectJob = new ConnectJob(dataSourceDescriptor);
             final JobChangeAdapter jobChangeAdapter = new JobChangeAdapter() {
@@ -161,7 +144,7 @@ public class DataSourceHandler
         }
     }
 
-    private static void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor)
+    public static void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor)
     {
         dataSourceDescriptor.getRegistry().notifyDataSourceListeners(new DBPEvent(
             DBPEvent.Action.OBJECT_UPDATE,

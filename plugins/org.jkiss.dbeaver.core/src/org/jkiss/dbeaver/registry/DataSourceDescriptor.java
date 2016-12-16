@@ -632,6 +632,25 @@ public class DataSourceDescriptor
         log.debug("Connect with '" + getName() + "' (" + getId() + ")");
 
         connecting = true;
+
+        final String oldName = getConnectionConfiguration().getUserName();
+        final String oldPassword = getConnectionConfiguration().getUserPassword();
+        if (!isSavePassword()) {
+            // Ask for password
+            if (!DataSourceHandler.askForPassword(this, null)) {
+                DataSourceHandler.updateDataSourceObject(this);
+                return false;
+            }
+        }
+        for (DBWHandlerConfiguration handler : getConnectionConfiguration().getDeclaredHandlers()) {
+            if (handler.isEnabled() && handler.isSecured() && !handler.isSavePassword()) {
+                if (!DataSourceHandler.askForPassword(this, handler)) {
+                    DataSourceHandler.updateDataSourceObject(this);
+                    return false;
+                }
+            }
+        }
+
         tunnelConnectionInfo = null;
         try {
             // Handle tunnel

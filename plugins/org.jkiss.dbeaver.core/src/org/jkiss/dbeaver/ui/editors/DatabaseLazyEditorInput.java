@@ -179,7 +179,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput
         final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
 
         if (!dataSource.isConnected()) {
-            dataSource.connect(monitor, true, true);
+            dataSource.initConnection(monitor, null);
         }
         DBNDataSource dsNode = (DBNDataSource) navigatorModel.getNodeByObject(monitor, dataSource, true);
         if (dsNode == null) {
