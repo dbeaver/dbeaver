@@ -19,23 +19,19 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
+import org.jkiss.dbeaver.ui.editors.NodeEditorInputFactory;
 
 /**
  * NodeEditorInput
  */
 public class NodeEditorInput implements INavigatorEditorInput, IPersistableElement
 {
-    private final DBNNode node;
+    private DBNNode node;
     public NodeEditorInput(DBNNode node)
     {
         this.node = node;
@@ -44,6 +40,10 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
     @Override
     public DBNNode getNavigatorNode() {
         return node;
+    }
+
+    public void setNavigatorNode(DBNNode node) {
+        this.node = node;
     }
 
     @Override
@@ -63,7 +63,7 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
 
     @Override
     public IPersistableElement getPersistable() {
-        return null;
+        return this;
     }
 
     @Override
@@ -80,13 +80,15 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
     }
 
     @Override
-    public String getFactoryId() {
-        return null;
+    public String getFactoryId()
+    {
+        return NodeEditorInputFactory.ID_FACTORY;
     }
 
     @Override
-    public void saveState(IMemento memento) {
-
+    public void saveState(IMemento memento)
+    {
+        NodeEditorInputFactory.saveState(memento, this);
     }
 
 }

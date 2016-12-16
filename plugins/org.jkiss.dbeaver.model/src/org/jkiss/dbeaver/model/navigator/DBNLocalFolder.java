@@ -128,7 +128,12 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
 
     @Override
     public String getNodeItemPath() {
-        return NodePathType.folder.getPrefix() + folder.getFolderPath();
+        return NodePathType.folder.getPrefix() + getParentNode().getDataSourceRegistry().getProject().getName() + "/" + folder.getFolderPath();
+    }
+
+    @Override
+    public DBNProjectDatabases getParentNode() {
+        return (DBNProjectDatabases)super.getParentNode();
     }
 
     @Override
@@ -161,7 +166,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     public List<DBNDataSource> getDataSources()
     {
         List<DBNDataSource> children = new ArrayList<>();
-        DBNProjectDatabases parent = (DBNProjectDatabases) getParentNode();
+        DBNProjectDatabases parent = getParentNode();
         for (DBNDataSource dataSource : parent.getDataSources()) {
             if (folder == dataSource.getDataSourceContainer().getFolder()) {
                 children.add(dataSource);
