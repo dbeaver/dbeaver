@@ -403,7 +403,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
         final IDatabaseEditorInput editorInput = getEditorInput();
         if (editorInput instanceof DatabaseLazyEditorInput) {
             try {
-                addPage(new ProgressEditorPart(), editorInput);
+                addPage(new ProgressEditorPart(this), editorInput);
+                setPageText(0, "Initializing ...");
             } catch (PartInitException e) {
                 log.error(e);
             }
@@ -777,7 +778,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
-        return getDatabaseObject().getDataSource().getContainer();
+        DBSObject databaseObject = getDatabaseObject();
+        return databaseObject == null ? null :
+            databaseObject instanceof DBPDataSourceContainer ?
+                (DBPDataSourceContainer)databaseObject :
+                databaseObject.getDataSource().getContainer();
     }
 
     private static final int MAX_BREADCRUMBS_MENU_ITEM = 300;

@@ -31,14 +31,18 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh;
  */
 public class DatabaseEditorListener implements INavigatorListener
 {
-
     private final IDatabaseEditor databaseEditor;
     private DBPDataSourceContainer dataSourceContainer;
 
     DatabaseEditorListener(IDatabaseEditor databaseEditor) {
         this.databaseEditor = databaseEditor;
         // Acquire datasource
-        dataSourceContainer = databaseEditor.getEditorInput().getNavigatorNode().getDataSourceContainer();
+        IDatabaseEditorInput editorInput = databaseEditor.getEditorInput();
+        if (editorInput.getDatabaseObject() instanceof DBPDataSourceContainer) {
+            dataSourceContainer = (DBPDataSourceContainer) editorInput.getDatabaseObject();
+        } else if (editorInput.getNavigatorNode() != null) {
+            dataSourceContainer = editorInput.getNavigatorNode().getDataSourceContainer();
+        }
         if (dataSourceContainer != null) {
             dataSourceContainer.acquire(databaseEditor);
         }
@@ -50,12 +54,12 @@ public class DatabaseEditorListener implements INavigatorListener
     {
         // Release datasource
         if (dataSourceContainer != null) {
-            // Remove node listener
-            DBeaverCore.getInstance().getNavigatorModel().removeListener(this);
-
             dataSourceContainer.release(databaseEditor);
             dataSourceContainer = null;
         }
+
+        // Remove node listener
+        DBeaverCore.getInstance().getNavigatorModel().removeListener(this);
     }
 
     public DBNNode getTreeNode()
@@ -111,7 +115,7 @@ public class DatabaseEditorListener implements INavigatorListener
     protected boolean isValuableNode(DBNNode node)
     {
         DBNNode editorNode = getTreeNode();
-        return node == editorNode || editorNode.isChildOf(node);
+        return node == editorNode || (editorNode != null && editorNode.isChildOf(node));
     }
 
 }

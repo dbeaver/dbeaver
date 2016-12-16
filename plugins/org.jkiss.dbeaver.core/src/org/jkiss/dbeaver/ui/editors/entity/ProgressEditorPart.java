@@ -19,24 +19,30 @@ package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
+import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.editors.DatabaseLazyEditorInput;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * ProgressEditorPart
  */
 public class ProgressEditorPart extends EditorPart {
 
+    private final EntityEditor entityEditor;
     private Composite parentControl;
     private Canvas progressCanvas;
 
-    public ProgressEditorPart() {
+    public ProgressEditorPart(EntityEditor entityEditor) {
+        this.entityEditor = entityEditor;
     }
 
     @Override
@@ -84,16 +90,58 @@ public class ProgressEditorPart extends EditorPart {
 
     private void createProgressPane(final Composite parent) {
         progressCanvas = new Canvas(parent, SWT.NONE);
-        progressCanvas.addPaintListener(new PaintListener() {
-            @Override
-            public void paintControl(PaintEvent e) {
-                paintProgress(e);
-            }
-        });
+
+        InitNodeService loadingService = new InitNodeService();
+        LoadingJob<EntityEditorInput> loadJob = LoadingJob.createService(
+            loadingService,
+            new InitNodeVisualizer(loadingService));
+        loadJob.schedule();
     }
 
-    private void paintProgress(PaintEvent e) {
+    private void initEntityEditor(EntityEditorInput result) {
+        try {
+            entityEditor.init(entityEditor.getEditorSite(), result);
+            entityEditor.recreatePages();
+        } catch (Exception e) {
+            UIUtils.showErrorDialog(entityEditor.getSite().getShell(), "Editor init", "Can't initialize editor", e);
+        }
+    }
 
+    private class InitNodeService extends AbstractLoadService<EntityEditorInput> {
+
+        protected InitNodeService()
+        {
+            super("Initialize entity editor");
+        }
+
+        @Override
+        public EntityEditorInput evaluate()
+            throws InvocationTargetException, InterruptedException
+        {
+            try {
+                return getEditorInput().initializeRealInput(getProgressMonitor());
+            } catch (Throwable ex) {
+                throw new InvocationTargetException(ex);
+            }
+        }
+
+        @Override
+        public Object getFamily() {
+            return null;
+        }
+    }
+
+    private class InitNodeVisualizer extends ProgressLoaderVisualizer<EntityEditorInput> {
+        public InitNodeVisualizer(InitNodeService loadingService) {
+            super(loadingService, ProgressEditorPart.this.progressCanvas);
+        }
+
+        @Override
+        public void completeLoading(EntityEditorInput result) {
+            super.completeLoading(result);
+            super.visualizeLoading();
+            initEntityEditor(result);
+        }
     }
 
 }

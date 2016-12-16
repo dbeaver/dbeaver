@@ -21,6 +21,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 /**
  * MultiPageDatabaseEditor
@@ -34,14 +35,14 @@ public abstract class MultiPageDatabaseEditor extends MultiPageAbstractEditor im
         throws PartInitException
     {
         super.init(site, input);
-
-        listener = new DatabaseEditorListener(this);
     }
 
     @Override
     public void dispose()
     {
-        listener.dispose();
+        if (listener != null) {
+            listener.dispose();
+        }
         super.dispose();
     }
 
@@ -51,7 +52,17 @@ public abstract class MultiPageDatabaseEditor extends MultiPageAbstractEditor im
     }
 
     @Override
-    public org.jkiss.dbeaver.model.exec.DBCExecutionContext getExecutionContext() {
+    protected void setInput(IEditorInput input) {
+        super.setInput(input);
+
+        if (listener != null) {
+            listener.dispose();
+        }
+        listener = new DatabaseEditorListener(this);
+    }
+
+    @Override
+    public DBCExecutionContext getExecutionContext() {
         return getEditorInput().getExecutionContext();
     }
 

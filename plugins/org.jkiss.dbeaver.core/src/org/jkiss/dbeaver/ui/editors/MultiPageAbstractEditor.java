@@ -180,4 +180,11 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
         return null;
     }
 
+    public void recreatePages() {
+        int pageCount = getPageCount();
+        for (int i = pageCount; i > 0; i--) {
+            removePage(i - 1);
+        }
+        createPages();
+    }
 }

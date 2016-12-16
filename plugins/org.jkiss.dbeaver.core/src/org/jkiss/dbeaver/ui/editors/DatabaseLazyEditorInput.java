@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.Nullable;
@@ -45,7 +44,7 @@ import java.util.Collections;
 /**
  * Lazy input. Use by entity editors which are created during DBeaver startup (from memo by factory).
  */
-public abstract class DatabaseLazyEditorInput implements IDatabaseEditorInput
+public class DatabaseLazyEditorInput implements IDatabaseEditorInput
 {
     private final DBPDataSourceContainer dataSource;
     private final IProject project;
@@ -58,6 +57,10 @@ public abstract class DatabaseLazyEditorInput implements IDatabaseEditorInput
         this.dataSource = dataSource;
         this.project = project;
         this.nodePath = nodePath;
+        if (nodeName == null) {
+            int divPos = nodePath.lastIndexOf('/');
+            nodeName = divPos == -1 ? nodePath : nodePath.substring(divPos + 1);
+        }
         this.nodeName = nodeName;
         this.activePageId = activePageId;
         this.activeFolderId = activeFolderId;
@@ -113,7 +116,7 @@ public abstract class DatabaseLazyEditorInput implements IDatabaseEditorInput
     @Override
     public DBSObject getDatabaseObject()
     {
-        return null;
+        return dataSource;
     }
 
     @Override
@@ -191,7 +194,10 @@ public abstract class DatabaseLazyEditorInput implements IDatabaseEditorInput
             throw new DBException("Navigator node '" + nodePath + "' not found");
         }
         if (node instanceof DBNDatabaseNode) {
-            return new EntityEditorInput((DBNDatabaseNode) node);
+            EntityEditorInput realInput = new EntityEditorInput((DBNDatabaseNode) node);
+            realInput.setDefaultFolderId(activeFolderId);
+            realInput.setDefaultPageId(activePageId);
+            return realInput;
         } else {
             throw new DBException("Database node has bad type: " + node.getClass().getName());
         }
