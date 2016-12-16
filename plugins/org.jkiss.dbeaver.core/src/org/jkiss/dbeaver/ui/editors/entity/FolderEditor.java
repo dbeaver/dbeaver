@@ -35,10 +35,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
-import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
@@ -192,16 +189,39 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
 
         @Override
         protected void setListData(Collection<DBNNode> items, boolean append) {
-
+            if (!append) {
+                // Add parent node reference (we actually add DBNRoot to avoid unneeded parent properties columns loading)
+                final DBNNode rootNode = getRootNode();
+                final DBNNode parentNode = rootNode.getParentNode();
+                if (parentNode instanceof DBNProjectDatabases || parentNode instanceof DBNLocalFolder || parentNode instanceof DBNResource) {
+                    List<DBNNode> nodesWithParent = new ArrayList<>(items);
+                    nodesWithParent.add(0, DBeaverCore.getInstance().getNavigatorModel().getRoot());
+                    items = nodesWithParent;
+                }
+            }
             super.setListData(items, append);
+        }
+
+        @Nullable
+        @Override
+        protected Object getCellValue(Object element, int columnIndex) {
+            if (element instanceof DBNRoot) {
+                return columnIndex == 0 ? ".." : "";
+            }
+            return super.getCellValue(element, columnIndex);
         }
 
         @Override
         protected void openNodeEditor(DBNNode node) {
             final DBNNode rootNode = getRootNode();
-            if ((rootNode instanceof DBNContainer && node instanceof DBNLocalFolder) ||
-                (rootNode instanceof DBNResource && node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IContainer))
-            {
+            if (!(node instanceof DBNDatabaseNode)) {
+                if (node instanceof DBNRoot) {
+                    if (rootNode instanceof DBNLocalFolder) {
+                        node = ((DBNLocalFolder) rootNode).getLogicalParent();
+                    } else {
+                        node = rootNode.getParentNode();
+                    }
+                }
 
                 if (historyPosition >= 0) {
                     while (historyPosition < history.size() - 1) {
@@ -217,6 +237,10 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         }
 
         private void changeCurrentNode(DBNNode node) {
+            if (getRootNode() != null && node.getClass() != getRootNode().getClass()) {
+                // Different node type - cleanup
+                clearListData();
+            }
             setRootNode(node);
             loadData();
             setPartName(node.getNodeName());

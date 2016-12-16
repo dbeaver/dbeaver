@@ -93,7 +93,7 @@ public class DBNProject extends DBNResource
     @Override
     public boolean allowsOpen()
     {
-        return false;
+        return true;
     }
 
     @Override

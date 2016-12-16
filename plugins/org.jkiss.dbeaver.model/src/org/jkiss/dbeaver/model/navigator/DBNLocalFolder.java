@@ -148,6 +148,14 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         return true;
     }
 
+    public DBNNode getLogicalParent() {
+        if (folder.getParent() == null) {
+            return getParentNode();
+        } else {
+            return getParentNode().getFolderNode(folder.getParent());
+        }
+    }
+
     @Override
     public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException
     {
@@ -156,7 +164,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         }
         final List<DBNNode> nodes = new ArrayList<>();
         for (DBPDataSourceFolder childFolder : folder.getChildren()) {
-            nodes.add(((DBNProjectDatabases) parentNode).getFolderNode(childFolder));
+            nodes.add(getParentNode().getFolderNode(childFolder));
         }
         nodes.addAll(getDataSources());
         sortNodes(nodes);
