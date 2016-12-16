@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -118,11 +119,11 @@ public class ProgressEditorPart extends EditorPart {
         }
 
         @Override
-        public EntityEditorInput evaluate()
+        public EntityEditorInput evaluate(DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             try {
-                return getEditorInput().initializeRealInput(getProgressMonitor());
+                return getEditorInput().initializeRealInput(monitor);
             } catch (Throwable ex) {
                 throw new InvocationTargetException(ex);
             }

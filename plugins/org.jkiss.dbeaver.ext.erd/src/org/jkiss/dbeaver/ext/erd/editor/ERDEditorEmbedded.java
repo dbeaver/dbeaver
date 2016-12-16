@@ -128,18 +128,18 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         diagramLoadingJob = LoadingJob.createService(
             new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
                 @Override
-                public EntityDiagram evaluate()
+                public EntityDiagram evaluate(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
                     if (refreshMetadata && object instanceof DBPRefreshableObject) {
                         try {
-                            getEditorInput().getNavigatorNode().refreshNode(getProgressMonitor(), ERDEditorEmbedded.this);
+                            getEditorInput().getNavigatorNode().refreshNode(monitor, ERDEditorEmbedded.this);
                         } catch (DBException e) {
                             log.warn("Error refreshing database metadata", e);
                         }
                     }
                     try {
-                        return loadFromDatabase(getProgressMonitor());
+                        return loadFromDatabase(monitor);
                     } catch (DBException e) {
                         log.error("Error loading ER diagram", e);
                     }

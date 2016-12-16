@@ -30,11 +30,7 @@ public interface ILoadService<RESULT> {
 
     String getServiceName();
 
-    DBRProgressMonitor getProgressMonitor();
-
-    void setProgressMonitor(DBRProgressMonitor monitor);
-
-    RESULT evaluate() throws InvocationTargetException, InterruptedException;
+    RESULT evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException;
 
     boolean cancel() throws InvocationTargetException;
 

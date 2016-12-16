@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.editors.ControlPropertyCommandListener;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
@@ -171,9 +172,9 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         LoadingJob.createService(
             new DatabaseLoadService<List<MySQLPrivilege>>(MySQLMessages.editors_user_editor_general_service_load_catalog_privileges, getExecutionContext()) {
                 @Override
-                public List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException {
+                public List<MySQLPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        final List<MySQLPrivilege> privList = getDatabaseObject().getDataSource().getPrivilegesByKind(getProgressMonitor(), MySQLPrivilege.Kind.ADMIN);
+                        final List<MySQLPrivilege> privList = getDatabaseObject().getDataSource().getPrivilegesByKind(monitor, MySQLPrivilege.Kind.ADMIN);
                         for (Iterator<MySQLPrivilege> iterator = privList.iterator(); iterator.hasNext(); ) {
                             MySQLPrivilege priv = iterator.next();
                             // Remove proxy (it is not singleton)

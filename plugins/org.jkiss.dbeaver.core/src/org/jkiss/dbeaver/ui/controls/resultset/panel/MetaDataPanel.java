@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -263,7 +264,7 @@ public class MetaDataPanel implements IResultSetPanel {
         }
 
         @Override
-        public Collection<DBDAttributeBinding> evaluate()
+        public Collection<DBDAttributeBinding> evaluate(DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             return curAttributes;

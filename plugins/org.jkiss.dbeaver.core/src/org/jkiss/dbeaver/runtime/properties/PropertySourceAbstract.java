@@ -330,16 +330,16 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         }
 
         @Override
-        public Map<ObjectPropertyDescriptor, Object> evaluate()
+        public Map<ObjectPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             try {
                 Map<ObjectPropertyDescriptor, Object> result = new IdentityHashMap<>();
                 for (ObjectPropertyDescriptor prop : obtainLazyProperties()) {
-                    if (getProgressMonitor().isCanceled()) {
+                    if (monitor.isCanceled()) {
                         break;
                     }
-                    result.put(prop, prop.readValue(getEditableValue(), getProgressMonitor()));
+                    result.put(prop, prop.readValue(getEditableValue(), monitor));
                 }
                 return result;
             } catch (Throwable ex) {

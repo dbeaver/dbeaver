@@ -126,10 +126,10 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
         diagramLoadingJob = LoadingJob.createService(
             new AbstractLoadService<EntityDiagram>("Load diagram '" + getEditorInput().getName() + "'") {
                 @Override
-                public EntityDiagram evaluate()
+                public EntityDiagram evaluate(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException {
                     try {
-                        return loadContentFromFile(getProgressMonitor());
+                        return loadContentFromFile(monitor);
                     } catch (DBException e) {
                         log.error(e);
                     }

@@ -1064,9 +1064,9 @@ public class ResultSetViewer extends Viewer
                 protected ILoadService<String> createLoadService() {
                     return new DatabaseLoadService<String>("Load row count", getExecutionContext()) {
                         @Override
-                        public String evaluate() throws InvocationTargetException, InterruptedException {
+                        public String evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                             try {
-                                long rowCount = readRowCount(getProgressMonitor());
+                                long rowCount = readRowCount(monitor);
                                 return ROW_COUNT_FORMAT.format(rowCount);
                             } catch (DBException e) {
                                 log.error(e);

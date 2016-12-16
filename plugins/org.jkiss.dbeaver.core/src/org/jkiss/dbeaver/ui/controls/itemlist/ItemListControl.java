@@ -29,6 +29,7 @@ import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
@@ -160,17 +161,17 @@ public class ItemListControl extends NodeListControl
         }
 
         @Override
-        public Collection<DBNNode> evaluate()
+        public Collection<DBNNode> evaluate(DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             try {
                 List<DBNNode> items = new ArrayList<>();
-                DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(getProgressMonitor(), getRootNode());
+                DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(monitor, getRootNode());
                 if (ArrayUtils.isEmpty(children)) {
                     return items;
                 }
                 for (DBNNode item : children) {
-                    if (getProgressMonitor().isCanceled()) {
+                    if (monitor.isCanceled()) {
                         break;
                     }
                     if (metaNode != null) {

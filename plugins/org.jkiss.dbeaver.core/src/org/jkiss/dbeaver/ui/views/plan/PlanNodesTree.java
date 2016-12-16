@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.LoadingJob;
@@ -134,11 +135,11 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
         }
 
         @Override
-        public Collection<DBCPlanNode> evaluate()
+        public Collection<DBCPlanNode> evaluate(DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             try {
-                try (DBCSession session = context.openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
+                try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
                     DBCPlan plan = planner.planQueryExecution(session, query);
                     return (Collection<DBCPlanNode>) plan.getPlanNodes();
                 }
