@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
@@ -93,6 +95,12 @@ public class ProgressEditorPart extends EditorPart {
 
     private void createProgressPane(final Composite parent) {
         progressCanvas = new Canvas(parent, SWT.NONE);
+        progressCanvas.addPaintListener(new PaintListener() {
+            @Override
+            public void paintControl(PaintEvent e) {
+                e.gc.drawText("Connecting to datasource '" + getEditorInput().getDatabaseObject().getName() + "'...", 5, 5, true);
+            }
+        });
 
         InitNodeService loadingService = new InitNodeService();
         LoadingJob<IDatabaseEditorInput> loadJob = LoadingJob.createService(
