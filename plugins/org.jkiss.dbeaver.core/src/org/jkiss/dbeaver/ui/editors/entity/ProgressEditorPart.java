@@ -99,6 +99,9 @@ public class ProgressEditorPart extends EditorPart {
     }
 
     private void initEntityEditor(EntityEditorInput result) {
+        if (result == null) {
+            return;
+        }
         try {
             entityEditor.init(entityEditor.getEditorSite(), result);
             entityEditor.recreatePages();
