@@ -44,9 +44,6 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         BINARY
     }
 
-    private static final String PATTERN_TABLE = "${table}";
-    private static final String PATTERN_TIMESTAMP = "${timestamp}";
-
     public static final String PROP_EXTRACT_IMAGES = "extractImages";
     public static final String PROP_FILE_EXTENSION = "extension";
     public static final String PROP_FORMAT = "format";
@@ -55,7 +52,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private LobEncoding lobEncoding = LobEncoding.HEX;
 
     private String outputFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
-    private String outputFilePattern = PATTERN_TABLE + "_" + PATTERN_TIMESTAMP;
+    private String outputFilePattern = GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE) + "_" + GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP);
     private String outputEncoding = GeneralUtils.getDefaultFileEncoding();
     private boolean outputEncodingBOM = true;
 
