@@ -210,9 +210,14 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
         return createTime;
     }
 
-    @Property(viewable = true, editable = false, order = 3)
+    @Property(viewable = true, editable = true, order = 3)
     public String getDescription() {
         return remarks;
+    }
+    
+    public void setDescription(String newRemarks)
+    {
+    	remarks = newRemarks;
     }
 
     @Property(viewable = true, editable = false, order = 4)
