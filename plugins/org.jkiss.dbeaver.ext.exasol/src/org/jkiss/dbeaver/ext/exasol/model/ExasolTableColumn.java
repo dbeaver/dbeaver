@@ -40,19 +40,14 @@ import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collection;
 
-/**
- * @author Karl Griesser
- */
 public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
     implements DBSTableColumn, DBSTypedObjectEx, DBPHiddenObject, DBPNamedObject2, JDBCColumnKeyType {
 
     private ExasolDataType dataType;
     private Boolean identity;
     private BigDecimal identityValue;
-    private Integer keySeq;
     private String remarks;
     private Boolean isInDistKey;
     private String formatType;
