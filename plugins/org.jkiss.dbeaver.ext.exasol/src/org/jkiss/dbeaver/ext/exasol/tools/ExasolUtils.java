@@ -184,20 +184,23 @@ public class ExasolUtils {
 
         //check dba view
         try {
-            JDBCPreparedStatement dbStat = session.prepareStatement(SESS_DBA_QUERY);
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            while (dbResult.next()) {
-                listSessions.add(new ExasolServerSession(dbResult));
+            try(JDBCPreparedStatement dbStat = session.prepareStatement(SESS_DBA_QUERY)) {
+	            try(JDBCResultSet dbResult = dbStat.executeQuery()) {
+		            while (dbResult.next()) {
+		                listSessions.add(new ExasolServerSession(dbResult));
+		            }
+	            }
             }
+            
             //now try all view
         } catch (SQLException e) {
-
-            JDBCPreparedStatement dbStat = session.prepareStatement(SESS_ALL_QUERY);
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            while (dbResult.next()) {
-                listSessions.add(new ExasolServerSession(dbResult));
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(SESS_ALL_QUERY)) {
+	            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+		            while (dbResult.next()) {
+		                listSessions.add(new ExasolServerSession(dbResult));
+		            }
+	            }
             }
-
         }
 
         return listSessions;
