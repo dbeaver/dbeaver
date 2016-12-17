@@ -159,42 +159,42 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     // -----------------
     // Properties
     // -----------------
-    @Property(viewable = false, editable = false, order = 90, category = ExasolConstants.CAT_BASEOBJECT)
+    @Property(viewable = false, expensive = true,  editable = false, order = 90, category = ExasolConstants.CAT_BASEOBJECT)
     public Boolean getHasDistKey() throws DBCException {
     	if (! hasRead)
     		read();
         return hasDistKey;
     }
 
-    @Property(viewable = false, editable = false, order = 100, category = ExasolConstants.CAT_BASEOBJECT)
+    @Property(viewable = false, expensive = true, editable = false, order = 100, category = ExasolConstants.CAT_BASEOBJECT)
     public Timestamp getLastCommit() throws DBCException {
     	if (! hasRead)
     		read();
         return lastCommit;
     }
 
-    @Property(viewable = false, editable = false, order = 100, category = ExasolConstants.CAT_DATETIME)
+    @Property(viewable = false, expensive = true, editable = false, order = 100, category = ExasolConstants.CAT_DATETIME)
     public Timestamp getCreateTime() throws DBCException {
     	if (! hasRead)
     		read();
         return createTime;
     }
 
-    @Property(viewable = false, editable = false, order = 150, category = ExasolConstants.CAT_STATS)
+    @Property(viewable = false, expensive = true, editable = false, order = 150, category = ExasolConstants.CAT_STATS)
     public String getRawsize() throws DBCException {
     	if (! hasRead)
     		read();
         return ExasolUtils.humanReadableByteCount(sizeRaw, true);
     }
 
-    @Property(viewable = false, editable = false, order = 200, category = ExasolConstants.CAT_STATS)
+    @Property(viewable = false, expensive = true, editable = false, order = 200, category = ExasolConstants.CAT_STATS)
     public String getCompressedsize() throws DBCException {
     	if (! hasRead)
     		read();
         return ExasolUtils.humanReadableByteCount(sizeCompressed, true);
     }
 
-    @Property(viewable = false, editable = false, order = 250, category = ExasolConstants.CAT_STATS)
+    @Property(viewable = false, expensive = true, editable = false, order = 250, category = ExasolConstants.CAT_STATS)
     public float getDeletePercentage() throws DBCException {
     	if (! hasRead)
     		read();
@@ -260,4 +260,5 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
         return DBSObjectState.NORMAL;
     }
 
+    
 }
