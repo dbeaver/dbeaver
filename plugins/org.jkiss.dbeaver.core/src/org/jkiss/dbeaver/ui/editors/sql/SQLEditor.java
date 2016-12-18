@@ -187,7 +187,7 @@ public class SQLEditor extends SQLEditorBase implements
                         lines.add(k);
                     }
                 } catch (BadLocationException e) {
-                    log.debug(e);
+                    // ignore - this may happen is SQL was edited after execution start
                 }
             }
             if (lines.isEmpty()) {
