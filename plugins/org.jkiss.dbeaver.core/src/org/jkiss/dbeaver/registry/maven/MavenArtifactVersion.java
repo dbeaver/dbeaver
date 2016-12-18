@@ -362,6 +362,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                         XMLUtils.getChildElementBody(repElement, "id"),
                         XMLUtils.getChildElementBody(repElement, "name"),
                         XMLUtils.getChildElementBody(repElement, "url"),
+                        null,
                         MavenRepository.RepositoryType.EXTERNAL);
                     String layout = XMLUtils.getChildElementBody(repElement, "layout");
                     if ("legacy".equals(layout)) {
