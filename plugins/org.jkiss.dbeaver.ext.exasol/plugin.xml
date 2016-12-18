@@ -440,4 +440,8 @@
       </tools>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <repository id="exasol-maven-repo" name="Exasol Repository" url="https://maven.exasol.com/artifactory/exasol-releases"/>
+    </extension>
+
 </plugin>
