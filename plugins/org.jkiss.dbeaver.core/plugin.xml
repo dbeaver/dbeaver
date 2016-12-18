@@ -2981,7 +2981,6 @@
 
     <extension point="org.jkiss.dbeaver.mavenRepository">
         <repository id="maven-central" name="Central Repository" url="http://central.maven.org/maven2/"/>
-        <repository id="exasol-jdbc" name="Exasol Repository" url="https://maven.exasol.com/artifactory/exasol-releases"/>
     </extension>
 
     <extension
