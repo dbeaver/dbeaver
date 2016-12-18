@@ -321,13 +321,13 @@
                         sampleURL="jdbc:exa:{host}[:{port}][;schema={database}]"
                         defaultPort="8563"
                         description="Exasol JDBC driver"
-                        webURL="https://maven.exasol.com/artifactory/exasol-releases/com/exasol/exasol-jdbc/">
+                        webURL="https://www.exasol.com/portal/display/DOWNLOAD/EXASOL+Download+Section">
+                   <file
+                         path="maven:/com.exasol:exasol-jdbc:{.*5\.0\..*}"
+                         type="jar">
+                   </file>
 
                     <replace provider="generic" driver="exasol"/>
-                    <file
-                          path="https://maven.exasol.com/artifactory/exasol-releases/com/exasol/exasol-jdbc/5.0.17/exasol-jdbc-5.0.17.jar"
-                          type="jar">
-                    </file>
                     <property name="querytimeout" value="600"/>
                     <property name="clientname" value="DBeaver"/>
                     <property name="connecttimeout" value="40"/>
