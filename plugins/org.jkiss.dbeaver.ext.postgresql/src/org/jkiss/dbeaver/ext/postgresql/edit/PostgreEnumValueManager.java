@@ -17,161 +17,44 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.List;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
-import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
-import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
+import org.jkiss.dbeaver.ui.data.managers.EnumValueManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * PostgreSQL ENUM value manager
  */
-public class PostgreEnumValueManager extends BaseValueManager {
-
-    @NotNull
+public class PostgreEnumValueManager extends EnumValueManager {
     @Override
-    public IValueController.EditType[] getSupportedEditTypes() {
-        return new IValueController.EditType[] {IValueController.EditType.INLINE, IValueController.EditType.PANEL, IValueController.EditType.EDITOR};
+    protected boolean isMultiValue(IValueController valueController) {
+        return false;
     }
 
     @Override
-    public IValueEditor createEditor(@NotNull final IValueController controller)
-        throws DBException
-    {
-        switch (controller.getEditType()) {
-            case INLINE:
-            {
-                return new EnumInlineEditor(controller);
-            }
-            case PANEL:
-            {
-                return new EnumPanelEditor(controller);
-            }
-            case EDITOR:
-                return new DefaultValueViewDialog(controller);
-            default:
-                return null;
+    protected List<String> getEnumValues(IValueController valueController) {
+        final PostgreAttribute attribute = (PostgreAttribute) valueController.getValueType();
+        if (attribute.getDataType() == null) {
+            return null;
         }
+        final Object[] values = attribute.getDataType().getEnumValues();
+        if (values == null) {
+            return null;
+        }
+        List<String> strValues = new ArrayList<>(values.length);
+        for (Object value : values) {
+            strValues.add(DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
+        }
+        return strValues;
     }
 
-    private static class EnumInlineEditor extends BaseValueEditor<Combo> {
-        private final IValueController controller;
-
-        public EnumInlineEditor(IValueController controller) {
-            super(controller);
-            this.controller = controller;
-        }
-
-        @Override
-        public void primeEditorValue(@Nullable Object value) throws DBException
-        {
-            control.setText(DBUtils.isNullValue(value) ? "" : DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
-        }
-
-        @Override
-        public Object extractEditorValue()
-        {
-            int selIndex = control.getSelectionIndex();
-            if (selIndex < 0) {
-                return null;
-            } else {
-                return control.getItem(selIndex);
-            }
-        }
-
-        @Override
-        protected Combo createControl(Composite editPlaceholder)
-        {
-            final Combo editor = new Combo(controller.getEditPlaceholder(), SWT.READ_ONLY);
-            final PostgreAttribute attribute = getAttribute();
-            Object[] enumValues = attribute.getDataType().getEnumValues();
-            if (enumValues != null) {
-                for (Object enumValue : enumValues) {
-                    editor.add(DBUtils.getDefaultValueDisplayString(enumValue, DBDDisplayFormat.UI));
-                }
-            }
-            if (editor.getSelectionIndex() < 0) {
-                editor.select(0);
-            }
-            return editor;
-        }
-
-        private PostgreAttribute getAttribute()
-        {
-            return (PostgreAttribute) controller.getValueType();
-        }
-    }
-
-    private static class EnumPanelEditor extends BaseValueEditor<List> {
-        private final IValueController controller;
-
-        public EnumPanelEditor(IValueController controller) {
-            super(controller);
-            this.controller = controller;
-        }
-
-        @Override
-        public void primeEditorValue(@Nullable Object value) throws DBException
-        {
-            if (value == null) {
-                control.setSelection(-1);
-            } else {
-                int itemCount = control.getItemCount();
-                for (int i = 0; i < itemCount; i++) {
-                    if (control.getItem(i).equals(DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.UI))) {
-                        control.setSelection(i);
-                        break;
-                    }
-                }
-            }
-        }
-
-        @Override
-        public Object extractEditorValue()
-        {
-            int selIndex = control.getSelectionIndex();
-            if (selIndex < 0) {
-                return null;
-            } else {
-                return control.getItem(selIndex);
-            }
-        }
-
-        @Override
-        protected List createControl(Composite editPlaceholder)
-        {
-            final PostgreAttribute column = getAttribute();
-            int style = SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL | SWT.SINGLE;
-            final List editor = new List(editPlaceholder, style);
-            Object[] enumValues = column.getDataType().getEnumValues();
-            if (enumValues != null) {
-                for (Object ev : enumValues) {
-                    editor.add(DBUtils.getDefaultValueDisplayString(ev, DBDDisplayFormat.UI));
-                }
-            }
-            if (editor.getSelectionIndex() < 0) {
-                editor.select(0);
-            }
-            if (controller.getEditType() == IValueController.EditType.INLINE) {
-                editor.setFocus();
-            }
-            return editor;
-        }
-
-        private PostgreAttribute getAttribute()
-        {
-            return (PostgreAttribute) controller.getValueType();
-        }
+    @Override
+    protected List<String> getSetValues(IValueController valueController, Object value) {
+        return null;
     }
 
 }
