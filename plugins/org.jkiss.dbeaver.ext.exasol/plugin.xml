@@ -321,7 +321,11 @@
                         sampleURL="jdbc:exa:{host}[:{port}][;schema={database}]"
                         defaultPort="8563"
                         description="Exasol JDBC driver"
-                        webURL="https://www.exasol.com/portal/display/DOWNLOAD/5.0">
+                        webURL="https://www.exasol.com/portal/display/DOWNLOAD/EXASOL+Download+Section">
+                   <file
+                         path="maven:/com.exasol:exasol-jdbc:{.*5\.0\..*}"
+                         type="jar">
+                   </file>
 
                     <replace provider="generic" driver="exasol"/>
                     <property name="querytimeout" value="600"/>
@@ -329,12 +333,6 @@
                     <property name="connecttimeout" value="40"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern"
                               value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
-                    <library path="C:\Program Files (x86)\EXASOL\EXASolution-5.0\JDBC\exajdbc.jar"/>
-                    <fileSource url="https://www.exasol.com/portal/display/DOWNLOAD/5.0"
-                                name="Exasol JDBC Drivers"
-                                instruction="Download Exasol JDBC (JCC) client driver. Extract downloaded archive and copy exajdbc.jar in some directory. Then add exajdbc.jar as a library in DBeaver driver editor dialog.">
-                        <file name="exajdbc.jar" description="JDBC driver"/>
-                    </fileSource>
                 </driver>
             </drivers>
             <views>
