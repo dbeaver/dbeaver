@@ -494,12 +494,21 @@ public final class DBUtils {
     public static DBDValueHandler findValueHandler(@NotNull DBPDataSource dataSource, @Nullable DBDPreferences preferences, @NotNull DBSTypedObject column)
     {
         DBDValueHandler typeHandler = null;
-
-        DBDValueHandlerProvider typeProvider = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getDataTypeProvider(
+        // Get handler provider from datasource
+        DBDValueHandlerProvider typeProvider = getAdapter(DBDValueHandlerProvider.class, dataSource);
+        if (typeProvider != null) {
+            typeHandler = typeProvider.getValueHandler(dataSource, preferences, column);
+            if (typeHandler != null) {
+                return typeHandler;
+            }
+        }
+        // Get handler provider from registry
+        typeProvider = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getDataTypeProvider(
             dataSource, column);
         if (typeProvider != null) {
-            typeHandler = typeProvider.getHandler(dataSource, preferences, column);
+            typeHandler = typeProvider.getValueHandler(dataSource, preferences, column);
         }
+        // Use default handler
         if (typeHandler == null) {
             if (preferences == null) {
                 typeHandler = DefaultValueHandler.INSTANCE;

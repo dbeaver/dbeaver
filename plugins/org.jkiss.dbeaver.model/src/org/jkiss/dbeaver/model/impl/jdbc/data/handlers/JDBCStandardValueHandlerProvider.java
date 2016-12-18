@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Override
-    public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
+    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
         int valueType = typedObject.getTypeID();
         DBPDataKind dataKind = typedObject.getDataKind();//JDBCUtils.resolveDataKind(dataSource, typedObject.getTypeName(), valueType);
@@ -60,6 +60,7 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
             case ROWID:
                 return JDBCObjectValueHandler.INSTANCE;
             default:
+                // Unknown type
                 return null;
         }
     }

@@ -29,6 +29,6 @@ public interface DBDValueHandlerProvider
 {
 
     @Nullable
-    DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject);
+    DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject);
 
 }
