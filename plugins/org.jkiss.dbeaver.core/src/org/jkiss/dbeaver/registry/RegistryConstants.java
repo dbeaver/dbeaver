@@ -55,6 +55,7 @@ public class RegistryConstants {
     public static final String ATTR_VALUE = "value"; //$NON-NLS-1$
     public static final String ATTR_CLASS = "class"; //$NON-NLS-1$
     public static final String ATTR_URL = "url"; //$NON-NLS-1$
+    public static final String ATTR_SCOPE = "scope"; //$NON-NLS-1$
     public static final String ATTR_PORT = "port"; //$NON-NLS-1$
     public static final String ATTR_DESCRIPTION = "description"; //$NON-NLS-1$
     public static final String ATTR_NOTE = "note"; //$NON-NLS-1$
