@@ -537,31 +537,33 @@ public class NavigatorUtils {
         return null;
     }
 
-    public static DBNNode[] getNodeChildrenFiltered(DBRProgressMonitor monitor, DBNNode node) throws DBException {
+    public static DBNNode[] getNodeChildrenFiltered(DBRProgressMonitor monitor, DBNNode node, boolean forTree) throws DBException {
         DBNNode[] children = node.getChildren(monitor);
         if (children != null && children.length > 0) {
-            children = filterNavigableChildren(children);
+            children = filterNavigableChildren(children, forTree);
         }
         return children;
     }
 
-    public static DBNNode[] filterNavigableChildren(DBNNode[] children)
+    public static DBNNode[] filterNavigableChildren(DBNNode[] children, boolean forTree)
     {
         if (ArrayUtils.isEmpty(children)) {
             return children;
         }
         List<DBNNode> filtered = null;
-        for (int i = 0; i < children.length; i++) {
-            DBNNode node = children[i];
-            if (node instanceof DBNDatabaseNode && !((DBNDatabaseNode) node).getMeta().isNavigable()) {
-                if (filtered == null) {
-                    filtered = new ArrayList<>(children.length);
-                    for (int k = 0; k < i; k++) {
-                        filtered.add(children[k]);
+        if (forTree) {
+            for (int i = 0; i < children.length; i++) {
+                DBNNode node = children[i];
+                if (node instanceof DBNDatabaseNode && !((DBNDatabaseNode) node).getMeta().isNavigable()) {
+                    if (filtered == null) {
+                        filtered = new ArrayList<>(children.length);
+                        for (int k = 0; k < i; k++) {
+                            filtered.add(children[k]);
+                        }
                     }
+                } else if (filtered != null) {
+                    filtered.add(node);
                 }
-            } else if (filtered != null) {
-                filtered.add(node);
             }
         }
         DBNNode[] result = filtered == null ? children : filtered.toArray(new DBNNode[filtered.size()]);
