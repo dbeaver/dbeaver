@@ -132,12 +132,6 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
-    public boolean allowsNavigableChildren()
-    {
-        return allowsChildren();
-    }
-
-    @Override
     public DBNNode[] getChildren(DBRProgressMonitor monitor)
     {
         if (children == null) {
@@ -256,7 +250,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                         parentFound = false;
                     }
                     if (parentNode != null) {
-                        if (parentNode.getChildNodes() == null && parentNode.allowsChildren()) {
+                        if (parentNode.getChildNodes() == null && parentNode.hasChildren(false)) {
                             final DBNDatabaseNode nodeToLoad = parentNode;
                             // We have to load children here
                             final AbstractJob loaderJob = new AbstractJob("Load sibling nodes of new database object") {

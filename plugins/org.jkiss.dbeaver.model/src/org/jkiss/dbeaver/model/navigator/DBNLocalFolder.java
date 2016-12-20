@@ -143,9 +143,16 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     }
 
     @Override
-    public boolean allowsNavigableChildren()
-    {
-        return true;
+    public boolean hasChildren(boolean navigableOnly) {
+        if (!ArrayUtils.isEmpty(folder.getChildren())) {
+            return true;
+        }
+        for (DBNDataSource dataSource : getParentNode().getDataSources()) {
+            if (folder == dataSource.getDataSourceContainer().getFolder()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public DBNNode getLogicalParent() {

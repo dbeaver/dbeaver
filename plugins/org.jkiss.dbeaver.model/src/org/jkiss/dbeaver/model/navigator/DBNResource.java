@@ -137,12 +137,6 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     }
 
     @Override
-    public boolean allowsNavigableChildren()
-    {
-        return allowsChildren();
-    }
-
-    @Override
     public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException
     {
         if (children == null) {
