@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.runtime.jobs.EventProcessorJob;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -155,13 +155,13 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             infoLabel.setLayoutData(gd);
-            addVariableLegend(helpGroup, EventProcessorJob.VARIABLE_HOST, "target host");
-            addVariableLegend(helpGroup, EventProcessorJob.VARIABLE_PORT, "target port");
-            addVariableLegend(helpGroup, EventProcessorJob.VARIABLE_SERVER, "target server name");
-            addVariableLegend(helpGroup, EventProcessorJob.VARIABLE_DATABASE, "target database");
-            addVariableLegend(helpGroup, EventProcessorJob.VARIABLE_USER, "user name");
-            addVariableLegend(helpGroup, EventProcessorJob.VARIABLE_PASSWORD, "password (plain)");
-            addVariableLegend(helpGroup, EventProcessorJob.VARIABLE_URL, "JDBC URL");
+            addVariableLegend(helpGroup, RegistryConstants.VARIABLE_HOST, "target host");
+            addVariableLegend(helpGroup, RegistryConstants.VARIABLE_PORT, "target port");
+            addVariableLegend(helpGroup, RegistryConstants.VARIABLE_SERVER, "target server name");
+            addVariableLegend(helpGroup, RegistryConstants.VARIABLE_DATABASE, "target database");
+            addVariableLegend(helpGroup, RegistryConstants.VARIABLE_USER, "user name");
+            addVariableLegend(helpGroup, RegistryConstants.VARIABLE_PASSWORD, "password (plain)");
+            addVariableLegend(helpGroup, RegistryConstants.VARIABLE_URL, "JDBC URL");
         }
 
         selectEventType(null);
@@ -209,7 +209,9 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
                 command.setCommand(commandText.getText());
             } else {
                 TableItem item = getEventItem(eventType);
-                command.setEnabled(item.getChecked());
+                if (item != null) {
+                    command.setEnabled(item.getChecked());
+                }
                 command.setShowProcessPanel(showProcessCheck.getSelection());
                 command.setWaitProcessFinish(waitFinishCheck.getSelection());
                 command.setTerminateAtDisconnect(terminateCheck.getSelection());

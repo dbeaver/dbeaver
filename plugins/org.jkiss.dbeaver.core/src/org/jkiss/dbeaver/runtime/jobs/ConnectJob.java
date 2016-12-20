@@ -22,10 +22,10 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
  * Always returns OK status.
  * To get real status use getConectStatus.
  */
-public class ConnectJob extends EventProcessorJob
+public class ConnectJob extends AbstractJob
 {
     private static final Log log = Log.getLog(ConnectJob.class);
 
@@ -42,12 +42,14 @@ public class ConnectJob extends EventProcessorJob
     protected boolean reflect = true;
     protected Throwable connectError;
     protected IStatus connectStatus;
+    protected final DBPDataSourceContainer container;
 
     public ConnectJob(
         DataSourceDescriptor container)
     {
-        super(NLS.bind(CoreMessages.runtime_jobs_connect_name, container.getName()), container);
+        super(NLS.bind(CoreMessages.runtime_jobs_connect_name, container.getName()));
         setUser(true);
+        this.container = container;
     }
 
     public IStatus getConnectStatus() {
@@ -68,8 +70,6 @@ public class ConnectJob extends EventProcessorJob
                 connectThread.setName(NLS.bind(CoreMessages.runtime_jobs_connect_thread_name, container.getName()));
             }
 
-            processEvents(DBPConnectionEventType.BEFORE_CONNECT);
-
             try {
                 container.connect(monitor, initialize, reflect);
             } finally {
@@ -78,8 +78,6 @@ public class ConnectJob extends EventProcessorJob
                     connectThread = null;
                 }
             }
-
-            processEvents(DBPConnectionEventType.AFTER_CONNECT);
 
             connectStatus = Status.OK_STATUS;
         }

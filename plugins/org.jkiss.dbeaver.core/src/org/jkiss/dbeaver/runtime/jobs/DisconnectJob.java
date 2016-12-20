@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -31,14 +31,16 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
  * Always returns OK status.
  * To get real status use getConectStatus.
  */
-public class DisconnectJob extends EventProcessorJob
+public class DisconnectJob extends AbstractJob
 {
     private IStatus connectStatus;
+    protected final DBPDataSourceContainer container;
 
     public DisconnectJob(DBPDataSourceContainer container)
     {
-        super(NLS.bind(CoreMessages.runtime_jobs_disconnect_name, container.getName()), container);
+        super(NLS.bind(CoreMessages.runtime_jobs_disconnect_name, container.getName()));
         setUser(true);
+        this.container = container;
     }
 
     public IStatus getConnectStatus() {
@@ -49,9 +51,7 @@ public class DisconnectJob extends EventProcessorJob
     protected IStatus run(DBRProgressMonitor monitor)
     {
         try {
-            processEvents(DBPConnectionEventType.BEFORE_DISCONNECT);
             container.disconnect(monitor);
-            processEvents(DBPConnectionEventType.AFTER_DISCONNECT);
 
             connectStatus = Status.OK_STATUS;
         }
