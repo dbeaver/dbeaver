@@ -184,7 +184,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     public synchronized DBNDatabaseNode[] getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (childNodes == null && allowsChildren()) {
+        if (childNodes == null && hasChildren(false)) {
             if (this.initializeNode(monitor, null)) {
                 final List<DBNDatabaseNode> tmpList = new ArrayList<>();
                 loadChildren(monitor, getMeta(), null, tmpList);
@@ -264,7 +264,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
 
     public boolean needsInitialization()
     {
-        return childNodes == null && allowsChildren();
+        return childNodes == null && hasChildren(false);
     }
 
     @Override
@@ -514,7 +514,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                     if (oldChild.getMeta() == meta && equalObjects(oldChild.getObject(), object)) {
                         oldChild.reloadObject(monitor, object);
 
-                        if (oldChild.allowsChildren() && !oldChild.needsInitialization()) {
+                        if (oldChild.hasChildren(false) && !oldChild.needsInitialization()) {
                             // Refresh children recursive
                             oldChild.reloadChildren(monitor);
                         }

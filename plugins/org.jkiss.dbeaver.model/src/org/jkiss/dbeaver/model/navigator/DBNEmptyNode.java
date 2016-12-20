@@ -61,12 +61,6 @@ public class DBNEmptyNode extends DBNNode
     }
 
     @Override
-    public boolean allowsNavigableChildren()
-    {
-        return false;
-    }
-
-    @Override
     public DBNNode[] getChildren(DBRProgressMonitor monitor)
     {
         return null;

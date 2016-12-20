@@ -157,7 +157,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                     public boolean hasChildren(Object parentElement)
                     {
                         return parentElement instanceof DBNDatabaseNode &&
-                            ((DBNDatabaseNode) parentElement).allowsChildren();
+                            ((DBNDatabaseNode) parentElement).hasChildren(false);
                     }
 
                     @Override
