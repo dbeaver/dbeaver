@@ -80,7 +80,7 @@ public class HandlerObjectValidate extends AbstractHandler {
         private void processNode(DBRProgressMonitor monitor, DBNNode node)
             throws DBException
         {
-            if (!node.allowsChildren()) {
+            if (!node.hasChildren(false)) {
                 return;
             }
             final DBNNode[] children = node.getChildren(monitor);
