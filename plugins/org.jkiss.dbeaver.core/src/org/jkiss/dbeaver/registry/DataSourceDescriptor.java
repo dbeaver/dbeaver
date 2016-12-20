@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.*;
@@ -145,7 +146,6 @@ public class DataSourceDescriptor
     private volatile boolean connecting = false;
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWTunnel tunnel;
-    private String folderPath;
     private DataSourceFolder folder;
     @NotNull
     private final DBVModel virtualModel;
@@ -163,6 +163,31 @@ public class DataSourceDescriptor
         this.createDate = new Date();
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
+    }
+
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source)
+    {
+        this.registry = source.registry;
+        this.id = source.id;
+        this.name = source.name;
+        this.description = source.description;
+        this.savePassword = source.savePassword;
+        this.showSystemObjects = source.showSystemObjects;
+        this.showUtilityObjects = source.showUtilityObjects;
+        this.connectionReadOnly = source.connectionReadOnly;
+        this.driver = source.driver;
+        this.connectionInfo = source.connectionInfo;
+        this.createDate = source.createDate;
+        this.preferenceStore = source.preferenceStore;
+        this.formatterProfile = source.formatterProfile;
+        this.clientHome = source.clientHome;
+        this.virtualModel = source.virtualModel;
+
+        this.connectionInfo = new DBPConnectionConfiguration(source.connectionInfo);
+        this.tunnelConnectionInfo = source.tunnelConnectionInfo == null ? null : new DBPConnectionConfiguration(source.tunnelConnectionInfo);
+        this.filterMap.putAll(source.filterMap);
+        this.lockPasswordHash = source.lockPasswordHash;
+        this.folder = source.folder;
     }
 
     public boolean isDisposed()
@@ -676,6 +701,7 @@ public class DataSourceDescriptor
                 }
                 monitor.worked(1);
             }
+
             monitor.subTask("Connect to data source");
             dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
             monitor.worked(1);
@@ -708,6 +734,16 @@ public class DataSourceDescriptor
             return true;
         } catch (Exception e) {
             log.debug("Connection failed (" + getId() + ")");
+            if (tunnel != null) {
+                try {
+                    tunnel.closeTunnel(monitor);
+                } catch (IOException e1) {
+                    log.error("Error closing tunnel", e);
+                } finally {
+                    tunnel = null;
+                    tunnelConnectionInfo = null;
+                }
+            }
             // Failed
             connectFailed = true;
             //if (reflect) {
@@ -859,7 +895,7 @@ public class DataSourceDescriptor
             if (tunnel != null) {
                 monitor.subTask("Close tunnel");
                 try {
-                    tunnel.closeTunnel(monitor, connectionInfo);
+                    tunnel.closeTunnel(monitor);
                 } catch (Exception e) {
                     log.warn("Error closing tunnel", e);
                 } finally {
@@ -1146,7 +1182,6 @@ public class DataSourceDescriptor
         setShowSystemObjects(descriptor.isShowSystemObjects());
         setShowUtilityObjects(descriptor.isShowUtilityObjects());
         setConnectionReadOnly(descriptor.isConnectionReadOnly());
-        folderPath = descriptor.folderPath;
     }
 
     @Override
