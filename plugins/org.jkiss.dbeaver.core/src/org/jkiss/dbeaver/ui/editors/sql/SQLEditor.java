@@ -689,6 +689,17 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     protected void doSetInput(IEditorInput editorInput) throws CoreException
     {
+        // Check for file existence
+        try {
+            if (editorInput instanceof IFileEditorInput) {
+                final IFile file = ((IFileEditorInput) editorInput).getFile();
+                if (!file.exists()) {
+                    file.create(new ByteArrayInputStream(new byte[]{}), true, new NullProgressMonitor());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error checking SQL file", e);               #1086
+        }
         try {
             super.doSetInput(editorInput);
         } catch (Throwable e) {
