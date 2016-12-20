@@ -32,7 +32,7 @@ public interface DBWTunnel extends DBWNetworkHandler {
     DBPConnectionConfiguration initializeTunnel(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException;
 
-    void closeTunnel(DBRProgressMonitor monitor, DBPConnectionConfiguration connectionInfo)
+    void closeTunnel(DBRProgressMonitor monitor)
         throws DBException, IOException;
 
 }

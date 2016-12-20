@@ -136,15 +136,15 @@ public class SSHTunnelImpl implements DBWTunnel {
                 privKeyFile != null ? "publickey" : "password");
             session.setConfig("ConnectTimeout", String.valueOf(connectTimeout));
             session.setUserInfo(ui);
+            if (!CommonUtils.isEmpty(aliveInterval)) {
+                session.setServerAliveInterval(Integer.parseInt(aliveInterval));
+            }
             log.debug("Connect to tunnel host");
             session.connect(connectTimeout);
             try {
                 session.setPortForwardingL(localPort, dbHost, dbPort);
-                if (!CommonUtils.isEmpty(aliveInterval)) {
-                    session.setServerAliveInterval(Integer.parseInt(aliveInterval));
-                }
             } catch (JSchException e) {
-                closeTunnel(monitor, connectionInfo);
+                closeTunnel(monitor);
                 throw e;
             }
         } catch (JSchException e) {
@@ -171,7 +171,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     }
 
     @Override
-    public void closeTunnel(DBRProgressMonitor monitor, DBPConnectionConfiguration connectionInfo) throws DBException, IOException
+    public void closeTunnel(DBRProgressMonitor monitor) throws DBException, IOException
     {
         if (session != null) {
             session.disconnect();

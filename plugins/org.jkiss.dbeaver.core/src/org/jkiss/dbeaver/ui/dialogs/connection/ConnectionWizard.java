@@ -109,11 +109,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
     public void testConnection()
     {
         DataSourceDescriptor dataSource = getPageSettings().getActiveDataSource();
-        DataSourceDescriptor testDataSource = new DataSourceDescriptor(
-            getDataSourceRegistry(),
-            dataSource.getId(),
-            getSelectedDriver(),
-            new DBPConnectionConfiguration(dataSource.getConnectionConfiguration()));
+        DataSourceDescriptor testDataSource = new DataSourceDescriptor(dataSource);
         try {
             saveSettings(testDataSource);
 
