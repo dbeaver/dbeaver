@@ -11,7 +11,7 @@
     <properties>
         <dbeaver-version>3.8.2</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-        <tycho-version>0.23.1</tycho-version>
+        <tycho-version>0.26.0</tycho-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <eclipse-p2-repo.url>http://download.eclipse.org/releases/mars/</eclipse-p2-repo.url>
         <!--<eclipse-p2-repo.url>http://download.eclipse.org/releases/neon/</eclipse-p2-repo.url>-->
