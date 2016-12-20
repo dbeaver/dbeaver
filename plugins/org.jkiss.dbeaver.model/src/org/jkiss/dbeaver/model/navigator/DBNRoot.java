@@ -105,12 +105,6 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
     }
 
     @Override
-    public boolean allowsNavigableChildren()
-    {
-        return allowsChildren();
-    }
-
-    @Override
     public DBNProject[] getChildren(DBRProgressMonitor monitor)
     {
         return projects;

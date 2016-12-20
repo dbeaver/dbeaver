@@ -118,7 +118,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject, IAd
     {
         DBPImage image = getNodeIcon();
         if (image == null) {
-            if (this.allowsChildren()) {
+            if (this.hasChildren(false)) {
                 return DBIcon.TREE_FOLDER;
             } else {
                 return DBIcon.TREE_PAGE;
@@ -146,10 +146,16 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject, IAd
         return pathName.toString();
     }
 
-    public abstract boolean allowsChildren();
+    public boolean hasChildren(boolean navigableOnly) {
+        return navigableOnly ? allowsNavigableChildren() : allowsChildren();
+    }
 
-    public abstract boolean allowsNavigableChildren();
-    
+    protected abstract boolean allowsChildren();
+
+    protected boolean allowsNavigableChildren() {
+        return allowsChildren();
+    }
+
     public abstract DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException;
 
     void clearNode(boolean reflect)

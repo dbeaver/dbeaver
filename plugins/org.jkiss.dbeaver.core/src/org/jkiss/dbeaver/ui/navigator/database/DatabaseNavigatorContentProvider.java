@@ -103,7 +103,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
             return EMPTY_CHILDREN;
         }
 */
-        if (!parentNode.allowsNavigableChildren()) {
+        if (!parentNode.hasChildren(true)) {
             return EMPTY_CHILDREN;
         }
         if (parentNode instanceof DBNDatabaseNode && ((DBNDatabaseNode)parentNode).needsInitialization()) {
@@ -118,7 +118,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                 // Read children with null monitor cos' it's not a lazy node
                 // and no blocking process will occur
                 DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(
-                    VoidProgressMonitor.INSTANCE, parentNode);
+                    VoidProgressMonitor.INSTANCE, parentNode, true);
                 if (ArrayUtils.isEmpty(children)) {
                     return EMPTY_CHILDREN;
                 } else {
@@ -147,7 +147,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
     @Override
     public boolean hasChildren(Object parent)
     {
-        return parent instanceof DBNNode && ((DBNNode) parent).allowsNavigableChildren();
+        return parent instanceof DBNNode && ((DBNNode) parent).hasChildren(true);
     }
 
 /*
