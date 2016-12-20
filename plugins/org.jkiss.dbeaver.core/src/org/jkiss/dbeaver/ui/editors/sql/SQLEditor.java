@@ -698,7 +698,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         } catch (Exception e) {
-            log.error("Error checking SQL file", e);               #1086
+            log.error("Error checking SQL file", e);
         }
         try {
             super.doSetInput(editorInput);
