@@ -85,6 +85,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private final DBPPlatform platform;
     private final IProject project;
 
+    private final Map<File, DataSourceOrigin> origins = new HashMap<>();
     private final List<DataSourceDescriptor> dataSources = new ArrayList<>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
@@ -141,6 +142,20 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         final DisconnectTask disconnectTask = new DisconnectTask();
         if (!RuntimeUtils.runTask(disconnectTask, "Disconnect from data sources", waitTime)) {
             log.warn("Some data source connections wasn't closed on shutdown in " + waitTime + "ms. Probably network timeout occurred.");
+        }
+    }
+
+    DataSourceOrigin getDefaultOrigin() {
+        synchronized (origins) {
+            for (DataSourceOrigin origin : origins.values()) {
+                if (origin.isDefault()) {
+                    return origin;
+                }
+            }
+            IFile defFile = project.getFile(CONFIG_FILE_NAME);
+            DataSourceOrigin origin = new DataSourceOrigin(defFile.getLocation().toFile(), true);
+            origins.put(origin.getSourceFile(), origin);
+            return origin;
         }
     }
 
@@ -462,12 +477,20 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private void loadDataSources(File fromFile, boolean refresh, ParseResults parseResults)
     {
+        boolean extraConfig = !fromFile.getName().equalsIgnoreCase(CONFIG_FILE_NAME);
+        DataSourceOrigin origin;
+        synchronized (origins) {
+            origin = origins.get(fromFile);
+            if (origin == null) {
+                origin = new DataSourceOrigin(fromFile, !extraConfig);
+                origins.put(fromFile, origin);
+            }
+        }
         if (!fromFile.exists()) {
             return;
         }
-        boolean extraConfig = !fromFile.getName().equalsIgnoreCase(CONFIG_FILE_NAME);
         try (InputStream is = new FileInputStream(fromFile)) {
-            loadDataSources(is, extraConfig, refresh, parseResults);
+            loadDataSources(is, origin, refresh, parseResults);
         } catch (DBException ex) {
             log.warn("Error loading datasource config from " + fromFile.getAbsolutePath(), ex);
         } catch (IOException ex) {
@@ -475,12 +498,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    private void loadDataSources(InputStream is, boolean extraConfig, boolean refresh, ParseResults parseResults)
+    private void loadDataSources(InputStream is, DataSourceOrigin origin, boolean refresh, ParseResults parseResults)
         throws DBException, IOException
     {
         SAXReader parser = new SAXReader(is);
         try {
-            final DataSourcesParser dsp = new DataSourcesParser(extraConfig, refresh, parseResults);
+            final DataSourcesParser dsp = new DataSourcesParser(origin, refresh, parseResults);
             parser.parse(dsp);
         }
         catch (XMLException ex) {
@@ -878,7 +901,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private class DataSourcesParser implements SAXListener
     {
         DataSourceDescriptor curDataSource;
-        boolean extraConfig;
+        DataSourceOrigin origin;
         boolean refresh;
         boolean isDescription = false;
         DBRShellCommand curCommand = null;
@@ -888,9 +911,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         private ParseResults parseResults;
         private boolean passwordReadCanceled = false;
 
-        private DataSourcesParser(boolean extraConfig, boolean refresh, ParseResults parseResults)
+        private DataSourcesParser(DataSourceOrigin origin, boolean refresh, ParseResults parseResults)
         {
-            this.extraConfig = extraConfig;
+            this.origin = origin;
             this.refresh = refresh;
             this.parseResults = parseResults;
         }
@@ -943,6 +966,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     if (newDataSource) {
                         curDataSource = new DataSourceDescriptor(
                             DataSourceRegistry.this,
+                            origin,
                             id,
                             driver,
                             new DBPConnectionConfiguration());
@@ -951,9 +975,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         curDataSource.getConnectionConfiguration().setProperties(Collections.emptyMap());
                         curDataSource.getConnectionConfiguration().setHandlers(Collections.<DBWHandlerConfiguration>emptyList());
                         curDataSource.clearFilters();
-                    }
-                    if (extraConfig) {
-                        curDataSource.setProvided(true);
                     }
                     curDataSource.setName(name);
                     try {
