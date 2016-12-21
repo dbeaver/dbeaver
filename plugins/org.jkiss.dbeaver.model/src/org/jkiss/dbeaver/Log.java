@@ -167,7 +167,7 @@ public class Log
     public void error(Object message)
     {
         if (message instanceof Throwable) {
-            error(message.toString(), (Throwable)message);
+            error(null, (Throwable)message);
             return;
         }
         debugMessage(message, null, System.err);
