@@ -112,6 +112,8 @@ public class DataSourceDescriptor
     @NotNull
     private final DBPDataSourceRegistry registry;
     @NotNull
+    private final DataSourceOrigin origin;
+    @NotNull
     private DriverDescriptor driver;
     @NotNull
     private DBPConnectionConfiguration connectionInfo;
@@ -138,8 +140,6 @@ public class DataSourceDescriptor
 
     private final List<DBPDataSourceUser> users = new ArrayList<>();
 
-    private boolean provided;
-
     private volatile boolean connectFailed = false;
     private volatile Date connectTime = null;
     private volatile boolean disposed = false;
@@ -156,7 +156,18 @@ public class DataSourceDescriptor
         @NotNull DriverDescriptor driver,
         @NotNull DBPConnectionConfiguration connectionInfo)
     {
+        this(registry, ((DataSourceRegistry)registry).getDefaultOrigin(), id, driver, connectionInfo);
+    }
+
+    DataSourceDescriptor(
+        @NotNull DBPDataSourceRegistry registry,
+        @NotNull DataSourceOrigin origin,
+        @NotNull String id,
+        @NotNull DriverDescriptor driver,
+        @NotNull DBPConnectionConfiguration connectionInfo)
+    {
         this.registry = registry;
+        this.origin = origin;
         this.id = id;
         this.driver = driver;
         this.connectionInfo = connectionInfo;
@@ -168,6 +179,7 @@ public class DataSourceDescriptor
     public DataSourceDescriptor(@NotNull DataSourceDescriptor source)
     {
         this.registry = source.registry;
+        this.origin = source.origin;
         this.id = source.id;
         this.name = source.name;
         this.description = source.description;
@@ -512,11 +524,7 @@ public class DataSourceDescriptor
 
     @Override
     public boolean isProvided() {
-        return provided;
-    }
-
-    public void setProvided(boolean provided) {
-        this.provided = provided;
+        return !origin.isDefault();
     }
 
     @Override
