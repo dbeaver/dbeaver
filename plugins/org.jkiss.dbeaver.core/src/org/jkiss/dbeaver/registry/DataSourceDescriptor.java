@@ -522,6 +522,11 @@ public class DataSourceDescriptor
         return new DBWNetworkHandler[] { tunnel };
     }
 
+    @NotNull
+    DataSourceOrigin getOrigin() {
+        return origin;
+    }
+
     @Override
     public boolean isProvided() {
         return !origin.isDefault();
