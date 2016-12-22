@@ -663,8 +663,6 @@ public class DataSourceDescriptor
         }
         log.debug("Connect with '" + getName() + "' (" + getId() + ")");
 
-        connecting = true;
-
         final String oldName = getConnectionConfiguration().getUserName();
         final String oldPassword = getConnectionConfiguration().getUserPassword();
         if (!isSavePassword()) {
@@ -685,6 +683,7 @@ public class DataSourceDescriptor
 
         processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
 
+        connecting = true;
         tunnelConnectionInfo = null;
         try {
             // Handle tunnel
