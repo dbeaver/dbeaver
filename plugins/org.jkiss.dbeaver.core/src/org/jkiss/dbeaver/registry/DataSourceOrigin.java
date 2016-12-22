@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.core.resources.IFile;
+
 import java.io.File;
 
 /**
@@ -24,10 +26,10 @@ import java.io.File;
  */
 class DataSourceOrigin
 {
-    private final File sourceFile;
+    private final IFile sourceFile;
     private final boolean isDefault;
 
-    public DataSourceOrigin(File sourceFile, boolean isDefault) {
+    public DataSourceOrigin(IFile sourceFile, boolean isDefault) {
         this.sourceFile = sourceFile;
         this.isDefault = isDefault;
     }
@@ -40,12 +42,12 @@ class DataSourceOrigin
         return isDefault;
     }
 
-    public File getSourceFile() {
+    public IFile getSourceFile() {
         return sourceFile;
     }
 
     @Override
     public String toString() {
-        return sourceFile.getAbsolutePath();
+        return sourceFile.getFullPath().toString();
     }
 }

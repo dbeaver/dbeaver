@@ -85,7 +85,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private final DBPPlatform platform;
     private final IProject project;
 
-    private final Map<File, DataSourceOrigin> origins = new HashMap<>();
+    private final Map<IFile, DataSourceOrigin> origins = new LinkedHashMap<>();
     private final List<DataSourceDescriptor> dataSources = new ArrayList<>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
@@ -153,8 +153,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 }
             }
             IFile defFile = project.getFile(CONFIG_FILE_NAME);
-            DataSourceOrigin origin = new DataSourceOrigin(defFile.getLocation().toFile(), true);
-            origins.put(origin.getSourceFile(), origin);
+            DataSourceOrigin origin = new DataSourceOrigin(defFile, true);
+            origins.put(defFile, origin);
             return origin;
         }
     }
@@ -440,9 +440,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     IFile file = (IFile) res;
                     if (res.getName().startsWith(CONFIG_FILE_PREFIX) && res.getName().endsWith(CONFIG_FILE_EXT)) {
                         if (file.exists()) {
-                            File dsFile = file.getLocation().toFile();
-                            if (dsFile.exists()) {
-                                loadDataSources(dsFile, refresh, parseResults);
+                            if (file.exists()) {
+                                loadDataSources(file, refresh, parseResults);
                             }
                         }
                     }
@@ -475,7 +474,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    private void loadDataSources(File fromFile, boolean refresh, ParseResults parseResults)
+    private void loadDataSources(IFile fromFile, boolean refresh, ParseResults parseResults)
     {
         boolean extraConfig = !fromFile.getName().equalsIgnoreCase(CONFIG_FILE_NAME);
         DataSourceOrigin origin;
@@ -489,12 +488,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         if (!fromFile.exists()) {
             return;
         }
-        try (InputStream is = new FileInputStream(fromFile)) {
+        try (InputStream is = fromFile.getContents()) {
             loadDataSources(is, origin, refresh, parseResults);
         } catch (DBException ex) {
-            log.warn("Error loading datasource config from " + fromFile.getAbsolutePath(), ex);
+            log.warn("Error loading datasource config from " + fromFile.getFullPath(), ex);
         } catch (IOException ex) {
             log.warn("IO error", ex);
+        } catch (CoreException e) {
+            log.warn("Resource error", e);
         }
     }
 
@@ -514,58 +515,71 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     void saveDataSources()
     {
-        List<DataSourceDescriptor> localDataSources;
-        synchronized (dataSources) {
-            localDataSources = CommonUtils.copyList(dataSources);
-        }
         updateProjectNature();
         final IProgressMonitor progressMonitor = new NullProgressMonitor();
-        IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
         saveInProgress = true;
         try {
-            if (localDataSources.isEmpty()) {
-                configFile.delete(true, false, progressMonitor);
-            } else {
-                // Save in temp memory to be safe (any error during direct write will corrupt configuration)
-                ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
+            for (DataSourceOrigin origin : origins.values()) {
+                List<DataSourceDescriptor> localDataSources = getDataSources(origin);
+                IFile configFile = origin.getSourceFile();
                 try {
-                    XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
-                    xml.setButify(true);
-                    xml.startElement("data-sources");
-                    // Folder
-                    for (DataSourceFolder folder : dataSourceFolders) {
-                        saveFolder(xml, folder);
-                    }
-                    // Datasources
-                    for (DataSourceDescriptor dataSource : localDataSources) {
-                        if (!dataSource.isProvided()) {
-                            saveDataSource(xml, dataSource);
+                    if (localDataSources.isEmpty()) {
+                        configFile.delete(true, false, progressMonitor);
+                    } else {
+                        // Save in temp memory to be safe (any error during direct write will corrupt configuration)
+                        ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
+                        try {
+                            XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
+                            xml.setButify(true);
+                            xml.startElement("data-sources");
+                            if (origin.isDefault()) {
+                                // Folders (only for default origin)
+                                for (DataSourceFolder folder : dataSourceFolders) {
+                                    saveFolder(xml, folder);
+                                }
+                            }
+                            // Datasources
+                            for (DataSourceDescriptor dataSource : localDataSources) {
+                                saveDataSource(xml, dataSource);
+                            }
+                            xml.endElement();
+                            xml.flush();
+                        } catch (IOException ex) {
+                            log.warn("IO error while saving datasources", ex);
+                        }
+                        InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
+                        if (!configFile.exists()) {
+                            configFile.create(ifs, true, progressMonitor);
+                            configFile.setHidden(true);
+                        } else {
+                            configFile.setContents(ifs, true, false, progressMonitor);
                         }
                     }
-                    xml.endElement();
-                    xml.flush();
-                }
-                catch (IOException ex) {
-                    log.warn("IO error while saving datasources", ex);
-                }
-                InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
-                if (!configFile.exists()) {
-                    configFile.create(ifs, true, progressMonitor);
-                    configFile.setHidden(true);
-                } else {
-                    configFile.setContents(ifs, true, false, progressMonitor);
+                    try {
+                        getSecurePreferences().flush();
+                    } catch (IOException e) {
+                        log.error("Error saving secured preferences", e);
+                    }
+                } catch (CoreException ex) {
+                    log.error("Error saving datasources configuration", ex);
                 }
             }
-            try {
-                getSecurePreferences().flush();
-            } catch (IOException e) {
-                log.error("Error saving secured preferences", e);
-            }
-        } catch (CoreException ex) {
-            log.error("Error saving datasources configuration", ex);
         } finally {
             saveInProgress = false;
         }
+    }
+
+    private List<DataSourceDescriptor> getDataSources(DataSourceOrigin origin) {
+        List<DataSourceDescriptor> result = new ArrayList<>();
+        synchronized (dataSources) {
+            for (DataSourceDescriptor ds : dataSources) {
+                if (ds.getOrigin() == origin) {
+                    result.add(ds);
+                }
+            }
+        }
+
+        return result;
     }
 
     private void updateProjectNature() {
