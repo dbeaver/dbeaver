@@ -227,8 +227,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
         propertiesPanel.createControl(propsPlaceholder);
 
-        pageControl.layout();
-        propsPlaceholder.redraw();
+        pageControl.layout(true);
+        propsPlaceholder.layout(true);
+
         if (sashForm != null) {
             Runnable sashUpdater = new Runnable() {
                 @Override
