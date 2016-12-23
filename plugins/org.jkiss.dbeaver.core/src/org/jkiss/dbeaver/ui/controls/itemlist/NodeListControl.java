@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -29,10 +27,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.INavigatorListener;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -60,7 +64,7 @@ import java.util.Set;
 /**
  * NodeListControl
  */
-public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceContainerProvider, INavigatorModelView, INavigatorListener, IMenuListener {
+public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceContainerProvider, INavigatorModelView, INavigatorListener {
     static final Log log = Log.getLog(NodeListControl.class);
 
     private final IWorkbenchSite workbenchSite;
@@ -77,7 +81,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         this.selectionProvider = new NodeSelectionProvider(super.getSelectionProvider());
 
         // Add context menu
-        NavigatorUtils.addContextMenu(workbenchSite, getSelectionProvider(), getItemsViewer().getControl(), this);
+        NavigatorUtils.addContextMenu(workbenchSite, getSelectionProvider(), getItemsViewer().getControl(), null);
 
         setDoubleClickHandler(new IDoubleClickListener() {
             @Override
@@ -296,12 +300,6 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                 });
             }
         }
-    }
-
-    @Override
-    public void menuAboutToShow(IMenuManager manager)
-    {
-        // Hook context menu
     }
 
     @Override

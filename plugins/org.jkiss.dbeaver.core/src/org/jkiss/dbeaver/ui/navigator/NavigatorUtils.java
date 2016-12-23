@@ -24,6 +24,8 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.dnd.*;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.widgets.Control;
@@ -259,6 +261,12 @@ public class NavigatorUtils {
 
         menuMgr.setRemoveAllWhenShown(true);
         control.setMenu(menu);
+        control.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                menuMgr.dispose();
+            }
+        });
         return menuMgr;
     }
 
