@@ -75,10 +75,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             }
         }
         if (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT) {
-            if (value instanceof BigDecimal) {
-                return ((BigDecimal) value).toPlainString();
-            }
-            return value.toString();
+            return DBUtils.convertNumberToNativeString((Number) value);
         }
         return formatter.formatValue(value);
     }

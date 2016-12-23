@@ -150,6 +150,8 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
     private String formatParameterValue(Object value) {
         if (value instanceof CharSequence) {
             return SQLUtils.quoteString(value.toString());
+        } else if (value instanceof Number) {
+            return DBUtils.convertNumberToNativeString((Number) value);
         } else if (value instanceof java.util.Date) {
             try {
                 DBDDataFormatterProfile formatterProfile = getSession().getDataSource().getDataFormatterProfile();

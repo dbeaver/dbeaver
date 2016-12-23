@@ -38,6 +38,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.*;
 
@@ -1433,6 +1435,19 @@ public final class DBUtils {
                 return null;
             }
         }
+    }
+
+    public static String convertNumberToNativeString(Number value) {
+        if (value instanceof BigDecimal) {
+            return ((BigDecimal) value).toPlainString();
+        } else if (value instanceof Float || value instanceof Double) {
+            DecimalFormat df = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+            df.setMaximumFractionDigits(340);
+            return df.format(value);
+        } else {
+            return value.toString();
+        }
+
     }
 
     @SuppressWarnings("unchecked")
