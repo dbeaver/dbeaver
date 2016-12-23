@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ViewerColumnController;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -76,6 +77,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private PropertySourceAbstract listPropertySource;
 
     private ObjectViewerRenderer renderer;
+    private ViewerColumnController columnController;
 
     // Sample flag. True only when initial content is packed. Used to provide actual cell data to Tree/Table pack() methods
     // After content is loaded is always false (and all hyperlink cells have empty text)
@@ -187,6 +189,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 setInfo(status);
             }
         });
+
+        // Columns controller
+        columnController = new ViewerColumnController("NodeList", getItemsViewer());
     }
 
     protected int getDefaultListStyle() {
@@ -349,6 +354,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (itemsControl.isDisposed()) {
             return;
         }
+        columnController.clearColumns();
         itemsControl.setRedraw(false);
         try {
             final boolean reload = !append && (objectList == null) || (columns.isEmpty());
@@ -738,7 +744,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 newColumn = viewerColumn;
                 columnItem = viewerColumn.getColumn();
             }
-            newColumn.setLabelProvider(getColumnLabelProvider(columns.size()));
+            final CellLabelProvider labelProvider = getColumnLabelProvider(columns.size());
+            newColumn.setLabelProvider(labelProvider);
             final EditingSupport editingSupport = makeEditingSupport(newColumn, columns.size());
             if (editingSupport != null) {
                 newColumn.setEditingSupport(editingSupport);
@@ -747,6 +754,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             objectColumn.addProperty(propClass, prop);
             this.columns.add(objectColumn);
             columnItem.setData(DATA_OBJECT_COLUMN, objectColumn);
+
+            // Add column in controller
+            columnController.addColumn(columnItem, labelProvider);
         } else {
             objectColumn.addProperty(propClass, prop);
             String oldTitle = objectColumn.item.getText();
