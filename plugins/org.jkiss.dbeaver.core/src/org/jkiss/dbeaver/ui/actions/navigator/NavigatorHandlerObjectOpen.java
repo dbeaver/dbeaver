@@ -142,6 +142,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             return null;
         }
         if (!selectedNode.isPersisted()) {
+            log.debug("Node '" + selectedNode.getNodeName() + "' s not persisted. Open not possible.");
             return null;
         }
         try {
