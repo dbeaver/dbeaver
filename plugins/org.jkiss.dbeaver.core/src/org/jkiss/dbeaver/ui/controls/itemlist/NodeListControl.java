@@ -427,6 +427,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             } else {
                 original.setSelection(selection);
             }
+            selectionChanged(new SelectionChangedEvent(this, selection));
         }
 
         @Override

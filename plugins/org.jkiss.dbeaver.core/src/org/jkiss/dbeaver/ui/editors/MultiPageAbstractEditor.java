@@ -45,7 +45,13 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {
-        super.init(site, input);
+        if (getEditorInput() == null) {
+            super.init(site, input);
+        } else {
+            // Pages re-initialization. Do not call init bcause it recreates selection provider
+            setSite(site);
+            setInput(input);
+        }
         setPartName(input.getName());
         setTitleImage(input.getImageDescriptor());
     }
