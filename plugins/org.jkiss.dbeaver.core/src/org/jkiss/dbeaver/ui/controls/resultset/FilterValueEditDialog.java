@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
@@ -351,7 +352,7 @@ class FilterValueEditDialog extends BaseDialog {
         }
         Collections.sort(sortedList);
         if (hasNulls) {
-            sortedList.add(0, new DBDLabelValuePair(DBUtils.getDefaultValueDisplayString(null, DBDDisplayFormat.UI), null));
+            sortedList.add(0, new DBDLabelValuePair(DBValueFormatting.getDefaultValueDisplayString(null, DBDDisplayFormat.UI), null));
         }
 
         Set<Object> checkedValues = new HashSet<>();

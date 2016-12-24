@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -337,7 +337,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
     private Image getColumnIcon(DBSEntityAttribute column)
     {
-        return DBeaverIcons.getImage(DBUtils.getObjectImage(column));
+        return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(column));
     }
 
     @Override

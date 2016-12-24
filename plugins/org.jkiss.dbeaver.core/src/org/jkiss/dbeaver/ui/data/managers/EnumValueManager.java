@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -87,7 +88,7 @@ public abstract class EnumValueManager extends BaseValueManager {
         @Override
         public void primeEditorValue(@Nullable Object value) throws DBException
         {
-            control.setText(DBUtils.isNullValue(value) ? "" : DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
+            control.setText(DBUtils.isNullValue(value) ? "" : DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
         }
 
         @Override

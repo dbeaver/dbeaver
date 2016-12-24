@@ -30,8 +30,8 @@ import org.eclipse.swt.graphics.Point;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -127,7 +127,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
             if (propValue instanceof DBPNamedObject) {
                 propString = ((DBPNamedObject) propValue).getName();
             } else {
-                propString = DBUtils.getDefaultValueDisplayString(propValue, DBDDisplayFormat.UI);
+                propString = DBValueFormatting.getDefaultValueDisplayString(propValue, DBDDisplayFormat.UI);
             }
             if (html) {
                 info.append("<b>").append(descriptor.getDisplayName()).append(":  </b>");

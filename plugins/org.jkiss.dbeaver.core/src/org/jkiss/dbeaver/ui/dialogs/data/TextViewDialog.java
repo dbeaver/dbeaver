@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -217,7 +217,7 @@ public class TextViewDialog extends ValueViewDialog {
         try {
             stringValue = new String(
                 bytes, 0, length,
-                DBUtils.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
+                DBValueFormatting.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
         } catch (UnsupportedEncodingException e) {
             log.error(e);
             stringValue = new String(bytes);
@@ -230,7 +230,7 @@ public class TextViewDialog extends ValueViewDialog {
         byte[] bytes;
         try {
             bytes = stringValue.getBytes(
-                DBUtils.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
+                DBValueFormatting.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
         } catch (UnsupportedEncodingException e) {
             log.error(e);
             bytes = stringValue.getBytes(Charset.defaultCharset());

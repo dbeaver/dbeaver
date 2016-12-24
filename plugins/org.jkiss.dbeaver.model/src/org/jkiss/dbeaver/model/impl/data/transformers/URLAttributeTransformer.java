@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -80,7 +81,7 @@ public class URLAttributeTransformer implements DBDAttributeTransformer {
         @Override
         public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
             if (pattern == null) {
-                return DBUtils.getDefaultValueDisplayString(value, format);
+                return DBValueFormatting.getDefaultValueDisplayString(value, format);
             } else {
                 return messageFormat.format(new Object[] { value } );
             }

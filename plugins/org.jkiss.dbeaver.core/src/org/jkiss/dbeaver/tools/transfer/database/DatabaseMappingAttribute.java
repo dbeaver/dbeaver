@@ -58,7 +58,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
     @Override
     public DBPImage getIcon()
     {
-        return DBUtils.getObjectImage(source);
+        return DBValueFormatting.getObjectImage(source);
     }
 
     @Override

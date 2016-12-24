@@ -32,7 +32,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.aggregate.IAggregateFunction;
 import org.jkiss.dbeaver.registry.functions.AggregateFunctionDescriptor;
@@ -253,7 +253,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             for (Map.Entry<DBDAttributeBinding, List<Object>> entry : attrValues.entrySet()) {
                 TreeItem attrItem = new TreeItem(aggregateTable, SWT.NONE);
                 attrItem.setText(entry.getKey().getName());
-                attrItem.setImage(DBeaverIcons.getImage(DBUtils.getObjectImage(entry.getKey())));
+                attrItem.setImage(DBeaverIcons.getImage(DBValueFormatting.getObjectImage(entry.getKey())));
                 aggregateValues(attrItem, entry.getValue());
                 attrItem.setExpanded(true);
             }

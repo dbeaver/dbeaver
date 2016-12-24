@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPImageProvider;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
@@ -156,6 +153,6 @@ public class DBDAttributeBindingElement extends DBDAttributeBindingNested implem
     @Nullable
     @Override
     public DBPImage getObjectImage() {
-        return DBUtils.getObjectImage(collection.getComponentType());
+        return DBValueFormatting.getObjectImage(collection.getComponentType());
     }
 }
