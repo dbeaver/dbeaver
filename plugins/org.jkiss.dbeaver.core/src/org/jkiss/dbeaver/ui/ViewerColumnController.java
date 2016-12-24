@@ -147,42 +147,47 @@ public class ViewerColumnController {
 
     private void recreateColumns()
     {
-        boolean needRefresh = false;
-        for (ColumnInfo columnInfo : columns) {
-            if (columnInfo.column != null) {
-                columnInfo.column.dispose();
-                columnInfo.column = null;
-                needRefresh = true;
-            }
-        }
-        createVisibleColumns();
-        boolean allSized = true;
-        for (ColumnInfo columnInfo : getVisibleColumns()) {
-            if (columnInfo.width <= 0) {
-                allSized = false;
-                break;
-            }
-        }
-        if (!allSized) {
-            repackColumns();
-            viewer.getControl().addControlListener(new ControlAdapter() {
-                @Override
-                public void controlResized(ControlEvent e)
-                {
-                    viewer.getControl().removeControlListener(this);
-                    repackColumns();
+        final Control control = viewer.getControl();
+        control.setRedraw(false);
+        try {
+            boolean needRefresh = false;
+            for (ColumnInfo columnInfo : columns) {
+                if (columnInfo.column != null) {
+                    columnInfo.column.dispose();
+                    columnInfo.column = null;
+                    needRefresh = true;
                 }
-            });
-        }
-        if (needRefresh) {
-            viewer.refresh();
+            }
+            createVisibleColumns();
+            boolean allSized = true;
             for (ColumnInfo columnInfo : getVisibleColumns()) {
-                if (columnInfo.column instanceof TreeColumn) {
-                    ((TreeColumn) columnInfo.column).pack();
-                } else {
-                    ((TableColumn) columnInfo.column).pack();
+                if (columnInfo.width <= 0) {
+                    allSized = false;
+                    break;
                 }
             }
+            if (!allSized) {
+                repackColumns();
+                control.addControlListener(new ControlAdapter() {
+                    @Override
+                    public void controlResized(ControlEvent e) {
+                        control.removeControlListener(this);
+                        repackColumns();
+                    }
+                });
+            }
+            if (needRefresh) {
+                viewer.refresh();
+                for (ColumnInfo columnInfo : getVisibleColumns()) {
+                    if (columnInfo.column instanceof TreeColumn) {
+                        ((TreeColumn) columnInfo.column).pack();
+                    } else {
+                        ((TableColumn) columnInfo.column).pack();
+                    }
+                }
+            }
+        } finally {
+            control.setRedraw(true);
         }
     }
 
