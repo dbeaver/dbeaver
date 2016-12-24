@@ -141,23 +141,24 @@ public class NavigatorUtils {
         return result;
     }
 
-    public static void addContextMenu(final IWorkbenchSite workbenchSite, final ISelectionProvider selectionProvider, final Control control)
+    public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer)
     {
-        addContextMenu(workbenchSite, selectionProvider, control, null);
+        addContextMenu(workbenchSite, viewer, null);
     }
 
-    public static void addContextMenu(final IWorkbenchSite workbenchSite, final ISelectionProvider selectionProvider, final Control control, final IMenuListener menuListener)
+    public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final IMenuListener menuListener)
     {
-        MenuManager menuMgr = createContextMenu(workbenchSite, selectionProvider, control, menuListener);
+        MenuManager menuMgr = createContextMenu(workbenchSite, viewer, menuListener);
         if (workbenchSite instanceof IWorkbenchPartSite) {
-            ((IWorkbenchPartSite)workbenchSite).registerContextMenu(menuMgr, selectionProvider);
+            ((IWorkbenchPartSite)workbenchSite).registerContextMenu(menuMgr, viewer);
         } else if (workbenchSite instanceof IPageSite) {
-            ((IPageSite)workbenchSite).registerContextMenu("navigatorMenu", menuMgr, selectionProvider);
+            ((IPageSite)workbenchSite).registerContextMenu("navigatorMenu", menuMgr, viewer);
         }
     }
 
-    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final ISelectionProvider selectionProvider, final Control control, IMenuListener menuListener)
+    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, IMenuListener menuListener)
     {
+        final Control control = viewer.getControl();
         final MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(control);
         menu.addMenuListener(new MenuListener()
@@ -171,7 +172,7 @@ public class NavigatorUtils {
             public void menuShown(MenuEvent e)
             {
                 Menu m = (Menu)e.widget;
-                DBNNode node = getSelectedNode(selectionProvider.getSelection());
+                DBNNode node = getSelectedNode(viewer.getSelection());
                 if (node != null && !node.isLocked() && node.allowsOpen()) {
                     // Dirty hack
                     // Get contribution item from menu item and check it's ID
@@ -198,9 +199,9 @@ public class NavigatorUtils {
                     return;
                 }
                 // Fill context menu
-                final IStructuredSelection selection = (IStructuredSelection)selectionProvider.getSelection();
+                final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
 
-                final DBNNode selectedNode = getSelectedNode(selectionProvider);
+                final DBNNode selectedNode = getSelectedNode(viewer);
                 if (selectedNode == null || selectedNode.isLocked()) {
                     //manager.
                     return;
