@@ -115,7 +115,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 
         // If we perform rename then we should refresh object cache
         // To update name-based cache
-        if (prop.getId().equals(DBConstants.PROP_ID_NAME) && editableValue instanceof DBSObject) {
+        if (prop.isNameProperty() && editableValue instanceof DBSObject) {
             DBEObjectMaker objectManager = getObjectEditor(DBEObjectMaker.class);
             if (objectManager != null) {
                 DBSObjectCache cache = objectManager.getObjectsCache((DBSObject) editableValue);

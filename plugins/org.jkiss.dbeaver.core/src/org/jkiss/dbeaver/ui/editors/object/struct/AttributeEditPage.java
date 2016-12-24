@@ -86,7 +86,7 @@ public class AttributeEditPage extends BaseObjectEditPage {
         pc.collectProperties();
         for (DBPPropertyDescriptor prop : pc.getProperties()) {
             if (prop instanceof ObjectPropertyDescriptor) {
-                if (((ObjectPropertyDescriptor) prop).isEditPossible() && !prop.getId().equals(DBConstants.PROP_ID_NAME)) {
+                if (((ObjectPropertyDescriptor) prop).isEditPossible() && !((ObjectPropertyDescriptor) prop).isNameProperty()) {
                     continue;
                 }
             }
