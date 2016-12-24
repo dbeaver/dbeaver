@@ -52,6 +52,7 @@ public class ViewerColumnController {
     private final ColumnViewer viewer;
     private final List<ColumnInfo> columns = new ArrayList<>();
     private boolean clickOnHeader;
+    private boolean isPacking;
 
     public static ViewerColumnController getFromControl(Control control)
     {
@@ -159,14 +160,7 @@ public class ViewerColumnController {
                 }
             }
             createVisibleColumns();
-            boolean allSized = true;
-            for (ColumnInfo columnInfo : getVisibleColumns()) {
-                if (columnInfo.width <= 0) {
-                    allSized = false;
-                    break;
-                }
-            }
-            if (!allSized) {
+            if (!isAllSized()) {
                 repackColumns();
                 control.addControlListener(new ControlAdapter() {
                     @Override
@@ -191,16 +185,33 @@ public class ViewerColumnController {
         }
     }
 
+    private boolean isAllSized() {
+        for (ColumnInfo columnInfo : columns) {
+            if (columnInfo.visible && columnInfo.width <= 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void repackColumns()
     {
-        if (viewer instanceof TreeViewer) {
-            float[] ratios = null;
-            if (((TreeViewer) viewer).getTree().getColumnCount() == 2) {
-                ratios = new float[]{0.6f, 0.4f};
+        if (isAllSized()) {
+            return;
+        }
+        isPacking = true;
+        try {
+            if (viewer instanceof TreeViewer) {
+                float[] ratios = null;
+                if (((TreeViewer) viewer).getTree().getColumnCount() == 2) {
+                    ratios = new float[]{0.6f, 0.4f};
+                }
+                UIUtils.packColumns(((TreeViewer) viewer).getTree(), true, ratios);
+            } else if (viewer instanceof TableViewer) {
+                UIUtils.packColumns(((TableViewer)viewer).getTable());
             }
-            UIUtils.packColumns(((TreeViewer) viewer).getTree(), true, ratios);
-        } else if (viewer instanceof TableViewer) {
-            UIUtils.packColumns(((TableViewer)viewer).getTable());
+        } finally {
+            isPacking = false;
         }
     }
 
@@ -228,10 +239,14 @@ public class ViewerColumnController {
                 }
                 column.addControlListener(new ControlAdapter() {
                     @Override
-                    public void controlResized(ControlEvent e)
-                    {
+                    public void controlResized(ControlEvent e) {
                         columnInfo.width = column.getWidth();
-                        saveColumnConfig();
+                    }
+                    @Override
+                    public void controlMoved(ControlEvent e) {
+                        if (e.getSource() instanceof TreeColumn) {
+                            updateColumnOrder(column.getParent().getColumnOrder());
+                        }
                     }
                 });
                 columnInfo.column = column;
@@ -251,7 +266,12 @@ public class ViewerColumnController {
                     public void controlResized(ControlEvent e)
                     {
                         columnInfo.width = column.getWidth();
-                        saveColumnConfig();
+                    }
+                    @Override
+                    public void controlMoved(ControlEvent e) {
+                        if (e.getSource() instanceof TableColumn) {
+                            updateColumnOrder(column.getParent().getColumnOrder());
+                        }
                     }
                 });
                 columnInfo.column = column;
@@ -273,9 +293,8 @@ public class ViewerColumnController {
                 public void handleEvent(Event event) {
                     if (viewer instanceof TreeViewer) {
                         TreeColumn column = ((TreeViewer) viewer).getTree().getColumn(event.index);
-                        if (((ColumnInfo)column.getData()).labelProvider instanceof ILazyLabelProvider &&
-                            CommonUtils.isEmpty(((TreeItem) event.item).getText(event.index)))
-                        {
+                        if (((ColumnInfo) column.getData()).labelProvider instanceof ILazyLabelProvider &&
+                            CommonUtils.isEmpty(((TreeItem) event.item).getText(event.index))) {
                             final String lazyText = ((ILazyLabelProvider) ((ColumnInfo) column.getData()).labelProvider).getLazyText(event.item.getData());
                             if (!CommonUtils.isEmpty(lazyText)) {
                                 ((TreeItem) event.item).setText(event.index, lazyText);
@@ -283,9 +302,8 @@ public class ViewerColumnController {
                         }
                     } else {
                         TableColumn column = ((TableViewer) viewer).getTable().getColumn(event.index);
-                        if (((ColumnInfo)column.getData()).labelProvider instanceof ILazyLabelProvider &&
-                            CommonUtils.isEmpty(((TableItem) event.item).getText(event.index)))
-                        {
+                        if (((ColumnInfo) column.getData()).labelProvider instanceof ILazyLabelProvider &&
+                            CommonUtils.isEmpty(((TableItem) event.item).getText(event.index))) {
                             final String lazyText = ((ILazyLabelProvider) ((ColumnInfo) column.getData()).labelProvider).getLazyText(event.item.getData());
                             if (!CommonUtils.isEmpty(lazyText)) {
                                 ((TableItem) event.item).setText(event.index, lazyText);
@@ -298,14 +316,15 @@ public class ViewerColumnController {
 
     }
 
-    private Collection<ColumnInfo> getVisibleColumns()
+    private List<ColumnInfo> getVisibleColumns()
     {
-        Set<ColumnInfo> visibleList = new TreeSet<>(new ColumnInfoComparator());
+        List<ColumnInfo> visibleList = new ArrayList<>();
         for (ColumnInfo column : columns) {
             if (column.visible) {
                 visibleList.add(column);
             }
         }
+        Collections.sort(visibleList, new ColumnInfoComparator());
         return visibleList;
     }
 
@@ -340,10 +359,6 @@ public class ViewerColumnController {
         return columnInfo.userData;
     }
 
-    public Object[] getColumnsData() {
-        return getColumnsData(Object.class);
-    }
-
     public <T> T[] getColumnsData(Class<T> type) {
         T[] newArray = (T[]) Array.newInstance(type, columns.size());
         for (int i = 0; i < columns.size(); i++) {
@@ -361,8 +376,23 @@ public class ViewerColumnController {
         saveColumnConfig();
     }
 
+    private void updateColumnOrder(int[] order) {
+        if (isPacking) {
+            return;
+        }
+        final List<ColumnInfo> visibleColumns = getVisibleColumns();
+        if (visibleColumns.size() != order.length) {
+            log.debug("Internal error: visible column size (" + visibleColumns.size() + ") doesn't match order length (" + order.length + ")");
+            return;
+        }
+        for (int i = 0; i < order.length; i++) {
+            visibleColumns.get(i).order = order[i];
+        }
+    }
+
     private void saveColumnConfig()
     {
+        // Save settings
         IDialogSettings settings = UIUtils.getDialogSettings(configId);
         for (ColumnInfo columnInfo : columns) {
             IDialogSettings subSect = settings.getSection(columnInfo.name);
@@ -443,8 +473,8 @@ public class ViewerColumnController {
 
             UIUtils.createControlLabel(composite, "Select columns you want to display");
 
-            Set<ColumnInfo> orderedList = new TreeSet<>(new ColumnInfoComparator());
-            orderedList.addAll(columns);
+            List<ColumnInfo> orderedList = new ArrayList<>(columns);
+            Collections.sort(orderedList, new ColumnInfoComparator());
             colTable = new Table(composite, SWT.BORDER | SWT.CHECK);
             colTable.setLinesVisible(true);
             final TableColumn nameColumn = new TableColumn(colTable, SWT.LEFT);
