@@ -81,7 +81,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         this.selectionProvider = new NodeSelectionProvider(super.getSelectionProvider());
 
         // Add context menu
-        NavigatorUtils.addContextMenu(workbenchSite, getSelectionProvider(), getItemsViewer().getControl(), null);
+        NavigatorUtils.addContextMenu(workbenchSite, getItemsViewer());
 
         setDoubleClickHandler(new IDoubleClickListener() {
             @Override
