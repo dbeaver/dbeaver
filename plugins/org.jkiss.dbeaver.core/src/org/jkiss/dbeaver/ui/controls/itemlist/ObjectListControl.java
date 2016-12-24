@@ -929,7 +929,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (prop != null) {
                 return ObjectViewerRenderer.getCellString(cellValue, prop.isNameProperty());
             } else {
-                return "?";
+                return "";
             }
         }
 
