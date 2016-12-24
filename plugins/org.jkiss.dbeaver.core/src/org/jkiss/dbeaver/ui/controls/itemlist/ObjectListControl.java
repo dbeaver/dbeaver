@@ -756,7 +756,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             columnItem.setData(DATA_OBJECT_COLUMN, objectColumn);
 
             // Add column in controller
-            columnController.addColumn(columnItem, labelProvider);
+            columnController.addColumn(prop.getDisplayName(), prop.getDescription(), numeric ? SWT.RIGHT : SWT.NONE, true, false, labelProvider);
         } else {
             objectColumn.addProperty(propClass, prop);
             String oldTitle = objectColumn.item.getText();

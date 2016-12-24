@@ -109,31 +109,6 @@ public class ViewerColumnController {
             new ColumnInfo(name, description, style, defaultVisible, required, labelProvider, columns.size()));
     }
 
-    public void addColumn(Item columnItem, CellLabelProvider labelProvider) {
-        final ColumnInfo columnInfo;
-        if (columnItem instanceof TableColumn) {
-            columnInfo = new ColumnInfo(
-                columnItem.getText(),
-                ((TableColumn) columnItem).getToolTipText(),
-                columnItem.getStyle(),
-                true,
-                false,
-                labelProvider,
-                columns.size());
-        } else {
-            columnInfo = new ColumnInfo(
-                columnItem.getText(),
-                ((TreeColumn) columnItem).getToolTipText(),
-                columnItem.getStyle(),
-                true,
-                false,
-                labelProvider,
-                columns.size());
-        }
-        columnInfo.column = columnItem;
-        columns.add(columnInfo);
-    }
-
     public void clearColumns() {
         columns.clear();
     }
