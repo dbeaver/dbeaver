@@ -36,6 +36,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
@@ -63,7 +64,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private static final Log log = Log.getLog(ObjectListControl.class);
 
     private final static LazyValue DEF_LAZY_VALUE = new LazyValue("..."); //$NON-NLS-1$
-    private final static String DATA_OBJECT_COLUMN = "objectColumn"; //$NON-NLS-1$
     private final static int LAZY_LOAD_DELAY = 100;
     private final static Object NULL_VALUE = new Object();
 
@@ -189,9 +189,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 setInfo(status);
             }
         });
+    }
 
-        // Columns controller
-        columnController = new ViewerColumnController("NodeList", getItemsViewer());
+    /**
+     * Usd to save/load columns configuration.
+     * Must depend on object types
+     */
+    @NotNull
+    protected String getListTypeId() {
+        return getClass().getSimpleName();
     }
 
     protected int getDefaultListStyle() {
@@ -354,13 +360,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (itemsControl.isDisposed()) {
             return;
         }
-        columnController.clearColumns();
+
         itemsControl.setRedraw(false);
         try {
             final boolean reload = !append && (objectList == null) || (columns.isEmpty());
 
             if (reload) {
                 clearListData();
+                columnController = new ViewerColumnController(getListTypeId(), getItemsViewer());
             }
 
             {
@@ -482,6 +489,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     public void clearListData()
     {
+        if (columnController != null) {
+            columnController.clearColumns();
+            columnController = null;
+        }
+
         for (ObjectColumn column : columns) {
             column.item.dispose();
         }
@@ -753,10 +765,17 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             objectColumn = new ObjectColumn(newColumn, columnItem, prop.getId(), prop.getDisplayName());
             objectColumn.addProperty(propClass, prop);
             this.columns.add(objectColumn);
-            columnItem.setData(DATA_OBJECT_COLUMN, objectColumn);
 
             // Add column in controller
-            columnController.addColumn(prop.getDisplayName(), prop.getDescription(), numeric ? SWT.RIGHT : SWT.NONE, true, false, labelProvider);
+            columnController.addColumn(
+                prop.getDisplayName(),
+                prop.getDescription(),
+                numeric ? SWT.RIGHT : SWT.NONE,
+                prop.isViewable(),
+                prop.getId().equals(DBConstants.PROP_ID_NAME),
+                objectColumn,
+                labelProvider,
+                editingSupport);
         } else {
             objectColumn.addProperty(propClass, prop);
             String oldTitle = objectColumn.item.getText();

@@ -105,11 +105,31 @@ public class ViewerColumnController {
 
     public void addColumn(String name, String description, int style, boolean defaultVisible, boolean required, CellLabelProvider labelProvider)
     {
+        addColumn(name, description, style, defaultVisible, required, null, labelProvider, null);
+    }
+
+    public void addColumn(String name, String description, int style, boolean defaultVisible, boolean required, Object userData, CellLabelProvider labelProvider, EditingSupport editingSupport)
+    {
         columns.add(
-            new ColumnInfo(name, description, style, defaultVisible, required, labelProvider, columns.size()));
+            new ColumnInfo(
+                name,
+                description,
+                style,
+                defaultVisible,
+                required,
+                userData,
+                labelProvider,
+                editingSupport,
+                columns.size()));
     }
 
     public void clearColumns() {
+        for (ColumnInfo columnInfo : columns) {
+            if (columnInfo.column != null) {
+                columnInfo.column.dispose();
+                columnInfo.column = null;
+            }
+        }
         columns.clear();
     }
 
@@ -188,8 +208,10 @@ public class ViewerColumnController {
         boolean hasLazyColumns = false;
         for (final ColumnInfo columnInfo : getVisibleColumns()) {
             final Item colItem;
+            ViewerColumn viewerColumn;
             if (viewer instanceof TreeViewer) {
                 final TreeViewerColumn item = new TreeViewerColumn((TreeViewer) viewer, columnInfo.style);
+                viewerColumn = item;
                 final TreeColumn column = item.getColumn();
                 colItem = column;
                 column.setText(columnInfo.name);
@@ -198,7 +220,6 @@ public class ViewerColumnController {
                 if (!CommonUtils.isEmpty(columnInfo.description)) {
                     column.setToolTipText(columnInfo.description);
                 }
-                item.setLabelProvider(columnInfo.labelProvider);
                 column.addControlListener(new ControlAdapter() {
                     @Override
                     public void controlResized(ControlEvent e)
@@ -210,6 +231,7 @@ public class ViewerColumnController {
                 columnInfo.column = column;
             } else if (viewer instanceof TableViewer) {
                 final TableViewerColumn item = new TableViewerColumn((TableViewer) viewer, columnInfo.style);
+                viewerColumn = item;
                 final TableColumn column = item.getColumn();
                 colItem = column;
                 column.setText(columnInfo.name);
@@ -218,7 +240,6 @@ public class ViewerColumnController {
                 if (!CommonUtils.isEmpty(columnInfo.description)) {
                     column.setToolTipText(columnInfo.description);
                 }
-                item.setLabelProvider(columnInfo.labelProvider);
                 column.addControlListener(new ControlAdapter() {
                     @Override
                     public void controlResized(ControlEvent e)
@@ -231,6 +252,8 @@ public class ViewerColumnController {
             } else {
                 continue;
             }
+            viewerColumn.setLabelProvider(columnInfo.labelProvider);
+            viewerColumn.setEditingSupport(columnInfo.editingSupport);
             colItem.setData(columnInfo);
             if (columnInfo.labelProvider instanceof ILazyLabelProvider) {
                 hasLazyColumns = true;
@@ -329,7 +352,9 @@ public class ViewerColumnController {
         final int style;
         final boolean defaultVisible;
         final boolean required;
+        final Object userData;
         final CellLabelProvider labelProvider;
+        final EditingSupport editingSupport;
 
         boolean visible;
         int order;
@@ -337,15 +362,17 @@ public class ViewerColumnController {
         Item column;
         SortListener sortListener;
 
-        private ColumnInfo(String name, String description, int style, boolean defaultVisible, boolean required, CellLabelProvider labelProvider, int order)
+        private ColumnInfo(String name, String description, int style, boolean defaultVisible, boolean required, Object userData, CellLabelProvider labelProvider, EditingSupport editingSupport, int order)
         {
             this.name = name;
             this.description = description;
             this.style = style;
             this.defaultVisible = defaultVisible;
             this.required = required;
+            this.userData = userData;
             this.visible = defaultVisible;
             this.labelProvider = labelProvider;
+            this.editingSupport = editingSupport;
             this.order = order;
         }
 
