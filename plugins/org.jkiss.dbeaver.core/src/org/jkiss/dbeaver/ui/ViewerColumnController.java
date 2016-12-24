@@ -384,7 +384,9 @@ public class ViewerColumnController {
 
     private class ConfigDialog extends BaseDialog {
 
-        private final Map<ColumnInfo, Button> buttonMap = new HashMap<>();
+        private Table colTable;
+
+        //private final Map<ColumnInfo, Button> buttonMap = new HashMap<>();
         protected ConfigDialog()
         {
             super(viewer.getControl().getShell(), "Configure columns", UIIcon.CONFIGURATION);
@@ -408,18 +410,24 @@ public class ViewerColumnController {
 
             Set<ColumnInfo> orderedList = new TreeSet<>(new ColumnInfoComparator());
             orderedList.addAll(columns);
+            colTable = new Table(composite, SWT.BORDER | SWT.CHECK);
+            colTable.setLinesVisible(true);
+            final TableColumn nameColumn = new TableColumn(colTable, SWT.LEFT);
+            nameColumn.setText("Name");
+            final TableColumn descColumn = new TableColumn(colTable, SWT.LEFT);
+            descColumn.setText("Description");
+
             for (ColumnInfo columnInfo : orderedList) {
-                Button check = new Button(composite, SWT.CHECK);
-                check.setText(columnInfo.name);
-                check.setSelection(columnInfo.visible);
+                TableItem colItem = new TableItem(colTable, SWT.NONE);
+                colItem.setData(columnInfo);
+                colItem.setText(0, columnInfo.name);
                 if (!CommonUtils.isEmpty(columnInfo.description)) {
-                    check.setToolTipText(columnInfo.description);
+                    colItem.setText(1, columnInfo.description);
                 }
-                if (columnInfo.required) {
-                    check.setEnabled(false);
-                }
-                buttonMap.put(columnInfo, check);
+                colItem.setChecked(columnInfo.visible);
             }
+            nameColumn.pack();
+            descColumn.pack();
 
             return parent;
         }
@@ -428,9 +436,10 @@ public class ViewerColumnController {
         protected void okPressed()
         {
             boolean recreateColumns = false;
-            for (Map.Entry<ColumnInfo, Button> cbEntry : buttonMap.entrySet()) {
-                if (cbEntry.getValue().getSelection() != cbEntry.getKey().visible) {
-                    cbEntry.getKey().visible = cbEntry.getValue().getSelection();
+            for (TableItem item : colTable.getItems()) {
+                ColumnInfo ci = (ColumnInfo) item.getData();
+                if (item.getChecked() != ci.visible) {
+                    ci.visible = item.getChecked();
                     recreateColumns = true;
                 }
             }
