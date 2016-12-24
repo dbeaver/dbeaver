@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Array;
 import java.text.Collator;
 import java.util.*;
 import java.util.List;
@@ -323,6 +324,29 @@ public class ViewerColumnController {
         }
     }
 
+    public Object getColumnData(int columnIndex) {
+        final Control control = viewer.getControl();
+        ColumnInfo columnInfo;
+        if (control instanceof Tree) {
+            columnInfo = (ColumnInfo) ((Tree) control).getColumn(columnIndex).getData();
+        } else {
+            columnInfo = (ColumnInfo) ((Table) control).getColumn(columnIndex).getData();
+        }
+        return columnInfo.userData;
+    }
+
+    public Object[] getColumnsData() {
+        return getColumnsData(Object.class);
+    }
+
+    public <T> T[] getColumnsData(Class<T> type) {
+        T[] newArray = (T[]) Array.newInstance(type, columns.size());
+        for (int i = 0; i < columns.size(); i++) {
+            newArray[i] = type.cast(columns.get(i).userData);
+        }
+        return newArray;
+    }
+
     public void configureColumns()
     {
         ConfigDialog configDialog = new ConfigDialog();
@@ -344,6 +368,12 @@ public class ViewerColumnController {
             subSect.put("visible", columnInfo.visible);
             subSect.put("width", columnInfo.width);
         }
+    }
+
+    public int getColumnsCount() {
+        final Control control = viewer.getControl();
+        return control instanceof Tree ?
+            ((Tree) control).getColumnCount() : ((Table) control).getColumnCount();
     }
 
     private static class ColumnInfo {

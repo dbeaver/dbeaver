@@ -139,15 +139,15 @@ public class ItemListControl extends NodeListControl
     }
 
     @Override
-    protected EditingSupport makeEditingSupport(ViewerColumn viewerColumn, int columnIndex)
+    protected EditingSupport makeEditingSupport(ObjectColumn objectColumn)
     {
-        return new CellEditingSupport(columnIndex);
+        return new CellEditingSupport(objectColumn);
     }
 
     @Override
-    protected CellLabelProvider getColumnLabelProvider(int columnIndex)
+    protected CellLabelProvider getColumnLabelProvider(ObjectColumn objectColumn)
     {
-        return new ItemColorProvider(columnIndex);
+        return new ItemColorProvider(objectColumn);
     }
 
     private class ItemLoadService extends DatabaseLoadService<Collection<DBNNode>> {
@@ -193,12 +193,12 @@ public class ItemListControl extends NodeListControl
 
     private class CellEditingSupport extends EditingSupport {
 
-        private int columnIndex;
+        private ObjectColumn objectColumn;
 
-        public CellEditingSupport(int columnIndex)
+        public CellEditingSupport(ObjectColumn objectColumn)
         {
             super(getItemsViewer());
-            this.columnIndex = columnIndex;
+            this.objectColumn = objectColumn;
         }
 
         @Override
@@ -207,9 +207,9 @@ public class ItemListControl extends NodeListControl
             DBNNode object = (DBNNode) element;
             // Set cur list object to let property see it in createPropertyEditor
             setCurListObject(object);
-            final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
+            final ObjectPropertyDescriptor property = objectColumn.getProperty(getObjectValue(object));
             if (property != null && property.isEditable(getObjectValue(object))) {
-                setFocusCell(object, columnIndex);
+                setFocusCell(object, objectColumn);
                 return UIUtils.createPropertyEditor(getWorkbenchSite(), getControl(), property.getSource(), property);
             }
             return null;
@@ -219,7 +219,7 @@ public class ItemListControl extends NodeListControl
         protected boolean canEdit(Object element)
         {
             DBNNode object = (DBNNode) element;
-            final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
+            final ObjectPropertyDescriptor property = objectColumn.getProperty(getObjectValue(object));
             return property != null && property.isEditable(getObjectValue(object));
         }
 
@@ -227,7 +227,7 @@ public class ItemListControl extends NodeListControl
         protected Object getValue(Object element)
         {
             DBNNode object = (DBNNode) element;
-            final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
+            final ObjectPropertyDescriptor property = objectColumn.getProperty(getObjectValue(object));
             if (property != null) {
                 return getListPropertySource().getPropertyValue(null, getObjectValue(object), property);
             }
@@ -238,7 +238,7 @@ public class ItemListControl extends NodeListControl
         protected void setValue(Object element, Object value)
         {
             DBNNode object = (DBNNode) element;
-            final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
+            final ObjectPropertyDescriptor property = objectColumn.getProperty(getObjectValue(object));
             try {
                 if (property != null) {
                     getListPropertySource().setPropertyValue(null, getObjectValue(object), property, value);
@@ -327,15 +327,16 @@ public class ItemListControl extends NodeListControl
 
     private class ItemColorProvider extends ObjectColumnLabelProvider {
 
-        ItemColorProvider(int columnIndex)
+        ItemColorProvider(ObjectColumn objectColumn)
         {
-            super(columnIndex);
+            super(objectColumn);
         }
 
         @Override
         public Font getFont(Object element)
         {
-            return columnIndex == 0 && NavigatorUtils.isDefaultElement(element) ? boldFont : normalFont;
+            final Object object = getObjectValue((DBNNode) element);
+            return objectColumn.isNameColumn(object) && NavigatorUtils.isDefaultElement(element) ? boldFont : normalFont;
         }
 
         @Override
@@ -354,9 +355,9 @@ public class ItemListControl extends NodeListControl
             if (searcher instanceof SearcherHighligther && ((SearcherHighligther) searcher).hasObject(node)) {
                 return searchHighlightColor;
             }
-            final Object objectValue = getObjectValue(node);
             if (isNewObject(node)) {
-                final ObjectPropertyDescriptor prop = getColumn(columnIndex).getProperty(objectValue);
+                final Object objectValue = getObjectValue(node);
+                final ObjectPropertyDescriptor prop = objectColumn.getProperty(getObjectValue(node));
                 if (prop != null && !prop.isEditable(objectValue)) {
                     return disabledCellColor;
                 }
