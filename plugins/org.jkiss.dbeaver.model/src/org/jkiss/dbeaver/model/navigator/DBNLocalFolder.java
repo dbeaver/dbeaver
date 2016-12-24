@@ -100,7 +100,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     {
         DBPImage dsIcon = null;
         for (DBNDataSource ds : getDataSources()) {
-            final DBPImage icon = DBUtils.getObjectImage(ds.getDataSourceContainer());
+            final DBPImage icon = DBValueFormatting.getObjectImage(ds.getDataSourceContainer());
             if (dsIcon == null) {
                 dsIcon = icon;
             } else if (!CommonUtils.equalObjects(dsIcon, icon)) {

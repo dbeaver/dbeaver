@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -230,7 +230,7 @@ public class MetaDataPanel implements IResultSetPanel {
         @Nullable
         @Override
         protected DBPImage getObjectImage(DBDAttributeBinding item) {
-            return DBUtils.getObjectImage(item.getMetaAttribute());
+            return DBValueFormatting.getObjectImage(item.getMetaAttribute());
         }
 
         @Override

@@ -1411,7 +1411,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Image getImage(Object element)
         {
             if (element instanceof DBDAttributeBinding/* && (!isRecordMode() || !model.isDynamicMetadata())*/) {
-                return DBeaverIcons.getImage(DBUtils.getObjectImage(((DBDAttributeBinding) element).getAttribute()));
+                return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(((DBDAttributeBinding) element).getAttribute()));
             }
             return null;
         }

@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPImageProvider;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -113,7 +110,7 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
     @Nullable
     @Override
     public DBPImage getObjectImage() {
-        return DBUtils.getObjectImage(attribute);
+        return DBValueFormatting.getObjectImage(attribute);
     }
 
     @Override

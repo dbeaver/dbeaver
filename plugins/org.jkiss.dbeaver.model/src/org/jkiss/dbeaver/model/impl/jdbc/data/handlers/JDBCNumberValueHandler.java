@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -62,7 +62,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format)
     {
         if (value == null) {
-            return DBUtils.getDefaultValueDisplayString(null, format);
+            return DBValueFormatting.getDefaultValueDisplayString(null, format);
         }
         if (value instanceof Double) {
             double dbl = ((Double) value).doubleValue();
@@ -75,7 +75,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             }
         }
         if (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT) {
-            return DBUtils.convertNumberToNativeString((Number) value);
+            return DBValueFormatting.convertNumberToNativeString((Number) value);
         }
         return formatter.formatValue(value);
     }
@@ -234,7 +234,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof Number) {
             return object;
         } else if (object instanceof String) {
-            return DBUtils.convertStringToNumber((String) object, getNumberType(type), formatter);
+            return DBValueFormatting.convertStringToNumber((String) object, getNumberType(type), formatter);
         } else {
             log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to numeric");
             return null;

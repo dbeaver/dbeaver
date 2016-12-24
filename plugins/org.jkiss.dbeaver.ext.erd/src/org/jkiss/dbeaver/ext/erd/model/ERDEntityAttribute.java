@@ -23,10 +23,8 @@ package org.jkiss.dbeaver.ext.erd.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeStyle;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * Column entry in model Table
@@ -58,7 +56,7 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
         if (!diagram.hasAttributeStyle(ERDAttributeStyle.ICONS)) {
             return null;
         }
-        return DBUtils.getObjectImage(object);
+        return DBValueFormatting.getObjectImage(object);
     }
 
     public boolean isInPrimaryKey() {

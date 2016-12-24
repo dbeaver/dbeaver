@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.EnumValueManager;
@@ -47,7 +47,7 @@ public class PostgreEnumValueManager extends EnumValueManager {
         }
         List<String> strValues = new ArrayList<>(values.length);
         for (Object value : values) {
-            strValues.add(DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
+            strValues.add(DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
         }
         return strValues;
     }

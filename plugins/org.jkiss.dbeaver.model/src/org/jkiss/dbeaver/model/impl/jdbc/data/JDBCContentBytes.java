@@ -21,7 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -61,7 +61,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
 
     public JDBCContentBytes(DBPDataSource dataSource, String data) {
         super(dataSource);
-        this.data = this.originalData = DBUtils.getBinaryPresentation(dataSource).toBytes(data);
+        this.data = this.originalData = DBValueFormatting.getBinaryPresentation(dataSource).toBytes(data);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
     @Override
     public String getCharset()
     {
-        return DBUtils.getDefaultBinaryFileEncoding(dataSource);
+        return DBValueFormatting.getDefaultBinaryFileEncoding(dataSource);
     }
 
     @Override
@@ -199,7 +199,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
         if (data == null) {
             return null;
         }
-        return DBUtils.formatBinaryString(dataSource, data, format);
+        return DBValueFormatting.formatBinaryString(dataSource, data, format);
     }
 
     @Override

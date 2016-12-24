@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -89,7 +89,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
                 }
                 return DEFAULT_TIME_FORMAT.format(new Date(dateValue));
             }
-            return DBUtils.getDefaultValueDisplayString(value, format);
+            return DBValueFormatting.getDefaultValueDisplayString(value, format);
         }
 
         @Nullable
