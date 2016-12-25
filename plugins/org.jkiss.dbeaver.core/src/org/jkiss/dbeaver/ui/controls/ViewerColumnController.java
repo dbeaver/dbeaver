@@ -56,6 +56,9 @@ public class ViewerColumnController {
     private boolean clickOnHeader;
     private boolean isPacking;
 
+    private transient DisposeListener disposeListener;
+    private transient Listener menuListener;
+
     public static ViewerColumnController getFromControl(Control control)
     {
         return (ViewerColumnController)control.getData(DATA_KEY);
@@ -67,27 +70,43 @@ public class ViewerColumnController {
         this.viewer = viewer;
         final Control control = this.viewer.getControl();
         control.setData(DATA_KEY, this);
-        control.addDisposeListener(new DisposeListener() {
+        disposeListener = new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e) {
                 saveColumnConfig();
             }
-        });
+        };
+        control.addDisposeListener(disposeListener);
 
         if (control instanceof Tree || control instanceof Table) {
-            control.addListener(SWT.MenuDetect, new Listener() {
+            menuListener = new Listener() {
                 @Override
-                public void handleEvent(Event event)
-                {
+                public void handleEvent(Event event) {
                     Point pt = control.getDisplay().map(null, control, new Point(event.x, event.y));
-                    Rectangle clientArea = ((Composite)control).getClientArea();
+                    Rectangle clientArea = ((Composite) control).getClientArea();
                     if (control instanceof Tree) {
                         clickOnHeader = clientArea.y <= pt.y && pt.y < (clientArea.y + ((Tree) control).getHeaderHeight());
                     } else {
                         clickOnHeader = clientArea.y <= pt.y && pt.y < (clientArea.y + ((Table) control).getHeaderHeight());
                     }
                 }
-            });
+            };
+            control.addListener(SWT.MenuDetect, menuListener);
+        }
+    }
+
+    public void dispose() {
+        clearColumns();
+        final Control control = this.viewer.getControl();
+        if (!control.isDisposed()) {
+            if (disposeListener != null) {
+                control.removeDisposeListener(disposeListener);
+                disposeListener = null;
+            }
+            if (menuListener != null) {
+                control.removeListener(SWT.MenuDetect, menuListener);
+                menuListener = null;
+            }
         }
     }
 
@@ -127,7 +146,7 @@ public class ViewerColumnController {
                 columns.size()));
     }
 
-    public void clearColumns() {
+    private void clearColumns() {
         for (ColumnInfo columnInfo : columns) {
             if (columnInfo.column != null) {
                 columnInfo.column.dispose();
@@ -137,7 +156,11 @@ public class ViewerColumnController {
         columns.clear();
     }
 
-    public void createColumns()
+    public void createColumns() {
+        this.createColumns(true);
+    }
+
+    public void createColumns(boolean pack)
     {
         try {
             readColumnsConfiguration();
@@ -145,10 +168,10 @@ public class ViewerColumnController {
             // Possibly incompatible format from previous version
             log.warn("Failed to load configuration for '" + this.configId + "'", e);
         }
-        recreateColumns();
+        recreateColumns(pack);
     }
 
-    private void recreateColumns()
+    private void recreateColumns(boolean pack)
     {
         final Control control = viewer.getControl();
         control.setRedraw(false);
@@ -162,7 +185,7 @@ public class ViewerColumnController {
                 }
             }
             createVisibleColumns();
-            if (!isAllSized()) {
+            if (pack && !isAllSized()) {
                 repackColumns();
                 control.addControlListener(new ControlAdapter() {
                     @Override
@@ -208,7 +231,7 @@ public class ViewerColumnController {
                 if (((TreeViewer) viewer).getTree().getColumnCount() == 2) {
                     ratios = new float[]{0.6f, 0.4f};
                 }
-                UIUtils.packColumns(((TreeViewer) viewer).getTree(), true, ratios);
+                UIUtils.packColumns(((TreeViewer) viewer).getTree(), false, ratios);
             } else if (viewer instanceof TableViewer) {
                 UIUtils.packColumns(((TableViewer)viewer).getTable());
             }
@@ -498,7 +521,7 @@ public class ViewerColumnController {
                 }
             }
             if (recreateColumns) {
-                recreateColumns();
+                recreateColumns(true);
             }
             super.okPressed();
         }
