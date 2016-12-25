@@ -24,8 +24,6 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -57,7 +55,6 @@ public class ViewerColumnController {
     private boolean clickOnHeader;
     private boolean isPacking, isInitializing;
 
-    private transient DisposeListener disposeListener;
     private transient Listener menuListener;
 
     public static ViewerColumnController getFromControl(Control control)
@@ -71,13 +68,6 @@ public class ViewerColumnController {
         this.viewer = viewer;
         final Control control = this.viewer.getControl();
         control.setData(DATA_KEY, this);
-        disposeListener = new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                saveColumnConfig();
-            }
-        };
-        control.addDisposeListener(disposeListener);
 
         if (control instanceof Tree || control instanceof Table) {
             menuListener = new Listener() {
@@ -100,10 +90,6 @@ public class ViewerColumnController {
         clearColumns();
         final Control control = this.viewer.getControl();
         if (!control.isDisposed()) {
-            if (disposeListener != null) {
-                control.removeDisposeListener(disposeListener);
-                disposeListener = null;
-            }
             if (menuListener != null) {
                 control.removeListener(SWT.MenuDetect, menuListener);
                 menuListener = null;

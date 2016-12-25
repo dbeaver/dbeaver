@@ -51,6 +51,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
     private String constraintName;
     private DBSEntityConstraintType[] constraintTypes;
     private DBSEntityConstraintType selectedConstraintType;
+    private String constraintExpression;
     private DBSEntityReferrer constraint;
     private Collection<? extends DBSEntityAttributeRef> attributes;
 
@@ -175,6 +176,13 @@ public class EditConstraintPage extends AttributesSelectorPage {
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = expressionText.getLineHeight() * 3;
         expressionText.setLayoutData(gd);
+        expressionText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                constraintExpression = expressionText.getText();
+                updatePageState();
+            }
+        });
 
     }
 
@@ -185,6 +193,22 @@ public class EditConstraintPage extends AttributesSelectorPage {
     public DBSEntityConstraintType getConstraintType()
     {
         return selectedConstraintType;
+    }
+
+    public String getConstraintExpression() {
+        return constraintExpression;
+    }
+
+    @Override
+    public boolean isPageComplete() {
+        if (selectedConstraintType == null) {
+            return false;
+        }
+        if (selectedConstraintType.isCustom()) {
+            return !CommonUtils.isEmpty(constraintExpression);
+        } else {
+            return super.isPageComplete();
+        }
     }
 
     @Override
