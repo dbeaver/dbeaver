@@ -87,7 +87,7 @@ class FilterValueEditDialog extends BaseDialog {
     private Text textControl;
     private CheckboxTableViewer table;
     private String filterPattern;
-    private KeyLoadLob loadJob;
+    private KeyLoadJob loadJob;
 
     public FilterValueEditDialog(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow[] rows, @NotNull DBCLogicalOperator operator) {
         super(viewer.getControl().getShell(), "Edit value", null);
@@ -256,7 +256,7 @@ class FilterValueEditDialog extends BaseDialog {
     }
 
     private void loadConstraintEnum(final DBSEntityReferrer refConstraint) {
-        loadJob = new KeyLoadLob("Load constraint '" + refConstraint.getName() + "' values") {
+        loadJob = new KeyLoadJob("Load constraint '" + refConstraint.getName() + "' values") {
             @Override
             protected Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
                 final DBSEntityAttribute tableColumn = attr.getEntityAttribute();
@@ -296,7 +296,7 @@ class FilterValueEditDialog extends BaseDialog {
 
     private void loadAttributeEnum(final DBSAttributeEnumerable attributeEnumerable) {
         table.getTable().getColumn(1).setText("Count");
-        loadJob = new KeyLoadLob("Load '" + attr.getName() + "' values") {
+        loadJob = new KeyLoadJob("Load '" + attr.getName() + "' values") {
             @Override
             protected Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
                 return attributeEnumerable.getValueEnumeration(session, filterPattern, MAX_MULTI_VALUES);
@@ -313,7 +313,7 @@ class FilterValueEditDialog extends BaseDialog {
 
         // Get all values from actual RSV data
         boolean hasNulls = false;
-        java.util.Map<Object, DBDLabelValuePair> rowData = new TreeMap<>();
+        java.util.Map<Object, DBDLabelValuePair> rowData = new HashMap<>();
         for (DBDLabelValuePair pair : values) {
             final DBDLabelValuePair oldLabel = rowData.get(pair.getValue());
             if (oldLabel != null) {
@@ -341,6 +341,7 @@ class FilterValueEditDialog extends BaseDialog {
         }
 
         java.util.List<DBDLabelValuePair> sortedList = new ArrayList<>(rowData.values());
+        Collections.sort(sortedList);
         if (pattern != null) {
             for (Iterator<DBDLabelValuePair> iter = sortedList.iterator(); iter.hasNext(); ) {
                 final DBDLabelValuePair valuePair = iter.next();
@@ -440,8 +441,8 @@ class FilterValueEditDialog extends BaseDialog {
         return value;
     }
 
-    private abstract class KeyLoadLob extends AbstractJob {
-        protected KeyLoadLob(String name) {
+    private abstract class KeyLoadJob extends AbstractJob {
+        protected KeyLoadJob(String name) {
             super(name);
         }
 

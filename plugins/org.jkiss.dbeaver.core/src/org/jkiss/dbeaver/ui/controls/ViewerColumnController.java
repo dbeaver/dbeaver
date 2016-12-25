@@ -258,6 +258,7 @@ public class ViewerColumnController {
                     @Override
                     public void controlResized(ControlEvent e) {
                         columnInfo.width = column.getWidth();
+                        saveColumnConfig();
                     }
 
                     @Override
@@ -283,6 +284,7 @@ public class ViewerColumnController {
                     @Override
                     public void controlResized(ControlEvent e) {
                         columnInfo.width = column.getWidth();
+                        saveColumnConfig();
                     }
 
                     @Override
