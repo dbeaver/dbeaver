@@ -25,9 +25,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -57,6 +55,8 @@ public class EditConstraintPage extends AttributesSelectorPage {
     private Collection<? extends DBSEntityAttributeRef> attributes;
 
     private Map<DBSEntityConstraintType, String> TYPE_PREFIX = new HashMap<>();
+    private Group expressionGroup;
+    private Text expressionText;
 
     public EditConstraintPage(
         String title,
@@ -91,6 +91,22 @@ public class EditConstraintPage extends AttributesSelectorPage {
     }
 
     @Override
+    protected Composite createPageContents(Composite parent) {
+        final Composite pageContents = super.createPageContents(parent);
+        toggleEditAreas();
+        return pageContents;
+    }
+
+    private void toggleEditAreas() {
+        final boolean custom = selectedConstraintType.isCustom();
+        columnsGroup.setVisible(!custom);
+        ((GridData)columnsGroup.getLayoutData()).exclude = custom;
+        expressionGroup.setVisible(custom);
+        ((GridData)expressionGroup.getLayoutData()).exclude = !custom;
+        columnsGroup.getParent().layout();
+    }
+
+    @Override
     protected void createContentsBeforeColumns(Composite panel)
     {
         if (entity != null) {
@@ -98,6 +114,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
             addTypePrefix(DBSEntityConstraintType.UNIQUE_KEY, "_UN");
             addTypePrefix(DBSEntityConstraintType.VIRTUAL_KEY, "_VK");
             addTypePrefix(DBSEntityConstraintType.FOREIGN_KEY, "_FK");
+            addTypePrefix(DBSEntityConstraintType.CHECK, "_CHECK");
 
             String namePrefix = TYPE_PREFIX.get(constraintTypes[0]);
             if (namePrefix == null) {
@@ -146,8 +163,19 @@ public class EditConstraintPage extends AttributesSelectorPage {
                         }
                     }
                 }
+                toggleEditAreas();
             }
         });
+    }
+
+    @Override
+    protected void createContentsAfterColumns(Composite panel) {
+        expressionGroup = UIUtils.createControlGroup(panel, "Expression", 1, GridData.FILL_BOTH, 0);
+        expressionText = new Text(expressionGroup, SWT.BORDER | SWT.MULTI);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = expressionText.getLineHeight() * 3;
+        expressionText.setLayoutData(gd);
+
     }
 
     public String getConstraintName() {

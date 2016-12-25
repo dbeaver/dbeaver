@@ -1050,7 +1050,7 @@ public class ResultSetViewer extends Viewer
         }
 
         {
-            final int fontHeight = statusBar.getFont().getFontData()[0].getHeight();
+            final int fontHeight = UIUtils.getFontHeight(statusBar);
             statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
             statusLabel.setLayoutData(new RowData(40 * fontHeight, SWT.DEFAULT));
 

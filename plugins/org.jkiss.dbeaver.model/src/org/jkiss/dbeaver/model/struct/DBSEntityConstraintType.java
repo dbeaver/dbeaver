@@ -24,30 +24,32 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
  */
 public class DBSEntityConstraintType
 {
-    public static final DBSEntityConstraintType FOREIGN_KEY = new DBSEntityConstraintType("fk", "FOREIGN KEY", ModelMessages.model_struct_Foreign_Key, true, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType PRIMARY_KEY = new DBSEntityConstraintType("pk", "PRIMARY KEY", ModelMessages.model_struct_Primary_Key, false, true); //$NON-NLS-1$
-    public static final DBSEntityConstraintType UNIQUE_KEY = new DBSEntityConstraintType("unique", "UNIQUE KEY", ModelMessages.model_struct_Unique_Key, false, true); //$NON-NLS-1$
-    public static final DBSEntityConstraintType VIRTUAL_KEY = new DBSEntityConstraintType("virtual", "VIRTUAL KEY", ModelMessages.model_struct_Virtual_Key, false, true); //$NON-NLS-1$
-    public static final DBSEntityConstraintType PSEUDO_KEY = new DBSEntityConstraintType("pseudo", "PSEUDO", ModelMessages.model_struct_Pseudo_Key, false, true); //$NON-NLS-1$
-    public static final DBSEntityConstraintType CHECK = new DBSEntityConstraintType("check", "CHECK", ModelMessages.model_struct_Check, false, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType NOT_NULL = new DBSEntityConstraintType("notnull", "NOT NULL", ModelMessages.model_struct_Not_NULL, false, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType INDEX = new DBSEntityConstraintType("index", "Index", "Index", false, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType ASSOCIATION = new DBSEntityConstraintType("association", "Association", "Association", true, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType INHERITANCE = new DBSEntityConstraintType("inheritance", "Inheritance", "Inheritance", true, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType FOREIGN_KEY = new DBSEntityConstraintType("fk", "FOREIGN KEY", ModelMessages.model_struct_Foreign_Key, true, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType PRIMARY_KEY = new DBSEntityConstraintType("pk", "PRIMARY KEY", ModelMessages.model_struct_Primary_Key, false, true, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType UNIQUE_KEY = new DBSEntityConstraintType("unique", "UNIQUE KEY", ModelMessages.model_struct_Unique_Key, false, true, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType VIRTUAL_KEY = new DBSEntityConstraintType("virtual", "VIRTUAL KEY", ModelMessages.model_struct_Virtual_Key, false, true, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType PSEUDO_KEY = new DBSEntityConstraintType("pseudo", "PSEUDO", ModelMessages.model_struct_Pseudo_Key, false, true, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType CHECK = new DBSEntityConstraintType("check", "CHECK", ModelMessages.model_struct_Check, false, false, true); //$NON-NLS-1$
+    public static final DBSEntityConstraintType NOT_NULL = new DBSEntityConstraintType("notnull", "NOT NULL", ModelMessages.model_struct_Not_NULL, false, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType INDEX = new DBSEntityConstraintType("index", "Index", "Index", false, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType ASSOCIATION = new DBSEntityConstraintType("association", "Association", "Association", true, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType INHERITANCE = new DBSEntityConstraintType("inheritance", "Inheritance", "Inheritance", true, false, false); //$NON-NLS-1$
 
     private final String id;
     private final String name;
     private final String localizedName;
     private final boolean association;
     private final boolean unique;
+    private final boolean custom;
 
-    public DBSEntityConstraintType(String id, String name, String localizedName, boolean association, boolean unique)
+    public DBSEntityConstraintType(String id, String name, String localizedName, boolean association, boolean unique, boolean custom)
     {
         this.id = id;
         this.name = name;
         this.localizedName = localizedName == null ? name : localizedName;
         this.association = association;
         this.unique = unique;
+        this.custom = custom;
     }
 
     public String getId() {
@@ -71,6 +73,13 @@ public class DBSEntityConstraintType
     public boolean isUnique()
     {
         return unique;
+    }
+
+    /**
+     * Custom constraint (like CHECK) has some associated SQL expression
+     */
+    public boolean isCustom() {
+        return custom;
     }
 
     public String toString()
