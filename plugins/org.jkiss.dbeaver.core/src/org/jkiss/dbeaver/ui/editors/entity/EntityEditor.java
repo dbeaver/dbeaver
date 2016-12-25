@@ -744,12 +744,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
     public <T> T getNestedAdapter(Class<T> adapter) {
         IEditorPart activeEditor = getActiveEditor();
         if (activeEditor != null) {
-            if (adapter.isAssignableFrom(activeEditor.getClass())) {
-                return adapter.cast(activeEditor);
-            }
             Object result = activeEditor.getAdapter(adapter);
             if (result != null) {
                 return adapter.cast(result);
+            }
+            if (adapter.isAssignableFrom(activeEditor.getClass())) {
+                return adapter.cast(activeEditor);
             }
         }
         return null;

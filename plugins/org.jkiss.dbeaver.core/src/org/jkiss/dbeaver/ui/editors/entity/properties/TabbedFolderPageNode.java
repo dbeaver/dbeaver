@@ -161,7 +161,7 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
                 loadNewData = false;
             }
         }
-        if (loadNewData && !itemControl.isDisposed()) {
+        if (loadNewData) {
             itemControl.loadData(false);
         }
     }
@@ -178,6 +178,9 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
+        if (adapter.isAssignableFrom(itemControl.getClass())) {
+            return adapter.cast(itemControl);
+        }
         return null;
     }
 }
