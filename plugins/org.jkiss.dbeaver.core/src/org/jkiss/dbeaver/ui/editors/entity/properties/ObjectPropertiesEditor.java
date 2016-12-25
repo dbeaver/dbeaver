@@ -410,10 +410,10 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         Object result = null;
         final Object activeFolder = getActiveFolder();
         if (activeFolder != null) {
-            if (adapter.isAssignableFrom(activeFolder.getClass())) {
-                result = activeFolder;
-            } else if (activeFolder instanceof IAdaptable) {
+            if (activeFolder instanceof IAdaptable) {
                 result = ((IAdaptable) activeFolder).getAdapter(adapter);
+            } else if (adapter.isAssignableFrom(activeFolder.getClass())) {
+                result = activeFolder;
             }
         }
         if (result != null) {
