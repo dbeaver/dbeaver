@@ -102,7 +102,9 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     protected void addDataTypes(Collection<String> allTypes) {
-        types.addAll(allTypes);
+        for (String type : allTypes) {
+            types.add(type.toUpperCase(Locale.ENGLISH));
+        }
         addKeywords(allTypes, DBPKeywordType.TYPE);
     }
 
@@ -115,6 +117,7 @@ public class BasicSQLDialect implements SQLDialect {
     {
         if (set != null) {
             for (String keyword : set) {
+                keyword = keyword.toUpperCase(Locale.ENGLISH);
                 reservedWords.add(keyword);
                 DBPKeywordType oldType = allKeywords.get(keyword);
                 if (oldType != DBPKeywordType.KEYWORD) {

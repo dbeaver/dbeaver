@@ -43,7 +43,7 @@ class PostgreDialect extends JDBCSQLDialect {
         addSQLKeyword("COMMENT");
         addSQLKeyword("MATERIALIZED");
 
-        addFunctions(Collections.singleton("current_database"));
+        addFunctions(Collections.singleton("CURRENT_DATABASE"));
 
         removeSQLKeyword("PUBLIC");
         removeSQLKeyword("LENGTH");
