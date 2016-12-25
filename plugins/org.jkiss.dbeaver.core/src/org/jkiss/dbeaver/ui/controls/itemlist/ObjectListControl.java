@@ -192,13 +192,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     /**
-     * Usd to save/load columns configuration.
+     * Used to save/load columns configuration.
      * Must depend on object types
+     * @param classList    classes of objects in the list
      */
     @NotNull
-    protected String getListTypeId() {
-        return getClass().getSimpleName();
-    }
+    protected abstract String getListConfigId(List<Class<?>> classList);
 
     protected int getDefaultListStyle() {
         return SWT.MULTI | SWT.FULL_SELECTION;
@@ -359,11 +358,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         try {
             final boolean reload = !append && (objectList == null) || (columnController == null);
 
-            if (reload) {
-                clearListData();
-                columnController = new ViewerColumnController(getListTypeId(), getItemsViewer());
-            }
-
             {
                 // Collect list of items' classes
                 final List<Class<?>> classList = new ArrayList<>();
@@ -391,6 +385,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
                 // Collect all properties
                 List<ObjectPropertyDescriptor> allProps = ObjectAttributeDescriptor.extractAnnotations(getListPropertySource(), classList, propertyFilter);
+
+                if (reload) {
+                    clearListData();
+                    columnController = new ViewerColumnController(getListConfigId(classList), getItemsViewer());
+                }
 
                 // Create columns from classes' annotations
                 for (ObjectPropertyDescriptor prop : allProps) {

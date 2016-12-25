@@ -21,26 +21,29 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 /**
  * DatabaseObjectListControl
  */
 public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> extends ObjectListControl<OBJECT_TYPE> {
 
+    private IWorkbenchSite site;
     protected DatabaseObjectListControl(
         Composite parent,
         int style,
+        IWorkbenchSite site,
         IContentProvider contentProvider)
     {
         super(parent, style, contentProvider);
+        this.site = site;
         setFitWidth(true);
 
         createContextMenu();
@@ -54,13 +57,9 @@ public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> e
 
     private void createContextMenu()
     {
-        Control control = getControl();
-        MenuManager menuMgr = new MenuManager();
-        Menu menu = menuMgr.createContextMenu(control);
-        menuMgr.addMenuListener(new IMenuListener() {
+        NavigatorUtils.createContextMenu(site, getItemsViewer(), new IMenuListener() {
             @Override
-            public void menuAboutToShow(IMenuManager manager)
-            {
+            public void menuAboutToShow(IMenuManager manager) {
                 IAction copyAction = new Action(CoreMessages.controls_itemlist_action_copy) {
                     @Override
                     public void run()
@@ -77,8 +76,6 @@ public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> e
                 fillCustomActions(manager);
             }
         });
-        menuMgr.setRemoveAllWhenShown(true);
-        control.setMenu(menu);
     }
 
     private class ObjectListRenderer extends ViewerRenderer {

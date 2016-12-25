@@ -21,6 +21,8 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -38,6 +40,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Plan nodes tree
@@ -48,9 +51,9 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
     private DBCQueryPlanner planner;
     private String query;
 
-    public PlanNodesTree(Composite parent, int style)
+    public PlanNodesTree(Composite parent, int style, IWorkbenchSite site)
     {
-        super(parent, style, CONTENT_PROVIDER);
+        super(parent, style, site, CONTENT_PROVIDER);
         setFitWidth(true);
     }
 
@@ -58,6 +61,12 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
     protected ObjectViewerRenderer createRenderer()
     {
         return new PlanTreeRenderer();
+    }
+
+    @NotNull
+    @Override
+    protected String getListConfigId(List<Class<?>> classList) {
+        return "ExecutionPlan/" + context.getDataSource().getContainer().getDriver().getId();
     }
 
     @Override
