@@ -156,7 +156,7 @@ public class NavigatorUtils {
         }
     }
 
-    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, IMenuListener menuListener)
+    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final IMenuListener menuListener)
     {
         final Control control = viewer.getControl();
         final MenuManager menuMgr = new MenuManager();
@@ -198,18 +198,12 @@ public class NavigatorUtils {
                     manager.add(new Separator());
                     return;
                 }
-                // Fill context menu
-                final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-
-                final DBNNode selectedNode = getSelectedNode(viewer);
-                if (selectedNode == null || selectedNode.isLocked()) {
-                    //manager.
-                    return;
-                }
 
                 manager.add(new GroupMarker(MB_NAVIGATOR_ADDITIONS));
 
-                if (workbenchSite != null) {
+                final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+                final DBNNode selectedNode = getSelectedNode(viewer);
+                if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
                     // Add "Set active object" menu
                     if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
                         final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
@@ -221,6 +215,7 @@ public class NavigatorUtils {
                                 DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
                                 if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == databaseNode.getObject().getClass())) {
                                     String text = "Set Active ";// + databaseNode.getNodeType();
+                                    // Fill context menu
                                     IAction action = ActionUtils.makeAction(new NavigatorActionSetActiveObject(), workbenchSite, selection, text, null, null);
 
                                     manager.add(action);
@@ -228,37 +223,30 @@ public class NavigatorUtils {
                             }
                         }
                     }
-                }
 
-                manager.add(new Separator());
+                    manager.add(new Separator());
 
-                manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-                manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
+                    manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+                    manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
 
-                IServiceLocator serviceLocator;
-                if (workbenchSite != null) {
-                    serviceLocator = workbenchSite;
-                } else {
-                    serviceLocator = DBeaverUI.getActiveWorkbenchWindow();
-                }
-                // Add properties button
-                if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {
-                    //propertyDialogAction.selectionChanged(selection);
-                    //manager.add(propertyDialogAction);
-                    manager.add(ActionUtils.makeCommandContribution(serviceLocator, IWorkbenchCommandConstants.FILE_PROPERTIES));
-                }
+                    // Add properties button
+                    if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {
+                        manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_PROPERTIES));
+                    }
 
-                if (selectedNode.isPersisted()) {
-                    // Add refresh button
-                    manager.add(ActionUtils.makeCommandContribution(serviceLocator, IWorkbenchCommandConstants.FILE_REFRESH));
+                    if (selectedNode.isPersisted()) {
+                        // Add refresh button
+                        manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
+                    }
                 }
 
                 manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
+
+                if (menuListener != null) {
+                    menuListener.menuAboutToShow(manager);
+                }
             }
         });
-        if (menuListener != null) {
-            menuMgr.addMenuListener(menuListener);
-        }
 
         menuMgr.setRemoveAllWhenShown(true);
         control.setMenu(menu);
