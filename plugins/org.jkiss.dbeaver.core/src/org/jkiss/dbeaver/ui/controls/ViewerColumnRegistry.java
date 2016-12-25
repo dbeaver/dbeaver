@@ -17,8 +17,12 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -62,9 +66,15 @@ class ViewerColumnRegistry {
             this.order = source.order;
             this.width = source.width;
         }
+
+        @Override
+        public String toString() {
+            return name + ":" + order;
+        }
     }
 
-    private Map<String, List<ColumnState>> columnsConfig = new HashMap<>();
+    private final Map<String, List<ColumnState>> columnsConfig = new TreeMap<>();
+    private volatile ConfigSaver saver = null;
 
     public ViewerColumnRegistry() {
         File columnsConfig = DBeaverActivator.getConfigurationFile(COLUMNS_CONFIG_FILE);
@@ -74,18 +84,24 @@ class ViewerColumnRegistry {
     }
 
     Collection<ColumnState> getSavedConfig(String controlId) {
-        return columnsConfig.get(controlId);
+        synchronized (columnsConfig) {
+            return columnsConfig.get(controlId);
+        }
     }
 
     void updateConfig(String controlId, Collection<? extends ColumnState> columns) {
-        List<ColumnState> newStates = new ArrayList<>(columns.size());
-        for (ColumnState state : columns) {
-            newStates.add(new ColumnState(state));
-        }
-        columnsConfig.put(controlId, newStates);
+        synchronized (columnsConfig) {
+            List<ColumnState> newStates = new ArrayList<>(columns.size());
+            for (ColumnState state : columns) {
+                newStates.add(new ColumnState(state));
+            }
+            columnsConfig.put(controlId, newStates);
 
-        // TODO: Flush in separate job once per 5 seconds
-        flushConfig();
+            if (saver == null) {
+                saver = new ConfigSaver();
+                saver.schedule(3000);
+            }
+        }
     }
 
     private void loadConfiguration(File configFile) {
@@ -100,30 +116,48 @@ class ViewerColumnRegistry {
 
     }
 
-    private void flushConfig() {
-        File configFile = DBeaverActivator.getConfigurationFile(COLUMNS_CONFIG_FILE);
-        try (OutputStream out = new FileOutputStream(configFile)) {
-            XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
-            xml.setButify(true);
-            try (final XMLBuilder.Element e = xml.startElement("items")) {
-                for (Map.Entry<String, List<ColumnState>> entry : columnsConfig.entrySet()) {
-                    try (final XMLBuilder.Element e2 = xml.startElement("item")) {
-                        xml.addAttribute("id", entry.getKey());
-                        for (ColumnState column : entry.getValue()) {
-                            try (final XMLBuilder.Element e3 = xml.startElement("column")) {
-                                xml.addAttribute("name", column.name);
-                                xml.addAttribute("visible", column.visible);
-                                xml.addAttribute("order", column.order);
-                                xml.addAttribute("width", column.width);
+    private class ConfigSaver extends AbstractJob {
+        protected ConfigSaver() {
+            super("Columns configuration save");
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            synchronized (columnsConfig) {
+                log.debug("Save column config " + System.currentTimeMillis());
+                flushConfig();
+                saver = null;
+            }
+            return Status.OK_STATUS;
+        }
+
+        private void flushConfig() {
+
+            File configFile = DBeaverActivator.getConfigurationFile(COLUMNS_CONFIG_FILE);
+            try (OutputStream out = new FileOutputStream(configFile)) {
+                XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
+                xml.setButify(true);
+                try (final XMLBuilder.Element e = xml.startElement("items")) {
+                    for (Map.Entry<String, List<ColumnState>> entry : columnsConfig.entrySet()) {
+                        try (final XMLBuilder.Element e2 = xml.startElement("item")) {
+                            xml.addAttribute("id", entry.getKey());
+                            for (ColumnState column : entry.getValue()) {
+                                try (final XMLBuilder.Element e3 = xml.startElement("column")) {
+                                    xml.addAttribute("name", column.name);
+                                    xml.addAttribute("visible", column.visible);
+                                    xml.addAttribute("order", column.order);
+                                    xml.addAttribute("width", column.width);
+                                }
                             }
                         }
                     }
                 }
+                xml.flush();
+            } catch (Exception e) {
+                log.error("Error saving columns configuration", e);
             }
-            xml.flush();
-        } catch (Exception e) {
-            log.error("Error saving columns configuration", e);
         }
+
     }
 
     private class ColumnsParser implements SAXListener {
