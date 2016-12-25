@@ -63,8 +63,12 @@ public class PostgreTableConstraint extends PostgreTableConstraintBase {
         this.columns.add(column);
     }
 
-    @Property(viewable = true, order = 10)
+    @Property(viewable = true, editable = true, order = 10)
     public String getSource() {
         return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }

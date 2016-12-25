@@ -65,13 +65,17 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
                     parent,
                     editPage.getConstraintName(),
                     editPage.getConstraintType());
-                int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    constraint.addColumn(
-                        new PostgreTableConstraintColumn(
-                            constraint,
-                            (PostgreAttribute) tableColumn,
-                            colIndex++));
+                if (constraint.getConstraintType().isCustom()) {
+                    constraint.setSource(editPage.getConstraintExpression());
+                } else {
+                    int colIndex = 1;
+                    for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
+                        constraint.addColumn(
+                            new PostgreTableConstraintColumn(
+                                constraint,
+                                (PostgreAttribute) tableColumn,
+                                colIndex++));
+                    }
                 }
                 return constraint;
             }
@@ -89,7 +93,7 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     @Override
     protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<PostgreTableConstraintBase> command) {
         if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
-            decl.append(((PostgreTableConstraint) command.getObject()).getSource());
+            decl.append(" (").append(((PostgreTableConstraint) command.getObject()).getSource()).append(")");
         } else {
             super.appendConstraintDefinition(decl, command);
         }
