@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -40,6 +41,12 @@ class EditObjectDialog extends TrayDialog {
             ((BaseObjectEditPage) this.dialogPage).setContainer(this);
         }
         //setHelpAvailable(false);
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings() {
+        String dialogId = "DBeaver.EditObjectDialog." + dialogPage.getClass().getSimpleName();
+        return UIUtils.getDialogSettings(dialogId);
     }
 
     @Override

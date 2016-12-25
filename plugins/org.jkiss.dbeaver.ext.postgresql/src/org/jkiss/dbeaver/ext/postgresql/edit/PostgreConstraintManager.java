@@ -55,7 +55,8 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
                     parent,
                     new DBSEntityConstraintType[] {
                         DBSEntityConstraintType.PRIMARY_KEY,
-                        DBSEntityConstraintType.UNIQUE_KEY });
+                        DBSEntityConstraintType.UNIQUE_KEY,
+                        DBSEntityConstraintType.CHECK });
                 if (!editPage.edit()) {
                     return null;
                 }
