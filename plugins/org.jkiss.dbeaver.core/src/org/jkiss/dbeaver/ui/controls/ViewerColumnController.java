@@ -28,6 +28,7 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.ILazyLabelProvider;
@@ -54,7 +55,7 @@ public class ViewerColumnController {
     private final ColumnViewer viewer;
     private final List<ColumnInfo> columns = new ArrayList<>();
     private boolean clickOnHeader;
-    private boolean isPacking;
+    private boolean isPacking, isInitializing;
 
     private transient DisposeListener disposeListener;
     private transient Listener menuListener;
@@ -175,6 +176,7 @@ public class ViewerColumnController {
     {
         final Control control = viewer.getControl();
         control.setRedraw(false);
+        isInitializing = true;
         try {
             boolean needRefresh = false;
             for (ColumnInfo columnInfo : columns) {
@@ -207,6 +209,7 @@ public class ViewerColumnController {
             }
         } finally {
             control.setRedraw(true);
+            isInitializing = false;
         }
     }
 
@@ -248,7 +251,10 @@ public class ViewerColumnController {
     private void createVisibleColumns()
     {
         boolean hasLazyColumns = false;
-        for (final ColumnInfo columnInfo : getVisibleColumns()) {
+        List<ColumnInfo> visibleColumns = getVisibleColumns();
+        for (int i = 0; i < visibleColumns.size(); i++) {
+            final ColumnInfo columnInfo = visibleColumns.get(i);
+            columnInfo.order = i;
             final Item colItem;
             ViewerColumn viewerColumn;
             if (viewer instanceof TreeViewer) {
@@ -267,10 +273,11 @@ public class ViewerColumnController {
                     public void controlResized(ControlEvent e) {
                         columnInfo.width = column.getWidth();
                     }
+
                     @Override
                     public void controlMoved(ControlEvent e) {
-                        if (e.getSource() instanceof TreeColumn) {
-                            updateColumnOrder(column.getParent().getColumnOrder());
+                        if (!isInitializing && e.getSource() instanceof TreeColumn) {
+                            updateColumnOrder(column, column.getParent().getColumnOrder());
                         }
                     }
                 });
@@ -288,14 +295,14 @@ public class ViewerColumnController {
                 }
                 column.addControlListener(new ControlAdapter() {
                     @Override
-                    public void controlResized(ControlEvent e)
-                    {
+                    public void controlResized(ControlEvent e) {
                         columnInfo.width = column.getWidth();
                     }
+
                     @Override
                     public void controlMoved(ControlEvent e) {
-                        if (e.getSource() instanceof TableColumn) {
-                            updateColumnOrder(column.getParent().getColumnOrder());
+                        if (!isInitializing && e.getSource() instanceof TableColumn) {
+                            updateColumnOrder(column, column.getParent().getColumnOrder());
                         }
                     }
                 });
@@ -400,10 +407,18 @@ public class ViewerColumnController {
         saveColumnConfig();
     }
 
-    private void updateColumnOrder(int[] order) {
+    private void updateColumnOrder(Item column, int[] order) {
         if (isPacking) {
             return;
         }
+        ColumnInfo columnInfo = (ColumnInfo) column.getData();
+        if (order.length < columnInfo.order - 1) {
+            log.debug("Bad column order index (" + columnInfo.order + ")");
+            return;
+        }
+        final int newOrder = order[columnInfo.order];
+        columnInfo.order = newOrder;
+/*
         final List<ColumnInfo> visibleColumns = getVisibleColumns();
         if (visibleColumns.size() != order.length) {
             log.debug("Internal error: visible column size (" + visibleColumns.size() + ") doesn't match order length (" + order.length + ")");
@@ -412,6 +427,7 @@ public class ViewerColumnController {
         for (int i = 0; i < order.length; i++) {
             visibleColumns.get(i).order = order[i];
         }
+*/
         saveColumnConfig();
     }
 
@@ -452,11 +468,6 @@ public class ViewerColumnController {
             this.editingSupport = editingSupport;
             this.order = order;
         }
-
-        @Override
-        public String toString() {
-            return name + ":" + order;
-        }
     }
 
     private class ConfigDialog extends BaseDialog {
@@ -487,7 +498,8 @@ public class ViewerColumnController {
 
             List<ColumnInfo> orderedList = new ArrayList<>(columns);
             Collections.sort(orderedList, new ColumnInfoComparator());
-            colTable = new Table(composite, SWT.BORDER | SWT.CHECK);
+            colTable = new Table(composite, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
+            colTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             colTable.setLinesVisible(true);
             final TableColumn nameColumn = new TableColumn(colTable, SWT.LEFT);
             nameColumn.setText("Name");
@@ -504,7 +516,13 @@ public class ViewerColumnController {
                 colItem.setChecked(columnInfo.visible);
             }
             nameColumn.pack();
+            if (nameColumn.getWidth() > 300) {
+                nameColumn.setWidth(300);
+            }
             descColumn.pack();
+            if (descColumn.getWidth() > 400) {
+                descColumn.setWidth(400);
+            }
 
             return parent;
         }
