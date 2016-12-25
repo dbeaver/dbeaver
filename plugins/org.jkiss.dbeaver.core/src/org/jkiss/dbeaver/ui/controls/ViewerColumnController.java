@@ -412,23 +412,17 @@ public class ViewerColumnController {
             return;
         }
         ColumnInfo columnInfo = (ColumnInfo) column.getData();
-        if (order.length < columnInfo.order - 1) {
-            log.debug("Bad column order index (" + columnInfo.order + ")");
-            return;
-        }
-        final int newOrder = order[columnInfo.order];
-        columnInfo.order = newOrder;
-/*
-        final List<ColumnInfo> visibleColumns = getVisibleColumns();
-        if (visibleColumns.size() != order.length) {
-            log.debug("Internal error: visible column size (" + visibleColumns.size() + ") doesn't match order length (" + order.length + ")");
-            return;
-        }
+        boolean updated = false;
         for (int i = 0; i < order.length; i++) {
-            visibleColumns.get(i).order = order[i];
+            if (order[i] == columnInfo.order) {
+                columnInfo.order = i;
+                updated = true;
+                break;
+            }
         }
-*/
-        saveColumnConfig();
+        if (updated) {
+            saveColumnConfig();
+        }
     }
 
     private void saveColumnConfig()
