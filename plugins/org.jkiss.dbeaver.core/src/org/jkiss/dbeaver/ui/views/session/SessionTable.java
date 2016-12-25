@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ui.views.session;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -32,6 +34,7 @@ import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,15 +44,21 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
 
     private DBAServerSessionManager<DBAServerSession> sessionManager;
 
-    public SessionTable(Composite parent, int style, DBAServerSessionManager<DBAServerSession> sessionManager)
+    public SessionTable(Composite parent, int style, IWorkbenchSite site, DBAServerSessionManager<DBAServerSession> sessionManager)
     {
-        super(parent, style, CONTENT_PROVIDER);
+        super(parent, style, site, CONTENT_PROVIDER);
         this.sessionManager = sessionManager;
         //setFitWidth(true);
     }
 
     public DBAServerSessionManager<DBAServerSession> getSessionManager() {
         return sessionManager;
+    }
+
+    @NotNull
+    @Override
+    protected String getListConfigId(List<Class<?>> classList) {
+        return "Sessions/" + sessionManager.getDataSource().getContainer().getDriver().getId();
     }
 
     @Override

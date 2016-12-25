@@ -97,6 +97,7 @@ public class MavenRegistry
             MAVEN_LOCAL_REPO_ID,
             MAVEN_LOCAL_REPO_NAME,
             localRepoURL,
+            null,
             MavenRepository.RepositoryType.LOCAL);
     }
 
@@ -123,7 +124,7 @@ public class MavenRegistry
             }
             String repoID = repoInfo.substring(0, divPos);
             String repoURL = repoInfo.substring(divPos + 1);
-            MavenRepository repo = new MavenRepository(repoID, repoID, repoURL, MavenRepository.RepositoryType.CUSTOM);
+            MavenRepository repo = new MavenRepository(repoID, repoID, repoURL, null, MavenRepository.RepositoryType.CUSTOM);
             repositories.add(repo);
         }
     }
@@ -171,6 +172,12 @@ public class MavenRegistry
         // Try all available repositories (without resolve)
         for (MavenRepository repository : repositories) {
             if (repository != currentRepository) {
+                if (!CommonUtils.isEmpty(repository.getScope())) {
+                    // Check scope (group id)
+                    if (!repository.getScope().equals(ref.getGroupId())) {
+                        continue;
+                    }
+                }
                 MavenArtifactVersion artifact = repository.findArtifact(monitor, ref);
                 if (artifact != null) {
                     return artifact;

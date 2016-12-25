@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.runtime.properties;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
@@ -111,6 +112,10 @@ public abstract class ObjectAttributeDescriptor {
     public Method getGetter()
     {
         return getter;
+    }
+
+    public boolean isNameProperty() {
+        return id.equals(DBConstants.PROP_ID_NAME);
     }
 
     public boolean isRemote()

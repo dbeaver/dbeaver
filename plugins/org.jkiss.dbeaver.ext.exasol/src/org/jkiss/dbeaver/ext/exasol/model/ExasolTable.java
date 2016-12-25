@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -115,9 +114,9 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
         hasRead=false;
     }
 
-    private void read() throws DBCException 
+    private void read(DBRProgressMonitor monitor) throws DBCException
     {
-    	JDBCSession session = DBUtils.openMetaSession(VoidProgressMonitor.INSTANCE, getDataSource(), "Read Table Details");
+    	JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read Table Details");
     	try (JDBCPreparedStatement stmt = session.prepareStatement(readAdditionalInfo))
     	{
     		stmt.setString(1, this.getSchema().getName());
@@ -152,52 +151,52 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     public void refreshObjectState(DBRProgressMonitor monitor)
     		throws DBCException
     {
-    	this.read();
+    	this.read(monitor);
     	super.refreshObjectState(monitor);
     }
     
     // -----------------
     // Properties
     // -----------------
-    @Property(viewable = false, editable = false, order = 90, category = ExasolConstants.CAT_BASEOBJECT)
-    public Boolean getHasDistKey() throws DBCException {
+    @Property(viewable = false, expensive = true,  editable = false, order = 90, category = ExasolConstants.CAT_BASEOBJECT)
+    public Boolean getHasDistKey(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
-    		read();
+    		read(monitor);
         return hasDistKey;
     }
 
-    @Property(viewable = false, editable = false, order = 100, category = ExasolConstants.CAT_BASEOBJECT)
-    public Timestamp getLastCommit() throws DBCException {
+    @Property(viewable = false, expensive = true, editable = false, order = 100, category = ExasolConstants.CAT_BASEOBJECT)
+    public Timestamp getLastCommit(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
-    		read();
+    		read(monitor);
         return lastCommit;
     }
 
-    @Property(viewable = false, editable = false, order = 100, category = ExasolConstants.CAT_DATETIME)
-    public Timestamp getCreateTime() throws DBCException {
+    @Property(viewable = false, expensive = true, editable = false, order = 100, category = ExasolConstants.CAT_DATETIME)
+    public Timestamp getCreateTime(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
-    		read();
+    		read(monitor);
         return createTime;
     }
 
-    @Property(viewable = false, editable = false, order = 150, category = ExasolConstants.CAT_STATS)
-    public String getRawsize() throws DBCException {
+    @Property(viewable = false, expensive = true, editable = false, order = 150, category = ExasolConstants.CAT_STATS)
+    public String getRawsize(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
-    		read();
+    		read(monitor);
         return ExasolUtils.humanReadableByteCount(sizeRaw, true);
     }
 
-    @Property(viewable = false, editable = false, order = 200, category = ExasolConstants.CAT_STATS)
-    public String getCompressedsize() throws DBCException {
+    @Property(viewable = false, expensive = true, editable = false, order = 200, category = ExasolConstants.CAT_STATS)
+    public String getCompressedsize(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
-    		read();
+    		read(monitor);
         return ExasolUtils.humanReadableByteCount(sizeCompressed, true);
     }
 
-    @Property(viewable = false, editable = false, order = 250, category = ExasolConstants.CAT_STATS)
-    public float getDeletePercentage() throws DBCException {
+    @Property(viewable = false, expensive = true, editable = false, order = 250, category = ExasolConstants.CAT_STATS)
+    public float getDeletePercentage(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
-    		read();
+    		read(monitor);
         return this.deletePercentage;
     }    
     
@@ -260,4 +259,5 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
         return DBSObjectState.NORMAL;
     }
 
+    
 }

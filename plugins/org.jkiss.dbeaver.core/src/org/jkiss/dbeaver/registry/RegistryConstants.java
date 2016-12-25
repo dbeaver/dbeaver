@@ -22,6 +22,16 @@ package org.jkiss.dbeaver.registry;
  */
 public class RegistryConstants {
 
+    // Process parameters constants
+    public static final String VARIABLE_HOST = "host";
+    public static final String VARIABLE_PORT = "port";
+    public static final String VARIABLE_SERVER = "server";
+    public static final String VARIABLE_DATABASE = "database";
+    public static final String VARIABLE_USER = "user";
+    public static final String VARIABLE_PASSWORD = "password";
+    public static final String VARIABLE_URL = "url";
+
+
     public static final String DRIVERS_FILE_NAME = "drivers.xml"; //$NON-NLS-1$
     public static final String CONNECTION_TYPES_FILE_NAME = "connection-types.xml"; //$NON-NLS-1$
 
@@ -55,6 +65,7 @@ public class RegistryConstants {
     public static final String ATTR_VALUE = "value"; //$NON-NLS-1$
     public static final String ATTR_CLASS = "class"; //$NON-NLS-1$
     public static final String ATTR_URL = "url"; //$NON-NLS-1$
+    public static final String ATTR_SCOPE = "scope"; //$NON-NLS-1$
     public static final String ATTR_PORT = "port"; //$NON-NLS-1$
     public static final String ATTR_DESCRIPTION = "description"; //$NON-NLS-1$
     public static final String ATTR_NOTE = "note"; //$NON-NLS-1$

@@ -32,7 +32,7 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Nullable
     @Override
-    public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
+    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
         if (typedObject.getDataKind() == DBPDataKind.DATETIME) {
             return new MySQLDateTimeValueHandler(preferences.getDataFormatterProfile());

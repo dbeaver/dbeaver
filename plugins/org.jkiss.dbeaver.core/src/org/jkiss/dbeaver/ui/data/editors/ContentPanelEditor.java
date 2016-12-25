@@ -103,6 +103,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
                 try {
                     streamEditor.primeEditorValue(monitor, control, content);
                 } catch (DBException e) {
+                    log.debug(e);
                     valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
                 }
             }
@@ -121,6 +122,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
             try {
                 streamEditor.extractEditorValue(VoidProgressMonitor.INSTANCE, control, content);
             } catch (Exception e) {
+                log.debug(e);
                 valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
             }
         }

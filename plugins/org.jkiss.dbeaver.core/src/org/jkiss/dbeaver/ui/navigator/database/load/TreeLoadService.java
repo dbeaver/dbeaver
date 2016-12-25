@@ -47,7 +47,7 @@ public class TreeLoadService extends DatabaseLoadService<Object[]> {
         throws InvocationTargetException, InterruptedException
     {
         try {
-            DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(monitor, parentNode);
+            DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(monitor, parentNode, true);
             return children == null ? new Object[0] : children;
         } catch (Throwable ex) {
             throw new InvocationTargetException(ex);

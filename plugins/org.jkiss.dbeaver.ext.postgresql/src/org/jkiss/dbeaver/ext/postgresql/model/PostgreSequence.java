@@ -53,19 +53,19 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         private Number maxValue;
         private Number incrementBy;
 
-        @Property(viewable = true, editable = true, updatable = true, order = 1)
+        @Property(viewable = true, editable = true, updatable = true, order = 10)
         public Number getLastValue() {
             return lastValue;
         }
-        @Property(viewable = true, editable = true, updatable = true, order = 2)
+        @Property(viewable = true, editable = true, updatable = true, order = 11)
         public Number getMinValue() {
             return minValue;
         }
-        @Property(viewable = true, editable = true, updatable = true, order = 3)
+        @Property(viewable = true, editable = true, updatable = true, order = 12)
         public Number getMaxValue() {
             return maxValue;
         }
-        @Property(viewable = true, editable = true, updatable = true, order = 4)
+        @Property(viewable = true, editable = true, updatable = true, order = 13)
         public Number getIncrementBy() {
             return incrementBy;
         }

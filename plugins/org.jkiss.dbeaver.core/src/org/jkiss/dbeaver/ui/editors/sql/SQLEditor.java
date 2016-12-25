@@ -187,7 +187,7 @@ public class SQLEditor extends SQLEditorBase implements
                         lines.add(k);
                     }
                 } catch (BadLocationException e) {
-                    log.debug(e);
+                    // ignore - this may happen is SQL was edited after execution start
                 }
             }
             if (lines.isEmpty()) {
@@ -689,6 +689,17 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     protected void doSetInput(IEditorInput editorInput) throws CoreException
     {
+        // Check for file existence
+        try {
+            if (editorInput instanceof IFileEditorInput) {
+                final IFile file = ((IFileEditorInput) editorInput).getFile();
+                if (!file.exists()) {
+                    file.create(new ByteArrayInputStream(new byte[]{}), true, new NullProgressMonitor());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error checking SQL file", e);
+        }
         try {
             super.doSetInput(editorInput);
         } catch (Throwable e) {
@@ -1127,7 +1138,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         super.dispose();
 
-        if (sqlFile != null) {
+        if (sqlFile != null && !PlatformUI.getWorkbench().isClosing()) {
             deleteFileIfEmpty(sqlFile);
         }
     }

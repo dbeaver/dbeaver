@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.utils.CommonUtils;
 

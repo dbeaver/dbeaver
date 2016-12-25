@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -150,6 +151,8 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
     private String formatParameterValue(Object value) {
         if (value instanceof CharSequence) {
             return SQLUtils.quoteString(value.toString());
+        } else if (value instanceof Number) {
+            return DBValueFormatting.convertNumberToNativeString((Number) value);
         } else if (value instanceof java.util.Date) {
             try {
                 DBDDataFormatterProfile formatterProfile = getSession().getDataSource().getDataFormatterProfile();

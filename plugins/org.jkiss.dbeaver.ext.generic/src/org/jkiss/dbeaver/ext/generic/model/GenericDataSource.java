@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
@@ -831,9 +832,12 @@ public class GenericDataSource extends JDBCDataSource
                 queryPlanner = metaModel.getQueryPlanner(this);
             }
             return adapter.cast(queryPlanner);
-        } else {
-            return super.getAdapter(adapter);
+        } else if (adapter == DBDValueHandlerProvider.class) {
+            if (metaModel instanceof DBDValueHandlerProvider) {
+                return adapter.cast(metaModel);
+            }
         }
+        return super.getAdapter(adapter);
     }
 
     @Override

@@ -23,7 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -69,7 +69,7 @@ public class StatisticsPresentation extends AbstractPresentation {
             Object value = row.getValues()[i];
             TableItem item = new TableItem(table, SWT.LEFT);
             item.setText(0, attr.getName());
-            item.setText(1, DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
+            item.setText(1, DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
         }
 
         UIUtils.packColumns(table);

@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -54,7 +55,7 @@ public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
     @Override
     public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
-        return DBUtils.getDefaultValueDisplayString(value, format);
+        return DBValueFormatting.getDefaultValueDisplayString(value, format);
     }
 
     @Override

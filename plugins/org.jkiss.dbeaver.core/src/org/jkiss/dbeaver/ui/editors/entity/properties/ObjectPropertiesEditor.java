@@ -227,8 +227,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
         propertiesPanel.createControl(propsPlaceholder);
 
-        pageControl.layout();
-        propsPlaceholder.redraw();
+        pageControl.layout(true);
+        propsPlaceholder.layout(true);
+
         if (sashForm != null) {
             Runnable sashUpdater = new Runnable() {
                 @Override
@@ -496,7 +497,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             // Do not add children tabs
         } else if (node != null) {
             try {
-                DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(monitor, node);
+                DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(monitor, node, false);
                 if (children != null) {
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {

@@ -34,7 +34,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -461,7 +461,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             DBDAttributeBinding binding = (DBDAttributeBinding) element;
             if (columnIndex == 0) {
                 return DBeaverIcons.getImage(
-                    DBUtils.getObjectImage(binding.getMetaAttribute()));
+                    DBValueFormatting.getObjectImage(binding.getMetaAttribute()));
             }
             if (columnIndex == 2) {
                 DBDAttributeConstraint constraint = getBindingConstraint(binding);

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -42,19 +43,18 @@ import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
-import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
-import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.*;
@@ -112,6 +112,8 @@ public class DataSourceDescriptor
     @NotNull
     private final DBPDataSourceRegistry registry;
     @NotNull
+    private final DataSourceOrigin origin;
+    @NotNull
     private DriverDescriptor driver;
     @NotNull
     private DBPConnectionConfiguration connectionInfo;
@@ -138,15 +140,12 @@ public class DataSourceDescriptor
 
     private final List<DBPDataSourceUser> users = new ArrayList<>();
 
-    private boolean provided;
-
     private volatile boolean connectFailed = false;
     private volatile Date connectTime = null;
     private volatile boolean disposed = false;
     private volatile boolean connecting = false;
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWTunnel tunnel;
-    private String folderPath;
     private DataSourceFolder folder;
     @NotNull
     private final DBVModel virtualModel;
@@ -157,13 +156,50 @@ public class DataSourceDescriptor
         @NotNull DriverDescriptor driver,
         @NotNull DBPConnectionConfiguration connectionInfo)
     {
+        this(registry, ((DataSourceRegistry)registry).getDefaultOrigin(), id, driver, connectionInfo);
+    }
+
+    DataSourceDescriptor(
+        @NotNull DBPDataSourceRegistry registry,
+        @NotNull DataSourceOrigin origin,
+        @NotNull String id,
+        @NotNull DriverDescriptor driver,
+        @NotNull DBPConnectionConfiguration connectionInfo)
+    {
         this.registry = registry;
+        this.origin = origin;
         this.id = id;
         this.driver = driver;
         this.connectionInfo = connectionInfo;
         this.createDate = new Date();
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
+    }
+
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source)
+    {
+        this.registry = source.registry;
+        this.origin = source.origin;
+        this.id = source.id;
+        this.name = source.name;
+        this.description = source.description;
+        this.savePassword = source.savePassword;
+        this.showSystemObjects = source.showSystemObjects;
+        this.showUtilityObjects = source.showUtilityObjects;
+        this.connectionReadOnly = source.connectionReadOnly;
+        this.driver = source.driver;
+        this.connectionInfo = source.connectionInfo;
+        this.createDate = source.createDate;
+        this.preferenceStore = source.preferenceStore;
+        this.formatterProfile = source.formatterProfile;
+        this.clientHome = source.clientHome;
+        this.virtualModel = source.virtualModel;
+
+        this.connectionInfo = new DBPConnectionConfiguration(source.connectionInfo);
+        this.tunnelConnectionInfo = source.tunnelConnectionInfo == null ? null : new DBPConnectionConfiguration(source.tunnelConnectionInfo);
+        this.filterMap.putAll(source.filterMap);
+        this.lockPasswordHash = source.lockPasswordHash;
+        this.folder = source.folder;
     }
 
     public boolean isDisposed()
@@ -486,13 +522,14 @@ public class DataSourceDescriptor
         return new DBWNetworkHandler[] { tunnel };
     }
 
-    @Override
-    public boolean isProvided() {
-        return provided;
+    @NotNull
+    DataSourceOrigin getOrigin() {
+        return origin;
     }
 
-    public void setProvided(boolean provided) {
-        this.provided = provided;
+    @Override
+    public boolean isProvided() {
+        return !origin.isDefault();
     }
 
     @Override
@@ -631,8 +668,6 @@ public class DataSourceDescriptor
         }
         log.debug("Connect with '" + getName() + "' (" + getId() + ")");
 
-        connecting = true;
-
         final String oldName = getConnectionConfiguration().getUserName();
         final String oldPassword = getConnectionConfiguration().getUserPassword();
         if (!isSavePassword()) {
@@ -651,6 +686,9 @@ public class DataSourceDescriptor
             }
         }
 
+        processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
+
+        connecting = true;
         tunnelConnectionInfo = null;
         try {
             // Handle tunnel
@@ -675,6 +713,7 @@ public class DataSourceDescriptor
                 }
                 monitor.worked(1);
             }
+
             monitor.subTask("Connect to data source");
             dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
             monitor.worked(1);
@@ -695,6 +734,8 @@ public class DataSourceDescriptor
             connectTime = new Date();
             loginDate = connectTime;
 
+            processEvents(monitor, DBPConnectionEventType.AFTER_CONNECT);
+
             if (reflect) {
                 getRegistry().notifyDataSourceListeners(new DBPEvent(
                     DBPEvent.Action.OBJECT_UPDATE,
@@ -705,6 +746,16 @@ public class DataSourceDescriptor
             return true;
         } catch (Exception e) {
             log.debug("Connection failed (" + getId() + ")");
+            if (tunnel != null) {
+                try {
+                    tunnel.closeTunnel(monitor);
+                } catch (IOException e1) {
+                    log.error("Error closing tunnel", e);
+                } finally {
+                    tunnel = null;
+                    tunnelConnectionInfo = null;
+                }
+            }
             // Failed
             connectFailed = true;
             //if (reflect) {
@@ -746,6 +797,33 @@ public class DataSourceDescriptor
             }
         }
 
+    }
+
+    private void processEvents(DBRProgressMonitor monitor, DBPConnectionEventType eventType)
+    {
+        DBPConnectionConfiguration info = getActualConnectionConfiguration();
+        DBRShellCommand command = info.getEvent(eventType);
+        if (command != null && command.isEnabled()) {
+            Map<String, Object> variables = new HashMap<>();
+            for (Map.Entry<Object, Object> entry : info.getProperties().entrySet()) {
+                variables.put(CommonUtils.toString(entry.getKey()), entry.getValue());
+            }
+            variables.put(RegistryConstants.VARIABLE_HOST, info.getHostName());
+            variables.put(RegistryConstants.VARIABLE_PORT, info.getHostPort());
+            variables.put(RegistryConstants.VARIABLE_SERVER, info.getServerName());
+            variables.put(RegistryConstants.VARIABLE_DATABASE, info.getDatabaseName());
+            variables.put(RegistryConstants.VARIABLE_USER, info.getUserName());
+            variables.put(RegistryConstants.VARIABLE_PASSWORD, info.getUserPassword());
+            variables.put(RegistryConstants.VARIABLE_URL, info.getUrl());
+
+            final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, variables);
+            monitor.subTask("Execute process " + processDescriptor.getName());
+            DBUserInterface.getInstance().executeProcess(processDescriptor);
+            if (command.isWaitProcessFinish()) {
+                processDescriptor.waitFor();
+            }
+            addChildProcess(processDescriptor);
+        }
     }
 
     @Override
@@ -812,7 +890,11 @@ public class DataSourceDescriptor
                 }
             }
 
-            monitor.beginTask("Disconnect from '" + getName() + "'", 4);
+            monitor.beginTask("Disconnect from '" + getName() + "'", 6);
+
+            processEvents(monitor, DBPConnectionEventType.BEFORE_DISCONNECT);
+
+            monitor.worked(1);
 
             // Close datasource
             monitor.subTask("Close connection");
@@ -825,13 +907,17 @@ public class DataSourceDescriptor
             if (tunnel != null) {
                 monitor.subTask("Close tunnel");
                 try {
-                    tunnel.closeTunnel(monitor, connectionInfo);
+                    tunnel.closeTunnel(monitor);
                 } catch (Exception e) {
                     log.warn("Error closing tunnel", e);
                 } finally {
                     this.tunnel = null;
                 }
             }
+            monitor.worked(1);
+
+            processEvents(monitor, DBPConnectionEventType.AFTER_DISCONNECT);
+
             monitor.worked(1);
 
             monitor.done();
@@ -1108,7 +1194,6 @@ public class DataSourceDescriptor
         setShowSystemObjects(descriptor.isShowSystemObjects());
         setShowUtilityObjects(descriptor.isShowUtilityObjects());
         setConnectionReadOnly(descriptor.isConnectionReadOnly());
-        folderPath = descriptor.folderPath;
     }
 
     @Override

@@ -39,7 +39,7 @@ public class HTTPTunnelImpl implements DBWTunnel {
     }
 
     @Override
-    public void closeTunnel(DBRProgressMonitor monitor, DBPConnectionConfiguration connectionInfo) throws DBException, IOException
+    public void closeTunnel(DBRProgressMonitor monitor) throws DBException, IOException
     {
     }
 

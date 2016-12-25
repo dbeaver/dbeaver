@@ -56,6 +56,7 @@ public class MavenRepository
     private final String name;
     private final String url;
     private final RepositoryType type;
+    private final String scope;
 
     private Map<String, MavenArtifact> cachedArtifacts = new LinkedHashMap<>();
 
@@ -65,14 +66,16 @@ public class MavenRepository
             config.getAttribute(RegistryConstants.ATTR_ID),
             config.getAttribute(RegistryConstants.ATTR_NAME),
             config.getAttribute(RegistryConstants.ATTR_URL),
+            config.getAttribute(RegistryConstants.ATTR_SCOPE),
             RepositoryType.GLOBAL);
     }
 
-    public MavenRepository(String id, String name, String url, RepositoryType type) {
+    public MavenRepository(String id, String name, String url, String scope, RepositoryType type) {
         this.id = id;
         this.name = CommonUtils.isEmpty(name) ? id : name;
         if (!url.endsWith("/")) url += "/";
         this.url = url;
+        this.scope = scope;
         this.type = type;
     }
 
@@ -86,6 +89,10 @@ public class MavenRepository
 
     public String getUrl() {
         return url;
+    }
+
+    public String getScope() {
+        return scope;
     }
 
     public RepositoryType getType() {

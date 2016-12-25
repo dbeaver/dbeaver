@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -135,7 +135,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
     @Override
     public String getCharset()
     {
-        return DBUtils.getDefaultBinaryFileEncoding(dataSource);
+        return DBValueFormatting.getDefaultBinaryFileEncoding(dataSource);
     }
 
     @Override

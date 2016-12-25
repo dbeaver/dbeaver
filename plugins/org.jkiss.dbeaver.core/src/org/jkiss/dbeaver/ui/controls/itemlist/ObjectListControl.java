@@ -26,7 +26,10 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -37,14 +40,15 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -62,7 +66,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private static final Log log = Log.getLog(ObjectListControl.class);
 
     private final static LazyValue DEF_LAZY_VALUE = new LazyValue("..."); //$NON-NLS-1$
-    private final static String DATA_OBJECT_COLUMN = "objectColumn"; //$NON-NLS-1$
     private final static int LAZY_LOAD_DELAY = 100;
     private final static Object NULL_VALUE = new Object();
 
@@ -70,12 +73,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private ColumnViewer itemsViewer;
     //private ColumnViewerEditor itemsEditor;
-    @NotNull
-    private final List<ObjectColumn> columns = new ArrayList<>();
     private IDoubleClickListener doubleClickHandler;
     private PropertySourceAbstract listPropertySource;
 
     private ObjectViewerRenderer renderer;
+    private ViewerColumnController columnController;
 
     // Sample flag. True only when initial content is packed. Used to provide actual cell data to Tree/Table pack() methods
     // After content is loaded is always false (and all hyperlink cells have empty text)
@@ -90,7 +92,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private volatile boolean lazyLoadCanceled;
     private List<OBJECT_TYPE> objectList = null;
     private Object focusObject;
-    private int focusColumn;
+    private ObjectColumn focusColumn;
 
     public ObjectListControl(
         Composite parent,
@@ -189,6 +191,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         });
     }
 
+    /**
+     * Used to save/load columns configuration.
+     * Must depend on object types
+     * @param classList    classes of objects in the list
+     */
+    @NotNull
+    protected abstract String getListConfigId(List<Class<?>> classList);
+
     protected int getDefaultListStyle() {
         return SWT.MULTI | SWT.FULL_SELECTION;
     }
@@ -211,9 +221,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return new DefaultListPropertySource();
     }
 
-    protected CellLabelProvider getColumnLabelProvider(int columnIndex)
+    protected CellLabelProvider getColumnLabelProvider(ObjectColumn objectColumn)
     {
-        return new ObjectColumnLabelProvider(columnIndex);
+        return new ObjectColumnLabelProvider(objectColumn);
     }
 
     @Override
@@ -254,15 +264,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return itemsViewer;
     }
 
-    protected ObjectColumn getColumn(int index)
+    protected ObjectColumn getColumnByIndex(int index)
     {
-        return columns.get(index);
-    }
-
-    @Nullable
-    protected ObjectPropertyDescriptor getObjectProperty(OBJECT_TYPE object, int columnIndex)
-    {
-        return columns.get(columnIndex).getProperty(getObjectValue(object));
+        return (ObjectColumn) columnController.getColumnData(index);
     }
 
     public void setFitWidth(boolean fitWidth)
@@ -349,13 +353,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (itemsControl.isDisposed()) {
             return;
         }
+
         itemsControl.setRedraw(false);
         try {
-            final boolean reload = !append && (objectList == null) || (columns.isEmpty());
-
-            if (reload) {
-                clearListData();
-            }
+            final boolean reload = !append && (objectList == null) || (columnController == null);
 
             {
                 // Collect list of items' classes
@@ -385,11 +386,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 // Collect all properties
                 List<ObjectPropertyDescriptor> allProps = ObjectAttributeDescriptor.extractAnnotations(getListPropertySource(), classList, propertyFilter);
 
+                if (reload) {
+                    clearListData();
+                    columnController = new ViewerColumnController(getListConfigId(classList), getItemsViewer());
+                }
+
                 // Create columns from classes' annotations
                 for (ObjectPropertyDescriptor prop : allProps) {
-                    if (!prop.isViewable() || prop.isHidden()) {
-                        continue;
-                    }
                     if (!getListPropertySource().hasProperty(prop)) {
                         getListPropertySource().addProperty(prop);
                         createColumn(prop);
@@ -397,67 +400,71 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             }
 
-            if (!itemsControl.isDisposed()) {
-                if (reload || objectList.isEmpty()) {
-                    // Set viewer content
-                    objectList = CommonUtils.isEmpty(items) ? new ArrayList<OBJECT_TYPE>() : new ArrayList<>(items);
+            if (itemsControl.isDisposed()) {
+                return;
+            }
+            if (reload) {
+                columnController.createColumns(false);
+            }
+            if (reload || objectList.isEmpty()) {
+                // Set viewer content
+                objectList = CommonUtils.isEmpty(items) ? new ArrayList<OBJECT_TYPE>() : new ArrayList<>(items);
 
-                    // Pack columns
-                    sampleItems = true;
-                    try {
-                        List<OBJECT_TYPE> sampleList;
-                        if (objectList.size() > 200) {
-                            sampleList = objectList.subList(0, 100);
-                        } else {
-                            sampleList = objectList;
-                        }
-                        itemsViewer.setInput(sampleList);
-
-                        if (renderer.isTree()) {
-                            ((TreeViewer)itemsViewer).expandToLevel(4);
-                            UIUtils.packColumns(getTree(), isFitWidth, null);
-                        } else {
-                            UIUtils.packColumns(getTable(), isFitWidth);
-                        }
-                    } finally {
-                        sampleItems = false;
-                    }
-                    // Set real content
-                    itemsViewer.setInput(objectList);
-                } else if (items != null) {
-                    if (append) {
-                        // Simply append new list to the tail
-                        for (OBJECT_TYPE newObject : items) {
-                            if (!objectList.contains(newObject)) {
-                                objectList.add(newObject);
-                            }
-                        }
+                // Pack columns
+                sampleItems = true;
+                try {
+                    List<OBJECT_TYPE> sampleList;
+                    if (objectList.size() > 200) {
+                        sampleList = objectList.subList(0, 100);
                     } else {
-                        // Update object list
-                        if (!objectList.equals(items)) {
-                            int newListSize = items.size();
-                            int itemIndex = 0;
-                            for (OBJECT_TYPE newObject : items) {
-                                if (itemIndex >= objectList.size()) {
-                                    // Add to tail
-                                    objectList.add(itemIndex, newObject);
-                                } else {
-                                    OBJECT_TYPE oldObject = objectList.get(itemIndex);
-                                    if (!CommonUtils.equalObjects(oldObject, newObject)) {
-                                        // Replace old object
-                                        objectList.set(itemIndex, newObject);
-                                    }
-                                }
-                                itemIndex++;
-                            }
-                            while (objectList.size() > newListSize) {
-                                objectList.remove(objectList.size() - 1);
-                            }
+                        sampleList = objectList;
+                    }
+                    itemsViewer.setInput(sampleList);
+
+                    if (renderer.isTree()) {
+                        ((TreeViewer)itemsViewer).expandToLevel(4);
+                    }
+                    if (reload) {
+                        columnController.repackColumns();
+                    }
+                } finally {
+                    sampleItems = false;
+                }
+                // Set real content
+                itemsViewer.setInput(objectList);
+            } else if (items != null) {
+                if (append) {
+                    // Simply append new list to the tail
+                    for (OBJECT_TYPE newObject : items) {
+                        if (!objectList.contains(newObject)) {
+                            objectList.add(newObject);
                         }
                     }
-
-                    itemsViewer.refresh();
+                } else {
+                    // Update object list
+                    if (!objectList.equals(items)) {
+                        int newListSize = items.size();
+                        int itemIndex = 0;
+                        for (OBJECT_TYPE newObject : items) {
+                            if (itemIndex >= objectList.size()) {
+                                // Add to tail
+                                objectList.add(itemIndex, newObject);
+                            } else {
+                                OBJECT_TYPE oldObject = objectList.get(itemIndex);
+                                if (!CommonUtils.equalObjects(oldObject, newObject)) {
+                                    // Replace old object
+                                    objectList.set(itemIndex, newObject);
+                                }
+                            }
+                            itemIndex++;
+                        }
+                        while (objectList.size() > newListSize) {
+                            objectList.remove(objectList.size() - 1);
+                        }
+                    }
                 }
+
+                itemsViewer.refresh();
             }
         } finally {
             itemsControl.setRedraw(true);
@@ -476,10 +483,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     public void clearListData()
     {
-        for (ObjectColumn column : columns) {
-            column.item.dispose();
+        if (columnController != null) {
+            columnController.dispose();
+            columnController = null;
         }
-        columns.clear();
+
         if (!itemsViewer.getControl().isDisposed()) {
             itemsViewer.setInput(Collections.emptyList());
         }
@@ -592,22 +600,22 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     @Nullable
-    protected Object getCellValue(Object element, int columnIndex)
+    protected final Object getCellValue(Object element, int columnIndex)
+    {
+        final ObjectColumn columnInfo = getColumnByIndex(columnIndex);
+        return getCellValue(element, columnInfo);
+    }
+
+    @Nullable
+    protected Object getCellValue(Object element, ObjectColumn objectColumn)
     {
         OBJECT_TYPE object = (OBJECT_TYPE)element;
 
-        if (columnIndex >= columns.size()) {
-            return null;
-        }
-        ObjectColumn column = columns.get(columnIndex);
-        if (column.item.isDisposed()) {
-            return null;
-        }
         Object objectValue = getObjectValue(object);
         if (objectValue == null) {
             return null;
         }
-        ObjectPropertyDescriptor prop = getPropertyByObject(column, objectValue);
+        ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
         if (prop == null) {
             return null;
         }
@@ -619,7 +627,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             synchronized (lazyCache) {
                 final Map<String, Object> cache = lazyCache.get(object);
                 if (cache != null) {
-                    final Object value = cache.get(column.id);
+                    final Object value = cache.get(objectColumn.id);
                     if (value != null) {
                         if (value == NULL_VALUE) {
                             return null;
@@ -640,6 +648,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return getListPropertySource().getPropertyValue(null, objectValue, prop);
     }
 
+    /**
+     * Gets property descriptor by column and object value (NB! not OBJECT_TYPE but real object value).
+     */
     @Nullable
     private static ObjectPropertyDescriptor getPropertyByObject(ObjectColumn column, Object objectValue)
     {
@@ -700,6 +711,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     @NotNull
     protected Set<DBPPropertyDescriptor> getAllProperties()
     {
+        ObjectColumn[] columns = columnController.getColumnsData(ObjectColumn.class);
         Set<DBPPropertyDescriptor> props = new LinkedHashSet<>();
         for (ObjectColumn column : columns) {
             props.addAll(column.propMap.values());
@@ -710,7 +722,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     protected void createColumn(ObjectPropertyDescriptor prop)
     {
         ObjectColumn objectColumn = null;
-        for (ObjectColumn col : columns) {
+        for (ObjectColumn col : columnController.getColumnsData(ObjectColumn.class)) {
             if (CommonUtils.equalObjects(col.id, prop.getId()) || CommonUtils.equalObjects(col.displayName, prop.getDisplayName())) {
                 objectColumn = col;
                 break;
@@ -719,40 +731,32 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         // Use prop class from top parent
         Class<?> propClass = prop.getParent() == null ? prop.getDeclaringClass() : prop.getParent().getDeclaringClass();
         if (objectColumn == null) {
-            Item columnItem;
-            ViewerColumn newColumn;
-            boolean numeric = prop.isNumeric();
-            if (renderer.isTree()) {
-                TreeViewerColumn viewerColumn = new TreeViewerColumn ((TreeViewer) itemsViewer, numeric ? SWT.RIGHT : SWT.NONE);
-                viewerColumn.getColumn().setText(prop.getDisplayName());
-                viewerColumn.getColumn().setToolTipText(prop.getDescription());
-                viewerColumn.getColumn().addListener(SWT.Selection, renderer.getSortListener());
-                newColumn = viewerColumn;
-                columnItem = viewerColumn.getColumn();
-            } else {
-                TableViewerColumn viewerColumn = new TableViewerColumn ((TableViewer) itemsViewer, numeric ? SWT.RIGHT : SWT.NONE);
-                viewerColumn.getColumn().setText(prop.getDisplayName());
-                viewerColumn.getColumn().setToolTipText(prop.getDescription());
-                //column.setData(prop);
-                viewerColumn.getColumn().addListener(SWT.Selection, renderer.getSortListener());
-                newColumn = viewerColumn;
-                columnItem = viewerColumn.getColumn();
+
+            if (prop.isHidden()) {
+                return;
             }
-            newColumn.setLabelProvider(getColumnLabelProvider(columns.size()));
-            final EditingSupport editingSupport = makeEditingSupport(newColumn, columns.size());
-            if (editingSupport != null) {
-                newColumn.setEditingSupport(editingSupport);
-            }
-            objectColumn = new ObjectColumn(newColumn, columnItem, prop.getId(), prop.getDisplayName());
+            objectColumn = new ObjectColumn(prop.getId(), prop.getDisplayName());
             objectColumn.addProperty(propClass, prop);
-            this.columns.add(objectColumn);
-            columnItem.setData(DATA_OBJECT_COLUMN, objectColumn);
+
+            final CellLabelProvider labelProvider = getColumnLabelProvider(objectColumn);
+            final EditingSupport editingSupport = makeEditingSupport(objectColumn);
+
+            // Add column in controller
+            columnController.addColumn(
+                prop.getDisplayName(),
+                prop.getDescription(),
+                prop.isNumeric() ? SWT.RIGHT : SWT.NONE,
+                prop.isViewable(),
+                prop.isNameProperty(),
+                objectColumn,
+                labelProvider,
+                editingSupport);
         } else {
             objectColumn.addProperty(propClass, prop);
-            String oldTitle = objectColumn.item.getText();
-            if (!oldTitle.contains(prop.getDisplayName())) {
-                objectColumn.item.setText(CommonUtils.capitalizeWord(objectColumn.id));
-            }
+//            String oldTitle = objectColumn.item.getText();
+//            if (!oldTitle.contains(prop.getDisplayName())) {
+//                objectColumn.item.setText(CommonUtils.capitalizeWord(objectColumn.id));
+//            }
         }
     }
 
@@ -770,14 +774,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     // Edit
 
     @Nullable
-    protected EditingSupport makeEditingSupport(ViewerColumn viewerColumn, int columnIndex)
+    protected EditingSupport makeEditingSupport(ObjectColumn objectColumn)
     {
         return null;
     }
 
-    protected void setFocusCell(Object object, int columnIndex) {
+    protected void setFocusCell(Object object, ObjectColumn objectColumn) {
         this.focusObject = object;
-        this.focusColumn = columnIndex;
+        this.focusColumn = objectColumn;
     }
 
     //////////////////////////////////////////////////////
@@ -862,25 +866,26 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     protected static class ObjectColumn {
         String id;
         String displayName;
-        Item item;
-        ViewerColumn column;
         Map<Class<?>, ObjectPropertyDescriptor> propMap = new IdentityHashMap<>();
 
-        private ObjectColumn(ViewerColumn column, Item item, String id, String displayName) {
+        private ObjectColumn(String id, String displayName) {
             this.id = id;
             this.displayName = displayName;
-            this.column = column;
-            this.item = item;
         }
         void addProperty(Class<?> objectClass, ObjectPropertyDescriptor prop)
         {
             this.propMap.put(objectClass, prop);
         }
 
+        public boolean isNameColumn(Object object) {
+            final ObjectPropertyDescriptor property = getProperty(object);
+            return property != null && property.isNameProperty();
+        }
+
         @Nullable
-        public ObjectPropertyDescriptor getProperty(Object element)
+        public ObjectPropertyDescriptor getProperty(Object object)
         {
-            return element == null ? null : getPropertyByObject(this, element);
+            return object == null ? null : getPropertyByObject(this, object);
         }
     }
 
@@ -889,19 +894,21 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     protected class ObjectColumnLabelProvider extends ColumnLabelProvider
     {
-        protected final int columnIndex;
+        protected final ObjectColumn objectColumn;
 
-        ObjectColumnLabelProvider(int columnIndex)
+        ObjectColumnLabelProvider(ObjectColumn objectColumn)
         {
-            this.columnIndex = columnIndex;
+            this.objectColumn = objectColumn;
         }
 
         @Nullable
         @Override
         public Image getImage(Object element)
         {
-            if (columnIndex == 0) {
-                DBPImage objectImage = getObjectImage((OBJECT_TYPE) element);
+            OBJECT_TYPE object = (OBJECT_TYPE) element;
+            final ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, getObjectValue(object));
+            if (prop != null && prop.isNameProperty()) {
+                DBPImage objectImage = getObjectImage(object);
                 return objectImage == null ? null : DBeaverIcons.getImage(objectImage);
             }
             return null;
@@ -910,14 +917,20 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         @Override
         public String getText(Object element)
         {
-            Object cellValue = getCellValue(element, columnIndex);
+            Object cellValue = getCellValue(element, objectColumn);
             if (cellValue instanceof LazyValue) {
                 cellValue = ((LazyValue)cellValue).value;
             }
             if (!sampleItems && renderer.isHyperlink(cellValue)) {
                 return ""; //$NON-NLS-1$
             }
-            return ObjectViewerRenderer.getCellString(cellValue, columnIndex == 0);
+            final Object objectValue = getObjectValue((OBJECT_TYPE) element);
+            final ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
+            if (prop != null) {
+                return ObjectViewerRenderer.getCellString(cellValue, prop.isNameProperty());
+            } else {
+                return "";
+            }
         }
 
         @Override
@@ -982,11 +995,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 return;
             }
 			switch(event.type) {
-				case SWT.PaintItem: if (event.index < columns.size()) {
+				case SWT.PaintItem: if (event.index < columnController.getColumnsCount()) {
+                    final ObjectColumn objectColumn = getColumnByIndex(event.index);
                     final OBJECT_TYPE object = (OBJECT_TYPE)event.item.getData();
                     final Object objectValue = getObjectValue(object);
-                    Object cellValue = getCellValue(object, event.index);
-                    final ObjectColumn objectColumn = columns.get(event.index);
+                    Object cellValue = getCellValue(object, objectColumn);
                     if (cellValue instanceof LazyValue) {
                         if (!lazyLoadCanceled) {
                             addLazyObject(object, objectColumn);
@@ -994,7 +1007,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     } else if (cellValue != null ) {
                         ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
                         if (prop != null) {
-                            if (itemsViewer.isCellEditorActive() && focusObject == object && focusColumn == event.index) {
+                            if (itemsViewer.isCellEditorActive() && focusObject == object && focusColumn == objectColumn) {
                                 // Do not paint over active editor
                                 return;
                             }

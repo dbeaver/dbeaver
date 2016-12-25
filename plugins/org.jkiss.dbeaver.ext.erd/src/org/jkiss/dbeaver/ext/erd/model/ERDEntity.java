@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
@@ -312,7 +311,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
         // Find PK or unique key
         DBSEntityConstraint uniqueId = null;
         //DBSEntityConstraint uniqueIndex = null;
-        for (DBSEntityConstraint id : entity.getConstraints(monitor)) {
+        for (DBSEntityConstraint id : CommonUtils.safeCollection(entity.getConstraints(monitor))) {
             if (id instanceof DBSEntityReferrer && id.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                 return DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) id);
             } else if (id.getConstraintType().isUnique()) {

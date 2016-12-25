@@ -24,6 +24,8 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.dnd.*;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.widgets.Control;
@@ -54,7 +56,7 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ViewerColumnController;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh;
@@ -139,23 +141,24 @@ public class NavigatorUtils {
         return result;
     }
 
-    public static void addContextMenu(final IWorkbenchSite workbenchSite, final ISelectionProvider selectionProvider, final Control control)
+    public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer)
     {
-        addContextMenu(workbenchSite, selectionProvider, control, null);
+        addContextMenu(workbenchSite, viewer, null);
     }
 
-    public static void addContextMenu(final IWorkbenchSite workbenchSite, final ISelectionProvider selectionProvider, final Control control, final IMenuListener menuListener)
+    public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final IMenuListener menuListener)
     {
-        MenuManager menuMgr = createContextMenu(workbenchSite, selectionProvider, control, menuListener);
+        MenuManager menuMgr = createContextMenu(workbenchSite, viewer, menuListener);
         if (workbenchSite instanceof IWorkbenchPartSite) {
-            ((IWorkbenchPartSite)workbenchSite).registerContextMenu(menuMgr, selectionProvider);
+            ((IWorkbenchPartSite)workbenchSite).registerContextMenu(menuMgr, viewer);
         } else if (workbenchSite instanceof IPageSite) {
-            ((IPageSite)workbenchSite).registerContextMenu("navigatorMenu", menuMgr, selectionProvider);
+            ((IPageSite)workbenchSite).registerContextMenu("navigatorMenu", menuMgr, viewer);
         }
     }
 
-    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final ISelectionProvider selectionProvider, final Control control, IMenuListener menuListener)
+    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, IMenuListener menuListener)
     {
+        final Control control = viewer.getControl();
         final MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(control);
         menu.addMenuListener(new MenuListener()
@@ -169,7 +172,7 @@ public class NavigatorUtils {
             public void menuShown(MenuEvent e)
             {
                 Menu m = (Menu)e.widget;
-                DBNNode node = getSelectedNode(selectionProvider.getSelection());
+                DBNNode node = getSelectedNode(viewer.getSelection());
                 if (node != null && !node.isLocked() && node.allowsOpen()) {
                     // Dirty hack
                     // Get contribution item from menu item and check it's ID
@@ -196,9 +199,9 @@ public class NavigatorUtils {
                     return;
                 }
                 // Fill context menu
-                final IStructuredSelection selection = (IStructuredSelection)selectionProvider.getSelection();
+                final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
 
-                final DBNNode selectedNode = getSelectedNode(selectionProvider);
+                final DBNNode selectedNode = getSelectedNode(viewer);
                 if (selectedNode == null || selectedNode.isLocked()) {
                     //manager.
                     return;
@@ -259,6 +262,12 @@ public class NavigatorUtils {
 
         menuMgr.setRemoveAllWhenShown(true);
         control.setMenu(menu);
+        control.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                menuMgr.dispose();
+            }
+        });
         return menuMgr;
     }
 
@@ -537,31 +546,33 @@ public class NavigatorUtils {
         return null;
     }
 
-    public static DBNNode[] getNodeChildrenFiltered(DBRProgressMonitor monitor, DBNNode node) throws DBException {
+    public static DBNNode[] getNodeChildrenFiltered(DBRProgressMonitor monitor, DBNNode node, boolean forTree) throws DBException {
         DBNNode[] children = node.getChildren(monitor);
         if (children != null && children.length > 0) {
-            children = filterNavigableChildren(children);
+            children = filterNavigableChildren(children, forTree);
         }
         return children;
     }
 
-    public static DBNNode[] filterNavigableChildren(DBNNode[] children)
+    public static DBNNode[] filterNavigableChildren(DBNNode[] children, boolean forTree)
     {
         if (ArrayUtils.isEmpty(children)) {
             return children;
         }
         List<DBNNode> filtered = null;
-        for (int i = 0; i < children.length; i++) {
-            DBNNode node = children[i];
-            if (node instanceof DBNDatabaseNode && !((DBNDatabaseNode) node).getMeta().isNavigable()) {
-                if (filtered == null) {
-                    filtered = new ArrayList<>(children.length);
-                    for (int k = 0; k < i; k++) {
-                        filtered.add(children[k]);
+        if (forTree) {
+            for (int i = 0; i < children.length; i++) {
+                DBNNode node = children[i];
+                if (node instanceof DBNDatabaseNode && !((DBNDatabaseNode) node).getMeta().isNavigable()) {
+                    if (filtered == null) {
+                        filtered = new ArrayList<>(children.length);
+                        for (int k = 0; k < i; k++) {
+                            filtered.add(children[k]);
+                        }
                     }
+                } else if (filtered != null) {
+                    filtered.add(node);
                 }
-            } else if (filtered != null) {
-                filtered.add(node);
             }
         }
         DBNNode[] result = filtered == null ? children : filtered.toArray(new DBNNode[filtered.size()]);

@@ -85,6 +85,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private final DBPPlatform platform;
     private final IProject project;
 
+    private final Map<IFile, DataSourceOrigin> origins = new LinkedHashMap<>();
     private final List<DataSourceDescriptor> dataSources = new ArrayList<>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
@@ -141,6 +142,20 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         final DisconnectTask disconnectTask = new DisconnectTask();
         if (!RuntimeUtils.runTask(disconnectTask, "Disconnect from data sources", waitTime)) {
             log.warn("Some data source connections wasn't closed on shutdown in " + waitTime + "ms. Probably network timeout occurred.");
+        }
+    }
+
+    DataSourceOrigin getDefaultOrigin() {
+        synchronized (origins) {
+            for (DataSourceOrigin origin : origins.values()) {
+                if (origin.isDefault()) {
+                    return origin;
+                }
+            }
+            IFile defFile = project.getFile(CONFIG_FILE_NAME);
+            DataSourceOrigin origin = new DataSourceOrigin(defFile, true);
+            origins.put(defFile, origin);
+            return origin;
         }
     }
 
@@ -425,9 +440,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     IFile file = (IFile) res;
                     if (res.getName().startsWith(CONFIG_FILE_PREFIX) && res.getName().endsWith(CONFIG_FILE_EXT)) {
                         if (file.exists()) {
-                            File dsFile = file.getLocation().toFile();
-                            if (dsFile.exists()) {
-                                loadDataSources(dsFile, refresh, parseResults);
+                            if (file.exists()) {
+                                loadDataSources(file, refresh, parseResults);
                             }
                         }
                     }
@@ -460,27 +474,37 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    private void loadDataSources(File fromFile, boolean refresh, ParseResults parseResults)
+    private void loadDataSources(IFile fromFile, boolean refresh, ParseResults parseResults)
     {
+        boolean extraConfig = !fromFile.getName().equalsIgnoreCase(CONFIG_FILE_NAME);
+        DataSourceOrigin origin;
+        synchronized (origins) {
+            origin = origins.get(fromFile);
+            if (origin == null) {
+                origin = new DataSourceOrigin(fromFile, !extraConfig);
+                origins.put(fromFile, origin);
+            }
+        }
         if (!fromFile.exists()) {
             return;
         }
-        boolean extraConfig = !fromFile.getName().equalsIgnoreCase(CONFIG_FILE_NAME);
-        try (InputStream is = new FileInputStream(fromFile)) {
-            loadDataSources(is, extraConfig, refresh, parseResults);
+        try (InputStream is = fromFile.getContents()) {
+            loadDataSources(is, origin, refresh, parseResults);
         } catch (DBException ex) {
-            log.warn("Error loading datasource config from " + fromFile.getAbsolutePath(), ex);
+            log.warn("Error loading datasource config from " + fromFile.getFullPath(), ex);
         } catch (IOException ex) {
             log.warn("IO error", ex);
+        } catch (CoreException e) {
+            log.warn("Resource error", e);
         }
     }
 
-    private void loadDataSources(InputStream is, boolean extraConfig, boolean refresh, ParseResults parseResults)
+    private void loadDataSources(InputStream is, DataSourceOrigin origin, boolean refresh, ParseResults parseResults)
         throws DBException, IOException
     {
         SAXReader parser = new SAXReader(is);
         try {
-            final DataSourcesParser dsp = new DataSourcesParser(extraConfig, refresh, parseResults);
+            final DataSourcesParser dsp = new DataSourcesParser(origin, refresh, parseResults);
             parser.parse(dsp);
         }
         catch (XMLException ex) {
@@ -491,58 +515,71 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     void saveDataSources()
     {
-        List<DataSourceDescriptor> localDataSources;
-        synchronized (dataSources) {
-            localDataSources = CommonUtils.copyList(dataSources);
-        }
         updateProjectNature();
         final IProgressMonitor progressMonitor = new NullProgressMonitor();
-        IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
         saveInProgress = true;
         try {
-            if (localDataSources.isEmpty()) {
-                configFile.delete(true, false, progressMonitor);
-            } else {
-                // Save in temp memory to be safe (any error during direct write will corrupt configuration)
-                ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
+            for (DataSourceOrigin origin : origins.values()) {
+                List<DataSourceDescriptor> localDataSources = getDataSources(origin);
+                IFile configFile = origin.getSourceFile();
                 try {
-                    XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
-                    xml.setButify(true);
-                    xml.startElement("data-sources");
-                    // Folder
-                    for (DataSourceFolder folder : dataSourceFolders) {
-                        saveFolder(xml, folder);
-                    }
-                    // Datasources
-                    for (DataSourceDescriptor dataSource : localDataSources) {
-                        if (!dataSource.isProvided()) {
-                            saveDataSource(xml, dataSource);
+                    if (localDataSources.isEmpty()) {
+                        configFile.delete(true, false, progressMonitor);
+                    } else {
+                        // Save in temp memory to be safe (any error during direct write will corrupt configuration)
+                        ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
+                        try {
+                            XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
+                            xml.setButify(true);
+                            xml.startElement("data-sources");
+                            if (origin.isDefault()) {
+                                // Folders (only for default origin)
+                                for (DataSourceFolder folder : dataSourceFolders) {
+                                    saveFolder(xml, folder);
+                                }
+                            }
+                            // Datasources
+                            for (DataSourceDescriptor dataSource : localDataSources) {
+                                saveDataSource(xml, dataSource);
+                            }
+                            xml.endElement();
+                            xml.flush();
+                        } catch (IOException ex) {
+                            log.warn("IO error while saving datasources", ex);
+                        }
+                        InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
+                        if (!configFile.exists()) {
+                            configFile.create(ifs, true, progressMonitor);
+                            configFile.setHidden(true);
+                        } else {
+                            configFile.setContents(ifs, true, false, progressMonitor);
                         }
                     }
-                    xml.endElement();
-                    xml.flush();
-                }
-                catch (IOException ex) {
-                    log.warn("IO error while saving datasources", ex);
-                }
-                InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
-                if (!configFile.exists()) {
-                    configFile.create(ifs, true, progressMonitor);
-                    configFile.setHidden(true);
-                } else {
-                    configFile.setContents(ifs, true, false, progressMonitor);
+                    try {
+                        getSecurePreferences().flush();
+                    } catch (IOException e) {
+                        log.error("Error saving secured preferences", e);
+                    }
+                } catch (CoreException ex) {
+                    log.error("Error saving datasources configuration", ex);
                 }
             }
-            try {
-                getSecurePreferences().flush();
-            } catch (IOException e) {
-                log.error("Error saving secured preferences", e);
-            }
-        } catch (CoreException ex) {
-            log.error("Error saving datasources configuration", ex);
         } finally {
             saveInProgress = false;
         }
+    }
+
+    private List<DataSourceDescriptor> getDataSources(DataSourceOrigin origin) {
+        List<DataSourceDescriptor> result = new ArrayList<>();
+        synchronized (dataSources) {
+            for (DataSourceDescriptor ds : dataSources) {
+                if (ds.getOrigin() == origin) {
+                    result.add(ds);
+                }
+            }
+        }
+
+        return result;
     }
 
     private void updateProjectNature() {
@@ -878,7 +915,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private class DataSourcesParser implements SAXListener
     {
         DataSourceDescriptor curDataSource;
-        boolean extraConfig;
+        DataSourceOrigin origin;
         boolean refresh;
         boolean isDescription = false;
         DBRShellCommand curCommand = null;
@@ -888,9 +925,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         private ParseResults parseResults;
         private boolean passwordReadCanceled = false;
 
-        private DataSourcesParser(boolean extraConfig, boolean refresh, ParseResults parseResults)
+        private DataSourcesParser(DataSourceOrigin origin, boolean refresh, ParseResults parseResults)
         {
-            this.extraConfig = extraConfig;
+            this.origin = origin;
             this.refresh = refresh;
             this.parseResults = parseResults;
         }
@@ -943,6 +980,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     if (newDataSource) {
                         curDataSource = new DataSourceDescriptor(
                             DataSourceRegistry.this,
+                            origin,
                             id,
                             driver,
                             new DBPConnectionConfiguration());
@@ -951,9 +989,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         curDataSource.getConnectionConfiguration().setProperties(Collections.emptyMap());
                         curDataSource.getConnectionConfiguration().setHandlers(Collections.<DBWHandlerConfiguration>emptyList());
                         curDataSource.clearFilters();
-                    }
-                    if (extraConfig) {
-                        curDataSource.setProvided(true);
                     }
                     curDataSource.setName(name);
                     try {

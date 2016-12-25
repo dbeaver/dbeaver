@@ -46,6 +46,11 @@ public class SSHTunnelImpl implements DBWTunnel {
     private static transient JSch jsch;
     private transient Session session;
 
+    // Saved config - used for tunnel invalidate
+    private transient int savedLocalPort;
+    private transient DBWHandlerConfiguration savedConfiguration;
+    private transient DBPConnectionConfiguration savedConnectionInfo;
+
     @Override
     public DBPConnectionConfiguration initializeTunnel(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException
@@ -114,7 +119,10 @@ public class SSHTunnelImpl implements DBWTunnel {
         } catch (NumberFormatException e) {
             throw new DBException("Bad database port number: " + dbPortString);
         }
-        int localPort = findFreePort(platform);
+        int localPort = savedLocalPort;
+        if (platform != null) {
+            localPort = findFreePort(platform);
+        }
         try {
             if (jsch == null) {
                 jsch = new JSch();
@@ -136,20 +144,24 @@ public class SSHTunnelImpl implements DBWTunnel {
                 privKeyFile != null ? "publickey" : "password");
             session.setConfig("ConnectTimeout", String.valueOf(connectTimeout));
             session.setUserInfo(ui);
+            if (!CommonUtils.isEmpty(aliveInterval)) {
+                session.setServerAliveInterval(Integer.parseInt(aliveInterval));
+            }
             log.debug("Connect to tunnel host");
             session.connect(connectTimeout);
             try {
                 session.setPortForwardingL(localPort, dbHost, dbPort);
-                if (!CommonUtils.isEmpty(aliveInterval)) {
-                    session.setServerAliveInterval(Integer.parseInt(aliveInterval));
-                }
             } catch (JSchException e) {
-                closeTunnel(monitor, connectionInfo);
+                closeTunnel(monitor);
                 throw e;
             }
         } catch (JSchException e) {
             throw new DBException("Cannot establish tunnel", e);
         }
+        savedLocalPort = localPort;
+        savedConfiguration = configuration;
+        savedConnectionInfo = connectionInfo;
+
         connectionInfo = new DBPConnectionConfiguration(connectionInfo);
         String newPortValue = String.valueOf(localPort);
         // Replace database host/port and URL - let's use localhost
@@ -171,7 +183,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     }
 
     @Override
-    public void closeTunnel(DBRProgressMonitor monitor, DBPConnectionConfiguration connectionInfo) throws DBException, IOException
+    public void closeTunnel(DBRProgressMonitor monitor) throws DBException, IOException
     {
         if (session != null) {
             session.disconnect();
@@ -181,7 +193,7 @@ public class SSHTunnelImpl implements DBWTunnel {
 
     @Override
     public void invalidateHandler(DBRProgressMonitor monitor) throws DBException, IOException {
-        boolean isAlive = session.isConnected();
+        boolean isAlive = session != null && session.isConnected();
         if (isAlive) {
             try {
                 session.sendKeepAliveMsg();
@@ -190,12 +202,8 @@ public class SSHTunnelImpl implements DBWTunnel {
             }
         }
         if (!isAlive) {
-            session.disconnect();
-            try {
-                session.connect();
-            } catch (JSchException e) {
-                throw new DBException("Cannot initiate SSH connection", e);
-            }
+            closeTunnel(monitor);
+            initializeTunnel(monitor, null, savedConfiguration, savedConnectionInfo);
         }
     }
 
@@ -251,7 +259,7 @@ public class SSHTunnelImpl implements DBWTunnel {
 
         @Override
         public void log(int level, String message) {
-            String levelStr = "";
+            String levelStr;
             switch (level) {
                 case INFO: levelStr = "INFO"; break;
                 case WARN: levelStr = "WARN"; break;

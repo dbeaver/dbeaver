@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -116,7 +116,7 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
         if (value instanceof DBDValue) {
             return value.toString();
         }
-        return DBUtils.getDefaultValueDisplayString(value, format);
+        return DBValueFormatting.getDefaultValueDisplayString(value, format);
     }
 
 }

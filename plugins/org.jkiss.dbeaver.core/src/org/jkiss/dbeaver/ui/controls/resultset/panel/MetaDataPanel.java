@@ -28,12 +28,14 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
@@ -187,7 +189,7 @@ public class MetaDataPanel implements IResultSetPanel {
 
     private class MetaDataTable extends DatabaseObjectListControl<DBDAttributeBinding> {
         protected MetaDataTable(Composite parent) {
-            super(parent, SWT.SHEET, new TreeContentProvider() {
+            super(parent, SWT.SHEET, presentation.getController().getSite(), new TreeContentProvider() {
                 @Override
                 public Object[] getChildren(Object parentElement) {
                     List<DBDAttributeBinding> nested = ((DBDAttributeBinding) parentElement).getNestedBindings();
@@ -218,6 +220,16 @@ public class MetaDataPanel implements IResultSetPanel {
             });
         }
 
+        @NotNull
+        @Override
+        protected String getListConfigId(List<Class<?>> classList) {
+            final DBCExecutionContext executionContext = presentation.getController().getExecutionContext();
+            if (executionContext == null) {
+                return "MetaData";
+            }
+            return "MetaData/" + executionContext.getDataSource().getContainer().getDriver().getId();
+        }
+
         @Override
         protected Object getObjectValue(DBDAttributeBinding item) {
             if (item instanceof DBDAttributeBindingMeta) {
@@ -230,7 +242,7 @@ public class MetaDataPanel implements IResultSetPanel {
         @Nullable
         @Override
         protected DBPImage getObjectImage(DBDAttributeBinding item) {
-            return DBUtils.getObjectImage(item.getMetaAttribute());
+            return DBValueFormatting.getObjectImage(item.getMetaAttribute());
         }
 
         @Override

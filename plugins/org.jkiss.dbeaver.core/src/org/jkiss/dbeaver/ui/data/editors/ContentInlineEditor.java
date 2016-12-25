@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -61,10 +61,10 @@ public class ContentInlineEditor extends BaseValueEditor<Text> {
                 stringValue = "";  //$NON-NLS-1$
             } else if (cachedValue instanceof byte[]) {
                 byte[] bytes = (byte[]) cachedValue;
-                stringValue = DBUtils.getBinaryPresentation(valueController.getExecutionContext().getDataSource()).toString(bytes, 0, bytes.length);
+                stringValue = DBValueFormatting.getBinaryPresentation(valueController.getExecutionContext().getDataSource()).toString(bytes, 0, bytes.length);
             } else if (cachedValue instanceof ByteBuffer) {
                 byte[] bytes = ((ByteBuffer) cachedValue).array();
-                stringValue = DBUtils.getBinaryPresentation(valueController.getExecutionContext().getDataSource()).toString(bytes, 0, bytes.length);
+                stringValue = DBValueFormatting.getBinaryPresentation(valueController.getExecutionContext().getDataSource()).toString(bytes, 0, bytes.length);
             } else {
                 stringValue = cachedValue.toString();
             }

@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
@@ -51,7 +52,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ViewerColumnController;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -351,7 +352,7 @@ class FilterValueEditDialog extends BaseDialog {
         }
         Collections.sort(sortedList);
         if (hasNulls) {
-            sortedList.add(0, new DBDLabelValuePair(DBUtils.getDefaultValueDisplayString(null, DBDDisplayFormat.UI), null));
+            sortedList.add(0, new DBDLabelValuePair(DBValueFormatting.getDefaultValueDisplayString(null, DBDDisplayFormat.UI), null));
         }
 
         Set<Object> checkedValues = new HashSet<>();

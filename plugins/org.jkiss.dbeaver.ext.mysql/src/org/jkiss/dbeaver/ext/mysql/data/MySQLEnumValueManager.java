@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.EnumValueManager;
@@ -46,7 +46,7 @@ public class MySQLEnumValueManager extends EnumValueManager {
 
     @Override
     protected List<String> getSetValues(IValueController valueController, Object value) {
-        String setString = DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.UI);
+        String setString = DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.UI);
         List<String> setValues = new ArrayList<String>();
         if (!CommonUtils.isEmpty(setString)) {
             StringTokenizer st = new StringTokenizer(setString, ",");

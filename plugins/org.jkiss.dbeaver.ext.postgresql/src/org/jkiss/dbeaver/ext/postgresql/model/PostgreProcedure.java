@@ -120,8 +120,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         this.estRows = JDBCUtils.safeGetFloat(dbResult, "prorows");
 
         Long[] allArgTypes = JDBCUtils.safeGetArray(dbResult, "proallargtypes");
+        String[] argNames = JDBCUtils.safeGetArray(dbResult, "proargnames");
         if (!ArrayUtils.isEmpty(allArgTypes)) {
-            String[] argNames = JDBCUtils.safeGetArray(dbResult, "proargnames");
             String[] argModes = JDBCUtils.safeGetArray(dbResult, "proargmodes");
 
             for (int i = 0; i < allArgTypes.length; i++) {
@@ -161,7 +161,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                         continue;
                     }
                     //String paramName = argNames == null || argNames.length < inArg
-                    String paramName = "$" + (i + 1);
+                    //String paramName = "$" + (i + 1);
+                    String paramName = argNames == null || argNames.length < inArgTypes.length ? "$" + (i + 1) : argNames[i];
                     PostgreProcedureParameter param = new PostgreProcedureParameter(this, paramName, dataType, DBSProcedureParameterKind.IN, i + 1);
                     params.add(param);
                 }
@@ -398,7 +399,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @Override
     public String toString() {
-        return overloadedName;
+        return overloadedName == null ? name : overloadedName;
     }
 
 }

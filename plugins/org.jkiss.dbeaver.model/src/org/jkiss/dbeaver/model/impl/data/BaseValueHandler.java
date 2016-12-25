@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -48,7 +49,7 @@ public abstract class BaseValueHandler implements DBDValueHandler {
     @NotNull
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-        return DBUtils.getDefaultValueDisplayString(value, format);
+        return DBValueFormatting.getDefaultValueDisplayString(value, format);
     }
 
 
