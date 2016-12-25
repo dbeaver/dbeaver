@@ -87,7 +87,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
             leftPanel = UIUtils.createPartDivider(workbenchPart, planPanel, SWT.VERTICAL);
             leftPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            this.planTree = new PlanNodesTree(leftPanel, SWT.SHEET) {
+            this.planTree = new PlanNodesTree(leftPanel, SWT.SHEET, workbenchPart.getSite()) {
                 @Override
                 protected void fillCustomActions(IContributionManager contributionManager) {
                     contributionManager.add(toggleViewAction);

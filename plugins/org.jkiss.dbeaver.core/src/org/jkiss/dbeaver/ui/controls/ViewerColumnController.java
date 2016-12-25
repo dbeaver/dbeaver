@@ -63,7 +63,7 @@ public class ViewerColumnController {
 
     public ViewerColumnController(String id, ColumnViewer viewer)
     {
-        this.configId = id + ".columns";
+        this.configId = id;
         this.viewer = viewer;
         final Control control = this.viewer.getControl();
         control.setData(DATA_KEY, this);
@@ -389,6 +389,7 @@ public class ViewerColumnController {
         for (int i = 0; i < order.length; i++) {
             visibleColumns.get(i).order = order[i];
         }
+        saveColumnConfig();
     }
 
     private void saveColumnConfig()

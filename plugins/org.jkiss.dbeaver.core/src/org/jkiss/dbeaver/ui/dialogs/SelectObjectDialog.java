@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
@@ -85,7 +86,14 @@ public class SelectObjectDialog<T> extends Dialog {
         ObjectListControl<T> objectList = new ObjectListControl<T>(
             group,
             SWT.BORDER | (singleSelection ? SWT.SINGLE : SWT.MULTI),
-            new ListContentProvider()) {
+            new ListContentProvider())
+        {
+            @NotNull
+            @Override
+            protected String getListConfigId(List<Class<?>> classList) {
+                return "ObjectsSelector";
+            }
+
             @Override
             protected LoadingJob<Collection<T>> createLoadService()
             {

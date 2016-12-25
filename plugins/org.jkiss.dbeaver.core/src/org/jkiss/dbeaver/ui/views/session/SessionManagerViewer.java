@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
@@ -79,7 +80,7 @@ public class SessionManagerViewer
         SashForm sash = UIUtils.createPartDivider(part, composite, SWT.VERTICAL | SWT.SMOOTH);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        sessionTable = new SessionListControl(sash, sessionManager);
+        sessionTable = new SessionListControl(sash, part.getSite(), sessionManager);
         sessionTable.getItemsViewer().addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event)
@@ -184,9 +185,9 @@ public class SessionManagerViewer
 
     private class SessionListControl extends SessionTable {
 
-        public SessionListControl(SashForm sash, DBAServerSessionManager sessionManager)
+        public SessionListControl(SashForm sash, IWorkbenchSite site, DBAServerSessionManager<DBAServerSession> sessionManager)
         {
-            super(sash, SWT.SHEET, sessionManager);
+            super(sash, SWT.SHEET, site, sessionManager);
         }
 
         @Override

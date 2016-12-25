@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -269,6 +270,16 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     protected boolean isNewObject(DBNNode objectValue)
     {
         return !objectValue.isPersisted();
+    }
+
+    @NotNull
+    @Override
+    protected String getListConfigId(List<Class<?>> classList) {
+        StringBuilder sb = new StringBuilder("NodeList");
+        for (Class theClass : classList) {
+            sb.append("/").append(theClass.getSimpleName());
+        }
+        return sb.toString();
     }
 
     @Override
