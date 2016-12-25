@@ -399,69 +399,72 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     }
                 }
             }
-            if (reload) {
-                columnController.createColumns();
+
+            if (itemsControl.isDisposed()) {
+                return;
             }
+            if (reload) {
+                columnController.createColumns(false);
+            }
+            if (reload || objectList.isEmpty()) {
+                // Set viewer content
+                objectList = CommonUtils.isEmpty(items) ? new ArrayList<OBJECT_TYPE>() : new ArrayList<>(items);
 
-            if (!itemsControl.isDisposed()) {
-                if (reload || objectList.isEmpty()) {
-                    // Set viewer content
-                    objectList = CommonUtils.isEmpty(items) ? new ArrayList<OBJECT_TYPE>() : new ArrayList<>(items);
-
-                    // Pack columns
-                    sampleItems = true;
-                    try {
-                        List<OBJECT_TYPE> sampleList;
-                        if (objectList.size() > 200) {
-                            sampleList = objectList.subList(0, 100);
-                        } else {
-                            sampleList = objectList;
-                        }
-                        itemsViewer.setInput(sampleList);
-
-                        if (renderer.isTree()) {
-                            ((TreeViewer)itemsViewer).expandToLevel(4);
-                        }
-                        columnController.repackColumns();
-                    } finally {
-                        sampleItems = false;
-                    }
-                    // Set real content
-                    itemsViewer.setInput(objectList);
-                } else if (items != null) {
-                    if (append) {
-                        // Simply append new list to the tail
-                        for (OBJECT_TYPE newObject : items) {
-                            if (!objectList.contains(newObject)) {
-                                objectList.add(newObject);
-                            }
-                        }
+                // Pack columns
+                sampleItems = true;
+                try {
+                    List<OBJECT_TYPE> sampleList;
+                    if (objectList.size() > 200) {
+                        sampleList = objectList.subList(0, 100);
                     } else {
-                        // Update object list
-                        if (!objectList.equals(items)) {
-                            int newListSize = items.size();
-                            int itemIndex = 0;
-                            for (OBJECT_TYPE newObject : items) {
-                                if (itemIndex >= objectList.size()) {
-                                    // Add to tail
-                                    objectList.add(itemIndex, newObject);
-                                } else {
-                                    OBJECT_TYPE oldObject = objectList.get(itemIndex);
-                                    if (!CommonUtils.equalObjects(oldObject, newObject)) {
-                                        // Replace old object
-                                        objectList.set(itemIndex, newObject);
-                                    }
-                                }
-                                itemIndex++;
-                            }
-                            while (objectList.size() > newListSize) {
-                                objectList.remove(objectList.size() - 1);
-                            }
+                        sampleList = objectList;
+                    }
+                    itemsViewer.setInput(sampleList);
+
+                    if (renderer.isTree()) {
+                        ((TreeViewer)itemsViewer).expandToLevel(4);
+                    }
+                    if (reload) {
+                        columnController.repackColumns();
+                    }
+                } finally {
+                    sampleItems = false;
+                }
+                // Set real content
+                itemsViewer.setInput(objectList);
+            } else if (items != null) {
+                if (append) {
+                    // Simply append new list to the tail
+                    for (OBJECT_TYPE newObject : items) {
+                        if (!objectList.contains(newObject)) {
+                            objectList.add(newObject);
                         }
                     }
-
-                    itemsViewer.refresh();
+                } else {
+                    // Update object list
+                    if (!objectList.equals(items)) {
+                        int newListSize = items.size();
+                        int itemIndex = 0;
+                        for (OBJECT_TYPE newObject : items) {
+                            if (itemIndex >= objectList.size()) {
+                                // Add to tail
+                                objectList.add(itemIndex, newObject);
+                            } else {
+                                OBJECT_TYPE oldObject = objectList.get(itemIndex);
+                                if (!CommonUtils.equalObjects(oldObject, newObject)) {
+                                    // Replace old object
+                                    objectList.set(itemIndex, newObject);
+                                }
+                            }
+                            itemIndex++;
+                        }
+                        while (objectList.size() > newListSize) {
+                            objectList.remove(objectList.size() - 1);
+                        }
+                    }
                 }
+
+                itemsViewer.refresh();
             }
         } finally {
             itemsControl.setRedraw(true);
@@ -481,7 +484,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public void clearListData()
     {
         if (columnController != null) {
-            columnController.clearColumns();
+            columnController.dispose();
             columnController = null;
         }
 

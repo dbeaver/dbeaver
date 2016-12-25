@@ -84,6 +84,7 @@ class ViewerColumnRegistry {
         }
         columnsConfig.put(controlId, newStates);
 
+        // TODO: Flush in separate job once per 5 seconds
         flushConfig();
     }
 
