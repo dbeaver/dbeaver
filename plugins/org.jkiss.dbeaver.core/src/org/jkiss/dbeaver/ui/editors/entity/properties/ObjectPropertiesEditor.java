@@ -419,7 +419,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         if (result != null) {
             return adapter.cast(result);
         }
-        return super.getAdapter(adapter);
+        return null;//super.getAdapter(adapter);
     }
 
     public TabbedFolderInfo[] collectFolders(IWorkbenchPart part)
