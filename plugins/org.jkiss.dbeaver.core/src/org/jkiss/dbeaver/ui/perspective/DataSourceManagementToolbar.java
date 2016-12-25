@@ -719,7 +719,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         gl.marginHeight = 0;
         comboGroup.setLayout(gl);
 
-        final int fontHeight = parent.getFont().getFontData()[0].getHeight();
+        final int fontHeight = UIUtils.getFontHeight(parent);
         int comboWidth = fontHeight * 20;
 
         connectionCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);

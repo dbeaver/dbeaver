@@ -55,5 +55,5 @@ public class ERDConstants {
 
     public static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + ERDActivator.PLUGIN_ID + "/icons/";
 
-    public static DBSEntityConstraintType CONSTRAINT_LOGICAL_FK = new DBSEntityConstraintType("erdkey", "Logical Key", null, true, false);
+    public static DBSEntityConstraintType CONSTRAINT_LOGICAL_FK = new DBSEntityConstraintType("erdkey", "Logical Key", null, true, false, false);
 }

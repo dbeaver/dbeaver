@@ -51,10 +51,11 @@ import java.util.List;
  */
 public abstract class AttributesSelectorPage extends BaseObjectEditPage {
 
-    private DBSEntity entity;
-    private Table columnsTable;
-    private List<AttributeInfo> attributes = new ArrayList<>();
-    private Button toggleButton;
+    protected DBSEntity entity;
+    protected Table columnsTable;
+    protected List<AttributeInfo> attributes = new ArrayList<>();
+    protected Button toggleButton;
+    protected Group columnsGroup;
 
     private static class AttributeInfo {
         DBSEntityAttribute attribute;
@@ -76,7 +77,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     }
 
     @Override
-    protected Control createPageContents(Composite parent) {
+    protected Composite createPageContents(Composite parent) {
         final Composite panel = UIUtils.createPlaceholder(parent, 1);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -95,7 +96,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
 
     protected void createColumnsGroup(Composite panel)
     {
-        Composite columnsGroup = UIUtils.createControlGroup(panel, CoreMessages.dialog_struct_columns_select_group_columns, 1, GridData.FILL_BOTH, 0);
+        columnsGroup = UIUtils.createControlGroup(panel, CoreMessages.dialog_struct_columns_select_group_columns, 1, GridData.FILL_BOTH, 0);
         //columnsViewer = new TableViewer(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
         columnsTable = new Table(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK);
         columnsTable.setHeaderVisible(true);
