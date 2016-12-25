@@ -227,7 +227,7 @@ public class MetaDataPanel implements IResultSetPanel {
             if (executionContext == null) {
                 return "MetaData";
             }
-            return "MetaData/" + executionContext.getDataSource().getContainer().getDriver().getName();
+            return "MetaData/" + executionContext.getDataSource().getContainer().getDriver().getId();
         }
 
         @Override
