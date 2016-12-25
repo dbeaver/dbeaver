@@ -57,7 +57,7 @@ public class DBDLabelValuePair implements Comparable {
             if (lvp.value == null) {
                 return 1;
             }
-            if (value instanceof Comparable && lvp.value instanceof Comparable) {
+            if (value instanceof Comparable && value.getClass() == lvp.value.getClass()) {
                 return ((Comparable) value).compareTo(lvp.value);
             }
         }
