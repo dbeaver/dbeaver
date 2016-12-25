@@ -86,11 +86,13 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
 
     @NotNull
     @Override
+    @Property(name = "Type", viewable = true, order = 3)
     public DBSEntityConstraintType getConstraintType()
     {
         return constraintType;
     }
 
+    @NotNull
     @Override
     public TABLE getParentObject()
     {
