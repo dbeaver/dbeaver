@@ -176,7 +176,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
                 return res;
             }
         }
-        return super.getAdapter(adapter);
+        return null;//super.getAdapter(adapter);
     }
 
     @Override
