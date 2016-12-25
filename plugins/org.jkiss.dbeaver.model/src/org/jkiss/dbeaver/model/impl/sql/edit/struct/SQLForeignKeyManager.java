@@ -71,7 +71,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
                 ModelMessages.model_jdbc_drop_foreign_key,
                 getDropForeignKeyPattern(command.getObject())
                     .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
-                    .replace(PATTERN_ITEM_CONSTRAINT, command.getObject().getName()))
+                    .replace(PATTERN_ITEM_CONSTRAINT, DBUtils.getQuotedIdentifier(command.getObject())))
         );
     }
 
