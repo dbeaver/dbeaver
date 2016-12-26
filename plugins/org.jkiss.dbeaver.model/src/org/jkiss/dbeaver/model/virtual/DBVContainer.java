@@ -46,6 +46,20 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         this.name = name;
     }
 
+    // Copy constructor
+    DBVContainer(DBVContainer parent, DBVContainer source)
+    {
+        this.parent = parent;
+        this.name = source.name;
+        this.description = source.description;
+        for (Map.Entry<String, DBVContainer> ce : source.containers.entrySet()) {
+            this.containers.put(ce.getKey(), new DBVContainer(this, ce.getValue()));
+        }
+        for (Map.Entry<String, DBVEntity> ee : source.entities.entrySet()) {
+            this.entities.put(ee.getKey(), new DBVEntity(this, ee.getValue()));
+        }
+    }
+
     public DBSObjectContainer getRealContainer(DBRProgressMonitor monitor) throws DBException
     {
         DBSObjectContainer realParent = parent.getRealContainer(monitor);

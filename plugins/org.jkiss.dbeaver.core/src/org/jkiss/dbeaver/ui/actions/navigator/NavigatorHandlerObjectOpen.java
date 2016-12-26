@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -46,7 +45,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
@@ -232,17 +230,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         EditConnectionDialog dialog = new EditConnectionDialog(
             workbenchWindow,
             new EditConnectionWizard(dataSourceContainer));
-        if (dialog.open() == IDialogConstants.OK_ID) {
-            if (dataSourceContainer.isConnected()) {
-                if (UIUtils.confirmAction(
-                    workbenchWindow.getShell(),
-                    "Connection changed",
-                    "Connection '" + dataSourceContainer.getName() + "' has been changed.\nDo you want to reconnect?"))
-                {
-                    DataSourceHandler.reconnectDataSource(null, dataSourceContainer);
-                }
-            }
-        }
+        dialog.open();
     }
 
     public static void openResourceEditor(IWorkbenchWindow workbenchWindow, ResourceUtils.ResourceInfo resourceInfo) {
