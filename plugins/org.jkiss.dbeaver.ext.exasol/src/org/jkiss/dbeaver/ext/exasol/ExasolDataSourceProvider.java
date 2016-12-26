@@ -68,7 +68,7 @@ public class ExasolDataSourceProvider extends JDBCDataSourceProvider {
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
             port = ":" + connectionInfo.getHostPort();
         }
-        Map<Object, Object> properties = connectionInfo.getProperties();
+        Map<String, String> properties = connectionInfo.getProperties();
 
         StringBuilder url = new StringBuilder(128);
         url.append("jdbc:exa:").append(connectionInfo.getHostName()).append(port);

@@ -54,9 +54,9 @@ public abstract class PostgreWizardPageSettings<WIZARD extends AbstractToolWizar
             String authUser = null;
             String authPassword = null;
             {
-                Object authValue = connectionInfo.getProperty(authProperty);
+                String authValue = connectionInfo.getProviderProperty(authProperty);
                 if (authValue != null) {
-                    String authCredentials = encrypter.decrypt(authValue.toString());
+                    String authCredentials = encrypter.decrypt(authValue);
                     int divPos = authCredentials.indexOf(':');
                     if (divPos != -1) {
                         authUser = authCredentials.substring(0, divPos);
@@ -90,7 +90,7 @@ public abstract class PostgreWizardPageSettings<WIZARD extends AbstractToolWizar
                         wizard.setToolUserPassword(authDialog.getUserPassword());
                         if (authDialog.isSavePassword()) {
                             try {
-                                connectionInfo.setProperty(
+                                connectionInfo.setProviderProperty(
                                     authProperty,
                                     encrypter.encrypt(wizard.getToolUserName() + ':' + wizard.getToolUserPassword()));
                             } catch (EncryptionException e1) {
@@ -107,7 +107,7 @@ public abstract class PostgreWizardPageSettings<WIZARD extends AbstractToolWizar
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    connectionInfo.getProperties().remove(authProperty);
+                    connectionInfo.getProviderProperties().remove(authProperty);
                     wizard.setToolUserName(connectionInfo.getUserName());
                     wizard.setToolUserPassword(connectionInfo.getUserPassword());
                 }

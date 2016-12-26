@@ -38,7 +38,7 @@ public class ImportConnectionInfo {
     private String database;
     private String user;
     private String password;
-    private Map<Object, Object> properties = new HashMap<>();
+    private Map<String, String> properties = new HashMap<>();
     private Map<String, String> providerProperties = new HashMap<>();
     private boolean checked = false;
 
@@ -128,7 +128,7 @@ public class ImportConnectionInfo {
         return password;
     }
 
-    public Map<Object, Object> getProperties()
+    public Map<String, String> getProperties()
     {
         return properties;
     }
