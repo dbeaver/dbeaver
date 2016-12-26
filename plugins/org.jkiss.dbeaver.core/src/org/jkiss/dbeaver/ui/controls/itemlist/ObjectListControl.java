@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.TraverseEvent;
@@ -46,9 +47,9 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -95,8 +96,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public ObjectListControl(
         Composite parent,
         int style,
-        IContentProvider contentProvider)
-    {
+        IContentProvider contentProvider) {
         super(parent, style);
         this.isFitWidth = false;
 
@@ -118,23 +118,24 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (contentProvider instanceof ITreeContentProvider) {
             TreeViewer treeViewer = new TreeViewer(this, viewerStyle);
             final Tree tree = treeViewer.getTree();
-            tree.setLinesVisible (true);
+            tree.setLinesVisible(true);
             tree.setHeaderVisible(true);
             itemsViewer = treeViewer;
             editorActivationStrategy = new EditorActivationStrategy(treeViewer);
             TreeViewerEditor.create(treeViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
             // We need measure item listener to prevent collapse/expand on double click
             // Looks like a bug in SWT: http://www.eclipse.org/forums/index.php/t/257325/
-            treeViewer.getControl().addListener(SWT.MeasureItem, new Listener(){
+            treeViewer.getControl().addListener(SWT.MeasureItem, new Listener() {
                 @Override
                 public void handleEvent(Event event) {
                     // Just do nothing
-                }});
+                }
+            });
             tree.addTraverseListener(traverseListener);
         } else {
             TableViewer tableViewer = new TableViewer(this, viewerStyle);
             final Table table = tableViewer.getTable();
-            table.setLinesVisible (true);
+            table.setLinesVisible(true);
             table.setHeaderVisible(true);
             itemsViewer = tableViewer;
             //UIUtils.applyCustomTolTips(table);
@@ -166,9 +167,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         // Add selection listener
         itemsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
-            public void selectionChanged(SelectionChangedEvent event)
-            {
-                IStructuredSelection selection = (IStructuredSelection)event.getSelection();
+            public void selectionChanged(SelectionChangedEvent event) {
+                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
                 if (selection.isEmpty()) {
                     setCurListObject(null);
                 } else {
@@ -192,7 +192,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     /**
      * Used to save/load columns configuration.
      * Must depend on object types
-     * @param classList    classes of objects in the list
+     *
+     * @param classList classes of objects in the list
      */
     @NotNull
     protected abstract String getListConfigId(List<Class<?>> classList);
@@ -201,32 +202,27 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return SWT.MULTI | SWT.FULL_SELECTION;
     }
 
-    public ObjectViewerRenderer getRenderer()
-    {
+    public ObjectViewerRenderer getRenderer() {
         return renderer;
     }
 
-    public PropertySourceAbstract getListPropertySource()
-    {
+    public PropertySourceAbstract getListPropertySource() {
         if (this.listPropertySource == null) {
             this.listPropertySource = createListPropertySource();
         }
         return listPropertySource;
     }
 
-    protected PropertySourceAbstract createListPropertySource()
-    {
+    protected PropertySourceAbstract createListPropertySource() {
         return new DefaultListPropertySource();
     }
 
-    protected CellLabelProvider getColumnLabelProvider(ObjectColumn objectColumn)
-    {
+    protected CellLabelProvider getColumnLabelProvider(ObjectColumn objectColumn) {
         return new ObjectColumnLabelProvider(objectColumn);
     }
 
     @Override
-    protected boolean cancelProgress()
-    {
+    protected boolean cancelProgress() {
         synchronized (this) {
             if (loadingJob != null) {
                 loadingJob.cancel();
@@ -236,46 +232,37 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return false;
     }
 
-    public OBJECT_TYPE getCurrentListObject()
-    {
+    public OBJECT_TYPE getCurrentListObject() {
         return curListObject;
     }
 
-    protected void setCurListObject(@Nullable OBJECT_TYPE curListObject)
-    {
+    protected void setCurListObject(@Nullable OBJECT_TYPE curListObject) {
         this.curListObject = curListObject;
     }
 
-    public ColumnViewer getItemsViewer()
-    {
+    public ColumnViewer getItemsViewer() {
         return itemsViewer;
     }
 
-    public Composite getControl()
-    {
+    public Composite getControl() {
         // Both table and tree are composites so its ok
         return (Composite) itemsViewer.getControl();
     }
 
-    public ISelectionProvider getSelectionProvider()
-    {
+    public ISelectionProvider getSelectionProvider() {
         return itemsViewer;
     }
 
-    protected ObjectColumn getColumnByIndex(int index)
-    {
+    protected ObjectColumn getColumnByIndex(int index) {
         return (ObjectColumn) columnController.getColumnData(index);
     }
 
-    public void setFitWidth(boolean fitWidth)
-    {
+    public void setFitWidth(boolean fitWidth) {
         isFitWidth = fitWidth;
     }
 
     @Override
-    public void disposeControl()
-    {
-        //PropertiesContributor.getInstance().removeLazyListener(this);
+    public void disposeControl() {
         synchronized (this) {
             if (loadingJob != null) {
                 // Cancel running job
@@ -287,18 +274,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         super.disposeControl();
     }
 
-    public synchronized boolean isLoading()
-    {
+    public synchronized boolean isLoading() {
         return loadingJob != null;
     }
 
-    public void loadData()
-    {
+    public void loadData() {
         loadData(true);
     }
 
-    public void loadData(boolean lazy)
-    {
+    public void loadData(boolean lazy) {
         if (this.loadingJob != null) {
             try {
                 for (int i = 0; i < 20; i++) {
@@ -328,8 +312,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 if (this.loadingJob != null) {
                     this.loadingJob.addJobChangeListener(new JobChangeAdapter() {
                         @Override
-                        public void done(IJobChangeEvent event)
-                        {
+                        public void done(IJobChangeEvent event) {
                             loadingJob = null;
                         }
                     });
@@ -345,8 +328,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    protected void setListData(Collection<OBJECT_TYPE> items, boolean append)
-    {
+    protected void setListData(Collection<OBJECT_TYPE> items, boolean append) {
         final Control itemsControl = itemsViewer.getControl();
         if (itemsControl.isDisposed()) {
             return;
@@ -378,7 +360,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
                 IPropertyFilter propertyFilter = new DataSourcePropertyFilter(
                     ObjectListControl.this instanceof IDataSourceContainerProvider ?
-                        ((IDataSourceContainerProvider)ObjectListControl.this).getDataSourceContainer() :
+                        ((IDataSourceContainerProvider) ObjectListControl.this).getDataSourceContainer() :
                         null);
 
                 // Collect all properties
@@ -420,7 +402,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     itemsViewer.setInput(sampleList);
 
                     if (renderer.isTree()) {
-                        ((TreeViewer)itemsViewer).expandToLevel(4);
+                        ((TreeViewer) itemsViewer).expandToLevel(4);
                     }
                     if (reload) {
                         columnController.repackColumns();
@@ -470,8 +452,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         setInfo(getItemsLoadMessage(objectList.size()));
     }
 
-    public void appendListData(Collection<OBJECT_TYPE> items)
-    {
+    public void appendListData(Collection<OBJECT_TYPE> items) {
         setListData(items, true);
     }
 
@@ -479,8 +460,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return objectList;
     }
 
-    public void clearListData()
-    {
+    public void clearListData() {
         if (columnController != null) {
             columnController.dispose();
             columnController = null;
@@ -495,8 +475,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         clearLazyCache();
     }
 
-    private void collectItemClasses(OBJECT_TYPE item, List<Class<?>> classList, Map<OBJECT_TYPE, Boolean> collectedSet)
-    {
+    private void collectItemClasses(OBJECT_TYPE item, List<Class<?>> classList, Map<OBJECT_TYPE, Boolean> collectedSet) {
         if (collectedSet.containsKey(item)) {
             log.warn("Cycled object tree: " + item);
             return;
@@ -509,7 +488,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         Object[] children = contentProvider.getChildren(item);
         if (!ArrayUtils.isEmpty(children)) {
             for (Object child : children) {
-                OBJECT_TYPE childItem = (OBJECT_TYPE)child;
+                OBJECT_TYPE childItem = (OBJECT_TYPE) child;
                 Object objectValue = getObjectValue(childItem);
                 if (objectValue != null) {
                     if (!classList.contains(objectValue.getClass())) {
@@ -521,15 +500,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    private void clearLazyCache()
-    {
+    private void clearLazyCache() {
         synchronized (lazyCache) {
             lazyCache.clear();
         }
     }
 
-    protected String getItemsLoadMessage(int count)
-    {
+    protected String getItemsLoadMessage(int count) {
         if (count == 0) {
             return CoreMessages.controls_object_list_message_no_items;
         } else {
@@ -537,23 +514,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    public void setDoubleClickHandler(IDoubleClickListener doubleClickHandler)
-    {
+    public void setDoubleClickHandler(IDoubleClickListener doubleClickHandler) {
         this.doubleClickHandler = doubleClickHandler;
     }
 
-    private Tree getTree()
-    {
-        return ((TreeViewer)itemsViewer).getTree();
+    private Tree getTree() {
+        return ((TreeViewer) itemsViewer).getTree();
     }
 
-    private Table getTable()
-    {
-        return ((TableViewer)itemsViewer).getTable();
+    private Table getTable() {
+        return ((TableViewer) itemsViewer).getTable();
     }
 
-    private synchronized void addLazyObject(OBJECT_TYPE object, ObjectColumn column)
-    {
+    private synchronized void addLazyObject(OBJECT_TYPE object, ObjectColumn column) {
         if (lazyObjects == null) {
             lazyObjects = new LinkedHashMap<>();
         }
@@ -569,8 +542,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             lazyLoadingJob = new LazyLoaderJob();
             lazyLoadingJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
-                public void done(IJobChangeEvent event)
-                {
+                public void done(IJobChangeEvent event) {
                     synchronized (ObjectListControl.this) {
                         if (lazyObjects == null || lazyObjects.isEmpty()) {
                             lazyLoadingJob = null;
@@ -585,8 +557,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     @Nullable
-    private synchronized Map<OBJECT_TYPE, List<ObjectColumn>> obtainLazyObjects()
-    {
+    private synchronized Map<OBJECT_TYPE, List<ObjectColumn>> obtainLazyObjects() {
         synchronized (lazyCache) {
             if (lazyObjects == null) {
                 return null;
@@ -598,16 +569,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     @Nullable
-    protected final Object getCellValue(Object element, int columnIndex)
-    {
+    protected final Object getCellValue(Object element, int columnIndex) {
         final ObjectColumn columnInfo = getColumnByIndex(columnIndex);
         return getCellValue(element, columnInfo);
     }
 
     @Nullable
-    protected Object getCellValue(Object element, ObjectColumn objectColumn)
-    {
-        OBJECT_TYPE object = (OBJECT_TYPE)element;
+    protected Object getCellValue(Object element, ObjectColumn objectColumn) {
+        OBJECT_TYPE object = (OBJECT_TYPE) element;
 
         Object objectValue = getObjectValue(object);
         if (objectValue == null) {
@@ -618,8 +587,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return null;
         }
         //if (!prop.isReadOnly(objectValue) && isNewObject(object)) {
-            // Non-editable properties are empty for new objects
-            //return null;
+        // Non-editable properties are empty for new objects
+        //return null;
         //}
         if (prop.isLazy(objectValue, true)) {
             synchronized (lazyCache) {
@@ -650,8 +619,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
      * Gets property descriptor by column and object value (NB! not OBJECT_TYPE but real object value).
      */
     @Nullable
-    private static ObjectPropertyDescriptor getPropertyByObject(ObjectColumn column, Object objectValue)
-    {
+    private static ObjectPropertyDescriptor getPropertyByObject(ObjectColumn column, Object objectValue) {
         ObjectPropertyDescriptor prop = null;
         for (Class valueClass = objectValue.getClass(); prop == null && valueClass != Object.class; valueClass = valueClass.getSuperclass()) {
             prop = column.propMap.get(valueClass);
@@ -668,23 +636,23 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     @Nullable
-    protected Class<?>[] getListBaseTypes(Collection<OBJECT_TYPE> items)
-    {
+    protected Class<?>[] getListBaseTypes(Collection<OBJECT_TYPE> items) {
         return null;
     }
 
     /**
      * Returns object with properties
+     *
      * @param item list item
      * @return object which will be examined for properties
      */
-    protected Object getObjectValue(OBJECT_TYPE item)
-    {
+    protected Object getObjectValue(OBJECT_TYPE item) {
         return item;
     }
 
     /**
      * Returns object's image
+     *
      * @param item object
      * @return image or null
      */
@@ -701,14 +669,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return null;
     }
 
-    protected boolean isNewObject(OBJECT_TYPE objectValue)
-    {
+    protected boolean isNewObject(OBJECT_TYPE objectValue) {
         return false;
     }
 
     @NotNull
-    protected Set<DBPPropertyDescriptor> getAllProperties()
-    {
+    protected Set<DBPPropertyDescriptor> getAllProperties() {
         ObjectColumn[] columns = columnController.getColumnsData(ObjectColumn.class);
         Set<DBPPropertyDescriptor> props = new LinkedHashSet<>();
         for (ObjectColumn column : columns) {
@@ -717,8 +683,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return props;
     }
 
-    protected void createColumn(ObjectPropertyDescriptor prop)
-    {
+    protected void createColumn(ObjectPropertyDescriptor prop) {
         ObjectColumn objectColumn = null;
         for (ObjectColumn col : columnController.getColumnsData(ObjectColumn.class)) {
             if (CommonUtils.equalObjects(col.id, prop.getId()) || CommonUtils.equalObjects(col.displayName, prop.getDisplayName())) {
@@ -763,8 +728,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     protected abstract LoadingJob<Collection<OBJECT_TYPE>> createLoadService();
 
-    protected ObjectViewerRenderer createRenderer()
-    {
+    protected ObjectViewerRenderer createRenderer() {
         return new ViewerRenderer();
     }
 
@@ -772,8 +736,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     // Edit
 
     @Nullable
-    protected EditingSupport makeEditingSupport(ObjectColumn objectColumn)
-    {
+    protected EditingSupport makeEditingSupport(ObjectColumn objectColumn) {
         return null;
     }
 
@@ -788,6 +751,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     @Override
     public void addClipboardData(ClipboardData clipboardData) {
         // Cope selected cells
+        final String selectedText = getRenderer().getSelectedText();
+        if (!CommonUtils.isEmpty(selectedText)) {
+            clipboardData.addTransfer(TextTransfer.getInstance(), selectedText);
+        }
     }
 
     //////////////////////////////////////////////////////
@@ -795,15 +762,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private class EditorActivationStrategy extends ColumnViewerEditorActivationStrategy {
 
-        public EditorActivationStrategy(ColumnViewer viewer)
-        {
+        public EditorActivationStrategy(ColumnViewer viewer) {
             super(viewer);
         }
 
         @Override
-        protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event)
-        {
-            ViewerCell cell = (ViewerCell)event.getSource();
+        protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event) {
+            ViewerCell cell = (ViewerCell) event.getSource();
             if (renderer.isHyperlink(getCellValue(cell.getElement(), cell.getColumnIndex())) &&
                 getItemsViewer().getControl().getCursor() == getItemsViewer().getControl().getDisplay().getSystemCursor(SWT.CURSOR_HAND)) {
                 return false;
@@ -814,23 +779,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private static class EditorActivationListener extends ColumnViewerEditorActivationListener {
         @Override
-        public void beforeEditorActivated(ColumnViewerEditorActivationEvent event)
-        {
+        public void beforeEditorActivated(ColumnViewerEditorActivationEvent event) {
         }
 
         @Override
-        public void afterEditorActivated(ColumnViewerEditorActivationEvent event)
-        {
+        public void afterEditorActivated(ColumnViewerEditorActivationEvent event) {
         }
 
         @Override
-        public void beforeEditorDeactivated(ColumnViewerEditorDeactivationEvent event)
-        {
+        public void beforeEditorDeactivated(ColumnViewerEditorDeactivationEvent event) {
         }
 
         @Override
-        public void afterEditorDeactivated(ColumnViewerEditorDeactivationEvent event)
-        {
+        public void afterEditorDeactivated(ColumnViewerEditorDeactivationEvent event) {
         }
     }
 
@@ -840,26 +801,22 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private class DefaultListPropertySource extends PropertySourceAbstract {
 
-        public DefaultListPropertySource()
-        {
+        public DefaultListPropertySource() {
             super(ObjectListControl.this, ObjectListControl.this, true);
         }
 
         @Override
-        public Object getSourceObject()
-        {
+        public Object getSourceObject() {
             return getCurrentListObject();
         }
 
         @Override
-        public Object getEditableValue()
-        {
+        public Object getEditableValue() {
             return getObjectValue(getCurrentListObject());
         }
 
         @Override
-        public DBPPropertyDescriptor[] getPropertyDescriptors2()
-        {
+        public DBPPropertyDescriptor[] getPropertyDescriptors2() {
             Set<DBPPropertyDescriptor> props = getAllProperties();
             return props.toArray(new DBPPropertyDescriptor[props.size()]);
         }
@@ -878,8 +835,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             this.id = id;
             this.displayName = displayName;
         }
-        void addProperty(Class<?> objectClass, ObjectPropertyDescriptor prop)
-        {
+
+        void addProperty(Class<?> objectClass, ObjectPropertyDescriptor prop) {
             this.propMap.put(objectClass, prop);
         }
 
@@ -889,8 +846,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         @Nullable
-        public ObjectPropertyDescriptor getProperty(Object object)
-        {
+        public ObjectPropertyDescriptor getProperty(Object object) {
             return object == null ? null : getPropertyByObject(this, object);
         }
     }
@@ -898,19 +854,16 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     //////////////////////////////////////////////////////
     // List sorter
 
-    protected class ObjectColumnLabelProvider extends ColumnLabelProvider
-    {
+    protected class ObjectColumnLabelProvider extends ColumnLabelProvider {
         protected final ObjectColumn objectColumn;
 
-        ObjectColumnLabelProvider(ObjectColumn objectColumn)
-        {
+        ObjectColumnLabelProvider(ObjectColumn objectColumn) {
             this.objectColumn = objectColumn;
         }
 
         @Nullable
         @Override
-        public Image getImage(Object element)
-        {
+        public Image getImage(Object element) {
             OBJECT_TYPE object = (OBJECT_TYPE) element;
             final ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, getObjectValue(object));
             if (prop != null && prop.isNameProperty()) {
@@ -921,11 +874,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         @Override
-        public String getText(Object element)
-        {
+        public String getText(Object element) {
             Object cellValue = getCellValue(element, objectColumn);
             if (cellValue instanceof LazyValue) {
-                cellValue = ((LazyValue)cellValue).value;
+                cellValue = ((LazyValue) cellValue).value;
             }
             if (!sampleItems && renderer.isHyperlink(cellValue)) {
                 return ""; //$NON-NLS-1$
@@ -941,7 +893,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         @Override
         public Color getBackground(Object element) {
-            return getObjectBackground((OBJECT_TYPE) element);
+            final Color background = getObjectBackground((OBJECT_TYPE) element);
+            if (background == null) {
+
+            }
+            return background;
         }
 
         @Override
@@ -952,13 +908,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     public class ObjectsLoadVisualizer extends ProgressVisualizer<Collection<OBJECT_TYPE>> {
 
-        public ObjectsLoadVisualizer()
-        {
+        public ObjectsLoadVisualizer() {
         }
 
         @Override
-        public void completeLoading(Collection<OBJECT_TYPE> items)
-        {
+        public void completeLoading(Collection<OBJECT_TYPE> items) {
             super.completeLoading(items);
             setListData(items, false);
         }
@@ -967,13 +921,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     public class ObjectActionVisualizer extends ProgressVisualizer<Void> {
 
-        public ObjectActionVisualizer()
-        {
+        public ObjectActionVisualizer() {
         }
 
         @Override
-        public void completeLoading(Void v)
-        {
+        public void completeLoading(Void v) {
             super.completeLoading(v);
         }
     }
@@ -981,60 +933,60 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private static class LazyValue {
         private final Object value;
 
-        private LazyValue(Object value)
-        {
+        private LazyValue(Object value) {
             this.value = value;
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return value.toString();
         }
     }
 
-	class PaintListener implements Listener {
+    class PaintListener implements Listener {
 
-		@Override
-        public void handleEvent(Event event) {
+        @Override
+        public void handleEvent(Event e) {
             if (isDisposed()) {
                 return;
             }
-			switch(event.type) {
-				case SWT.PaintItem: if (event.index < columnController.getColumnsCount()) {
-                    final ObjectColumn objectColumn = getColumnByIndex(event.index);
-                    final OBJECT_TYPE object = (OBJECT_TYPE)event.item.getData();
-                    final Object objectValue = getObjectValue(object);
-                    Object cellValue = getCellValue(object, objectColumn);
-                    if (cellValue instanceof LazyValue) {
-                        if (!lazyLoadCanceled) {
-                            addLazyObject(object, objectColumn);
-                        }
-                    } else if (cellValue != null ) {
-                        ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
-                        if (prop != null) {
-                            if (itemsViewer.isCellEditorActive() && focusObject == object && focusColumn == objectColumn) {
-                                // Do not paint over active editor
-                                return;
+            switch (e.type) {
+                case SWT.PaintItem:
+                    if (e.index < columnController.getColumnsCount()) {
+                        final ObjectColumn objectColumn = getColumnByIndex(e.index);
+                        final OBJECT_TYPE object = (OBJECT_TYPE) e.item.getData();
+                        final boolean isFocusCell = focusObject == object && focusColumn == objectColumn;
+
+                        final Object objectValue = getObjectValue(object);
+                        Object cellValue = getCellValue(object, objectColumn);
+
+                        if (cellValue instanceof LazyValue) {
+                            if (!lazyLoadCanceled) {
+                                addLazyObject(object, objectColumn);
                             }
-                            renderer.paintCell(event, object, event.index, prop.isEditable(objectValue));
+                        } else if (cellValue != null) {
+                            ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
+                            if (prop != null) {
+                                if (itemsViewer.isCellEditorActive() && isFocusCell) {
+                                    // Do not paint over active editor
+                                    return;
+                                }
+                                renderer.paintCell(e, object, e.index, prop.isEditable(objectValue));
+                            }
                         }
+                        break;
                     }
-					break;
-				}
-			}
-		}
-	}
+            }
+        }
+    }
 
     private class LazyLoaderJob extends AbstractJob {
-        public LazyLoaderJob()
-        {
+        public LazyLoaderJob() {
             super(CoreMessages.controls_object_list_job_props_read);
         }
 
         @Override
-        protected IStatus run(final DBRProgressMonitor monitor)
-        {
+        protected IStatus run(final DBRProgressMonitor monitor) {
             final Map<OBJECT_TYPE, List<ObjectColumn>> objectMap = obtainLazyObjects();
             if (isDisposed()) {
                 return Status.OK_STATUS;
@@ -1079,8 +1031,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             synchronized (lazyCache) {
                                 objectCache.put(prop.getId(), lazyValue);
                             }
-                        }
-                        catch (Throwable e) {
+                        } catch (Throwable e) {
                             if (e instanceof InvocationTargetException) {
                                 e = ((InvocationTargetException) e).getTargetException();
                             }
@@ -1088,7 +1039,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             // do not return error - it causes a lot of error boxes
                             //return RuntimeUtils.makeExceptionStatus(e);
                         }
-                }
+                    }
                 }
                 monitor.worked(1);
             }
@@ -1131,15 +1082,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     protected class ViewerRenderer extends ObjectViewerRenderer {
-        protected ViewerRenderer()
-        {
+        protected ViewerRenderer() {
             super(itemsViewer);
         }
 
         @Nullable
         @Override
-        protected Object getCellValue(Object element, int columnIndex)
-        {
+        protected Object getCellValue(Object element, int columnIndex) {
             return ObjectListControl.this.getCellValue(element, columnIndex);
         }
     }
