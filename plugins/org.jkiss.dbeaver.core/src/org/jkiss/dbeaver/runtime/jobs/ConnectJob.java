@@ -71,15 +71,15 @@ public class ConnectJob extends AbstractJob
             }
 
             try {
-                container.connect(monitor, initialize, reflect);
+                final boolean connected = container.connect(monitor, initialize, reflect);
+
+                connectStatus = connected ? Status.OK_STATUS : Status.CANCEL_STATUS;
             } finally {
                 if (connectThread != null) {
                     connectThread.setName(oldName);
                     connectThread = null;
                 }
             }
-
-            connectStatus = Status.OK_STATUS;
         }
         catch (Throwable ex) {
             log.debug(ex);

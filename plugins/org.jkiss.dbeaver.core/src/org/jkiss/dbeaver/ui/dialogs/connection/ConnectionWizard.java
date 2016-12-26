@@ -136,6 +136,9 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                         if (op.getConnectError() != null) {
                             throw new InvocationTargetException(op.getConnectError());
                         }
+                        if (op.getConnectStatus() == Status.CANCEL_STATUS) {
+                            throw new InterruptedException();
+                        }
                     }
                 });
 
@@ -220,6 +223,9 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 connectTime = (System.currentTimeMillis() - startTime);
                 if (connectError != null || monitor.isCanceled()) {
                     return Status.OK_STATUS;
+                }
+                if (connectStatus == Status.CANCEL_STATUS) {
+                    return Status.CANCEL_STATUS;
                 }
 
                 monitor.worked(1);
