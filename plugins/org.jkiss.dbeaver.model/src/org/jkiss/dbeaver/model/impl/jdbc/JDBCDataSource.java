@@ -130,7 +130,7 @@ public abstract class JDBCDataSource
         }
 
         DBPConnectionConfiguration connectionInfo = container.getActualConnectionConfiguration();
-        for (Map.Entry<Object,Object> prop : connectionInfo.getProperties().entrySet()) {
+        for (Map.Entry<String, String> prop : connectionInfo.getProperties().entrySet()) {
             connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
         }
         if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {

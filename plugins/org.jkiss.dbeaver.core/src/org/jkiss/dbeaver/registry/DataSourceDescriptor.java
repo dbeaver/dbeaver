@@ -777,7 +777,7 @@ public class DataSourceDescriptor
         DBRShellCommand command = info.getEvent(eventType);
         if (command != null && command.isEnabled()) {
             Map<String, Object> variables = new HashMap<>();
-            for (Map.Entry<Object, Object> entry : info.getProperties().entrySet()) {
+            for (Map.Entry<String, String> entry : info.getProperties().entrySet()) {
                 variables.put(CommonUtils.toString(entry.getKey()), entry.getValue());
             }
             variables.put(RegistryConstants.VARIABLE_HOST, info.getHostName());

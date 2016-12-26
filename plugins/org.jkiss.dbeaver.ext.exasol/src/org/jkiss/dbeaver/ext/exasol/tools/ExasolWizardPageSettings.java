@@ -52,9 +52,9 @@ public class ExasolWizardPageSettings<WIZARD extends AbstractToolWizard> extends
             String authUser = null;
             String authPassword = null;
             {
-                Object authValue = connectionInfo.getProperty(authProperty);
+                String authValue = connectionInfo.getProperty(authProperty);
                 if (authValue != null) {
-                    String authCredentials = encrypter.decrypt(authValue.toString());
+                    String authCredentials = encrypter.decrypt(authValue);
                     int divPos = authCredentials.indexOf(':');
                     if (divPos != -1) {
                         authUser = authCredentials.substring(0, divPos);

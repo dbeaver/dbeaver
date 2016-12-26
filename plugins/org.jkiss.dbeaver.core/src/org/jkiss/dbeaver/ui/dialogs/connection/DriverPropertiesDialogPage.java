@@ -26,8 +26,10 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 /**
  * DriverPropertiesDialogPage
@@ -111,7 +113,10 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
         if (propertySource != null) {
-            dataSource.getConnectionConfiguration().getProperties().putAll(propertySource.getProperties());
+            final Map<String, String> properties = dataSource.getConnectionConfiguration().getProperties();
+            for (Map.Entry<Object, Object> entry : propertySource.getProperties().entrySet()) {
+                properties.put(CommonUtils.toString(entry.getKey()), CommonUtils.toString(entry.getValue()));
+            }
         }
     }
 

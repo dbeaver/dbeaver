@@ -40,7 +40,7 @@ public class DBPConnectionConfiguration implements DBPObject
     private String url;
     private String clientHomeId;
     @NotNull
-    private final Map<Object, Object> properties;
+    private final Map<String, String> properties;
     @NotNull
     private final Map<String, String> providerProperties;
     @NotNull
@@ -171,23 +171,23 @@ public class DBPConnectionConfiguration implements DBPObject
     ////////////////////////////////////////////////////
     // Properties (connection properties, usually used by driver)
 
-    public Object getProperty(Object name)
+    public String getProperty(String name)
     {
         return properties.get(name);
     }
 
-    public void setProperty(Object name, Object value)
+    public void setProperty(String name, String value)
     {
         properties.put(name, value);
     }
 
     @NotNull
-    public Map<Object, Object> getProperties()
+    public Map<String, String> getProperties()
     {
         return properties;
     }
 
-    public void setProperties(@NotNull Map<Object, Object> properties)
+    public void setProperties(@NotNull Map<String, String> properties)
     {
         this.properties.clear();
         this.properties.putAll(properties);

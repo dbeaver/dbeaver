@@ -685,7 +685,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.addAttribute(RegistryConstants.ATTR_KEEP_ALIVE, connectionInfo.getKeepAliveInterval());
             }
 
-            for (Map.Entry<Object, Object> entry : connectionInfo.getProperties().entrySet()) {
+            for (Map.Entry<String, String> entry : connectionInfo.getProperties().entrySet()) {
                 xml.startElement(RegistryConstants.TAG_PROPERTY);
                 xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(entry.getKey()));
                 xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(entry.getValue()));
@@ -997,7 +997,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             new DBPConnectionConfiguration());
                     } else {
                         // Clean settings - they have to be loaded later by parser
-                        curDataSource.getConnectionConfiguration().setProperties(Collections.emptyMap());
+                        curDataSource.getConnectionConfiguration().setProperties(Collections.<String, String>emptyMap());
                         curDataSource.getConnectionConfiguration().setHandlers(Collections.<DBWHandlerConfiguration>emptyList());
                         curDataSource.clearFilters();
                     }
