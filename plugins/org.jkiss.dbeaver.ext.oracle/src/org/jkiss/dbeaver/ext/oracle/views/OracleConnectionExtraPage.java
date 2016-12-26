@@ -130,7 +130,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
-        Map<Object,Object> providerProperties = connectionInfo.getProviderProperties();
+        Map<String, String> providerProperties = connectionInfo.getProviderProperties();
 
         // Settings
         final Object nlsLanguage = providerProperties.get(OracleConstants.PROP_SESSION_LANGUAGE);
@@ -160,7 +160,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
-        Map<Object, Object> providerProperties = dataSource.getConnectionConfiguration().getProviderProperties();
+        Map<String, String> providerProperties = dataSource.getConnectionConfiguration().getProviderProperties();
 
         {
             // Settings

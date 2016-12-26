@@ -691,7 +691,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(entry.getValue()));
                 xml.endElement();
             }
-            for (Map.Entry<Object, Object> entry : connectionInfo.getProviderProperties().entrySet()) {
+            for (Map.Entry<String, String> entry : connectionInfo.getProviderProperties().entrySet()) {
                 xml.startElement(RegistryConstants.TAG_PROVIDER_PROPERTY);
                 xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(entry.getKey()));
                 xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(entry.getValue()));

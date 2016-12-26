@@ -146,7 +146,7 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
     {
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
-        Map<Object,Object> providerProperties = connectionInfo.getProviderProperties();
+        Map<String, String> providerProperties = connectionInfo.getProviderProperties();
 
         // Settings
         enableTraceCheck.setSelection(
@@ -179,20 +179,20 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
         super.saveSettings(dataSource);
-        Map<Object, Object> providerProperties = dataSource.getConnectionConfiguration().getProviderProperties();
+        Map<String, String> providerProperties = dataSource.getConnectionConfiguration().getProviderProperties();
 
         {
-            providerProperties.put(DB2Constants.PROP_TRACE_ENABLED, enableTraceCheck.getSelection());
+            providerProperties.put(DB2Constants.PROP_TRACE_ENABLED, String.valueOf(enableTraceCheck.getSelection()));
             providerProperties.put(DB2Constants.PROP_TRACE_FOLDER, folderText.getText());
             providerProperties.put(DB2Constants.PROP_TRACE_FILE, fileNameText.getText());
-            providerProperties.put(DB2Constants.PROP_TRACE_APPEND, traceAppendCheck.getSelection());
+            providerProperties.put(DB2Constants.PROP_TRACE_APPEND, String.valueOf(traceAppendCheck.getSelection()));
             int traceLevel = 0;
             for (LevelConfig level : levels) {
                 if (level.checkbox.getSelection()) {
                     traceLevel |= level.level;
                 }
             }
-            providerProperties.put(DB2Constants.PROP_TRACE_LEVEL, traceLevel);
+            providerProperties.put(DB2Constants.PROP_TRACE_LEVEL, String.valueOf(traceLevel));
         }
         saveConnectionURL(dataSource.getConnectionConfiguration());
     }

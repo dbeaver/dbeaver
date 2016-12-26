@@ -99,7 +99,7 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
                 url = "//" + conInfo.getHostName() + (port != null ? ":" + port : "") + "/" + conInfo.getDatabaseName(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
             }
         }
-        final Object role = conInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
+        final String role = conInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
         if (role != null) {
             url += (" AS " + role);
         }

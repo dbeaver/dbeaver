@@ -203,19 +203,19 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
 
-        Object backupHostText = connectionInfo.getProviderProperty(ExasolConstants.DRV_BACKUP_HOST_LIST);
+        String backupHostText = connectionInfo.getProviderProperty(ExasolConstants.DRV_BACKUP_HOST_LIST);
 
         if (backupHostText != null) {
-            this.backupHostText.setText(backupHostText.toString());
+            this.backupHostText.setText(backupHostText);
             this.useBackupHostList.setEnabled(true);
             this.backupHostText.setEnabled(true);
             this.useBackupHostList.setSelection(true);
         }
 
-        Object encryptComm = connectionInfo.getProviderProperty(ExasolConstants.DRV_ENCRYPT);
+        String encryptComm = connectionInfo.getProviderProperty(ExasolConstants.DRV_ENCRYPT);
 
         if (encryptComm != null) {
-            if (encryptComm.toString().equals("1"))
+            if (encryptComm.equals("1"))
                 this.encryptCommunication.setEnabled(true);
         }
 
