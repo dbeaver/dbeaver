@@ -3605,7 +3605,7 @@ public abstract class LightGrid extends Canvas {
                 // get column header specific tooltip
                 newTip = hoveringColumn.getHeaderTooltip();
             } else if (rowHeaderVisible && hoveringItem >= 0 && x <= rowHeaderWidth) {
-                newTip = getLabelProvider().getTooltip(getRowElement(hoveringItem));
+                newTip = getLabelProvider().getToolTipText(getRowElement(hoveringItem));
             }
 
             //Avoid unnecessarily resetting tooltip - this will cause the tooltip to jump around

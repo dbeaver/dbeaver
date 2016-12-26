@@ -269,7 +269,7 @@ class GridColumn {
 	 */
 	@Nullable
     public String getHeaderTooltip() {
-        String tip = grid.getLabelProvider().getTooltip(element);
+        String tip = grid.getLabelProvider().getToolTipText(element);
         if (tip == null) {
             tip = grid.getLabelProvider().getText(element);
         }

@@ -23,7 +23,7 @@ package org.jkiss.dbeaver.ui;
  */
 public interface ISearchContextProvider
 {
-    public static enum SearchType {
+    enum SearchType {
         NONE,
         NEXT,
         PREVIOUS
