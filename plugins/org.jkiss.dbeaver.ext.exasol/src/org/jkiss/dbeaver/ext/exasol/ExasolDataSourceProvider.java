@@ -74,7 +74,7 @@ public class ExasolDataSourceProvider extends JDBCDataSourceProvider {
         url.append("jdbc:exa:").append(connectionInfo.getHostName()).append(port);
 
         //check if we got an backup host list
-        Object backupHostList = connectionInfo.getProviderProperty(ExasolConstants.DRV_BACKUP_HOST_LIST);
+        String backupHostList = connectionInfo.getProviderProperty(ExasolConstants.DRV_BACKUP_HOST_LIST);
 
         if (backupHostList != null)
             url.append(",").append(backupHostList).append(port);
@@ -85,7 +85,7 @@ public class ExasolDataSourceProvider extends JDBCDataSourceProvider {
             Object propClientName = properties.get(ExasolConstants.DRV_CLIENT_NAME);
             if (propClientName != null)
                 clientName = propClientName.toString();
-            url.append(";clientname=" + clientName);
+            url.append(";clientname=").append(clientName);
         }
         Object querytimeout = properties.get(ExasolConstants.DRV_QUERYTIMEOUT);
         if (querytimeout != null)

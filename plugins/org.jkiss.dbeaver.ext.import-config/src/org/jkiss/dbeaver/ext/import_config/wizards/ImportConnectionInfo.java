@@ -39,7 +39,7 @@ public class ImportConnectionInfo {
     private String user;
     private String password;
     private Map<Object, Object> properties = new HashMap<>();
-    private Map<Object, Object> providerProperties = new HashMap<>();
+    private Map<String, String> providerProperties = new HashMap<>();
     private boolean checked = false;
 
     public ImportConnectionInfo(ImportDriverInfo driverInfo, String id, String alias, String url, String host, String port, String database, String user, String password)
@@ -138,7 +138,7 @@ public class ImportConnectionInfo {
         properties.put(name, value);
     }
 
-    public Map<Object, Object> getProviderProperties() {
+    public Map<String, String> getProviderProperties() {
         return providerProperties;
     }
 

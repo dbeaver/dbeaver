@@ -77,7 +77,7 @@ public class DB2DataSourceProvider extends JDBCDataSourceProvider {
         if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
             url.append(connectionInfo.getDatabaseName());
         }
-        Map<Object, Object> properties = connectionInfo.getProviderProperties();
+        Map<String, String> properties = connectionInfo.getProviderProperties();
         boolean traceEnabled = CommonUtils.getBoolean(properties.get(DB2Constants.PROP_TRACE_ENABLED), false);
         if (traceEnabled) {
             url.append(":traceDirectory=").append(CommonUtils.toString(properties.get(DB2Constants.PROP_TRACE_FOLDER)));

@@ -356,9 +356,9 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
 
-        final Object sidService = connectionInfo.getProviderProperty(OracleConstants.PROP_SID_SERVICE);
+        final String sidService = connectionInfo.getProviderProperty(OracleConstants.PROP_SID_SERVICE);
         if (sidService != null) {
-            sidServiceCombo.setText(OracleConnectionType.valueOf(sidService.toString()).getTitle());
+            sidServiceCombo.setText(OracleConnectionType.valueOf(sidService).getTitle());
         }
 
         //if (isOCI) {
@@ -375,7 +375,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             }
         }
 
-        Object conTypeProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE);
+        String conTypeProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE);
         if (conTypeProperty != null) {
             connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
         } else {
@@ -398,12 +398,12 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
                 break;
             case TNS: {
                 tnsNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
-                Object tnsPathProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_TNS_PATH);
+                String tnsPathProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_TNS_PATH);
 //                if (tnsPathProperty == null) {
 //                    tnsPathProperty = System.getenv(OracleConstants.VAR_TNS_ADMIN);
 //                }
                 if (tnsPathProperty != null) {
-                    tnsPathText.setText(tnsPathProperty.toString());
+                    tnsPathText.setText(tnsPathProperty);
                 }
                 break;
             }
@@ -422,9 +422,9 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             osAuthCheck.setSelection(false);
         }
 
-        final Object roleName = connectionInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
+        final String roleName = connectionInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
         if (roleName != null) {
-            userRoleCombo.setText(roleName.toString().toUpperCase(Locale.ENGLISH));
+            userRoleCombo.setText(roleName.toUpperCase(Locale.ENGLISH));
         }
     }
 

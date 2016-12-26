@@ -151,7 +151,7 @@ public class OracleDataSource extends JDBCDataSource
 
             try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Set connection parameters")) {
                 // Set session settings
-                Object sessionLanguage = connectionInfo.getProviderProperty(OracleConstants.PROP_SESSION_LANGUAGE);
+                String sessionLanguage = connectionInfo.getProviderProperty(OracleConstants.PROP_SESSION_LANGUAGE);
                 if (sessionLanguage != null) {
                     try {
                         JDBCUtils.executeSQL(
@@ -161,7 +161,7 @@ public class OracleDataSource extends JDBCDataSource
                         log.warn("Can't set session language", e);
                     }
                 }
-                Object sessionTerritory = connectionInfo.getProviderProperty(OracleConstants.PROP_SESSION_TERRITORY);
+                String sessionTerritory = connectionInfo.getProviderProperty(OracleConstants.PROP_SESSION_TERRITORY);
                 if (sessionTerritory != null) {
                     try {
                         JDBCUtils.executeSQL(
@@ -171,7 +171,7 @@ public class OracleDataSource extends JDBCDataSource
                         log.warn("Can't set session territory", e);
                     }
                 }
-                Object nlsDateFormat = connectionInfo.getProviderProperty(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
+                String nlsDateFormat = connectionInfo.getProviderProperty(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
                 if (nlsDateFormat != null) {
                     try {
                         JDBCUtils.executeSQL(
@@ -187,7 +187,7 @@ public class OracleDataSource extends JDBCDataSource
 
     @Override
     protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
-        final Object role = connectionInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
+        final String role = connectionInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
         return role == null ? connectionInfo.getUserName() : connectionInfo.getUserName() + " AS " + role;
     }
 
@@ -285,7 +285,7 @@ public class OracleDataSource extends JDBCDataSource
         DBPConnectionConfiguration connectionInfo = getContainer().getConnectionConfiguration();
 
         {
-            Object useRuleHintProp = connectionInfo.getProviderProperty(OracleConstants.PROP_USE_RULE_HINT);
+            String useRuleHintProp = connectionInfo.getProviderProperty(OracleConstants.PROP_USE_RULE_HINT);
             if (useRuleHintProp != null) {
                 useRuleHint = CommonUtils.getBoolean(useRuleHintProp, false);
             }
@@ -302,7 +302,7 @@ public class OracleDataSource extends JDBCDataSource
                         "SELECT 'YES' FROM USER_ROLE_PRIVS WHERE GRANTED_ROLE='DBA'"));
                 this.isAdminVisible = isAdmin;
                 if (!isAdminVisible) {
-                    Object showAdmin = connectionInfo.getProviderProperty(OracleConstants.PROP_ALWAYS_SHOW_DBA);
+                    String showAdmin = connectionInfo.getProviderProperty(OracleConstants.PROP_ALWAYS_SHOW_DBA);
                     if (showAdmin != null) {
                         isAdminVisible = CommonUtils.getBoolean(showAdmin, false);
                     }

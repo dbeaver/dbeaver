@@ -42,7 +42,7 @@ public class DBPConnectionConfiguration implements DBPObject
     @NotNull
     private final Map<Object, Object> properties;
     @NotNull
-    private final Map<Object, Object> providerProperties;
+    private final Map<String, String> providerProperties;
     @NotNull
     private final Map<DBPConnectionEventType, DBRShellCommand> events;
     @NotNull
@@ -196,22 +196,22 @@ public class DBPConnectionConfiguration implements DBPObject
     ////////////////////////////////////////////////////
     // Provider properties (extra configuration parameters)
 
-    public Object getProviderProperty(Object name)
+    public String getProviderProperty(String name)
     {
         return providerProperties.get(name);
     }
 
-    public void setProviderProperty(Object name, Object value)
+    public void setProviderProperty(String name, String value)
     {
         providerProperties.put(name, value);
     }
 
     @NotNull
-    public Map<Object, Object> getProviderProperties() {
+    public Map<String, String> getProviderProperties() {
         return providerProperties;
     }
 
-    public void setProviderProperties(@NotNull Map<Object, Object> properties)
+    public void setProviderProperties(@NotNull Map<String, String> properties)
     {
         this.providerProperties.clear();
         this.providerProperties.putAll(properties);
