@@ -45,9 +45,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.properties.*;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -62,7 +60,7 @@ import java.util.List;
 /**
  * ObjectListControl
  */
-public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl {
+public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implements IClipboardSource {
     private static final Log log = Log.getLog(ObjectListControl.class);
 
     private final static LazyValue DEF_LAZY_VALUE = new LazyValue("..."); //$NON-NLS-1$
@@ -782,6 +780,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     protected void setFocusCell(Object object, ObjectColumn objectColumn) {
         this.focusObject = object;
         this.focusColumn = objectColumn;
+    }
+
+    //////////////////////////////////////////////////////
+    // Clipboard
+
+    @Override
+    public void addClipboardData(ClipboardData clipboardData) {
+        // Cope selected cells
     }
 
     //////////////////////////////////////////////////////
