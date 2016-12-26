@@ -635,13 +635,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         xml.addAttribute(RegistryConstants.ATTR_PROVIDER, dataSource.getDriver().getProviderDescriptor().getId());
         xml.addAttribute(RegistryConstants.ATTR_DRIVER, dataSource.getDriver().getId());
         xml.addAttribute(RegistryConstants.ATTR_NAME, dataSource.getName());
-        xml.addAttribute(RegistryConstants.ATTR_CREATE_DATE, dataSource.getCreateDate().getTime());
-        if (dataSource.getUpdateDate() != null) {
-            xml.addAttribute(RegistryConstants.ATTR_UPDATE_DATE, dataSource.getUpdateDate().getTime());
-        }
-        if (dataSource.getLoginDate() != null) {
-            xml.addAttribute(RegistryConstants.ATTR_LOGIN_DATE, dataSource.getLoginDate().getTime());
-        }
         xml.addAttribute(RegistryConstants.ATTR_SAVE_PASSWORD, dataSource.isSavePassword());
         if (dataSource.isShowSystemObjects()) {
             xml.addAttribute(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS, dataSource.isShowSystemObjects());
@@ -1009,22 +1002,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         curDataSource.clearFilters();
                     }
                     curDataSource.setName(name);
-                    try {
-                        String createDate = atts.getValue(RegistryConstants.ATTR_CREATE_DATE);
-                        if (!CommonUtils.isEmpty(createDate)) {
-                            curDataSource.setCreateDate(new Date(Long.parseLong(createDate)));
-                        }
-                        String updateDate = atts.getValue(RegistryConstants.ATTR_UPDATE_DATE);
-                        if (!CommonUtils.isEmpty(updateDate)) {
-                            curDataSource.setUpdateDate(new Date(Long.parseLong(updateDate)));
-                        }
-                        String loginDate = atts.getValue(RegistryConstants.ATTR_LOGIN_DATE);
-                        if (!CommonUtils.isEmpty(loginDate)) {
-                            curDataSource.setLoginDate(new Date(Long.parseLong(loginDate)));
-                        }
-                    } catch (NumberFormatException e) {
-                        log.warn("Bad date value", e);
-                    }
                     curDataSource.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
                     curDataSource.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS)));
                     curDataSource.setShowUtilityObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_UTIL_OBJECTS)));
