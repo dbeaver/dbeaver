@@ -128,8 +128,6 @@ public class DataSourceDescriptor
     private boolean connectionReadOnly;
     private final Map<String, FilterMapping> filterMap = new HashMap<>();
     private Date createDate;
-    private Date updateDate;
-    private Date loginDate;
     private DBDDataFormatterProfile formatterProfile;
     private DBPClientHome clientHome;
     private DataSourcePreferenceStore preferenceStore;
@@ -560,36 +558,6 @@ public class DataSourceDescriptor
         this.description = description;
     }
 
-    public Date getCreateDate()
-    {
-        return createDate;
-    }
-
-    public void setCreateDate(Date createDate)
-    {
-        this.createDate = createDate;
-    }
-
-    public Date getUpdateDate()
-    {
-        return updateDate;
-    }
-
-    public void setUpdateDate(Date updateDate)
-    {
-        this.updateDate = updateDate;
-    }
-
-    public Date getLoginDate()
-    {
-        return loginDate;
-    }
-
-    public void setLoginDate(Date loginDate)
-    {
-        this.loginDate = loginDate;
-    }
-
     public Date getConnectTime() {
         return connectTime;
     }
@@ -732,7 +700,6 @@ public class DataSourceDescriptor
 
             connectFailed = false;
             connectTime = new Date();
-            loginDate = connectTime;
 
             processEvents(monitor, DBPConnectionEventType.AFTER_CONNECT);
 

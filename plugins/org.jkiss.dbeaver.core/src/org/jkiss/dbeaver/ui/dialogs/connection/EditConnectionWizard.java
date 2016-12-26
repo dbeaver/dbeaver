@@ -42,7 +42,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -176,7 +175,6 @@ public class EditConnectionWizard extends ConnectionWizard
                 return false;
             }
         }
-        dataSource.setUpdateDate(new Date());
         saveSettings(dataSource);
         dataSource.getRegistry().updateDataSource(dataSource);
         return true;
