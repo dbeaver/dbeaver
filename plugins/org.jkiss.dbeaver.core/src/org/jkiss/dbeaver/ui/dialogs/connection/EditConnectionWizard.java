@@ -29,13 +29,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.preferences.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -52,8 +52,9 @@ import java.util.Locale;
 public class EditConnectionWizard extends ConnectionWizard
 {
     @NotNull
+    private DataSourceDescriptor originalDataSource;
+    @NotNull
     private DataSourceDescriptor dataSource;
-    private DBPConnectionConfiguration oldData;
     @Nullable
     private ConnectionPageSettings pageSettings;
     private ConnectionPageGeneral pageGeneral;
@@ -66,8 +67,9 @@ public class EditConnectionWizard extends ConnectionWizard
      */
     public EditConnectionWizard(@NotNull DataSourceDescriptor dataSource)
     {
-        this.dataSource = dataSource;
-        this.oldData = new DBPConnectionConfiguration(this.dataSource.getConnectionConfiguration());
+        this.originalDataSource = dataSource;
+        this.dataSource = new DataSourceDescriptor(dataSource);
+
         setWindowTitle(CoreMessages.dialog_connection_wizard_title);
     }
 
@@ -170,14 +172,47 @@ public class EditConnectionWizard extends ConnectionWizard
     @Override
     public boolean performFinish()
     {
+        DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource);
+        DataSourceDescriptor dsChanged = new DataSourceDescriptor(dataSource);
+        saveSettings(dsChanged);
+
+        if (dsCopy.equalSettings(dsChanged)) {
+            // No changes
+            return true;
+        }
+
+        // Check locked datasources
         if (!CommonUtils.isEmpty(dataSource.getLockPasswordHash())) {
-            if (!checkLockPassword()) {
-                return false;
+            if (!isOnlyUserCredentialChanged(dsCopy, dsChanged)) {
+                if (!checkLockPassword()) {
+                    return false;
+                }
             }
         }
-        saveSettings(dataSource);
-        dataSource.getRegistry().updateDataSource(dataSource);
+
+        // Save
+        saveSettings(originalDataSource);
+        originalDataSource.getRegistry().updateDataSource(originalDataSource);
+
+        if (originalDataSource.isConnected()) {
+            if (UIUtils.confirmAction(
+                getShell(),
+                "Connection changed",
+                "Connection '" + originalDataSource.getName() + "' has been changed.\nDo you want to reconnect?"))
+            {
+                DataSourceHandler.reconnectDataSource(null, originalDataSource);
+            }
+        }
+
         return true;
+    }
+
+    private boolean isOnlyUserCredentialChanged(DataSourceDescriptor dsCopy, DataSourceDescriptor dsChanged) {
+        dsCopy.getConnectionConfiguration().setUserName(null);
+        dsCopy.getConnectionConfiguration().setUserPassword(null);
+        dsChanged.getConnectionConfiguration().setUserName(null);
+        dsChanged.getConnectionConfiguration().setUserPassword(null);
+        return dsCopy.equalSettings(dsChanged);
     }
 
     private boolean checkLockPassword() {
@@ -203,7 +238,7 @@ public class EditConnectionWizard extends ConnectionWizard
     @Override
     public boolean performCancel()
     {
-        dataSource.setConnectionInfo(oldData);
+        // Just in case - cancel changes in pref pages (there shouldn't be any)
         for (WizardPrefPage prefPage : prefPages) {
             prefPage.performCancel();
         }

@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -74,7 +75,7 @@ public class DBPConnectionConfiguration implements DBPObject
         this.clientHomeId = info.clientHomeId;
         this.connectionType = info.connectionType;
         this.properties = new HashMap<>(info.properties);
-        this.providerProperties = new HashMap<>(info.properties);
+        this.providerProperties = new HashMap<>(info.providerProperties);
         this.events = new HashMap<>(info.events.size());
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : info.events.entrySet()) {
             this.events.put(entry.getKey(), new DBRShellCommand(entry.getValue()));
@@ -325,5 +326,34 @@ public class DBPConnectionConfiguration implements DBPObject
 
     public void setKeepAliveInterval(int keepAliveInterval) {
         this.keepAliveInterval = keepAliveInterval;
+    }
+
+    @Override
+    public String toString() {
+        return "Connection: " + (url == null ? databaseName : url);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof DBPConnectionConfiguration)) {
+            return false;
+        }
+        DBPConnectionConfiguration source = (DBPConnectionConfiguration)obj;
+        return
+            CommonUtils.equalObjects(this.hostName, source.hostName) &&
+            CommonUtils.equalObjects(this.hostPort, source.hostPort) &&
+            CommonUtils.equalObjects(this.serverName, source.serverName) &&
+            CommonUtils.equalObjects(this.databaseName, source.databaseName) &&
+            CommonUtils.equalObjects(this.userName, source.userName) &&
+            CommonUtils.equalObjects(this.userPassword, source.userPassword) &&
+            CommonUtils.equalObjects(this.url, source.url) &&
+            CommonUtils.equalObjects(this.clientHomeId, source.clientHomeId) &&
+            CommonUtils.equalObjects(this.connectionType, source.connectionType) &&
+            CommonUtils.equalObjects(this.properties, source.properties) &&
+            CommonUtils.equalObjects(this.providerProperties, source.providerProperties) &&
+            CommonUtils.equalObjects(this.events, source.events) &&
+            CommonUtils.equalObjects(this.handlers, source.handlers) &&
+            CommonUtils.equalObjects(this.bootstrap, source.bootstrap) &&
+            this.keepAliveInterval == source.keepAliveInterval;
     }
 }

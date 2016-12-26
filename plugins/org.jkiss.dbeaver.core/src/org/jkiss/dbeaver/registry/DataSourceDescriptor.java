@@ -82,6 +82,7 @@ public class DataSourceDescriptor
             this.typeName = typeName;
         }
 
+        // Copy constructor
         FilterMapping(FilterMapping mapping)
         {
             this.typeName = mapping.typeName;
@@ -127,14 +128,18 @@ public class DataSourceDescriptor
     private boolean showUtilityObjects;
     private boolean connectionReadOnly;
     private final Map<String, FilterMapping> filterMap = new HashMap<>();
-    private Date createDate;
     private DBDDataFormatterProfile formatterProfile;
+    @Nullable
     private DBPClientHome clientHome;
+    @Nullable
+    private String lockPasswordHash;
+    @Nullable
+    private DataSourceFolder folder;
+
+    @NotNull
     private DataSourcePreferenceStore preferenceStore;
     @Nullable
     private DBPDataSource dataSource;
-    @Nullable
-    private String lockPasswordHash;
 
     private final List<DBPDataSourceUser> users = new ArrayList<>();
 
@@ -144,7 +149,6 @@ public class DataSourceDescriptor
     private volatile boolean connecting = false;
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWTunnel tunnel;
-    private DataSourceFolder folder;
     @NotNull
     private final DBVModel virtualModel;
 
@@ -169,11 +173,11 @@ public class DataSourceDescriptor
         this.id = id;
         this.driver = driver;
         this.connectionInfo = connectionInfo;
-        this.createDate = new Date();
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
     }
 
+    // Copy constructor
     public DataSourceDescriptor(@NotNull DataSourceDescriptor source)
     {
         this.registry = source.registry;
@@ -187,17 +191,18 @@ public class DataSourceDescriptor
         this.connectionReadOnly = source.connectionReadOnly;
         this.driver = source.driver;
         this.connectionInfo = source.connectionInfo;
-        this.createDate = source.createDate;
-        this.preferenceStore = source.preferenceStore;
         this.formatterProfile = source.formatterProfile;
         this.clientHome = source.clientHome;
-        this.virtualModel = source.virtualModel;
 
         this.connectionInfo = new DBPConnectionConfiguration(source.connectionInfo);
-        this.tunnelConnectionInfo = source.tunnelConnectionInfo == null ? null : new DBPConnectionConfiguration(source.tunnelConnectionInfo);
-        this.filterMap.putAll(source.filterMap);
+        for (Map.Entry<String, FilterMapping> fe : source.filterMap.entrySet()) {
+            this.filterMap.put(fe.getKey(), new FilterMapping(fe.getValue()));
+        }
         this.lockPasswordHash = source.lockPasswordHash;
         this.folder = source.folder;
+
+        this.preferenceStore = new DataSourcePreferenceStore(this);
+        this.virtualModel = new DBVModel(this, source.virtualModel);
     }
 
     public boolean isDisposed()
@@ -1172,6 +1177,26 @@ public class DataSourceDescriptor
     @Override
     public String toString() {
         return name + " [" + driver + "]";
+    }
+
+    public boolean equalSettings(Object obj) {
+        if (!(obj instanceof DataSourceDescriptor)) {
+            return false;
+        }
+        DataSourceDescriptor source = (DataSourceDescriptor) obj;
+        return 
+            CommonUtils.equalObjects(this.name, source.name) &&
+            CommonUtils.equalObjects(this.description, source.description) &&
+            CommonUtils.equalObjects(this.savePassword, source.savePassword) &&
+            CommonUtils.equalObjects(this.showSystemObjects, source.showSystemObjects) &&
+            CommonUtils.equalObjects(this.showUtilityObjects, source.showUtilityObjects) &&
+            CommonUtils.equalObjects(this.connectionReadOnly, source.connectionReadOnly) &&
+            CommonUtils.equalObjects(this.driver, source.driver) &&
+            CommonUtils.equalObjects(this.connectionInfo, source.connectionInfo) &&
+            CommonUtils.equalObjects(this.formatterProfile, source.formatterProfile) &&
+            CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
+            CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
+            CommonUtils.equalObjects(this.folder, source.folder);
     }
 
     public static class ContextInfo implements DBPObject {

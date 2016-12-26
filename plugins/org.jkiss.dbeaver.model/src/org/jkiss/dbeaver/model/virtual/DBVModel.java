@@ -74,6 +74,12 @@ public class DBVModel extends DBVContainer {
         this.dataSourceContainer = dataSourceContainer;
     }
 
+    // Copy constructor
+    public DBVModel(DBPDataSourceContainer dataSourceContainer, DBVModel source) {
+        super(null, source);
+        this.dataSourceContainer = dataSourceContainer;
+    }
+
     @Override
     public DBSObjectContainer getRealContainer(DBRProgressMonitor monitor) throws DBException {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();

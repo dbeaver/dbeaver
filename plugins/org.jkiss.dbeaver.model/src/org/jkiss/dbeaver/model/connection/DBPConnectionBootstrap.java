@@ -97,4 +97,18 @@ public class DBPConnectionBootstrap
             ignoreErrors ||
             !CommonUtils.isEmpty(initQueries);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof DBPConnectionBootstrap)) {
+            return false;
+        }
+        DBPConnectionBootstrap source = (DBPConnectionBootstrap)obj;
+        return
+            CommonUtils.equalObjects(this.defaultObjectName, source.defaultObjectName) &&
+            CommonUtils.equalObjects(this.defaultAutoCommit, source.defaultAutoCommit) &&
+            CommonUtils.equalObjects(this.defaultTransactionIsolation, source.defaultTransactionIsolation) &&
+            CommonUtils.equalObjects(this.initQueries, source.initQueries) &&
+            this.ignoreErrors == source.ignoreErrors;
+    }
 }

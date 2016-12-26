@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -137,4 +138,19 @@ public class DBWHandlerConfiguration {
         return properties;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof DBWHandlerConfiguration)) {
+            return false;
+        }
+        DBWHandlerConfiguration source = (DBWHandlerConfiguration)obj;
+        return
+            CommonUtils.equalObjects(this.descriptor, source.descriptor) &&
+            CommonUtils.equalObjects(this.driver, source.driver) &&
+            this.enabled == source.enabled &&
+            CommonUtils.equalObjects(this.userName, source.userName) &&
+            CommonUtils.equalObjects(this.password, source.password) &&
+            this.savePassword == source.savePassword &&
+            CommonUtils.equalObjects(this.properties, source.properties);
+    }
 }

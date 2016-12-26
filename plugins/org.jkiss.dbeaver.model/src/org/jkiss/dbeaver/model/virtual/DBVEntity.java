@@ -64,6 +64,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         this.descriptionColumnNames = descriptionColumnNames;
     }
 
+    // Copy constructor
     public DBVEntity(DBVContainer container, DBVEntity copy) {
         this.container = container;
         this.name = copy.name;

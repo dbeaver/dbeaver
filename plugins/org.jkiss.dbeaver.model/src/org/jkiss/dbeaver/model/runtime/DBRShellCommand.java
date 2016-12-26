@@ -18,6 +18,8 @@
 
 package org.jkiss.dbeaver.model.runtime;
 
+import org.jkiss.utils.CommonUtils;
+
 /**
  * DBRShellCommand
  */
@@ -43,6 +45,7 @@ public class DBRShellCommand
         this.showProcessPanel = command.showProcessPanel;
         this.waitProcessFinish = command.waitProcessFinish;
         this.terminateAtDisconnect = command.terminateAtDisconnect;
+        this.workingDirectory = command.workingDirectory;
     }
 
     public String getCommand()
@@ -103,5 +106,20 @@ public class DBRShellCommand
     public void setWorkingDirectory(String workingDirectory)
     {
         this.workingDirectory = workingDirectory;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof DBRShellCommand)) {
+            return false;
+        }
+        DBRShellCommand source = (DBRShellCommand)obj;
+        return
+            CommonUtils.equalObjects(this.command, source.command) &&
+            this.enabled == source.enabled &&
+            this.showProcessPanel == source.showProcessPanel &&
+            this.waitProcessFinish == source.waitProcessFinish &&
+            this.terminateAtDisconnect == source.terminateAtDisconnect &&
+            CommonUtils.equalObjects(this.workingDirectory, source.workingDirectory);
     }
 }
