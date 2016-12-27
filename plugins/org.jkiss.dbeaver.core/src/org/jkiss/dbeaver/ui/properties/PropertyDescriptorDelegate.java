@@ -18,18 +18,46 @@
 package org.jkiss.dbeaver.ui.properties;
 
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * PropertyDescriptorDelegate
  */
 public class PropertyDescriptorDelegate implements IPropertyDescriptor
 {
+    private static final ILabelProvider DEFAULT_LABEL_PROVIDER = new ColumnLabelProvider() {
+        @Override
+        public String getText(Object element) {
+            if (element instanceof DBPNamedObject) {
+                return DBUtils.getObjectFullName((DBPNamedObject) element, DBPEvaluationContext.UI);
+            } else {
+                return CommonUtils.toString(GeneralUtils.makeDisplayString(element));
+            }
+        }
+
+        @Override
+        public Image getImage(Object element) {
+            if (element instanceof DBPObject) {
+                final DBPImage image = DBValueFormatting.getObjectImage((DBPObject) element, false);
+                if (image != null) {
+                    return DBeaverIcons.getImage(image);
+                }
+            }
+            return super.getImage(element);
+        }
+    };
+
     private final DBPPropertySource propSource;
     private final DBPPropertyDescriptor delegate;
 
@@ -78,7 +106,7 @@ public class PropertyDescriptorDelegate implements IPropertyDescriptor
 
     @Override
     public ILabelProvider getLabelProvider() {
-        return null;
+        return DEFAULT_LABEL_PROVIDER;
     }
 
     @Override
