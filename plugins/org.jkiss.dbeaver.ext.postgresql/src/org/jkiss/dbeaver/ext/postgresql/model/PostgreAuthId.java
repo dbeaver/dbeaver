@@ -165,5 +165,10 @@ public class PostgreAuthId implements PostgreObject {
     public Date getValidUntil() {
         return validUntil;
     }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }
 
