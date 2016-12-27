@@ -102,7 +102,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
                 if (!firstColumn) decl.append(","); //$NON-NLS-1$
                 firstColumn = false;
                 if (attribute != null) {
-                    decl.append(attribute.getName());
+                    decl.append(DBUtils.getQuotedIdentifier(attribute));
                 }
             }
         } catch (DBException e) {
