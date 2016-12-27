@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.core.application.about;
 
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
@@ -42,11 +40,12 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.DBeaverApplication;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.InformationDialog;
 
 /**
  * About box
  */
-public class AboutBoxDialog extends Dialog
+public class AboutBoxDialog extends InformationDialog
 {
     public static final String PRODUCT_PROP_SUB_TITLE = "subTitle"; //$NON-NLS-1$
     public static final String PRODUCT_PROP_COPYRIGHT = "copyright"; //$NON-NLS-1$
@@ -61,6 +60,11 @@ public class AboutBoxDialog extends Dialog
         super(shell);
         NAME_FONT = new Font(shell.getDisplay(), CoreMessages.dialog_about_font, 20, SWT.BOLD);
         TITLE_FONT = new Font(shell.getDisplay(), CoreMessages.dialog_about_font, 10, SWT.NORMAL);
+    }
+
+    @Override
+    protected boolean isBanner() {
+        return true;
     }
 
     @Override
@@ -187,20 +191,6 @@ public class AboutBoxDialog extends Dialog
         emailLink.setLayoutData(gd);
 
         return parent;
-    }
-
-    @Override
-    protected void createButtonsForButtonBar(Composite parent) {
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalAlignment = GridData.CENTER; 
-        parent.setLayoutData(gd);
-        parent.setBackground(JFaceColors.getBannerBackground(parent.getDisplay()));
-        Button button = createButton(
-            parent,
-            IDialogConstants.OK_ID,
-            IDialogConstants.OK_LABEL,
-            true);
-        button.setFocus();
     }
 
 }
