@@ -23,9 +23,12 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -49,7 +52,15 @@ public class PropertyDescriptorDelegate implements IPropertyDescriptor
         @Override
         public Image getImage(Object element) {
             if (element instanceof DBPObject) {
-                final DBPImage image = DBValueFormatting.getObjectImage((DBPObject) element, false);
+                DBPImage image = DBValueFormatting.getObjectImage((DBPObject) element, false);
+/*
+                if (image == null && element instanceof DBSObject) {
+                    final DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().findNode((DBSObject) element);
+                    if (node != null) {
+                        image = node.getNodeIcon();
+                    }
+                }
+*/
                 if (image != null) {
                     return DBeaverIcons.getImage(image);
                 }
