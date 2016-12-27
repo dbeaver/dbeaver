@@ -57,6 +57,7 @@ public class BaseDialog extends Dialog
         this.icon = image;
     }
 
+    @Override
     protected boolean isResizable() {
         return true;
     }
