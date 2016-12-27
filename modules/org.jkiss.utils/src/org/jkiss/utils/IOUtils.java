@@ -127,11 +127,13 @@ public final class IOUtils {
 		outputStream.flush();
 	}
 
-	public static String toString(File file) throws IOException {
-		try (Reader reader = new FileReader(file)) {
-			StringWriter writer = new StringWriter();
-			copyText(reader, writer, DEFAULT_BUFFER_SIZE);
-			return writer.toString();
+	public static String toString(File file, String encoding) throws IOException {
+		try (InputStream is = new FileInputStream(file)) {
+			try (Reader reader = new InputStreamReader(is, encoding)) {
+				StringWriter writer = new StringWriter();
+				copyText(reader, writer, DEFAULT_BUFFER_SIZE);
+				return writer.toString();
+			}
 		}
 	}
 
