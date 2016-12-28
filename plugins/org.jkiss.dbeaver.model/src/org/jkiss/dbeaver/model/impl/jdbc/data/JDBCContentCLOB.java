@@ -67,7 +67,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         }
         try {
             return clob.length();
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             throw new DBCException(e, dataSource);
         }
     }
@@ -92,7 +92,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 }
                 catch (IOException e) {
                     throw new DBCException("IO error while reading content", e);
-                } catch (SQLException e) {
+                } catch (Throwable e) {
                     throw new DBCException(e, dataSource);
                 }
             } else {
@@ -109,7 +109,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 } catch (IOException e) {
                     ContentUtils.deleteTempFile(tempFile);
                     throw new DBCException("IO error while copying content", e);
-                } catch (SQLException e) {
+                } catch (Throwable e) {
                     ContentUtils.deleteTempFile(tempFile);
                     throw new DBCException(e, dataSource);
                 }
@@ -197,8 +197,8 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         catch (SQLException e) {
             throw new DBCException(e, dataSource);
         }
-        catch (Exception e) {
-            throw new DBCException("IO error while reading content", e);
+        catch (Throwable e) {
+            throw new DBCException("IO error while binding content", e);
         }
     }
 

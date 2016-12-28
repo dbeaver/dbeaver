@@ -102,7 +102,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 try {
                     streamEditor.primeEditorValue(monitor, control, content);
-                } catch (DBException e) {
+                } catch (Throwable e) {
                     log.debug(e);
                     valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
                 }
@@ -121,7 +121,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
         } else {
             try {
                 streamEditor.extractEditorValue(VoidProgressMonitor.INSTANCE, control, content);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 log.debug(e);
                 valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
             }
