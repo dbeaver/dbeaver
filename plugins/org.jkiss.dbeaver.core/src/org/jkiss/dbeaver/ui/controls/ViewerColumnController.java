@@ -574,6 +574,7 @@ public class ViewerColumnController {
             final ILabelProvider labelProvider = (ILabelProvider)columnInfo.labelProvider;
 
             viewer.setSorter(new ViewerSorter(collator) {
+                private final NumberFormat numberFormat = NumberFormat.getInstance();
                 @Override
                 public int compare(Viewer v, Object e1, Object e2)
                 {
@@ -589,7 +590,6 @@ public class ViewerColumnController {
                     } else {
                         if (columnInfo.numeric) {
                             try {
-                                final NumberFormat numberFormat = NumberFormat.getInstance();
                                 final Number num1 = numberFormat.parse(value1);
                                 final Number num2 = numberFormat.parse(value2);
                                 if (num1.getClass() == num2.getClass() && num1 instanceof Comparable) {
