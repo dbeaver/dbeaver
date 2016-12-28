@@ -26,6 +26,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 import java.util.Arrays;
 
@@ -251,13 +253,13 @@ public class CImageCombo extends Composite {
      *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
      *                                  </ul>
      */
-    public void add(@Nullable Image image, String string, @Nullable Color background, @Nullable Object data)
+    public void add(@Nullable DBPImage icon, String string, @Nullable Color background, @Nullable Object data)
     {
         checkWidget();
         if (string == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
         }
-
+        Image image = icon == null ? null : DBeaverIcons.getImage(icon);
         TableItem newItem = new TableItem(this.table, SWT.NONE);
         newItem.setText(string);
         newItem.setData(data);

@@ -34,6 +34,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
@@ -72,6 +73,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private DataSourceDescriptor dataSourceDescriptor;
     private Text connectionNameText;
     private CImageCombo connectionTypeCombo;
+    private CImageCombo connectionFolderCombo;
     private Button savePasswordCheck;
     private Button autocommit;
     private Combo isolationLevel;
@@ -186,6 +188,11 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 // Get settings from data source descriptor
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 connectionTypeCombo.select(conConfig.getConnectionType());
+                if (dataSourceDescriptor.getFolder() == null) {
+                    connectionFolderCombo.select(0);
+                } else {
+                    connectionFolderCombo.select(dataSourceDescriptor.getFolder());
+                }
                 savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
                 autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
                 showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
@@ -234,6 +241,11 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             savePasswordCheck.setSelection(true);
             connectionTypeCombo.select(0);
             autocommit.setSelection(((DBPConnectionType)connectionTypeCombo.getData(0)).isAutocommit());
+            if (dataSourceFolder != null) {
+                connectionFolderCombo.select(dataSourceFolder);
+            } else {
+                connectionFolderCombo.select(0);
+            }
             showSystemObjects.setSelection(true);
             showUtilityObjects.setSelection(false);
             readOnlyConnection.setSelection(false);
@@ -337,12 +349,21 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                     autocommit.setSelection(connectionType.isAutocommit());
                 }
             });
-/*
-            UIUtils.createControlLabel(colorGroup, "Custom color");
-            new CImageCombo(colorGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            Button pickerButton = new Button(colorGroup, SWT.PUSH);
-            pickerButton.setText("...");
-*/
+        }
+
+        {
+            UIUtils.createControlLabel(group, "Connection folder");
+
+            connectionFolderCombo = new CImageCombo(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            //connectionFolderCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            loadConnectionFolders();
+            connectionFolderCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    dataSourceFolder = (DBPDataSourceFolder)connectionFolderCombo.getItem(connectionFolderCombo.getSelectionIndex()).getData();
+                }
+            });
         }
 
         {
@@ -505,6 +526,24 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         connectionTypeCombo.removeAll();
         for (DBPConnectionType ct : DataSourceProviderRegistry.getInstance().getConnectionTypes()) {
             connectionTypeCombo.add(null, ct.getName(), UIUtils.getConnectionTypeColor(ct), ct);
+        }
+    }
+
+    private void loadConnectionFolders()
+    {
+        connectionFolderCombo.removeAll();
+        connectionFolderCombo.add(null, "<NONE>", null, null);
+        for (DBPDataSourceFolder folder : getWizard().getDataSourceRegistry().getRootFolders()) {
+            loadConnectionFolder(0, folder);
+        }
+    }
+
+    private void loadConnectionFolder(int level, DBPDataSourceFolder folder) {
+        String prefix = "";
+        for (int i = 0; i < level; i++) prefix += "   ";
+        connectionFolderCombo.add(DBIcon.TREE_DATABASE_CATEGORY, prefix + folder.getName(), null, folder);
+        for (DBPDataSourceFolder child : folder.getChildren()) {
+            loadConnectionFolder(level + 1, child);
         }
     }
 

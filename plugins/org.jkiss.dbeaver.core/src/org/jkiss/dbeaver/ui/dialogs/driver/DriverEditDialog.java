@@ -183,7 +183,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             if (newDriver) {
                 for (DataSourceProviderDescriptor p : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
                     if (p.isDriversManagable()) {
-                        providerCombo.add(DBeaverIcons.getImage(p.getIcon()), p.getName(), null, p);
+                        providerCombo.add(p.getIcon(), p.getName(), null, p);
                     }
                 }
                 providerCombo.select(provider);
@@ -195,7 +195,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                     }
                 });
             } else {
-                providerCombo.add(DBeaverIcons.getImage(provider.getIcon()), provider.getName(), null, provider);
+                providerCombo.add(provider.getIcon(), provider.getName(), null, provider);
                 providerCombo.select(provider);
             }
 
