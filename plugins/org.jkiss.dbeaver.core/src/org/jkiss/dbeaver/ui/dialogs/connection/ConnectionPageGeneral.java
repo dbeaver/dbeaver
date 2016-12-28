@@ -92,6 +92,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private List<String> bootstrapQueries;
     private boolean ignoreBootstrapErrors;
     private Text descriptionText;
+    private DBPDataSourceFolder dataSourceFolder;
 
     private static class FilterInfo {
         final Class<?> type;
@@ -542,6 +543,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         if (!dataSource.isSavePassword()) {
             dataSource.resetPassword();
         }
+        dataSource.setFolder(dataSourceFolder);
 
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
 
@@ -583,6 +585,10 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 }
             }
         }
+    }
+
+    public void setDataSourceFolder(DBPDataSourceFolder dataSourceFolder) {
+        this.dataSourceFolder = dataSourceFolder;
     }
 
     private class SchemaReadJob extends AbstractJob {

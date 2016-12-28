@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -42,6 +43,7 @@ import java.util.Map;
 
 public class NewConnectionWizard extends ConnectionWizard
 {
+    private IStructuredSelection selection;
     private List<DataSourceProviderDescriptor> availableProvides = new ArrayList<>();
     private ConnectionPageDriver pageDrivers;
     private Map<DataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<>();
@@ -116,6 +118,14 @@ public class NewConnectionWizard extends ConnectionWizard
         pageNetwork = new ConnectionPageNetwork(this);
         addPage(pageGeneral);
         addPage(pageNetwork);
+
+        // Initial settings
+        if (selection != null && !selection.isEmpty()) {
+            final Object element = selection.getFirstElement();
+            if (element instanceof DBNLocalFolder) {
+                pageGeneral.setDataSourceFolder(((DBNLocalFolder) element).getFolder());
+            }
+        }
     }
 
     @Nullable
@@ -162,6 +172,7 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection)
     {
+        this.selection = selection;
     }
 
     @Override
