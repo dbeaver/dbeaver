@@ -532,7 +532,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private void loadConnectionFolders()
     {
         connectionFolderCombo.removeAll();
-        connectionFolderCombo.add(null, "<NONE>", null, null);
+        connectionFolderCombo.add(null, CoreMessages.toolbar_datasource_selector_empty, null, null);
         for (DBPDataSourceFolder folder : getWizard().getDataSourceRegistry().getRootFolders()) {
             loadConnectionFolder(0, folder);
         }
