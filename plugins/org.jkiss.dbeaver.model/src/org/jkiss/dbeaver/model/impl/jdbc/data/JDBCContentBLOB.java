@@ -61,7 +61,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
         if (blob != null) {
             try {
                 return blob.length();
-            } catch (SQLException e) {
+            } catch (Throwable e) {
                 throw new DBCException(e, dataSource);
             }
         }
@@ -90,11 +90,10 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                             contentLength,
                             platform.getPreferenceStore().getString(ModelPreferences.CONTENT_HEX_ENCODING));
                     }
-                }
-                catch (SQLException e) {
-                    throw new DBCException(e, dataSource);
                 } catch (IOException e) {
                     throw new DBCException("IO error while reading content", e);
+                } catch (Throwable e) {
+                    throw new DBCException(e, dataSource);
                 }
             } else {
                 // Create new local storage
@@ -112,7 +111,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                 } catch (IOException e) {
                     ContentUtils.deleteTempFile(tempFile);
                     throw new DBCException("IO error while copying stream", e);
-                } catch (SQLException e) {
+                } catch (Throwable e) {
                     ContentUtils.deleteTempFile(tempFile);
                     throw new DBCException(e, dataSource);
                 }

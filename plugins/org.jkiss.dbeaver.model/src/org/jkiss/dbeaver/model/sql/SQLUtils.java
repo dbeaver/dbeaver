@@ -540,7 +540,7 @@ public final class SQLUtils {
                 }
             }
         }
-        catch (Exception e) {
+        catch (Throwable e) {
             log.warn(e);
             return SQLConstants.NULL_VALUE;
         }
