@@ -164,14 +164,18 @@ public class CustomComboBoxCellEditor extends CellEditor {
 	 */
 	@Override
     protected void doSetValue(Object value) {
-		Assert.isTrue(comboBox != null && (value instanceof String || value instanceof DBPNamedObject || value instanceof Enum));
-        if (value instanceof DBPNamedObject) {
-            comboBox.setText(((DBPNamedObject) value).getName());
-        } else if (value instanceof Enum) {
-            comboBox.setText(((Enum)value).name());
-        } else {
-		    comboBox.setText(CommonUtils.toString(value));
-        }
+		if (value == null) {
+			comboBox.setText("");
+		} else {
+			Assert.isTrue(comboBox != null && (value instanceof String || value instanceof DBPNamedObject || value instanceof Enum));
+			if (value instanceof DBPNamedObject) {
+				comboBox.setText(((DBPNamedObject) value).getName());
+			} else if (value instanceof Enum) {
+				comboBox.setText(((Enum) value).name());
+			} else {
+				comboBox.setText(CommonUtils.toString(value));
+			}
+		}
 	}
 
 	/**
