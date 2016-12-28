@@ -37,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Array;
 import java.text.Collator;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
 
@@ -115,10 +116,10 @@ public class ViewerColumnController {
 
     public void addColumn(String name, String description, int style, boolean defaultVisible, boolean required, CellLabelProvider labelProvider)
     {
-        addColumn(name, description, style, defaultVisible, required, null, labelProvider, null);
+        addColumn(name, description, style, defaultVisible, required, false, null, labelProvider, null);
     }
 
-    public void addColumn(String name, String description, int style, boolean defaultVisible, boolean required, Object userData, CellLabelProvider labelProvider, EditingSupport editingSupport)
+    public void addColumn(String name, String description, int style, boolean defaultVisible, boolean required, boolean isNumeric, Object userData, CellLabelProvider labelProvider, EditingSupport editingSupport)
     {
         columns.add(
             new ColumnInfo(
@@ -127,6 +128,7 @@ public class ViewerColumnController {
                 style,
                 defaultVisible,
                 required,
+                isNumeric,
                 userData,
                 labelProvider,
                 editingSupport,
@@ -430,6 +432,7 @@ public class ViewerColumnController {
         final int style;
         final boolean defaultVisible;
         final boolean required;
+        final boolean numeric;
         final Object userData;
         final CellLabelProvider labelProvider;
         final EditingSupport editingSupport;
@@ -437,13 +440,14 @@ public class ViewerColumnController {
         Item column;
         SortListener sortListener;
 
-        private ColumnInfo(String name, String description, int style, boolean defaultVisible, boolean required, Object userData, CellLabelProvider labelProvider, EditingSupport editingSupport, int order)
+        private ColumnInfo(String name, String description, int style, boolean defaultVisible, boolean required, boolean numeric, Object userData, CellLabelProvider labelProvider, EditingSupport editingSupport, int order)
         {
             this.name = name;
             this.description = description;
             this.style = style;
             this.defaultVisible = defaultVisible;
             this.required = required;
+            this.numeric = numeric;
             this.userData = userData;
             this.visible = defaultVisible;
             this.labelProvider = labelProvider;
@@ -558,7 +562,7 @@ public class ViewerColumnController {
             sortViewer(column, sortDirection);
         }
 
-        private void sortViewer(Item column, final int sortDirection) {
+        private void sortViewer(final Item column, final int sortDirection) {
             Collator collator = Collator.getInstance();
             if (viewer instanceof TreeViewer) {
                 ((TreeViewer)viewer).getTree().setSortColumn((TreeColumn) column);
@@ -583,12 +587,24 @@ public class ViewerColumnController {
                     } else if (value2 == null) {
                         result = 1;
                     } else {
-                        try {
-                            return (int)(Long.parseLong(value1) - Long.parseLong(value2));
-                        } catch (NumberFormatException e) {
-                            // not numbers
+                        if (columnInfo.numeric) {
+                            try {
+                                final NumberFormat numberFormat = NumberFormat.getInstance();
+                                final Number num1 = numberFormat.parse(value1);
+                                final Number num2 = numberFormat.parse(value2);
+                                if (num1.getClass() == num2.getClass() && num1 instanceof Comparable) {
+                                    result = ((Comparable) num1).compareTo(num2);
+                                } else {
+                                    // Dunno how to compare
+                                    result = 0;
+                                }
+                            } catch (Exception e) {
+                                // not numbers
+                                result = value1.compareToIgnoreCase(value2);
+                            }
+                        } else {
+                            result = value1.compareToIgnoreCase(value2);
                         }
-                        result = value1.compareToIgnoreCase(value2);
                     }
                     return sortDirection == SWT.DOWN ? result : -result;
                 }

@@ -711,6 +711,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 prop.isNumeric() ? SWT.RIGHT : SWT.NONE,
                 prop.isViewable(),
                 prop.isNameProperty(),
+                prop.isNumeric(),
                 objectColumn,
                 labelProvider,
                 editingSupport);
