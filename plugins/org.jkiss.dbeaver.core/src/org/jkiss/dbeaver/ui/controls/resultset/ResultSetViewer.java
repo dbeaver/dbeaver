@@ -373,6 +373,9 @@ public class ResultSetViewer extends Viewer
     }
 
     void updatePresentation(final DBCResultSet resultSet) {
+        if (getControl().isDisposed()) {
+            return;
+        }
         boolean changed = false;
         try {
             if (resultSet instanceof StatResultSet) {
