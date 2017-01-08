@@ -135,7 +135,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     void saveSettings(DataSourceDescriptor dataSource)
     {
-        getActiveDataSource().getConnectionConfiguration().getProperties().clear();
+        dataSource.getConnectionConfiguration().getProperties().clear();
         if (connectionEditor != null) {
             connectionEditor.saveSettings(dataSource);
         }
