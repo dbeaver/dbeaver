@@ -46,6 +46,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
         addSQLKeyword("STRUCTURE");
         addSQLKeyword("COMPUTE");
         addSQLKeyword("STATISTICS");
+        addSQLKeyword("LOOP");
         addFunctions(
             Arrays.asList(
                 "SUBSTR", "APPROX_COUNT_DISTINCT",
