@@ -157,7 +157,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
             try {
                 DBDDataFormatterProfile formatterProfile = getSession().getDataSource().getDataFormatterProfile();
                 if (value instanceof Date) {
-                    return SQLUtils.quoteString(formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIME).formatValue(value));
+                    return SQLUtils.quoteString(formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_DATE).formatValue(value));
                 } else if (value instanceof Time) {
                     return SQLUtils.quoteString(formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIME).formatValue(value));
                 } else {
