@@ -201,7 +201,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         if (sshAuthType != null) {
             authType = SSHConstants.AuthType.valueOf(sshAuthType);
         }
-        return authType == SSHConstants.AuthType.PASSWORD && !configuration.isSavePassword();
+        return authType == SSHConstants.AuthType.PASSWORD;
     }
 
     @Override

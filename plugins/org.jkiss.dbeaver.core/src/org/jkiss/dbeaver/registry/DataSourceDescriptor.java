@@ -672,7 +672,7 @@ public class DataSourceDescriptor
                 monitor.subTask("Initialize tunnel");
                 tunnel = tunnelConfiguration.createHandler(DBWTunnel.class);
                 try {
-                    if (tunnel.needsPassword(tunnelConfiguration)) {
+                    if (!tunnelConfiguration.isSavePassword() && tunnel.needsPassword(tunnelConfiguration)) {
                         if (!DataSourceHandler.askForPassword(this, tunnelConfiguration)) {
                             DataSourceHandler.updateDataSourceObject(this);
                             tunnel = null;
