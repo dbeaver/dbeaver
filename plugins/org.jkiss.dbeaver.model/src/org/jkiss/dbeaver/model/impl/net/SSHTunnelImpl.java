@@ -192,6 +192,19 @@ public class SSHTunnelImpl implements DBWTunnel {
     }
 
     @Override
+    public boolean needsPassword(DBWHandlerConfiguration configuration) {
+        if (!configuration.isEnabled() || !configuration.isSecured()) {
+            return false;
+        }
+        String sshAuthType = configuration.getProperties().get(SSHConstants.PROP_AUTH_TYPE);
+        SSHConstants.AuthType authType = SSHConstants.AuthType.PASSWORD;
+        if (sshAuthType != null) {
+            authType = SSHConstants.AuthType.valueOf(sshAuthType);
+        }
+        return authType == SSHConstants.AuthType.PASSWORD && !configuration.isSavePassword();
+    }
+
+    @Override
     public void invalidateHandler(DBRProgressMonitor monitor) throws DBException, IOException {
         boolean isAlive = session != null && session.isConnected();
         if (isAlive) {

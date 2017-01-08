@@ -641,21 +641,13 @@ public class DataSourceDescriptor
         }
         log.debug("Connect with '" + getName() + "' (" + getId() + ")");
 
-        final String oldName = getConnectionConfiguration().getUserName();
-        final String oldPassword = getConnectionConfiguration().getUserPassword();
+        //final String oldName = getConnectionConfiguration().getUserName();
+        //final String oldPassword = getConnectionConfiguration().getUserPassword();
         if (!isSavePassword()) {
             // Ask for password
             if (!DataSourceHandler.askForPassword(this, null)) {
                 DataSourceHandler.updateDataSourceObject(this);
                 return false;
-            }
-        }
-        for (DBWHandlerConfiguration handler : getConnectionConfiguration().getDeclaredHandlers()) {
-            if (handler.isEnabled() && handler.isSecured() && !handler.isSavePassword()) {
-                if (!DataSourceHandler.askForPassword(this, handler)) {
-                    DataSourceHandler.updateDataSourceObject(this);
-                    return false;
-                }
             }
         }
 
@@ -680,6 +672,25 @@ public class DataSourceDescriptor
                 monitor.subTask("Initialize tunnel");
                 tunnel = tunnelConfiguration.createHandler(DBWTunnel.class);
                 try {
+                    if (tunnel.needsPassword(tunnelConfiguration)) {
+                        if (!DataSourceHandler.askForPassword(this, tunnelConfiguration)) {
+                            DataSourceHandler.updateDataSourceObject(this);
+                            tunnel = null;
+                            return false;
+                        }
+                    }
+
+/*
+                    for (DBWHandlerConfiguration handler : getConnectionConfiguration().getDeclaredHandlers()) {
+                        if (handler.isEnabled() && handler.isSecured() && !handler.isSavePassword()) {
+                            if (!DataSourceHandler.askForPassword(this, handler)) {
+                                DataSourceHandler.updateDataSourceObject(this);
+                                return false;
+                            }
+                        }
+                    }
+*/
+
                     tunnelConnectionInfo = tunnel.initializeTunnel(monitor, registry.getPlatform(), tunnelConfiguration, connectionInfo);
                 } catch (Exception e) {
                     throw new DBCException("Can't initialize tunnel", e);
