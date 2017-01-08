@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.templates;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.templates.*;
 import org.jkiss.dbeaver.model.DBPContextProvider;
@@ -70,6 +71,7 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
             }
         };
         TemplateBuffer buffer = translator.translate(template);
+        formatTemplate(buffer);
 /*
         // Reorder variables
         TemplateVariable[] bufferVariables = buffer.getVariables();
@@ -87,6 +89,21 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
         getContextType().resolve(buffer, this);
 
         return buffer;
+    }
+
+    private void formatTemplate(TemplateBuffer buffer) {
+        TemplateVariable[] variables= buffer.getVariables();
+        final String indentation = getIndentation();
+        String content = buffer.getString();
+        if (!indentation.isEmpty() && content.indexOf('\n') != -1) {
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < content.length(); i++) {
+                char c = content.charAt(i);
+                result.append(c);
+                if (c == '\n') result.append(indentation);
+            }
+            buffer.setContent(result.toString(), variables);
+        }
     }
 
 /*
@@ -118,5 +135,25 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
     Collection<SQLVariable> getVariables()
     {
         return variables.values();
+    }
+
+    private String getIndentation() {
+        int start = this.getStart();
+        IDocument document = this.getDocument();
+
+        try {
+            IRegion region = document.getLineInformationOfOffset(start);
+            int lineIndent = start - region.getOffset();
+            if (lineIndent <= 0) {
+                return "";
+            }
+            char[] buf = new char[lineIndent];
+            for (int i = 0; i < lineIndent; i++) {
+                buf[i] = ' ';
+            }
+            return String.valueOf(buf);
+        } catch (Exception var6) {
+            return "";
+        }
     }
 }
