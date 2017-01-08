@@ -138,6 +138,10 @@ class GridColumn {
             if (image != null) {
                 height = Math.max(height, topMargin + image.getBounds().height + bottomMargin);
             }
+            final String description = grid.getLabelProvider().getDescription(element);
+            if (!CommonUtils.isEmpty(description)) {
+                height += topMargin + grid.fontMetrics.getHeight();
+            }
         }
         int childHeight = 0;
         if (includeChildren && !CommonUtils.isEmpty(children)) {
@@ -151,12 +155,21 @@ class GridColumn {
     int computeHeaderWidth()
     {
         int x = leftMargin;
-        Image image = grid.getLabelProvider().getImage(element);
-        String text = grid.getLabelProvider().getText(element);
+        final IGridLabelProvider labelProvider = grid.getLabelProvider();
+        Image image = labelProvider.getImage(element);
+        String text = labelProvider.getText(element);
+        String description = labelProvider.getDescription(element);
         if (image != null) {
             x += image.getBounds().width + imageSpacing;
         }
-        x += grid.sizingGC.stringExtent(text).x + rightMargin;
+        int textWidth = grid.sizingGC.stringExtent(text).x;
+        if (!CommonUtils.isEmpty(description)) {
+            int descWidth = grid.sizingGC.stringExtent(description).x;
+            if (descWidth > textWidth) {
+                textWidth = descWidth;
+            }
+        }
+        x += textWidth + rightMargin;
         if (isSortable()) {
             x += rightMargin + GridColumnRenderer.getSortControlBounds().width;
         }

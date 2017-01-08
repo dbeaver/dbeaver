@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Grid column renderer
@@ -59,7 +60,12 @@ class GridColumnRenderer extends AbstractRenderer
     {
         return grid.getLabelProvider().getText(element);
     }
-    
+
+    protected String getColumnDescription(Object element)
+    {
+        return grid.getLabelProvider().getDescription(element);
+    }
+
     protected Font getColumnFont(Object element) {
         Font font = grid.getLabelProvider().getFont(element);
         return font != null ? font : grid.normalFont;
@@ -116,15 +122,15 @@ class GridColumnRenderer extends AbstractRenderer
 
         int y = bounds.y + TOP_MARGIN;
 
-        String text = getColumnText(element);
-
-        text = TextUtils.getShortString(grid.fontMetrics, text, width);
-
-        gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
+        {
+            // Column name
+            String text = getColumnText(element);
+            text = TextUtils.getShortString(grid.fontMetrics, text, width);
+            gc.setFont(grid.normalFont);
+            gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
+        }
 
         if (sortOrder != SWT.NONE) {
-            y = bounds.y + TOP_MARGIN;
-
             if (drawSelected) {
                 sortBounds.x = bounds.x + bounds.width - ARROW_MARGIN - sortBounds.width + 1;
                 sortBounds.y = y;
@@ -135,6 +141,18 @@ class GridColumnRenderer extends AbstractRenderer
             paintSort(gc, sortBounds, sortOrder);
         }
 
+        {
+            // Draw column description
+            String text = getColumnDescription(element);
+            if (!CommonUtils.isEmpty(text)) {
+                y += TOP_MARGIN + grid.fontMetrics.getHeight();
+                text = TextUtils.getShortString(grid.fontMetrics, text, width);
+                gc.setFont(grid.normalFont);
+                gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
+            }
+        }
+
+        // Draw border
         if (!flat) {
 
             if (drawSelected) {
