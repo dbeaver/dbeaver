@@ -993,7 +993,7 @@ public class SQLEditor extends SQLEditorBase implements
         this.startScriptEvaluation();
         try {
             for (int queryOffset = startOffset; ; ) {
-                SQLQuery query = parseQuery(document, queryOffset, startOffset + length, queryOffset);
+                SQLQuery query = parseQuery(document, queryOffset, startOffset + length, queryOffset, true);
                 if (query == null) {
                     break;
                 }
