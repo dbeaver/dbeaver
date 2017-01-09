@@ -9,6 +9,6 @@
     <relativePath>../../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.firebird</artifactId>
-  <version>1.0.48</version>
+  <version>1.0.49</version>
   <packaging>eclipse-plugin</packaging>
 </project>
