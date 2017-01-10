@@ -213,6 +213,44 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     }
                 }));
 
+                menu.add(makeAction("UPDATE", new ResultSetAnalysisRunner(dataContainer.getDataSource(), rsv.getModel()) {
+                    @Override
+                    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) throws DBException {
+                        for (ResultSetRow firstRow : selectedRows) {
+
+                            Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
+                            Collection<? extends DBSAttributeBase> valueAttributes = getValueAttributes(monitor, object, keyAttributes);
+                            sql.append("UPDATE ").append(DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML));
+                            sql.append("\nSET ");
+                            boolean hasAttr = false;
+                            for (DBSAttributeBase attr : valueAttributes) {
+                                if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
+                                    continue;
+                                }
+                                if (hasAttr) sql.append(", ");
+                                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
+                                DBDAttributeBinding binding = rsv.getModel().getAttributeBinding(attr);
+                                if (binding == null) {
+                                    appendDefaultValue(sql, attr);
+                                } else {
+                                    appendAttributeValue(rsv, sql, binding, firstRow);
+                                }
+
+                                hasAttr = true;
+                            }
+                            sql.append("\nWHERE ");
+                            hasAttr = false;
+                            for (DBDAttributeBinding attr : keyAttributes) {
+                                if (hasAttr) sql.append(" AND ");
+                                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
+                                appendAttributeValue(rsv, sql, attr, firstRow);
+                                hasAttr = true;
+                            }
+                            sql.append(";\n");
+                        }
+                    }
+                }));
+
                 menu.add(makeAction("DELETE by Unique Key", new ResultSetAnalysisRunner(dataContainer.getDataSource(), rsv.getModel()) {
                     @Override
                     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) throws DBException
