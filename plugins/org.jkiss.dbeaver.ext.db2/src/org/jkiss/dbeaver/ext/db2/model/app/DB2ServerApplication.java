@@ -224,7 +224,7 @@ public class DB2ServerApplication implements DBAServerSession {
         return tpmonClientWorkstationNane;
     }
 
-    @Property(viewable = false, category = DB2Constants.CAT_CLIENT)
+    @Property(viewable = true, category = DB2Constants.CAT_CLIENT)
     public String getTpmonClientApplicationName()
     {
         return tpmonClientApplicationName;
