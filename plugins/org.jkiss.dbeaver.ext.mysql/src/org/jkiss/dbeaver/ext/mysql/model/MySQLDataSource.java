@@ -18,13 +18,10 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProduct;
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
@@ -32,9 +29,9 @@ import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
@@ -84,7 +81,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor)
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, String purpose)
         throws DBCException
     {
         Map<String, String> props = new LinkedHashMap<>(MySQLDataSourceProvider.getConnectionsProps());
@@ -377,21 +374,16 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
         {
             // Provide client info
-            IProduct product = Platform.getProduct();
-            if (product != null) {
-                String appName = DBeaverCore.getProductTitle();
-                try {
-                    mysqlConnection.setClientInfo("ApplicationName", appName + " - " + purpose);
-                } catch (Throwable e) {
-                    // just ignore
-                    log.debug(e);
-                }
+            try {
+                mysqlConnection.setClientInfo("ApplicationName", DBUtils.getClientApplicationName(getContainer()) + " - " + purpose);
+            } catch (Throwable e) {
+                // just ignore
+                log.debug(e);
             }
         }
 
         return mysqlConnection;
     }
-
 
     public List<MySQLUser> getUsers(DBRProgressMonitor monitor)
         throws DBException
