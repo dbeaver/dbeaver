@@ -18,10 +18,7 @@
 
 package org.jkiss.dbeaver.utils;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -29,6 +26,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
+import org.osgi.framework.Bundle;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -256,6 +254,17 @@ public class GeneralUtils {
             ModelPreferences.PLUGIN_ID,
             message,
             null);
+    }
+
+    public static String getProductTitle()
+    {
+        final IProduct product = Platform.getProduct();
+        if (product == null) {
+            return "DBeaver";
+        }
+
+        final Bundle definingBundle = product.getDefiningBundle();
+        return product.getName() + " " + definingBundle.getVersion();
     }
 
     public interface IVariableResolver {
