@@ -375,7 +375,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         {
             // Provide client info
             try {
-                mysqlConnection.setClientInfo("ApplicationName", DBUtils.getClientApplicationName(getContainer()) + " - " + purpose);
+                mysqlConnection.setClientInfo("ApplicationName", DBUtils.getClientApplicationName(getContainer(), purpose));
             } catch (Throwable e) {
                 // just ignore
                 log.debug(e);
