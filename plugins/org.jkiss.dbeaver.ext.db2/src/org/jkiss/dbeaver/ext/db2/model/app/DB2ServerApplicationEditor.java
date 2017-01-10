@@ -23,15 +23,15 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
+import org.jkiss.dbeaver.ui.views.session.AbstractSessionEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 
 import java.util.HashMap;
@@ -42,22 +42,19 @@ import java.util.Map;
  * 
  * @author Denis Forveille
  */
-public class DB2ServerApplicationEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput> {
-    private SessionManagerViewer applicationViewer;
+public class DB2ServerApplicationEditor extends AbstractSessionEditor {
     private ForceApplicationAction forceApplicationAction;
-
-    @Override
-    public void dispose()
-    {
-        applicationViewer.dispose();
-        super.dispose();
-    }
 
     @Override
     public void createPartControl(Composite parent)
     {
         forceApplicationAction = new ForceApplicationAction();
-        applicationViewer = new SessionManagerViewer(this, parent, new DB2ServerApplicationManager((DB2DataSource) getExecutionContext().getDataSource())) {
+        super.createPartControl(parent);
+    }
+
+    @Override
+    protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
+        return new SessionManagerViewer(this, parent, new DB2ServerApplicationManager((DB2DataSource) executionContext.getDataSource())) {
 
             @Override
             @SuppressWarnings("rawtypes")
@@ -74,14 +71,6 @@ public class DB2ServerApplicationEditor extends SinglePageDatabaseEditor<IDataba
                 forceApplicationAction.setEnabled(session != null);
             }
         };
-
-        applicationViewer.refreshSessions();
-    }
-
-    @Override
-    public void refreshPart(Object source, boolean force)
-    {
-        applicationViewer.refreshSessions();
     }
 
     private class ForceApplicationAction extends Action {
@@ -94,12 +83,12 @@ public class DB2ServerApplicationEditor extends SinglePageDatabaseEditor<IDataba
         @Override
         public void run()
         {
-            final DBAServerSession session = applicationViewer.getSelectedSession();
+            final DBAServerSession session = getSessionsViewer().getSelectedSession();
             final String action = DB2Messages.editors_db2_application_editor_action_force;
             if (UIUtils.confirmAction(getSite().getShell(), "Confirm force application",
                 NLS.bind(DB2Messages.editors_db2_application_editor_confirm_action, action.toLowerCase(), session))) {
                 Map<String, Object> options = new HashMap<>();
-                applicationViewer.alterSession(session, options);
+                getSessionsViewer().alterSession(session, options);
             }
         }
     }
