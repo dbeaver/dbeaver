@@ -355,7 +355,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         {
             // Provide client info
             try {
-                pgConnection.setClientInfo("ApplicationName", DBUtils.getClientApplicationName(getContainer()) + " - " + purpose);
+                pgConnection.setClientInfo("ApplicationName", DBUtils.getClientApplicationName(getContainer(), purpose));
             } catch (Throwable e) {
                 // just ignore
                 log.debug(e);

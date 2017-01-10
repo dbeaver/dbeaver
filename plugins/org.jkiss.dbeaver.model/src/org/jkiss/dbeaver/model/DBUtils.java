@@ -1360,8 +1360,12 @@ public final class DBUtils {
         });
     }
 
-    public static String getClientApplicationName(DBPDataSourceContainer container) {
-        return GeneralUtils.getProductTitle();
+    public static String getClientApplicationName(DBPDataSourceContainer container, String purpose) {
+        if (container.getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE)) {
+            return container.getPreferenceStore().getString(ModelPreferences.META_CLIENT_NAME_VALUE);
+        }
+        final String productTitle = GeneralUtils.getProductTitle();
+        return purpose == null ? productTitle : productTitle + " - " + purpose;
     }
 
 }

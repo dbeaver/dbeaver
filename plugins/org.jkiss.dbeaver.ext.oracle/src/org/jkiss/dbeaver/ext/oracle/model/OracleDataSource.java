@@ -208,7 +208,7 @@ public class OracleDataSource extends JDBCDataSource
     protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, String purpose) throws DBCException {
         Map<String, String> connectionsProps = new HashMap<>();
         // Program name
-        connectionsProps.put("v$session.program", CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer()) + " - " + purpose, 48));
+        connectionsProps.put("v$session.program", CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), purpose), 48));
         return connectionsProps;
     }
 

@@ -300,7 +300,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             // Provide client info
             try {
                 db2Connection.setClientInfo("ApplicationName",
-                    CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer()) + " - " + purpose, 255));
+                    CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), purpose), 255));
             } catch (Throwable e) {
                 // just ignore
             }
