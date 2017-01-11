@@ -21,10 +21,7 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -50,6 +47,7 @@ import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
@@ -115,7 +113,7 @@ public class DBeaverCore implements DBPPlatform {
 
     private static DBeaverCore createInstance()
     {
-        log.debug("Initializing " + getProductTitle());
+        log.debug("Initializing " + GeneralUtils.getProductTitle());
         if (Platform.getProduct() != null) {
             Bundle definingBundle = Platform.getProduct().getDefiningBundle();
             if (definingBundle != null) {
@@ -163,11 +161,6 @@ public class DBeaverCore implements DBPPlatform {
     public static Version getVersion()
     {
         return DBeaverActivator.getInstance().getBundle().getVersion();
-    }
-
-    public static String getProductTitle()
-    {
-        return Platform.getProduct().getName() + " " + getVersion();
     }
 
     public static DBPPreferenceStore getGlobalPreferenceStore()

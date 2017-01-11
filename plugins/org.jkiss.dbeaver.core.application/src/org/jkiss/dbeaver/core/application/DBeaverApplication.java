@@ -183,7 +183,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
 
         initDebugWriter();
 
-        log.debug(DBeaverCore.getProductTitle() + " is starting"); //$NON-NLS-1$
+        log.debug(GeneralUtils.getProductTitle() + " is starting"); //$NON-NLS-1$
         log.debug("Install path: '" + SystemVariablesResolver.getInstallPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Memory available " + (runtime.totalMemory() / (1024 * 1024)) + "Mb/" + (runtime.maxMemory() / (1024 * 1024)) + "Mb");
@@ -246,7 +246,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
                     return 0;
                 }
             });
-            helpFormatter.printHelp("dbeaver", DBeaverCore.getProductTitle(), DBeaverCommandLine.ALL_OPTIONS, "(C) 2016 JKISS", true);
+            helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), DBeaverCommandLine.ALL_OPTIONS, "(C) 2016 JKISS", true);
             return true;
         }
 
