@@ -1323,7 +1323,7 @@ public class ResultSetViewer extends Viewer
             }
         }
 
-        this.activePresentation.refreshData(true, false, !model.isMetadataChanged());
+        //this.activePresentation.refreshData(true, false, !model.isMetadataChanged());
     }
 
     void appendData(List<Object[]> rows)
@@ -2274,7 +2274,7 @@ public class ResultSetViewer extends Viewer
             public void aboutToRun(IJobChangeEvent event) {
                 model.setUpdateInProgress(true);
                 model.setStatistics(null);
-                DBeaverUI.asyncExec(new Runnable() {
+                DBeaverUI.syncExec(new Runnable() {
                     @Override
                     public void run() {
                         filtersPanel.enableFilters(false);
@@ -2293,7 +2293,7 @@ public class ResultSetViewer extends Viewer
                 if (control.isDisposed()) {
                     return;
                 }
-                DBeaverUI.asyncExec(new Runnable() {
+                DBeaverUI.syncExec(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -2309,13 +2309,13 @@ public class ResultSetViewer extends Viewer
                                     "Query execution failed",
                                     error);
                             } else {
-                                updateStatusMessage();
                                 if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
                                     // Seems to be refresh
                                     // Restore original position
                                     curRow = model.getRow(focusRow);
                                     restorePresentationState(presentationState);
                                 }
+                                updateStatusMessage();
                             }
                             activePresentation.updateValueView();
                             updatePanelsContent(false);
