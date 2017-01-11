@@ -148,7 +148,7 @@ public class ArrayUtils {
 
     public static <T> int indexOf(T[] array, T element) {
         for (int i = 0; i < array.length; i++) {
-            if (array[i] == element) {
+            if (CommonUtils.equalObjects(array[i], element)) {
                 return i;
             }
         }

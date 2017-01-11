@@ -570,6 +570,9 @@ public abstract class LightGrid extends Canvas {
                 }
             }
         }
+        // Recalculate indexes, sizes and update scrollbars
+        topIndex = -1;
+        bottomIndex = -1;
         recalculateSizes();
         updateScrollbars();
 
