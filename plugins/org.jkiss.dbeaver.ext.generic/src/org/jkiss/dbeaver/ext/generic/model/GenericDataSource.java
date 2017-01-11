@@ -17,15 +17,15 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
@@ -39,15 +39,13 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.time.ExtendedDateFormat;
 
-import java.sql.Driver;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
+import java.sql.*;
 import java.text.Format;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +58,8 @@ public class GenericDataSource extends JDBCDataSource
     implements DBSObjectSelector, DBPTermProvider, IAdaptable, GenericStructContainer
 {
     private static final Log log = Log.getLog(GenericDataSource.class);
+
+    static boolean populateClientAppName = false;
 
     private final TableTypeCache tableTypeCache;
     private final JDBCBasicDataTypeCache dataTypeCache;
@@ -116,6 +116,41 @@ public class GenericDataSource extends JDBCDataSource
             connectionInfo.setUrl(connectionURL);
         }
         return connectionURL;
+    }
+
+    @Override
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBCException {
+        Connection jdbcConnection = super.openConnection(monitor, purpose);
+
+        if (populateClientAppName) {
+            // Provide client info
+            // "ApplicationName" property seems to be pretty standard
+            try {
+                final ResultSet ciList = jdbcConnection.getMetaData().getClientInfoProperties();
+                if (ciList != null) {
+                    try {
+                        while (ciList.next()) {
+                            final String name = JDBCUtils.safeGetString(ciList, "NAME");
+                            final int maxLength = JDBCUtils.safeGetInt(ciList, "MAX_LEN");
+                            if ("ApplicationName".equals(name)) {
+                                String appName = DBUtils.getClientApplicationName(getContainer(), purpose);
+                                if (maxLength > 0) {
+                                    appName = CommonUtils.truncateString(appName, maxLength <= 0 ? 48 : maxLength);
+                                }
+                                jdbcConnection.setClientInfo("ApplicationName", appName);
+                                break;
+                            }
+                        }
+                    } finally {
+                        ciList.close();
+                    }
+                }
+            } catch (Throwable e) {
+                // just ignore
+            }
+        }
+
+        return jdbcConnection;
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {

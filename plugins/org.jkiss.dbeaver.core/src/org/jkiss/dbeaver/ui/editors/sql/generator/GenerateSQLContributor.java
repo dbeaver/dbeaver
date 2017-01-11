@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -154,7 +155,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     {
                         for (ResultSetRow firstRow : selectedRows) {
 
-                            Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
+                            Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
                             sql.append("SELECT ");
                             boolean hasAttr = false;
                             for (DBSAttributeBase attr : getValueAttributes(monitor, object, keyAttributes)) {
@@ -165,15 +166,10 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             sql.append("\nFROM ").append(DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML));
                             sql.append("\nWHERE ");
                             hasAttr = false;
-                            for (DBSEntityAttribute attr : keyAttributes) {
+                            for (DBDAttributeBinding binding : keyAttributes) {
                                 if (hasAttr) sql.append(" AND ");
-                                DBDAttributeBinding binding = rsv.getModel().getAttributeBinding(attr);
-                                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
-                                if (binding == null) {
-                                    appendDefaultValue(sql, attr);
-                                } else {
-                                    appendAttributeValue(rsv, sql, binding, firstRow);
-                                }
+                                sql.append(DBUtils.getObjectFullName(binding.getAttribute(), DBPEvaluationContext.DML)).append("=");
+                                appendAttributeValue(rsv, sql, binding, firstRow);
                                 hasAttr = true;
                             }
                             sql.append(";\n");
@@ -217,25 +213,58 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     }
                 }));
 
+                menu.add(makeAction("UPDATE", new ResultSetAnalysisRunner(dataContainer.getDataSource(), rsv.getModel()) {
+                    @Override
+                    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) throws DBException {
+                        for (ResultSetRow firstRow : selectedRows) {
+
+                            Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
+                            Collection<? extends DBSAttributeBase> valueAttributes = getValueAttributes(monitor, object, keyAttributes);
+                            sql.append("UPDATE ").append(DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML));
+                            sql.append("\nSET ");
+                            boolean hasAttr = false;
+                            for (DBSAttributeBase attr : valueAttributes) {
+                                if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
+                                    continue;
+                                }
+                                if (hasAttr) sql.append(", ");
+                                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
+                                DBDAttributeBinding binding = rsv.getModel().getAttributeBinding(attr);
+                                if (binding == null) {
+                                    appendDefaultValue(sql, attr);
+                                } else {
+                                    appendAttributeValue(rsv, sql, binding, firstRow);
+                                }
+
+                                hasAttr = true;
+                            }
+                            sql.append("\nWHERE ");
+                            hasAttr = false;
+                            for (DBDAttributeBinding attr : keyAttributes) {
+                                if (hasAttr) sql.append(" AND ");
+                                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
+                                appendAttributeValue(rsv, sql, attr, firstRow);
+                                hasAttr = true;
+                            }
+                            sql.append(";\n");
+                        }
+                    }
+                }));
+
                 menu.add(makeAction("DELETE by Unique Key", new ResultSetAnalysisRunner(dataContainer.getDataSource(), rsv.getModel()) {
                     @Override
                     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) throws DBException
                     {
                         for (ResultSetRow firstRow : selectedRows) {
 
-                            Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
+                            Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
                             sql.append("DELETE FROM ").append(DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML));
                             sql.append("\nWHERE ");
                             boolean hasAttr = false;
-                            for (DBSEntityAttribute attr : keyAttributes) {
+                            for (DBDAttributeBinding binding : keyAttributes) {
                                 if (hasAttr) sql.append(" AND ");
-                                DBDAttributeBinding binding = rsv.getModel().getAttributeBinding(attr);
-                                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
-                                if (binding == null) {
-                                    appendDefaultValue(sql, attr);
-                                } else {
-                                    appendAttributeValue(rsv, sql, binding, firstRow);
-                                }
+                                sql.append(DBUtils.getObjectFullName(binding.getAttribute(), DBPEvaluationContext.DML)).append("=");
+                                appendAttributeValue(rsv, sql, binding, firstRow);
                                 hasAttr = true;
                             }
                             sql.append(";\n");
@@ -379,14 +408,26 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             return object.getVisibleAttributes();
         }
 
-        protected Collection<? extends DBSEntityAttribute> getKeyAttributes(DBRProgressMonitor monitor, ResultSetModel object) throws DBException
+        protected List<DBDAttributeBinding> getKeyAttributes(DBRProgressMonitor monitor, ResultSetModel object) throws DBException
         {
-            final DBSEntity singleSource = object.getSingleSource();
-            if (singleSource == null) {
+            final DBDRowIdentifier rowIdentifier = getDefaultRowIdentifier(object);
+            if (rowIdentifier == null) {
                 return Collections.emptyList();
             }
-            return DBUtils.getBestTableIdentifier(monitor, singleSource);
+            return rowIdentifier.getAttributes();
         }
+
+        @Nullable
+        private DBDRowIdentifier getDefaultRowIdentifier(ResultSetModel object) {
+            for (DBDAttributeBinding attr : object.getAttributes()) {
+                DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
+                if (rowIdentifier != null) {
+                    return rowIdentifier;
+                }
+            }
+            return null;
+        }
+
     }
 
     private static ContributionItem makeAction(String text, final DBRRunnableWithResult<String> runnable)

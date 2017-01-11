@@ -20,13 +20,13 @@ package org.jkiss.dbeaver.ext.oracle;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.connection.DBPClientManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -36,31 +36,15 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class OracleDataSourceProvider extends JDBCDataSourceProvider implements DBPClientManager {
 
-    private static Map<String,String> connectionsProps;
-
-    static {
-        connectionsProps = new HashMap<>();
-
-        // Program name
-        connectionsProps.put("v$session.program", DBeaverCore.getProductTitle());
-    }
-
-    public static Map<String,String> getConnectionsProps() {
-        return connectionsProps;
-    }
-
     public OracleDataSourceProvider()
     {
-    }
-
-    @Override
-    protected String getConnectionPropertyDefaultValue(String name, String value) {
-        String ovrValue = connectionsProps.get(name);
-        return ovrValue != null ? ovrValue : super.getConnectionPropertyDefaultValue(name, value);
     }
 
     @Override

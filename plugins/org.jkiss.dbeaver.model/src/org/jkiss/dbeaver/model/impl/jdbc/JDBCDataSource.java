@@ -115,7 +115,7 @@ public abstract class JDBCDataSource
 
         {
             // Use properties defined by datasource itself
-            Map<String,String> internalProps = getInternalConnectionProperties(monitor);
+            Map<String,String> internalProps = getInternalConnectionProperties(monitor, purpose);
             if (internalProps != null) {
                 connectProps.putAll(internalProps);
             }
@@ -548,9 +548,10 @@ public abstract class JDBCDataSource
      * Note: these properties may be overwritten by connection advanced properties.
      * @return predefined connection properties
      * @param monitor
+     * @param purpose
      */
     @Nullable
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor)
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, String purpose)
         throws DBCException
     {
         return null;

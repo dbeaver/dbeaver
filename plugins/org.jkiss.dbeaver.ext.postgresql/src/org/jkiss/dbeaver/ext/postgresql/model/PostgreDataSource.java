@@ -18,13 +18,10 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProduct;
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -35,7 +32,10 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
@@ -78,7 +78,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor) throws DBCException
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, String purpose) throws DBCException
     {
         Map<String, String> props = new LinkedHashMap<>(PostgreDataSourceProvider.getConnectionsProps());
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getDeclaredHandler(PostgreConstants.HANDLER_SSL);
@@ -354,15 +354,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         {
             // Provide client info
-            IProduct product = Platform.getProduct();
-            if (product != null) {
-                String appName = DBeaverCore.getProductTitle();
-                try {
-                    pgConnection.setClientInfo("ApplicationName", appName + " - " + purpose);
-                } catch (Throwable e) {
-                    // just ignore
-                    log.debug(e);
-                }
+            try {
+                pgConnection.setClientInfo("ApplicationName", DBUtils.getClientApplicationName(getContainer(), purpose));
+            } catch (Throwable e) {
+                // just ignore
+                log.debug(e);
             }
         }
 
