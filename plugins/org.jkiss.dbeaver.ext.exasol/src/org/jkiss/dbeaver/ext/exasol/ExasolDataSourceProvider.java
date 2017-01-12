@@ -18,17 +18,22 @@
  */
 package org.jkiss.dbeaver.ext.exasol;
 
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,6 +66,7 @@ public class ExasolDataSourceProvider extends JDBCDataSourceProvider {
         return FEATURE_SCHEMAS;
     }
 
+
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         //Default Port
@@ -76,16 +82,26 @@ public class ExasolDataSourceProvider extends JDBCDataSourceProvider {
         //check if we got an backup host list
         String backupHostList = connectionInfo.getProviderProperty(ExasolConstants.DRV_BACKUP_HOST_LIST);
 
-        if (backupHostList != null)
+        if (backupHostList != null && backupHostList != "")
             url.append(",").append(backupHostList).append(port);
 
         if (!url.toString().toUpperCase().contains("CLIENTNAME")) {
-            String clientName = "DBeaver";
+            // Client info can only be provided in the url with the exasol driver
+            String clientName = Platform.getProduct().getName();
 
             Object propClientName = properties.get(ExasolConstants.DRV_CLIENT_NAME);
             if (propClientName != null)
                 clientName = propClientName.toString();
             url.append(";clientname=").append(clientName);
+        }
+        
+        if (!url.toString().toUpperCase().contains("CLIENTVERSION"))
+        {
+        	String clientVersion=Platform.getProduct().getDefiningBundle().getVersion().toString();
+            Object propClientName = properties.get(ExasolConstants.DRV_CLIENT_VERSION);
+            if (propClientName != null)
+            	clientVersion = propClientName.toString();
+            url.append(";clientversion=").append(clientVersion);
         }
         Object querytimeout = properties.get(ExasolConstants.DRV_QUERYTIMEOUT);
         if (querytimeout != null)
