@@ -1323,7 +1323,7 @@ public class ResultSetViewer extends Viewer
             }
         }
 
-        this.activePresentation.refreshData(true, false, !model.isMetadataChanged());
+        //this.activePresentation.refreshData(true, false, !model.isMetadataChanged());
     }
 
     void appendData(List<Object[]> rows)
@@ -2069,7 +2069,7 @@ public class ResultSetViewer extends Viewer
                                 DBeaverUI.asyncExec(new Runnable() {
                                     @Override
                                     public void run() {
-                                        refresh();
+                                        refreshData(null);
                                     }
                                 });
                             }
@@ -2091,14 +2091,9 @@ public class ResultSetViewer extends Viewer
             return;
         }
         // Pump data
-        ResultSetRow oldRow = curRow;
-
         DBSDataContainer dataContainer = getDataContainer();
         if (container.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
-            if (oldRow != null && oldRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
-                segmentSize = (oldRow.getVisualNumber() / segmentSize + 1) * segmentSize;
-            }
             runDataPump(dataContainer, null, 0, segmentSize, -1, true, false, new Runnable() {
                 @Override
                 public void run()
@@ -2274,7 +2269,7 @@ public class ResultSetViewer extends Viewer
             public void aboutToRun(IJobChangeEvent event) {
                 model.setUpdateInProgress(true);
                 model.setStatistics(null);
-                DBeaverUI.asyncExec(new Runnable() {
+                DBeaverUI.syncExec(new Runnable() {
                     @Override
                     public void run() {
                         filtersPanel.enableFilters(false);
@@ -2293,7 +2288,7 @@ public class ResultSetViewer extends Viewer
                 if (control.isDisposed()) {
                     return;
                 }
-                DBeaverUI.asyncExec(new Runnable() {
+                DBeaverUI.syncExec(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -2301,6 +2296,7 @@ public class ResultSetViewer extends Viewer
                                 return;
                             }
                             final Shell shell = control.getShell();
+                            final boolean metadataChanged = model.isMetadataChanged();
                             if (error != null) {
                                 setStatus(error.getMessage(), DBPMessageType.ERROR);
                                 UIUtils.showErrorDialog(
@@ -2309,13 +2305,13 @@ public class ResultSetViewer extends Viewer
                                     "Query execution failed",
                                     error);
                             } else {
-                                updateStatusMessage();
-                                if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
+                                if (!metadataChanged && focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
                                     // Seems to be refresh
                                     // Restore original position
                                     curRow = model.getRow(focusRow);
                                     restorePresentationState(presentationState);
                                 }
+                                updateStatusMessage();
                             }
                             activePresentation.updateValueView();
                             updatePanelsContent(false);
@@ -2329,7 +2325,7 @@ public class ResultSetViewer extends Viewer
                                     model.updateDataFilter(dataFilter);
                                     //activePresentation.refreshData(true, false);
                                 }
-                                activePresentation.refreshData(true, false, true);
+                                activePresentation.refreshData(true, false, !metadataChanged);
                             }
                             model.setUpdateInProgress(false);
                             updateFiltersText(error == null);
