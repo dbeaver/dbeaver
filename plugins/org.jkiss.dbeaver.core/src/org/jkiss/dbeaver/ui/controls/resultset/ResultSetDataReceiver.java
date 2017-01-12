@@ -149,7 +149,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         final List<Object[]> tmpRows = rows;
 
         final boolean nextSegmentRead = this.nextSegmentRead;
-        DBeaverUI.asyncExec(new Runnable() {
+        DBeaverUI.syncExec(new Runnable() {
             @Override
             public void run() {
                 // Push data into viewer

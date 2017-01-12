@@ -140,4 +140,16 @@ public class ResultSetRow {
     public String toString() {
         return String.valueOf(rowNumber);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ResultSetRow) {
+            ResultSetRow row = (ResultSetRow)obj;
+            return
+                this.rowNumber == row.rowNumber &&
+                this.visualNumber == row.visualNumber;
+
+        }
+        return super.equals(obj);
+    }
 }
