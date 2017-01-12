@@ -31,6 +31,9 @@ public interface IGridLabelProvider extends IColorProvider, IFontProvider, ITool
     String getText(Object element);
 
     @Nullable
+    String getDescription(Object element);
+
+    @Nullable
     Image getImage(Object element);
 
 }

@@ -115,6 +115,7 @@ public class ArrayUtils {
         return false;
     }
 
+    @SafeVarargs
     public static <OBJECT_TYPE> boolean contains(OBJECT_TYPE[] array, OBJECT_TYPE... values)
     {
         if (isEmpty(array))
@@ -148,7 +149,7 @@ public class ArrayUtils {
 
     public static <T> int indexOf(T[] array, T element) {
         for (int i = 0; i < array.length; i++) {
-            if (array[i] == element) {
+            if (CommonUtils.equalObjects(array[i], element)) {
                 return i;
             }
         }
@@ -164,6 +165,7 @@ public class ArrayUtils {
         return -1;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T[] deleteArea(Class<T> type, T[] elements, int from, int to) {
         int delCount = to - from + 1;
         T[] newArray = (T[]) Array.newInstance(type, elements.length - delCount);
@@ -175,6 +177,7 @@ public class ArrayUtils {
         return newArray;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T[] insertArea(Class<T> type, Object[] elements, int pos, Object[] add) {
         T[] newArray = (T[]) Array.newInstance(type, elements.length + add.length);
         System.arraycopy(elements, 0, newArray, 0, pos);
@@ -183,6 +186,7 @@ public class ArrayUtils {
         return newArray;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T[] add(Class<T> type, T[] elements, T add) {
         T[] newArray = (T[]) Array.newInstance(type, elements.length + 1);
         System.arraycopy(elements, 0, newArray, 0, elements.length);
@@ -190,6 +194,7 @@ public class ArrayUtils {
         return newArray;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T[] remove(Class<T> type, T[] elements, int index) {
         T[] newArray = (T[]) Array.newInstance(type, elements.length - 1);
         System.arraycopy(elements, 0, newArray, 0, index);
@@ -221,6 +226,7 @@ public class ArrayUtils {
         System.out.println(Arrays.toString(arr));
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T[] toArray(Class<T> type, Collection<? extends T> list) {
         return list.toArray((T[]) Array.newInstance(type, list.size()));
     }

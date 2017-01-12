@@ -533,7 +533,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         } catch (BadLocationException e) {
             log.warn(e);
         }
-        return parseQuery(document, startPos, document.getLength(), currentPos);
+        return parseQuery(document, startPos, document.getLength(), currentPos, false);
     }
 
     public SQLQuery extractNextQuery(boolean next) {
@@ -605,14 +605,14 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         ruleManager.endEval();
     }
 
-    protected SQLQuery parseQuery(IDocument document, int startPos, int endPos, int currentPos) {
+    protected SQLQuery parseQuery(IDocument document, int startPos, int endPos, int currentPos, boolean scriptMode) {
         if (endPos - startPos <= 0) {
             return null;
         }
         SQLDialect dialect = getSQLDialect();
 
         // Parse range
-        boolean useBlankLines = syntaxManager.isBlankLineDelimiter();
+        boolean useBlankLines = !scriptMode && syntaxManager.isBlankLineDelimiter();
         ruleManager.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
         int bracketDepth = 0;

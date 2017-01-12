@@ -18,8 +18,8 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.runtime.IStatus;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.awt.*;
@@ -71,7 +71,7 @@ public class TrayIconHandler {
 
 
         // Add tooltip and menu to tray icon
-        trayItem.setToolTip(DBeaverCore.getProductTitle());
+        trayItem.setToolTip(GeneralUtils.getProductTitle());
 
         // Add the trayIcon to system tray/notification
         // area
@@ -107,7 +107,7 @@ public class TrayIconHandler {
             case IStatus.WARNING: type = TrayIcon.MessageType.WARNING; break;
             default: type = TrayIcon.MessageType.NONE; break;
         }
-        trayItem.displayMessage(DBeaverCore.getProductTitle(), message, type);
+        trayItem.displayMessage(GeneralUtils.getProductTitle(), message, type);
     }
 
 }

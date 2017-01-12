@@ -306,7 +306,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             this.dataSources.add(descriptor);
         }
         this.saveDataSources();
-        this.fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, descriptor);
+        notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_ADD, descriptor, true));
     }
 
     public void removeDataSource(DBPDataSourceContainer dataSource)

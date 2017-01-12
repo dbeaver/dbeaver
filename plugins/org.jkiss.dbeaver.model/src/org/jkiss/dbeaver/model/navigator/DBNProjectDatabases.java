@@ -51,7 +51,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
         List<? extends DBPDataSourceContainer> projectDataSources = this.dataSourceRegistry.getDataSources();
         for (DBPDataSourceContainer ds : projectDataSources) {
-            addDataSource(ds, false);
+            addDataSource(ds, false, false);
         }
     }
 
@@ -205,13 +205,17 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return null;
     }
 
-    private DBNDataSource addDataSource(DBPDataSourceContainer descriptor, boolean reflect)
+    private DBNDataSource addDataSource(DBPDataSourceContainer descriptor, boolean reflect, boolean reveal)
     {
         DBNDataSource newNode = new DBNDataSource(this, descriptor);
         dataSources.add(newNode);
         children = null;
         if (reflect) {
-            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, newNode));
+            getModel().fireNodeEvent(new DBNEvent(
+                this,
+                DBNEvent.Action.ADD,
+                reveal ? DBNEvent.NodeChange.SELECT : DBNEvent.NodeChange.REFRESH,
+                newNode));
         }
         return newNode;
     }
@@ -240,7 +244,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         switch (event.getAction()) {
             case OBJECT_ADD:
                 if (event.getObject() instanceof DBPDataSourceContainer) {
-                    addDataSource((DBPDataSourceContainer) event.getObject(), true);
+                    addDataSource((DBPDataSourceContainer) event.getObject(), true, event.getEnabled() != null && event.getEnabled());
                 } else if (model.getNodeByObject(event.getObject()) == null) {
                     DBNDatabaseNode parentNode = model.getParentNode(event.getObject());
                     boolean parentFound = (parentNode != null);

@@ -177,8 +177,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     {
         switch (event.getAction()) {
             case ADD:
-            case REMOVE:
-                final DBNNode parentNode = event.getNode().getParentNode();
+            case REMOVE: {
+                final DBNNode node = event.getNode();
+                final DBNNode parentNode = node.getParentNode();
                 if (parentNode != null) {
                     DBeaverUI.syncExec(new Runnable() {
                         @Override
@@ -186,12 +187,17 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                             if (!treeViewer.getControl().isDisposed()) {
                                 if (!parentNode.isDisposed()) {
                                     treeViewer.refresh(getViewerObject(parentNode));
+                                    if (event.getNodeChange() == DBNEvent.NodeChange.SELECT) {
+                                        treeViewer.reveal(node);
+                                        treeViewer.setSelection(new StructuredSelection(node));
+                                    }
                                 }
                             }
                         }
                     });
                 }
                 break;
+            }
             case UPDATE:
                 DBeaverUI.syncExec(new Runnable() {
                     @Override

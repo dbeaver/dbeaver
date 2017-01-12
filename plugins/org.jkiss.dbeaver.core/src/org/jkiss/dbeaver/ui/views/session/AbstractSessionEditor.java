@@ -45,11 +45,11 @@ public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDa
     @Override
     public void createPartControl(Composite parent) {
         final DBCExecutionContext executionContext = getExecutionContext();
-        assert executionContext != null;
-
-        setPartName("Sessions - " + executionContext.getDataSource().getContainer().getName());
-        sessionsViewer = createSessionViewer(executionContext, parent);
-        sessionsViewer.refreshSessions();
+        if (executionContext != null) {
+            setPartName("Sessions - " + executionContext.getDataSource().getContainer().getName());
+            sessionsViewer = createSessionViewer(executionContext, parent);
+            sessionsViewer.refreshSessions();
+        }
     }
 
     protected abstract SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent);

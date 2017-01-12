@@ -39,6 +39,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     private Button gridShowCellIcons;
     private Combo gridDoubleClickBehavior;
     private Button autoSwitchMode;
+    private Button showDescription;
 
     private Spinner textMaxColumnSize;
 
@@ -54,6 +55,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         return
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
+            store.contains(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION) ||
             store.contains(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK) ||
             store.contains(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE) ||
 
@@ -73,9 +75,10 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, "Behavior", 2, SWT.NONE, 0);
+            Group uiGroup = UIUtils.createControlGroup(composite, "Common", 1, SWT.NONE, 0);
 
-            autoSwitchMode = UIUtils.createLabelCheckbox(uiGroup, "Switch to record/grid mode on single/multiple row(s)", false);
+            autoSwitchMode = UIUtils.createCheckbox(uiGroup, "Switch to record/grid mode on single/multiple row(s)", false);
+            showDescription = UIUtils.createCheckbox(uiGroup, "Show column description in header", false);
         }
 
         {
@@ -107,6 +110,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             gridDoubleClickBehavior.select(
                 Spreadsheet.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK)).ordinal());
             autoSwitchMode.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE));
+            showDescription.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION));
 
             textMaxColumnSize.setSelection(store.getInt(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE));
         } catch (Exception e) {
@@ -122,6 +126,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS, gridShowCellIcons.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(Spreadsheet.DoubleClickBehavior.class, gridDoubleClickBehavior.getSelectionIndex()).name());
             store.setValue(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE, autoSwitchMode.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION, showDescription.getSelection());
             store.setValue(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, textMaxColumnSize.getSelection());
         } catch (Exception e) {
             log.warn(e);
@@ -136,6 +141,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
         store.setToDefault(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK);
         store.setToDefault(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION);
         store.setToDefault(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
     }
 

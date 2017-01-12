@@ -32,6 +32,11 @@ import java.io.IOException;
 public class HTTPTunnelImpl implements DBWTunnel {
 
     @Override
+    public boolean needsPassword(DBWHandlerConfiguration configuration) {
+        return false;
+    }
+
+    @Override
     public DBPConnectionConfiguration initializeTunnel(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException
     {
