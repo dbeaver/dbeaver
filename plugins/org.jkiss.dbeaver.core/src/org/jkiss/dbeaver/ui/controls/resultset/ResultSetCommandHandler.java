@@ -115,7 +115,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
         IResultSetPresentation presentation = rsv.getActivePresentation();
         switch (actionId) {
             case IWorkbenchCommandConstants.FILE_REFRESH:
-                rsv.refresh();
+                rsv.refreshData(null);
                 break;
             case CMD_TOGGLE_MODE:
                 rsv.toggleMode();

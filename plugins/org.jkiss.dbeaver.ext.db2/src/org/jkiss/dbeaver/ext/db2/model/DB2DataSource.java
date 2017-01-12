@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -281,7 +282,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor) throws DBCException
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, String purpose) throws DBCException
     {
         Map<String, String> props = new HashMap<>();
         props.putAll(DB2DataSourceProvider.getConnectionsProps());
@@ -289,6 +290,23 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             props.put(DB2Constants.PROP_READ_ONLY, "true");
         }
         return props;
+    }
+
+    @Override
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBCException {
+        Connection db2Connection = super.openConnection(monitor, purpose);
+
+        {
+            // Provide client info
+            try {
+                db2Connection.setClientInfo("ApplicationName",
+                    CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), purpose), 255));
+            } catch (Throwable e) {
+                // just ignore
+            }
+        }
+
+        return db2Connection;
     }
 
     @Override

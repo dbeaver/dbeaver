@@ -1471,6 +1471,19 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Nullable
         @Override
+        public String getDescription(Object element) {
+            if (!getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION)) {
+                return null;
+            }
+            if (element instanceof DBDAttributeBinding) {
+                return ((DBDAttributeBinding) element).getDescription();
+            } else {
+                return null;
+            }
+        }
+
+        @Nullable
+        @Override
         public Font getFont(Object element)
         {
             if (element instanceof DBDAttributeBinding) {

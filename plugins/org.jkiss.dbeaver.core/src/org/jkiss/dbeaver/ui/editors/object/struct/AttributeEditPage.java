@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
@@ -71,7 +73,7 @@ public class AttributeEditPage extends BaseObjectEditPage {
         });
 
         UIUtils.createControlLabel(propsGroup, "Properties").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        PropertyTreeViewer propertyViewer = new PropertyTreeViewer(propsGroup, SWT.BORDER);
+        final PropertyTreeViewer propertyViewer = new PropertyTreeViewer(propsGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 400;
         propertyViewer.getControl().setLayoutData(gd);
@@ -82,7 +84,30 @@ public class AttributeEditPage extends BaseObjectEditPage {
             }
         });
 
-        PropertySourceAbstract pc = new PropertySourceEditable(commandContext, attribute, attribute);
+        PropertySourceAbstract pc = new PropertySourceEditable(commandContext, attribute, attribute) {
+            @Override
+            public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object editableValue, ObjectPropertyDescriptor prop, Object newValue) throws IllegalArgumentException {
+                super.setPropertyValue(monitor, editableValue, prop, newValue);
+
+/*
+                if (prop.getId().equals("dataType")) {
+                    newValue = getPropertyValue(monitor, editableValue, prop);
+                    if (newValue instanceof DBSDataType) {
+                        DBPPropertyDescriptor lengthProp = getProperty("maxLength");
+                        if (lengthProp instanceof ObjectPropertyDescriptor) {
+                            DBPDataKind dataKind = ((DBSDataType) newValue).getDataKind();
+                            if (dataKind == DBPDataKind.STRING) {
+                                setPropertyValue(monitor, editableValue, (ObjectPropertyDescriptor) lengthProp, 100);
+                            } else {
+                                setPropertyValue(monitor, editableValue, (ObjectPropertyDescriptor) lengthProp, null);
+                            }
+                            propertyViewer.update(lengthProp, null);
+                        }
+                    }
+                }
+*/
+            }
+        };
         pc.collectProperties();
         for (DBPPropertyDescriptor prop : pc.getProperties()) {
             if (prop instanceof ObjectPropertyDescriptor) {

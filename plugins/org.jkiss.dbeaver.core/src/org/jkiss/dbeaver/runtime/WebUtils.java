@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -65,7 +66,7 @@ public class WebUtils {
             httpConnection.setInstanceFollowRedirects(true);
             connection.setRequestProperty(
                 "User-Agent",  //$NON-NLS-1$
-                DBeaverCore.getProductTitle());
+                GeneralUtils.getProductTitle());
         }
         connection.connect();
         if (connection instanceof HttpURLConnection) {
