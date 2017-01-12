@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,7 +62,12 @@ class PostgreDialect extends JDBCSQLDialect {
     @Nullable
     @Override
     public String getBlockToggleString() {
-        return "$$";
+        return "$" + SQLConstants.KEYWORD_PATTERN_CHARS + "$";
+    }
+
+    @Override
+    public String[][] getBlockBoundStrings() {
+        return null;
     }
 
     @Override
