@@ -98,7 +98,7 @@ public class ExasolConnection
 	}
 
 	@Override
-	public DBPDataSource getDataSource()
+	public ExasolDataSource getDataSource()
 	{
 		return this.dataSource;
 	}

@@ -60,14 +60,16 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
     public ExasolTableColumn(DBRProgressMonitor monitor, ExasolTableBase tableBase, ResultSet dbResult)
         throws DBException {
         super(tableBase, true);
-
+        
+        
         this.formatType = JDBCUtils.safeGetString(dbResult, "COLUMN_TYPE");
         setName(JDBCUtils.safeGetString(dbResult, "COLUMN_NAME"));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "ORDINAL_POSITION"));
-        setRequired(JDBCUtils.safeGetBoolean(dbResult, "COLUMN_IS_NULLABLE"));
+        setRequired(! JDBCUtils.safeGetBoolean(dbResult, "COLUMN_IS_NULLABLE"));
         setDefaultValue(JDBCUtils.safeGetString(dbResult, "COLUMN_DEF"));
         setMaxLength(JDBCUtils.safeGetInt(dbResult, "COLUMN_SIZE"));
         setScale(JDBCUtils.safeGetInt(dbResult, "DECIMAL_DIGITS"));
+        
 
         this.isInDistKey = JDBCUtils.safeGetBoolean(dbResult, "COLUMN_IS_DISTRIBUTION_KEY");
         this.identity = JDBCUtils.safeGetInteger(dbResult, "COLUMN_IDENTITY") == null ? false : true;
@@ -75,6 +77,20 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
             this.identityValue = JDBCUtils.safeGetBigDecimal(dbResult, "COLUMN_IDENTITY");
         this.remarks = JDBCUtils.safeGetString(dbResult, "COLUMN_COMMENT");
         this.dataType = tableBase.getDataSource().getDataType(monitor, JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+
+        // drivers > 5 have the issue that an cast from decimal without scale is made to matching integer in sql
+        // so meta data queries have to handle this case
+        if 	(tableBase.getDataSource().getDriverMajorVersion() > 5 && this.dataType.getName().equals("DECIMAL") && super.getScale() == 0)
+        {
+        	if (super.getMaxLength() <= 4) {
+        		this.dataType = tableBase.getDataSource().getDataType(monitor,"SMALLINT");
+			} else if (super.getMaxLength() > 4 && super.getMaxLength() <= 9 ) {
+        		this.dataType = tableBase.getDataSource().getDataType(monitor,"INTEGER");
+			} else if (super.getMaxLength() > 9 && super.getMaxLength() <= 18 ) {
+	    		this.dataType = tableBase.getDataSource().getDataType(monitor,"BIGINT");
+			}
+        }
+        
         this.changed = true;
 
 
