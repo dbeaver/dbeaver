@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
@@ -112,17 +114,28 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    protected PostgreTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreTableBase parent, Object copyFrom)
+    protected PostgreTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final PostgreTableBase parent, Object copyFrom)
     {
-        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar"); //$NON-NLS-1$
+        return new UITask<PostgreTableColumn>() {
+            @Override
+            protected PostgreTableColumn runTask() {
+                final PostgreTableColumn column = new PostgreTableColumn(parent);
+                column.setName(getNewColumnName(monitor, context, parent));
+                final PostgreDataType dataType = parent.getDatabase().getDataType(PostgreOid.VARCHAR);
+                column.setDataType(dataType); //$NON-NLS-1$
+                column.setOrdinalPosition(-1);
 
-        final PostgreTableColumn column = new PostgreTableColumn(parent);
-        column.setName(getNewColumnName(monitor, context, parent));
-        final PostgreDataType dataType = parent.getDatabase().getDataType(PostgreOid.VARCHAR);
-        column.setDataType(dataType); //$NON-NLS-1$
-        column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
-        column.setOrdinalPosition(-1);
-        return column;
+                AttributeEditPage page = new AttributeEditPage(null, column);
+                if (!page.edit()) {
+                    return null;
+                }
+                if (column.getDataKind() == DBPDataKind.STRING && !column.getTypeName().contains("text") && column.getMaxLength() <= 0) {
+                    column.setMaxLength(100);
+                }
+                return column;
+            }
+        }.execute();
+
     }
 
     @Override
