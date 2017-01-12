@@ -108,6 +108,15 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         return props.toArray(new DBPPropertyDescriptor[props.size()]);
     }
 
+    public DBPPropertyDescriptor getProperty(String id) {
+        for (DBPPropertyDescriptor prop : props) {
+            if (prop.getId().equals(id)) {
+                return prop;
+            }
+        }
+        return null;
+    }
+
     @Override
     public boolean isDirty(Object id) {
         return false;

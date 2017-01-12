@@ -766,14 +766,19 @@ public class PropertyTreeViewer extends TreeViewer {
         public String getToolTipText(Object obj)
         {
             if (!(obj instanceof TreeNode)) {
-                return ""; //$NON-NLS-1$
+                return null; //$NON-NLS-1$
             }
             TreeNode node = (TreeNode) obj;
+            String toolTip;
             if (node.category != null) {
-                return node.category;
+                toolTip = node.category;
             } else {
-                return isName ? node.property.getDescription() : getText(obj, 1);
+                toolTip = isName ? node.property.getDescription() : getText(obj, 1);
             }
+            if (CommonUtils.isEmpty(toolTip)) {
+                return null;
+            }
+            return toolTip;
         }
 
         @Override

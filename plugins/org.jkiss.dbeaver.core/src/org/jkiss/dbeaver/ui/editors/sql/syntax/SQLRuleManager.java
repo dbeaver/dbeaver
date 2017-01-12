@@ -232,9 +232,17 @@ public class SQLRuleManager extends RuleBasedScanner {
 
         final String blockToggleString = dialect.getBlockToggleString();
         if (!CommonUtils.isEmpty(blockToggleString)) {
-            WordRule blockToggleRule = new WordRule(getWordOrSymbolDetector(blockToggleString), Token.UNDEFINED, true);
-            blockToggleRule.addWord(blockToggleString, blockToggleToken);
-            rules.add(blockToggleRule);
+            int divPos = blockToggleString.indexOf(SQLConstants.KEYWORD_PATTERN_CHARS);
+            if (divPos != -1) {
+                String prefix = blockToggleString.substring(0, divPos);
+                String postfix = blockToggleString.substring(divPos + SQLConstants.KEYWORD_PATTERN_CHARS.length());
+                WordPatternRule blockToggleRule = new WordPatternRule(new SQLWordDetector(), prefix, postfix, blockToggleToken);
+                rules.add(blockToggleRule);
+            } else {
+                WordRule blockToggleRule = new WordRule(getWordOrSymbolDetector(blockToggleString), Token.UNDEFINED, true);
+                blockToggleRule.addWord(blockToggleString, blockToggleToken);
+                rules.add(blockToggleRule);
+            }
         }
 
         // Parameter rule
