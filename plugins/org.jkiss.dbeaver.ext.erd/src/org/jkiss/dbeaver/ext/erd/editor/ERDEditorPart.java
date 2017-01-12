@@ -143,6 +143,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     {
     }
 
+    @Override
+    protected ERDGraphicalViewer getGraphicalViewer() {
+        return (ERDGraphicalViewer) super.getGraphicalViewer();
+    }
+
     /**
      * Initializes the editor.
      */
