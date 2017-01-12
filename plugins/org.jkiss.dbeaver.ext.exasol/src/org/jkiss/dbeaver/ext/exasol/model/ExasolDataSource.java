@@ -19,11 +19,12 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.eclipse.core.runtime.IAdaptable;
-
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider;
 import org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect;
 import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolBaseObjectGrant;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -100,6 +102,8 @@ public class ExasolDataSource extends JDBCDataSource
 	private DBSObjectCache<ExasolDataSource, ExasolConnectionGrant> connectionGrantCache = null;
 	private DBSObjectCache<ExasolDataSource, ExasolBaseObjectGrant> baseTableGrantCache = null;
 	
+	private int driverMajorVersion = 5;
+	
 
 	private String activeSchemaName;
 
@@ -137,6 +141,8 @@ public class ExasolDataSource extends JDBCDataSource
 			this.activeSchemaName = determineActiveSchema(session);
 			this.exasolCurrentUserPrivileges = new ExasolCurrentUserPrivileges(
 					monitor, session, this);
+			
+			this.driverMajorVersion = session.getMetaData().getDriverMajorVersion();
 
 		} catch (SQLException e) {
 			LOG.warn("Error reading active schema", e);
@@ -252,6 +258,11 @@ public class ExasolDataSource extends JDBCDataSource
 	
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile("(.+)\\[line ([0-9]+), column ([0-9]+)\\]");
 
+    
+    public int getDriverMajorVersion()
+    {
+    	return this.driverMajorVersion;
+    }
     
     @Nullable
     @Override
@@ -726,6 +737,54 @@ public class ExasolDataSource extends JDBCDataSource
 			return null;
 		}
 	}
+	
+    @Override
+    public String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+        //Default Port
+        String port = ":8563";
+        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+            port = ":" + connectionInfo.getHostPort();
+        }
+        Map<String, String> properties = connectionInfo.getProperties();
+
+        StringBuilder url = new StringBuilder(128);
+        url.append("jdbc:exa:").append(connectionInfo.getHostName()).append(port);
+
+        //check if we got an backup host list
+        String backupHostList = connectionInfo.getProviderProperty(ExasolConstants.DRV_BACKUP_HOST_LIST);
+
+        if (backupHostList != null && backupHostList != "")
+            url.append(",").append(backupHostList).append(port);
+
+        if (!url.toString().toUpperCase().contains("CLIENTNAME")) {
+            // Client info can only be provided in the url with the exasol driver
+            String clientName = Platform.getProduct().getName();
+
+            Object propClientName = properties.get(ExasolConstants.DRV_CLIENT_NAME);
+            if (propClientName != null)
+                clientName = propClientName.toString();
+            url.append(";clientname=").append(clientName);
+        }
+        
+        if (!url.toString().toUpperCase().contains("CLIENTVERSION"))
+        {
+        	String clientVersion=Platform.getProduct().getDefiningBundle().getVersion().toString();
+            Object propClientName = properties.get(ExasolConstants.DRV_CLIENT_VERSION);
+            if (propClientName != null)
+            	clientVersion = propClientName.toString();
+            url.append(";clientversion=").append(clientVersion);
+        }
+        Object querytimeout = properties.get(ExasolConstants.DRV_QUERYTIMEOUT);
+        if (querytimeout != null)
+            url.append(";").append(ExasolConstants.DRV_QUERYTIMEOUT).append("=").append(querytimeout);
+
+        Object connecttimeout = properties.get(ExasolConstants.DRV_CONNECT_TIMEOUT);
+        if (connecttimeout != null)
+            url.append(";").append(ExasolConstants.DRV_CONNECT_TIMEOUT).append("=").append(connecttimeout);
+
+        return url.toString();
+    }
+	
 
 	@Override
 	public DBSDataType getLocalDataType(String typeName)
@@ -747,7 +806,7 @@ public class ExasolDataSource extends JDBCDataSource
 		plan.explain(session);
 		return plan;
 	}
-
+	
 	public DBSObjectCache<ExasolDataSource, ExasolDataType> getDataTypeCache()
 	{
 		return dataTypeCache;

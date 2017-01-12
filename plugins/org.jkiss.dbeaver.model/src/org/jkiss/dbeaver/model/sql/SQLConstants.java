@@ -624,4 +624,5 @@ public class SQLConstants {
     public static final char DEFAULT_PARAMETER_MARK = '?';
     public static final char DEFAULT_PARAMETER_PREFIX = ':';
     public static final String DEFAULT_IDENTIFIER_QUOTE = "\"";
+    public static final String KEYWORD_PATTERN_CHARS = "\\*\\";
 }
