@@ -130,6 +130,7 @@
 
                     <folder label="%tree.administer.node.name" icon="#folder_admin" description="Administer">
                         <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor"/>
+                        <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor" label="%tree.locks.node.name" icon="#locks" description="Server locks manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor"/>
                     </folder>
 
                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="Information">
@@ -277,6 +278,13 @@
                 class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor"
                 id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor">
         </editor>
+        <editor
+                name="%editor.lock_manager.name"
+                icon="#sessions"
+                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor"
+                id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor">
+        </editor>
+        
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">

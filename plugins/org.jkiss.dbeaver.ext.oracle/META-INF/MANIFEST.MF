@@ -14,7 +14,8 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ext.import_config,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.ui.editors,
- com.github.jsqlparser
+ com.github.jsqlparser,
+ org.jkiss.dbeaver.model
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Vendor: JKISS
