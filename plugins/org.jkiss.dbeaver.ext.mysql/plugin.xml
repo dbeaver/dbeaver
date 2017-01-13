@@ -147,7 +147,7 @@
                     defaultPort="3306"
                     webURL="http://www.mysql.com/products/connector/"
                     description="MySQL standard driver">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.39]"/>
                     <property name="connectTimeout" value="20000"/>
                 </driver>
                 <driver
@@ -159,7 +159,7 @@
                     defaultPort="3306"
                     webURL="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/"
                     description="MySQL standard driver">
-                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE"/>
+                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[1.5.5]"/>
                 </driver>
             </drivers>
             <views>
@@ -369,13 +369,6 @@
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
             <objectType name="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"/>
         </handler>
-    </extension>
-
-    <!-- Exclude broken driver versions -->
-    <extension point="org.jkiss.dbeaver.mavenRepository">
-        <ignoreArtifactVersion id="mysql:mysql-connector-java:6.0"/>
-        <ignoreArtifactVersion id="org.mariadb.jdbc:mariadb-java-client:1.4.0"/>
-        <ignoreArtifactVersion id="org.mariadb.jdbc:mariadb-java-client:1.5.6"/>
     </extension>
 
 </plugin>

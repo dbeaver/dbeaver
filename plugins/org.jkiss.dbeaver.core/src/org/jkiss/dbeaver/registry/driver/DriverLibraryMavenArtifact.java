@@ -44,19 +44,33 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     public static final String PATH_PREFIX = "maven:/";
 
-    private final MavenArtifactReference reference;
+    private MavenArtifactReference reference;
     protected MavenArtifactVersion localVersion;
     private String preferredVersion;
 
     public DriverLibraryMavenArtifact(DriverDescriptor driver, FileType type, String path, String preferredVersion) {
         super(driver, type, path);
-        this.reference = new MavenArtifactReference(path);
-        this.preferredVersion = preferredVersion;
+        initArtifactReference(preferredVersion);
     }
 
     public DriverLibraryMavenArtifact(DriverDescriptor driver, IConfigurationElement config) {
         super(driver, config);
-        reference = new MavenArtifactReference(path);
+        initArtifactReference(null);
+    }
+
+    private void initArtifactReference(String preferredVersion) {
+        if (path.endsWith("]")) {
+            int divPos = path.lastIndexOf('[');
+            if (divPos != -1) {
+                String version = path.substring(divPos + 1, path.length() - 1);
+                path = path.substring(0, divPos);
+                if (preferredVersion == null) {
+                    preferredVersion = version;
+                }
+            }
+        }
+        this.reference = new MavenArtifactReference(path);
+        this.preferredVersion = preferredVersion;
     }
 
     @Override

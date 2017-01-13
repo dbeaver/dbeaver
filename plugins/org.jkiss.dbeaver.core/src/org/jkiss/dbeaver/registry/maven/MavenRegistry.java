@@ -111,7 +111,7 @@ public class MavenRegistry
                 iterator.remove();
             }
         }
-        // PArse repositories from preferences
+        // Parse repositories from preferences
         String repoString = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.UI_MAVEN_REPOSITORIES);
         if (CommonUtils.isEmpty(repoString)) {
             return;
