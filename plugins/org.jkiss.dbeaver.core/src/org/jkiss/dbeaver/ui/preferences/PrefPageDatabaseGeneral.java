@@ -26,6 +26,8 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.eclipse.ui.dialogs.PreferenceLinkArea;
+import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -95,6 +97,20 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
             UIUtils.createControlLabel(groupResources, "Default resource encoding");
             defaultResourceEncoding = UIUtils.createEncodingCombo(groupResources, GeneralUtils.DEFAULT_ENCODING);
             defaultResourceEncoding.setToolTipText("Default encoding for scripts and text files. Change requires restart");
+
+        }
+
+        {
+            // Link to secure storage config
+            new PreferenceLinkArea(composite, SWT.NONE,
+                PrefPageEntityEditor.PAGE_ID,
+                "<a>''{0}''</a> settings",
+                (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
+
+            new PreferenceLinkArea(composite, SWT.NONE,
+                PrefPageSQLEditor.PAGE_ID,
+                "<a>''{0}''</a> settings",
+                (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
 
         }
 

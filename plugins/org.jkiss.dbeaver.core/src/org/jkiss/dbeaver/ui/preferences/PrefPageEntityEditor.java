@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
  */
 public class PrefPageEntityEditor extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.entityEditor"; //$NON-NLS-1$
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.entityeditor"; //$NON-NLS-1$
 
     private Button keepEditorsOnRestart;
     private Button refreshEditorOnOpen;
