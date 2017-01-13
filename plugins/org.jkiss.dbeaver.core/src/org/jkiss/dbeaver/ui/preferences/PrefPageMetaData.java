@@ -18,10 +18,11 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -41,9 +42,6 @@ public class PrefPageMetaData extends TargetPrefPage
     private Button separateMetaConnectionCheck;
     private Button caseSensitiveNamesCheck;
 
-    private Button overrideClientApplicationNameCheck;
-    private Text clientApplicationNameText;
-
     public PrefPageMetaData()
     {
         super();
@@ -56,9 +54,7 @@ public class PrefPageMetaData extends TargetPrefPage
         return
             store.contains(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES) ||
             store.contains(ModelPreferences.META_SEPARATE_CONNECTION) ||
-            store.contains(ModelPreferences.META_CASE_SENSITIVE) ||
-            store.contains(ModelPreferences.META_CLIENT_NAME_OVERRIDE) ||
-            store.contains(ModelPreferences.META_CLIENT_NAME_VALUE)
+            store.contains(ModelPreferences.META_CASE_SENSITIVE)
             ;
     }
 
@@ -80,30 +76,7 @@ public class PrefPageMetaData extends TargetPrefPage
             readExpensiveCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_show_row_count, false);
         }
 
-        {
-            Group clientNameGroup = UIUtils.createControlGroup(composite, "Client Application Name", 2, GridData.FILL_HORIZONTAL, 0);
-
-            final Label label = UIUtils.createLabel(clientNameGroup,
-                "Client application name is passed to database server on connect to identify client connections.\n" +
-                "By default it is set to product name + product version. You can set it to any custom value.");
-            GridData gd = new GridData();
-            gd.horizontalSpan = 2;
-            label.setLayoutData(gd);
-            overrideClientApplicationNameCheck = UIUtils.createCheckbox(clientNameGroup, "Override client application name", null, false, 2);
-            overrideClientApplicationNameCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    updateClientAppEnablement();
-                }
-            });
-            clientApplicationNameText = UIUtils.createLabelText(clientNameGroup, "Client Application Name", "");
-        }
-
         return composite;
-    }
-
-    private void updateClientAppEnablement() {
-        clientApplicationNameText.setEnabled(overrideClientApplicationNameCheck.getSelection());
     }
 
     @Override
@@ -113,11 +86,6 @@ public class PrefPageMetaData extends TargetPrefPage
             readExpensiveCheck.setSelection(store.getBoolean(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES));
             separateMetaConnectionCheck.setSelection(store.getBoolean(ModelPreferences.META_SEPARATE_CONNECTION));
             caseSensitiveNamesCheck.setSelection(store.getBoolean(ModelPreferences.META_CASE_SENSITIVE));
-
-            overrideClientApplicationNameCheck.setSelection(store.getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE));
-            clientApplicationNameText.setText(store.getString(ModelPreferences.META_CLIENT_NAME_VALUE));
-
-            updateClientAppEnablement();
         } catch (Exception e) {
             log.warn(e);
         }
@@ -130,9 +98,6 @@ public class PrefPageMetaData extends TargetPrefPage
             store.setValue(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
             store.setValue(ModelPreferences.META_SEPARATE_CONNECTION, separateMetaConnectionCheck.getSelection());
             store.setValue(ModelPreferences.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
-
-            store.setValue(ModelPreferences.META_CLIENT_NAME_OVERRIDE, overrideClientApplicationNameCheck.getSelection());
-            store.setValue(ModelPreferences.META_CLIENT_NAME_VALUE, clientApplicationNameText.getText());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -145,9 +110,6 @@ public class PrefPageMetaData extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES);
         store.setToDefault(ModelPreferences.META_SEPARATE_CONNECTION);
         store.setToDefault(ModelPreferences.META_CASE_SENSITIVE);
-
-        store.setToDefault(ModelPreferences.META_CLIENT_NAME_OVERRIDE);
-        store.setToDefault(ModelPreferences.META_CLIENT_NAME_VALUE);
     }
 
     @Override
