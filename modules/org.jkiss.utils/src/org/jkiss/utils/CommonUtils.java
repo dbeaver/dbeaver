@@ -245,6 +245,16 @@ public class CommonUtils {
         }
     }
 
+    public static String toString(@Nullable Object object, String def) {
+        if (object == null) {
+            return def;
+        } else if (object instanceof String) {
+            return (String) object;
+        } else {
+            return object.toString();
+        }
+    }
+
     public static boolean toBoolean(@Nullable Object object) {
         return object != null && getBoolean(object.toString());
     }
