@@ -50,7 +50,6 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
 
     private Button keepEditorsOnRestart;
     private Button refreshEditorOnOpen;
-    private Button syncEditorDataSourceWithNavigator;
     private Combo defaultResourceEncoding;
 
     public PrefPageDatabaseGeneral()
@@ -100,10 +99,6 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
 
             refreshEditorOnOpen = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_refresh_editor_on_open, false);
             refreshEditorOnOpen.setToolTipText("Refreshes object from database every time you open this object's editor.\nYou may need this option if your database structure changes frequently (e.g. by SQL scripts).");
-
-            syncEditorDataSourceWithNavigator = UIUtils.createCheckbox(groupEditors, "Auto-sync editor connection with navigator selection", false);
-            syncEditorDataSourceWithNavigator.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
-            syncEditorDataSourceWithNavigator.setToolTipText("Automatically sets editor (e.g. SQL editor) connection from selected navigator node.\nMakes sense if you need to change active connection/schema frequently.");
         }
         {
             // Resources
@@ -131,7 +126,6 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
 
         keepEditorsOnRestart.setSelection(store.getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS));
         refreshEditorOnOpen.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN));
-        syncEditorDataSourceWithNavigator.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
         defaultResourceEncoding.setText(store.getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING));
     }
 
@@ -147,7 +141,6 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
 
         store.setValue(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, keepEditorsOnRestart.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, refreshEditorOnOpen.getSelection());
-        store.setValue(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, syncEditorDataSourceWithNavigator.getSelection());
         store.setValue(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING, defaultResourceEncoding.getText());
 
         PrefUtils.savePreferenceStore(store);

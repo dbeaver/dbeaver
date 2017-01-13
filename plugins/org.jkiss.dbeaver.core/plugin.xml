@@ -2185,6 +2185,14 @@
                 </or>
             </enabledWhen>
         </page>
+        <page id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnections" name="Connections">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+                </or>
+            </enabledWhen>
+        </page>
         <page id="org.jkiss.dbeaver.preferences.main.meta" class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData" name="Metadata">
             <enabledWhen>
                 <or>
