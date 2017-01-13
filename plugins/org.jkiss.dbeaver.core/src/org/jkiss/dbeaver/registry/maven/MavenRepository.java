@@ -30,7 +30,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -56,7 +58,7 @@ public class MavenRepository
     private final String name;
     private final String url;
     private final RepositoryType type;
-    private final String scope;
+    private final List<String> scopes = new ArrayList<>();
 
     private Map<String, MavenArtifact> cachedArtifacts = new LinkedHashMap<>();
 
@@ -66,16 +68,20 @@ public class MavenRepository
             config.getAttribute(RegistryConstants.ATTR_ID),
             config.getAttribute(RegistryConstants.ATTR_NAME),
             config.getAttribute(RegistryConstants.ATTR_URL),
-            config.getAttribute(RegistryConstants.ATTR_SCOPE),
             RepositoryType.GLOBAL);
+        for (IConfigurationElement scope : config.getChildren("scope")) {
+            final String group = scope.getAttribute("group");
+            if (!CommonUtils.isEmpty(group)) {
+                scopes.add(group);
+            }
+        }
     }
 
-    public MavenRepository(String id, String name, String url, String scope, RepositoryType type) {
+    public MavenRepository(String id, String name, String url, RepositoryType type) {
         this.id = id;
         this.name = CommonUtils.isEmpty(name) ? id : name;
         if (!url.endsWith("/")) url += "/";
         this.url = url;
-        this.scope = scope;
         this.type = type;
     }
 
@@ -91,8 +97,9 @@ public class MavenRepository
         return url;
     }
 
-    public String getScope() {
-        return scope;
+    @NotNull
+    public List<String> getScopes() {
+        return scopes;
     }
 
     public RepositoryType getType() {
