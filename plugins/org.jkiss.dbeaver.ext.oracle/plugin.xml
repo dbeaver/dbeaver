@@ -245,6 +245,7 @@
                 </folder>
                 <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings" visibleIf="object.dataSource.adminVisible">
                     <object type="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"/>
+                    <object type="org.jkiss.dbeaver.ext.oracle.editors.OracleLockEditor" label="%tree.locks.node.name" icon="#locks" description="Server locks manager" editor="org.jkiss.dbeaver.ext.oracle.editors.OracleLockEditor"/>
                     <!--folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="Global Recycle Bin" icon="#recycle_bin" description="Global recycle bin" visibleIf="object.dataSource.admin">
                         <items label="Recycled Object" path="object" property="adminRecycleBin" icon="#recycle_bin"/>
                     </folder-->
@@ -516,6 +517,11 @@
             name="Session Manager"
             class="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"
             id="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor">
+        </editor>
+        <editor
+            name="Lock Manager"
+            class="org.jkiss.dbeaver.ext.oracle.editors.OracleLockEditor"
+            id="org.jkiss.dbeaver.ext.oracle.editors.OracleLockEditor">
         </editor>
     </extension>
 
