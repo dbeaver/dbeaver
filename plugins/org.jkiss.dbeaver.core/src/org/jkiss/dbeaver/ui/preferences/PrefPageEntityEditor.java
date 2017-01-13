@@ -45,6 +45,7 @@ public class PrefPageEntityEditor extends AbstractPrefPage implements IWorkbench
     private Button keepEditorsOnRestart;
     private Button refreshEditorOnOpen;
     private Button editorFullName;
+    private Button showPreviewOnSave;
 
     public PrefPageEntityEditor()
     {
@@ -74,8 +75,7 @@ public class PrefPageEntityEditor extends AbstractPrefPage implements IWorkbench
             refreshEditorOnOpen.setToolTipText("Refreshes object from database every time you open this object's editor.\nYou may need this option if your database structure changes frequently (e.g. by SQL scripts).");
 
             editorFullName = UIUtils.createCheckbox(groupEditors, "Show full object names in editors", false);
-            editorFullName.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
-
+            showPreviewOnSave = UIUtils.createCheckbox(groupEditors, "Show SQL preview dialog on save", false);
         }
 
         performDefaults();
@@ -91,6 +91,7 @@ public class PrefPageEntityEditor extends AbstractPrefPage implements IWorkbench
         keepEditorsOnRestart.setSelection(store.getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS));
         refreshEditorOnOpen.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN));
         editorFullName.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
+        showPreviewOnSave.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW));
     }
 
     @Override
@@ -101,6 +102,7 @@ public class PrefPageEntityEditor extends AbstractPrefPage implements IWorkbench
         store.setValue(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, keepEditorsOnRestart.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, refreshEditorOnOpen.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
+        store.setValue(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW, showPreviewOnSave.getSelection());
 
         PrefUtils.savePreferenceStore(store);
 
