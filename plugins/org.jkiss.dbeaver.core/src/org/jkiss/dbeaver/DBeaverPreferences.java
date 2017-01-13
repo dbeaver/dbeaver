@@ -35,6 +35,7 @@ public final class DBeaverPreferences
     public static final String NAVIGATOR_GROUP_BY_DRIVER = "navigator.group.by.driver"; //$NON-NLS-1$
     public static final String NAVIGATOR_EDITOR_FULL_NAME = "navigator.editor.full-name"; //$NON-NLS-1$
     public static final String NAVIGATOR_CONNECTION_DOUBLE_CLICK = "navigator.connection.doubleClick"; //$NON-NLS-1$
+    public static final String NAVIGATOR_SHOW_SQL_PREVIEW = "navigator.editor.show.preview"; //$NON-NLS-1$
 
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
 
