@@ -74,8 +74,8 @@ public class PrefPageEntityEditor extends AbstractPrefPage implements IWorkbench
             refreshEditorOnOpen = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_refresh_editor_on_open, false);
             refreshEditorOnOpen.setToolTipText("Refreshes object from database every time you open this object's editor.\nYou may need this option if your database structure changes frequently (e.g. by SQL scripts).");
 
-            editorFullName = UIUtils.createCheckbox(groupEditors, "Show full object names in editors", false);
-            showPreviewOnSave = UIUtils.createCheckbox(groupEditors, "Show SQL preview dialog on save", false);
+            editorFullName = UIUtils.createCheckbox(groupEditors, "Show fully qualified object names in editors title", false);
+            showPreviewOnSave = UIUtils.createCheckbox(groupEditors, "Show SQL preview dialog on editor save", false);
         }
 
         performDefaults();
