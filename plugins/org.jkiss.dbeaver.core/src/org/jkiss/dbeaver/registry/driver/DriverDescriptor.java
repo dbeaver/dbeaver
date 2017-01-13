@@ -274,7 +274,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 }
                 if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
                     defaultConnectionProperties.put(paramName, paramValue);
-                    customConnectionProperties.put(paramName, paramValue);
+                    if (!paramName.startsWith(DBConstants.INTERNAL_PROP_PREFIX)) {
+                        customConnectionProperties.put(paramName, paramValue);
+                    }
                 }
             }
         }
