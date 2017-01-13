@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -256,10 +257,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     private boolean saveCommandContext(DBRProgressMonitor monitor)
     {
-        monitor.beginTask(CoreMessages.editors_entity_monitor_preview_changes, 1);
-        int previewResult = showChanges(true);
-        monitor.done();
-
+        int previewResult = IDialogConstants.PROCEED_ID;
+        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW)) {
+            monitor.beginTask(CoreMessages.editors_entity_monitor_preview_changes, 1);
+            previewResult = showChanges(true);
+            monitor.done();
+        }
 
         if (previewResult == IDialogConstants.PROCEED_ID) {
             Throwable error = null;
