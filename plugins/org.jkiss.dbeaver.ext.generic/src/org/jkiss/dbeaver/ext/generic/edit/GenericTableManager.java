@@ -21,11 +21,18 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Collection;
 
 /**
  * Generic table manager
@@ -64,6 +71,25 @@ public class GenericTableManager extends SQLTableManager<GenericTable, GenericSt
         }
 
         return table;
+    }
+
+    @Override
+    protected boolean excludeFromDDL(NestedObjectCommand command, Collection<NestedObjectCommand> orderedCommands) {
+        // Filter out indexes for unique constraints (if they have the same name)
+        DBPObject object = command.getObject();
+        if (object instanceof DBSTableIndex) {
+            for (NestedObjectCommand ccom : orderedCommands) {
+                if (ccom.getObject() instanceof DBSEntityConstraint &&
+                    ccom.getObject() != object &&
+                    ((DBSEntityConstraint) ccom.getObject()).getConstraintType().isUnique() &&
+                    CommonUtils.equalObjects(
+                        ((DBSTableIndex) object).getName(), ((DBSEntityConstraint) ccom.getObject()).getName()))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }
