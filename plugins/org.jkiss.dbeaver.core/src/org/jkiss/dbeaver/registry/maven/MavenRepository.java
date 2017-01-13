@@ -64,11 +64,13 @@ public class MavenRepository
 
     public MavenRepository(IConfigurationElement config)
     {
-        this(
-            config.getAttribute(RegistryConstants.ATTR_ID),
-            config.getAttribute(RegistryConstants.ATTR_NAME),
-            config.getAttribute(RegistryConstants.ATTR_URL),
-            RepositoryType.GLOBAL);
+        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        this.name = CommonUtils.toString(config.getAttribute(RegistryConstants.ATTR_NAME), this.id);
+        String urlString = config.getAttribute(RegistryConstants.ATTR_URL);
+        if (!urlString.endsWith("/")) urlString += "/";
+        this.url = urlString;
+        this.type = RepositoryType.GLOBAL;
+
         for (IConfigurationElement scope : config.getChildren("scope")) {
             final String group = scope.getAttribute("group");
             if (!CommonUtils.isEmpty(group)) {
