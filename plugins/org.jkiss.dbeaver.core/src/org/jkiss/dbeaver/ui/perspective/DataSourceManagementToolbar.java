@@ -32,7 +32,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.WorkbenchWindow;
@@ -93,7 +92,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     private IWorkbenchPart activePart;
 
     private Text resultSetSize;
-    private CImageCombo connectionCombo;
+    private CImageCombo<DBPDataSourceContainer> connectionCombo;
     private CImageCombo databaseCombo;
 
     private SoftReference<DBPDataSourceContainer> curDataSourceContainer = null;
@@ -273,7 +272,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             final int selConnection = connectionCombo.getSelectionIndex();
             DBPDataSourceContainer visibleContainer = null;
             if (selConnection > 0) {
-                visibleContainer = (DBPDataSourceContainer) connectionCombo.getItem(selConnection).getData();
+                visibleContainer = connectionCombo.getItem(selConnection);
             }
             DBPDataSourceContainer newContainer = getDataSourceContainer(part);
             if (activePart != part || activePart == null || visibleContainer != newContainer) {
@@ -315,12 +314,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         boolean update = force;
         if (!update) {
             // Check if there are any changes
-            final List<DBPDataSourceContainer> oldDataSources = new ArrayList<>();
-            for (TableItem item : connectionCombo.getItems()) {
-                if (item.getData() instanceof DBPDataSourceContainer) {
-                    oldDataSources.add((DBPDataSourceContainer) item.getData());
-                }
-            }
+            final List<DBPDataSourceContainer> oldDataSources = new ArrayList<>(connectionCombo.getItems());
             if (oldDataSources.size() == dataSources.size()) {
                 for (int i = 0; i < dataSources.size(); i++) {
                     if (dataSources.get(i) != oldDataSources.get(i)) {
@@ -359,10 +353,6 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                                 ds.getName(),
                                 UIUtils.getConnectionColor(ds.getConnectionConfiguration()),
                                 ds);
-                        } else {
-                            TableItem item = connectionCombo.getItem(i + 1);
-                            item.setText(ds.getName());
-                            item.setBackground(UIUtils.getConnectionColor(ds.getConnectionConfiguration()));
                         }
                         if (dataSourceContainer == ds) {
                             selectionIndex = i + 1;
@@ -721,7 +711,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         final int fontHeight = UIUtils.getFontHeight(parent);
         int comboWidth = fontHeight * 20;
 
-        connectionCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
+        connectionCombo = new CImageCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
         GridData gd = new GridData();
         gd.widthHint = comboWidth;
         gd.minimumWidth = comboWidth;
@@ -836,7 +826,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 public void run() {
                     final int selConnection = connectionCombo.getSelectionIndex();
                     if (selConnection > 0) {
-                        DBPDataSourceContainer visibleContainer = (DBPDataSourceContainer) connectionCombo.getItem(selConnection).getData();
+                        DBPDataSourceContainer visibleContainer = connectionCombo.getItem(selConnection);
                         DBPDataSourceContainer newContainer = EditorUtils.getFileDataSource(activeFile);
                         if (newContainer != visibleContainer) {
                             updateControls(true);

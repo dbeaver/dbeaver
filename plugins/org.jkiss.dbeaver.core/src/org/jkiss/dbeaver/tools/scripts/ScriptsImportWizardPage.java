@@ -54,7 +54,7 @@ class ScriptsImportWizardPage extends WizardPage {
 
     private Text directoryText;
     private Text extensionsText;
-    private CImageCombo scriptsDataSources;
+    private CImageCombo<DataSourceDescriptor> scriptsDataSources;
     private Button overwriteCheck;
     private DBNNode importRoot = null;
 
@@ -128,9 +128,10 @@ class ScriptsImportWizardPage extends WizardPage {
             extensionsText.setLayoutData(gd);
 
             UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_scripts_import_wizard_label_default_connection);
-            scriptsDataSources = new CImageCombo(generalSettings, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            scriptsDataSources = new CImageCombo<>(generalSettings, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             for (DataSourceDescriptor dataSourceDescriptor : DataSourceRegistry.getAllDataSources()) {
-                scriptsDataSources.add(dataSourceDescriptor.getObjectImage(), dataSourceDescriptor.getName(), null, dataSourceDescriptor);
+                scriptsDataSources.add(dataSourceDescriptor.getObjectImage(), dataSourceDescriptor.getName(),
+                    UIUtils.getConnectionColor(dataSourceDescriptor.getConnectionConfiguration()), dataSourceDescriptor);
             }
 
             if (scriptsDataSources.getItemCount() > 0) {
@@ -189,7 +190,7 @@ class ScriptsImportWizardPage extends WizardPage {
         DBPDataSourceContainer dataSourceContainer = null;
         final int dsIndex = scriptsDataSources.getSelectionIndex();
         if (dsIndex >= 0) {
-            dataSourceContainer = (DBPDataSourceContainer) scriptsDataSources.getData(dsIndex);
+            dataSourceContainer = (DBPDataSourceContainer) scriptsDataSources.getItem(dsIndex);
         }
         final String outputDir = directoryText.getText();
         DBeaverCore.getGlobalPreferenceStore().setValue(ScriptsExportWizardPage.PREF_SCRIPTS_EXPORT_OUT_DIR, outputDir);

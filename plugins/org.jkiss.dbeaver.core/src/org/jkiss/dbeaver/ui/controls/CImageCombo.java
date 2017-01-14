@@ -29,50 +29,27 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Instances of this class are controls that allow the user
- * to choose an item from a list of items, or optionally
- * enter a new value by typing it into an editable text
- * field. Often, <code>Combo</code>s are used in the same place
- * where a single selection <code>List</code> widget could
- * be used but space is limited. A <code>Combo</code> takes
- * less space than a <code>List</code> widget and shows
- * similar information.
- * <p>
- * Note: Since <code>Combo</code>s can contain both a list
- * and an editable text field, it is possible to confuse methods
- * which access one versus the other (compare for example,
- * <code>clearSelection()</code> and <code>deselectAll()</code>).
- * The API documentation is careful to indicate either "the
- * receiver's list" or the "the receiver's text field" to
- * distinguish between the two cases.
- * </p><p>
- * Note that although this class is a subclass of <code>Composite</code>,
- * it does not make sense to add children to it, or set a layout on it.
- * </p>
- * <dl>
- * <dt><b>Styles:</b></dt>
- * <dd>DROP_DOWN, READ_ONLY, SIMPLE</dd>
- * <dt><b>Events:</b></dt>
- * <dd>DefaultSelection, Modify, Selection, Verify</dd>
- * </dl>
- * <p>
- * Note: Only one of the styles DROP_DOWN and SIMPLE may be specified.
- * </p><p>
- * IMPORTANT: This class is <em>not</em> intended to be subclassed.
- * </p>
- *
- * @see List
+ * Image combo
  */
+public class CImageCombo<ITEM_TYPE extends Object> extends Composite {
 
-public class CImageCombo extends Composite {
+    public interface DropDownRenderer<T extends Control> {
+
+        T createControl(Composite parent, T oldControl);
+
+        void setSelection(T control, int selectionIndex);
+
+        void addItem(@Nullable Object parent, @Nullable DBPImage icon, String string, @Nullable Color background, @Nullable Object data);
+    }
 
     private Label imageLabel;
     private Text text;
     private Table table;
-    private int visibleItemCount = 4;
+    private int visibleItemCount = 10;
     private int widthHint = SWT.DEFAULT;
     private Shell popup;
     private Button arrow;
@@ -81,34 +58,6 @@ public class CImageCombo extends Composite {
     private Font font;
     private Point sizeHint;
 
-    /**
-     * Constructs a new instance of this class given its parent
-     * and a style value describing its behavior and appearance.
-     * <p>
-     * The style value is either one of the style constants defined in
-     * class <code>SWT</code> which is applicable to instances of this
-     * class, or must be built by <em>bitwise OR</em>'ing together
-     * (that is, using the <code>int</code> "|" operator) two or more
-     * of those <code>SWT</code> style constants. The class description
-     * lists the style constants that are applicable to the class.
-     * Style bits are also inherited from superclasses.
-     * </p>
-     *
-     * @param parent a composite control which will be the parent of the new instance (cannot be null)
-     * @param style  the style of control to construct
-     * @throws IllegalArgumentException <ul>
-     *                                  <li>ERROR_NULL_ARGUMENT - if the parent is null</li>
-     *                                  </ul>
-     * @throws SWTException             <ul>
-     *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the parent</li>
-     *                                  <li>ERROR_INVALID_SUBCLASS - if this class is not an allowed subclass</li>
-     *                                  </ul>
-     * @see SWT#DROP_DOWN
-     * @see SWT#READ_ONLY
-     * @see SWT#SIMPLE
-     * @see Widget#checkSubclass
-     * @see Widget#getStyle
-     */
     public CImageCombo(Composite parent, int style)
     {
         super(parent, style = checkStyle(style));
@@ -253,7 +202,7 @@ public class CImageCombo extends Composite {
      *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
      *                                  </ul>
      */
-    public void add(@Nullable DBPImage icon, String string, @Nullable Color background, @Nullable Object data)
+    public void add(@Nullable DBPImage icon, String string, @Nullable Color background, @Nullable ITEM_TYPE data)
     {
         checkWidget();
         if (string == null) {
@@ -274,13 +223,13 @@ public class CImageCombo extends Composite {
         }
     }
 
-    public Object getData(int index)
+    public ITEM_TYPE getItem(int index)
     {
         checkWidget();
         if (index < 0 || index >= table.getItemCount()) {
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
         }
-        return table.getItem(index).getData();
+        return (ITEM_TYPE) table.getItem(index).getData();
     }
 
     /**
@@ -424,12 +373,6 @@ public class CImageCombo extends Composite {
         return this.table.getItem(index).getText();
     }
 
-    public TableItem getItem(int index)
-    {
-        checkWidget();
-        return this.table.getItem(index);
-    }
-
     /**
      * Returns the number of items contained in the receiver's list.
      *
@@ -460,10 +403,16 @@ public class CImageCombo extends Composite {
      *                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
      *                      </ul>
      */
-    public TableItem[] getItems()
+    public List<ITEM_TYPE> getItems()
     {
         checkWidget();
-        return this.table.getItems();
+        List<ITEM_TYPE> result = new ArrayList<>();
+        for (TableItem item : this.table.getItems()) {
+            if (item.getData() != null) {
+                result.add((ITEM_TYPE) item.getData());
+            }
+        }
+        return result;
     }
 
     /**
@@ -499,44 +448,6 @@ public class CImageCombo extends Composite {
         return this.text.getText();
     }
 
-    /**
-     * Searches the receiver's list starting at the first item
-     * (index 0) until an item is found that is equal to the
-     * argument, and returns the index of that item. If no item
-     * is found, returns -1.
-     *
-     * @param string the search item
-     * @return the index of the item
-     * @throws IllegalArgumentException <ul>
-     *                                  <li>ERROR_NULL_ARGUMENT - if the string is null</li>
-     *                                  </ul>
-     * @throws SWTException             <ul>
-     *                                  <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                                  </ul>
-     */
-    public int indexOf(String string)
-    {
-        checkWidget();
-        if (string == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-        }
-        return Arrays.asList(getStringsFromTable()).indexOf(string);
-    }
-
-    /**
-     * Removes the item from the receiver's list at the given
-     * zero-relative index.
-     *
-     * @param index the index for the item
-     * @throws IllegalArgumentException <ul>
-     *                                  <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number of elements in the list minus 1 (inclusive)</li>
-     *                                  </ul>
-     * @throws SWTException             <ul>
-     *                                  <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                                  </ul>
-     */
     public void remove(int index)
     {
         checkWidget();
@@ -546,42 +457,12 @@ public class CImageCombo extends Composite {
         this.table.remove(index);
     }
 
-    /**
-     * Removes the items from the receiver's list which are
-     * between the given zero-relative start and end
-     * indices (inclusive).
-     *
-     * @param start the start of the range
-     * @param end   the end of the range
-     * @throws IllegalArgumentException <ul>
-     *                                  <li>ERROR_INVALID_RANGE - if either the start or end are not between 0 and the number of elements in the list minus 1 (inclusive)</li>
-     *                                  </ul>
-     * @throws SWTException             <ul>
-     *                                  <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                                  </ul>
-     */
     public void remove(int start, int end)
     {
         checkWidget();
         this.table.remove(start, end);
     }
 
-    /**
-     * Searches the receiver's list starting at the first item
-     * until an item is found that is equal to the argument,
-     * and removes that item from the list.
-     *
-     * @param string the item to remove
-     * @throws IllegalArgumentException <ul>
-     *                                  <li>ERROR_NULL_ARGUMENT - if the string is null</li>
-     *                                  <li>ERROR_INVALID_ARGUMENT - if the string is not found in the list</li>
-     *                                  </ul>
-     * @throws SWTException             <ul>
-     *                                  <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                                  </ul>
-     */
     public void remove(String string)
     {
         checkWidget();
@@ -678,26 +559,6 @@ public class CImageCombo extends Composite {
         this.table.setFont(font);
     }
 
-    /**
-     * Sets the contents of the receiver's text field to the
-     * given string.
-     * <p>
-     * Note: The text field in a <code>Combo</code> is typically
-     * only capable of displaying a single line of text. Thus,
-     * setting the text to a string containing line breaks or
-     * other special characters will probably cause it to
-     * display incorrectly.
-     * </p>
-     *
-     * @param string the new text
-     * @throws IllegalArgumentException <ul>
-     *                                  <li>ERROR_NULL_ARGUMENT - if the string is null</li>
-     *                                  </ul>
-     * @throws SWTException             <ul>
-     *                                  <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                                  </ul>
-     */
     public void setText(String string)
     {
         checkWidget();
@@ -732,21 +593,6 @@ public class CImageCombo extends Composite {
         this.text.setToolTipText(string);
     }
 
-    /**
-     * Sets the number of items that are visible in the drop
-     * down portion of the receiver's list.
-     * <p>
-     * Note: This operation is a hint and is not supported on
-     * platforms that do not have this concept.
-     * </p>
-     *
-     * @param count the new number of items to be visible
-     * @throws SWTException <ul>
-     *                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                      </ul>
-     * @since 3.0
-     */
     public void setVisibleItemCount(int count)
     {
         checkWidget();
@@ -878,8 +724,6 @@ public class CImageCombo extends Composite {
             createPopup(selectionIndex);
         }
 
-        // Commented because it increased table size on each dropdown
-
         Point size = getSize();
         int itemCount = this.table.getItemCount();
         itemCount = (itemCount == 0) ? this.visibleItemCount : Math.min(this.visibleItemCount, itemCount);
@@ -889,7 +733,16 @@ public class CImageCombo extends Composite {
         if (verticalBar != null) {
             listSize.x -= verticalBar.getSize().x;
         }
-        this.table.setBounds(1, 1, Math.max(size.x - 2, listSize.x), listSize.y);
+        this.table.setBounds(1, 1, Math.max(size.x, listSize.x) - 30, listSize.y);
+
+        {
+            final TableColumn column = table.getColumn(0);
+            column.pack();
+            final int maxSize = table.getSize().x - 10;// - 2;//table.getVerticalBar().getSize().x;
+            if (column.getWidth() < maxSize) {
+                //column.setWidth(maxSize);
+            }
+        }
 
         int index = this.table.getSelectionIndex();
         if (index != -1) {
@@ -914,14 +767,6 @@ public class CImageCombo extends Composite {
         this.popup.setBounds(x, y, width, height);
         this.popup.layout();
 
-        {
-            final TableColumn column = table.getColumn(0);
-            column.pack();
-            final int maxSize = table.getSize().x - 2;// - 2;//table.getVerticalBar().getSize().x;
-            if (column.getWidth() < maxSize) {
-                column.setWidth(maxSize);
-            }
-        }
         if (this.popup.getData("resizeListener") == null) {
             this.popup.addListener(SWT.Resize, new Listener() {
                 @Override
@@ -1101,15 +946,6 @@ public class CImageCombo extends Composite {
                 dropDown(false);
                 break;
         }
-    }
-
-    String[] getStringsFromTable()
-    {
-        String[] items = new String[this.table.getItems().length];
-        for (int i = 0, n = items.length; i < n; i++) {
-            items[i] = this.table.getItem(i).getText();
-        }
-        return items;
     }
 
     void textEvent(Event event)
