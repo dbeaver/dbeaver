@@ -32,7 +32,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreAuthId;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -49,9 +49,9 @@ import java.util.List;
 public class PostgreCreateSchemaDialog extends BaseDialog
 {
     private final PostgreDatabase database;
-    private List<PostgreAuthId> allUsers;
+    private List<PostgreRole> allUsers;
     private String name;
-    private PostgreAuthId owner;
+    private PostgreRole owner;
 
     public PostgreCreateSchemaDialog(Shell parentShell, PostgreDatabase database) {
         super(parentShell, "Create schema", null);
@@ -90,13 +90,13 @@ public class PostgreCreateSchemaDialog extends BaseDialog
                 try {
                     final List<String> userNames = new ArrayList<>();
                     allUsers = new ArrayList<>(database.getUsers(monitor));
-                    final PostgreAuthId dba = database.getDBA(monitor);
+                    final PostgreRole dba = database.getDBA(monitor);
                     final String defUserName = dba == null ? "" : dba.getName();
 
                     DBeaverUI.syncExec(new Runnable() {
                         @Override
                         public void run() {
-                            for (PostgreAuthId authId : allUsers) {
+                            for (PostgreRole authId : allUsers) {
                                 String name = authId.getName();
                                 userCombo.add(name);
                                 if (name.equals(defUserName)) {
@@ -120,7 +120,7 @@ public class PostgreCreateSchemaDialog extends BaseDialog
         return name;
     }
 
-    public PostgreAuthId getOwner() {
+    public PostgreRole getOwner() {
         return owner;
     }
 

@@ -276,8 +276,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Property(category = CAT_PROPS, order = 10)
-    public PostgreAuthId getOwner(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, container.getDatabase().authIdCache, container.getDatabase(), ownerId);
+    public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, container.getDatabase().roleCache, container.getDatabase(), ownerId);
     }
 
     @Property(category = CAT_PROPS, viewable = true, order = 11)

@@ -28,9 +28,9 @@ import java.sql.SQLException;
 import java.util.Date;
 
 /**
- * PostgreAuthId
+ * PostgreRole
  */
-public class PostgreAuthId implements PostgreObject {
+public class PostgreRole implements PostgreObject {
 
     public static final String CAT_SETTINGS = "Settings";
     public static final String CAT_FLAGS = "Flags";
@@ -49,7 +49,7 @@ public class PostgreAuthId implements PostgreObject {
     private String password;
     private Date validUntil;
 
-    public PostgreAuthId(PostgreDatabase database, ResultSet dbResult)
+    public PostgreRole(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
     {
         this.database = database;

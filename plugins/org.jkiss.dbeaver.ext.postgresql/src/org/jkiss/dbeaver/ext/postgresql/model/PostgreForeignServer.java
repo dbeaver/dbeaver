@@ -88,8 +88,8 @@ public class PostgreForeignServer extends PostgreInformation {
     }
 
     @Property(viewable = false, order = 8)
-    public PostgreAuthId getOwner(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, getDatabase().authIdCache, getDatabase(), ownerId);
+    public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, getDatabase().roleCache, getDatabase(), ownerId);
     }
 
     @Property(viewable = true, order = 10)
