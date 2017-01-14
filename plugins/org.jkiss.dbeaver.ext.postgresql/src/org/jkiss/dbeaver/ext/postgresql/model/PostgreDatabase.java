@@ -67,7 +67,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     private int connectionLimit;
     private long tablespaceId;
 
-    public final AuthIdCache authIdCache = new AuthIdCache();
+    public final RoleCache roleCache = new RoleCache();
     public final AccessMethodCache accessMethodCache = new AccessMethodCache();
     public final ForeignDataWrapperCache foreignDataWrapperCache = new ForeignDataWrapperCache();
     public final ForeignServerCache foreignServerCache = new ForeignServerCache();
@@ -146,8 +146,8 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     // Properties
 
     @Property(viewable = false, order = 3)
-    public PostgreAuthId getDBA(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, authIdCache, this, ownerId);
+    public PostgreRole getDBA(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, roleCache, this, ownerId);
     }
 
     @Property(viewable = false, order = 4)
@@ -214,8 +214,8 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     // Infos
 
     @Association
-    public Collection<PostgreAuthId> getAuthIds(DBRProgressMonitor monitor) throws DBException {
-        return authIdCache.getAllObjects(monitor, this);
+    public Collection<PostgreRole> getAuthIds(DBRProgressMonitor monitor) throws DBException {
+        return roleCache.getAllObjects(monitor, this);
     }
 
     @Association
@@ -344,7 +344,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        authIdCache.clearCache();
+        roleCache.clearCache();
         accessMethodCache.clearCache();
         languageCache.clearCache();
         encodingCache.clearCache();
@@ -355,8 +355,8 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return this;
     }
 
-    public Collection<PostgreAuthId> getUsers(DBRProgressMonitor monitor) throws DBException {
-        return authIdCache.getAllObjects(monitor, this);
+    public Collection<PostgreRole> getUsers(DBRProgressMonitor monitor) throws DBException {
+        return roleCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -483,23 +483,23 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return name;
     }
 
-    class AuthIdCache extends JDBCObjectCache<PostgreDatabase, PostgreAuthId> {
+    class RoleCache extends JDBCObjectCache<PostgreDatabase, PostgreRole> {
 
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException
         {
             return session.prepareStatement(
-                "SELECT a.oid,a.* FROM pg_catalog.pg_authid a " +
+                "SELECT a.oid,a.* FROM pg_catalog.pg_roles a " +
                     "\nORDER BY a.oid"
             );
         }
 
         @Override
-        protected PostgreAuthId fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+        protected PostgreRole fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new PostgreAuthId(owner, dbResult);
+            return new PostgreRole(owner, dbResult);
         }
 
         @Override
@@ -508,7 +508,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
             // FIXME: maybe some better workaround?
             if (PostgreConstants.EC_PERMISSION_DENIED.equals(error.getDatabaseState())) {
                 log.warn(error);
-                setCache(Collections.<PostgreAuthId>emptyList());
+                setCache(Collections.<PostgreRole>emptyList());
                 return true;
             }
             return false;

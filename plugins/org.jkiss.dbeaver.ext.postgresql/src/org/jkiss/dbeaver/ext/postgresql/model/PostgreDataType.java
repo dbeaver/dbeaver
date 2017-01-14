@@ -247,8 +247,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @Property(category = CAT_MAIN, order = 15)
-    public PostgreAuthId getOwner(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, getDatabase().authIdCache, getDatabase(), ownerId);
+    public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, getDatabase().roleCache, getDatabase(), ownerId);
     }
 
     @Property(category = CAT_MISC)

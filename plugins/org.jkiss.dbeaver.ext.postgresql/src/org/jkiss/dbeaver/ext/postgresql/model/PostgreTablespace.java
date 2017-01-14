@@ -67,8 +67,8 @@ public class PostgreTablespace extends PostgreInformation {
     }
 
     @Property(order = 2)
-    public PostgreAuthId getOwner(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, getDatabase().authIdCache, getDatabase(), ownerId);
+    public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, getDatabase().roleCache, getDatabase(), ownerId);
     }
 
     @Property(order = 100)

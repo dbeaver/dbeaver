@@ -21,7 +21,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreAuthId;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateSchemaDialog;
@@ -77,7 +77,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
         final PostgreSchema schema = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema));
         try {
-            final PostgreAuthId owner = schema.getOwner(VoidProgressMonitor.INSTANCE);
+            final PostgreRole owner = schema.getOwner(VoidProgressMonitor.INSTANCE);
             if (owner != null) {
                 script.append("\nAUTHORIZATION ").append(owner.getName());
             }

@@ -77,7 +77,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         this.loadInfo(dbResult);
     }
 
-    public PostgreSchema(PostgreDatabase database, String name, PostgreAuthId owner)
+    public PostgreSchema(PostgreDatabase database, String name, PostgreRole owner)
     {
         this.database = database;
         this.name = name;
@@ -117,8 +117,8 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     }
 
     @Property(order = 4)
-    public PostgreAuthId getOwner(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, database.authIdCache, database, ownerId);
+    public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, database.roleCache, database, ownerId);
     }
 
     @Nullable
