@@ -56,6 +56,8 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
     private final Set<MavenRepository> disabledRepositories = new HashSet<>();
     private Button disableButton;
     private Button removeButton;
+    private Button moveUpButton;
+    private Button moveDownButton;
     private Color enabledColor, disabledColor;
 
     @Override
@@ -124,6 +126,32 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
                 }
             });
             removeButton.setEnabled(false);
+            moveUpButton = UIUtils.createToolButton(buttonsPH, "Up", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    final TableItem item = mavenRepoTable.getSelection()[0];
+                    final int index = mavenRepoTable.indexOf(item);
+                    if (index > 0) {
+                        final TableItem prevItem = mavenRepoTable.getItem(index - 1);
+                        switchItems(item, prevItem);
+                        mavenRepoTable.setSelection(index - 1);
+                        updateSelection();
+                    }
+                }
+            });
+            moveDownButton = UIUtils.createToolButton(buttonsPH, "Down", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    final TableItem item = mavenRepoTable.getSelection()[0];
+                    final int index = mavenRepoTable.indexOf(item);
+                    if (index < mavenRepoTable.getItemCount() - 1) {
+                        final TableItem nextItem = mavenRepoTable.getItem(index + 1);
+                        switchItems(item, nextItem);
+                        mavenRepoTable.setSelection(index + 1);
+                        updateSelection();
+                    }
+                }
+            });
 
             mavenRepoTable.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -180,6 +208,19 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
         return composite;
     }
 
+    private void switchItems(TableItem item1, TableItem item2) {
+        final String id1 = item1.getText(0);
+        final String url1 = item1.getText(1);
+        final Object repo1 = item1.getData();
+        item1.setText(0, item2.getText(0));
+        item1.setText(1, item2.getText(1));
+        item1.setData(item2.getData());
+
+        item2.setText(0, id1);
+        item2.setText(1, url1);
+        item2.setData(repo1);
+    }
+
     private MavenRepository getSelectedRepository() {
         TableItem[] selection = mavenRepoTable.getSelection();
         if (selection.length == 1) {
@@ -223,6 +264,8 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
             urlText.setEnabled(false);
             scopeText.setEnabled(false);
         }
+        moveUpButton.setEnabled(mavenRepoTable.getSelectionIndex() > 0);
+        moveDownButton.setEnabled(mavenRepoTable.getSelectionIndex() < mavenRepoTable.getItemCount() - 1);
     }
 
     @Override
