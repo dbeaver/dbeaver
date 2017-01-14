@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -287,8 +288,9 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         }
     }
 
+    @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators()
+    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute)
     {
         return DBUtils.getDefaultOperators(this);
     }

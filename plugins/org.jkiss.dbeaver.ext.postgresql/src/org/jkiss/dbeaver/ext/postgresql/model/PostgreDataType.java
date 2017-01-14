@@ -387,7 +387,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
     @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators() {
+    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
         if (dataKind == DBPDataKind.STRING) {
             if (typeCategory == PostgreTypeCategory.S) {
                 return new DBCLogicalOperator[]{
@@ -407,7 +407,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 };
             }
         }
-        return super.getSupportedOperators();
+        return super.getSupportedOperators(attribute);
     }
 
     @Override

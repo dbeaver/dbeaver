@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * AbstractAttribute
@@ -89,7 +90,7 @@ public abstract class AbstractDataType<DS extends DBPDataSource> implements DBSD
 
     @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators() {
+    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
         return DBUtils.getDefaultOperators(this);
     }
 

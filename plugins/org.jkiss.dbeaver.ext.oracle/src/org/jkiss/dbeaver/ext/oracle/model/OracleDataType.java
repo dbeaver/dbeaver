@@ -348,8 +348,9 @@ public class OracleDataType extends OracleObject<DBSObject>
         return typeDesc == null ? 0 : typeDesc.maxScale;
     }
 
+    @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators() {
+    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
         return DBUtils.getDefaultOperators(this);
     }
 

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.ResultSet;
 import java.sql.Types;
@@ -201,8 +202,9 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
         }
     }
 
+    @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators() {
+    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
         return DBUtils.getDefaultOperators(this);
     }
 
