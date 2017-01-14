@@ -54,7 +54,7 @@ public class MavenRepository
         EXTERNAL    // POM-defined repository
     }
 
-    private final String id;
+    private String id;
     private final RepositoryType type;
     private String name;
     private String url;
@@ -85,27 +85,57 @@ public class MavenRepository
 
     public MavenRepository(String id, String name, String url, RepositoryType type) {
         this.id = id;
+        this.type = type;
         this.name = CommonUtils.isEmpty(name) ? id : name;
         if (!url.endsWith("/")) url += "/";
         this.url = url;
-        this.type = type;
+    }
+
+    // Copy constructor
+    public MavenRepository(MavenRepository source) {
+        this.id = source.id;
+        this.type = source.type;
+        this.name = source.name;
+        this.url = source.url;
+        this.scopes.addAll(source.scopes);
+
+        this.order = source.order;
+        this.enabled = source.enabled;
+        this.description = source.description;
     }
 
     public String getId() {
         return id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getUrl() {
         return url;
     }
 
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
     @NotNull
     public List<String> getScopes() {
         return scopes;
+    }
+
+    public void setScopes(List<String> scopes) {
+        this.scopes.clear();
+        this.scopes.addAll(scopes);
     }
 
     public RepositoryType getType() {

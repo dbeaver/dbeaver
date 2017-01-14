@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -27,9 +29,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.maven.MavenRegistry;
 import org.jkiss.dbeaver.registry.maven.MavenRepository;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -38,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,8 +46,6 @@ import java.util.Set;
  */
 public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
-    private static final Log log = Log.getLog(PrefPageDriversMaven.class);
-
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.drivers.maven"; //$NON-NLS-1$
 
     private Table mavenRepoTable;
@@ -138,9 +136,43 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
         {
             Group propsGroup = UIUtils.createControlGroup(composite, "Properties", 2, GridData.FILL_HORIZONTAL, 0);
             idText = UIUtils.createLabelText(propsGroup, "ID", "", SWT.BORDER | SWT.READ_ONLY);
+            idText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    if (getSelectedRepository() != null) {
+                        getSelectedRepository().setId(idText.getText());
+                        mavenRepoTable.getSelection()[0].setText(0, idText.getText());
+                    }
+                }
+            });
             nameText = UIUtils.createLabelText(propsGroup, "Name", "", SWT.BORDER);
+            nameText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    if (getSelectedRepository() != null) {
+                        getSelectedRepository().setName(nameText.getText());
+                    }
+                }
+            });
             urlText = UIUtils.createLabelText(propsGroup, "URL", "", SWT.BORDER);
+            urlText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    if (getSelectedRepository() != null) {
+                        getSelectedRepository().setUrl(urlText.getText());
+                        mavenRepoTable.getSelection()[0].setText(1, urlText.getText());
+                    }
+                }
+            });
             scopeText = UIUtils.createLabelText(propsGroup, "Scope", "", SWT.BORDER);
+            scopeText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    if (getSelectedRepository() != null) {
+                        getSelectedRepository().setScopes(CommonUtils.splitString(scopeText.getText(), ','));
+                    }
+                }
+            });
         }
 
         performDefaults();
@@ -148,10 +180,17 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
         return composite;
     }
 
-    private void updateSelection() {
+    private MavenRepository getSelectedRepository() {
         TableItem[] selection = mavenRepoTable.getSelection();
         if (selection.length == 1) {
-            final MavenRepository repo = (MavenRepository) selection[0].getData();
+            return (MavenRepository) selection[0].getData();
+        }
+        return null;
+    }
+
+    private void updateSelection() {
+        final MavenRepository repo = getSelectedRepository();
+        if (repo != null) {
             if (disabledRepositories.contains(repo)) {
                 disableButton.setText("Enable");
             } else {
@@ -162,15 +201,18 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
             removeButton.setEnabled(isEditable);
 
             idText.setEnabled(true);
-            nameText.setEnabled(true);
-            urlText.setEnabled(true);
-            scopeText.setEnabled(true);
-
+            idText.setEditable(isEditable);
             idText.setText(repo.getId());
+
+            nameText.setEnabled(true);
             nameText.setEditable(isEditable);
             nameText.setText(repo.getName());
+
+            urlText.setEnabled(true);
             urlText.setEditable(isEditable);
             urlText.setText(repo.getUrl());
+
+            scopeText.setEnabled(true);
             scopeText.setEditable(isEditable);
             scopeText.setText(CommonUtils.makeString(repo.getScopes(), ','));
         } else {
@@ -186,12 +228,11 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
     @Override
     protected void performDefaults()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-
         for (MavenRepository repo : MavenRegistry.getInstance().getRepositories()) {
+            MavenRepository repoCopy = repo.getType() == MavenRepository.RepositoryType.CUSTOM ? new MavenRepository(repo) : repo;
             TableItem item = new TableItem(mavenRepoTable, SWT.NONE);
-            item.setText(new String[]{repo.getId(), repo.getUrl()});
-            item.setData(repo);
+            item.setText(new String[]{repoCopy.getId(), repoCopy.getUrl()});
+            item.setData(repoCopy);
             if (!repo.isEnabled()) {
                 disabledRepositories.add(repo);
                 item.setForeground(disabledColor);
@@ -205,7 +246,20 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
     @Override
     public boolean performOk()
     {
-        MavenRegistry.getInstance().saveConfiguration();
+        java.util.List<MavenRepository> customRepos = new ArrayList<>();
+        TableItem[] items = mavenRepoTable.getItems();
+        for (int i = 0; i < items.length; i++) {
+            TableItem item = items[i];
+            MavenRepository repo = (MavenRepository) item.getData();
+            repo.setEnabled(!disabledRepositories.contains(repo));
+            repo.setOrder(i);
+            if (repo.getType() == MavenRepository.RepositoryType.CUSTOM) {
+                customRepos.add(repo);
+            }
+        }
+        final MavenRegistry registry = MavenRegistry.getInstance();
+        registry.setCustomRepositories(customRepos);
+        registry.saveConfiguration();
         return super.performOk();
     }
 

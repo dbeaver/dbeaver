@@ -21,14 +21,15 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.xml.XMLUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -107,31 +108,51 @@ public class MavenRegistry
             MavenRepository.RepositoryType.LOCAL);
     }
 
-    public void loadCustomRepositories() {
+    public void setCustomRepositories(List<MavenRepository> customRepositories) {
         // Clear not-found cache
         notFoundArtifacts.clear();
+        // Remove old custom repos
+        for (Iterator<MavenRepository> iter = this.repositories.iterator(); iter.hasNext(); ) {
+            if (iter.next().getType() == MavenRepository.RepositoryType.CUSTOM) {
+                iter.remove();
+            }
+        }
+        // Add new and reorder
+        this.repositories.addAll(customRepositories);
+        sortRepositories();
+    }
 
-        // Remove all custom repositories
-        for (Iterator<MavenRepository> iterator = repositories.iterator(); iterator.hasNext(); ) {
-            MavenRepository repository = iterator.next();
-            if (repository.getType() == MavenRepository.RepositoryType.CUSTOM) {
-                iterator.remove();
+    public void loadCustomRepositories() {
+        final File cfgFile = getConfigurationFile();
+        if (cfgFile.exists()) {
+            try {
+                final Document reposDocument = XMLUtils.parseDocument(cfgFile);
+                for (Element repoElement : XMLUtils.getChildElementList(reposDocument.getDocumentElement(), "repository")) {
+                    String repoID = repoElement.getAttribute("id");
+                    MavenRepository repo = findRepository(repoID);
+                    if (repo == null) {
+                        String repoName = repoElement.getAttribute("name");
+                        String repoURL = repoElement.getAttribute("url");
+                        repo = new MavenRepository(
+                            repoID,
+                            repoName,
+                            repoURL,
+                            MavenRepository.RepositoryType.CUSTOM);
+                        List<String> scopes = new ArrayList<>();
+                        for (Element scopeElement : XMLUtils.getChildElementList(repoElement, "scope")) {
+                            scopes.add(scopeElement.getAttribute("group"));
+                        }
+                        repo.setScopes(scopes);
+
+                        repositories.add(repo);
+                    }
+
+                    repo.setOrder(CommonUtils.toInt(repoElement.getAttribute("order")));
+                    repo.setEnabled(CommonUtils.toBoolean(repoElement.getAttribute("enabled")));
+                }
+            } catch (Exception e) {
+                log.error("Error parsing maven repositories configuration", e);
             }
-        }
-        // Parse repositories from preferences
-        String repoString = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.UI_MAVEN_REPOSITORIES);
-        if (CommonUtils.isEmpty(repoString)) {
-            return;
-        }
-        for (String repoInfo : repoString.split("\\|")) {
-            int divPos = repoInfo.indexOf(':');
-            if (divPos < 0) {
-                continue;
-            }
-            String repoID = repoInfo.substring(0, divPos);
-            String repoURL = repoInfo.substring(divPos + 1);
-            MavenRepository repo = new MavenRepository(repoID, repoID, repoURL, MavenRepository.RepositoryType.CUSTOM);
-            repositories.add(repo);
         }
     }
 
