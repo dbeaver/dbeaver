@@ -178,7 +178,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             });
 
             UIUtils.createControlLabel(propsGroup, "Driver Type");
-            final CImageCombo providerCombo = new CImageCombo(propsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
+            final CImageCombo<DataSourceProviderDescriptor> providerCombo = new CImageCombo<>(propsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
             providerCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (newDriver) {
                 for (DataSourceProviderDescriptor p : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
@@ -190,7 +190,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 providerCombo.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        provider = (DataSourceProviderDescriptor) providerCombo.getItem(providerCombo.getSelectionIndex()).getData();
+                        provider = providerCombo.getItem(providerCombo.getSelectionIndex());
                         driver = provider.createDriver();
                     }
                 });
