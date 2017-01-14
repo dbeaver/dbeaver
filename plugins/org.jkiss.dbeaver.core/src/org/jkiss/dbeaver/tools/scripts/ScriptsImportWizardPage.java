@@ -26,6 +26,8 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -36,15 +38,16 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -128,10 +131,9 @@ class ScriptsImportWizardPage extends WizardPage {
             extensionsText.setLayoutData(gd);
 
             UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_scripts_import_wizard_label_default_connection);
-            scriptsDataSources = new CImageCombo<>(generalSettings, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            scriptsDataSources = new CImageCombo<>(generalSettings, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionLabelProvider());
             for (DataSourceDescriptor dataSourceDescriptor : DataSourceRegistry.getAllDataSources()) {
-                scriptsDataSources.add(dataSourceDescriptor.getObjectImage(), dataSourceDescriptor.getName(),
-                    UIUtils.getConnectionColor(dataSourceDescriptor.getConnectionConfiguration()), dataSourceDescriptor);
+                scriptsDataSources.addItem(dataSourceDescriptor);
             }
 
             if (scriptsDataSources.getItemCount() > 0) {
@@ -201,4 +203,28 @@ class ScriptsImportWizardPage extends WizardPage {
             (DBNResource) importRoot,
             dataSourceContainer);
     }
+
+    private static class ConnectionLabelProvider extends LabelProvider implements IColorProvider {
+        @Override
+        public Image getImage(Object element) {
+            final DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().findNode((DataSourceDescriptor) element);
+            return node == null ? null : DBeaverIcons.getImage(node.getNodeIcon());
+        }
+
+        @Override
+        public String getText(Object element) {
+            return ((DataSourceDescriptor) element).getName();
+        }
+
+        @Override
+        public Color getForeground(Object element) {
+            return null;
+        }
+
+        @Override
+        public Color getBackground(Object element) {
+            return element == null ? null : UIUtils.getConnectionColor(((DataSourceDescriptor) element).getConnectionConfiguration());
+        }
+    }
+
 }

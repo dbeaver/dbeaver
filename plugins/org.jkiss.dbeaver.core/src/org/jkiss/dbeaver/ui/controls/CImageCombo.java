@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.jface.viewers.IColorProvider;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.events.*;
@@ -26,8 +28,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,17 +35,9 @@ import java.util.List;
 /**
  * Image combo
  */
-public class CImageCombo<ITEM_TYPE extends Object> extends Composite {
+public class CImageCombo<ITEM_TYPE> extends Composite {
 
-    public interface DropDownRenderer<T extends Control> {
-
-        T createControl(Composite parent, T oldControl);
-
-        void setSelection(T control, int selectionIndex);
-
-        void addItem(@Nullable Object parent, @Nullable DBPImage icon, String string, @Nullable Color background, @Nullable Object data);
-    }
-
+    private final ILabelProvider labelProvider;
     private Label imageLabel;
     private Text text;
     private Table table;
@@ -58,9 +50,10 @@ public class CImageCombo<ITEM_TYPE extends Object> extends Composite {
     private Font font;
     private Point sizeHint;
 
-    public CImageCombo(Composite parent, int style)
+    public CImageCombo(Composite parent, int style, ILabelProvider labelProvider)
     {
         super(parent, style = checkStyle(style));
+        this.labelProvider = labelProvider;
         this.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER));
 
         GridLayout gridLayout = new GridLayout(3, false);
@@ -189,37 +182,30 @@ public class CImageCombo<ITEM_TYPE extends Object> extends Composite {
     }
 
     /**
-     * Adds the argument to the end of the receiver's list.
-     *
-     *
-     * @param string the new item
-     * @param background item background color
-     * @throws IllegalArgumentException <ul>
-     *                                  <li>ERROR_NULL_ARGUMENT - if the string is null</li>
-     *                                  </ul>
-     * @throws SWTException             <ul>
-     *                                  <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                                  </ul>
+     * Adds element
      */
-    public void add(@Nullable DBPImage icon, String string, @Nullable Color background, @Nullable ITEM_TYPE data)
+    public void addItem(@Nullable ITEM_TYPE element)
     {
         checkWidget();
+        String string = labelProvider.getText(element);
         if (string == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
         }
-        Image image = icon == null ? null : DBeaverIcons.getImage(icon);
+        Image image = labelProvider.getImage(element);
         TableItem newItem = new TableItem(this.table, SWT.NONE);
         newItem.setText(string);
-        newItem.setData(data);
+        newItem.setData(element);
         if (image != null) {
             newItem.setImage(image);
             if (imageLabel.getImage() == null) {
                 imageLabel.setImage(image);
             }
         }
-        if (background != null) {
-            newItem.setBackground(background);
+        if (labelProvider instanceof IColorProvider) {
+            Color background= ((IColorProvider) labelProvider).getBackground(element);
+            if (background != null) {
+                newItem.setBackground(background);
+            }
         }
     }
 

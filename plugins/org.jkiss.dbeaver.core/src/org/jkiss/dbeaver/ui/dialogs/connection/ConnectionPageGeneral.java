@@ -20,13 +20,17 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.IColorProvider;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -319,7 +323,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             UIUtils.createControlLabel(group, "Connection type");
 
             Composite ctGroup = UIUtils.createPlaceholder(group, 2, 5);
-            connectionTypeCombo = new CImageCombo<>(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            connectionTypeCombo = new CImageCombo<>(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionTypeLabelProvider());
             loadConnectionTypes();
             connectionTypeCombo.select(0);
             connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
@@ -335,8 +339,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             pickerButton.setText("Edit");
             pickerButton.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     DataSourceDescriptor dataSource = getActiveDataSource();
                     UIUtils.showPreferencesFor(
                         getControl().getShell(),
@@ -353,13 +356,12 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         {
             UIUtils.createControlLabel(group, "Connection folder");
 
-            connectionFolderCombo = new CImageCombo<>(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            connectionFolderCombo = new CImageCombo<>(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionFolderLabelProvider());
             //connectionFolderCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             loadConnectionFolders();
             connectionFolderCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     dataSourceFolder = connectionFolderCombo.getItem(connectionFolderCombo.getSelectionIndex());
                 }
             });
@@ -524,23 +526,21 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     {
         connectionTypeCombo.removeAll();
         for (DBPConnectionType ct : DataSourceProviderRegistry.getInstance().getConnectionTypes()) {
-            connectionTypeCombo.add(null, ct.getName(), UIUtils.getConnectionTypeColor(ct), ct);
+            connectionTypeCombo.addItem(ct);
         }
     }
 
     private void loadConnectionFolders()
     {
         connectionFolderCombo.removeAll();
-        connectionFolderCombo.add(null, CoreMessages.toolbar_datasource_selector_empty, null, null);
+        connectionFolderCombo.addItem(null);
         for (DBPDataSourceFolder folder : getWizard().getDataSourceRegistry().getRootFolders()) {
             loadConnectionFolder(0, folder);
         }
     }
 
     private void loadConnectionFolder(int level, DBPDataSourceFolder folder) {
-        String prefix = "";
-        for (int i = 0; i < level; i++) prefix += "   ";
-        connectionFolderCombo.add(DBIcon.TREE_DATABASE_CATEGORY, prefix + folder.getName(), null, folder);
+        connectionFolderCombo.addItem(folder);
         for (DBPDataSourceFolder child : folder.getChildren()) {
             loadConnectionFolder(level + 1, child);
         }
@@ -627,6 +627,44 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
 
     public void setDataSourceFolder(DBPDataSourceFolder dataSourceFolder) {
         this.dataSourceFolder = dataSourceFolder;
+    }
+
+    private static class ConnectionTypeLabelProvider extends LabelProvider implements IColorProvider {
+        @Override
+        public String getText(Object element) {
+            return ((DBPConnectionType)element).getName();
+        }
+
+        @Override
+        public Color getForeground(Object element) {
+            return null;
+        }
+
+        @Override
+        public Color getBackground(Object element) {
+            return UIUtils.getConnectionTypeColor((DBPConnectionType)element);
+        }
+    }
+
+    private static class ConnectionFolderLabelProvider extends LabelProvider {
+        @Override
+        public Image getImage(Object element) {
+            return element == null ?
+                null :
+                DBeaverIcons.getImage(DBIcon.TREE_DATABASE_CATEGORY);
+        }
+
+        @Override
+        public String getText(Object element) {
+            if (element == null) {
+                return CoreMessages.toolbar_datasource_selector_empty;
+            }
+            String prefix = "";
+            for (DBPDataSourceFolder folder = ((DBPDataSourceFolder) element).getParent(); folder != null; folder = folder.getParent()) {
+                prefix += "   ";
+            }
+            return prefix + ((DBPDataSourceFolder)element).getName();
+        }
     }
 
     private class SchemaReadJob extends AbstractJob {

@@ -24,10 +24,14 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -62,6 +66,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
@@ -333,26 +338,20 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         try {
             if (update) {
                 connectionCombo.removeAll();
-                connectionCombo.add(DBIcon.TREE_DATABASE, EMPTY_SELECTION_TEXT, null, null);
+                connectionCombo.addItem(null);
             }
 
             int selectionIndex = 0;
             if (activePart != null) {
                 final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
                 if (!CommonUtils.isEmpty(dataSources)) {
-                    DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                     for (int i = 0; i < dataSources.size(); i++) {
                         DBPDataSourceContainer ds = dataSources.get(i);
                         if (ds == null) {
                             continue;
                         }
                         if (update) {
-                            DBNDatabaseNode dsNode = navigatorModel.getNodeByObject(ds);
-                            connectionCombo.add(
-                                dsNode == null ? DBIcon.TREE_DATABASE : dsNode.getNodeIconDefault(),
-                                ds.getName(),
-                                UIUtils.getConnectionColor(ds.getConnectionConfiguration()),
-                                ds);
+                            connectionCombo.addItem(ds);
                         }
                         if (dataSourceContainer == ds) {
                             selectionIndex = i + 1;
@@ -487,7 +486,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                                 DBeaverUI.syncExec(new Runnable() {
                                     @Override
                                     public void run() {
-                                        fillDatabaseList((DatabaseListReader) event.getJob(), dsContainer);
+                                        fillDatabaseList((DatabaseListReader) event.getJob());
                                     }
                                 });
                             }
@@ -505,7 +504,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
     }
 
-    private synchronized void fillDatabaseList(DatabaseListReader reader, DBPDataSourceContainer dsContainer) {
+    private synchronized void fillDatabaseList(DatabaseListReader reader) {
         synchronized (dbListReads) {
             dbListReads.remove(reader);
         }
@@ -522,11 +521,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             Collection<DBNDatabaseNode> dbList = reader.nodeList;
             if (dbList != null && !dbList.isEmpty()) {
                 for (DBNDatabaseNode node : dbList) {
-                    databaseCombo.add(
-                        node.getNodeIconDefault(),
-                        node.getName(),
-                        UIUtils.getConnectionColor(node.getObject().getDataSource().getContainer().getConnectionConfiguration()),
-                        node);
+                    databaseCombo.addItem(node);
                 }
             }
             if (reader.active != null) {
@@ -709,7 +704,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         final int fontHeight = UIUtils.getFontHeight(parent);
         int comboWidth = fontHeight * 20;
 
-        connectionCombo = new CImageCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
+        connectionCombo = new CImageCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new ConnectionLabelProvider());
         GridData gd = new GridData();
         gd.widthHint = comboWidth;
         gd.minimumWidth = comboWidth;
@@ -718,7 +713,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         connectionCombo.setVisibleItemCount(15);
         connectionCombo.setWidthHint(comboWidth);
         connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
-        connectionCombo.add(DBIcon.TREE_DATABASE, EMPTY_SELECTION_TEXT, null, null);
+        connectionCombo.addItem(null);
         connectionCombo.select(0);
         connectionCombo.addSelectionListener(new SelectionListener() {
             @Override
@@ -733,7 +728,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         });
 
         comboWidth = fontHeight * 16;
-        databaseCombo = new CImageCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
+        databaseCombo = new CImageCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new DatabaseLabelProvider());
         gd = new GridData();
         gd.widthHint = comboWidth;
         gd.minimumWidth = comboWidth;
@@ -742,7 +737,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         databaseCombo.setVisibleItemCount(15);
         databaseCombo.setWidthHint(comboWidth);
         databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip);
-        databaseCombo.add(DBIcon.TREE_DATABASE, EMPTY_SELECTION_TEXT, null, null);
+        databaseCombo.addItem(null);
         databaseCombo.select(0);
         databaseCombo.addSelectionListener(new SelectionListener() {
             @Override
@@ -846,4 +841,68 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             return toolbar.createControl(parent);
         }
     }
+
+    private static class ConnectionLabelProvider extends LabelProvider implements IColorProvider {
+        @Override
+        public Image getImage(Object element) {
+            if (element == null) {
+                return DBeaverIcons.getImage(DBIcon.TREE_DATABASE);
+            }
+            final DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().findNode((DBPDataSourceContainer) element);
+            return node == null ? null : DBeaverIcons.getImage(node.getNodeIcon());
+        }
+
+        @Override
+        public String getText(Object element) {
+            if (element == null) {
+                return EMPTY_SELECTION_TEXT;
+            }
+            return ((DBPDataSourceContainer) element).getName();
+        }
+
+        @Override
+        public Color getForeground(Object element) {
+            return null;
+        }
+
+        @Override
+        public Color getBackground(Object element) {
+            return element == null ? null : UIUtils.getConnectionColor(((DBPDataSourceContainer) element).getConnectionConfiguration());
+        }
+    }
+
+    private static class DatabaseLabelProvider extends LabelProvider implements IColorProvider {
+        @Override
+        public Image getImage(Object element) {
+            if (element == null) {
+                return DBeaverIcons.getImage(DBIcon.TREE_DATABASE);
+            }
+            return DBeaverIcons.getImage(((DBNDatabaseNode)element).getNodeIconDefault());
+        }
+
+        @Override
+        public String getText(Object element) {
+            if (element == null) {
+                return EMPTY_SELECTION_TEXT;
+            }
+            return ((DBNDatabaseNode)element).getNodeName();
+        }
+
+        @Override
+        public Color getForeground(Object element) {
+            return null;
+        }
+
+        @Override
+        public Color getBackground(Object element) {
+            if (element instanceof DBNDatabaseNode) {
+                final DBPDataSourceContainer container = ((DBNDatabaseNode) element).getDataSourceContainer();
+                if (container != null) {
+                    return UIUtils.getConnectionColor((container.getConnectionConfiguration()));
+                }
+            }
+            return null;
+        }
+    }
+
 }
