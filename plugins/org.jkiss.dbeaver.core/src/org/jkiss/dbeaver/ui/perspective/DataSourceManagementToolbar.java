@@ -93,7 +93,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     private Text resultSetSize;
     private CImageCombo<DBPDataSourceContainer> connectionCombo;
-    private CImageCombo databaseCombo;
+    private CImageCombo<DBNDatabaseNode> databaseCombo;
 
     private SoftReference<DBPDataSourceContainer> curDataSourceContainer = null;
 
@@ -377,8 +377,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             event.getAction() == DBPEvent.Action.OBJECT_REMOVE ||
             (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getObject() == getDataSourceContainer()) ||
             (event.getAction() == DBPEvent.Action.OBJECT_SELECT && Boolean.TRUE.equals(event.getEnabled()) &&
-                event.getObject().getDataSource() != null &&
-                event.getObject().getDataSource().getContainer() == getDataSourceContainer())
+                DBUtils.getContainer(event.getObject()) == getDataSourceContainer())
             ) {
             DBeaverUI.asyncExec(
                 new Runnable() {
@@ -696,7 +695,6 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
         // Register as datasource listener in all datasources
         // We need it because at this moment there could be come already loaded registries (on startup)
-        final DBeaverCore core = DBeaverCore.getInstance();
         DataSourceProviderRegistry.getInstance().addDataSourceRegistryListener(DataSourceManagementToolbar.this);
         for (DataSourceRegistry registry : DataSourceRegistry.getAllRegistries()) {
             handleRegistryLoad(registry);
@@ -735,7 +733,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         });
 
         comboWidth = fontHeight * 16;
-        databaseCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
+        databaseCombo = new CImageCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
         gd = new GridData();
         gd.widthHint = comboWidth;
         gd.minimumWidth = comboWidth;
