@@ -222,6 +222,8 @@
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.drivers" class="org.jkiss.dbeaver.ui.preferences.PrefPageDrivers" name="%pref.page.name.drivers">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.ui.general"/>
         </page>
+        <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.drivers.maven" class="org.jkiss.dbeaver.ui.preferences.PrefPageDriversMaven" name="%pref.page.name.drivers.maven">
+        </page>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.connectionTypes" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" name="%pref.page.name.connectionTypes"/>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.navigator" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseNavigator" name="%pref.page.name.navigator"/>
 
