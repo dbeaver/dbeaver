@@ -1064,7 +1064,8 @@ public final class DBUtils {
         if (object instanceof DBPDataSourceContainer) {
             return (DBPDataSourceContainer) object;
         }
-        return object.getDataSource().getContainer();
+        final DBPDataSource dataSource = object.getDataSource();
+        return dataSource == null ? null : dataSource.getContainer();
     }
 
     @NotNull
