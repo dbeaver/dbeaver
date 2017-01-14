@@ -3014,7 +3014,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository id="maven-central" name="Central Repository" url="http://central.maven.org/maven2/"/>
+        <repository id="maven-central" name="Central Repository" url="http://central.maven.org/maven2/" order="0"/>
     </extension>
 
     <extension

@@ -23,11 +23,17 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLBuilder;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.*;
 
 public class MavenRegistry
@@ -71,6 +77,7 @@ public class MavenRegistry
     private void init() {
         loadStandardRepositories();
         loadCustomRepositories();
+        sortRepositories();
     }
 
     private void loadStandardRepositories() {
@@ -214,6 +221,53 @@ public class MavenRegistry
             }
         }
         return null;
+    }
+
+    public void saveConfiguration() {
+        sortRepositories();
+
+        try (OutputStream is = new FileOutputStream(getConfigurationFile())) {
+            XMLBuilder xml = new XMLBuilder(is, GeneralUtils.UTF8_ENCODING);
+            xml.setButify(true);
+            try (final XMLBuilder.Element e1 = xml.startElement("maven")) {
+                for (MavenRepository repository : repositories) {
+                    try (final XMLBuilder.Element e2 = xml.startElement("repository")) {
+                        xml.addAttribute("id", repository.getId());
+                        xml.addAttribute("order", repository.getOrder());
+                        xml.addAttribute("enabled", repository.isEnabled());
+                        if (repository.getType() != MavenRepository.RepositoryType.GLOBAL) {
+                            xml.addAttribute("url", repository.getUrl());
+                            xml.addAttribute("name", repository.getName());
+                            if (!CommonUtils.isEmpty(repository.getDescription())) {
+                                xml.addAttribute("description", repository.getDescription());
+                            }
+                            for (String scope : repository.getScopes()) {
+                                try (final XMLBuilder.Element e3 = xml.startElement("scope")) {
+                                    xml.addAttribute("group", scope);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            xml.flush();
+        } catch (Exception e) {
+            log.error("Error saving Maven registry", e);
+        }
+    }
+
+    private void sortRepositories() {
+        Collections.sort(repositories, new Comparator<MavenRepository>() {
+            @Override
+            public int compare(MavenRepository o1, MavenRepository o2) {
+                return o1.getOrder() - o2.getOrder();
+            }
+        });
+    }
+
+    private static File getConfigurationFile()
+    {
+        return DBeaverActivator.getConfigurationFile("maven-repositories.xml");
     }
 
 }

@@ -55,16 +55,20 @@ public class MavenRepository
     }
 
     private final String id;
-    private final String name;
-    private final String url;
     private final RepositoryType type;
+    private String name;
+    private String url;
     private final List<String> scopes = new ArrayList<>();
+    private int order;
+    private boolean enabled = true;
+    private String description;
 
     private Map<String, MavenArtifact> cachedArtifacts = new LinkedHashMap<>();
 
     public MavenRepository(IConfigurationElement config)
     {
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER));
         this.name = CommonUtils.toString(config.getAttribute(RegistryConstants.ATTR_NAME), this.id);
         String urlString = config.getAttribute(RegistryConstants.ATTR_URL);
         if (!urlString.endsWith("/")) urlString += "/";
@@ -106,6 +110,30 @@ public class MavenRepository
 
     public RepositoryType getType() {
         return type;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Nullable
