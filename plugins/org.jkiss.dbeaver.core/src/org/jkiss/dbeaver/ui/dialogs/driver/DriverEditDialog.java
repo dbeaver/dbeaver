@@ -24,6 +24,7 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -178,12 +179,22 @@ public class DriverEditDialog extends HelpEnabledDialog {
             });
 
             UIUtils.createControlLabel(propsGroup, "Driver Type");
-            final CImageCombo<DataSourceProviderDescriptor> providerCombo = new CImageCombo<>(propsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
+            final CImageCombo<DataSourceProviderDescriptor> providerCombo = new CImageCombo<>(propsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN, new LabelProvider() {
+                @Override
+                public Image getImage(Object element) {
+                    return DBeaverIcons.getImage(((DataSourceProviderDescriptor) element).getIcon());
+                }
+
+                @Override
+                public String getText(Object element) {
+                    return ((DataSourceProviderDescriptor) element).getName();
+                }
+            });
             providerCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (newDriver) {
-                for (DataSourceProviderDescriptor p : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
-                    if (p.isDriversManagable()) {
-                        providerCombo.add(p.getIcon(), p.getName(), null, p);
+                for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
+                    if (provider.isDriversManagable()) {
+                        providerCombo.addItem(provider);
                     }
                 }
                 providerCombo.select(provider);
@@ -195,7 +206,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                     }
                 });
             } else {
-                providerCombo.add(provider.getIcon(), provider.getName(), null, provider);
+                providerCombo.addItem(provider);
                 providerCombo.select(provider);
             }
 
@@ -244,8 +255,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 driverCategoryCombo.setEnabled(false);
             }
             Set<String> categories = new TreeSet<>();
-            for (DataSourceProviderDescriptor p : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
-                for (DriverDescriptor drv : p.getEnabledDrivers()) {
+            for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
+                for (DriverDescriptor drv : provider.getEnabledDrivers()) {
                     if (!CommonUtils.isEmpty(drv.getCategory())) {
                         categories.add(drv.getCategory());
                     }
