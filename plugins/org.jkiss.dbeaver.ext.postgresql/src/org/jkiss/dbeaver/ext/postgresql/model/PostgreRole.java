@@ -19,12 +19,21 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Date;
 
 /**
@@ -48,6 +57,33 @@ public class PostgreRole implements PostgreObject {
     private int connLimit;
     private String password;
     private Date validUntil;
+    private MembersCache membersCache = new MembersCache(true);
+    private MembersCache belongsCache = new MembersCache(false);
+
+    static class MembersCache extends JDBCObjectCache<PostgreRole, PostgreRoleMember> {
+        private final boolean members;
+        public MembersCache(boolean members) {
+            this.members = members;
+        }
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreRole owner)
+            throws SQLException
+        {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM pg_catalog.pg_auth_members WHERE " + (members ? "roleid" : "member")+ "=?");
+            dbStat.setLong(1, owner.getObjectId());
+            return dbStat;
+        }
+
+        @Override
+        protected PostgreRoleMember fetchObject(@NotNull JDBCSession session, @NotNull PostgreRole owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreRoleMember(owner, dbResult);
+        }
+
+    }
 
     public PostgreRole(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
@@ -164,6 +200,16 @@ public class PostgreRole implements PostgreObject {
     @Property(category = CAT_SETTINGS, order = 22)
     public Date getValidUntil() {
         return validUntil;
+    }
+
+    @Association
+    public Collection<PostgreRoleMember> getMembers(DBRProgressMonitor monitor) throws DBException {
+        return membersCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<PostgreRoleMember> getBelongs(DBRProgressMonitor monitor) throws DBException {
+        return belongsCache.getAllObjects(monitor, this);
     }
 
     @Override

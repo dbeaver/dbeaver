@@ -119,6 +119,12 @@
                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole" label="%tree.roles.node.name" icon="#folder_user" description="Roles and users">
                         <items label="%tree.role.node.name" path="users" property="authIds" icon="#user">
                             <icon if="!object.canLogin" icon="#user_group"/>
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRoleMember" label="%tree.role.members.node.name" icon="#folder_user" description="Members" visibleIf="!object.canLogin"  navigable="false">
+                                <items label="%tree.role.members.node.name" itemLabel="%tree.role.member.node.name" path="members" property="members" visibleIf="!object.canLogin"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRoleMember" label="%tree.role.belongs.node.name" icon="#folder_user" description="Belongs" navigable="false">
+                                <items label="%tree.role.belongs.node.name" itemLabel="%tree.role.belongs.node.name" path="members" property="belongs" icon="#folder_user"/>
+                            </folder>
                         </items>
                     </folder>
 
