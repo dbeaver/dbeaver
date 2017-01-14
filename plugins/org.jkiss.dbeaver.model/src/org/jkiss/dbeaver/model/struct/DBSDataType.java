@@ -45,5 +45,5 @@ public interface DBSDataType extends DBSObject, DBSTypedObject
     int getMaxScale();
 
     @NotNull
-    DBCLogicalOperator[] getSupportedOperators();
+    DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute);
 }

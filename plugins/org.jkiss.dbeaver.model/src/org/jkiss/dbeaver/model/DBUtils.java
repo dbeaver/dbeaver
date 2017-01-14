@@ -1148,7 +1148,7 @@ public final class DBUtils {
         if (attribute instanceof DBSTypedObjectEx) {
             DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
             if (dataType != null) {
-                return dataType.getSupportedOperators();
+                return dataType.getSupportedOperators(attribute);
             }
         }
         return getDefaultOperators(attribute);

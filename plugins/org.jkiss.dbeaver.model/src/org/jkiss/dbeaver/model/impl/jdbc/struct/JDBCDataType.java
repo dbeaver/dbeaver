@@ -174,9 +174,10 @@ public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
         return maxScale;
     }
 
+    @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators() {
-        return DBUtils.getDefaultOperators(this);
+    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
+        return DBUtils.getDefaultOperators(attribute);
     }
 
     public String toString()
