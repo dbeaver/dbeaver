@@ -198,6 +198,9 @@ public class MavenRegistry
 
         // Try all available repositories (without resolve)
         for (MavenRepository repository : repositories) {
+            if (!repository.isEnabled()) {
+                continue;
+            }
             if (repository != currentRepository) {
                 if (!repository.getScopes().isEmpty()) {
                     // Check scope (group id)

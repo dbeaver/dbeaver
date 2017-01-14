@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDrivers;
+import org.jkiss.dbeaver.ui.preferences.PrefPageDriversMaven;
 import org.jkiss.utils.CommonUtils;
 
 abstract class DriverDownloadPage extends WizardPage {
@@ -80,7 +81,8 @@ abstract class DriverDownloadPage extends WizardPage {
                     UIUtils.showPreferencesFor(
                         null,
                         null,
-                        PrefPageDrivers.PAGE_ID);
+                        PrefPageDrivers.PAGE_ID,
+                        PrefPageDriversMaven.PAGE_ID);
                 }
             });
         link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END));

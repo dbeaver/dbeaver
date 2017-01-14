@@ -975,13 +975,13 @@ public class UIUtils {
         shell.setText(title);
     }
 
-    public static void showPreferencesFor(Shell shell, Object element, String defPageID)
+    public static void showPreferencesFor(Shell shell, Object element, String ... defPageID)
     {
         PreferenceDialog propDialog;
         if (element == null) {
-            propDialog = PreferencesUtil.createPreferenceDialogOn(shell, defPageID, new String[] { defPageID }, null, PreferencesUtil.OPTION_NONE);
+            propDialog = PreferencesUtil.createPreferenceDialogOn(shell, defPageID[0], defPageID, null, PreferencesUtil.OPTION_NONE);
         } else {
-            propDialog = PreferencesUtil.createPropertyDialogOn(shell, element, defPageID, null, null, PreferencesUtil.OPTION_NONE);
+            propDialog = PreferencesUtil.createPropertyDialogOn(shell, element, defPageID[0], defPageID, null, PreferencesUtil.OPTION_NONE);
         }
         if (propDialog != null) {
             propDialog.open();
