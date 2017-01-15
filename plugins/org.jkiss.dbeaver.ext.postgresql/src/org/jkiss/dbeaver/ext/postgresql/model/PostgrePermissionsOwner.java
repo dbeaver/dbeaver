@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -28,6 +29,6 @@ import java.util.List;
  */
 public interface PostgrePermissionsOwner extends PostgreObject {
 
-    List<? extends PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException;
+    Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException;
 
 }
