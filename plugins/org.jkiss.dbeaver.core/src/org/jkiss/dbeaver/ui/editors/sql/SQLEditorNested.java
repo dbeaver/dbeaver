@@ -118,18 +118,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         }
 
         // Create new or substitute progress control
-        ProgressPageControl progressControl = null;
-        IWorkbenchPartSite site = getSite();
-        if (site instanceof ITabbedFolderEditorSite && ((ITabbedFolderEditorSite) site).getFolderEditor() instanceof IProgressControlProvider) {
-            progressControl = ((IProgressControlProvider)((ITabbedFolderEditorSite) site).getFolderEditor()).getProgressControl();
-        } else if (site instanceof MultiPageEditorSite && ((MultiPageEditorSite) site).getMultiPageEditor() instanceof IProgressControlProvider) {
-            progressControl = ((IProgressControlProvider)((MultiPageEditorSite) site).getMultiPageEditor()).getProgressControl();
-        }
-        if (progressControl != null) {
-            pageControl.substituteProgressPanel(progressControl);
-        } else {
-            pageControl.createProgressPanel();
-        }
+        pageControl.createOrSubstituteProgressPanel(getSite());
         pageControl.setInfo("Source");
 
         if (hasCompiler) {
