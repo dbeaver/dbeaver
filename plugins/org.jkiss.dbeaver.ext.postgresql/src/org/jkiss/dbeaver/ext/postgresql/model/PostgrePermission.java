@@ -34,14 +34,14 @@ public abstract class PostgrePermission implements DBSObject {
     public static final short WITH_GRANT_OPTION = 2;
     public static final short WITH_HIERARCHY = 4;
 
-    public static class PrivilegePermission {
+    public static class ObjectPermission {
         @NotNull
         private PostgrePrivilegeType privilegeType;
         @NotNull
         private String grantor;
         private short permissions;
 
-        public PrivilegePermission(@NotNull PostgrePrivilegeType privilegeType, @NotNull String grantor, short permissions) {
+        public ObjectPermission(@NotNull PostgrePrivilegeType privilegeType, @NotNull String grantor, short permissions) {
             this.privilegeType = privilegeType;
             this.grantor = grantor;
             this.permissions = permissions;
@@ -68,17 +68,17 @@ public abstract class PostgrePermission implements DBSObject {
     }
 
     private final PostgrePermissionsOwner owner;
-    private PrivilegePermission[] permissions;
+    private ObjectPermission[] permissions;
 
     public PostgrePermission(PostgrePermissionsOwner owner, List<PostgrePrivilege> privileges) {
         this.owner = owner;
-        this.permissions = new PrivilegePermission[privileges.size()];
+        this.permissions = new ObjectPermission[privileges.size()];
         for (int i = 0 ; i < privileges.size(); i++) {
             final PostgrePrivilege privilege = privileges.get(i);
             short permission = GRANTED;
             if (privilege.isGrantable()) permission |= WITH_GRANT_OPTION;
             if (privilege.isWithHierarchy()) permission |= WITH_HIERARCHY;
-            this.permissions[i] = new PrivilegePermission(privilege.getPrivilegeType(), privilege.getGrantor(), permission);
+            this.permissions[i] = new ObjectPermission(privilege.getPrivilegeType(), privilege.getGrantor(), permission);
         }
 
     }
@@ -112,7 +112,7 @@ public abstract class PostgrePermission implements DBSObject {
         return owner.getDataSource();
     }
 
-    public PrivilegePermission[] getPermissions() {
+    public ObjectPermission[] getPermissions() {
         return permissions;
     }
 
