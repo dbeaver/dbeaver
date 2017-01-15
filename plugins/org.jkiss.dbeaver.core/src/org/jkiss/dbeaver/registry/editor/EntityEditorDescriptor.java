@@ -174,4 +174,8 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         }
     }
 
+    @Override
+    public String toString() {
+        return id;
+    }
 }
