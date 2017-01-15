@@ -23,6 +23,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -34,13 +37,13 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
-import java.util.Collection;
-import java.util.List;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * PostgreTable base
  */
-public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, PostgreSchema> implements PostgreClass, PostgreScriptObject, DBPNamedObject2
+public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, PostgreSchema> implements PostgreClass, PostgreScriptObject, PostgrePermissionsOwner, DBPNamedObject2
 {
     private long oid;
     private String description;
@@ -162,4 +165,37 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return getContainer().tableCache.refreshObject(monitor, getContainer(), this);
     }
 
+    @Override
+    public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read table privileges")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND table_schema=? AND table_name=?"))
+            {
+                dbStat.setString(1, getDatabase().getName());
+                dbStat.setString(2, getSchema().getName());
+                dbStat.setString(3, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    Map<String, List<PostgrePrivilege>> privs = new LinkedHashMap<>();
+                    while (dbResult.next()) {
+                        PostgrePrivilege privilege = new PostgrePrivilege(dbResult);
+                        List<PostgrePrivilege> privList = privs.get(privilege.getGrantee());
+                        if (privList == null) {
+                            privList = new ArrayList<>();
+                            privs.put(privilege.getGrantee(), privList);
+                        }
+                        privList.add(privilege);
+                    }
+                    // Pack to permission list
+                    List<PostgrePermission> result = new ArrayList<>(privs.size());
+                    for (List<PostgrePrivilege> priv : privs.values()) {
+                        result.add(new PostgreTablePermission(this, priv.get(0).getGrantee(), priv));
+                    }
+                    Collections.sort(result);
+                    return result;
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, getDataSource());
+            }
+        }
+    }
 }

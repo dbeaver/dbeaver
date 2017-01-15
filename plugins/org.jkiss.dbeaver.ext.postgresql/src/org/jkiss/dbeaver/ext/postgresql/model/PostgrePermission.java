@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;
@@ -68,7 +70,7 @@ public abstract class PostgrePermission implements DBSObject, Comparable<Postgre
         }
     }
 
-    private final PostgrePermissionsOwner owner;
+    protected final PostgrePermissionsOwner owner;
     private ObjectPermission[] permissions;
 
     public PostgrePermission(PostgrePermissionsOwner owner, List<PostgrePrivilege> privileges) {
@@ -106,6 +108,8 @@ public abstract class PostgrePermission implements DBSObject, Comparable<Postgre
     public DBPDataSource getDataSource() {
         return owner.getDataSource();
     }
+
+    public abstract PostgreObject getTargetObject(DBRProgressMonitor monitor) throws DBException;
 
     public ObjectPermission[] getPermissions() {
         return permissions;
