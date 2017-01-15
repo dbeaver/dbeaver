@@ -35,6 +35,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 /**
  * PostgreRole
@@ -210,6 +211,10 @@ public class PostgreRole implements PostgreObject {
     @Association
     public Collection<PostgreRoleMember> getBelongs(DBRProgressMonitor monitor) throws DBException {
         return belongsCache.getAllObjects(monitor, this);
+    }
+
+    public List<PostgreRolePrivilege> getPrivileges(DBRProgressMonitor monitor) throws DBException {
+        return null;
     }
 
     @Override
