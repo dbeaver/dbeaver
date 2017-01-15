@@ -213,7 +213,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner {
     }
 
     @Override
-    public List<PostgreRolePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read role privileges")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND grantee=?"))
@@ -233,17 +233,11 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner {
                         privList.add(privilege);
                     }
                     // Pack to permission list
-                    List<PostgreRolePermission> result = new ArrayList<>(privs.size());
+                    List<PostgrePermission> result = new ArrayList<>(privs.size());
                     for (List<PostgrePrivilege> priv : privs.values()) {
                         result.add(new PostgreRolePermission(this, priv.get(0).getTableSchema(), priv.get(0).getTableName(), priv));
                     }
-                    Collections.sort(result, new Comparator<PostgreRolePermission>() {
-                        @Override
-                        public int compare(PostgreRolePermission o1, PostgreRolePermission o2) {
-                            final int res = o1.getSchemaName().compareTo(o2.getSchemaName());
-                            return res != 0 ? res : o1.getTableName().compareTo(o2.getTableName());
-                        }
-                    });
+                    Collections.sort(result);
                     return result;
                 }
             } catch (SQLException e) {

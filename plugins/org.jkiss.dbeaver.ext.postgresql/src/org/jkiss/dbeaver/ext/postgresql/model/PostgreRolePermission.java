@@ -17,8 +17,10 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -35,6 +37,12 @@ public class PostgreRolePermission extends PostgrePermission {
         super(owner, privileges);
         this.schemaName = schemaName;
         this.tableName = tableName;
+    }
+
+    @Property(viewable = true, order = 1)
+    @NotNull
+    public String getName() {
+        return getFullTableName();
     }
 
     public String getSchemaName() {
@@ -58,5 +66,15 @@ public class PostgreRolePermission extends PostgrePermission {
     public String toString() {
         return getFullTableName();
     }
+
+    @Override
+    public int compareTo(@NotNull PostgrePermission o) {
+        if (o instanceof PostgreRolePermission) {
+            final int res = schemaName.compareTo(((PostgreRolePermission)o).schemaName);
+            return res != 0 ? res : tableName.compareTo(((PostgreRolePermission)o).tableName);
+        }
+        return 0;
+    }
+
 }
 

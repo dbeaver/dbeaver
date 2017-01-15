@@ -17,30 +17,32 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
-import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgrePermission;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgrePermissionsOwner;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
-import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
+import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -54,70 +56,11 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
     private Font boldFont;
     private boolean isLoaded;
-    private TreeViewer permissionTable;
-    private ViewerColumnController columnController;
 
     @Override
     public void createPartControl(Composite parent)
     {
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
-
-        pageControl = new PageControl(parent);
-        final Composite contentContainer = pageControl.createContentContainer();
-
-        {
-            this.permissionTable = new TreeViewer(contentContainer, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
-            this.permissionTable.getTree().setHeaderVisible(true);
-            this.permissionTable.setContentProvider(new TreeContentProvider() {
-                @Override
-                public Object[] getChildren(Object parentElement) {
-                    return null;
-                }
-
-                @Override
-                public boolean hasChildren(Object element) {
-                    return false;
-                }
-
-            });
-
-            final boolean roleEditor = isRoleEditor();
-            columnController = new ViewerColumnController("PostgreSQL/Permissions/" + (roleEditor ? "Role" : "Object"), permissionTable);
-            if (roleEditor) {
-                columnController.addColumn("Object", "Granted object", SWT.LEFT, true, true, new ColumnLabelProvider() {
-                    @Override
-                    public Image getImage(Object element) {
-                        return DBeaverIcons.getImage(DBIcon.TREE_TABLE);
-                    }
-
-                    @Override
-                    public String getText(Object element) {
-                        return ((PostgreRolePermission) element).getFullTableName();
-                    }
-                });
-            } else {
-                columnController.addColumn("Role", "Granted role", SWT.LEFT, true, true, new ColumnLabelProvider() {
-                    @Override
-                    public Image getImage(Object element) {
-                        return DBeaverIcons.getImage(DBIcon.TREE_USER);
-                    }
-
-                    @Override
-                    public String getText(Object element) {
-                        return ((PostgrePermission) element).toString();
-                    }
-                });
-            }
-            columnController.addColumn("SELECT", "SELECT permissions", SWT.LEFT, true, true, new ColumnLabelProvider() {
-                @Override
-                public String getText(Object element) {
-                    return "NO";
-                }
-            });
-        }
-        columnController.createColumns(true);
-        pageControl.createOrSubstituteProgressPanel(getSite());
-
+        this.boldFont = UIUtils.makeBoldFont(parent.getFont());
         parent.addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e)
@@ -126,6 +69,8 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             }
         });
 
+        this.pageControl = new PageControl(parent);
+        this.pageControl.createOrSubstituteProgressPanel(getSite());
     }
 
     private boolean isRoleEditor() {
@@ -143,46 +88,73 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             return;
         }
         isLoaded = true;
-        loadPrivileges();
-    }
-
-    private void loadPrivileges() {
-        LoadingJob.createService(
-            new DatabaseLoadService<List<? extends PostgrePermission>>("Load privileges", getExecutionContext()) {
-                @Override
-                public List<? extends PostgrePermission> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        return getDatabaseObject().getPermissions(monitor);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            },
-            pageControl.createPrivilegesLoadVisualizer())
-            .schedule();
+        pageControl.loadData();
     }
 
     @Override
     public void refreshPart(Object source, boolean force)
     {
-        loadPrivileges();
+        pageControl.loadData();
     }
 
-    private class PageControl extends ObjectEditorPageControl {
+    private class PermissionsContentProvider extends TreeContentProvider {
+        @Override
+        public Object[] getChildren(Object parentElement) {
+            return null;
+        }
+
+        @Override
+        public boolean hasChildren(Object element) {
+            return false;
+        }
+    }
+
+    private class PageControl extends DatabaseObjectListControl<PostgrePermission> {
         public PageControl(Composite parent) {
-            super(parent, SWT.SHEET, PostgresRolePrivilegesEditor.this);
+            super(parent, SWT.SHEET, getSite(), new PermissionsContentProvider());
         }
 
-        public ProgressPageControl.ProgressVisualizer<List<? extends PostgrePermission>> createPrivilegesLoadVisualizer() {
-            return new ProgressPageControl.ProgressVisualizer<List<? extends PostgrePermission>>() {
-                @Override
-                public void completeLoading(List<? extends PostgrePermission> privs) {
-                    super.completeLoading(privs);
-                    permissionTable.setInput(privs);
+        @NotNull
+        @Override
+        protected String getListConfigId(List<Class<?>> classList) {
+            return "PostgreSQL/Permissions/" + (isRoleEditor() ? "Role" : "Object");
+        }
+
+        @Nullable
+        @Override
+        protected DBPImage getObjectImage(PostgrePermission item) {
+            return isRoleEditor() ? DBIcon.TREE_TABLE : DBIcon.TREE_USER;
+        }
+
+        @Override
+        protected LoadingJob<Collection<PostgrePermission>> createLoadService() {
+            return LoadingJob.createService(
+                new PermissionLoadService(),
+                new PermissionLoadVisualizer());
+        }
+
+        public class PermissionLoadVisualizer extends ObjectsLoadVisualizer {
+            @Override
+            public void completeLoading(Collection<PostgrePermission> items)
+            {
+                super.completeLoading(items);
+            }
+        }
+
+        private class PermissionLoadService extends DatabaseLoadService<Collection<PostgrePermission>> {
+            public PermissionLoadService() {
+                super("Load privileges", getExecutionContext());
+            }
+
+            @Override
+            public Collection<PostgrePermission> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                try {
+                    return getDatabaseObject().getPermissions(monitor);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
                 }
-            };
+            }
         }
-
     }
 
 

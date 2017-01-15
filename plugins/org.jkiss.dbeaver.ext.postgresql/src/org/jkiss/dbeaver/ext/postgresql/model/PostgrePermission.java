@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;
@@ -27,7 +28,7 @@ import java.util.List;
 /**
  * PostgrePermission
  */
-public abstract class PostgrePermission implements DBSObject {
+public abstract class PostgrePermission implements DBSObject, Comparable<PostgrePermission> {
 
     public static final short NONE = 0;
     public static final short GRANTED = 1;
@@ -83,12 +84,6 @@ public abstract class PostgrePermission implements DBSObject {
 
     }
 
-    @NotNull
-    @Override
-    public String getName() {
-        return toString();
-    }
-
     @Override
     public boolean isPersisted() {
         return true;
@@ -123,6 +118,43 @@ public abstract class PostgrePermission implements DBSObject {
             }
         }
         return NONE;
+    }
+
+    // Properties for permissions viewer
+
+    @Property(viewable = true, order = 100, name = "SELECT")
+    public boolean hasPermissionSelect() {
+        return getPermission(PostgrePrivilegeType.SELECT) != 0;
+    }
+
+    @Property(viewable = true, order = 101, name = "INSERT")
+    public boolean hasPermissionInsert() {
+        return getPermission(PostgrePrivilegeType.INSERT) != 0;
+    }
+
+    @Property(viewable = true, order = 102, name = "UPDATE")
+    public boolean hasPermissionUpdate() {
+        return getPermission(PostgrePrivilegeType.UPDATE) != 0;
+    }
+
+    @Property(viewable = true, order = 103, name = "DELETE")
+    public boolean hasPermissionDelete() {
+        return getPermission(PostgrePrivilegeType.DELETE) != 0;
+    }
+
+    @Property(viewable = true, order = 104, name = "TRUNCATE")
+    public boolean hasPermissionTruncate() {
+        return getPermission(PostgrePrivilegeType.TRUNCATE) != 0;
+    }
+
+    @Property(viewable = true, order = 105, name = "REFERENCES")
+    public boolean hasPermissionReferences() {
+        return getPermission(PostgrePrivilegeType.REFERENCES) != 0;
+    }
+
+    @Property(viewable = true, order = 106, name = "TRIGGER")
+    public boolean hasPermissionTrigger() {
+        return getPermission(PostgrePrivilegeType.TRIGGER) != 0;
     }
 
 }
