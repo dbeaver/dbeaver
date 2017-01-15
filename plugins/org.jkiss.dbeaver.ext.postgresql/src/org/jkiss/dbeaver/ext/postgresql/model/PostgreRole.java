@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -33,14 +34,12 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * PostgreRole
  */
-public class PostgreRole implements PostgreObject {
+public class PostgreRole implements PostgreObject, PostgrePermissionsOwner {
 
     public static final String CAT_SETTINGS = "Settings";
     public static final String CAT_FLAGS = "Flags";
@@ -213,8 +212,44 @@ public class PostgreRole implements PostgreObject {
         return belongsCache.getAllObjects(monitor, this);
     }
 
-    public List<PostgreRolePrivilege> getPrivileges(DBRProgressMonitor monitor) throws DBException {
-        return null;
+    @Override
+    public List<PostgreRolePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read role privileges")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND grantee=?"))
+            {
+                dbStat.setString(1, getDatabase().getName());
+                dbStat.setString(2, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    Map<String, List<PostgrePrivilege>> privs = new LinkedHashMap<>();
+                    while (dbResult.next()) {
+                        PostgrePrivilege privilege = new PostgrePrivilege(dbResult);
+                        String tableId = privilege.getTableSchema() + "." + privilege.getTableName();
+                        List<PostgrePrivilege> privList = privs.get(tableId);
+                        if (privList == null) {
+                            privList = new ArrayList<>();
+                            privs.put(tableId, privList);
+                        }
+                        privList.add(privilege);
+                    }
+                    // Pack to permission list
+                    List<PostgreRolePermission> result = new ArrayList<>(privs.size());
+                    for (List<PostgrePrivilege> priv : privs.values()) {
+                        result.add(new PostgreRolePermission(this, priv.get(0).getTableSchema(), priv.get(0).getTableName(), priv));
+                    }
+                    Collections.sort(result, new Comparator<PostgreRolePermission>() {
+                        @Override
+                        public int compare(PostgreRolePermission o1, PostgreRolePermission o2) {
+                            final int res = o1.getSchemaName().compareTo(o2.getSchemaName());
+                            return res != 0 ? res : o1.getTableName().compareTo(o2.getTableName());
+                        }
+                    });
+                    return result;
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, getDataSource());
+            }
+        }
     }
 
     @Override

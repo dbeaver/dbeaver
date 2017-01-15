@@ -34,15 +34,17 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.progress.UIJob;
-import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderEditorSite;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -135,6 +137,26 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     public final void substituteProgressPanel(ProgressPageControl externalPageControl)
     {
         this.ownerPageControl = externalPageControl;
+    }
+
+    public void createOrSubstituteProgressPanel(IWorkbenchPartSite site) {
+        ProgressPageControl progressControl = findOwnerPageControl(site);
+        if (progressControl != null) {
+            substituteProgressPanel(progressControl);
+        } else {
+            createProgressPanel();
+        }
+
+    }
+
+    private ProgressPageControl findOwnerPageControl(IWorkbenchPartSite site) {
+        if (site instanceof ITabbedFolderEditorSite && ((ITabbedFolderEditorSite) site).getFolderEditor() instanceof IProgressControlProvider) {
+            return ((IProgressControlProvider)((ITabbedFolderEditorSite) site).getFolderEditor()).getProgressControl();
+        } else if (site instanceof MultiPageEditorSite && ((MultiPageEditorSite) site).getMultiPageEditor() instanceof IProgressControlProvider) {
+            return ((IProgressControlProvider)((MultiPageEditorSite) site).getMultiPageEditor()).getProgressControl();
+        } else {
+            return null;
+        }
     }
 
     private void setChildControl(ProgressPageControl progressPageControl)

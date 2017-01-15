@@ -17,20 +17,27 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreRolePrivilege;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
 import java.lang.reflect.InvocationTargetException;
@@ -39,7 +46,7 @@ import java.util.List;
 /**
  * PostgresRolePrivilegesEditor
  */
-public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<PostgreRole>
+public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<PostgrePermissionsOwner>
 {
     private static final Log log = Log.getLog(PostgresRolePrivilegesEditor.class);
 
@@ -47,6 +54,8 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
     private Font boldFont;
     private boolean isLoaded;
+    private TreeViewer permissionTable;
+    private ViewerColumnController columnController;
 
     @Override
     public void createPartControl(Composite parent)
@@ -54,87 +63,60 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         pageControl = new PageControl(parent);
-
-        Composite container = UIUtils.createPlaceholder(pageControl, 2, 5);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        container.setLayoutData(gd);
-
-        Composite leftPane = UIUtils.createPlaceholder(container, 2);
-        leftPane.setLayoutData(new GridData(GridData.FILL_BOTH));
-        leftPane.setLayout(new GridLayout(2, true));
-/*
-        {
-            Composite catalogGroup = UIUtils.createControlGroup(leftPane, MySQLMessages.editors_user_editor_privileges_group_catalogs, 1, GridData.FILL_BOTH, 0);
-
-            catalogsTable = new Table(catalogGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
-            catalogsTable.setHeaderVisible(true);
-            gd = new GridData(GridData.FILL_BOTH);
-            catalogsTable.setLayoutData(gd);
-            catalogsTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    int selIndex = catalogsTable.getSelectionIndex();
-                    if (selIndex <= 0) {
-                        selectedCatalog = null;
-                    } else {
-                        selectedCatalog = (MySQLCatalog) catalogsTable.getItem(selIndex).getData();
-                    }
-                    showCatalogTables();
-                    showGrants();
-                }
-            });
-            UIUtils.createTableColumn(catalogsTable, SWT.LEFT, MySQLMessages.editors_user_editor_privileges_column_catalog);
-            {
-                TableItem item = new TableItem(catalogsTable, SWT.NONE);
-                item.setText("% (All)"); //$NON-NLS-1$
-                item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
-            }
-            for (MySQLCatalog catalog : getDatabaseObject().getDataSource().getCatalogs()) {
-                TableItem item = new TableItem(catalogsTable, SWT.NONE);
-                item.setText(catalog.getName());
-                item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
-                item.setData(catalog);
-            }
-            UIUtils.packColumns(catalogsTable);
-        }
+        final Composite contentContainer = pageControl.createContentContainer();
 
         {
-            Composite tablesGroup = UIUtils.createControlGroup(leftPane, MySQLMessages.editors_user_editor_privileges_group_tables, 1, GridData.FILL_BOTH, 0);
-
-            tablesTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
-            tablesTable.setHeaderVisible(true);
-            gd = new GridData(GridData.FILL_BOTH);
-            tablesTable.setLayoutData(gd);
-            tablesTable.addSelectionListener(new SelectionAdapter() {
+            this.permissionTable = new TreeViewer(contentContainer, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
+            this.permissionTable.getTree().setHeaderVisible(true);
+            this.permissionTable.setContentProvider(new TreeContentProvider() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
-                    int selIndex = tablesTable.getSelectionIndex();
-                    if (selIndex <= 0) {
-                        selectedTable = null;
-                    } else {
-                        selectedTable = (MySQLTableBase) tablesTable.getItem(selIndex).getData();
+                public Object[] getChildren(Object parentElement) {
+                    return null;
+                }
+
+                @Override
+                public boolean hasChildren(Object element) {
+                    return false;
+                }
+
+            });
+
+            final boolean roleEditor = isRoleEditor();
+            columnController = new ViewerColumnController("PostgreSQL/Permissions/" + (roleEditor ? "Role" : "Object"), permissionTable);
+            if (roleEditor) {
+                columnController.addColumn("Object", "Granted object", SWT.LEFT, true, true, new ColumnLabelProvider() {
+                    @Override
+                    public Image getImage(Object element) {
+                        return DBeaverIcons.getImage(DBIcon.TREE_TABLE);
                     }
-                    showGrants();
+
+                    @Override
+                    public String getText(Object element) {
+                        return ((PostgreRolePermission) element).getFullTableName();
+                    }
+                });
+            } else {
+                columnController.addColumn("Role", "Granted role", SWT.LEFT, true, true, new ColumnLabelProvider() {
+                    @Override
+                    public Image getImage(Object element) {
+                        return DBeaverIcons.getImage(DBIcon.TREE_USER);
+                    }
+
+                    @Override
+                    public String getText(Object element) {
+                        return ((PostgrePermission) element).toString();
+                    }
+                });
+            }
+            columnController.addColumn("SELECT", "SELECT permissions", SWT.LEFT, true, true, new ColumnLabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    return "NO";
                 }
             });
-            UIUtils.createTableColumn(tablesTable, SWT.LEFT, MySQLMessages.editors_user_editor_privileges_column_table);
-            UIUtils.packColumns(tablesTable);
         }
-        Composite ph = UIUtils.createPlaceholder(container, 1);
-        ph.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        tablePrivilegesTable = new PrivilegeTableControl(ph, MySQLMessages.editors_user_editor_privileges_control_table_privileges);
-        gd = new GridData(GridData.FILL_BOTH);
-        tablePrivilegesTable.setLayoutData(gd);
-
-        otherPrivilegesTable = new PrivilegeTableControl(ph, MySQLMessages.editors_user_editor_privileges_control_other_privileges);
-        gd = new GridData(GridData.FILL_BOTH);
-        otherPrivilegesTable.setLayoutData(gd);
-
-        catalogsTable.setSelection(0);
-        showCatalogTables();
-
-        pageControl.createProgressPanel();
+        columnController.createColumns(true);
+        pageControl.createOrSubstituteProgressPanel(getSite());
 
         parent.addDisposeListener(new DisposeListener() {
             @Override
@@ -144,11 +126,11 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             }
         });
 
-        addGrantListener(tablePrivilegesTable);
-        addGrantListener(otherPrivilegesTable);
-*/
     }
 
+    private boolean isRoleEditor() {
+        return getDatabaseObject() instanceof PostgreRole;
+    }
     @Override
     public void setFocus() {
 
@@ -161,12 +143,16 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             return;
         }
         isLoaded = true;
+        loadPrivileges();
+    }
+
+    private void loadPrivileges() {
         LoadingJob.createService(
-            new DatabaseLoadService<List<PostgreRolePrivilege>>("Load privileges", getExecutionContext()) {
+            new DatabaseLoadService<List<? extends PostgrePermission>>("Load privileges", getExecutionContext()) {
                 @Override
-                public List<PostgreRolePrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                public List<? extends PostgrePermission> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        return getDatabaseObject().getPrivileges(monitor);
+                        return getDatabaseObject().getPermissions(monitor);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
@@ -179,36 +165,20 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     @Override
     public void refreshPart(Object source, boolean force)
     {
-        // do nothing
+        loadPrivileges();
     }
 
-    private class PageControl extends ProgressPageControl {
+    private class PageControl extends ObjectEditorPageControl {
         public PageControl(Composite parent) {
-            super(parent, SWT.NONE);
+            super(parent, SWT.SHEET, PostgresRolePrivilegesEditor.this);
         }
 
-        public ProgressPageControl.ProgressVisualizer<List<PostgreRolePrivilege>> createPrivilegesLoadVisualizer() {
-            return new ProgressPageControl.ProgressVisualizer<List<PostgreRolePrivilege>>() {
+        public ProgressPageControl.ProgressVisualizer<List<? extends PostgrePermission>> createPrivilegesLoadVisualizer() {
+            return new ProgressPageControl.ProgressVisualizer<List<? extends PostgrePermission>>() {
                 @Override
-                public void completeLoading(List<PostgreRolePrivilege> privs) {
+                public void completeLoading(List<? extends PostgrePermission> privs) {
                     super.completeLoading(privs);
-/*
-                    List<MySQLPrivilege> otherPrivs = new ArrayList<>();
-                    List<MySQLPrivilege> tablePrivs = new ArrayList<>();
-                    for (MySQLPrivilege priv : privs) {
-                        if (priv.getKind() == MySQLPrivilege.Kind.ADMIN) {
-                            continue;
-                        }
-                        if (priv.getContext().contains("Table")) {
-                            tablePrivs.add(priv);
-                        } else {
-                            otherPrivs.add(priv);
-                        }
-                    }
-                    tablePrivilegesTable.fillPrivileges(tablePrivs);
-                    otherPrivilegesTable.fillPrivileges(otherPrivs);
-                    loadGrants();
-*/
+                    permissionTable.setInput(privs);
                 }
             };
         }
