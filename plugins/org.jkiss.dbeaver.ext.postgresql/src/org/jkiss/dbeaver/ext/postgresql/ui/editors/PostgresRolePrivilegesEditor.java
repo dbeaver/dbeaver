@@ -17,7 +17,12 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
-import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -27,19 +32,22 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgrePermission;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgrePermissionsOwner;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -71,6 +79,34 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
         this.pageControl = new PageControl(parent);
         this.pageControl.createOrSubstituteProgressPanel(getSite());
+        this.pageControl.setDoubleClickHandler(new IDoubleClickListener() {
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+                final ISelection selection = pageControl.getSelectionProvider().getSelection();
+                if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+                    final PostgrePermission element = (PostgrePermission) ((IStructuredSelection) selection).getFirstElement();
+                    new AbstractJob("Open target object") {
+                        @Override
+                        protected IStatus run(DBRProgressMonitor monitor) {
+                            try {
+                                final PostgreObject targetObject = element.getTargetObject(monitor);
+                                if (targetObject != null) {
+                                    DBeaverUI.syncExec(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            NavigatorHandlerObjectOpen.openEntityEditor(targetObject);
+                                        }
+                                    });
+                                }
+                            } catch (DBException e) {
+                                return GeneralUtils.makeExceptionStatus(e);
+                            }
+                            return Status.OK_STATUS;
+                        }
+                    }.schedule();
+                }
+            }
+        });
     }
 
     private boolean isRoleEditor() {
@@ -78,7 +114,9 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     }
     @Override
     public void setFocus() {
-
+        if (this.pageControl != null) {
+            this.pageControl.setFocus();
+        }
     }
 
     @Override

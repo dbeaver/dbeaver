@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -29,6 +30,8 @@ import java.util.List;
  * PostgreRolePermission
  */
 public class PostgreRolePermission extends PostgrePermission {
+
+    private static final Log log = Log.getLog(PostgreRolePermission.class);
 
     private String schemaName;
     private String tableName;
@@ -45,6 +48,16 @@ public class PostgreRolePermission extends PostgrePermission {
         return getFullTableName();
     }
 
+    @Override
+    public PostgreTableBase getTargetObject(DBRProgressMonitor monitor) throws DBException
+    {
+        final PostgreSchema schema = owner.getDatabase().getSchema(monitor, schemaName);
+        if (schema != null) {
+            return schema.getChild(monitor, tableName);
+        }
+        return null;
+    }
+
     public String getSchemaName() {
         return schemaName;
     }
@@ -56,10 +69,6 @@ public class PostgreRolePermission extends PostgrePermission {
     public String getFullTableName() {
         return DBUtils.getQuotedIdentifier(getDataSource(), schemaName) + "." +
             DBUtils.getQuotedIdentifier(getDataSource(), tableName);
-    }
-
-    public Object getTable(DBRProgressMonitor monitor) throws DBException {
-        return getFullTableName();
     }
 
     @Override
