@@ -138,6 +138,22 @@
                 </configuration>
             </plugin>
 
+            <!-- Set Built-By info -->
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-packaging-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Built-By>jkiss.org</Built-By>
+                            <Created-By>jkiss.org</Created-By>
+                        </manifestEntries>
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                    </archive>
+                </configuration>
+            </plugin>
+
             <!-- Signing -->
             <!--plugin>
                 <groupId>org.apache.maven.plugins</groupId>
