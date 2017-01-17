@@ -240,18 +240,18 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
 
         switch (s.length()) {
             case 3:
-                if ("end".equals(s)) {
+                if (SQLIndentSymbols.end.equals(s)) {
                     return Tokenend;
                 }
-                if ("END".equalsIgnoreCase(s)) {
+                if (SQLIndentSymbols.END.equalsIgnoreCase(s)) {
                     return TokenEND;
                 }
                 break;
             case 5:
-                if ("begin".equals(s)) {
+                if (SQLIndentSymbols.begin.equals(s)) {
                     return Tokenbegin;
                 }
-                if ("BEGIN".equalsIgnoreCase(s)) {
+                if (SQLIndentSymbols.BEGIN.equalsIgnoreCase(s)) {
                     return TokenBEGIN;
                 }
                 break;
