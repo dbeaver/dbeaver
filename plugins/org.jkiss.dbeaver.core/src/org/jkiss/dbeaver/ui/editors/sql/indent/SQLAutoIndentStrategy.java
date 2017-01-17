@@ -220,21 +220,25 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
         //get previous token
         int previousToken = scanner.previousToken(command.offset - 1, SQLHeuristicScanner.UNBOUND);
+        int nextToken = scanner.nextToken(command.offset, SQLHeuristicScanner.UNBOUND);
 
-        StringBuilder indent;
-
-        StringBuilder beginIndentaion = new StringBuilder();
+        String indent;
+        String beginIndentaion = "";
 
         if (isSupportedAutoCompletionToken(previousToken)) {
             indent = indenter.computeIndentation(command.offset);
 
-            beginIndentaion.append(indenter.getReferenceIndentation(command.offset));
+            beginIndentaion = indenter.getReferenceIndentation(command.offset);
         } else {
-            indent = indenter.getReferenceIndentation(command.offset);
+            if (nextToken == SQLIndentSymbols.Tokenend || nextToken == SQLIndentSymbols.TokenEND) {
+                indent = indenter.getReferenceIndentation(command.offset + 1);
+            } else {
+                indent = indenter.getReferenceIndentation(command.offset);
+            }
         }
 
         if (indent == null) {
-            indent = new StringBuilder(); //$NON-NLS-1$
+            indent = ""; //$NON-NLS-1$
         }
 
         try {
@@ -299,8 +303,8 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         DBPPreferenceStore preferenceStore = DBeaverCore.getGlobalPreferenceStore();
         boolean closeBeginEnd = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BEGIN_END);
         if (closeBeginEnd) {
-            autoCompletionMap.put(SQLIndentSymbols.Tokenbegin, SQLIndentSymbols.beginTrail);
-            autoCompletionMap.put(SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.BEGINTrail);
+            autoCompletionMap.put(SQLIndentSymbols.Tokenbegin, SQLIndentSymbols.end);
+            autoCompletionMap.put(SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.END);
         }
 
     }

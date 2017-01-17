@@ -30,10 +30,9 @@ public interface SQLIndentSymbols
     int TokenKeyword = 3000;
     int TokenKeywordStart = 3001;
 
-
     String BEGIN = "BEGIN";
     String begin = "begin";
-    String beginTrail = "end ";
-    String BEGINTrail = "END ";
+    String end = "end ";
+    String END = "END ";
 }
 

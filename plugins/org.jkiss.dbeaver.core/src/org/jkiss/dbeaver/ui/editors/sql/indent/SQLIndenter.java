@@ -71,7 +71,7 @@ public class SQLIndenter {
      * @return a String which reflects the indentation at the line in which the reference position to
      *         <code>offset</code> resides, or <code>null</code> if it cannot be determined
      */
-    public StringBuilder getReferenceIndentation(int offset)
+    public String getReferenceIndentation(int offset)
     {
         int unit;
         unit = findReferencePosition(offset);
@@ -90,7 +90,7 @@ public class SQLIndenter {
      * @return a String which reflects the correct indentation for the line in which offset resides, or
      *         <code>null</code> if it cannot be determined
      */
-    public StringBuilder computeIndentation(int offset)
+    public String computeIndentation(int offset)
     {
         return computeIndentation(offset, false);
 
@@ -104,7 +104,7 @@ public class SQLIndenter {
      * @return a String which reflects the correct indentation for the line in which offset resides, or
      *         <code>null</code> if it cannot be determined
      */
-    public StringBuilder computeIndentation(int offset, boolean assumeOpening)
+    public String computeIndentation(int offset, boolean assumeOpening)
     {
 
         indent = 1;
@@ -123,7 +123,7 @@ public class SQLIndenter {
         //adding offset, after adding indent to keep consistency on whitespace of the last line.
         indent.append(getReferenceIndentation(offset));
 
-        return indent;
+        return indent.toString();
     }
 
     /**
@@ -133,19 +133,17 @@ public class SQLIndenter {
      * @param offset the offset in the document
      * @return the indentation (leading whitespace) of the line in which <code>offset</code> is located
      */
-    private StringBuilder getLeadingWhitespace(int offset)
+    private String getLeadingWhitespace(int offset)
     {
-        StringBuilder indent = new StringBuilder();
         try {
             IRegion line = document.getLineInformationOfOffset(offset);
             int lineOffset = line.getOffset();
             int nonWS = scanner.findNonWhitespaceForwardInAnyPartition(lineOffset, lineOffset + line.getLength());
-            indent.append(document.get(lineOffset, nonWS - lineOffset));
-            return indent;
+            return document.get(lineOffset, nonWS - lineOffset);
         }
         catch (BadLocationException e) {
 //            _log.debug(EditorMessages.error_badLocationException, e);
-            return indent;
+            return "";
         }
     }
 
@@ -196,8 +194,6 @@ public class SQLIndenter {
 
     /**
      * Returns the reference position regarding to indentation for <code>offset</code>, or <code>NOT_FOUND</code>.
-     * This method calls {@link #findReferencePosition(int, int) findReferencePosition(offset, nextChar)}where
-     * <code>nextChar</code> is the next character after <code>offset</code>.
      *
      * @param offset the offset for which the reference is computed
      * @return the reference statement relative to which <code>offset</code> should be indented, or
@@ -215,8 +211,7 @@ public class SQLIndenter {
      * Returns the reference position for a list element. The algorithm tries to match any previous indentation on the
      * same list. If there is none, the reference position returned is determined depending on the type of list: The
      * indentation will either match the list scope introducer (e.g. for method declarations), so called deep indents,
-     * or simply increase the indentation by a number of standard indents. See also
-     * {@link #handleScopeIntroduction(int)}.
+     * or simply increase the indentation by a number of standard indents.
      *
      * @return the reference position for a list item: either a previous list item that has its own indentation, or the
      *         list introduction start.
