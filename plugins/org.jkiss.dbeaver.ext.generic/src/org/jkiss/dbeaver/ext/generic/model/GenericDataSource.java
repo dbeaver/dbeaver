@@ -52,6 +52,7 @@ import java.text.Format;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
 
 /**
  * GenericDataSource
@@ -811,7 +812,7 @@ public class GenericDataSource extends JDBCDataSource
                 if (CommonUtils.isEmpty(querySetActiveDB) || !(entity instanceof GenericObjectContainer)) {
                     throw new DBCException("Active database can't be changed for this kind of datasource!");
                 }
-                String changeQuery = querySetActiveDB.replaceFirst("\\?", entity.getName());
+                String changeQuery = querySetActiveDB.replaceFirst("\\?", Matcher.quoteReplacement(entity.getName()));
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(changeQuery)) {
                     dbStat.execute();
                 }
