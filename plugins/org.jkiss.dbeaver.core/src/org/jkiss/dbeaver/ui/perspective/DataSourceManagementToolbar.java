@@ -726,6 +726,34 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 widgetSelected(e);
             }
         });
+        connectionCombo.setTableFilter(new CSmartCombo.TableFilter<DBPDataSourceContainer>() {
+            boolean enabled = false;
+            @Override
+            public String getFilterLabel() {
+                return "Connected";
+            }
+
+            @Override
+            public String getDefaultLabel() {
+                return "All";
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            @Override
+            public boolean setEnabled(boolean enabled) {
+                this.enabled = enabled;
+                return enabled;
+            }
+
+            @Override
+            public boolean filter(DBPDataSourceContainer item) {
+                return item != null && item.isConnected();
+            }
+        });
 
         comboWidth = fontHeight * 16;
         databaseCombo = new CSmartCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new DatabaseLabelProvider());
