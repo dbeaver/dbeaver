@@ -58,7 +58,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.CImageCombo;
+import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.utils.CommonUtils;
@@ -75,8 +75,8 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private ConnectionWizard wizard;
     private DataSourceDescriptor dataSourceDescriptor;
     private Text connectionNameText;
-    private CImageCombo<DBPConnectionType> connectionTypeCombo;
-    private CImageCombo<DBPDataSourceFolder> connectionFolderCombo;
+    private CSmartCombo<DBPConnectionType> connectionTypeCombo;
+    private CSmartCombo<DBPDataSourceFolder> connectionFolderCombo;
     private Button savePasswordCheck;
     private Button autocommit;
     private Combo isolationLevel;
@@ -323,7 +323,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             UIUtils.createControlLabel(group, "Connection type");
 
             Composite ctGroup = UIUtils.createPlaceholder(group, 2, 5);
-            connectionTypeCombo = new CImageCombo<>(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionTypeLabelProvider());
+            connectionTypeCombo = new CSmartCombo<>(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionTypeLabelProvider());
             loadConnectionTypes();
             connectionTypeCombo.select(0);
             connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
@@ -356,7 +356,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         {
             UIUtils.createControlLabel(group, "Connection folder");
 
-            connectionFolderCombo = new CImageCombo<>(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionFolderLabelProvider());
+            connectionFolderCombo = new CSmartCombo<>(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionFolderLabelProvider());
             //connectionFolderCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             loadConnectionFolders();
             connectionFolderCombo.addSelectionListener(new SelectionAdapter() {
@@ -586,8 +586,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
 
         if (connectionTypeCombo.getSelectionIndex() >= 0) {
-            confConfig.setConnectionType(
-                (DBPConnectionType) connectionTypeCombo.getItem(connectionTypeCombo.getSelectionIndex()));
+            confConfig.setConnectionType(connectionTypeCombo.getItem(connectionTypeCombo.getSelectionIndex()));
         }
         for (FilterInfo filterInfo : filters) {
             if (filterInfo.filter != null) {
@@ -649,9 +648,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private static class ConnectionFolderLabelProvider extends LabelProvider {
         @Override
         public Image getImage(Object element) {
-            return element == null ?
-                null :
-                DBeaverIcons.getImage(DBIcon.TREE_DATABASE_CATEGORY);
+            return DBeaverIcons.getImage(DBIcon.TREE_DATABASE_CATEGORY);
         }
 
         @Override

@@ -70,7 +70,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
-import org.jkiss.dbeaver.ui.controls.CImageCombo;
+import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -97,8 +97,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     private IWorkbenchPart activePart;
 
     private Text resultSetSize;
-    private CImageCombo<DBPDataSourceContainer> connectionCombo;
-    private CImageCombo<DBNDatabaseNode> databaseCombo;
+    private CSmartCombo<DBPDataSourceContainer> connectionCombo;
+    private CSmartCombo<DBNDatabaseNode> databaseCombo;
 
     private SoftReference<DBPDataSourceContainer> curDataSourceContainer = null;
 
@@ -704,7 +704,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         final int fontHeight = UIUtils.getFontHeight(parent);
         int comboWidth = fontHeight * 20;
 
-        connectionCombo = new CImageCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new ConnectionLabelProvider());
+        connectionCombo = new CSmartCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new ConnectionLabelProvider());
         GridData gd = new GridData();
         gd.widthHint = comboWidth;
         gd.minimumWidth = comboWidth;
@@ -728,7 +728,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         });
 
         comboWidth = fontHeight * 16;
-        databaseCombo = new CImageCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new DatabaseLabelProvider());
+        databaseCombo = new CSmartCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new DatabaseLabelProvider());
         gd = new GridData();
         gd.widthHint = comboWidth;
         gd.minimumWidth = comboWidth;
