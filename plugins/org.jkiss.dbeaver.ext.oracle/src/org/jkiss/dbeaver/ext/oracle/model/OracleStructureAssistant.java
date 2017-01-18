@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -84,6 +85,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
             };
     }
 
+    @NotNull
     @Override
     public Collection<DBSObjectReference> findObjectsByMask(
         DBRProgressMonitor monitor,

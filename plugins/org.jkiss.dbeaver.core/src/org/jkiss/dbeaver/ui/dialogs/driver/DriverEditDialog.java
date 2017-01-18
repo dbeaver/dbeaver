@@ -45,7 +45,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.CImageCombo;
+import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesPanel;
@@ -179,7 +179,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             });
 
             UIUtils.createControlLabel(propsGroup, "Driver Type");
-            final CImageCombo<DataSourceProviderDescriptor> providerCombo = new CImageCombo<>(propsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN, new LabelProvider() {
+            final CSmartCombo<DataSourceProviderDescriptor> providerCombo = new CSmartCombo<>(propsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN, new LabelProvider() {
                 @Override
                 public Image getImage(Object element) {
                     return DBeaverIcons.getImage(((DataSourceProviderDescriptor) element).getIcon());
