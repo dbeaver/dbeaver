@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -61,6 +62,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         return new DBSObjectType[] { RelationalObjectType.TYPE_TABLE };
     }
 
+    @NotNull
     @Override
     public Collection<DBSObjectReference> findObjectsByMask(
         DBRProgressMonitor monitor,
