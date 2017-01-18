@@ -22,7 +22,6 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -37,8 +36,17 @@ import java.util.List;
  */
 public class CSmartCombo<ITEM_TYPE> extends Composite {
 
+    public interface TableFilter<FILTER_ITEM_TYPE> {
+        String getFilterLabel();
+        String getDefaultLabel();
+        boolean isEnabled();
+        boolean setEnabled(boolean enabled);
+        boolean filter(FILTER_ITEM_TYPE item);
+    }
+
     private final ILabelProvider labelProvider;
     private final List<ITEM_TYPE> items = new ArrayList<>();
+    private TableFilter<ITEM_TYPE> tableFilter = null;
     private ITEM_TYPE selectedItem;
     private Label imageLabel;
     private Text text;
@@ -151,6 +159,10 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     public void setWidthHint(int widthHint)
     {
         this.widthHint = widthHint;
+    }
+
+    public void setTableFilter(TableFilter<ITEM_TYPE> tableFilter) {
+        this.tableFilter = tableFilter;
     }
 
     private void setEnabled(boolean enabled, boolean force)
@@ -451,7 +463,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
     }
 
-    void createPopup(int selectionIndex)
+    void createPopup()
     {
         Shell oldPopup = this.popup;
         if (oldPopup != null) {
@@ -471,31 +483,34 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         if ((style & SWT.LEFT_TO_RIGHT) != 0) {
             listStyle |= SWT.LEFT_TO_RIGHT;
         }
-        this.popup.setLayout(new FillLayout());
+        GridLayout gl = new GridLayout(1, true);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        this.popup.setLayout(gl);
+
+        if (tableFilter != null) {
+            final Button filterButton = new Button(this.popup, SWT.PUSH | SWT.FLAT | SWT.CENTER);
+            filterButton.setText("Show " + (tableFilter.isEnabled() ? tableFilter.getDefaultLabel() : tableFilter.getFilterLabel()));
+            filterButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            filterButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    tableFilter.setEnabled(!tableFilter.isEnabled());
+                    filterButton.setText("Show " + (tableFilter.isEnabled() ? tableFilter.getDefaultLabel() : tableFilter.getFilterLabel()));
+                    updateTableItems();
+                }
+            });
+        }
+
         // create a table instead of a list.
         Table table = new Table(this.popup, listStyle);
+        table.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.dropDownControl = table;
         if (this.font != null) {
             table.setFont(this.font);
         }
         new TableColumn(table, SWT.LEFT);
-        {
-            for (ITEM_TYPE item : this.items) {
-                String itemText = labelProvider.getText(item);
-                Image itemImage = labelProvider.getImage(item);
-                Color itemBackground = null, itemForeground = null;
-                if (labelProvider instanceof IColorProvider) {
-                    itemBackground = ((IColorProvider) labelProvider).getBackground(item);
-                    itemForeground = ((IColorProvider) labelProvider).getForeground(item);
-                }
-                TableItem newItem = new TableItem(table, SWT.NONE);
-                newItem.setData(item);
-                newItem.setText(itemText);
-                newItem.setImage(itemImage);
-                newItem.setBackground(itemBackground);
-                newItem.setForeground(itemForeground);
-            }
-        }
+        createTableItems(table);
 
         int[] popupEvents = {SWT.Close, SWT.Paint, SWT.Deactivate};
         for (int popupEvent : popupEvents) {
@@ -505,9 +520,37 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         for (int listEvent : listEvents) {
             table.addListener(listEvent, this.listener);
         }
+    }
 
-        if (selectionIndex != -1) {
-            table.setSelection(selectionIndex);
+    private void updateTableItems() {
+        Table table = (Table)dropDownControl;
+        table.removeAll();
+        createTableItems(table);
+        table.setFocus();
+    }
+
+    private void createTableItems(Table table) {
+        TableFilter<ITEM_TYPE> filter = tableFilter != null && tableFilter.isEnabled() ? tableFilter : null;
+        for (ITEM_TYPE item : this.items) {
+            if (filter != null && !filter.filter(item)) {
+                continue;
+            }
+            String itemText = labelProvider.getText(item);
+            Image itemImage = labelProvider.getImage(item);
+            Color itemBackground = null, itemForeground = null;
+            if (labelProvider instanceof IColorProvider) {
+                itemBackground = ((IColorProvider) labelProvider).getBackground(item);
+                itemForeground = ((IColorProvider) labelProvider).getForeground(item);
+            }
+            TableItem newItem = new TableItem(table, SWT.NONE);
+            newItem.setData(item);
+            newItem.setText(itemText);
+            newItem.setImage(itemImage);
+            newItem.setBackground(itemBackground);
+            newItem.setForeground(itemForeground);
+            if (item == selectedItem) {
+                table.setSelection(newItem);
+            }
         }
     }
 
@@ -535,7 +578,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         if (this.dropDownControl != null) {
             this.dropDownControl.removeListener(SWT.Dispose, this.listener);
         }
-        createPopup(getSelectionIndex());
+        createPopup();
 
         Point size = getSize();
         int itemCount = this.items.size();
@@ -602,7 +645,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                     int selectionIndex = this.getSelectionIndex();
                     this.popup = null;
                     this.dropDownControl = null;
-                    createPopup(selectionIndex);
+                    createPopup();
                 }
                 break;
             case SWT.FocusIn: {
