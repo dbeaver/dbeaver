@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private Listener listener, filter;
     private Font font;
     private Point sizeHint;
+    private Color defBackground;
 
     public CSmartCombo(Composite parent, int style, ILabelProvider labelProvider)
     {
@@ -135,9 +137,15 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             this.arrow.addListener(arrowEvent, this.listener);
         }
 
-        Color defBg = this.text.getBackground();
-        this.text.setEditable(false);
-        this.setBackground(defBg);
+        // Update default bg color in async mode to let Eclipse set appropriate styles
+        DBeaverUI.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                defBackground = text.getBackground();
+                text.setEditable(false);
+                setBackground(defBackground);
+            }
+        });
     }
 
     public void setWidthHint(int widthHint)
@@ -173,7 +181,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     public void setBackground(Color background)
     {
         if (background == null) {
-            background = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+            background = defBackground;
         }
         super.setBackground(background);
         this.imageLabel.setBackground(background);
