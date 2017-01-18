@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.editors;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
@@ -98,6 +99,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         return AUTOC_OBJ_TYPES;
     }
 
+    @NotNull
     @Override
     public Collection<DBSObjectReference> findObjectsByMask(DBRProgressMonitor monitor, DBSObject parentObject,
                                                             DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults) throws DBException
