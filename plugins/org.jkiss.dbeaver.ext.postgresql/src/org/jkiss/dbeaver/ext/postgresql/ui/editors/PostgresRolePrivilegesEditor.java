@@ -150,12 +150,18 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     private class PageControl extends DatabaseObjectListControl<PostgrePermission> {
         public PageControl(Composite parent) {
             super(parent, SWT.SHEET, getSite(), new PermissionsContentProvider());
+
         }
 
         @NotNull
         @Override
         protected String getListConfigId(List<Class<?>> classList) {
             return "PostgreSQL/Permissions/" + (isRoleEditor() ? "Role" : "Object");
+        }
+
+        @Override
+        protected Class<?>[] getListBaseTypes(Collection<PostgrePermission> items) {
+            return new Class[] {PostgrePermission.class};
         }
 
         @Nullable

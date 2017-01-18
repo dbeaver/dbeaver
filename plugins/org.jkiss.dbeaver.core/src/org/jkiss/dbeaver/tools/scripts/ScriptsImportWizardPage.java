@@ -45,7 +45,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.CImageCombo;
+import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -57,7 +57,7 @@ class ScriptsImportWizardPage extends WizardPage {
 
     private Text directoryText;
     private Text extensionsText;
-    private CImageCombo<DataSourceDescriptor> scriptsDataSources;
+    private CSmartCombo<DataSourceDescriptor> scriptsDataSources;
     private Button overwriteCheck;
     private DBNNode importRoot = null;
 
@@ -131,7 +131,7 @@ class ScriptsImportWizardPage extends WizardPage {
             extensionsText.setLayoutData(gd);
 
             UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_scripts_import_wizard_label_default_connection);
-            scriptsDataSources = new CImageCombo<>(generalSettings, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionLabelProvider());
+            scriptsDataSources = new CSmartCombo<>(generalSettings, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionLabelProvider());
             for (DataSourceDescriptor dataSourceDescriptor : DataSourceRegistry.getAllDataSources()) {
                 scriptsDataSources.addItem(dataSourceDescriptor);
             }
