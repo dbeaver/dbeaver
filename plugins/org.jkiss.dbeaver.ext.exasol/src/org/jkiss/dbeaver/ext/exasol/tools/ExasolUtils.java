@@ -88,7 +88,7 @@ public class ExasolUtils {
 
                     // has default value?
                     if (rs.getString("COLUMN_DEFAULT") != null)
-                        columnString.append("DEFAULT " + rs.getString("COLUMN_DEFAULT"));
+                        columnString.append("DEFAULT " + rs.getString("COLUMN_DEFAULT") + " ");
 
                     // has identity
                     if (rs.getBigDecimal("COLUMN_IDENTITY") != null)
