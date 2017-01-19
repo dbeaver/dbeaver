@@ -41,6 +41,9 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.DBeaverApplication;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.InformationDialog;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+
+import java.text.DateFormat;
 
 /**
  * About box
@@ -103,7 +106,6 @@ public class AboutBoxDialog extends InformationDialog
         GridData gd;
 
         IProduct product = Platform.getProduct();
-        String productVersion = DBeaverCore.getVersion().toString();
 
         {
             Label nameLabel = new Label(group, SWT.NONE);
@@ -156,10 +158,17 @@ public class AboutBoxDialog extends InformationDialog
 
         Label versionLabel = new Label(group, SWT.NONE);
         versionLabel.setBackground(background);
-        versionLabel.setText(CoreMessages.dialog_about_label_version + productVersion);
+        versionLabel.setText(CoreMessages.dialog_about_label_version + DBeaverCore.getVersion().toString());
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         versionLabel.setLayoutData(gd);
+
+        Label releaseTimeLabel = new Label(group, SWT.NONE);
+        releaseTimeLabel.setBackground(background);
+        releaseTimeLabel.setText(DateFormat.getDateInstance(DateFormat.LONG).format(GeneralUtils.getProductReleaseDate()));
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalAlignment = GridData.CENTER;
+        releaseTimeLabel.setLayoutData(gd);
 
         Label authorLabel = new Label(group, SWT.NONE);
         authorLabel.setBackground(background);
@@ -178,17 +187,6 @@ public class AboutBoxDialog extends InformationDialog
         gd = new GridData();
         gd.horizontalAlignment = GridData.CENTER;
         siteLink.setLayoutData(gd);
-
-        Link emailLink = UIUtils.createLink(group, UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_EMAIL)), new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                UIUtils.launchProgram("mailto:" + e.text); //$NON-NLS-1$
-            }
-        });
-        emailLink.setBackground(background);
-        gd = new GridData();
-        gd.horizontalAlignment = GridData.CENTER;
-        emailLink.setLayoutData(gd);
 
         return parent;
     }

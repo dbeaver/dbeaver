@@ -79,7 +79,7 @@ public class RuntimeUtils {
 
     public static String getCurrentDate()
     {
-        return new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
+        return new SimpleDateFormat(GeneralUtils.DEFAULT_DATE_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
 /*
         Calendar c = Calendar.getInstance();
         c.setTime(new Date());
@@ -91,7 +91,7 @@ public class RuntimeUtils {
 
     public static String getCurrentTimeStamp()
     {
-        return new SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
+        return new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
 /*
         Calendar c = Calendar.getInstance();
         c.setTime(new Date());
