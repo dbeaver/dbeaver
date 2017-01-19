@@ -46,7 +46,9 @@ public class NodeEditorInputFactory implements IElementFactory
     {
         // Get the node path.
         final String nodePath = memento.getString(TAG_NODE);
-
+        if (nodePath == null) {
+            return null;
+        }
         final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
 
         try {
