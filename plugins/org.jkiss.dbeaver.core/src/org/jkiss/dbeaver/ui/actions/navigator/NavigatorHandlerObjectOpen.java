@@ -156,7 +156,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     IEditorInput editorInput;
                     try {
                         editorInput = ref.getEditorInput();
-                    } catch (PartInitException e) {
+                    } catch (Throwable e) {
                         continue;
                     }
                     if (editorInput instanceof INavigatorEditorInput && ((INavigatorEditorInput) editorInput).getNavigatorNode() == selectedNode) {

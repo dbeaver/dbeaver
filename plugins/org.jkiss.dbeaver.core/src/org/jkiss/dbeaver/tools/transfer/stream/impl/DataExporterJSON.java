@@ -183,7 +183,36 @@ public class DataExporterJSON extends StreamExporterAbstract {
         if (str == null) {
             return null;
         }
-        return str.replace("\\", "\\\\").replace("\"", "\\\"");
+        StringBuilder result = new StringBuilder(str.length());
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            switch (c) {
+                case '\n':
+                    result.append("\\n");
+                    break;
+                case '\r':
+                    result.append("\\r");
+                    break;
+                case '\t':
+                    result.append("\\t");
+                    break;
+                case '\f':
+                    result.append("\\f");
+                    break;
+                case '\b':
+                    result.append("\\b");
+                    break;
+                case '"':
+                case '\\':
+                case '/':
+                    result.append("\\").append(c);
+                    break;
+                default:
+                    result.append(c);
+                    break;
+            }
+        }
+        return result.toString();
     }
 
 }

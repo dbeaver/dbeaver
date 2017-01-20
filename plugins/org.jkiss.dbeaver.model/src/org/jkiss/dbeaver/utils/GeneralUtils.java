@@ -33,10 +33,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,6 +52,9 @@ public class GeneralUtils {
     public static final Charset UTF8_CHARSET = Charset.forName(UTF8_ENCODING);
     public static final Charset DEFAULT_FILE_CHARSET = UTF8_CHARSET;
     public static final Charset ASCII_CHARSET = Charset.forName("US-ASCII");
+
+    public static final String DEFAULT_TIMESTAMP_PATTERN = "yyyyMMddHHmm";
+    public static final String DEFAULT_DATE_PATTERN = "yyyyMMdd";
 
     public static final String[] byteToHex = new String[256];
     public static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -248,6 +250,7 @@ public class GeneralUtils {
         }
     }
 
+    @NotNull
     public static IStatus makeInfoStatus(String message) {
         return new Status(
             IStatus.INFO,
@@ -256,6 +259,7 @@ public class GeneralUtils {
             null);
     }
 
+    @NotNull
     public static String getProductTitle()
     {
         final IProduct product = Platform.getProduct();
@@ -265,6 +269,29 @@ public class GeneralUtils {
 
         final Bundle definingBundle = product.getDefiningBundle();
         return product.getName() + " " + definingBundle.getVersion();
+    }
+
+    @NotNull
+    public static Date getProductReleaseDate() {
+        final IProduct product = Platform.getProduct();
+        if (product != null) {
+            Bundle definingBundle = product.getDefiningBundle();
+            final Dictionary<String, String> headers = definingBundle.getHeaders();
+            final String buildTime = headers.get("Build-Time");
+            if (buildTime != null) {
+                try {
+                    return new SimpleDateFormat(DEFAULT_TIMESTAMP_PATTERN).parse(buildTime);
+                } catch (ParseException e) {
+                    log.debug(e);
+                }
+            }
+        }
+        // Failed to get valid date from product bundle
+        final Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, 2017);
+        calendar.set(Calendar.MONTH, 0);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        return calendar.getTime();
     }
 
     public interface IVariableResolver {
@@ -285,11 +312,13 @@ public class GeneralUtils {
         }
     }
 
+    @NotNull
     public static String variablePattern(String name) {
         return "${" + name + "}";
     }
 
-    public static String replaceVariables(String string, IVariableResolver resolver) {
+    @NotNull
+    public static String replaceVariables(@NotNull String string, IVariableResolver resolver) {
         try {
             Matcher matcher = VAR_PATTERN.matcher(string);
             int pos = 0;
