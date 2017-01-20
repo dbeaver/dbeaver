@@ -271,11 +271,11 @@ class SQLCompletionAnalyzer
             return null;
         }
 
-        final List<String> nameList = new ArrayList<>();
         if (token == null) {
             token = "";
         }
 
+        final List<String> nameList = new ArrayList<>();
         SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
         String quoteString = sqlDialect.getIdentifierQuoteString();
         {
@@ -286,7 +286,7 @@ class SQLCompletionAnalyzer
             String catalogSeparator = sqlDialect.getCatalogSeparator();
             while (token.endsWith(catalogSeparator)) token = token.substring(0, token.length() -1);
 
-            String tableNamePattern = "([\\w_$" + quote + Pattern.quote(catalogSeparator) + "]+)";
+            String tableNamePattern = "((?:(?:(?:[\\w_$]+)|(?:"  + quote + ".+" + quote + "))"  + Pattern.quote(catalogSeparator) + "?)+)";
             String structNamePattern;
             if (CommonUtils.isEmpty(token)) {
                 structNamePattern = "(?:from|update|join|into)\\s*" + tableNamePattern;
@@ -305,16 +305,14 @@ class SQLCompletionAnalyzer
             }
             String testQuery = SQLUtils.stripComments(request.editor.getSyntaxManager().getDialect(), request.activeQuery);
             Matcher matcher = aliasPattern.matcher(testQuery);
-            if (!matcher.find()) {
-                return null;
-            }
-
-            int groupCount = matcher.groupCount();
-            for (int i = 1; i <= groupCount; i++) {
-                String group = matcher.group(i);
-                if (!CommonUtils.isEmpty(group)) {
-                    String[] allNames = group.split(Pattern.quote(catalogSeparator));
-                    Collections.addAll(nameList, allNames);
+            if (matcher.find()) {
+                int groupCount = matcher.groupCount();
+                for (int i = 1; i <= groupCount; i++) {
+                    String group = matcher.group(i);
+                    if (!CommonUtils.isEmpty(group)) {
+                        String[] allNames = group.split(Pattern.quote(catalogSeparator));
+                        Collections.addAll(nameList, allNames);
+                    }
                 }
             }
         }
