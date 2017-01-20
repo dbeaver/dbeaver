@@ -109,7 +109,8 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
                         useQuotes = false;
                     }
                     if (dataKind == DBPDataKind.DATETIME) {
-                        if (!Character.isLetter(defaultValue.charAt(0))) {
+                        final char firstChar = defaultValue.trim().charAt(0);
+                        if (!Character.isLetter(firstChar) && firstChar != '(' && firstChar != '[') {
                             useQuotes = true;
                         }
                     }

@@ -180,6 +180,10 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
             autoIncrement = true;
             typeName = typeName.substring(0, typeName.length() - GenericConstants.TYPE_MODIFIER_IDENTITY.length());
         }
+        // Check for empty modifiers [MS SQL]
+        if (typeName.endsWith("()")) {
+            typeName = typeName.substring(0, typeName.length() - 2);
+        }
 
         {
             // Fix value type
