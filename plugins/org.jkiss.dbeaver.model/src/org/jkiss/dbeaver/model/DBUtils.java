@@ -1045,6 +1045,18 @@ public final class DBUtils {
         return dataTypeProvider.resolveDataType(monitor, fullTypeName);
     }
 
+    @Nullable
+    public static DBSDataType getLocalDataType(
+        @NotNull DBPDataSource dataSource,
+        @NotNull String fullTypeName)
+    {
+        DBPDataTypeProvider dataTypeProvider = getAdapter(DBPDataTypeProvider.class, dataSource);
+        if (dataTypeProvider == null) {
+            return null;
+        }
+        return dataTypeProvider.getLocalDataType(fullTypeName);
+    }
+
     public static DBPObject getPublicObject(@NotNull DBPObject object)
     {
         if (object instanceof DBPDataSourceContainer) {

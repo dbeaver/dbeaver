@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -548,6 +549,15 @@ public final class SQLUtils {
 
     public static String getColumnTypeModifiers(@NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
         typeName = typeName.toUpperCase(Locale.ENGLISH);
+        if (column instanceof DBSObject) {
+            // If type is UDT (i.e. we can find it in type list) and type precision == column precision
+            // then do not use explicit precision in column definition
+            final DBSDataType dataType = DBUtils.getLocalDataType(((DBSObject) column).getDataSource(), column.getTypeName());
+            if (dataType != null && dataType.getScale() == column.getScale() &&
+                (dataType.getPrecision() == column.getPrecision() || dataType.getMaxLength() == column.getMaxLength())) {
+                return null;
+            }
+        }
         if (dataKind == DBPDataKind.STRING) {
             if (typeName.indexOf('(') == -1) {
                 final long maxLength = column.getMaxLength();
