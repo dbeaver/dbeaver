@@ -155,7 +155,7 @@ class SQLCompletionAnalyzer
 
         String lastToken = null;
         for (int i = 0; i < tokens.size(); i++) {
-            String token = tokens.get(i);
+            final String token = tokens.get(i);
             if (i == tokens.size() - 1 && !request.wordDetector.getWordPart().endsWith(".")) {
                 lastToken = token;
                 break;
@@ -165,8 +165,9 @@ class SQLCompletionAnalyzer
             }
             // Get next structure container
             try {
-                token = DBUtils.getUnQuotedIdentifier(dataSource, token);
-                String objectName = DBObjectNameCaseTransformer.transformName(dataSource, token);
+                final String objectName =
+                    request.wordDetector.isQuoted(token) ? request.wordDetector.removeQuotes(token) :
+                    DBObjectNameCaseTransformer.transformName(dataSource, token);
                 childObject = sc.getChild(monitor, objectName);
                 if (childObject == null && i == 0) {
                     for (int k = 0; k < selectedContainers.length; k++) {
