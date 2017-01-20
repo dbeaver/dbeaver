@@ -57,8 +57,23 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
         endOffset = documentOffset;
         int topIndex = 0, documentLength = document.getLength();
         try {
-            while (startOffset >= topIndex && isWordPart(document.getChar(startOffset))) {
-                startOffset--;
+            boolean inQuote = false;
+            while (startOffset >= topIndex) {
+                char c = document.getChar(startOffset);
+                if (inQuote) {
+                    startOffset--;
+                    // Opening quote
+                    if (isQuote(c)) {
+                        break;
+                    }
+                } else if (isQuote(c)) {
+                    startOffset--;
+                    inQuote = true;
+                } else if (isWordPart(c)) {
+                    startOffset--;
+                } else {
+                    break;
+                }
             }
             while (endOffset < documentLength && isWordPart(document.getChar(endOffset))) {
                 endOffset++;
