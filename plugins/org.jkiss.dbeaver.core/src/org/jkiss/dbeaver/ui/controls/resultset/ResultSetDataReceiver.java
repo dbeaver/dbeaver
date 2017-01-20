@@ -156,9 +156,12 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 if (!nextSegmentRead) {
                     resultSetViewer.updatePresentation(resultSet);
                     resultSetViewer.setData(tmpRows);
+                    resultSetViewer.getActivePresentation().refreshData(true, false, !resultSetViewer.getModel().isMetadataChanged());
                 } else {
                     resultSetViewer.appendData(tmpRows);
+                    resultSetViewer.getActivePresentation().refreshData(false, true, false);
                 }
+                resultSetViewer.updateStatusMessage();
                 // Check for more data
                 hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
             }

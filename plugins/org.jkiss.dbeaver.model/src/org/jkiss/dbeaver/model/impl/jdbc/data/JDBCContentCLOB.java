@@ -135,7 +135,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 clob.free();
             } catch (Throwable e) {
                 // Log as warning only if it is an exception.
-                log.debug(e);
+                log.debug("Error freeing CLOB: " + e.getClass().getName() + ": " + e.getMessage());
             }
             clob = null;
         }

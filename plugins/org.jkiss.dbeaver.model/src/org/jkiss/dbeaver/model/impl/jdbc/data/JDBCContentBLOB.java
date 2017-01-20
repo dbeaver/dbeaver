@@ -138,7 +138,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
             } catch (Throwable e) {
                 // Log as warning only if it is an exception.
                 // Errors just spam log
-                log.debug(e);
+                log.debug("Error freeing BLOB: " + e.getClass().getName() + ": " + e.getMessage());
             }
             blob = null;
         }

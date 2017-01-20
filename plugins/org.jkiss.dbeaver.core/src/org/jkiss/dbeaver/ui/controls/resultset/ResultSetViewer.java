@@ -2307,7 +2307,6 @@ public class ResultSetViewer extends Viewer
                                     curRow = model.getRow(focusRow);
                                     restorePresentationState(presentationState);
                                 }
-                                updateStatusMessage();
                             }
                             activePresentation.updateValueView();
                             updatePanelsContent(false);
@@ -2320,7 +2319,6 @@ public class ResultSetViewer extends Viewer
                                 if (dataFilter != null) {
                                     model.updateDataFilter(dataFilter);
                                 }
-                                activePresentation.refreshData(true, false, !metadataChanged);
                             }
                             model.setUpdateInProgress(false);
                             updateFiltersText(error == null);
