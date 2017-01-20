@@ -51,6 +51,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
@@ -115,30 +116,34 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
         final String caCertProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CA_CERT);
 
-        // Trust keystore
-        String ksId = "ssl-truststore";
-        if (!CommonUtils.isEmpty(caCertProp)) {
-            File caCertFile = new File(caCertProp);
-            try (InputStream is = new FileInputStream(caCertFile)) {
-                securityManager.addCertificate(ksId, getContainer().getId(), is);
+        {
+            // Trust keystore
+            String ksId = "ssl-truststore";
+            if (!CommonUtils.isEmpty(caCertProp)) {
+                File caCertFile = new File(caCertProp);
+                try (InputStream is = new FileInputStream(caCertFile)) {
+                    securityManager.addCertificate(ksId, getContainer().getId(), is);
+                }
+            } else {
+                securityManager.deleteCertificate(ksId, getContainer().getId());
             }
-        } else {
-            securityManager.deleteCertificate(ksId, getContainer().getId());
+            props.put("trustCertificateKeyStoreUrl", makeKeyStorePath(securityManager.getKeyStorePath(ksId)));
         }
-        props.put("trustCertificateKeyStoreUrl", securityManager.getKeyStorePath(ksId).toURI().toURL().toString());
 
-        // Client certificate
-        ksId = "ssl-clientstore";
-        final String clientCertProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_CERT);
-        if (!CommonUtils.isEmpty(clientCertProp)) {
-            File clientCertFile = new File(clientCertProp);
-            try (InputStream is = new FileInputStream(clientCertFile)) {
-                securityManager.addCertificate(ksId, getContainer().getId(), is);
+        {
+            // Client certificate
+            String ksId = "ssl-clientstore";
+            final String clientCertProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_CERT);
+            if (!CommonUtils.isEmpty(clientCertProp)) {
+                File clientCertFile = new File(clientCertProp);
+                try (InputStream is = new FileInputStream(clientCertFile)) {
+                    securityManager.addCertificate(ksId, getContainer().getId(), is);
+                }
+            } else {
+                securityManager.deleteCertificate(ksId, getContainer().getId());
             }
-        } else {
-            securityManager.deleteCertificate(ksId, getContainer().getId());
+            props.put("clientCertificateKeyStoreUrl", makeKeyStorePath(securityManager.getKeyStorePath(ksId)));
         }
-        props.put("clientCertificateKeyStoreUrl", securityManager.getKeyStorePath(ksId).toURI().toURL().toString());
 
         final boolean retrievePublicKey = CommonUtils.getBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE), false);
         if (retrievePublicKey) {
@@ -147,6 +152,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
         if (CommonUtils.getBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_SSL_DEBUG), false)) {
             System.setProperty("javax.net.debug", "all");
+        }
+    }
+
+    private String makeKeyStorePath(File keyStorePath) throws MalformedURLException {
+        if (isMariaDB()) {
+            return keyStorePath.getAbsolutePath();
+        } else {
+            return keyStorePath.toURI().toURL().toString();
         }
     }
 
