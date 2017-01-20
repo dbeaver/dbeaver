@@ -981,7 +981,7 @@ public class UIUtils {
         if (element == null) {
             propDialog = PreferencesUtil.createPreferenceDialogOn(shell, defPageID[0], defPageID, null, PreferencesUtil.OPTION_NONE);
         } else {
-            propDialog = PreferencesUtil.createPropertyDialogOn(shell, element, defPageID[0], defPageID, null, PreferencesUtil.OPTION_NONE);
+            propDialog = PreferencesUtil.createPropertyDialogOn(shell, element, defPageID[0], null, null, PreferencesUtil.OPTION_NONE);
         }
         if (propDialog != null) {
             propDialog.open();
