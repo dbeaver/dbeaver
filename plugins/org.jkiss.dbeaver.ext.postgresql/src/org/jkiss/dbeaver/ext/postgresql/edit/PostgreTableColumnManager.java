@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
@@ -96,7 +95,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         return object.getParentObject().getContainer().tableCache.getChildrenCache(object.getParentObject());
     }
 
-    protected ColumnModifier[] getSupportedModifiers()
+    protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column)
     {
         return new ColumnModifier[] {PostgreDataTypeModifier, NullNotNullModifier, DefaultModifier};
     }

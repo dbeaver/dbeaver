@@ -84,4 +84,10 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
         }
         return features;
     }
+
+    protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column)
+    {
+        return new ColumnModifier[] {DataTypeModifier, NullNotNullModifier, DefaultModifier};
+    }
+
 }

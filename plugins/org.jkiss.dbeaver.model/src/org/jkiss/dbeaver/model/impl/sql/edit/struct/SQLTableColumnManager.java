@@ -124,7 +124,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     };
 
 
-    protected ColumnModifier[] getSupportedModifiers()
+    protected ColumnModifier[] getSupportedModifiers(OBJECT_TYPE column)
     {
         return new ColumnModifier[] {DataTypeModifier, NotNullModifier, DefaultModifier};
     }
@@ -225,7 +225,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
 
         StringBuilder decl = new StringBuilder(40);
         decl.append(columnName);
-        for (ColumnModifier modifier : getSupportedModifiers()) {
+        for (ColumnModifier<OBJECT_TYPE> modifier : getSupportedModifiers(column)) {
             modifier.appendModifier(column, decl, command);
         }
 
