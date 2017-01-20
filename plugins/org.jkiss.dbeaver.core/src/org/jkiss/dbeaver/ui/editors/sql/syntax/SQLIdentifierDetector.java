@@ -85,7 +85,7 @@ public class SQLIdentifierDetector extends SQLWordDetector
             name = name.substring(quoteSymbol.length());
         }
         if (name.endsWith(quoteSymbol)) {
-            name = name.substring(name.length() - quoteSymbol.length());
+            name = name.substring(0, name.length() - quoteSymbol.length());
         }
         return name;
     }
