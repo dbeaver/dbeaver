@@ -605,6 +605,9 @@ public abstract class LightGrid extends Canvas {
     private Rectangle getCurrentOrLastClientArea() {
         Rectangle clientArea = getClientArea();
         if (clientArea.width == 0) {
+            if (lastClientArea == null) {
+                return clientArea;
+            }
             return lastClientArea;
         }
         lastClientArea = clientArea;

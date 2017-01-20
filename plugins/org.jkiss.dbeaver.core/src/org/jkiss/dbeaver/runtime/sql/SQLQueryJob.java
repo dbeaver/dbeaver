@@ -354,6 +354,9 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                             DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
                             if (dataReceiver != null) {
                                 hasResultSet = fetchQueryData(session, dbcStatement.openResultSet(), curResult, dataReceiver, true);
+                                if (resultSetNumber > 0) {
+                                    resultsConsumer.refreshReceiver(resultSetNumber);
+                                }
                             }
                         }
                     }
@@ -440,6 +443,8 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             if (dataReceiver != null) {
                 try {
                     fetchExecutionResult(session, dataReceiver, query);
+                    resultsConsumer.refreshReceiver(resultSetNumber);
+
                 } catch (DBCException e) {
                     log.error("Error generating execution result stats", e);
                 }

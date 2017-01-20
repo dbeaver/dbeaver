@@ -952,7 +952,7 @@ public class ResultSetViewer extends Viewer
         UIUtils.updateContributionItems(panelToolBar);
     }
 
-    public void redrawData(boolean rowsChanged)
+    public void redrawData(boolean attributesChanged, boolean rowsChanged)
     {
         if (viewerPanel.isDisposed()) {
             return;
@@ -968,7 +968,7 @@ public class ResultSetViewer extends Viewer
                 this.updateFiltersText();
             }
         }
-        activePresentation.refreshData(rowsChanged && recordMode, false, true);
+        activePresentation.refreshData(attributesChanged || (rowsChanged && recordMode), false, true);
         this.updateStatusMessage();
     }
 
@@ -1318,18 +1318,14 @@ public class ResultSetViewer extends Viewer
                 boolean newRecordMode = (rows.size() == 1);
                 if (newRecordMode != recordMode) {
                     toggleMode();
-//                    ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_TOGGLE);
                 }
             }
         }
-
-        //this.activePresentation.refreshData(true, false, !model.isMetadataChanged());
     }
 
     void appendData(List<Object[]> rows)
     {
         model.appendData(rows);
-        //redrawData(true);
         activePresentation.refreshData(false, true, true);
 
         setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
@@ -2323,7 +2319,6 @@ public class ResultSetViewer extends Viewer
 
                                 if (dataFilter != null) {
                                     model.updateDataFilter(dataFilter);
-                                    //activePresentation.refreshData(true, false);
                                 }
                                 activePresentation.refreshData(true, false, !metadataChanged);
                             }
@@ -2525,7 +2520,7 @@ public class ResultSetViewer extends Viewer
             }
         }
         curRow = model.addNewRow(afterCurrent ? rowNum + 1 : rowNum, cells);
-        redrawData(true);
+        redrawData(false, true);
         updateEditControls();
         fireResultSetChange();
     }
@@ -2553,7 +2548,7 @@ public class ResultSetViewer extends Viewer
             }
             lastRowNum = row.getVisualNumber();
         }
-        redrawData(rowsRemoved > 0);
+        redrawData(false, rowsRemoved > 0);
         // Move one row down (if we are in grid mode)
         if (!recordMode && lastRowNum < model.getRowCount() - 1 && rowsRemoved == 0) {
             activePresentation.scrollToRow(IResultSetPresentation.RowPosition.NEXT);
@@ -3058,7 +3053,7 @@ public class ResultSetViewer extends Viewer
 
         protected void updateColors(DBVEntity entity) {
             model.updateColorMapping();
-            redrawData(false);
+            redrawData(false, false);
             entity.getDataSource().getContainer().persistConfiguration();
         }
     }
