@@ -58,8 +58,8 @@ public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, E
             + " object_type, "
             + " 'N/A for sysobjects' as view_text "
             + " from sys.exa_syscat "
-            + " where object_type = 'VIEW' "
-            + "   and SCHEMA_NAME = ? "
+            + " where  "
+            + "   SCHEMA_NAME = ? "
             + " ) "
             + "order by table_name";
     private static final String SQL_COLS_VIEW = "SELECT c.*,CAST(NULL AS INTEGER) as key_seq FROM  \"$ODBCJDBC\".\"ALL_COLUMNS\"  c WHERE c.table_SCHEM = ? AND c.TABLE_name = ? order by ORDINAL_POSITION";
