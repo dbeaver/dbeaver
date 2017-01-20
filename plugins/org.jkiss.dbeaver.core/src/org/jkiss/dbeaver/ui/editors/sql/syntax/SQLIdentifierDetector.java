@@ -32,12 +32,16 @@ import java.util.StringTokenizer;
 public class SQLIdentifierDetector extends SQLWordDetector
 {
     private char structSeparator;
-    private String quoteSymbol;
+    private final String quoteSymbol;
 
     public SQLIdentifierDetector(char structSeparator, String quoteSymbol)
     {
         this.structSeparator = structSeparator;
         this.quoteSymbol = quoteSymbol;
+    }
+
+    protected boolean isQuote(char c) {
+        return quoteSymbol != null && quoteSymbol.indexOf(c) != -1;
     }
 
     public boolean containsSeparator(String identifier)
@@ -60,9 +64,7 @@ public class SQLIdentifierDetector extends SQLWordDetector
 
     @Override
     public boolean isWordPart(char c) {
-        return super.isWordPart(c) ||
-            (quoteSymbol != null && quoteSymbol.indexOf(c) != -1) ||
-            structSeparator == c;
+        return super.isWordPart(c) || isQuote(c) || structSeparator == c;
     }
 
     public boolean isPlainWordPart(char c) {
