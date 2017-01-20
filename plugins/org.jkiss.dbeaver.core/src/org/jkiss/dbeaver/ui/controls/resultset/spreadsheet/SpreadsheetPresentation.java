@@ -451,7 +451,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             prevCell = cell;
         }
         if (settings.isCut()) {
-            controller.redrawData(false);
+            controller.redrawData(false, false);
             controller.updatePanelsContent(false);
         }
 

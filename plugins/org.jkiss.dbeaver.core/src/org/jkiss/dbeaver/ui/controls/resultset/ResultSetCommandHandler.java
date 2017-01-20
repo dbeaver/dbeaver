@@ -189,7 +189,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                         }
                     }
                 }
-                rsv.redrawData(false);
+                rsv.redrawData(false, false);
                 rsv.updatePanelsContent(false);
                 break;
             }

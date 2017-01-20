@@ -305,7 +305,7 @@ class ResultSetPersister {
         }
         model.refreshChangeCount();
 
-        viewer.redrawData(rowsChanged);
+        viewer.redrawData(false, rowsChanged);
         viewer.fireResultSetChange();
         viewer.updateEditControls();
         viewer.updatePanelsContent(false);
@@ -425,7 +425,7 @@ class ResultSetPersister {
                         }
                         if (!viewer.getControl().isDisposed()) {
                             //releaseStatements();
-                            viewer.redrawData(rowsChanged);
+                            viewer.redrawData(false, rowsChanged);
                             viewer.updateEditControls();
                             if (error == null) {
                                 viewer.setStatus(
@@ -834,7 +834,7 @@ class ResultSetPersister {
                                     rows.get(i).values = refreshValues[i];
                                 }
                             }
-                            viewer.redrawData(true);
+                            viewer.redrawData(false, true);
                         }
                     }
                 });

@@ -109,9 +109,10 @@ public interface IResultSetController extends DBPContextProvider {
 
     /**
      * Redraws results and updates all toolbars/edit controls
+     * @param attributesChanged
      * @param rowsChanged updates contents
      */
-    void redrawData(boolean rowsChanged);
+    void redrawData(boolean attributesChanged, boolean rowsChanged);
 
     void fillContextMenu(@NotNull IMenuManager manager, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row);
 

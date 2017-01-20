@@ -37,4 +37,10 @@ public interface SQLResultsConsumer
     @Nullable
     DBDDataReceiver getDataReceiver(SQLQuery statement, int resultSetNumber);
 
+    /**
+     * Refreshes results viewer.
+     * TODO: this is a hack! Results viewer has to be refreshed by itself.
+     * This is needed when query produces more than one resultset
+     */
+    void refreshReceiver(final int resultSetNumber);
 }

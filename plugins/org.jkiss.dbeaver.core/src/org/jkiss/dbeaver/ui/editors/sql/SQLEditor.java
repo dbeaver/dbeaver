@@ -1564,6 +1564,18 @@ public class SQLEditor extends SQLEditorBase implements
             return rsv == null ? null : rsv.getDataReceiver();
         }
 
+        @Override
+        public void refreshReceiver(final int resultSetNumber) {
+            DBeaverUI.asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    if (resultSetNumber < resultContainers.size()) {
+                        resultContainers.get(resultSetNumber).viewer.redrawData(true, true);
+                    }
+                }
+            });
+        }
+
     }
 
     public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IDataSourceContainerProvider {
