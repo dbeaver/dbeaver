@@ -47,6 +47,10 @@ class OracleSQLDialect extends JDBCSQLDialect {
         addSQLKeyword("COMPUTE");
         addSQLKeyword("STATISTICS");
         addSQLKeyword("LOOP");
+        addSQLKeyword("WHILE");
+        addSQLKeyword("BULK");
+        addSQLKeyword("ELSIF");
+        addSQLKeyword("EXIT");
         addFunctions(
             Arrays.asList(
                 "SUBSTR", "APPROX_COUNT_DISTINCT",
@@ -70,6 +74,11 @@ class OracleSQLDialect extends JDBCSQLDialect {
                 "NLSSORT",
                 "NLS_UPPER",
                 "RPAD",
+                "REVERSE",
+                "SUBSTRB",
+                "SUBSTRC",
+                "SUBSTR2",
+                "SUBSTR4",
 
                 // NLS Character Functions:
                 "NLS_CHARSET_DECL_LEN",
@@ -78,6 +87,11 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
                 //Character Functions Returning Number VALUES:
                 "INSTR",
+                "INSTRB",
+                "INSTRC",
+                "INSTR2",
+                "INSTR4",
+                "LENGTHB",
 
                 //Datetime Functions:
                 "ADD_MONTHS",
