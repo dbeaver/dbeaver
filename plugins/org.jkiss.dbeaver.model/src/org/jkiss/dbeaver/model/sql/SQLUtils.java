@@ -747,7 +747,7 @@ public final class SQLUtils {
                     script.append(delimiter).append(lineSeparator);
                 }
                 script.append(scriptLine);
-                script.append(delimiter).append(lineSeparator);
+                script.append(" ").append(delimiter).append(lineSeparator);
 
                 if (action.isComplex() && redefiner != null) {
                     script.append(redefiner).append(" ").append(sqlDialect.getScriptDelimiter()).append(lineSeparator);
