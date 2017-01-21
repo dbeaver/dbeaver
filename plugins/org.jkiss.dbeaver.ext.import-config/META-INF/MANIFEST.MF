@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Import Config Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.import_config;singleton:=true
-Bundle-Version: 3.8.4
+Bundle-Version: 2.1.12
 Bundle-Release-Date: 20170123
 Bundle-Activator: org.jkiss.dbeaver.ext.import_config.Activator
 Require-Bundle: org.eclipse.ui,
