@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Language model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.lang;singleton:=true
 Bundle-Version: 1.0.0
+Bundle-Release-Date: 20170101
 Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.model,
  org.jkiss.utils,
