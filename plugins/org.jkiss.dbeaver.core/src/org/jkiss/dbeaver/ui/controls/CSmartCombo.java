@@ -486,6 +486,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         GridLayout gl = new GridLayout(1, true);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
+        gl.verticalSpacing = 0;
+        gl.horizontalSpacing = 0;
         this.popup.setLayout(gl);
 
         if (tableFilter != null) {
@@ -586,9 +588,16 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         Table table = (Table)dropDownControl;
         int itemHeight = table.getItemHeight() * itemCount;
         Point listSize = table.computeSize(SWT.DEFAULT, itemHeight, false);
+        if (tableFilter != null) {
+            listSize.y += popup.getChildren()[0].computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+        }
         ScrollBar verticalBar = table.getVerticalBar();
         if (verticalBar != null) {
             listSize.x -= verticalBar.getSize().x;
+        }
+        ScrollBar hScrollBar = table.getHorizontalBar();
+        if (hScrollBar != null) {
+            listSize.y += hScrollBar.getSize().y;
         }
         table.setBounds(1, 1, Math.max(size.x, listSize.x) - 30, listSize.y);
 
