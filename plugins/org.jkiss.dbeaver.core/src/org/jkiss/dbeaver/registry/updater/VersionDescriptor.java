@@ -37,8 +37,6 @@ import java.util.List;
  */
 public class VersionDescriptor {
 
-    public static final String DEFAULT_VERSION_URL = "http://dbeaver.jkiss.org/product/version.xml";
-
     private String programName;
     private Version programVersion;
     private String updateTime;
