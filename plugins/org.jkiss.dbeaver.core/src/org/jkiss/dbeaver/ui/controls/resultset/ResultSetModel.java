@@ -649,6 +649,9 @@ public class ResultSetModel {
     }
 
     public boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attribute) {
+        if (!isSingleSource()) {
+            return true;
+        }
         if (attribute.getMetaAttribute().isReadOnly()) {
             return true;
         }
