@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: H2 Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.h2;singleton:=true
 Bundle-Version: 1.0.3
+Bundle-Release-Date: 20170101
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.views,
