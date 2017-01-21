@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.core.application.update;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
@@ -76,7 +77,11 @@ public class DBeaverVersionChecker extends AbstractJob {
         }
         try {
             DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.UI_UPDATE_CHECK_TIME, System.currentTimeMillis());
-            VersionDescriptor versionDescriptor = new VersionDescriptor(VersionDescriptor.DEFAULT_VERSION_URL);
+            final String updateURL = Platform.getProduct().getProperty("versionUpdateURL");
+            if (updateURL == null) {
+                return Status.OK_STATUS;
+            }
+            VersionDescriptor versionDescriptor = new VersionDescriptor(updateURL);
 
             if (versionDescriptor.getProgramVersion().compareTo(DBeaverCore.getVersion()) > 0) {
                 if (showAlways || showUpdateDialog) {
