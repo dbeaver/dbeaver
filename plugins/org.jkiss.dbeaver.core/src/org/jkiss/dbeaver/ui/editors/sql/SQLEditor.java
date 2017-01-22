@@ -1462,6 +1462,7 @@ public class SQLEditor extends SQLEditorBase implements
                 } else if (isSingleQuery) {
                     closeJob();
                     curJob = job;
+                    resultsContainer.query = queries.get(0);
                     ResultSetViewer rsv = resultsContainer.getResultSetController();
                     if (rsv != null) {
                         rsv.resetDataFilter(false);
@@ -1579,7 +1580,7 @@ public class SQLEditor extends SQLEditorBase implements
         {
             this.queryProcessor = queryProcessor;
             this.resultSetNumber = resultSetNumber;
-            viewer = new ResultSetViewer(resultTabs, getSite(), this);
+            this.viewer = new ResultSetViewer(resultTabs, getSite(), this);
 
             int tabCount = resultTabs.getItemCount();
             int tabIndex = 0;
@@ -1778,7 +1779,9 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public String toString() {
-            return "SQL Query / " + SQLEditor.this.getEditorInput().getName() + ": " + query;
+            return query == null ?
+                "SQL Query / " + SQLEditor.this.getEditorInput().getName() :
+                query.getOriginalQuery();
         }
 
     }
