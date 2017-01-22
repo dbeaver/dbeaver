@@ -674,9 +674,10 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 if (index == -1) {
                     return;
                 }
-                select(index);
+                final TableItem tableItem = table.getItem(index);
+                ITEM_TYPE item = (ITEM_TYPE) tableItem.getData();
+                select(item);
                 table.setSelection(index);
-                this.selectedItem = this.items.get(index);
                 Event e = new Event();
                 e.time = event.time;
                 e.stateMask = event.stateMask;
