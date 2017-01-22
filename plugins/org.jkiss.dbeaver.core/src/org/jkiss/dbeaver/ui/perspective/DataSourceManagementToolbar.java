@@ -119,8 +119,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
         @Override
         public IStatus run(DBRProgressMonitor monitor) {
-            DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, getExecutionContext().getDataSource());
-            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, getExecutionContext().getDataSource());
+            final DBPDataSource dataSource = getExecutionContext().getDataSource();
+            DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
             if (objectContainer == null || objectSelector == null) {
                 return Status.CANCEL_STATUS;
             }
@@ -131,8 +132,17 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                     enabled = false;
                 } else {
                     enabled = true;
+                    DBSObject defObject = objectSelector.getDefaultObject();
+                    if (defObject instanceof DBSObjectContainer) {
+                        // Default object can be object container + object selector (e.g. in PG)
+                        objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
+                        if (objectSelector != null) {
+                            objectContainer = (DBSObjectContainer) defObject;
+                            defObject = objectSelector.getDefaultObject();
+                        }
+                    }
                     Collection<? extends DBSObject> children = objectContainer.getChildren(monitor);
-                    active = objectSelector.getDefaultObject();
+                    active = defObject;
                     // Cache navigator nodes
                     if (children != null) {
                         DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
@@ -592,6 +602,18 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                     try {
                         DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
                         DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+                        if (os != null) {
+                            final DBSObject defObject = os.getDefaultObject();
+                            if (defObject instanceof DBSObjectContainer) {
+                                // USe seconds level of active object
+                                DBSObjectSelector os2 = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
+                                if (os2 != null) {
+                                    oc = (DBSObjectContainer) defObject;
+                                    os = os2;
+                                }
+                            }
+                        }
+
                         if (oc != null && os != null && os.supportsDefaultChange()) {
                             DBSObject newChild = oc.getChild(monitor, newName);
                             if (newChild != null) {
