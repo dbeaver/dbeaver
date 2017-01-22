@@ -136,7 +136,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                     if (defObject instanceof DBSObjectContainer) {
                         // Default object can be object container + object selector (e.g. in PG)
                         objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
-                        if (objectSelector != null) {
+                        if (objectSelector != null && objectSelector.supportsDefaultChange()) {
                             objectContainer = (DBSObjectContainer) defObject;
                             defObject = objectSelector.getDefaultObject();
                         }
@@ -607,7 +607,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                             if (defObject instanceof DBSObjectContainer) {
                                 // USe seconds level of active object
                                 DBSObjectSelector os2 = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
-                                if (os2 != null) {
+                                if (os2 != null && os2.supportsDefaultChange()) {
                                     oc = (DBSObjectContainer) defObject;
                                     os = os2;
                                 }
