@@ -101,7 +101,11 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
         if (dataSource == null) {
             throw new DBException("Not connected to database");
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Reload object '" + object + "' from " + owner.getName())) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource,
+            object == null ?
+                "Load object '" + objectName + "' from " + owner.getName() :
+                "Reload object '" + object + "' from " + owner.getName()))
+        {
             try (JDBCStatement dbStat = prepareLookupStatement(session, owner, object, objectName)) {
                 dbStat.setFetchSize(1);
                 dbStat.executeStatement();
