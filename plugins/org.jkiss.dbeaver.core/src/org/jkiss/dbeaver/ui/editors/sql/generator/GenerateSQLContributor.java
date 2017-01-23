@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.jkiss.code.NotNull;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -49,6 +51,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -442,7 +445,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     if (sql == null) {
                         return;
                     }
-                    IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+                    IWorkbenchPage activePage = DBeaverUI.getActiveWorkbenchWindow().getActivePage();
+                    IEditorPart activeEditor = activePage.getActiveEditor();
                     boolean showDialog = true;
 /*
                     if (activeEditor instanceof AbstractTextEditor) {
@@ -462,17 +466,31 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         showDialog = false;
                     }
 */
-                    if (showDialog) {
-                        DBPDataSource dataSource = activeEditor instanceof DBPContextProvider ? ((DBPContextProvider) activeEditor).getExecutionContext().getDataSource() : null;
-                        if (dataSource != null) {
-                            ViewSQLDialog dialog = new ViewSQLDialog(
-                                DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
-                                dataSource.getDefaultContext(false),
-                                "Generated SQL",
-                                null,
-                                sql.toString());
-                            dialog.open();
+                    DBPDataSource dataSource = null;
+                    if (activeEditor instanceof DBPContextProvider) {
+                        DBCExecutionContext context = ((DBPContextProvider) activeEditor).getExecutionContext();
+                        if (context != null) {
+                            dataSource = context.getDataSource();
                         }
+                    }
+                    if (dataSource == null) {
+                        IWorkbenchPart activePart = activePage.getActivePart();
+                        if (activePart != null) {
+                            DBNNode selectedNode = NavigatorUtils.getSelectedNode(activePart.getSite().getSelectionProvider());
+                            if (selectedNode instanceof DBNDatabaseNode) {
+                                dataSource = ((DBNDatabaseNode) selectedNode).getDataSource();
+                            }
+                        }
+                    }
+
+                    if (showDialog && dataSource != null) {
+                        ViewSQLDialog dialog = new ViewSQLDialog(
+                            activePage.getActivePart().getSite(),
+                            dataSource.getDefaultContext(false),
+                            "Generated SQL (" + dataSource.getContainer().getName() + ")",
+                            null,
+                            sql.toString());
+                        dialog.open();
                     } else {
                         UIUtils.setClipboardContents(DBeaverUI.getActiveWorkbenchShell().getDisplay(), TextTransfer.getInstance(), sql);
                     }
