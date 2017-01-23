@@ -2055,7 +2055,7 @@ public class SQLEditor extends SQLEditorBase implements
                     new AbstractJob("Refresh default object") {
                         @Override
                         protected IStatus run(DBRProgressMonitor monitor) {
-                            try (DBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Refresh default object")) {
+                            try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Refresh default object")) {
                                 objectSelector.refreshDefaultObject(session);
                             } catch (Exception e) {
                                 log.error(e);
