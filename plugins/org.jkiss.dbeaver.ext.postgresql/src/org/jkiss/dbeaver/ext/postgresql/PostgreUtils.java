@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -401,6 +402,11 @@ public class PostgreUtils {
         for (int i = 0; i < objectList.size(); i++) {
             dbStat.setLong(index + i, objectList.get(i).getObjectId());
         }
+    }
+
+    public static String getViewDDL(PostgreViewBase view, String definition) {
+        String createSQL = (view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
+        return createSQL + view.getViewType() + " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" + definition;
     }
 
 }

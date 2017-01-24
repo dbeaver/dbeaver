@@ -96,11 +96,8 @@ public class PostgreViewManager extends SQLObjectEditor<PostgreTableBase, Postgr
 
     protected void createOrReplaceViewQuery(List<DBEPersistAction> actions, PostgreViewBase view)
     {
-        String createSQL = (view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
-        String ddl = createSQL + view.getViewType() + " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" + view.getSource();
-
         actions.add(
-            new SQLDatabasePersistAction("Create view", ddl));
+            new SQLDatabasePersistAction("Create view", view.getSource()));
     }
 
 }
