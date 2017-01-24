@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.impl.sql.edit;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.*;
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.ProxyPropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -236,7 +237,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
     protected class ObjectChangeCommand extends NestedObjectCommand<OBJECT_TYPE, PropertyHandler>
     {
-        private ObjectChangeCommand(OBJECT_TYPE object)
+        public ObjectChangeCommand(OBJECT_TYPE object)
         {
             super(object, "JDBC Composite"); //$NON-NLS-1$
         }
@@ -336,7 +337,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         private String oldName;
         private String newName;
 
-        protected ObjectRenameCommand(OBJECT_TYPE object, String title, String newName)
+        public ObjectRenameCommand(OBJECT_TYPE object, String title, String newName)
         {
             super(object, title);
             this.oldName = object.getName();
@@ -371,6 +372,14 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
     }
 
+    protected static class EmptyCommand extends DBECommandAbstract<DBPObject>
+    {
+        public EmptyCommand(DBPObject object)
+        {
+            super(object, "Empty"); //$NON-NLS-1$
+        }
+    }
+
     public class RenameObjectReflector implements DBECommandReflector<OBJECT_TYPE, ObjectRenameCommand> {
 
         @Override
@@ -389,6 +398,22 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
                 ((DBPNamedObject2)command.getObject()).setName(command.oldName);
                 DBUtils.fireObjectUpdate(command.getObject());
             }
+        }
+
+    }
+
+    public static class RefreshObjectReflector<OBJECT_TYPE extends DBSObject> implements DBECommandReflector<OBJECT_TYPE, DBECommandAbstract<OBJECT_TYPE>> {
+
+        @Override
+        public void redoCommand(DBECommandAbstract<OBJECT_TYPE> command)
+        {
+            DBUtils.fireObjectSelect(command.getObject(), true);
+        }
+
+        @Override
+        public void undoCommand(DBECommandAbstract<OBJECT_TYPE> command)
+        {
+            DBUtils.fireObjectUpdate(command.getObject(), true);
         }
 
     }

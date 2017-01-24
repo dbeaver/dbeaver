@@ -40,6 +40,8 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject, IAd
 {
     static final Log log = Log.getLog(DBNNode.class);
 
+    public static final Object FORCE_REFRESH = new Object();
+
     public enum NodePathType {
         resource,
         folder,
@@ -48,8 +50,6 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject, IAd
         public String getPrefix() {
             return name() + "://";
         }
-
-
     }
 
     protected final DBNNode parentNode;

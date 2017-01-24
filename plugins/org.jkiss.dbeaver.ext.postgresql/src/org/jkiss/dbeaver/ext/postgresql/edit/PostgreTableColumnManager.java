@@ -168,6 +168,11 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     @Override
     public void renameObject(DBECommandContext commandContext, PostgreTableColumn object, String newName) throws DBException {
         processObjectRename(commandContext, object, newName);
+        final PostgreTableBase table = object.getTable();
+        if (table.isPersisted() && table instanceof PostgreViewBase) {
+            table.setObjectDefinitionText(null);
+            commandContext.addCommand(new EmptyCommand(table), new RefreshObjectReflector(), true);
+        }
     }
 
     @Override
