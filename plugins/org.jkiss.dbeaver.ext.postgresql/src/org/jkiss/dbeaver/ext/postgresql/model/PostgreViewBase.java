@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -81,7 +82,8 @@ public abstract class PostgreViewBase extends PostgreTableReal
         if (source == null) {
             if (isPersisted()) {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read view definition")) {
-                    source = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(?, true)", getObjectId());
+                    String definition = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(?, true)", getObjectId());
+                    this.source = PostgreUtils.getViewDDL(this, definition);
                 } catch (SQLException e) {
                     throw new DBException("Error reading view definition", e);
                 }
