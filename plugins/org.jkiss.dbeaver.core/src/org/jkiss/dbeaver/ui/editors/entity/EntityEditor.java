@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolder;
@@ -296,7 +295,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {
                             try {
-                                treeNode.refreshNode(monitor, NavigatorHandlerRefresh.FORCE_REFRESH);
+                                treeNode.refreshNode(monitor, DBNNode.FORCE_REFRESH);
                             } catch (DBException e) {
                                 throw new InvocationTargetException(e);
                             }

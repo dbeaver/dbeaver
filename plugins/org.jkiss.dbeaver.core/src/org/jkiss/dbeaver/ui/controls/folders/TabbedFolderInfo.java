@@ -79,4 +79,9 @@ public class TabbedFolderInfo {
     public ITabbedFolder getContents() {
         return contents;
     }
+
+    @Override
+    public String toString() {
+        return id;
+    }
 }

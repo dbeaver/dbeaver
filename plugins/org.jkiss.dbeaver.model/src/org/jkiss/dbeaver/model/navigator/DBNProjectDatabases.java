@@ -305,11 +305,12 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 DBNNode dbmNode = model.getNodeByObject(event.getObject());
                 if (dbmNode != null) {
                     DBNEvent.NodeChange nodeChange;
-                    Boolean enabled = null;
+                    Boolean enabled = event.getEnabled();
+                    Object source = this;
                     if (event.getAction() == DBPEvent.Action.OBJECT_SELECT) {
                         nodeChange = DBNEvent.NodeChange.REFRESH;
+                        if (enabled != null && enabled) source = FORCE_REFRESH;
                     } else {
-                        enabled = event.getEnabled();
                         if (enabled != null) {
                             if (enabled) {
                                 nodeChange = DBNEvent.NodeChange.LOAD;
@@ -321,7 +322,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                         }
                     }
                     model.fireNodeUpdate(
-                        this,
+                        source,
                         dbmNode,
                         nodeChange);
 

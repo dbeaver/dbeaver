@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.INavigatorListener;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh;
 
 /**
  * DatabaseEditorListener
@@ -85,7 +84,7 @@ public class DatabaseEditorListener implements INavigatorListener
                             databaseEditor.refreshPart(
                                 event,
                                 event.getNodeChange() == DBNEvent.NodeChange.REFRESH &&
-                                event.getSource() == NavigatorHandlerRefresh.FORCE_REFRESH);
+                                event.getSource() == DBNNode.FORCE_REFRESH);
                         }};
                     }
                 } else if (event.getNodeChange() == DBNEvent.NodeChange.UNLOAD) {
