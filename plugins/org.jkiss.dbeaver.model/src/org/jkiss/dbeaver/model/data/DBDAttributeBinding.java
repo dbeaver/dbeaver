@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -214,8 +211,8 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         StringBuilder query = new StringBuilder();
         boolean hasPrevIdentifier = false;
         for (DBDAttributeBinding attribute = this; attribute != null; attribute = attribute.getParentObject()) {
-            if (attribute.isPseudoAttribute()) {
-                // Skip pseudo attributes (e.g. Mongo root document)
+            if (attribute.isPseudoAttribute() || attribute.getDataKind() == DBPDataKind.DOCUMENT) {
+                // Skip pseudo attributes and document attributes (e.g. Mongo root document)
                 continue;
             }
             if (hasPrevIdentifier) {
