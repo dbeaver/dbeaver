@@ -576,6 +576,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         spreadsheet.redrawGrid();
         spreadsheet.updateScrollbars();
 
+        if (curAttribute == null) {
+            curAttribute = getFocusAttribute();
+        }
         if (curAttribute != null) {
             spreadsheet.showColumn(curAttribute);
         }
