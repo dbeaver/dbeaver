@@ -280,21 +280,27 @@ class SQLCompletionAnalyzer
         SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
         String quoteString = sqlDialect.getIdentifierQuoteString();
         {
-            String quote = quoteString == null ? SQLConstants.STR_QUOTE_DOUBLE :
-                SQLConstants.STR_QUOTE_DOUBLE.equals(quoteString) ?
-                    quoteString :
-                    Pattern.quote(quoteString);
-            String catalogSeparator = sqlDialect.getCatalogSeparator();
-            while (token.endsWith(catalogSeparator)) token = token.substring(0, token.length() -1);
+            // Regex matching MUST be very fast.
+            // Otherwise UI will freeze during SQL typing.
+            // So let's make regex as simple as possible.
+            // TODO: will be replaced by SQL preparse + structure analysis
 
-            String tableNamePattern = "((?:(?:(?:[\\w_$]+)|(?:"  + quote + ".+" + quote + "))"  + Pattern.quote(catalogSeparator) + "?)+)";
+//            String quote = quoteString == null ? SQLConstants.STR_QUOTE_DOUBLE :
+//                SQLConstants.STR_QUOTE_DOUBLE.equals(quoteString) || SQLConstants.STR_QUOTE_APOS.equals(quoteString) ?
+//                    quoteString :
+//                    Pattern.quote(quoteString);
+            String catalogSeparator = sqlDialect.getCatalogSeparator();
+            while (token.endsWith(catalogSeparator)) {
+                token = token.substring(0, token.length() -1);
+            }
+
+            //String separatorPattern = ".".equals(catalogSeparator) ? "\\." : Pattern.quote(catalogSeparator);
+            String tableNamePattern = "([\\w_$\\.\"`]+)";
             String structNamePattern;
             if (CommonUtils.isEmpty(token)) {
                 structNamePattern = "(?:from|update|join|into)\\s*" + tableNamePattern;
             } else {
-                structNamePattern = tableNamePattern +
-                    "(?:\\s*\\.\\s*" + tableNamePattern + ")?" +
-                    "\\s+(?:(?:AS)\\s)?" + token + "[\\s,]+";
+                structNamePattern = tableNamePattern + "\\s+(?:as\\s)?" + token + "[\\s,]+";
             }
 
             Pattern aliasPattern;
