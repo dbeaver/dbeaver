@@ -37,10 +37,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPStatefulObject;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -782,11 +779,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
-        DBSObject databaseObject = getDatabaseObject();
-        return databaseObject == null ? null :
-            databaseObject instanceof DBPDataSourceContainer ?
-                (DBPDataSourceContainer)databaseObject :
-                databaseObject.getDataSource().getContainer();
+        return DBUtils.getContainer(getDatabaseObject());
     }
 
     private static final int MAX_BREADCRUMBS_MENU_ITEM = 300;
