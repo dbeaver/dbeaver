@@ -403,6 +403,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         List<GridCell> selectedCells = spreadsheet.getCellSelection();
+        boolean quoteCells = settings.isQuoteCells() && selectedCells.size() > 1;
 
         GridCell prevCell = null;
         for (GridCell cell : selectedCells) {
@@ -438,6 +439,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 column.getAttribute(),
                 value,
                 settings.getFormat());
+            if (quoteCells && cellText != null) {
+                if (cellText.contains(columnDelimiter) || cellText.contains(rowDelimiter)) {
+                    cellText = '"' + cellText + '"';
+                }
+            }
             tdt.append(cellText);
 
             if (settings.isCut()) {

@@ -26,6 +26,7 @@ public class ResultSetCopySettings {
     private boolean copyHeader;
     private boolean copyRowNumbers;
     private boolean cut;
+    private boolean quoteCells;
     private String columnDelimiter;
     private String rowDelimiter;
     private DBDDisplayFormat format;
@@ -33,11 +34,13 @@ public class ResultSetCopySettings {
     public ResultSetCopySettings() {
     }
 
-    public ResultSetCopySettings(boolean copyHeader, boolean copyRowNumbers, boolean cut, String columnDelimiter, String rowDelimiter, DBDDisplayFormat format) {
+    public ResultSetCopySettings(boolean copyHeader, boolean copyRowNumbers, boolean cut, boolean quoteCells, String columnDelimiter, String rowDelimiter, DBDDisplayFormat format) {
         this.copyHeader = copyHeader;
         this.copyRowNumbers = copyRowNumbers;
         this.cut = cut;
+        this.quoteCells = quoteCells;
         this.columnDelimiter = columnDelimiter;
+        this.rowDelimiter = rowDelimiter;
         this.format = format;
     }
 
@@ -63,6 +66,14 @@ public class ResultSetCopySettings {
 
     public void setCut(boolean cut) {
         this.cut = cut;
+    }
+
+    public boolean isQuoteCells() {
+        return quoteCells;
+    }
+
+    public void setQuoteCells(boolean quoteCells) {
+        this.quoteCells = quoteCells;
     }
 
     public String getColumnDelimiter() {

@@ -74,6 +74,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
 
         public static final String PARAM_COPY_HEADER = "copyHeader";
         public static final String PARAM_COPY_ROWS = "copyRows";
+        public static final String PARAM_QUOTE_CELLS = "quoteCells";
         public static final String PARAM_FORMAT = "format";
         public static final String PARAM_COL_DELIMITER = "delimiter";
         public static final String PARAM_ROW_DELIMITER = "rowDelimiter";
@@ -82,6 +83,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
 
         private Button copyHeaderCheck;
         private Button copyRowsCheck;
+        private Button quoteCellsCheck;
         private Combo formatCombo;
         private Combo colDelimCombo;
         private Combo rowDelimCombo;
@@ -93,6 +95,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             super(shell);
             settings = UIUtils.getDialogSettings("AdvanceCopySettings");
             copySettings = new ResultSetCopySettings();
+            copySettings.setQuoteCells(true);
             copySettings.setCopyHeader(true);
             copySettings.setCopyRowNumbers(false);
             copySettings.setFormat(DBDDisplayFormat.UI);
@@ -103,6 +106,9 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             }
             if (settings.get(PARAM_COPY_ROWS) != null) {
                 copySettings.setCopyRowNumbers(settings.getBoolean(PARAM_COPY_ROWS));
+            }
+            if (settings.get(PARAM_QUOTE_CELLS) != null) {
+                copySettings.setQuoteCells(settings.getBoolean(PARAM_QUOTE_CELLS));
             }
             if (settings.get(PARAM_FORMAT) != null) {
                 copySettings.setFormat(DBDDisplayFormat.valueOf(settings.get(PARAM_FORMAT)));
@@ -127,8 +133,9 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             Composite group = (Composite)super.createDialogArea(parent);
             ((GridLayout)group.getLayout()).numColumns = 2;
 
-            copyHeaderCheck = UIUtils.createLabelCheckbox(group, "Copy header", copySettings.isCopyHeader());
-            copyRowsCheck = UIUtils.createLabelCheckbox(group, "Copy row numbers", copySettings.isCopyRowNumbers());
+            copyHeaderCheck = UIUtils.createCheckbox(group, "Copy header", null, copySettings.isCopyHeader(), 2);
+            copyRowsCheck = UIUtils.createCheckbox(group, "Copy row numbers", null, copySettings.isCopyRowNumbers(), 2);
+            quoteCellsCheck = UIUtils.createCheckbox(group, "Quote cell values", "Place cell value in quotes it it contains column or row delimiter", copySettings.isCopyRowNumbers(), 2);
 
             UIUtils.createControlLabel(group, "Format");
             formatCombo = new Combo(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -176,6 +183,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
         protected void okPressed() {
             copySettings.setCopyHeader(copyHeaderCheck.getSelection());
             copySettings.setCopyRowNumbers(copyRowsCheck.getSelection());
+            copySettings.setQuoteCells(quoteCellsCheck.getSelection());
             DBDDisplayFormat format = DBDDisplayFormat.UI;
             switch (formatCombo.getSelectionIndex()) {
                 case 0: format = DBDDisplayFormat.UI; break;
