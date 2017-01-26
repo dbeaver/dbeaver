@@ -295,7 +295,7 @@ class SQLCompletionAnalyzer
             }
 
             //String separatorPattern = ".".equals(catalogSeparator) ? "\\." : Pattern.quote(catalogSeparator);
-            String tableNamePattern = "([\\w_$\\.\"`]+)";
+            String tableNamePattern = "([\\w_$\\.\\-\"`]+)";
             String structNamePattern;
             if (CommonUtils.isEmpty(token)) {
                 structNamePattern = "(?:from|update|join|into)\\s*" + tableNamePattern;
