@@ -40,6 +40,7 @@ import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
@@ -350,6 +351,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         ((GridLayout)searchControlsComposite.getLayout()).numColumns = 2;
 
         searchText = new Text(searchControlsComposite, SWT.BORDER);
+        UIUtils.addFocusTracker(DBeaverUI.getActiveWorkbenchWindow(), UIUtils.INLINE_WIDGET_EDITOR_ID, this.searchText);
         if (curSearchText != null) {
             searchText.setText(curSearchText);
             searchText.setSelection(curSearchText.length());
