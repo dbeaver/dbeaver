@@ -22,6 +22,7 @@ History and release notes: https://github.com/serge-rider/dbeaver/releases
 ## Documentation
 
 WIKI: https://github.com/serge-rider/dbeaver/wiki
+Issue tracker: https://github.com/serge-rider/dbeaver/issues
 
 ## Building
 
@@ -40,7 +41,6 @@ Binaries are in `product/standalone/target/products`
 
 ## Notes
 
-- Please leave bug reports and feature requests in the <a href="https://github.com/serge-rider/dbeaver/issues">GitHub issue tracker</a>.
 - DBeaver is a free non-profitable hobby project. Please don't expect immediate reaction on issues.
 - If you have any questions, suggestions, ideas, etc - <a href="mailto:serge@jkiss.org">write me</a>.
 - Pull requests are welcome.
