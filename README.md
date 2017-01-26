@@ -16,7 +16,12 @@ Supports any database which has JDBC driver (which basically means - ANY databas
 
 ## Download
 
-You can download prebuilt binaries from http://dbeaver.jkiss.org/download/
+You can download prebuilt binaries from http://dbeaver.jkiss.org/download/  
+History and release notes: https://github.com/serge-rider/dbeaver/releases
+
+## Documentation
+
+WIKI: https://github.com/serge-rider/dbeaver/wiki
 
 ## Building
 
