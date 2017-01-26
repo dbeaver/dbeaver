@@ -280,6 +280,7 @@
                     <replace provider="oracle" driver="oracle_oci"/>
 
                     <property name="loginTimeout" value="20"/>
+                    <property name="useFetchSizeWithLongColumn" value="true"/>
 
                     <fileSource url="http://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html" name="Oracle 11g drivers">
                         <file name="ojdbc6.jar" description="JDBC driver"/>
