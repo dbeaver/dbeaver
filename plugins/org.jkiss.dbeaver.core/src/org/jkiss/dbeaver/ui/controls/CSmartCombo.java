@@ -306,6 +306,10 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         return items;
     }
 
+    public ITEM_TYPE getSelectedItem() {
+        return selectedItem;
+    }
+
     public int getSelectionIndex()
     {
         return this.items.indexOf(this.selectedItem);

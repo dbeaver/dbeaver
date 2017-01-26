@@ -17,10 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
@@ -31,24 +28,25 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
-import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.utils.CommonUtils;
 
@@ -64,6 +62,8 @@ import java.util.List;
  * @author Serge Rider
  */
 public class EditForeignKeyPage extends BaseObjectEditPage {
+
+    private static final Log log = Log.getLog(EditForeignKeyPage.class);
 
     public static class FKColumnInfo {
         final DBSEntityAttribute refColumn;
@@ -92,6 +92,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     private DBNDatabaseNode ownerTableNode;
     private Combo uniqueKeyCombo;
     private Table columnsTable;
+    private ItemListControl tableList;
 
     private DBSTableConstraint curConstraint;
     private List<? extends DBSEntityAttribute> ownColumns;
@@ -121,16 +122,24 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            final Composite tableGroup = UIUtils.createPlaceholder(panel, 2);
+            final Composite tableGroup = UIUtils.createPlaceholder(panel, 2, 5);
             tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.createLabelText(tableGroup, CoreMessages.dialog_struct_edit_fk_label_table, ownTable.getFullyQualifiedName(DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
+
+            if (ownerTableNode != null) {
+                try {
+                    createSchemaSelector(tableGroup);
+                } catch (Throwable e) {
+                    log.debug("Can't create schema selector", e);
+                }
+            }
         }
 
         {
             DBNNode rootNode = ownerTableNode == null ? DBeaverCore.getInstance().getNavigatorModel().getRoot() : ownerTableNode.getParentNode();
 
             UIUtils.createControlLabel(panel, CoreMessages.dialog_struct_edit_fk_label_ref_table);
-            ItemListControl tableList = new ItemListControl(panel, SWT.SINGLE | SWT.SHEET | SWT.BORDER, null, rootNode, null);
+            tableList = new ItemListControl(panel, SWT.SINGLE | SWT.SHEET | SWT.BORDER, null, rootNode, null);
 
             tableList.loadData();
             final GridData gd = new GridData(GridData.FILL_BOTH);
@@ -217,6 +226,86 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         //panel.setTabList(new Control[] { tableList, pkGroup, columnsTable, cascadeGroup });
 
         return panel;
+    }
+
+    private void createSchemaSelector(Composite tableGroup) throws DBException {
+        // Here is a trick - we need to find schema/catalog container node and list its children
+        DBNDatabaseNode schemaContainerNode = null;
+        for (DBNNode node = ownerTableNode.getParentNode(); node != null; node = node.getParentNode()) {
+            if (node instanceof DBNDatabaseNode) {
+                DBSObject nodeObject = ((DBNDatabaseNode) node).getObject();
+                if (nodeObject instanceof DBSSchema || nodeObject instanceof DBSCatalog) {
+                    if (node.getParentNode() instanceof DBNDatabaseNode) {
+                        schemaContainerNode = (DBNDatabaseNode) node.getParentNode();
+                        break;
+                    }
+                }
+
+            }
+        }
+        if (schemaContainerNode != null) {
+            ILabelProvider labelProvider = new LabelProvider() {
+                @Override
+                public Image getImage(Object element) {
+                    return DBeaverIcons.getImage(((DBNDatabaseNode) element).getNodeIcon());
+                }
+                @Override
+                public String getText(Object element) {
+                    return ((DBNDatabaseNode) element).getNodeName();
+                }
+            };
+
+            boolean isSchema = (ownTable.getParentObject() instanceof DBSSchema);
+            DBPDataSourceInfo dsInfo = ownTable.getDataSource().getInfo();
+
+            UIUtils.createControlLabel(tableGroup, isSchema ? dsInfo.getSchemaTerm() : dsInfo.getCatalogTerm());
+            final CSmartCombo<DBNDatabaseNode> schemaCombo = new CSmartCombo<>(tableGroup, SWT.BORDER, labelProvider);
+            schemaCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+            DBNDatabaseNode selectedNode = null;
+            for (DBNNode node : schemaContainerNode.getChildren(VoidProgressMonitor.INSTANCE)) {
+                if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSObjectContainer) {
+                    schemaCombo.addItem((DBNDatabaseNode) node);
+                    if (((DBNDatabaseNode) node).getObject() == ownTable.getParentObject()) {
+                        selectedNode = (DBNDatabaseNode) node;
+                    }
+                }
+            }
+            if (selectedNode != null) {
+                schemaCombo.select(selectedNode);
+            }
+
+            schemaCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    // Here is another trick
+                    // We need to find table container node
+                    // This node is a child of schema node and has the same meta as our original table parent node
+                    DBNDatabaseNode newContainerNode = null;
+                    DBXTreeNode tableContainerMeta = ((DBNDatabaseNode) ownerTableNode.getParentNode()).getMeta();
+                    DBNDatabaseNode schemaNode = schemaCombo.getSelectedItem();
+                    if (schemaNode.getMeta() == tableContainerMeta) {
+                        newContainerNode = schemaNode;
+                    } else {
+                        try {
+                            for (DBNNode child : schemaNode.getChildren(VoidProgressMonitor.INSTANCE)) {
+                                if (child instanceof DBNDatabaseNode && ((DBNDatabaseNode) child).getMeta() == tableContainerMeta) {
+                                    newContainerNode = (DBNDatabaseNode) child;
+                                    break;
+                                }
+                            }
+                        } catch (DBException e1) {
+                            log.debug(e1);
+                            // Shouldn't be here
+                        }
+                    }
+                    if (newContainerNode != null) {
+                        tableList.setRootNode(newContainerNode);
+                        tableList.loadData();
+                    }
+                }
+            });
+        }
     }
 
     private void handleRefTableSelect(ISelection selection)

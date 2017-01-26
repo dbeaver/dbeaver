@@ -245,7 +245,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         return rootNode;
     }
 
-    protected void setRootNode(DBNNode rootNode) {
+    public void setRootNode(DBNNode rootNode) {
         this.rootNode = rootNode;
     }
 
