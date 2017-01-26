@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -44,6 +45,7 @@ import java.util.Collection;
  */
 public class OracleView extends OracleTableBase implements OracleSourceObject
 {
+    private static final Log log = Log.getLog(OracleView.class);
 
     public class AdditionalInfo extends TableAdditionalInfo {
         private String text;
@@ -189,6 +191,8 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
                         if (!CommonUtils.isEmpty(superViewName)) {
                             additionalInfo.setSuperView(getContainer().getView(monitor, superViewName));
                         }
+                    } else {
+                        log.warn("Cannot find view '" + getFullyQualifiedName(DBPEvaluationContext.UI) + "' metadata");
                     }
                     additionalInfo.loaded = true;
                 }
