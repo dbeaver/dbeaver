@@ -1070,7 +1070,6 @@ public final class DBUtils {
     public static DBPDataSourceContainer getContainer(@Nullable DBSObject object)
     {
         if (object == null) {
-            log.warn("Null object passed");
             return null;
         }
         if (object instanceof DBPDataSourceContainer) {
