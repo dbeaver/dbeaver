@@ -21,7 +21,7 @@ History and release notes: https://github.com/serge-rider/dbeaver/releases
 
 ## Documentation
 
-WIKI: https://github.com/serge-rider/dbeaver/wiki
+WIKI: https://github.com/serge-rider/dbeaver/wiki  
 Issue tracker: https://github.com/serge-rider/dbeaver/issues
 
 ## Building
