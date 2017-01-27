@@ -92,7 +92,7 @@ public class CheckboxTreeManager implements ICheckStateListener {
                 }
             });
         } catch (InvocationTargetException e) {
-            log.error("Error updating checkbox state", e);
+            log.error("Error updating checkbox state", e.getTargetException());
             //UIUtils.showErrorDialog(viewer.getControl().getShell(), "Error", "Can't collect child nodes", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
