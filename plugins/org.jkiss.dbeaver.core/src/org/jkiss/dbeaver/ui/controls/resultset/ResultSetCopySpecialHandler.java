@@ -135,7 +135,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
 
             copyHeaderCheck = UIUtils.createCheckbox(group, "Copy header", null, copySettings.isCopyHeader(), 2);
             copyRowsCheck = UIUtils.createCheckbox(group, "Copy row numbers", null, copySettings.isCopyRowNumbers(), 2);
-            quoteCellsCheck = UIUtils.createCheckbox(group, "Quote cell values", "Place cell value in quotes it it contains column or row delimiter", copySettings.isCopyRowNumbers(), 2);
+            quoteCellsCheck = UIUtils.createCheckbox(group, "Quote cell values", "Place cell value in quotes if it contains column or row delimiter", copySettings.isQuoteCells(), 2);
 
             UIUtils.createControlLabel(group, "Format");
             formatCombo = new Combo(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -196,6 +196,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
 
             settings.put(PARAM_COPY_HEADER, copySettings.isCopyHeader());
             settings.put(PARAM_COPY_ROWS, copySettings.isCopyRowNumbers());
+            settings.put(PARAM_QUOTE_CELLS, copySettings.isQuoteCells());
             settings.put(PARAM_FORMAT, format.name());
             settings.put(PARAM_COL_DELIMITER, copySettings.getColumnDelimiter());
             settings.put(PARAM_ROW_DELIMITER, copySettings.getRowDelimiter());
