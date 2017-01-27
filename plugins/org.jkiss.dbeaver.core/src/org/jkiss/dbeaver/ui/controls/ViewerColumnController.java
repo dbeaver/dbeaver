@@ -487,6 +487,16 @@ public class ViewerColumnController {
             colTable = new Table(composite, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
             colTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             colTable.setLinesVisible(true);
+            colTable.addListener(SWT.Selection,new Listener() {
+                public void handleEvent(Event event) {
+                    if( event.detail == SWT.CHECK ) {
+                        if (((TableItem)event.item).getGrayed()) {
+                            ((TableItem)event.item).setChecked(true);
+                            event.doit = false;
+                        }
+                    }
+                }
+            });
             final TableColumn nameColumn = new TableColumn(colTable, SWT.LEFT);
             nameColumn.setText("Name");
             final TableColumn descColumn = new TableColumn(colTable, SWT.LEFT);
@@ -500,6 +510,9 @@ public class ViewerColumnController {
                     colItem.setText(1, columnInfo.description);
                 }
                 colItem.setChecked(columnInfo.visible);
+                if (columnInfo.required) {
+                    colItem.setGrayed(true);
+                }
             }
             nameColumn.pack();
             if (nameColumn.getWidth() > 300) {
