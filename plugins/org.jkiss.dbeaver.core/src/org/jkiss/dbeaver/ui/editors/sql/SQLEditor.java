@@ -1662,7 +1662,10 @@ public class SQLEditor extends SQLEditorBase implements
         public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
         {
             final SQLQueryJob job = queryProcessor.curJob;
-            if (job != null) {
+            if (job == null) {
+                throw new DBCException("No active query - can't read data");
+            }
+            try {
                 if (dataReceiver != viewer.getDataReceiver()) {
                     // Some custom receiver. Probably data export
                     queryProcessor.curDataReceiver = dataReceiver;
@@ -1685,8 +1688,9 @@ public class SQLEditor extends SQLEditorBase implements
                 lastGoodQuery = job.getLastGoodQuery();
 
                 return job.getStatistics();
-            } else {
-                throw new DBCException("No active query - can't read data");
+            } finally {
+                // Nullify custom data receiver
+                queryProcessor.curDataReceiver = null;
             }
         }
 
