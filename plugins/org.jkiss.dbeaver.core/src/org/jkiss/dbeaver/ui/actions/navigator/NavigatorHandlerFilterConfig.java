@@ -85,7 +85,9 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                         objectFilter != null  ?objectFilter : new DBSObjectFilter(),
                         true);
                     if (dialog.open() == IDialogConstants.OK_ID) {
-                        folder.setNodeFilter(itemsMeta, dialog.getFilter());
+                        // Set global filter
+                        folder.getDataSource().getContainer().setObjectFilter(folder.getChildrenClass(), null, dialog.getFilter());
+                        folder.getDataSource().getContainer().persistConfiguration();
                         NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
                     }
                     break;

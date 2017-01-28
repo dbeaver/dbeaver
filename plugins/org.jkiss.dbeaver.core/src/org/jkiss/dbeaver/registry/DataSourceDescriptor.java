@@ -101,7 +101,7 @@ public class DataSourceDescriptor
             if (!customFilters.isEmpty()) {
                 String objectID = DBUtils.getObjectUniqueName(parentObject);
                 DBSObjectFilter filter = customFilters.get(objectID);
-                if ((filter != null && filter.isEnabled()) || firstMatch) {
+                if ((filter != null && !filter.isNotApplicable()) || firstMatch) {
                     return filter;
                 }
             }
@@ -460,7 +460,9 @@ public class DataSourceDescriptor
             }
             if (filterMapping != null) {
                 filter = filterMapping.getFilter(parentObject, firstMatch);
-                if (filter != null && (firstMatch || filter.isEnabled())) return filterMapping;
+                if (filter != null && (firstMatch || !filter.isNotApplicable())) {
+                    return filterMapping;
+                }
             }
         }
 
