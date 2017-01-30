@@ -21,11 +21,14 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
@@ -51,7 +54,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.Version;
 
 import java.io.File;
 import java.io.IOException;
@@ -156,11 +158,6 @@ public class DBeaverCore implements DBPPlatform {
     public static void setClosing(boolean closing)
     {
         isClosing = closing;
-    }
-
-    public static Version getVersion()
-    {
-        return DBeaverActivator.getInstance().getBundle().getVersion();
     }
 
     public static DBPPreferenceStore getGlobalPreferenceStore()

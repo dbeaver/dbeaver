@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -83,7 +84,7 @@ public class DBeaverVersionChecker extends AbstractJob {
             }
             VersionDescriptor versionDescriptor = new VersionDescriptor(updateURL);
 
-            if (versionDescriptor.getProgramVersion().compareTo(DBeaverCore.getVersion()) > 0) {
+            if (versionDescriptor.getProgramVersion().compareTo(GeneralUtils.getProductVersion()) > 0) {
                 if (showAlways || showUpdateDialog) {
                     showUpdaterDialog(versionDescriptor);
                 }

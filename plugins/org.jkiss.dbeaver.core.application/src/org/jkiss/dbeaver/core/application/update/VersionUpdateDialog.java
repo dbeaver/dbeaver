@@ -31,11 +31,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 class VersionUpdateDialog extends Dialog {
 
@@ -68,13 +68,15 @@ class VersionUpdateDialog extends Dialog {
         titleLabel.setLayoutData(gd);
         titleLabel.setFont(boldFont);
 
+        final String versionStr = GeneralUtils.getProductVersion().toString();
+
         UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_current_version);
         new Label(propGroup, SWT.NONE)
-            .setText(DBeaverCore.getVersion().toString());
+            .setText(versionStr);
 
         UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_new_version);
         new Label(propGroup, SWT.NONE)
-            .setText(newVersion == null ? DBeaverCore.getVersion().toString() : newVersion.getProgramVersion().toString() + "    (" + newVersion.getUpdateTime() + ")"); //$NON-NLS-2$ //$NON-NLS-3$
+            .setText(newVersion == null ? versionStr : newVersion.getProgramVersion().toString() + "    (" + newVersion.getUpdateTime() + ")"); //$NON-NLS-2$ //$NON-NLS-3$
 
         if (newVersion != null) {
             final Label notesLabel = UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_notes);

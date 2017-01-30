@@ -37,7 +37,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.DBeaverApplication;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.InformationDialog;
@@ -158,7 +157,7 @@ public class AboutBoxDialog extends InformationDialog
 
         Label versionLabel = new Label(group, SWT.NONE);
         versionLabel.setBackground(background);
-        versionLabel.setText(CoreMessages.dialog_about_label_version + DBeaverCore.getVersion().toString());
+        versionLabel.setText(CoreMessages.dialog_about_label_version + GeneralUtils.getProductVersion().toString());
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         versionLabel.setLayoutData(gd);

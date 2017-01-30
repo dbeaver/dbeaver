@@ -23,14 +23,17 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.Version;
 
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -65,6 +68,7 @@ public class GeneralUtils {
       '8', '9', 'a', 'b',
       'c', 'd', 'e', 'f'
     };
+    private static final String METADATA_FOLDER = ".metadata";
 
     static {
         // Compose byte to hex map
@@ -262,13 +266,27 @@ public class GeneralUtils {
     @NotNull
     public static String getProductTitle()
     {
+        return getProductName() + " " + getProductVersion();
+    }
+
+    @NotNull
+    public static String getProductName()
+    {
         final IProduct product = Platform.getProduct();
         if (product == null) {
             return "DBeaver";
         }
+        return product.getName();
+    }
 
-        final Bundle definingBundle = product.getDefiningBundle();
-        return product.getName() + " " + definingBundle.getVersion();
+    @NotNull
+    public static Version getProductVersion()
+    {
+        final IProduct product = Platform.getProduct();
+        if (product == null) {
+            return ModelActivator.getInstance().getBundle().getVersion();
+        }
+        return product.getDefiningBundle().getVersion();
     }
 
     @NotNull
@@ -481,7 +499,12 @@ public class GeneralUtils {
     }
 
     public static File getMetadataFolder() {
-        return Platform.getLogFileLocation().toFile().getParentFile();
+        final URL workspaceURL = Platform.getInstanceLocation().getURL();
+        File metaDir = new File(workspaceURL.getPath(), METADATA_FOLDER);
+        if (!metaDir.exists() && !metaDir.mkdir()) {
+            return Platform.getLogFileLocation().toFile().getParentFile();
+        }
+        return metaDir;
     }
 
 }

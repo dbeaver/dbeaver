@@ -21,9 +21,7 @@ package org.jkiss.dbeaver.core.application.rpc;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
@@ -48,7 +46,7 @@ public class DBeaverInstanceServer implements IInstanceController {
 
     @Override
     public String getVersion() {
-        return DBeaverCore.getVersion().toString();
+        return GeneralUtils.getProductVersion().toString();
     }
 
     @Override
