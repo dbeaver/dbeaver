@@ -29,7 +29,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
  * @since 3.3
@@ -119,7 +119,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
             public void paintControl(PaintEvent e) {
                 String productVersion = "";
                 if (product != null) {
-                    productVersion = DBeaverCore.getVersion().toString();
+                    productVersion = GeneralUtils.getProductVersion().toString();
                 }
                 //String osVersion = Platform.getOS() + " " + Platform.getOSArch();
                 if (boldFont != null) {

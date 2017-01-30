@@ -58,20 +58,21 @@ import org.osgi.framework.BundleListener;
 import java.io.*;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class controls all aspects of the application's execution
  */
 public class DBeaverApplication implements IApplication, DBPApplication {
 
+    private static final Log log = Log.getLog(DBeaverApplication.class);
+
     public static final String APPLICATION_PLUGIN_ID = "org.jkiss.dbeaver.core.application";
     public static final String DBEAVER_DEFAULT_DIR = ".dbeaver"; //$NON-NLS-1$
+    public static final String WORKSPACE_PROPS_FILE = "dbeaver-workspace.properties"; //$NON-NLS-1$
 
-    private static final Log log = Log.getLog(DBeaverApplication.class);
+    private static final String VERSION_PROP_PRODUCT_NAME = "product-name";
+    private static final String VERSION_PROP_PRODUCT_VERSION = "product-version";
 
     private static DBeaverApplication instance;
     private IInstanceController instanceServer;
@@ -148,25 +149,12 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());  //$NON-NLS-1$ //$NON-NLS-2$
         }
 
+        // Add bundle load logger
         Bundle brandingBundle = context.getBrandingBundle();
         if (brandingBundle != null) {
             BundleContext bundleContext = brandingBundle.getBundleContext();
             if (bundleContext != null) {
-                bundleContext.addBundleListener(new BundleListener() {
-                    @Override
-                    public void bundleChanged(BundleEvent event) {
-                        String message = null;
-
-                        if (event.getType() == BundleEvent.STARTED) {
-                            message = "> Start " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
-                        } else if (event.getType() == BundleEvent.STOPPED) {
-                            message = "< Stop " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
-                        }
-                        if (message != null) {
-                            log.debug(message);
-                        }
-                    }
-                });
+                bundleContext.addBundleListener(new BundleLoadListener());
             }
         }
         Log.addListener(new Log.Listener() {
@@ -187,6 +175,9 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         log.debug("Install path: '" + SystemVariablesResolver.getInstallPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Memory available " + (runtime.totalMemory() / (1024 * 1024)) + "Mb/" + (runtime.maxMemory() / (1024 * 1024)) + "Mb");
+
+        // Write version info
+        writeWorkspaceInfo();
 
         // Run instance server
         instanceServer = DBeaverInstanceServer.startInstanceServer();
@@ -224,6 +215,20 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             }
 */
             display.dispose();
+        }
+    }
+
+    private void writeWorkspaceInfo() {
+        File versionFile = new File(GeneralUtils.getMetadataFolder(), WORKSPACE_PROPS_FILE);
+
+        Properties props = new Properties();
+        props.setProperty(VERSION_PROP_PRODUCT_NAME, GeneralUtils.getProductName());
+        props.setProperty(VERSION_PROP_PRODUCT_VERSION, GeneralUtils.getProductVersion().toString());
+
+        try (OutputStream os = new FileOutputStream(versionFile)) {
+            props.store(os, "DBeaver workspace version");
+        } catch (Exception e) {
+            log.error(e);
         }
     }
 
@@ -380,6 +385,22 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     @Override
     public DBASecureStorage getSecureStorage() {
         return DefaultSecureStorage.INSTANCE;
+    }
+
+    private static class BundleLoadListener implements BundleListener {
+        @Override
+        public void bundleChanged(BundleEvent event) {
+            String message = null;
+
+            if (event.getType() == BundleEvent.STARTED) {
+                message = "> Start " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
+            } else if (event.getType() == BundleEvent.STOPPED) {
+                message = "< Stop " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
+            }
+            if (message != null) {
+                log.debug(message);
+            }
+        }
     }
 
     private class ProxyPrintStream extends OutputStream {
