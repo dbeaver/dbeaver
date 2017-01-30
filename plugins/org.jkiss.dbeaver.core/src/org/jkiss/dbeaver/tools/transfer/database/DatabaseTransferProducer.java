@@ -99,6 +99,14 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                         totalRows = dataContainer.countData(transferSource, session, dataFilter);
                     } catch (Throwable e) {
                         log.warn("Can't retrieve row count from '" + dataContainer.getName() + "'", e);
+                        try {
+                            DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+                            if (txnManager != null && !txnManager.isAutoCommit()) {
+                                txnManager.rollback(session, null);
+                            }
+                        } catch (Throwable e1) {
+                            log.warn("Error rolling back transaction", e1);
+                        }
                     } finally {
                         monitor.done();
                     }
