@@ -68,7 +68,13 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     private static final Log log = Log.getLog(DBeaverApplication.class);
 
     public static final String APPLICATION_PLUGIN_ID = "org.jkiss.dbeaver.core.application";
-    public static final String DBEAVER_DEFAULT_DIR = ".dbeaver"; //$NON-NLS-1$
+
+    public static final String WORKSPACE_DIR_LEGACY = ".dbeaver"; //$NON-NLS-1$
+    public static final String WORKSPACE_DIR_4 = ".dbeaver4"; //$NON-NLS-1$
+
+    public static final String WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_LEGACY;
+    public static final String WORKSPACE_DIR_PREVIOUS[] = { WORKSPACE_DIR_LEGACY };
+
     public static final String WORKSPACE_PROPS_FILE = "dbeaver-workspace.properties"; //$NON-NLS-1$
 
     private static final String VERSION_PROP_PRODUCT_NAME = "product-name";
@@ -80,6 +86,8 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     private OutputStream debugWriter;
     private PrintStream oldSystemOut;
     private PrintStream oldSystemErr;
+
+    private Display display = null;
 
     static {
         // Explicitly set UTF-8 as default file encoding
@@ -98,55 +106,12 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     @Override
     public Object start(IApplicationContext context) {
         instance = this;
-        Display display = null;
 
         Location instanceLoc = Platform.getInstanceLocation();
-        //log.debug("Default instance location: " + instanceLoc.getDefault());
-        String defaultHomePath = getDefaultWorkspaceLocation().getAbsolutePath();
-        try {
-            URL defaultHomeURL = new URL(
-                "file",  //$NON-NLS-1$
-                null,
-                defaultHomePath);
-            boolean keepTrying = true;
-            while (keepTrying) {
-                if (!instanceLoc.set(defaultHomeURL, true)) {
-                    if (handleCommandLine(defaultHomePath)) {
-                        return IApplication.EXIT_OK;
-                    }
-                    // Can't lock specified path
-                    if (display == null) {
-                        display = PlatformUI.createDisplay();
-                    }
-
-                    Shell shell = new Shell(display, SWT.ON_TOP);
-                    MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.IGNORE | SWT.RETRY | SWT.ABORT);
-                    messageBox.setText("DBeaver - Can't lock workspace");
-                    messageBox.setMessage("Can't lock workspace at " + defaultHomePath + ".\n" +
-                        "It seems that you have another DBeaver instance running.\n" +
-                        "You may ignore it and work without lock but it is recommended to shutdown previous instance otherwise you may corrupt workspace data.");
-                    int msgResult = messageBox.open();
-                    shell.dispose();
-
-                    switch (msgResult) {
-                        case SWT.ABORT:
-                            return IApplication.EXIT_OK;
-                        case SWT.IGNORE:
-                            instanceLoc.set(defaultHomeURL, false);
-                            keepTrying = false;
-                            break;
-                        case SWT.RETRY:
-                            break;
-                    }
-                } else {
-                    break;
-                }
+        if (!instanceLoc.isSet()) {
+            if (!setDefaultWorkspacePath(instanceLoc)) {
+                return IApplication.EXIT_OK;
             }
-
-        } catch (Throwable e) {
-            // Just skip it
-            // Error may occur if -data parameter was specified at startup
-            System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());  //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         // Add bundle load logger
@@ -190,16 +155,14 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         ResourcesPlugin.getPlugin().getPluginPreferences().setValue(ResourcesPlugin.PREF_ENCODING, defEncoding);
 
         // Create display
-        if (display == null) {
-            log.debug("Initialize display");
-            display = PlatformUI.createDisplay();
-        }
+        getDisplay();
 
         // Prefs default
         PlatformUI.getPreferenceStore().setDefault(
             IWorkbenchPreferenceConstants.KEY_CONFIGURATION_ID,
             ApplicationWorkbenchAdvisor.DBEAVER_SCHEME_NAME);
         try {
+            log.debug("Run workbench");
             int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor());
             if (returnCode == PlatformUI.RETURN_RESTART) {
                 return IApplication.EXIT_RESTART;
@@ -215,7 +178,67 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             }
 */
             display.dispose();
+            display = null;
         }
+    }
+
+    private Display getDisplay() {
+        if (display == null) {
+            log.debug("Create display");
+            display = PlatformUI.createDisplay();
+        }
+        return display;
+    }
+
+    private boolean setDefaultWorkspacePath(Location instanceLoc) {
+        String defaultHomePath = getDefaultWorkspaceLocation(WORKSPACE_DIR_CURRENT).getAbsolutePath();
+        final File homeDir = new File(defaultHomePath);
+        if (!homeDir.exists()) {
+            //migrateFromPreviousVersion();
+        }
+        try {
+            // Make URL manually because file.toURI().toURL() produces bad path (with %20).
+            final URL defaultHomeURL = new URL(
+                "file",  //$NON-NLS-1$
+                null,
+                defaultHomePath);
+            boolean keepTrying = true;
+            while (keepTrying) {
+                if (!instanceLoc.set(defaultHomeURL, true)) {
+                    if (handleCommandLine(defaultHomePath)) {
+                        return false;
+                    }
+                    // Can't lock specified path
+                    Shell shell = new Shell(getDisplay(), SWT.ON_TOP);
+                    MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.IGNORE | SWT.RETRY | SWT.ABORT);
+                    messageBox.setText("DBeaver - Can't lock workspace");
+                    messageBox.setMessage("Can't lock workspace at " + defaultHomePath + ".\n" +
+                        "It seems that you have another DBeaver instance running.\n" +
+                        "You may ignore it and work without lock but it is recommended to shutdown previous instance otherwise you may corrupt workspace data.");
+                    int msgResult = messageBox.open();
+                    shell.dispose();
+
+                    switch (msgResult) {
+                        case SWT.ABORT:
+                            return true;
+                        case SWT.IGNORE:
+                            instanceLoc.set(defaultHomeURL, false);
+                            keepTrying = false;
+                            break;
+                        case SWT.RETRY:
+                            break;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+        } catch (Throwable e) {
+            // Just skip it
+            // Error may occur if -data parameter was specified at startup
+            System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());  //$NON-NLS-1$ //$NON-NLS-2$
+        }
+        return true;
     }
 
     private void writeWorkspaceInfo() {
@@ -361,10 +384,10 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         return instanceServer;
     }
 
-    private static File getDefaultWorkspaceLocation() {
+    private static File getDefaultWorkspaceLocation(String path) {
         return new File(
             System.getProperty(StandardConstants.ENV_USER_HOME),
-            DBEAVER_DEFAULT_DIR);
+            path);
     }
 
     public static CommandLine getCommandLine() {
