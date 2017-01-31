@@ -1949,23 +1949,25 @@ public abstract class LightGrid extends Canvas {
                     overSorter = true;
                 }
             } else {
-                for (GridColumn column : columns) {
-                    if (x >= x2 && x <= x2 + column.getWidth()) {
-                        hoveringOnHeader = true;
-                        if (column.isOverSortArrow(x - x2, y)) {
-                            overSorter = true;
-                            columnBeingSorted = column;
-                            break;
-                        }
-                        x2 += column.getWidth();
-                        if (x2 >= (x - COLUMN_RESIZER_THRESHOLD) && x2 <= (x + COLUMN_RESIZER_THRESHOLD)) {
-                            overResizer = true;
+                if (x > getRowHeaderWidth()) {
+                    for (GridColumn column : columns) {
+                        if (x >= x2 && x <= x2 + column.getWidth()) {
+                            hoveringOnHeader = true;
+                            if (column.isOverSortArrow(x - x2, y)) {
+                                overSorter = true;
+                                columnBeingSorted = column;
+                                break;
+                            }
+                            x2 += column.getWidth();
+                            if (x2 >= (x - COLUMN_RESIZER_THRESHOLD) && x2 <= (x + COLUMN_RESIZER_THRESHOLD)) {
+                                overResizer = true;
 
-                            columnBeingResized = column;
-                            break;
+                                columnBeingResized = column;
+                                break;
+                            }
+                        } else {
+                            x2 += column.getWidth();
                         }
-                    } else {
-                        x2 += column.getWidth();
                     }
                 }
             }
