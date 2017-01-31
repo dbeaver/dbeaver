@@ -129,7 +129,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
         UIUtils.showMessageBox(
             getShell(),
             MySQLMessages.tools_db_export_wizard_title,
-            NLS.bind(MySQLMessages.tools_db_export_wizard_message_export_completed, getObjectsName()),
+            CommonUtils.truncateString(NLS.bind(MySQLMessages.tools_db_export_wizard_message_export_completed, getObjectsName()), 255),
             SWT.ICON_INFORMATION);
         UIUtils.launchProgram(outputFolder.getAbsolutePath());
 	}

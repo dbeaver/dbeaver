@@ -97,7 +97,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
         UIUtils.showMessageBox(
             getShell(),
             "Database export",
-            "Export '" + getObjectsName() + "'",
+            "Export of '" + CommonUtils.truncateString(getObjectsName(), 255) + "' completed",
             SWT.ICON_INFORMATION);
         UIUtils.launchProgram(outputFolder.getAbsolutePath());
 	}
