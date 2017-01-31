@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -207,7 +208,8 @@ public class MavenRepository
                 extPath = id;
                 break;
         }
-        File homeFolder = new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "maven/" + extPath);
+        File homeFolder = new File(DriverDescriptor.getCustomDriversHome(), "maven/" + extPath);
+        //File homeFolder = new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "maven/" + extPath);
         if (!homeFolder.exists()) {
             if (!homeFolder.mkdirs()) {
                 log.warn("Can't create maven repository '" + name + "' cache folder '" + homeFolder + "'");

@@ -22,14 +22,16 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
@@ -44,6 +46,7 @@ import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
@@ -59,6 +62,7 @@ import java.io.*;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.*;
+import java.util.List;
 
 /**
  * This class controls all aspects of the application's execution
@@ -72,13 +76,13 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     public static final String WORKSPACE_DIR_LEGACY = ".dbeaver"; //$NON-NLS-1$
     public static final String WORKSPACE_DIR_4 = ".dbeaver4"; //$NON-NLS-1$
 
-    public static final String WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_LEGACY;
+    public static final String WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_4;
     public static final String WORKSPACE_DIR_PREVIOUS[] = { WORKSPACE_DIR_LEGACY };
 
     public static final String WORKSPACE_PROPS_FILE = "dbeaver-workspace.properties"; //$NON-NLS-1$
 
-    private static final String VERSION_PROP_PRODUCT_NAME = "product-name";
-    private static final String VERSION_PROP_PRODUCT_VERSION = "product-version";
+    static final String VERSION_PROP_PRODUCT_NAME = "product-name";
+    static final String VERSION_PROP_PRODUCT_VERSION = "product-version";
 
     private static DBeaverApplication instance;
     private IInstanceController instanceServer;
@@ -194,7 +198,18 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         String defaultHomePath = getDefaultWorkspaceLocation(WORKSPACE_DIR_CURRENT).getAbsolutePath();
         final File homeDir = new File(defaultHomePath);
         if (!homeDir.exists()) {
-            //migrateFromPreviousVersion();
+            File previousVersionWorkspaceDir = null;
+            for (String oldDir : WORKSPACE_DIR_PREVIOUS) {
+                final File oldWorkspaceDir = new File(getDefaultWorkspaceLocation(oldDir).getAbsolutePath());
+                if (oldWorkspaceDir.exists() && GeneralUtils.getMetadataFolder(oldWorkspaceDir).exists()) {
+                    previousVersionWorkspaceDir = oldWorkspaceDir;
+                    break;
+                }
+            }
+            if (previousVersionWorkspaceDir != null) {
+                DBeaverSettingsImporter importer = new DBeaverSettingsImporter(this, getDisplay());
+                importer.migrateFromPreviousVersion(previousVersionWorkspaceDir, homeDir);
+            }
         }
         try {
             // Make URL manually because file.toURI().toURL() produces bad path (with %20).
@@ -209,14 +224,12 @@ public class DBeaverApplication implements IApplication, DBPApplication {
                         return false;
                     }
                     // Can't lock specified path
-                    Shell shell = new Shell(getDisplay(), SWT.ON_TOP);
-                    MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.IGNORE | SWT.RETRY | SWT.ABORT);
-                    messageBox.setText("DBeaver - Can't lock workspace");
-                    messageBox.setMessage("Can't lock workspace at " + defaultHomePath + ".\n" +
-                        "It seems that you have another DBeaver instance running.\n" +
-                        "You may ignore it and work without lock but it is recommended to shutdown previous instance otherwise you may corrupt workspace data.");
-                    int msgResult = messageBox.open();
-                    shell.dispose();
+                    int msgResult = showMessageBox(
+                        "DBeaver - Can't lock workspace",
+                        "Can't lock workspace at " + defaultHomePath + ".\n" +
+                            "It seems that you have another DBeaver instance running.\n" +
+                            "You may ignore it and work without lock but it is recommended to shutdown previous instance otherwise you may corrupt workspace data.",
+                        SWT.ICON_WARNING | SWT.IGNORE | SWT.RETRY | SWT.ABORT);
 
                     switch (msgResult) {
                         case SWT.ABORT:
@@ -242,7 +255,12 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     }
 
     private void writeWorkspaceInfo() {
-        File versionFile = new File(GeneralUtils.getMetadataFolder(), WORKSPACE_PROPS_FILE);
+        final File metadataFolder = GeneralUtils.getMetadataFolder();
+        writeWorkspaceInfo(metadataFolder);
+    }
+
+    private void writeWorkspaceInfo(File metadataFolder) {
+        File versionFile = new File(metadataFolder, WORKSPACE_PROPS_FILE);
 
         Properties props = new Properties();
         props.setProperty(VERSION_PROP_PRODUCT_NAME, GeneralUtils.getProductName());
@@ -253,6 +271,20 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         } catch (Exception e) {
             log.error(e);
         }
+    }
+
+    Properties readWorkspaceInfo(File metadataFolder) {
+        Properties props = new Properties();
+
+        File versionFile = new File(metadataFolder, WORKSPACE_PROPS_FILE);
+        if (versionFile.exists()) {
+            try (InputStream is = new FileInputStream(versionFile)) {
+                props.load(is);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+        return props;
     }
 
     @NotNull
@@ -408,6 +440,18 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     @Override
     public DBASecureStorage getSecureStorage() {
         return DefaultSecureStorage.INSTANCE;
+    }
+
+    int showMessageBox(String title, String message, int style) {
+        // Can't lock specified path
+        Shell shell = new Shell(getDisplay(), SWT.ON_TOP);
+        shell.setText(GeneralUtils.getProductTitle());
+        MessageBox messageBox = new MessageBox(shell, style);
+        messageBox.setText(title);
+        messageBox.setMessage(message);
+        int msgResult = messageBox.open();
+        shell.dispose();
+        return msgResult;
     }
 
     private static class BundleLoadListener implements BundleListener {

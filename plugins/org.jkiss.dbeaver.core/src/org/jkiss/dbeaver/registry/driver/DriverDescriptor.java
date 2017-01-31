@@ -1236,7 +1236,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         if (!CommonUtils.isEmpty(driversHome)) {
             homeFolder = new File(driversHome);
         } else {
-            homeFolder = DBeaverActivator.getInstance().getStateLocation().toFile();
+            homeFolder = new File(
+                System.getProperty(StandardConstants.ENV_USER_HOME),
+                DBConstants.DEFAULT_DRIVERS_FOLDER);
         }
         if (!homeFolder.exists()) {
             if (!homeFolder.mkdirs()) {
@@ -1547,15 +1549,28 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     private static String replacePathVariables(String path) {
-        return GeneralUtils.replaceVariables(path, new SystemVariablesResolver());
+        return GeneralUtils.replaceVariables(path, new DriverVariablesResolver());
     }
 
     private static String substitutePathVariables(String path) {
         String workspacePath = SystemVariablesResolver.getWorkspacePath();
+        final String driversHome = getCustomDriversHome().getAbsolutePath();
         if (path.startsWith(workspacePath)) {
             path = "${workspace}" + path.substring(workspacePath.length());
+        } else if (path.startsWith(driversHome)) {
+            path = "${drivers_home}" + path.substring(driversHome.length());
         }
         return path;
     }
 
+    private static class DriverVariablesResolver extends SystemVariablesResolver {
+        @Override
+        public String get(String name) {
+            if (name.equalsIgnoreCase("drivers_home")) {
+                return getCustomDriversHome().getAbsolutePath();
+            } else {
+                return super.get(name);
+            }
+        }
+    }
 }

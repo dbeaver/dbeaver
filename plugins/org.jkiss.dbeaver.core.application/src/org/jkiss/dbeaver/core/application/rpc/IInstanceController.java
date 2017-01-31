@@ -27,7 +27,7 @@ import java.rmi.RemoteException;
 public interface IInstanceController extends Remote {
 
     String CONTROLLER_ID = "DBeaver.InstanceController";
-    String RMI_PROP_FILE = ".dbeaver-server.properties";
+    String RMI_PROP_FILE = "dbeaver-instance.properties";
 
     String getVersion() throws RemoteException;
 
