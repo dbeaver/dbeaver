@@ -56,6 +56,8 @@ public class GeneralUtils {
     public static final Charset DEFAULT_FILE_CHARSET = UTF8_CHARSET;
     public static final Charset ASCII_CHARSET = Charset.forName("US-ASCII");
 
+    private static final String METADATA_FOLDER = ".metadata";
+
     public static final String DEFAULT_TIMESTAMP_PATTERN = "yyyyMMddHHmm";
     public static final String DEFAULT_DATE_PATTERN = "yyyyMMdd";
 
@@ -68,7 +70,6 @@ public class GeneralUtils {
       '8', '9', 'a', 'b',
       'c', 'd', 'e', 'f'
     };
-    private static final String METADATA_FOLDER = ".metadata";
 
     static {
         // Compose byte to hex map
@@ -500,11 +501,15 @@ public class GeneralUtils {
 
     public static File getMetadataFolder() {
         final URL workspaceURL = Platform.getInstanceLocation().getURL();
-        File metaDir = new File(workspaceURL.getPath(), METADATA_FOLDER);
+        File metaDir = getMetadataFolder(new File(workspaceURL.getPath()));
         if (!metaDir.exists() && !metaDir.mkdir()) {
             return Platform.getLogFileLocation().toFile().getParentFile();
         }
         return metaDir;
+    }
+
+    public static File getMetadataFolder(File workspaceFolder) {
+        return new File(workspaceFolder, METADATA_FOLDER);
     }
 
 }
