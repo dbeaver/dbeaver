@@ -1603,10 +1603,15 @@
                 <command commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_auto.png" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
-                <separator name="datasource" visible="true"/>
+                <separator name="additions" visible="false"/>
+            </toolbar>
+            <toolbar id="dbeaver-datasource-selector" label="DataSource Selector">
                 <control class="org.jkiss.dbeaver.ui.perspective.DataSourceManagementToolbar$ToolbarContribution">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </control>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection" style="pulldown" id="org.jkiss.dbeaver.core.menu.sql.sync">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                </command>
                 <separator name="additions" visible="false"/>
             </toolbar>
             <toolbar id="dbeaver-edit" label="Edit actions">
@@ -1987,7 +1992,7 @@
         </menuContribution>
 
         <!-- SQL editor connection sync drop-down menu -->
-        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.ui.editors.sql.sync">
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.sql.sync">
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.auto" style="toggle"/>
             <separator name="sync_additions" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>

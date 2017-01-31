@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -39,15 +38,12 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.WorkbenchWindow;
-import org.eclipse.ui.menus.CommandContributionItem;
-import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -801,8 +797,6 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             }
         });
 
-        createSyncToolbar(comboGroup);
-
         resultSetSize = new Text(comboGroup, SWT.BORDER);
         resultSetSize.setTextLimit(10);
         gd = new GridData();
@@ -844,17 +838,6 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         });
 
         return comboGroup;
-    }
-
-    private void createSyncToolbar(Composite comboGroup) {
-        CommandContributionItem syncItem = new CommandContributionItem(new CommandContributionItemParameter(
-            workbenchWindow,
-            "org.jkiss.dbeaver.ui.editors.sql.sync",
-            CoreCommands.CMD_SYNC_CONNECTION,
-            CommandContributionItem.STYLE_PULLDOWN));
-        ToolBarManager syncToolbar = new ToolBarManager(SWT.NONE);
-        syncToolbar.add(syncItem);
-        syncToolbar.createControl(comboGroup);
     }
 
     @Override
