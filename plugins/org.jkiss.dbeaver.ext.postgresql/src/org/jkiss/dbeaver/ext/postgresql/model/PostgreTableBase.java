@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -46,6 +47,7 @@ import java.util.*;
 public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, PostgreSchema> implements PostgreClass, PostgreScriptObject, PostgrePermissionsOwner, DBPNamedObject2
 {
     private long oid;
+    private long ownerId;
     private String description;
 
     protected PostgreTableBase(PostgreSchema catalog)
@@ -59,6 +61,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     {
         super(catalog, JDBCUtils.safeGetString(dbResult, "relname"), true);
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
+        this.ownerId = JDBCUtils.safeGetLong(dbResult, "relowner");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
@@ -88,7 +91,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return this.oid;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 10)
+    @Property(viewable = true, editable = true, updatable = true, order = 11)
     @Nullable
     @Override
     public String getDescription()
@@ -98,6 +101,11 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Property(viewable = true, editable = false, updatable = false, order = 10)
+    public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, getDatabase().roleCache, getDatabase(), ownerId);
     }
 
     @NotNull
