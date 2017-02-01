@@ -554,7 +554,9 @@ public final class SQLUtils {
             // then do not use explicit precision in column definition
             final DBSDataType dataType = DBUtils.getLocalDataType(((DBSObject) column).getDataSource(), column.getTypeName());
             if (dataType != null && dataType.getScale() == column.getScale() &&
-                (dataType.getPrecision() == column.getPrecision() || dataType.getMaxLength() == column.getMaxLength())) {
+                ((dataType.getPrecision() > 0 && dataType.getPrecision() == column.getPrecision()) ||
+                (dataType.getMaxLength() > 0 && dataType.getMaxLength() == column.getMaxLength())))
+            {
                 return null;
             }
         }
