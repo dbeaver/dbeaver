@@ -50,7 +50,7 @@ Command line parameters
 
 Licensing
 ==========================
-  GPL 2
+  Apache License 2 (http://www.apache.org/licenses/LICENSE-2.0)
 
 Web
 ==========
