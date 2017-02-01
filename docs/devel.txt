@@ -19,7 +19,7 @@ Notes:
 	As a result there are a few inconsistencies in commits history.
 	Commit owners wasn't properly migrated so you will see unrecognized users in old commits.
 
-	User "jurgen" = "serge-rider" AKA Serge Rieder
+	User "jurgen" = "serge-rider" AKA Serge Rider
 	User "titou10" = "titou10titou10" AKA Denis Forveille
 
 2015.10.25
