@@ -114,7 +114,8 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                                 }
                                 tmpObjectList.add(object);
 
-                                monitor.subTask(object.getName());
+                                // Do not log every object load. This overheats UI in case of long lists
+                                //monitor.subTask(object.getName());
                                 if (tmpObjectList.size() == maximumCacheSize) {
                                     log.warn("Maximum cache size exceeded (" + maximumCacheSize + ") in " + this);
                                     break;
