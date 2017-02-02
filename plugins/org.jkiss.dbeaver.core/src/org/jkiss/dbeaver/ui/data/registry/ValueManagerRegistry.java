@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -66,7 +67,7 @@ public class ValueManagerRegistry {
     }
 
     @NotNull
-    public IValueManager getManager(@Nullable DBPDataSourceContainer dataSource, @NotNull DBSTypedObject dataKind, @NotNull Class<?> valueType) {
+    public IValueManager getManager(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject dataKind, @NotNull Class<?> valueType) {
         // Check starting from most restrictive to less restrictive
         IValueManager manager = findManager(dataSource, dataKind, valueType, true, true);
         if (manager == null) {
@@ -84,7 +85,7 @@ public class ValueManagerRegistry {
         return manager;
     }
 
-    private IValueManager findManager(@Nullable DBPDataSourceContainer dataSource, DBSTypedObject typedObject, Class<?> valueType, boolean checkDataSource, boolean checkType) {
+    private IValueManager findManager(@Nullable DBPDataSource dataSource, DBSTypedObject typedObject, Class<?> valueType, boolean checkDataSource, boolean checkType) {
         for (ValueManagerDescriptor manager : managers) {
             if (manager.supportsType(dataSource, typedObject, valueType, checkDataSource, checkType)) {
                 return manager.getInstance();
@@ -94,7 +95,7 @@ public class ValueManagerRegistry {
     }
 
     @NotNull
-    public static IValueManager findValueManager(@Nullable DBPDataSourceContainer dataSource, @NotNull DBSTypedObject typedObject, @NotNull Class<?> valueType) {
+    public static IValueManager findValueManager(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject typedObject, @NotNull Class<?> valueType) {
         return getInstance().getManager(dataSource, typedObject, valueType);
     }
 
