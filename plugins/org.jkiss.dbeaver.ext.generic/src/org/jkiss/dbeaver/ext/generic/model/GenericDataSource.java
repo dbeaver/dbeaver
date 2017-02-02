@@ -914,7 +914,7 @@ public class GenericDataSource extends JDBCDataSource
     @NotNull
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType)
     {
-        DBSDataType dataType = dataTypeCache.getCachedObject(typeName);
+        DBSDataType dataType = getLocalDataType(typeName);
         if (dataType != null) {
             return super.resolveDataKind(dataType.getTypeName(), dataType.getTypeID());
         }
