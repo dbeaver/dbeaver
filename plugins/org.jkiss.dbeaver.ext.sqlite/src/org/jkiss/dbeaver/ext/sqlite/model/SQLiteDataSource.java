@@ -24,17 +24,39 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+
+import java.util.Locale;
 
 public class SQLiteDataSource extends GenericDataSource {
 
-	public SQLiteDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
-			throws DBException {
-		super(monitor, container, metaModel);
-	}
-	
-	@Override
-	protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData) {
-		return new SQLiteSQLDialect(this, metaData);
-	}    
+    public SQLiteDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
+        throws DBException {
+        super(monitor, container, metaModel);
+    }
+
+    @Override
+    protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData) {
+        return new SQLiteSQLDialect(this, metaData);
+    }
+
+    @Override
+    public DBSDataType getLocalDataType(String typeName) {
+        // Resolve type name according to https://www.sqlite.org/datatype3.html
+        typeName = typeName.toUpperCase(Locale.ENGLISH);
+        SQLiteAffinity affinity;
+        if (typeName.contains("INT")) {
+            affinity = SQLiteAffinity.INTEGER;
+        } else if (typeName.contains("CHAR") || typeName.contains("CLOB") || typeName.contains("TEXT")) {
+            affinity = SQLiteAffinity.TEXT;
+        } else if (typeName.contains("BLOB")) {
+            affinity = SQLiteAffinity.BLOB;
+        } else if (typeName.contains("REAL") || typeName.contains("FLOA") || typeName.contains("DOUB")) {
+            affinity = SQLiteAffinity.REAL;
+        } else {
+            affinity = SQLiteAffinity.NUMERIC;
+        }
+        return super.getLocalDataType(affinity.name());
+    }
 
 }
