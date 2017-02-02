@@ -217,4 +217,17 @@ public class DBSObjectFilter
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof DBSObjectFilter)) {
+            return false;
+        }
+        DBSObjectFilter source = (DBSObjectFilter)obj;
+
+        return CommonUtils.equalObjects(name, source.name) &&
+            CommonUtils.equalObjects(description, source.description) &&
+            enabled == source.enabled &&
+            CommonUtils.equalObjects(include, source.include) &&
+            CommonUtils.equalObjects(exclude, source.exclude);
+    }
 }
