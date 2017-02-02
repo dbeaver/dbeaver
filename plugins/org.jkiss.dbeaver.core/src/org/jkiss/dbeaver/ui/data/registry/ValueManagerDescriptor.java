@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -61,7 +62,7 @@ public class ValueManagerDescriptor extends AbstractDescriptor
         DBPDataKind dataKind;
         ObjectType valueType;
         String extension;
-        DataSourceProviderDescriptor dataSource;
+        String dataSource;
     }
 
     private IValueManager instance;
@@ -80,7 +81,7 @@ public class ValueManagerDescriptor extends AbstractDescriptor
             String className = typeElement.getAttribute(ATTR_TYPE);
             String ext = typeElement.getAttribute(ATTR_EXTENSION);
             String dspId = typeElement.getAttribute(ATTR_DATA_SOURCE);
-            if (!CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(typeName) || !CommonUtils.isEmpty(className) || !CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(ext)) {
+            if (!CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(typeName) || !CommonUtils.isEmpty(className) || !CommonUtils.isEmpty(dspId) || !CommonUtils.isEmpty(ext)) {
                 SupportInfo info = new SupportInfo();
                 if (!CommonUtils.isEmpty(kindName)) {
                     try {
@@ -99,10 +100,7 @@ public class ValueManagerDescriptor extends AbstractDescriptor
                     info.extension = ext;
                 }
                 if (!CommonUtils.isEmpty(dspId)) {
-                    info.dataSource = DataSourceProviderRegistry.getInstance().getDataSourceProvider(dspId);
-                    if (info.dataSource == null) {
-                        log.warn("Data source '" + dspId + "' not found");
-                    }
+                    info.dataSource = dspId;
                 }
                 supportInfos.add(info);
             }
@@ -128,13 +126,13 @@ public class ValueManagerDescriptor extends AbstractDescriptor
         return instance;
     }
 
-    public boolean supportsType(@Nullable DBPDataSourceContainer dataSource, DBSTypedObject typedObject, Class<?> valueType, boolean checkDataSource, boolean checkType)
+    public boolean supportsType(@Nullable DBPDataSource dataSource, DBSTypedObject typedObject, Class<?> valueType, boolean checkDataSource, boolean checkType)
     {
         final DBPDataKind dataKind = typedObject.getDataKind();
         for (SupportInfo info : supportInfos) {
             if (dataSource != null && info.dataSource != null) {
-                DriverDescriptor driver = (DriverDescriptor) dataSource.getDriver();
-                if (driver.getProviderDescriptor() != info.dataSource) {
+                DriverDescriptor driver = (DriverDescriptor) dataSource.getContainer().getDriver();
+                if (!info.dataSource.equals(driver.getProviderDescriptor().getId()) && !info.dataSource.equals(dataSource.getClass().getName())) {
                     continue;
                 }
             } else if (checkDataSource) {
@@ -169,8 +167,15 @@ public class ValueManagerDescriptor extends AbstractDescriptor
                     return true;
                 }
             }
+            if (!checkType && info.valueType == null && info.dataKind == null && info.typeName == null && info.extension == null) {
+                return true;
+            }
         }
         return false;
     }
 
+    @Override
+    public String toString() {
+        return id;
+    }
 }

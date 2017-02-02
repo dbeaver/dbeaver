@@ -792,7 +792,7 @@
                 id="org.jkiss.dbeaver.ext.generic.data.GenericValueHandlerProvider"
                 label="Generic data types provider">
             <datasource id="generic"/>
-            <!-- Date/time value handler - needed to provide native datatime value formatting. Formatting itself provided in drivers configuration. -->
+            <!-- Date/time value handler - needed to provide native datetime value formatting. Formatting itself provided in drivers configuration. -->
             <type kind="DATETIME"/>
         </provider>
     </extension>
