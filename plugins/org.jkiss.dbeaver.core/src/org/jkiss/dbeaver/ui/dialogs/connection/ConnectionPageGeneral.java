@@ -190,10 +190,11 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 // Get settings from data source descriptor
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 connectionTypeCombo.select(conConfig.getConnectionType());
+                dataSourceFolder = dataSourceDescriptor.getFolder();
                 if (dataSourceDescriptor.getFolder() == null) {
                     connectionFolderCombo.select(0);
                 } else {
-                    connectionFolderCombo.select(dataSourceDescriptor.getFolder());
+                    connectionFolderCombo.select(dataSourceFolder);
                 }
                 savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
                 autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
