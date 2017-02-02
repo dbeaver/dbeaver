@@ -107,6 +107,18 @@ public class DataSourceDescriptor
 
             return firstMatch ? null : defaultFilter;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof FilterMapping)) {
+                return false;
+            }
+            FilterMapping source = (FilterMapping)obj;
+            return
+                CommonUtils.equalObjects(typeName, source.typeName) &&
+                CommonUtils.equalObjects(defaultFilter, source.defaultFilter) &&
+                CommonUtils.equalObjects(customFilters, source.customFilters);
+        }
     }
 
     @NotNull
@@ -1205,6 +1217,7 @@ public class DataSourceDescriptor
             CommonUtils.equalObjects(this.connectionReadOnly, source.connectionReadOnly) &&
             CommonUtils.equalObjects(this.driver, source.driver) &&
             CommonUtils.equalObjects(this.connectionInfo, source.connectionInfo) &&
+            CommonUtils.equalObjects(this.filterMap, source.filterMap) &&
             CommonUtils.equalObjects(this.formatterProfile, source.formatterProfile) &&
             CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
             CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
