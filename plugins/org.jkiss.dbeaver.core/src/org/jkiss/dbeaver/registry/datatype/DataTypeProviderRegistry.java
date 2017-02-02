@@ -24,7 +24,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
+import org.jkiss.dbeaver.model.data.DBDRegistry;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -95,7 +97,7 @@ public class DataTypeProviderRegistry implements DBDRegistry
 
         // First try to find type provider for specific datasource type
         for (ValueHandlerDescriptor dtProvider : dataTypeProviders) {
-            if (!dtProvider.isGlobal() && dtProvider.supportsDataSource(dsProvider) && dtProvider.supportsType(typedObject)) {
+            if (!dtProvider.isGlobal() && dtProvider.supportsDataSource(dataSource, dsProvider) && dtProvider.supportsType(typedObject)) {
                 return dtProvider.getInstance();
             }
         }
@@ -123,7 +125,7 @@ public class DataTypeProviderRegistry implements DBDRegistry
         for (AttributeTransformerDescriptor descriptor : dataTypeTransformers) {
 
             if ((custom == null || custom == descriptor.isCustom()) &&
-                ((!descriptor.isGlobal() && descriptor.supportsDataSource(dsProvider) && descriptor.supportsType(typedObject)) ||
+                ((!descriptor.isGlobal() && descriptor.supportsDataSource(dataSource, dsProvider) && descriptor.supportsType(typedObject)) ||
                 (descriptor.isGlobal() && descriptor.supportsType(typedObject))))
             {
                 if (result == null) {

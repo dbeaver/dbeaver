@@ -17,7 +17,7 @@
                 id="org.jkiss.dbeaver.ext.phoenix.model.data.PhoenixValueHandlerProvider"
                 label="Phoenix data types provider">
 
-            <datasource id="generic" /> 
+            <datasource class="org.jkiss.dbeaver.ext.phoenix.model.PhoenixDataSource"/>
             <type standard="ARRAY"/>
         </provider>
     </extension>

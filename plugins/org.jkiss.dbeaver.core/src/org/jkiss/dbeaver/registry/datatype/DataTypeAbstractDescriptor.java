@@ -20,17 +20,15 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPRegistryDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
 import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 /**
  * DataTypeAbstractDescriptor
@@ -45,7 +43,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
     private final String id;
     private ObjectType implType;
     private Set<Object> supportedTypes = new HashSet<>();
-    private Set<DataSourceProviderDescriptor> supportedDataSources = new HashSet<>();
+    private List<String> supportedDataSources = new ArrayList<>();
 
     private boolean hasAll, hasTypeIds, hasDataKinds, hasTypeNames;
 
@@ -110,16 +108,12 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         IConfigurationElement[] dsElements = config.getChildren(RegistryConstants.TAG_DATASOURCE);
         for (IConfigurationElement dsElement : dsElements) {
             String dsId = dsElement.getAttribute(RegistryConstants.ATTR_ID);
-            if (dsId == null) {
-                log.warn("Datasource reference with null ID"); //$NON-NLS-1$
+            String dsClassName = dsElement.getAttribute(RegistryConstants.ATTR_CLASS);
+            if (dsId == null && dsClassName == null) {
+                log.warn("Datasource reference with null ID/Class"); //$NON-NLS-1$
                 continue;
             }
-            DataSourceProviderDescriptor dsProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(dsId);
-            if (dsProvider == null) {
-                log.warn("Datasource provider '" + dsId + "' not found. Bad data type mapping."); //$NON-NLS-1$
-                continue;
-            }
-            supportedDataSources.add(dsProvider);
+            supportedDataSources.add(dsId != null ? dsId : dsClassName);
         }
     }
 
@@ -166,14 +160,9 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         return supportedDataSources.isEmpty();
     }
 
-    public boolean supportsDataSource(DataSourceProviderDescriptor descriptor)
+    public boolean supportsDataSource(DBPDataSource dataSource, DataSourceProviderDescriptor descriptor)
     {
-        return supportedDataSources.contains(descriptor);
-    }
-
-    public Set<DataSourceProviderDescriptor> getSupportedDataSources()
-    {
-        return supportedDataSources;
+        return supportedDataSources.contains(descriptor.getId()) || supportedDataSources.contains(dataSource.getClass().getName());
     }
 
     @Override
