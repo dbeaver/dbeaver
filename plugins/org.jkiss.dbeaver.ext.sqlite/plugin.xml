@@ -8,4 +8,22 @@
         	driverClass="org.sqlite.JDBC"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                class="org.jkiss.dbeaver.ext.sqlite.model.data.SQLiteValueHandlerProvider"
+                description="SQLite data types provider"
+                id="org.jkiss.dbeaver.ext.sqlite.model.data.SQLiteValueHandlerProvider"
+                label="SQLite data types provider">
+
+            <datasource class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteDataSource"/>
+            <type name="*"/>
+        </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <manager class="org.jkiss.dbeaver.ext.sqlite.model.data.SQLiteValueManager" id="org.jkiss.dbeaver.ext.sqlite.model.data.SQLiteValueManager">
+            <supports dataSource="org.jkiss.dbeaver.ext.sqlite.model.SQLiteDataSource"/>
+        </manager>
+    </extension>
+
 </plugin>
