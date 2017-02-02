@@ -40,6 +40,7 @@
         <module>plugins/org.jkiss.dbeaver.ext.oracle</module>
         <module>plugins/org.jkiss.dbeaver.ext.phoenix</module>
         <module>plugins/org.jkiss.dbeaver.ext.postgresql</module>
+        <module>plugins/org.jkiss.dbeaver.ext.sqlite</module>
         <module>plugins/org.jkiss.dbeaver.ext.vertica</module>
         <module>plugins/org.jkiss.dbeaver.ext.teradata</module>
         <module>plugins/org.jkiss.dbeaver.ext.exasol</module>
