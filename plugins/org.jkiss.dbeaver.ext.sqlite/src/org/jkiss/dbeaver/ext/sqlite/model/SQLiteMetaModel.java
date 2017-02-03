@@ -21,15 +21,28 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.sqlite.SQLiteUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * SQLiteMetaModel
@@ -42,7 +55,49 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
-        return getTableDDL(monitor, sourceObject);
+        return SQLiteUtils.readMasterDefinition(monitor, sourceObject.getDataSource(), SQLiteObjectType.view, sourceObject.getName(), sourceObject);
+    }
+
+    @Override
+    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
+        return SQLiteUtils.readMasterDefinition(monitor, sourceObject.getDataSource(), SQLiteObjectType.table, sourceObject.getName(), sourceObject);
+    }
+
+    @Override
+    public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
+        return SQLiteUtils.readMasterDefinition(monitor, trigger.getDataSource(), SQLiteObjectType.trigger, trigger.getName(), trigger.getTable());
+    }
+
+    @Override
+    public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
+        return true;
+    }
+
+    @Override
+    public boolean supportsDatabaseTriggers(@NotNull GenericDataSource dataSource) {
+        return false;
+    }
+
+    @Override
+    public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
+        if (table == null) {
+            return Collections.emptyList();
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT name FROM sqlite_master WHERE type='trigger' AND tbl_name=?")) {
+                dbStat.setString(1, table.getName());
+                List<GenericTrigger> result = new ArrayList<>();
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String name = JDBCUtils.safeGetString(dbResult, 1);
+                        result.add(new GenericTrigger(container, table, name, null));
+                    }
+                }
+                return result;
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, container.getDataSource());
+        }
     }
 
     @Nullable
@@ -63,4 +118,6 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     public JDBCBasicDataTypeCache createDataTypeCache(@NotNull DBPDataSourceContainer container) {
         return new SQLiteDataTypeCache(container);
     }
+
+
 }
