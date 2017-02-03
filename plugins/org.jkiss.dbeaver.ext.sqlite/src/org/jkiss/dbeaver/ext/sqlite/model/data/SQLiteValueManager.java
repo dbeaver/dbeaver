@@ -16,10 +16,15 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.model.data;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.data.managers.ContentValueManager;
 import org.jkiss.dbeaver.ui.data.managers.StringValueManager;
 
 
@@ -27,8 +32,26 @@ import org.jkiss.dbeaver.ui.data.managers.StringValueManager;
  * SQLiteValueHandler
  */
 public class SQLiteValueManager extends StringValueManager {
+
+    private static boolean isBinary(@NotNull IValueController controller) {
+        DBPDataKind dataKind = controller.getValueType().getDataKind();
+        return (dataKind == DBPDataKind.BINARY || dataKind == DBPDataKind.CONTENT);
+    }
+
     @Override
     public IValueEditor createEditor(@NotNull IValueController controller) throws DBException {
+        if (isBinary(controller)) {
+            return new ContentValueManager().createEditor(controller);
+        }
         return super.createEditor(controller);
+    }
+
+    @Override
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller, @Nullable IValueEditor activeEditor) throws DBCException {
+        if (isBinary(controller)) {
+            new ContentValueManager().contributeActions(manager, controller, activeEditor);
+        } else {
+            super.contributeActions(manager, controller, activeEditor);
+        }
     }
 }

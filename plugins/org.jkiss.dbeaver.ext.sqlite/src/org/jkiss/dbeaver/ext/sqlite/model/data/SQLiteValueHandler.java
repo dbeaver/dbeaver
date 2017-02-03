@@ -18,11 +18,14 @@ package org.jkiss.dbeaver.ext.sqlite.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentAbstract;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentBytes;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -38,12 +41,17 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
     @Nullable
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
-        return resultSet.getObject(index);
+        Object object = resultSet.getObject(index);
+        return getValueFromObject(session, type, object, false);
     }
 
     @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
-        statement.setObject(paramIndex, value);
+        if (value instanceof JDBCContentAbstract) {
+            ((JDBCContentAbstract) value).bindParameter(session, statement, paramType, paramIndex);
+        } else {
+            statement.setObject(paramIndex, value);
+        }
     }
 
     @NotNull
@@ -55,6 +63,9 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
     @Nullable
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
+        if (object instanceof byte[]) {
+            return new JDBCContentBytes(session.getDataSource(), (byte[]) object);
+        }
         return object;
     }
 
