@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -48,8 +47,8 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 {
     private static final Log log = Log.getLog(SQLServerMetaModel.class);
 
-    public SQLServerMetaModel(IConfigurationElement cfg) {
-        super(cfg);
+    public SQLServerMetaModel() {
+        super();
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {

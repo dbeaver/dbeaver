@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.netezza.model;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
@@ -35,8 +34,8 @@ import java.sql.SQLException;
  */
 public class NetezzaMetaModel extends GenericMetaModel
 {
-    public NetezzaMetaModel(IConfigurationElement cfg) {
-        super(cfg);
+    public NetezzaMetaModel() {
+        super();
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {

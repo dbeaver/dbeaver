@@ -22,13 +22,13 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModelDescriptor;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -37,39 +37,16 @@ import java.util.Map;
 
 public class GenericDataSourceProvider extends JDBCDataSourceProvider {
 
-    private final Map<String, GenericMetaModel> metaModels = new HashMap<>();
+    private final Map<String, GenericMetaModelDescriptor> metaModels = new HashMap<>();
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.generic.meta";
 
     public GenericDataSourceProvider()
     {
-        metaModels.put(GenericConstants.META_MODEL_STANDARD, new GenericMetaModel(GenericConstants.META_MODEL_STANDARD));
+        metaModels.put(GenericConstants.META_MODEL_STANDARD, new GenericMetaModelDescriptor());
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
         IConfigurationElement[] extElements = extensionRegistry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
-            String metaClass = ext.getAttribute("class");
-            GenericMetaModel metaModel;
-            if (!CommonUtils.isEmpty(metaClass)) {
-                try {
-                    Class<? extends GenericMetaModel> metaClassImpl = AbstractDescriptor.getObjectClass(
-                        Platform.getBundle(ext.getContributor().getName()),
-                        metaClass,
-                        GenericMetaModel.class);
-                    if (metaClassImpl != null) {
-                        metaModel = metaClassImpl
-                            .getConstructor(IConfigurationElement.class)
-                            .newInstance(ext);
-                    } else {
-                        log.warn("Generic meta model implementation '" + metaClass + "' not found");
-                        continue;
-                    }
-                } catch (Exception e) {
-                    log.error(e);
-                    continue;
-                }
-            } else {
-                //for (IConfigurationElement metaChild : ext.getChildren("meta")) {
-                metaModel = new GenericMetaModel(ext);
-            }
+            GenericMetaModelDescriptor metaModel = new GenericMetaModelDescriptor(ext);
             metaModels.put(metaModel.getId(), metaModel);
             for (String driverClass : metaModel.getDriverClass()) {
                 metaModels.put(driverClass, metaModel);
@@ -134,7 +111,7 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
         @NotNull DBPDataSourceContainer container)
         throws DBException
     {
-        GenericMetaModel metaModel = null;
+        GenericMetaModelDescriptor metaModel = null;
         Object metaModelId = container.getDriver().getDriverParameter(GenericConstants.PARAM_META_MODEL);
         if (metaModelId != null && !GenericConstants.META_MODEL_STANDARD.equals(metaModelId)) {
             metaModel = metaModels.get(metaModelId.toString());
@@ -149,10 +126,11 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
         if (metaModel == null) {
             metaModel = getStandardMetaModel();
         }
-        return metaModel.createDataSource(monitor, container);
+        GenericMetaModel metaModelInstance = metaModel.getInstance();
+        return metaModelInstance.createDataSource(monitor, container);
     }
 
-    protected GenericMetaModel getStandardMetaModel() {
+    protected GenericMetaModelDescriptor getStandardMetaModel() {
         return metaModels.get(GenericConstants.META_MODEL_STANDARD);
     }
 

@@ -16,16 +16,15 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.generic;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericTypeCache;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericTrigger;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericTypeCache;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
@@ -60,11 +59,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile("\\n\\s*Position: ([0-9]+)");
 
     public PostgreMetaModel() {
-        super("postgresql", new String[] {"org.postgresql.Driver"});
-    }
-
-    public PostgreMetaModel(IConfigurationElement cfg) {
-        super(cfg);
+        super();
     }
 
     @Override
