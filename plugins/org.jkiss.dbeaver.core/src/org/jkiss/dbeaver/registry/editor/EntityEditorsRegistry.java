@@ -52,6 +52,7 @@ public class EntityEditorsRegistry implements DBERegistry {
     private List<EntityEditorDescriptor> entityEditors = new ArrayList<EntityEditorDescriptor>();
     private Map<String, List<EntityEditorDescriptor>> positionsMap = new HashMap<String, List<EntityEditorDescriptor>>();
     private List<EntityManagerDescriptor> entityManagers = new ArrayList<EntityManagerDescriptor>();
+    private Map<String, EntityManagerDescriptor> entityManagerMap = new HashMap<>();
 
     public EntityEditorsRegistry(IExtensionRegistry registry)
     {
@@ -74,7 +75,9 @@ public class EntityEditorsRegistry implements DBERegistry {
                 entityManagers.add(descriptor);
             }
         }
-
+        for (EntityManagerDescriptor em : entityManagers) {
+            entityManagerMap.put(em.getObjectType().getImplName(), em);
+        }
     }
 
     public void dispose()
@@ -85,6 +88,7 @@ public class EntityEditorsRegistry implements DBERegistry {
             descriptor.dispose();
         }
         entityManagers.clear();
+        entityManagerMap.clear();
     }
 
     public EntityEditorDescriptor getMainEntityEditor(DBPObject object)
@@ -114,6 +118,12 @@ public class EntityEditorsRegistry implements DBERegistry {
 
     private EntityManagerDescriptor getEntityManager(Class objectType)
     {
+        // 1. Try exact match
+        EntityManagerDescriptor manager = entityManagerMap.get(objectType.getName());
+        if (manager != null) {
+            return manager;
+        }
+        // 2. Find first applicable
         for (EntityManagerDescriptor descriptor : entityManagers) {
             if (descriptor.appliesToType(objectType)) {
                 return descriptor;

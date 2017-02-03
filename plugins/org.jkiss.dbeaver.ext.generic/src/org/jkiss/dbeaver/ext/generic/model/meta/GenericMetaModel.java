@@ -234,7 +234,7 @@ public class GenericMetaModel {
         }
     }
 
-    protected GenericProcedure createProcedureImpl(
+    public GenericProcedure createProcedureImpl(
         GenericStructContainer container,
         String procedureName,
         String specificName,
@@ -301,6 +301,19 @@ public class GenericMetaModel {
 
     public boolean supportsUpsertStatement() {
         return false;
+    }
+
+    public GenericTable createTableImpl(
+        GenericStructContainer container,
+        @Nullable String tableName,
+        @Nullable String tableType,
+        @Nullable JDBCResultSet dbResult)
+    {
+        return new GenericTable(
+            container,
+            tableName,
+            tableType,
+            dbResult);
     }
 
     public GenericTableIndex createIndexImpl(
