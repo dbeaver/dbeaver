@@ -53,6 +53,10 @@ public class EntityManagerDescriptor extends AbstractDescriptor
         return id;
     }
 
+    public ObjectType getObjectType() {
+        return objectType;
+    }
+
     public boolean appliesToType(Class clazz)
     {
         return objectType.matchesType(clazz);
@@ -73,5 +77,10 @@ public class EntityManagerDescriptor extends AbstractDescriptor
             throw new IllegalStateException("Error instantiating entity manager '" + clazz.getName() + "'", ex);
         }
         return managerInstance;
+    }
+
+    @Override
+    public String toString() {
+        return id;
     }
 }

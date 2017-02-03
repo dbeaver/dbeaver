@@ -120,6 +120,11 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     }
 
     @Override
+    public GenericTable createTableImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+        return new SQLiteTable(container, tableName, tableType, dbResult);
+    }
+
+    @Override
     public boolean isSystemTable(GenericTable table) {
         return table.getName().startsWith("sqlite_");
     }

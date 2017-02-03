@@ -61,24 +61,21 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     private String ddl;
 
     public GenericTable(
-        GenericStructContainer container)
-    {
-        this(container, null, null, null, false);
-    }
-
-    public GenericTable(
         GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,
-        @Nullable String remarks,
-        boolean persisted)
+        @Nullable JDBCResultSet dbResult)
     {
-        super(container, tableName, persisted);
+        super(container, tableName, dbResult != null);
         this.tableType = tableType;
         if (this.tableType == null) {
             this.tableType = "";
         }
-        this.description = remarks;
+
+        if (dbResult != null) {
+            this.description = GenericUtils.safeGetString(container.getTableCache().tableObject, dbResult, JDBCConstants.REMARKS);
+        }
+
         final GenericMetaModel metaModel = container.getDataSource().getMetaModel();
         this.isView = metaModel.isView(this);
         this.isSystem = metaModel.isSystemTable(this);

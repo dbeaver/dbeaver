@@ -8,6 +8,12 @@
         	driverClass="org.sqlite.JDBC"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <manager
+            class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableManager"
+            objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
                 class="org.jkiss.dbeaver.ext.sqlite.model.data.SQLiteValueHandlerProvider"

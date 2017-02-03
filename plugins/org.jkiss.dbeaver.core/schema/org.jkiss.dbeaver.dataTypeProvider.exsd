@@ -95,7 +95,14 @@
 
    <element name="datasource">
       <complexType>
-         <attribute name="id" type="string" use="required">
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string">
             <annotation>
                <documentation>
                   

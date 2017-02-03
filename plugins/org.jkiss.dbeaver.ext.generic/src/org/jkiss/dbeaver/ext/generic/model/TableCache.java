@@ -61,9 +61,9 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
         INVALID_TABLE_TYPES.add("TRIGGER");
     }
 
-    private final GenericDataSource dataSource;
-    private final GenericMetaObject tableObject;
-    private final GenericMetaObject columnObject;
+    final GenericDataSource dataSource;
+    final GenericMetaObject tableObject;
+    final GenericMetaObject columnObject;
 
     TableCache(GenericDataSource dataSource)
     {
@@ -96,49 +96,30 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
     {
         String tableName = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME);
         String tableType = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_TYPE);
-        String remarks = GenericUtils.safeGetString(tableObject, dbResult, JDBCConstants.REMARKS);
 
         if (CommonUtils.isEmpty(tableName)) {
             log.debug("Empty table name" + (owner == null ? "" : " in container " + owner.getName()));
             return null;
         }
 
+        if (CommonUtils.isEmpty(tableName)) {
+            return null;
+        }
         if (tableType != null && INVALID_TABLE_TYPES.contains(tableType)) {
             // Bad table type. Just skip it
             return null;
         }
-
-        boolean isSystemTable = tableType != null && tableType.toUpperCase().contains("SYSTEM");
-        if (isSystemTable && !owner.getDataSource().getContainer().isShowSystemObjects()) {
-            return null;
-        }
-
-        // Skip "recycled" tables (Oracle)
-        if (CommonUtils.isEmpty(tableName) || tableName.startsWith("BIN$")) {
-            return null;
-        }
-/*
-        // Do not read table type object
-        // Actually dunno what to do with it and it often throws stupid warnings in debug
-
-        String typeName = GenericUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
-        String typeCatalogName = GenericUtils.safeGetString(dbResult, JDBCConstants.TYPE_CAT);
-        String typeSchemaName = GenericUtils.safeGetString(dbResult, JDBCConstants.TYPE_SCHEM);
-        GenericCatalog typeCatalog = CommonUtils.isEmpty(typeCatalogName) ?
-            null :
-            getDataSourceContainer().getCatalog(context.getProgressMonitor(), typeCatalogName);
-        GenericSchema typeSchema = CommonUtils.isEmpty(typeSchemaName) ?
-            null :
-            typeCatalog == null ?
-                getDataSourceContainer().getSchema(context.getProgressMonitor(), typeSchemaName) :
-                typeCatalog.getSchema(typeSchemaName);
-*/
-        return new GenericTable(
+        GenericTable table = getDataSource().getMetaModel().createTableImpl(
             owner,
             tableName,
             tableType,
-            remarks,
-            true);
+            dbResult);
+
+        boolean isSystemTable = table.isSystem();
+        if (isSystemTable && !owner.getDataSource().getContainer().isShowSystemObjects()) {
+            return null;
+        }
+        return table;
     }
 
     @Override
