@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
@@ -154,13 +155,24 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         if (column.getDataType() != null) {
             typeClause += " USING " + DBUtils.getQuotedIdentifier(column) + "::" + column.getDataType().getName();
         }
-        actionList.add(new SQLDatabasePersistAction("Set column type", prefix + "TYPE " + typeClause));
-        actionList.add(new SQLDatabasePersistAction("Set column nullability", prefix + (column.isRequired() ? "SET" : "DROP") + " NOT NULL"));
+        if (command.getProperty("dataType") != null || command.getProperty("maxLength") != null || command.getProperty("precision") != null || command.getProperty("scale") != null) {
+            actionList.add(new SQLDatabasePersistAction("Set column type", prefix + "TYPE " + typeClause));
+        }
+        if (command.getProperty("required") != null) {
+            actionList.add(new SQLDatabasePersistAction("Set column nullability", prefix + (column.isRequired() ? "SET" : "DROP") + " NOT NULL"));
+        }
 
-        if (CommonUtils.isEmpty(column.getDefaultValue())) {
-            actionList.add(new SQLDatabasePersistAction("Drop column default", prefix + "DROP DEFAULT"));
-        } else {
-            actionList.add(new SQLDatabasePersistAction("Set column default", prefix + "SET DEFAULT " + column.getDefaultValue()));
+        if (command.getProperty("defaultValue") != null) {
+            if (CommonUtils.isEmpty(column.getDefaultValue())) {
+                actionList.add(new SQLDatabasePersistAction("Drop column default", prefix + "DROP DEFAULT"));
+            } else {
+                actionList.add(new SQLDatabasePersistAction("Set column default", prefix + "SET DEFAULT " + column.getDefaultValue()));
+            }
+        }
+        if (command.getProperty("description") != null) {
+            actionList.add(new SQLDatabasePersistAction("Set column comment", "COMMENT ON COLUMN " +
+                DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
+                " IS '" + SQLUtils.escapeString(CommonUtils.toString(column.getDescription())) + "'"));
         }
     }
 
