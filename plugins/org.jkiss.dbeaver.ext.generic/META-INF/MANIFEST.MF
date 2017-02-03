@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Generic Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.generic; singleton:=true
-Bundle-Version: 2.3.36
-Bundle-Release-Date: 20170130
+Bundle-Version: 2.3.37
+Bundle-Release-Date: 20170228
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
