@@ -38,8 +38,11 @@ public class SQLiteUtils {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load PostgreSQL description")) {
             return JDBCUtils.queryString(
                 session,
-                "SELECT sql FROM sqlite_master\n" +
-                "WHERE type=? AND name=? AND tbl_name=?", objectType.name(), sourceObjectName, table.getName());
+                "SELECT sql FROM sqlite_master WHERE type=? AND name=? AND tbl_name=?\n" +
+                "UNION ALL\n" +
+                "SELECT sql FROM sqlite_temp_master WHERE type=? AND name=? AND tbl_name=?\n",
+                objectType.name(), sourceObjectName, table.getName(),
+                objectType.name(), sourceObjectName, table.getName());
         } catch (Exception e) {
             log.debug(e);
             return null;
