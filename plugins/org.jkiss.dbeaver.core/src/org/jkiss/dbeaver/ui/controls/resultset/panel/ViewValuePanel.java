@@ -200,10 +200,11 @@ public class ViewValuePanel implements IResultSetPanel {
                     valueSaving = true;
                     try {
                         super.updateValue(value, updatePresentation);
-                        presentation.updateValueView();
                     } finally {
                         valueSaving = false;
                     }
+                    presentation.updateValueView();
+                    viewValue(false);
                 }
             };
             updateActions = true;
