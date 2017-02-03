@@ -18,9 +18,8 @@ package org.jkiss.dbeaver.ext.informix.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.informix.InformixUtils;
@@ -42,8 +41,8 @@ public class InformixMetaModel extends GenericMetaModel
 {
     private static final Log log = Log.getLog(InformixMetaModel.class);
 
-    public InformixMetaModel(IConfigurationElement cfg) {
-        super(cfg);
+    public InformixMetaModel() {
+        super();
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {

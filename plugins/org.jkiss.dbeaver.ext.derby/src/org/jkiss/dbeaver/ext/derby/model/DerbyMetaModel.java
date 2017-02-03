@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.derby.model;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -43,8 +42,8 @@ public class DerbyMetaModel extends GenericMetaModel
 {
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" at line ([0-9]+), column ([0-9]+)\\.");
 
-    public DerbyMetaModel(IConfigurationElement cfg) {
-        super(cfg);
+    public DerbyMetaModel() {
+        super();
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {

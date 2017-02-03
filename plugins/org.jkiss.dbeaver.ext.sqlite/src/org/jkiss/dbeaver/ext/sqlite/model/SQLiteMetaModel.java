@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.model;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -50,8 +49,8 @@ import java.util.List;
 public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
 {
 
-    public SQLiteMetaModel(IConfigurationElement cfg) {
-        super(cfg);
+    public SQLiteMetaModel() {
+        super();
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {

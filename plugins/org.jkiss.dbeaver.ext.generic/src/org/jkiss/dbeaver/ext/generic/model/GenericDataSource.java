@@ -172,7 +172,7 @@ public class GenericDataSource extends JDBCDataSource
     @Nullable
     public GenericMetaObject getMetaObject(String id)
     {
-        return metaModel.getObject(id);
+        return metaModel.getMetaObject(id);
     }
 
     @Override

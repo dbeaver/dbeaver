@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.vertica.model;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -45,8 +44,8 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
 {
     private static final Log log = Log.getLog(VerticaMetaModel.class);
 
-    public VerticaMetaModel(IConfigurationElement cfg) {
-        super(cfg);
+    public VerticaMetaModel() {
+        super();
     }
 
     @Override

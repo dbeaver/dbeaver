@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.teradata.model;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -44,8 +43,8 @@ import java.sql.SQLException;
  */
 public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandlerProvider
 {
-    public TeradataMetaModel(IConfigurationElement cfg) {
-        super(cfg);
+    public TeradataMetaModel() {
+        super();
     }
 
     @Override

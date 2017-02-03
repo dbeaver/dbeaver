@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.h2.model;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -37,8 +36,8 @@ import java.util.List;
  */
 public class H2MetaModel extends GenericMetaModel
 {
-    public H2MetaModel(IConfigurationElement cfg) {
-        super(cfg);
+    public H2MetaModel() {
+        super();
     }
 
     @Override

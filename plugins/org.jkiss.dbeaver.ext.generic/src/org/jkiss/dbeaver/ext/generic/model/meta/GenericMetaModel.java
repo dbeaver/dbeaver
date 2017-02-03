@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.generic.model.meta;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -35,8 +34,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
-import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
@@ -49,55 +46,18 @@ import java.util.*;
 public class GenericMetaModel {
 
     private static final Log log = Log.getLog(GenericMetaModel.class);
+    GenericMetaModelDescriptor descriptor;
 
-    private String id;
-    private final Map<String, GenericMetaObject> objects = new HashMap<>();
-    private String[] driverClass;
-
-    public GenericMetaModel(IConfigurationElement cfg)
+    public GenericMetaModel()
     {
-        this.id = cfg.getAttribute(RegistryConstants.ATTR_ID);
-        IConfigurationElement[] objectList = cfg.getChildren("object");
-        if (!ArrayUtils.isEmpty(objectList)) {
-            for (IConfigurationElement childConfig : objectList) {
-                GenericMetaObject metaObject = new GenericMetaObject(childConfig);
-                objects.put(metaObject.getType(), metaObject);
-            }
-        }
-        String driverClassList = cfg.getAttribute("driverClass");
-        if (CommonUtils.isEmpty(driverClassList)) {
-            this.driverClass = new String[0];
-        } else {
-            this.driverClass = driverClassList.split(",");
-        }
     }
 
-    public GenericMetaModel(String id, String[] driverClass) {
-        this.id = id;
-        this.driverClass = driverClass;
-    }
-
-    public GenericMetaModel(String id) {
-        this.id = id;
+    public GenericMetaObject getMetaObject(String id) {
+        return descriptor == null ? null : descriptor.getObject(id);
     }
 
     public GenericDataSource createDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         return new GenericDataSource(monitor, container, this);
-    }
-
-    public String getId()
-    {
-        return id;
-    }
-
-    @NotNull
-    public String[] getDriverClass() {
-        return driverClass;
-    }
-
-    public GenericMetaObject getObject(String id)
-    {
-        return objects.get(id);
     }
 
     public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container)
@@ -355,4 +315,5 @@ public class GenericMetaModel {
     public boolean isView(GenericTable table) {
         return table.getTableType().toUpperCase(Locale.ENGLISH).contains("VIEW");
     }
+
 }
