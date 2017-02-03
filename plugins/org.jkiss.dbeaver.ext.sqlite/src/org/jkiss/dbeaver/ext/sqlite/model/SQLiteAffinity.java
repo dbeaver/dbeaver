@@ -16,24 +16,32 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.model;
 
+import org.jkiss.dbeaver.model.DBPDataKind;
+
 import java.sql.Types;
 
 public enum SQLiteAffinity {
 
-    INTEGER(Types.BIGINT, 19, 0),
-    REAL(Types.DOUBLE, 17, 17),
-    NUMERIC(Types.NUMERIC, 17, 17),
-    TEXT(Types.VARCHAR, Integer.MAX_VALUE, 0),
-    BLOB(Types.BINARY, Integer.MAX_VALUE, 0);
+    INTEGER(DBPDataKind.NUMERIC, Types.BIGINT, 19, 0),
+    REAL(DBPDataKind.NUMERIC, Types.DOUBLE, 17, 17),
+    NUMERIC(DBPDataKind.NUMERIC, Types.NUMERIC, 17, 17),
+    TEXT(DBPDataKind.STRING, Types.VARCHAR, Integer.MAX_VALUE, 0),
+    BLOB(DBPDataKind.BINARY, Types.BINARY, Integer.MAX_VALUE, 0);
 
+    private final DBPDataKind dataKind;
     private final int valueType;
     private final int precision;
     private final int scale;
 
-    SQLiteAffinity(int valueType, int precision, int scale) {
+    SQLiteAffinity(DBPDataKind dataKind, int valueType, int precision, int scale) {
+        this.dataKind = dataKind;
         this.valueType = valueType;
         this.precision = precision;
         this.scale = scale;
+    }
+
+    public DBPDataKind getDataKind() {
+        return dataKind;
     }
 
     public int getValueType() {
