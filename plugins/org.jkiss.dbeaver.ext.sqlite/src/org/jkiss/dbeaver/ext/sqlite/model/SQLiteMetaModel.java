@@ -119,5 +119,10 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
         return new SQLiteDataTypeCache(container);
     }
 
+    @Override
+    public boolean isSystemTable(GenericTable table) {
+        return table.getName().startsWith("sqlite_");
+    }
+
 
 }

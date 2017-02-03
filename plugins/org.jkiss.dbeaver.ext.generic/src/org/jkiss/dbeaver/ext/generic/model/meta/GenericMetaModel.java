@@ -333,4 +333,13 @@ public class GenericMetaModel {
     public boolean useCatalogInObjectNames() {
         return true;
     }
+
+    public boolean isSystemTable(GenericTable table) {
+        final String tableType = table.getTableType().toUpperCase(Locale.ENGLISH);
+        return tableType.contains("SYSTEM");
+    }
+
+    public boolean isView(GenericTable table) {
+        return table.getTableType().toUpperCase(Locale.ENGLISH).contains("VIEW");
+    }
 }
