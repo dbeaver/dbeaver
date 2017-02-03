@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -74,14 +75,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     {
         super(container, tableName, persisted);
         this.tableType = tableType;
-        this.description = remarks;
-        if (!CommonUtils.isEmpty(this.getTableType())) {
-            String type = this.getTableType().toUpperCase(Locale.ENGLISH);
-            this.isView = (type.contains("VIEW"));
-            this.isSystem =
-                (type.contains("SYSTEM")) || // general rule
-                    (tableName != null && tableName.contains("RDB$"));    // [JDBC: Firebird]
+        if (this.tableType == null) {
+            this.tableType = "";
         }
+        this.description = remarks;
+        final GenericMetaModel metaModel = container.getDataSource().getMetaModel();
+        this.isView = metaModel.isView(this);
+        this.isSystem = metaModel.isSystemTable(this);
     }
 
     @Override

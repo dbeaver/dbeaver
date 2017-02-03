@@ -177,4 +177,10 @@ public class FireBirdMetaModel extends GenericMetaModel
         }
         return null;
     }
+
+    @Override
+    public boolean isSystemTable(GenericTable table) {
+        final String tableName = table.getName();
+        return tableName.contains("RDB$");    // [JDBC: Firebird]
+    }
 }
