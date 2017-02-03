@@ -47,11 +47,7 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
-        if (value instanceof JDBCContentAbstract) {
-            ((JDBCContentAbstract) value).bindParameter(session, statement, paramType, paramIndex);
-        } else {
-            statement.setObject(paramIndex, value);
-        }
+        statement.setObject(paramIndex, value);
     }
 
     @NotNull
@@ -63,9 +59,6 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
     @Nullable
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
-        if (object instanceof byte[]) {
-            return new JDBCContentBytes(session.getDataSource(), (byte[]) object);
-        }
         return object;
     }
 

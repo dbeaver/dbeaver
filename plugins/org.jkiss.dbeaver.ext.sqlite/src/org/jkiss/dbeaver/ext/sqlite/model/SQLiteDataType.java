@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.model;
 
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 
 public class SQLiteDataType extends JDBCDataType<SQLiteDataSource> {
@@ -29,5 +30,10 @@ public class SQLiteDataType extends JDBCDataType<SQLiteDataSource> {
 
     public SQLiteAffinity getAffinity() {
         return affinity;
+    }
+
+    @Override
+    public DBPDataKind getDataKind() {
+        return affinity.getDataKind();
     }
 }
