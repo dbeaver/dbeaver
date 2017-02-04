@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -123,11 +124,25 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return (PostgreSchema) parentObject;
     }
 
+    /**
+     * Table columns
+     * @param monitor progress monitor
+     * @throws DBException
+     */
     @Override
     public List<PostgreTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().tableCache.getChildren(monitor, getContainer(), this);
+    }
+
+    public List<PostgreTableColumn> getCachedAttributes()
+    {
+        final DBSObjectCache<PostgreTableBase, PostgreTableColumn> childrenCache = getContainer().tableCache.getChildrenCache(this);
+        if (childrenCache != null) {
+            return childrenCache.getCachedObjects();
+        }
+        return Collections.emptyList();
     }
 
     @Override
