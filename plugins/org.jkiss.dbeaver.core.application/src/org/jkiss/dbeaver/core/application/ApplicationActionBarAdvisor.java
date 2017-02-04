@@ -35,6 +35,9 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 
+import java.util.Locale;
+import java.util.TimeZone;
+
 /**
  * An action bar advisor is responsible for creating, adding, and disposing of the
  * actions added to a workbench window. Each window will be populated with
@@ -203,4 +206,20 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
     }
 
+    @Override
+    protected void fillStatusLine(IStatusLineManager statusLine) {
+
+        final String tzName = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT);
+        final String localeName = Locale.getDefault().toString();
+        {
+            StatusLineContributionItem tzItem = new StatusLineContributionItem("Time Zone", StatusLineContributionItem.CALC_TRUE_WIDTH);
+            tzItem.setText(tzName);
+            statusLine.add(tzItem);
+        }
+        {
+            StatusLineContributionItem localeItem = new StatusLineContributionItem("Locale", StatusLineContributionItem.CALC_TRUE_WIDTH);
+            localeItem.setText(localeName);
+            statusLine.add(localeItem);
+        }
+    }
 }
