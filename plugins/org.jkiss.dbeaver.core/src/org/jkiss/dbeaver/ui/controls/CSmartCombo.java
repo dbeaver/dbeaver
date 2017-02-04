@@ -93,6 +93,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             @Override
             public void handleEvent(Event event)
             {
+                if (isDisposed()) {
+                    return;
+                }
                 if (CSmartCombo.this.popup == event.widget) {
                     popupEvent(event);
                     return;
@@ -148,6 +151,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         DBeaverUI.asyncExec(new Runnable() {
             @Override
             public void run() {
+                if (isDisposed()) {
+                    return;
+                }
                 defBackground = text.getBackground();
                 text.setEditable(false);
                 setBackground(defBackground);
