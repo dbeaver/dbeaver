@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.core.application.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.actions.common.EmergentExitAction;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
+import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
@@ -209,16 +210,16 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     @Override
     protected void fillStatusLine(IStatusLineManager statusLine) {
 
-        final String tzName = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT);
-        final String localeName = Locale.getDefault().toString();
         {
-            StatusLineContributionItem tzItem = new StatusLineContributionItem("Time Zone", StatusLineContributionItem.CALC_TRUE_WIDTH);
-            tzItem.setText(tzName);
+            StatusLineContributionItemEx tzItem = new StatusLineContributionItemEx("Time Zone");
+            tzItem.setText(TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT));
+            tzItem.setToolTip(TimeZone.getDefault().getDisplayName(true, TimeZone.LONG));
             statusLine.add(tzItem);
         }
         {
-            StatusLineContributionItem localeItem = new StatusLineContributionItem("Locale", StatusLineContributionItem.CALC_TRUE_WIDTH);
-            localeItem.setText(localeName);
+            StatusLineContributionItemEx localeItem = new StatusLineContributionItemEx("Locale");
+            localeItem.setText(Locale.getDefault().toString());
+            localeItem.setToolTip(Locale.getDefault().getDisplayName());
             statusLine.add(localeItem);
         }
     }
