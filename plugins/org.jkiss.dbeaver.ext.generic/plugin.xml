@@ -629,7 +629,8 @@
                     class="org.apache.phoenix.jdbc.PhoenixDriver"
                     sampleURL="jdbc:phoenix:{host}"
                     webURL="http://phoenix.apache.org/"
-                    description="Driver for Apache Phoenix HBase Database">
+                    description="Driver for Apache Phoenix HBase Database"
+                    category="Hadoop">
                     <parameter name="omit-type-cache" value="true"/>
                     <file type="jar" path="maven:/org.apache.phoenix:phoenix-core:RELEASE"/>
                 </driver>
@@ -725,7 +726,8 @@
                     sampleURL="jdbc:hive2://{host}[:{port}]/{database}"
                     defaultPort="10000"
                     description="Apache Hive JDBC"
-                    webURL="https://cwiki.apache.org/confluence/display/Hive/Home">
+                    webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
+                    category="Hadoop">
                     <file type="jar" path="maven:/org.apache.hive:hive-jdbc:RELEASE"/>
                     <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
                 </driver>
@@ -736,7 +738,8 @@
                     sampleURL="jdbc:drill:zk={host}[:{port}][;schema={database}]"
                     defaultPort="2181"
                     description="Apache Drill JDBC"
-                    webURL="https://drill.apache.org/">
+                    webURL="https://drill.apache.org/"
+                    category="Hadoop">
                     <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc:RELEASE"/>
                 </driver>
 
