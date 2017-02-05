@@ -756,7 +756,7 @@
                 <!-- Virtuoso  -->
                 <driver
                     id="virtuoso_opensource"
-                    label="OpenLink Virtuoso"
+                    label="Virtuoso"
                     class="virtuoso.jdbc4.Driver"
                     sampleURL="jdbc:virtuoso://{host}:{port}/DATABASE={database}/CHARSET=UTF-8"
                     defaultPort="1111"
@@ -764,6 +764,20 @@
                     webURL="https://github.com/openlink/virtuoso-opensource">
                     <file type="jar" path="https://github.com/openlink/virtuoso-opensource/raw/develop/7/libsrc/JDBCDriverType4/virtjdbc4.jar"/>
                 </driver>
+
+                <!-- Infiniflux -->
+<!--
+                <driver
+                        id="infiniflux"
+                        label="Infiniflux"
+                        class="iflux.jdbc.driver.IfluxDriver"
+                        sampleURL="jdbc:Iflux://{host}[:{port}]/ifluxdb"
+                        defaultPort="5656"
+                        description="INFINIFLUX standard driver"
+                        webURL="http://infiniflux.com">
+                    <file type="jar" path="http://www.infiniflux.com/dist/iflux.jar"/>
+                </driver>
+-->
 
             </drivers>
 
