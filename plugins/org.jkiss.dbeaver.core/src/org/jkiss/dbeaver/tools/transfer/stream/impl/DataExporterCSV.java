@@ -43,6 +43,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private static final String PROP_DELIMITER = "delimiter";
     private static final String PROP_HEADER = "header";
     private static final String PROP_QUOTE_CHAR = "quoteChar";
+    private static final String PROP_NULL_STRING = "nullString";
     public static final char DEF_DELIMITER = ',';
     public static final String DEF_QUOTE_CHAR = "\"";
 
@@ -56,6 +57,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private char quoteChar = '"';
     private boolean useQuotes = true;
     private String rowDelimiter;
+    private String nullString;
     private HeaderPosition headerPosition;
     private PrintWriter out;
     private List<DBDAttributeBinding> columns;
@@ -86,6 +88,8 @@ public class DataExporterCSV extends StreamExporterAbstract {
         if (!CommonUtils.isEmpty(quoteStr)) {
             quoteChar = quoteStr.charAt(0);
         }
+        Object nullStringProp = site.getProperties().get(PROP_NULL_STRING);
+        nullString = nullStringProp == null ? null : nullStringProp.toString();
         useQuotes = quoteChar != ' ';
         out = site.getWriter();
         rowDelimiter = GeneralUtils.getDefaultLineSeparator();
@@ -134,7 +138,9 @@ public class DataExporterCSV extends StreamExporterAbstract {
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns.get(i);
             if (DBUtils.isNullValue(row[i])) {
-                // just skip it
+                if (!CommonUtils.isEmpty(nullString)) {
+                    out.write(nullString);
+                }
             } else if (row[i] instanceof DBDContent) {
                 // Content
                 // Inline textual content and handle binaries in some special way
