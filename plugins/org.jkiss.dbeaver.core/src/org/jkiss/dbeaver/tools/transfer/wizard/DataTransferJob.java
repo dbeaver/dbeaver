@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -71,11 +72,17 @@ public class DataTransferJob extends AbstractJob {
 
     private void showResult(final long time, final boolean hasErrors)
     {
-        UIUtils.showMessageBox(
-            null,
-            "Data transfer",
-            "Data transfer completed " + (hasErrors ? "with errors " : "") + "(" + RuntimeUtils.formatExecutionTime(time) + ")",
-            hasErrors ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
+        // Run async to avoid blocking progress monitor dialog
+        DBeaverUI.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                UIUtils.showMessageBox(
+                    null,
+                    "Data transfer",
+                    "Data transfer completed " + (hasErrors ? "with errors " : "") + "(" + RuntimeUtils.formatExecutionTime(time) + ")",
+                    hasErrors ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
+            }
+        });
     }
 
     private boolean transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe)
