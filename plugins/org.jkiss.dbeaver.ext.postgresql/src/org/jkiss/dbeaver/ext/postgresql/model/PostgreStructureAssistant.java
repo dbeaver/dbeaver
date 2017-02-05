@@ -120,24 +120,21 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                 }
             }
         }
-        if (!caseSensitive) {
-            objectNameMask = objectNameMask.toLowerCase(Locale.ENGLISH);
-        }
 
         if (objectType == RelationalObjectType.TYPE_TABLE) {
-            findTablesByMask(session, nsList, objectNameMask, maxResults, references);
+            findTablesByMask(session, nsList, objectNameMask, caseSensitive, maxResults, references);
         } else if (objectType == RelationalObjectType.TYPE_CONSTRAINT) {
-            findConstraintsByMask(session, nsList, objectNameMask, maxResults, references);
+            findConstraintsByMask(session, nsList, objectNameMask, caseSensitive, maxResults, references);
         } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
-            findProceduresByMask(session, nsList, objectNameMask, maxResults, references);
+            findProceduresByMask(session, nsList, objectNameMask, caseSensitive, maxResults, references);
         } else if (objectType == RelationalObjectType.TYPE_TABLE_COLUMN) {
-            findTableColumnsByMask(session, nsList, objectNameMask, maxResults, references);
+            findTableColumnsByMask(session, nsList, objectNameMask, caseSensitive, maxResults, references);
         } else if (objectType == RelationalObjectType.TYPE_DATA_TYPE) {
-            findDataTypesByMask(session, nsList, objectNameMask, maxResults, references);
+            findDataTypesByMask(session, nsList, objectNameMask, caseSensitive, maxResults, references);
         }
     }
 
-    private void findTablesByMask(JDBCSession session, @Nullable final List<PostgreSchema> schema, String tableNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findTablesByMask(JDBCSession session, @Nullable final List<PostgreSchema> schema, String tableNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -145,7 +142,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         // Load tables
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT x.oid,x.relname,x.relnamespace,x.relkind FROM pg_catalog.pg_class x " +
-                "WHERE x.relkind in('r','v','m') AND x.relname LIKE ? " +
+                "WHERE x.relkind in('r','v','m') AND x.relname " + (caseSensitive ? "LIKE" : "ILIKE") + " ? " +
                 (CommonUtils.isEmpty(schema) ? "" : " AND x.relnamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
                 " ORDER BY x.relname LIMIT " + maxResults)) {
             dbStat.setString(1, tableNameMask);
@@ -181,7 +178,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findProceduresByMask(JDBCSession session, @Nullable final List<PostgreSchema> schema, String procNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findProceduresByMask(JDBCSession session, @Nullable final List<PostgreSchema> schema, String procNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -189,7 +186,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         // Load procedures
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT DISTINCT x.oid,x.proname,x.pronamespace FROM pg_catalog.pg_proc x " +
-                "WHERE x.proname LIKE ? " +
+                "WHERE x.proname " + (caseSensitive ? "LIKE" : "ILIKE") + " ? " +
                 (CommonUtils.isEmpty(schema) ? "" : " AND x.pronamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
                 " ORDER BY x.proname LIMIT " + maxResults)) {
             dbStat.setString(1, procNameMask);
@@ -221,7 +218,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findConstraintsByMask(JDBCSession session, @Nullable final List<PostgreSchema> schema, String constrNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findConstraintsByMask(JDBCSession session, @Nullable final List<PostgreSchema> schema, String constrNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -229,7 +226,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         // Load constraints
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT x.oid,x.conname,x.connamespace FROM pg_catalog.pg_constraint x " +
-                "WHERE x.conname LIKE ? " +
+                "WHERE x.conname " + (caseSensitive ? "LIKE" : "ILIKE") + " ? " +
                 (CommonUtils.isEmpty(schema) ? "" : " AND x.connamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
                 " ORDER BY x.conname LIMIT " + maxResults)) {
             dbStat.setString(1, constrNameMask);
@@ -261,7 +258,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findTableColumnsByMask(JDBCSession session, @Nullable final List<PostgreSchema> schema, String columnNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findTableColumnsByMask(JDBCSession session, @Nullable final List<PostgreSchema> schema, String columnNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -270,7 +267,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT x.attname,x.attrelid,x.atttypid,c.relnamespace " +
                 "FROM pg_catalog.pg_attribute x, pg_catalog.pg_class c\n" +
-                "WHERE c.oid=x.attrelid AND x.attname LIKE ? " +
+                "WHERE c.oid=x.attrelid AND x.attname " + (caseSensitive ? "LIKE" : "ILIKE") + " ? " +
                 (CommonUtils.isEmpty(schema) ? "" : " AND c.relnamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
                 " ORDER BY x.attname LIMIT " + maxResults)) {
             dbStat.setString(1, columnNameMask);
@@ -306,7 +303,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findDataTypesByMask(JDBCSession session, List<PostgreSchema> catalog, String objectNameMask, int maxResults, List<DBSObjectReference> references) {
+    private void findDataTypesByMask(JDBCSession session, List<PostgreSchema> catalog, String objectNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> references) {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
     }
