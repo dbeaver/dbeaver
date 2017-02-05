@@ -51,52 +51,11 @@
                     <execution>
                         <id>archive-products</id>
                         <goals>
-                            <goal>archive-products</goal>
+                            <!--<goal>archive-products</goal>-->
                         </goals>
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>tycho-p2-repository-plugin</artifactId>
-                <version>${tycho-version}</version>
-                <configuration>
-                    <includeAllDependencies>false</includeAllDependencies>
-                </configuration>
-            </plugin>
-
-<!--
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.7</version>
-                <executions>
-                    <execution>
-                        <id>process-product-info</id>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/content/</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <includeEmptyDirs>true</includeEmptyDirs>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}/../../../packaging/content/</directory>
-                                </resource>
-                                <resource>
-                                    <directory>${basedir}/content/</directory>
-                                </resource>
-                            </resources>
-                        </configuration>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                    </execution>
-
-                </executions>
-            </plugin>
--->
-
 
         </plugins>
     </build>
