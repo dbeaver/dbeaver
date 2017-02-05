@@ -232,7 +232,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
 
                     switch (msgResult) {
                         case SWT.ABORT:
-                            return true;
+                            return false;
                         case SWT.IGNORE:
                             instanceLoc.set(defaultHomeURL, false);
                             keepTrying = false;
