@@ -19,18 +19,29 @@ package org.jkiss.dbeaver.ext.oracle.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.FindReplaceDocumentAdapter;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
+import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureArgument;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolder;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class PackageNavigateHandler extends AbstractHandler //implements IElementUpdater
 {
@@ -50,12 +61,44 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
                 ((EntityEditor) entityEditor).switchFolder("source.definition");
                 SQLEditorBase sqlEditor = entityEditor.getAdapter(SQLEditorBase.class);
                 if (sqlEditor != null) {
-
+                    final Document document = sqlEditor.getDocument();
+                    if (document != null) {
+                        String procRegex = procedure.getProcedureType().name() + "\\s+" + procedure.getName();
+                        final Collection<OracleProcedureArgument> parameters = getProcedureArguments(procedure);
+                        if (parameters != null) {
+                            List<OracleProcedureArgument> inParams = new ArrayList<>();
+                            for (OracleProcedureArgument arg : parameters) {
+                                if (arg.getParameterKind() != DBSProcedureParameterKind.OUT) {
+                                    inParams.add(arg);
+                                }
+                            }
+                            if (!inParams.isEmpty()) {
+                                procRegex += "\\s*\\([^\\)]+\\)";
+                            }
+                        }
+                        final FindReplaceDocumentAdapter findAdapter = new FindReplaceDocumentAdapter(document);
+                        try {
+                            final IRegion procRegion = findAdapter.find(0, procRegex, true, false, false, true);
+                            if (procRegion != null) {
+                                sqlEditor.selectAndReveal(procRegion.getOffset(), procRegion.getLength());
+                            }
+                        } catch (BadLocationException e) {
+                            log.error("Error finding procedure source", e);
+                        }
+                    }
                 }
-
             }
         }
         return null;
+    }
+
+    private Collection<OracleProcedureArgument> getProcedureArguments(OracleProcedurePackaged procedure) {
+        try {
+            return procedure.getParameters(VoidProgressMonitor.INSTANCE);
+        } catch (DBException e) {
+            log.error("Error reading procedure parameters", e);
+            return null;
+        }
     }
 
     private OracleProcedurePackaged getSelectedProcedure(ExecutionEvent event)
