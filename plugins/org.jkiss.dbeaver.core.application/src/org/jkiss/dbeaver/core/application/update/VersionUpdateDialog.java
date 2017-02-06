@@ -144,7 +144,7 @@ class VersionUpdateDialog extends Dialog {
             final IWorkbenchWindow window = DBeaverUI.getActiveWorkbenchWindow();
             CheckForUpdateAction.activateStandardHandler(window);
             try {
-                ActionUtils.runCommand(CheckForUpdateAction.P2_UPDATE_COMMAND, PlatformUI.getWorkbench());
+                ActionUtils.runCommand(CheckForUpdateAction.P2_UPDATE_COMMAND, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
             } finally {
                 CheckForUpdateAction.deactivateStandardHandler(window);
             }
