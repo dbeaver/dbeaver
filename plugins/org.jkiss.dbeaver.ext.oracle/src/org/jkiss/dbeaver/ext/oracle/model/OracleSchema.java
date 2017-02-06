@@ -371,7 +371,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                     "\tFROM SYS.ALL_ALL_TABLES t\n" +
                     "\tWHERE t.OWNER=? AND NESTED='NO'" + (object == null && objectName == null ? "": " AND t.TABLE_NAME=?") + "\n" +
                 "UNION ALL\n" +
-                    "\tSELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " o.OWNER,o.OBJECT_NAME as TABLE_NAME,'VIEW' as OBJECT_TYPE,o.STATUS,NULL,NULL,NULL,NULL,NULL,NULL,o.TEMPORARY,o.SECONDARY,NULL,NULL \n" +
+                    "\tSELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " o.OWNER,o.OBJECT_NAME as TABLE_NAME,'VIEW' as OBJECT_TYPE,o.STATUS,NULL,NULL,NULL,NULL,NULL,NULL,o.TEMPORARY,o.SECONDARY,NULL,0 \n" +
                     "\tFROM SYS.ALL_OBJECTS o \n" +
                     "\tWHERE o.OWNER=? AND o.OBJECT_TYPE='VIEW'" + (object == null && objectName == null  ? "": " AND o.OBJECT_NAME=?") + "\n"
                 );
