@@ -22,12 +22,12 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
+import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 
 /**
  * Oracle source definition editor
  */
-public class OracleSourceDefinitionEditor extends SQLEditorNested<OracleSourceObject> {
+public class OracleSourceDefinitionEditor extends SQLSourceViewer<OracleSourceObject> {
 
     @Override
     protected String getCompileCommandId()
