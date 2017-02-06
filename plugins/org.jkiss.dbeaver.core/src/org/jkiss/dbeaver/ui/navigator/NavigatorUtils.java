@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
@@ -56,10 +55,10 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
@@ -258,6 +257,21 @@ public class NavigatorUtils {
             }
         });
         return menuMgr;
+    }
+
+    public static void executeNodeAction(DBXTreeNodeHandler.Action action, Object node, IServiceLocator serviceLocator) {
+        String defCommandId = null;
+        if (action == DBXTreeNodeHandler.Action.open) {
+            defCommandId = CoreCommands.CMD_OBJECT_OPEN;
+        }
+        String actionCommand = getNodeActionCommand(action, node, defCommandId);
+        if (actionCommand != null) {
+            ActionUtils.runCommand(actionCommand, serviceLocator);
+        } else {
+            // do nothing
+            // TODO: implement some other behavior
+        }
+
     }
 
     public static String getNodeActionCommand(DBXTreeNodeHandler.Action action, Object node, String defCommand) {

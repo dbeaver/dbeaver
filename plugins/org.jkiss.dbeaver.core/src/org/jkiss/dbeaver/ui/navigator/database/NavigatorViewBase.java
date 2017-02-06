@@ -26,7 +26,6 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -34,7 +33,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
-import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
@@ -150,8 +148,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                                 break;
                         }
                     } else {
-                        String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, CoreCommands.CMD_OBJECT_OPEN);
-                        ActionUtils.runCommand(commandID, getSite().getWorkbenchWindow());
+                        NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, getSite().getWorkbenchWindow());
                     }
                 }
             }
