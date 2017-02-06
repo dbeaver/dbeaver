@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.struct.DirectObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.struct.*;
@@ -168,7 +169,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             final IRegion hlRegion = new Region(wordRegion.identStart, wordRegion.identEnd - wordRegion.identStart);
             IHyperlink[] links = new IHyperlink[tlc.references.size()];
             for (int i = 0, objectsSize = tlc.references.size(); i < objectsSize; i++) {
-                links[i] = new EntityHyperlink(tlc.references.get(i), hlRegion);
+                links[i] = new EntityHyperlink(editor.getSite(), tlc.references.get(i), hlRegion);
             }
             return links;
         }
@@ -225,9 +226,16 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                                 }
                             }
                             if (childContainer == null) {
-                                // Bad container - stop search
-                                return Status.CANCEL_STATUS;
-                            } else if (childContainer instanceof DBSObjectContainer) {
+                                // Container is not direct child of schema/catalog. Let's try struct assistant
+                                final List<DBSObjectReference> objReferences = structureAssistant.findObjectsByMask(monitor, null, structureAssistant.getAutoCompleteObjectTypes(), containerNames[0], false, true, 1);
+                                if (objReferences.size() == 1) {
+                                    childContainer = objReferences.get(0).resolveObject(monitor);
+                                }
+                                if (childContainer == null) {
+                                    return Status.CANCEL_STATUS;
+                                }
+                            }
+                            if (childContainer instanceof DBSObjectContainer) {
                                 container = (DBSObjectContainer) childContainer;
                             }
                         }
@@ -258,10 +266,21 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                     }
                 }
 
-                DBSObjectType[] objectTypes = structureAssistant.getHyperlinkObjectTypes();
-                Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, container, objectTypes, objectName, caseSensitive, false, 10);
-                if (!CommonUtils.isEmpty(objects)) {
-                    cache.references.addAll(objects);
+                DBSObject targetObject = null;
+                if (container != null) {
+                    final String fixedName = DBObjectNameCaseTransformer.transformName(getExecutionContext().getDataSource(), objectName);
+                    if (fixedName != null) {
+                        targetObject = container.getChild(monitor, fixedName);
+                    }
+                }
+                if (targetObject != null) {
+                    cache.references.add(new DirectObjectReference(container, null, targetObject));
+                } else {
+                    DBSObjectType[] objectTypes = structureAssistant.getHyperlinkObjectTypes();
+                    Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, container, objectTypes, objectName, caseSensitive, false, 10);
+                    if (!CommonUtils.isEmpty(objects)) {
+                        cache.references.addAll(objects);
+                    }
                 }
             } catch (DBException e) {
                 log.warn(e);

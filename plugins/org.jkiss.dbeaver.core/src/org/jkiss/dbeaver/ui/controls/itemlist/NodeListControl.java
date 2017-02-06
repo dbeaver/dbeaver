@@ -20,7 +20,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -104,10 +104,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
     protected void openNodeEditor(DBNNode node) {
-        IWorkbenchWindow workbenchWindow = workbenchSite != null ?
-            workbenchSite.getWorkbenchWindow() :
+        IServiceLocator serviceLocator = workbenchSite != null ?
+            workbenchSite :
             DBeaverUI.getActiveWorkbenchWindow();
-        NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, workbenchWindow);
+        NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, serviceLocator);
     }
 
     public NodeListControl(
