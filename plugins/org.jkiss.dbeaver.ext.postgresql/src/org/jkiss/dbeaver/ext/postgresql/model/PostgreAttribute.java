@@ -152,14 +152,14 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    @Property(viewable = true, editable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 22)
+    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 22)
     public int getPrecision()
     {
         return super.getPrecision();
     }
 
     @Override
-    @Property(viewable = true, editable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 23)
+    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 23)
     public int getScale()
     {
         return super.getScale();
