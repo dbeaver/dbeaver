@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.InvalidRegistryObjectException;
 import org.eclipse.jface.text.templates.TemplateContextType;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -372,8 +373,34 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 if (!CommonUtils.isEmpty(child.getId())) {
                     treeNodeMap.put(child.getId(), child);
                 }
+                loadTreeHandlers(child, config);
                 loadTreeIcon(child, config);
                 loadTreeChildren(config, child);
+            }
+        }
+    }
+
+    private void loadTreeHandlers(DBXTreeNode node, IConfigurationElement config)
+    {
+        IConfigurationElement[] handlerElements = config.getChildren("handler");
+        if (!ArrayUtils.isEmpty(handlerElements)) {
+            for (IConfigurationElement iconElement : handlerElements) {
+                try {
+                    DBXTreeNodeHandler.Action action = DBXTreeNodeHandler.Action.valueOf(iconElement.getAttribute("action"));
+                    String performName = iconElement.getAttribute("perform");
+                    String command = iconElement.getAttribute("command");
+                    DBXTreeNodeHandler.Perform perform;
+                    if (!CommonUtils.isEmpty(performName)) {
+                        perform = DBXTreeNodeHandler.Perform.valueOf(performName);
+                    } else if (!CommonUtils.isEmpty(command)) {
+                        perform = DBXTreeNodeHandler.Perform.command;
+                    } else {
+                        perform = DBXTreeNodeHandler.Perform.none;
+                    }
+                    node.addActionHandler(action, perform, command);
+                } catch (Exception e) {
+                    log.error("Error adding node handler", e);
+                }
             }
         }
     }

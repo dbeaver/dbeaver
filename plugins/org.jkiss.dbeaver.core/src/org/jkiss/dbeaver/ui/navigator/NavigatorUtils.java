@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -173,13 +174,14 @@ public class NavigatorUtils {
                 Menu m = (Menu)e.widget;
                 DBNNode node = getSelectedNode(viewer.getSelection());
                 if (node != null && !node.isLocked() && node.allowsOpen()) {
+                    String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, CoreCommands.CMD_OBJECT_OPEN);
                     // Dirty hack
                     // Get contribution item from menu item and check it's ID
                     for (MenuItem item : m.getItems()) {
                         Object itemData = item.getData();
                         if (itemData instanceof IContributionItem) {
                             String contribId = ((IContributionItem)itemData).getId();
-                            if (contribId != null && contribId.equals(CoreCommands.CMD_OBJECT_OPEN)) {
+                            if (contribId != null && contribId.equals(commandID)) {
                                 m.setDefaultItem(item);
                             }
                         }
@@ -256,6 +258,16 @@ public class NavigatorUtils {
             }
         });
         return menuMgr;
+    }
+
+    public static String getNodeActionCommand(DBXTreeNodeHandler.Action action, Object node, String defCommand) {
+        if (node instanceof DBNDatabaseNode) {
+            DBXTreeNodeHandler handler = ((DBNDatabaseNode) node).getMeta().getHandler(action);
+            if (handler != null && handler.getPerform() == DBXTreeNodeHandler.Perform.command && !CommonUtils.isEmpty(handler.getCommand())) {
+                return handler.getCommand();
+            }
+        }
+        return defCommand;
     }
 
     public static void addDragAndDropSupport(final Viewer viewer)
