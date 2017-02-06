@@ -79,6 +79,9 @@ public class OracleProcedureArgument implements DBSProcedureParameter, DBSTypedO
                 procedure.getDataSource(),
                 typeOwner,
                 typeName);
+            if (this.dataType == null) {
+                this.packageTypeName = typeOwner + "." + typeName;
+            }
         } else if (this.packageTypeName != null) {
             packageTypeName = typeName + "." + packageTypeName;
         }
@@ -162,7 +165,7 @@ public class OracleProcedureArgument implements DBSProcedureParameter, DBSTypedO
     @Override
     public String getTypeName()
     {
-        return type.getName();
+        return type == null ? packageTypeName : type.getName();
     }
 
     @Override
@@ -173,13 +176,13 @@ public class OracleProcedureArgument implements DBSProcedureParameter, DBSTypedO
     @Override
     public int getTypeID()
     {
-        return type.getTypeID();
+        return type == null ? 0 : type.getTypeID();
     }
 
     @Override
     public DBPDataKind getDataKind()
     {
-        return type.getDataKind();
+        return type == null ? DBPDataKind.OBJECT : type.getDataKind();
     }
 
     @Override
