@@ -52,6 +52,7 @@ public abstract class DBXTreeNode
     //private final boolean embeddable;
     private Expression visibleIf;
     private DBXTreeNode recursiveLink;
+    private List<DBXTreeNodeHandler> handlers = null;
 
     public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, String id, boolean navigable, boolean inline, boolean virtual, boolean standalone, String visibleIf, String recursive)
     {
@@ -247,6 +248,24 @@ public abstract class DBXTreeNode
     public Expression getVisibleIf()
     {
         return visibleIf;
+    }
+
+    public void addActionHandler(DBXTreeNodeHandler.Action action, DBXTreeNodeHandler.Perform perform, String command) {
+        if (handlers == null) {
+            handlers = new ArrayList<>();
+        }
+        handlers.add(new DBXTreeNodeHandler(action, perform, command));
+    }
+
+    public DBXTreeNodeHandler getHandler(DBXTreeNodeHandler.Action action) {
+        if (handlers != null) {
+            for (DBXTreeNodeHandler handler : handlers) {
+                if (handler.getAction() == action) {
+                    return handler;
+                }
+            }
+        }
+        return null;
     }
 
     private static JexlContext makeContext(final DBNNode node)

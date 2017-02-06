@@ -101,7 +101,7 @@ public final class DBValueFormatting {
             case ROWID:
                 return DBIcon.TYPE_ROWID;
             case OBJECT:
-                if (typeName.contains(DBConstants.TYPE_NAME_UUID) || typeName.contains(DBConstants.TYPE_NAME_UUID2)) {
+                if (typeName != null && (typeName.contains(DBConstants.TYPE_NAME_UUID) || typeName.contains(DBConstants.TYPE_NAME_UUID2))) {
                     return DBIcon.TYPE_UUID;
                 }
                 return DBIcon.TYPE_OBJECT;

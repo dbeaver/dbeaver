@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.INavigatorListener;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -46,6 +48,7 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
@@ -106,7 +109,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         IWorkbenchWindow workbenchWindow = workbenchSite != null ?
             workbenchSite.getWorkbenchWindow() :
             DBeaverUI.getActiveWorkbenchWindow();
-        NavigatorUtils.openNavigatorNode(node, workbenchWindow);
+        String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, CoreCommands.CMD_OBJECT_OPEN);
+        ActionUtils.runCommand(commandID, workbenchWindow);
     }
 
     public NodeListControl(
