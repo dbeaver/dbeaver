@@ -194,9 +194,18 @@ public abstract class SQLEditorNested<T extends DBSObject>
         return null;
     }
 
+    public boolean isDocumentLoaded() {
+        final IDocumentProvider documentProvider = getDocumentProvider();
+        if (documentProvider instanceof SQLEditorNested.ObjectDocumentProvider) {
+            return ((SQLEditorNested.ObjectDocumentProvider) documentProvider).sourceLoaded;
+        }
+        return true;
+    }
+
     private class ObjectDocumentProvider extends BaseTextDocumentProvider {
 
         private String sourceText;
+        private boolean sourceLoaded;
 
         @Override
         public boolean isReadOnly(Object element) {
@@ -240,6 +249,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
             } else {
                 // Set text
                 document.set(sourceText);
+                sourceLoaded = true;
             }
 
             return document;

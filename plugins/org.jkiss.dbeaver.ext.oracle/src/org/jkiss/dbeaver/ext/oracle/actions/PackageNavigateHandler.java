@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.oracle.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
@@ -29,14 +31,19 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureArgument;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
@@ -61,44 +68,76 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
                 ((EntityEditor) entityEditor).switchFolder("source.definition");
                 SQLEditorBase sqlEditor = entityEditor.getAdapter(SQLEditorBase.class);
                 if (sqlEditor != null) {
-                    final Document document = sqlEditor.getDocument();
-                    if (document != null) {
-                        String procRegex = procedure.getProcedureType().name() + "\\s+" + procedure.getName();
-                        final Collection<OracleProcedureArgument> parameters = getProcedureArguments(procedure);
-                        if (parameters != null) {
-                            List<OracleProcedureArgument> inParams = new ArrayList<>();
-                            for (OracleProcedureArgument arg : parameters) {
-                                if (arg.getParameterKind() != DBSProcedureParameterKind.OUT) {
-                                    inParams.add(arg);
-                                }
-                            }
-                            if (!inParams.isEmpty()) {
-                                procRegex += "\\s*\\([^\\)]+\\)";
-                            }
-                        }
-                        final FindReplaceDocumentAdapter findAdapter = new FindReplaceDocumentAdapter(document);
-                        try {
-                            final IRegion procRegion = findAdapter.find(0, procRegex, true, false, false, true);
-                            if (procRegion != null) {
-                                sqlEditor.selectAndReveal(procRegion.getOffset(), procRegion.getLength());
-                            }
-                        } catch (BadLocationException e) {
-                            log.error("Error finding procedure source", e);
-                        }
-                    }
+                    new NavigateJob(procedure, sqlEditor).schedule();
                 }
             }
         }
         return null;
     }
 
-    private Collection<OracleProcedureArgument> getProcedureArguments(OracleProcedurePackaged procedure) {
-        try {
-            return procedure.getParameters(VoidProgressMonitor.INSTANCE);
-        } catch (DBException e) {
-            log.error("Error reading procedure parameters", e);
-            return null;
+    static class NavigateJob extends AbstractJob {
+
+        private final OracleProcedurePackaged procedure;
+        private final SQLEditorBase sqlEditor;
+
+        public NavigateJob(OracleProcedurePackaged procedure, SQLEditorBase sqlEditor) {
+            super("Navigate procedure '" + procedure.getFullyQualifiedName(DBPEvaluationContext.UI));
+            this.procedure = procedure;
+            this.sqlEditor = sqlEditor;
         }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            try {
+                navigate(monitor);
+            } catch (InterruptedException e) {
+                return Status.CANCEL_STATUS;
+            } catch (DBException e) {
+                return GeneralUtils.makeExceptionStatus(e);
+            }
+            return Status.OK_STATUS;
+        }
+
+        private void navigate(DBRProgressMonitor monitor) throws InterruptedException, DBException {
+            if (sqlEditor instanceof SQLEditorNested) {
+                int checkAttempts = 0;
+                while (!((SQLEditorNested) sqlEditor).isDocumentLoaded() && checkAttempts < 10) {
+                    Thread.sleep(500);
+                    checkAttempts++;
+                }
+            }
+            final Document document = sqlEditor.getDocument();
+            if (document != null) {
+                String procRegex = procedure.getProcedureType().name() + "\\s+" + procedure.getName();
+                final Collection<OracleProcedureArgument> parameters = procedure.getParameters(monitor);
+                if (parameters != null) {
+                    List<OracleProcedureArgument> inParams = new ArrayList<>();
+                    for (OracleProcedureArgument arg : parameters) {
+                        if (arg.getParameterKind() != DBSProcedureParameterKind.OUT && !arg.isResultArgument()) {
+                            inParams.add(arg);
+                        }
+                    }
+                    if (!inParams.isEmpty()) {
+                        procRegex += "\\s*\\([^\\)]+\\)";
+                    }
+                }
+                final FindReplaceDocumentAdapter findAdapter = new FindReplaceDocumentAdapter(document);
+                try {
+                    final IRegion procRegion = findAdapter.find(0, procRegex, true, false, false, true);
+                    if (procRegion != null) {
+                        DBeaverUI.asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                sqlEditor.selectAndReveal(procRegion.getOffset(), procRegion.getLength());
+                            }
+                        });
+                    }
+                } catch (BadLocationException e) {
+                    log.error("Error finding procedure source", e);
+                }
+            }
+        }
+
     }
 
     private OracleProcedurePackaged getSelectedProcedure(ExecutionEvent event)
