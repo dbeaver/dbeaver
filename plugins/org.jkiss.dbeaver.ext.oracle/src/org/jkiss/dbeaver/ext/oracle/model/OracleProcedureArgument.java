@@ -133,6 +133,10 @@ public class OracleProcedureArgument implements DBSProcedureParameter, DBSTypedO
         return name;
     }
 
+    public boolean isResultArgument() {
+        return CommonUtils.isEmpty(name) && dataLevel == 0;
+    }
+
     @Property(viewable = true, order = 11)
     public int getPosition()
     {

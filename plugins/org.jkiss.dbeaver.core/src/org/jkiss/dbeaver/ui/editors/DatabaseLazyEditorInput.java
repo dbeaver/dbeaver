@@ -89,6 +89,10 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput
         return nodeName;
     }
 
+    public String getNodePath() {
+        return nodePath;
+    }
+
     @Override
     public IPersistableElement getPersistable()
     {

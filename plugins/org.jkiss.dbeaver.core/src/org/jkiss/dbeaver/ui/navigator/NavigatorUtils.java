@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -266,7 +263,7 @@ public class NavigatorUtils {
         }
         String actionCommand = getNodeActionCommand(action, node, defCommandId);
         if (actionCommand != null) {
-            ActionUtils.runCommand(actionCommand, serviceLocator);
+            ActionUtils.runCommand(actionCommand, new StructuredSelection(node), serviceLocator);
         } else {
             // do nothing
             // TODO: implement some other behavior

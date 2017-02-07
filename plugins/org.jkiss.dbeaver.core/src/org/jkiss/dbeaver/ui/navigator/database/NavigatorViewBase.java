@@ -148,7 +148,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                                 break;
                         }
                     } else {
-                        NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, getSite().getWorkbenchWindow());
+                        NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, getSite());
                     }
                 }
             }

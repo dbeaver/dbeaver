@@ -268,24 +268,35 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Override
-    public Collection<OracleTableBase> getChildren(@NotNull DBRProgressMonitor monitor)
+    public Collection<DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getAllObjects(monitor, this);
+        List<DBSObject> children = new ArrayList<>();
+        for (OracleTableBase table : tableCache.getAllObjects(monitor, this)) {
+            children.add(table);
+        }
+        for (OraclePackage pack : packageCache.getAllObjects(monitor, this)) {
+            children.add(pack);
+        }
+        return children;
     }
 
     @Override
-    public OracleTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
-        return tableCache.getObject(monitor, this, childName);
+        final OracleTableBase table = tableCache.getObject(monitor, this, childName);
+        if (table != null) {
+            return table;
+        }
+        return packageCache.getObject(monitor, this, childName);
     }
 
     @Override
     public Class<? extends DBSEntity> getChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return OracleTable.class;
+        return DBSEntity.class;
     }
 
     @Override
