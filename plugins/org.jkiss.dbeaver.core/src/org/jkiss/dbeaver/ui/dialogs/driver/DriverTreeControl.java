@@ -60,6 +60,10 @@ public class DriverTreeControl extends FilteredTree {
     }
 
     private static class DriverFilter extends PatternFilter {
+        public DriverFilter() {
+            setIncludeLeadingWildcard(true);
+        }
+
         @Override
         public boolean isElementVisible(Viewer viewer, Object element) {
             Object parent = ((ITreeContentProvider) ((AbstractTreeViewer) viewer)
