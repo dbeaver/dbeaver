@@ -22,7 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * DBSStructureAssistant
@@ -49,7 +49,7 @@ public interface DBSStructureAssistant
      * @throws DBException
      */
     @NotNull
-    Collection<DBSObjectReference> findObjectsByMask(
+    List<DBSObjectReference> findObjectsByMask(
         DBRProgressMonitor monitor,
         @Nullable DBSObject parentObject,
         DBSObjectType[] objectTypes,

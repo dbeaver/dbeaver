@@ -124,7 +124,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         }
         request.wordPart = searchPrefix;
-        if (request.queryType != null && request.wordPart != null) {
+        if (request.wordPart != null) {
             if (editor.getDataSource() != null) {
                 ProposalSearchJob searchJob = new ProposalSearchJob(request);
                 searchJob.schedule();

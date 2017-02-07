@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -63,7 +62,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
 
     @NotNull
     @Override
-    public Collection<DBSObjectReference> findObjectsByMask(
+    public List<DBSObjectReference> findObjectsByMask(
         DBRProgressMonitor monitor,
         DBSObject parentObject,
         DBSObjectType[] objectTypes,

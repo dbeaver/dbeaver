@@ -47,10 +47,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
+import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
@@ -158,14 +155,22 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     } catch (Throwable e) {
                         continue;
                     }
-                    if (editorInput instanceof INavigatorEditorInput && ((INavigatorEditorInput) editorInput).getNavigatorNode() == selectedNode) {
-                        final IEditorPart editor = ref.getEditor(true);
-                        if (editor instanceof ITabbedFolderContainer && defaultFolderId != null) {
-                            // Activate default folder
-                            ((ITabbedFolderContainer)editor).switchFolder(defaultFolderId);
+                    if (editorInput instanceof INavigatorEditorInput) {
+                        boolean matches;
+                        if (editorInput instanceof DatabaseLazyEditorInput) {
+                            matches = selectedNode.getNodeItemPath().equals(((DatabaseLazyEditorInput) editorInput).getNodePath());
+                        } else {
+                            matches = ((INavigatorEditorInput) editorInput).getNavigatorNode() == selectedNode;
                         }
-                        workbenchWindow.getActivePage().activate(editor);
-                        return editor;
+                        if (matches) {
+                            final IEditorPart editor = ref.getEditor(true);
+                            if (editor instanceof ITabbedFolderContainer && defaultFolderId != null) {
+                                // Activate default folder
+                                ((ITabbedFolderContainer) editor).switchFolder(defaultFolderId);
+                            }
+                            workbenchWindow.getActivePage().activate(editor);
+                            return editor;
+                        }
                     }
                 }
             }

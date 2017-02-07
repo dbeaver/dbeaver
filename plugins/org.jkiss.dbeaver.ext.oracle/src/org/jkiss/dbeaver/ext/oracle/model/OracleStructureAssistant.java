@@ -86,7 +86,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
 
     @NotNull
     @Override
-    public Collection<DBSObjectReference> findObjectsByMask(
+    public List<DBSObjectReference> findObjectsByMask(
         DBRProgressMonitor monitor,
         DBSObject parentObject,
         DBSObjectType[] objectTypes,
