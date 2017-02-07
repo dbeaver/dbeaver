@@ -1878,7 +1878,11 @@ public class SQLEditor extends SQLEditorBase implements
             if (error != null) {
                 setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
                 if (!scrollCursorToError(session, result, error)) {
-                    getSelectionProvider().setSelection(originalSelection);
+                    int errorQueryOffset = result.getStatement().getOffset();
+                    int errorQueryLength = result.getStatement().getLength();
+                    if (errorQueryOffset >= 0 && errorQueryLength > 0) {
+                        getSelectionProvider().setSelection(new TextSelection(errorQueryOffset, errorQueryLength));
+                    }
                 }
             } else if (!scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
                 getSelectionProvider().setSelection(originalSelection);
