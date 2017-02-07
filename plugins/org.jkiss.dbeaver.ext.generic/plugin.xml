@@ -769,18 +769,16 @@
                 </driver>
 
                 <!-- Infiniflux -->
-<!--
                 <driver
-                        id="infiniflux"
-                        label="Infiniflux"
-                        class="iflux.jdbc.driver.IfluxDriver"
-                        sampleURL="jdbc:Iflux://{host}[:{port}]/ifluxdb"
-                        defaultPort="5656"
-                        description="INFINIFLUX standard driver"
-                        webURL="http://infiniflux.com">
+                    id="infiniflux"
+                    label="Infiniflux"
+                    class="iflux.jdbc.driver.IfluxDriver"
+                    sampleURL="jdbc:Iflux://{host}[:{port}]/ifluxdb"
+                    defaultPort="5656"
+                    description="INFINIFLUX standard driver"
+                    webURL="http://infiniflux.com">
                     <file type="jar" path="http://www.infiniflux.com/dist/iflux.jar"/>
                 </driver>
--->
 
             </drivers>
 
