@@ -17,10 +17,14 @@
 package org.jkiss.dbeaver.core.application;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.runtime.BaseProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -57,18 +61,20 @@ class DBeaverSettingsImporter {
     private final DBeaverApplication application;
     private final Display display;
 
-    private Shell progressShell;
+    private Shell windowShell;
     private Label progressLabel;
     private ProgressBar progressBar;
     private File driversFolder;
     private File oldWorkspacePath;
+
+    private int shellResult = SWT.NONE;
 
     public DBeaverSettingsImporter(DBeaverApplication application, Display display) {
         this.application = application;
         this.display = display;
     }
 
-    void migrateFromPreviousVersion(final File oldDir, final File newDir) {
+    boolean migrateFromPreviousVersion(final File oldDir, final File newDir) {
         final Properties oldProps = application.readWorkspaceInfo(GeneralUtils.getMetadataFolder(oldDir));
         String oldVersion = oldProps.getProperty(DBeaverApplication.VERSION_PROP_PRODUCT_VERSION);
         if (oldVersion == null) {
@@ -78,6 +84,7 @@ class DBeaverSettingsImporter {
         driversFolder = new File(
             System.getProperty(StandardConstants.ENV_USER_HOME),
             DBConstants.DEFAULT_DRIVERS_FOLDER);
+/*
         int msgResult = application.showMessageBox(
             "DBeaver - Import settings",
             "Settings of previous version (" + oldVersion + ") of " + GeneralUtils.getProductName() + " was found at\n" +
@@ -94,24 +101,98 @@ class DBeaverSettingsImporter {
                 return;
             }
         }
+*/
 
-        progressShell = new Shell(display);
-        progressShell.setText("Import " + GeneralUtils.getProductName() + " configuration");
-        progressShell.setLayout(new GridLayout(1, false));
-        progressLabel = new Label(progressShell, SWT.NONE);
+        Image dbeaverIcon = AbstractUIPlugin.imageDescriptorFromPlugin(DBeaverApplication.APPLICATION_PLUGIN_ID, "icons/dbeaver32.png").createImage();
+        Image dbeaverLogo = AbstractUIPlugin.imageDescriptorFromPlugin(DBeaverApplication.APPLICATION_PLUGIN_ID, "icons/dbeaver64.png").createImage();
+
+        windowShell = new Shell(display);
+        windowShell.setImage(dbeaverIcon);
+        windowShell.setText("Import " + GeneralUtils.getProductName() + " configuration");
+        windowShell.setLayout(new GridLayout(1, false));
+
+        {
+            Group infoGroup = new Group(windowShell, SWT.NONE);
+            infoGroup.setText("Import workspace");
+            infoGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+            GridLayout gl = new GridLayout(2, false);
+            gl.horizontalSpacing = 10;
+            infoGroup.setLayout(gl);
+            Label iconLabel = new Label(infoGroup, SWT.NONE);
+            iconLabel.setImage(dbeaverLogo);
+            iconLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            Label confirmLabel = new Label(infoGroup, SWT.NONE);
+            //confirmLabel.setImage(JFaceResources.getImage(org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_INFO));
+            confirmLabel.setText("Settings of previous version (" + oldVersion + ") of " + GeneralUtils.getProductName() + " was found at\n" +
+                oldDir.getAbsolutePath() + "\n" +
+                "Do you want to import previous version settings? (Recommended).\n\n" +
+                "Make sure previous version of " + GeneralUtils.getProductName() + " isn't running");
+            confirmLabel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        }
+
+        {
+            Composite buttonsPanel = new Composite(windowShell, SWT.NONE);
+            buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            buttonsPanel.setLayout(new GridLayout(2, true));
+            final Button migrateButton = new Button(buttonsPanel, SWT.PUSH);
+            migrateButton.setText("Import workspace");
+
+            final Button skipButton = new Button(buttonsPanel, SWT.PUSH);
+            skipButton.setText("Skip");
+
+            migrateButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            migrateButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    migrateButton.setEnabled(false);
+                    skipButton.setEnabled(false);
+                    progressBar.setVisible(true);
+                    ((GridData)progressBar.getLayoutData()).exclude = false;
+                    windowShell.pack();
+                    migrateWorkspace(oldDir, newDir);
+                }
+            });
+
+            skipButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            skipButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    MessageBox messageBox = new MessageBox(windowShell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+                    messageBox.setText("Skip workspace migration");
+                    messageBox.setMessage("Skipping workspace migration you will loose all previous workspace data.\n\nAre you sure?");
+                    int response = messageBox.open();
+                    if (response == SWT.YES) {
+                        shellResult = SWT.IGNORE;
+                        windowShell.dispose();
+                    }
+                }
+            });
+        }
+
+        progressLabel = new Label(windowShell, SWT.NONE);
         progressLabel.setLayoutData(new GridData(GridData.FILL_BOTH));
-        progressBar = new ProgressBar(progressShell, SWT.SMOOTH);
+        progressBar = new ProgressBar(windowShell, SWT.SMOOTH);
+        progressBar.setVisible(false);
         final GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 30;
         gd.widthHint = 300;
+        gd.exclude = true;
         progressBar.setLayoutData(gd);
-        progressShell.pack();
+        windowShell.pack();
 
         Rectangle screenSize = display.getPrimaryMonitor().getBounds();
-        progressShell.setLocation((screenSize.width - progressShell.getBounds().width) / 2, (screenSize.height - progressShell.getBounds().height) / 2);
+        windowShell.setLocation((screenSize.width - windowShell.getBounds().width) / 2, (screenSize.height - windowShell.getBounds().height) / 2);
 
-        progressShell.open();
+        windowShell.open();
 
+        while (!windowShell.isDisposed ()) {
+            if (!display.readAndDispatch ()) display.sleep ();
+        }
+
+        return (shellResult != SWT.NONE);
+    }
+
+    private void migrateWorkspace(final File oldDir, final File newDir) {
         progressLabel.setText("Counting workspace files...");
         final int totalFiles = countWorkspaceFiles(oldDir);
         progressBar.setMinimum(0);
@@ -143,23 +224,26 @@ class DBeaverSettingsImporter {
             @Override
             public void run() {
                 try {
+                    if (!newDir.exists()) {
+                        if (!newDir.mkdirs()) {
+                            System.err.println("Can't create target workspace directory '" + newDir.getAbsolutePath() + "'");
+                            return;
+                        }
+                    }
                     copyWorkspaceFiles(monitor, DIR_TYPE.WORKSPACE, oldDir, newDir);
                 } finally {
+                    DBeaverApplication.WORKSPACE_MIGRATED = true;
                     display.syncExec(new Runnable() {
                         @Override
                         public void run() {
-                            progressShell.dispose();
+                            showMessageBox("Import completed", "Configuration was imported to '" + newDir.getAbsolutePath() + "'", SWT.ICON_INFORMATION | SWT.OK);
+                            shellResult = SWT.OK;
+                            windowShell.dispose();
                         }
                     });
                 }
             }
         }.start();
-
-        while (!progressShell.isDisposed ()) {
-            if (!display.readAndDispatch ()) display.sleep ();
-        }
-
-        application.showMessageBox("Import completed", "Configuration was imported to '" + newDir.getAbsolutePath() + "'", SWT.ICON_INFORMATION | SWT.OK);
     }
 
     private int countWorkspaceFiles(File dir) {
@@ -214,7 +298,8 @@ class DBeaverSettingsImporter {
                     break;
             }
 
-            monitor.subTask(file.getName());
+            String relPath = file.getAbsolutePath().substring(oldWorkspacePath.getAbsolutePath().length());
+            monitor.subTask(relPath);
             if (file.isDirectory()) {
                 if (parentDirType == DIR_TYPE.METADATA && !file.getName().equals(".plugins")) {
                     // Skip all dirs but plugins
@@ -323,7 +408,7 @@ class DBeaverSettingsImporter {
 
     int showMessageBox(String title, String message, int style) {
         // Can't lock specified path
-        MessageBox messageBox = new MessageBox(progressShell, style);
+        MessageBox messageBox = new MessageBox(windowShell, style);
         messageBox.setText(title);
         messageBox.setMessage(message);
         return messageBox.open();

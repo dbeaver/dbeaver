@@ -17,9 +17,15 @@
 package org.jkiss.dbeaver.core.application;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
@@ -45,7 +51,23 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
         super(configurer);
 
+        if (DBeaverApplication.WORKSPACE_MIGRATED) {
+            refreshProjects();
+        }
+
         DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
+    }
+
+    private void refreshProjects() {
+
+        // Refresh all projects
+        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+            try {
+                project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
+            } catch (CoreException e) {
+                log.error("Error refreshing project '" + project.getName() + "'", e);
+            }
+        }
     }
 
     @Override
@@ -76,8 +98,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         ProgressManagerUtil.SHORT_OPERATION_TIME = 100;
 
         // Configure window
+        Rectangle displaySize = Display.getCurrent().getPrimaryMonitor().getBounds();
         IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
-        configurer.setInitialSize(new Point(800, 600));
+        configurer.setInitialSize(new Point(displaySize.width * 3 / 4, displaySize.height * 3 / 4));
         configurer.setShowCoolBar(true);
         configurer.setShowStatusLine(true);
         configurer.setShowProgressIndicator(true);
