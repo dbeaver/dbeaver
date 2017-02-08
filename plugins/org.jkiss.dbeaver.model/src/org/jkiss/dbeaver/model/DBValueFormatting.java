@@ -36,9 +36,6 @@ import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -224,6 +221,10 @@ public final class DBValueFormatting {
     }
 
     public static String formatBinaryString(@NotNull DBPDataSource dataSource, @NotNull byte[] data, @NotNull DBDDisplayFormat format) {
+        return formatBinaryString(dataSource, data, format, false);
+    }
+
+    public static String formatBinaryString(@NotNull DBPDataSource dataSource, @NotNull byte[] data, @NotNull DBDDisplayFormat format, boolean forceLimit) {
         DBDBinaryFormatter formatter;
         if (format == DBDDisplayFormat.NATIVE && dataSource instanceof SQLDataSource) {
             formatter = ((SQLDataSource) dataSource).getSQLDialect().getNativeBinaryFormatter();
@@ -232,14 +233,15 @@ public final class DBValueFormatting {
         }
         // Convert bytes to string
         int length = data.length;
-        if (format == DBDDisplayFormat.UI) {
+        if (format == DBDDisplayFormat.UI || forceLimit) {
             int maxLength = dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN);
             if (length > maxLength) {
                 length = maxLength;
             }
         }
         String string = formatter.toString(data, 0, length);
-        if (length == data.length) {
+        if (format == DBDDisplayFormat.NATIVE || length == data.length) {
+            // Do not append ... for native formatter - it may contain expressions
             return string;
         }
         return string + "..." + " [" + data.length + "]";
