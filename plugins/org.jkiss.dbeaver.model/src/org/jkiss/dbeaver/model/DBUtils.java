@@ -254,47 +254,50 @@ public final class DBUtils {
         @Nullable String objectName)
         throws DBException
     {
-        if (!CommonUtils.isEmpty(catalogName)) {
+        if (!CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName)) {
+            // We have both both - just search both
             DBSObject catalog = rootSC.getChild(monitor, catalogName);
             if (!(catalog instanceof DBSObjectContainer)) {
                 return null;
             }
             rootSC = (DBSObjectContainer) catalog;
-        } else {
-            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, rootSC);
-            if (objectSelector != null) {
-                final DBSObject so = objectSelector.getDefaultObject();
-                if (so instanceof DBSCatalog) {
-                    rootSC = (DBSObjectContainer) so;
-                }
-            }
-        }
-        if (!CommonUtils.isEmpty(schemaName)) {
             DBSObject schema = rootSC.getChild(monitor, schemaName);
             if (!(schema instanceof DBSObjectContainer)) {
                 return null;
             }
             rootSC = (DBSObjectContainer) schema;
+        } else if (!CommonUtils.isEmpty(catalogName) || !CommonUtils.isEmpty(schemaName)) {
+            // One container name
+            String containerName = !CommonUtils.isEmpty(catalogName) ? catalogName : schemaName;
+            DBSObject sc = rootSC.getChild(monitor, containerName);
+            if (!(sc instanceof DBSObjectContainer)) {
+                // Not found - try to find in selected object
+                DBSObject selectedObject = getSelectedObject(rootSC, false);
+                if (selectedObject instanceof DBSObjectContainer) {
+                    sc = ((DBSObjectContainer) selectedObject).getChild(monitor, containerName);
+                }
+                if (!(sc instanceof DBSObjectContainer)) {
+                    return null;
+                }
+            }
+            rootSC = (DBSObjectContainer) sc;
         }
         if (objectName == null) {
             return rootSC;
         }
-        Class<? extends DBSObject> childType = rootSC.getChildType(monitor);
-        if (DBSTable.class.isAssignableFrom(childType)) {
-            return rootSC.getChild(monitor, objectName);
+        final DBSObject object = rootSC.getChild(monitor, objectName);
+        if (object instanceof DBSEntity) {
+            return object;
         } else {
-            // Child is not a table. May be catalog/schema names was omitted.
-            // Try to use active child
-            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, rootSC);
-            if (objectSelector != null) {
-                DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getDefaultObject());
-                if (objectContainer != null) {
-                    return objectContainer.getChild(monitor, objectName);
-                }
+            // Child is not an entity. May be catalog/schema names was omitted.
+            // Try to use selected object
+            DBSObject selectedObject = DBUtils.getSelectedObject(rootSC, true);
+            if (selectedObject instanceof DBSObjectContainer) {
+                return ((DBSObjectContainer) selectedObject).getChild(monitor, objectName);
             }
 
             // Table container not found
-            return null;
+            return object;
         }
     }
 
