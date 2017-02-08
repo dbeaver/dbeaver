@@ -385,7 +385,9 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     {
         // Refresh syntax
         SQLDialect dialect = getSQLDialect();
-
+        if (dialect == syntaxManager.getDialect()) {
+            return;
+        }
         syntaxManager.init(dialect, getActivePreferenceStore());
         ruleManager.refreshRules(getDataSource(), getEditorInput());
 

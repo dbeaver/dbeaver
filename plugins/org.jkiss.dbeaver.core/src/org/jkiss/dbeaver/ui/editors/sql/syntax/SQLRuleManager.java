@@ -116,9 +116,10 @@ public class SQLRuleManager extends RuleBasedScanner {
 
     public void refreshRules(DBPDataSource dataSource, IEditorInput editorInput)
     {
+        boolean minimalRules = false;
         File file = EditorUtils.getLocalFileFromInput(editorInput);
         if (file != null && file.length() > MAX_FILE_LENGTH_FOR_RULES) {
-            return;
+            minimalRules = true;
         }
         /*final Color backgroundColor = null;unassigned || dataSource != null ?
             getColor(SQLConstants.CONFIG_COLOR_BACKGROUND, SWT.COLOR_WHITE) :
@@ -185,8 +186,10 @@ public class SQLRuleManager extends RuleBasedScanner {
         // Add generic whitespace rule.
         rules.add(new WhitespaceRule(new TextWhiteSpaceDetector()));
 
-        // Add numeric rule
-        rules.add(new NumberRule(numberToken));
+        if (!minimalRules) {
+            // Add numeric rule
+            rules.add(new NumberRule(numberToken));
+        }
 
         DelimiterRule delimRule = new DelimiterRule(syntaxManager.getStatementDelimiters(), delimiterToken);
         rules.add(delimRule);
@@ -202,32 +205,34 @@ public class SQLRuleManager extends RuleBasedScanner {
             }
         }
 
-        // Add word rule for keywords, types, and constants.
-        WordRule wordRule = new WordRule(new SQLWordDetector(), otherToken, true);
-        for (String reservedWord : dialect.getReservedWords()) {
-            wordRule.addWord(reservedWord, keywordToken);
-        }
-        for (String function : dialect.getFunctions(dataSource)) {
-            wordRule.addWord(function, typeToken);
-        }
-        for (String type : dialect.getDataTypes(dataSource)) {
-            wordRule.addWord(type, typeToken);
-        }
-        final String blockHeaderString = dialect.getBlockHeaderString();
-        if (!CommonUtils.isEmpty(blockHeaderString)) {
-            wordRule.addWord(blockHeaderString, blockHeaderToken);
-        }
-        String[][] blockBounds = dialect.getBlockBoundStrings();
-        if (blockBounds != null) {
-            for (String[] block : blockBounds) {
-                if (block.length != 2) {
-                    continue;
-                }
-                wordRule.addWord(block[0], blockBeginToken);
-                wordRule.addWord(block[1], blockEndToken);
+        if (!minimalRules) {
+            // Add word rule for keywords, types, and constants.
+            WordRule wordRule = new WordRule(new SQLWordDetector(), otherToken, true);
+            for (String reservedWord : dialect.getReservedWords()) {
+                wordRule.addWord(reservedWord, keywordToken);
             }
+            for (String function : dialect.getFunctions(dataSource)) {
+                wordRule.addWord(function, typeToken);
+            }
+            for (String type : dialect.getDataTypes(dataSource)) {
+                wordRule.addWord(type, typeToken);
+            }
+            final String blockHeaderString = dialect.getBlockHeaderString();
+            if (!CommonUtils.isEmpty(blockHeaderString)) {
+                wordRule.addWord(blockHeaderString, blockHeaderToken);
+            }
+            String[][] blockBounds = dialect.getBlockBoundStrings();
+            if (blockBounds != null) {
+                for (String[] block : blockBounds) {
+                    if (block.length != 2) {
+                        continue;
+                    }
+                    wordRule.addWord(block[0], blockBeginToken);
+                    wordRule.addWord(block[1], blockEndToken);
+                }
+            }
+            rules.add(wordRule);
         }
-        rules.add(wordRule);
 
         final String blockToggleString = dialect.getBlockToggleString();
         if (!CommonUtils.isEmpty(blockToggleString)) {
@@ -244,8 +249,10 @@ public class SQLRuleManager extends RuleBasedScanner {
             }
         }
 
-        // Parameter rule
-        rules.add(new ParametersRule(parameterToken));
+        if (!minimalRules) {
+            // Parameter rule
+            rules.add(new ParametersRule(parameterToken));
+        }
 
         IRule[] result = new IRule[rules.size()];
         rules.toArray(result);
