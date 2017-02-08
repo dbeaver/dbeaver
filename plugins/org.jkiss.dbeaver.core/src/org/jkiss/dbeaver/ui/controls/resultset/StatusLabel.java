@@ -68,7 +68,7 @@ class StatusLabel extends Composite {
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         statusIcon.setLayoutData(gd);
 
-        statusText = new Text(this, SWT.READ_ONLY);
+        statusText = new Text(this, SWT.SINGLE | SWT.READ_ONLY);
         if (RuntimeUtils.isPlatformWindows()) {
             statusText.setBackground(null);
         } else {
