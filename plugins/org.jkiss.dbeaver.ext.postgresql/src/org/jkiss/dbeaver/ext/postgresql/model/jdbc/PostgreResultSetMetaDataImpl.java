@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.jdbc;
 
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetMetaDataImpl;
@@ -31,6 +32,14 @@ public class PostgreResultSetMetaDataImpl extends JDBCResultSetMetaDataImpl
 
     public PostgreResultSetMetaDataImpl(JDBCResultSet resultSet) throws SQLException {
         super(resultSet);
+    }
+
+    /**
+     * Always return current instance as catalog name
+     */
+    @Override
+    public String getCatalogName(int column) throws SQLException {
+        return ((PostgreDataSource)resultSet.getSession().getDataSource()).getDefaultInstance().getName();
     }
 
     @Override
