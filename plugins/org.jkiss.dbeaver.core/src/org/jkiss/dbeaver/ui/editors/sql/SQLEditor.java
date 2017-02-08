@@ -1063,6 +1063,7 @@ public class SQLEditor extends SQLEditorBase implements
         updateExecutionContext();
 
         if (sashForm == null || sashForm.isDisposed()) {
+            reloadSyntaxRules();
             return;
         }
 
