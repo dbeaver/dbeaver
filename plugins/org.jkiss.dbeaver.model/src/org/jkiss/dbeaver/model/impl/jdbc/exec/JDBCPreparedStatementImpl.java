@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -59,7 +60,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
                 displayString = SQLUtils.quoteString(new String(((RowId) value).getBytes()));
             } else if (value instanceof byte[]) {
                 byte[] bytes = (byte[])value;
-                displayString = session.getDataSource().getSQLDialect().getNativeBinaryFormatter().toString(bytes, 0, bytes.length);
+                displayString = DBValueFormatting.formatBinaryString(session.getDataSource(), bytes, DBDDisplayFormat.NATIVE, true);
             } else {
                 displayString = "DATA(" + (value == null ? DBConstants.NULL_VALUE_LABEL : value.getClass().getSimpleName()) + ")";
             }
