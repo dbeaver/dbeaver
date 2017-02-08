@@ -214,6 +214,7 @@ public class SQLEditor extends SQLEditorBase implements
             onDataSourceChange();
             return true;
         }
+
         // Release ds container
         releaseContainer();
         closeAllJobs();
@@ -221,6 +222,7 @@ public class SQLEditor extends SQLEditorBase implements
         dataSourceContainer = container;
         if (dataSourceContainer != null) {
             dataSourceContainer.getPreferenceStore().addPropertyChangeListener(this);
+            dataSourceContainer.getRegistry().addDataSourceListener(this);
         }
         IEditorInput input = getEditorInput();
         if (input != null) {
@@ -311,8 +313,10 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void releaseContainer() {
         releaseExecutionContext();
+
         if (dataSourceContainer != null) {
             dataSourceContainer.getPreferenceStore().removePropertyChangeListener(this);
+            dataSourceContainer.getRegistry().removeDataSourceListener(this);
             dataSourceContainer.release(this);
             dataSourceContainer = null;
         }
@@ -678,11 +682,6 @@ public class SQLEditor extends SQLEditorBase implements
         throws PartInitException
     {
         super.init(site, editorInput);
-
-        final DBPDataSourceContainer dsContainer = EditorUtils.getInputDataSource(editorInput);
-        if (dsContainer != null) {
-            dsContainer.getRegistry().addDataSourceListener(this);
-        }
     }
 
     @Override
@@ -1123,11 +1122,6 @@ public class SQLEditor extends SQLEditorBase implements
 
         final IEditorInput editorInput = getEditorInput();
         IFile sqlFile = EditorUtils.getFileFromInput(editorInput);
-
-        final DBPDataSourceContainer dsContainer = EditorUtils.getInputDataSource(editorInput);
-        if (dsContainer != null) {
-            dsContainer.getRegistry().removeDataSourceListener(this);
-        }
 
         logViewer = null;
         outputViewer = null;

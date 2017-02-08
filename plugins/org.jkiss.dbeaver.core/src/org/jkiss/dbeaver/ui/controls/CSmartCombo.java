@@ -198,6 +198,10 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     public void setBackground(Color background)
     {
         if (background == null) {
+            if (defBackground == null) {
+                // Not yet initialized
+                return;
+            }
             background = defBackground;
         }
         super.setBackground(background);

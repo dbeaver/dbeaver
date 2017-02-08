@@ -880,7 +880,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             if (element == null) {
                 return DBeaverIcons.getImage(DBIcon.TREE_DATABASE);
             }
-            final DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().findNode((DBPDataSourceContainer) element);
+            DBNModel nm = DBeaverCore.getInstance().getNavigatorModel();
+            nm.ensureProjectLoaded(((DBPDataSourceContainer) element).getRegistry().getProject());
+            final DBNDatabaseNode node = nm.findNode((DBPDataSourceContainer) element);
             return node == null ? null : DBeaverIcons.getImage(node.getNodeIcon());
         }
 
