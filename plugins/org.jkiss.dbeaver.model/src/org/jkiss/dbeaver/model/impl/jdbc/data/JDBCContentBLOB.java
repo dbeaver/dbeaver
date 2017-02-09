@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -247,7 +249,16 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     @Override
     public String getDisplayString(DBDDisplayFormat format)
     {
-        return blob == null && storage == null ? null : "[BLOB]";
+        if (blob == null && storage == null) {
+            return null;
+        }
+        if (storage != null && storage instanceof DBDContentCached) {
+            final Object cachedValue = ((DBDContentCached) storage).getCachedValue();
+            if (cachedValue instanceof byte[]) {
+                return DBValueFormatting.formatBinaryString(dataSource, (byte[]) cachedValue, format);
+            }
+        }
+        return "[BLOB]";
     }
 
 }

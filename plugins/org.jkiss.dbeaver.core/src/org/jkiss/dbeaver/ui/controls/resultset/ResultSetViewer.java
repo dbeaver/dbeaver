@@ -2320,7 +2320,10 @@ public class ResultSetViewer extends Viewer
                                 }
                             }
                             model.setUpdateInProgress(false);
-                            updateStatusMessage();
+                            if (error == null) {
+                                // Update status (update execution statistics)
+                                updateStatusMessage();
+                            }
                             updateFiltersText(error == null);
                             updateToolbar();
                             fireResultSetLoad();
