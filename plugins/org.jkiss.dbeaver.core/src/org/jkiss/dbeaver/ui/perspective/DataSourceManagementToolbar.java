@@ -30,8 +30,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
@@ -713,20 +713,21 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
 
         Composite comboGroup = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(4, false);
-        gl.marginWidth = 5;
-        gl.marginHeight = 0;
-        comboGroup.setLayout(gl);
+        RowLayout layout = new RowLayout(SWT.HORIZONTAL);
+        layout.marginTop = 0;
+        layout.marginBottom = 0;
+        layout.marginWidth = 5;
+        layout.marginHeight = 0;
+
+        comboGroup.setLayout(layout);
 
         final int fontHeight = UIUtils.getFontHeight(parent);
         int comboWidth = fontHeight * 20;
 
         connectionCombo = new CSmartCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new ConnectionLabelProvider());
-        GridData gd = new GridData();
-        gd.widthHint = comboWidth;
-        gd.minimumWidth = comboWidth;
-        gd.grabExcessVerticalSpace = true;
-        connectionCombo.setLayoutData(gd);
+        RowData rd = new RowData();
+        rd.width = comboWidth;
+        connectionCombo.setLayoutData(rd);
         connectionCombo.setVisibleItemCount(15);
         connectionCombo.setWidthHint(comboWidth);
         connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
@@ -774,11 +775,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
         comboWidth = fontHeight * 16;
         databaseCombo = new CSmartCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new DatabaseLabelProvider());
-        gd = new GridData();
-        gd.widthHint = comboWidth;
-        gd.minimumWidth = comboWidth;
-        gd.grabExcessVerticalSpace = true;
-        databaseCombo.setLayoutData(gd);
+        rd = new RowData();
+        rd.width = comboWidth;
+        databaseCombo.setLayoutData(rd);
         databaseCombo.setVisibleItemCount(15);
         databaseCombo.setWidthHint(comboWidth);
         databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip);
@@ -798,12 +797,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
         resultSetSize = new Text(comboGroup, SWT.BORDER);
         resultSetSize.setTextLimit(10);
-        gd = new GridData();
-        gd.widthHint = fontHeight * 4;
-        gd.grabExcessVerticalSpace = true;
-        resultSetSize.setLayoutData(gd);
-
+        rd = new RowData();
+        rd.width = fontHeight * 4;
+        resultSetSize.setLayoutData(rd);
         resultSetSize.setToolTipText(CoreMessages.toolbar_datasource_selector_resultset_segment_size);
+
         final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
             resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS)));
