@@ -28,6 +28,7 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.application.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -50,6 +51,8 @@ import java.util.TimeZone;
  */
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 {
+    private static final Log log = Log.getLog(ApplicationActionBarAdvisor.class);
+
     public static final String M_ALT_HELP = "dbhelp";
 
     protected IActionDelegate emergentExitAction;
@@ -82,9 +85,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         for (IActionSetDescriptor actionSet : actionSets) {
             for (String element : actionSetId) {
-                System.out.println(element);
 
                 if (element.equals(actionSet.getId())) {
+                    log.debug("Disable Eclipse action set '" + actionSet.getId() + "'");
                     IExtension ext = actionSet.getConfigurationElement().getDeclaringExtension();
                     asr.removeExtension(ext, new Object[] { actionSet });
                 }
