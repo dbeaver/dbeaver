@@ -135,7 +135,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (object instanceof QMMStatementExecuteInfo) {
                 QMMStatementExecuteInfo statement = (QMMStatementExecuteInfo) object;
                 //return SQLUtils.stripTransformations(statement.getQueryString());
-                return statement.getQueryString();
+                return CommonUtils.truncateString(statement.getQueryString(), 4000);
             } else if (object instanceof QMMTransactionInfo) {
                 if (((QMMTransactionInfo) object).isCommitted()) {
                     return CoreMessages.controls_querylog_commit;

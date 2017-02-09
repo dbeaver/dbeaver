@@ -256,38 +256,7 @@ public class ResultSetUtils
             schemaName = DBObjectNameCaseTransformer.transformName(dataSource, schemaName);
             entityName = DBObjectNameCaseTransformer.transformName(dataSource, entityName);
         }
-        Class<? extends DBSObject> scChildType = objectContainer.getChildType(monitor);
-        DBSObject entityObject;
-        if (!CommonUtils.isEmpty(catalogName) && scChildType != null &&
-            (DBSSchema.class.isAssignableFrom(scChildType) || DBSTable.class.isAssignableFrom(scChildType))) {
-            // Do not use catalog name
-            // Some data sources do not load catalog list but result set meta data contains one (e.g. DB2 and SQLite)
-            entityObject = DBUtils.getObjectByPath(monitor, objectContainer, null, schemaName, entityName);
-        } else {
-            if (CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName) && scChildType != null && DBSCatalog.class.isAssignableFrom(scChildType)) {
-                // No catalog name specified but metadata supports catalogs (e.g. PostgreSQL)
-                // Catalog specified instead of schema. This may happen if metadata provided by SQL query parser
-                // which doesn't know a difference between catalogs and schemas
-                entityObject = DBUtils.getObjectByPath(monitor, objectContainer, schemaName, null, entityName);
-                if (entityObject == null) {
-                    entityObject = DBUtils.getObjectByPath(monitor, objectContainer, null, schemaName, entityName);
-                }
-                if (entityObject == null) {
-                    // Try using active object
-                    DBSObject selectedObject = DBUtils.getSelectedObject(objectContainer, false);
-                    if (selectedObject != null && selectedObject instanceof DBSCatalog) {
-                        objectContainer = (DBSCatalog)selectedObject;
-                        entityObject = DBUtils.getObjectByPath(monitor, objectContainer, schemaName, null, entityName);
-                        if (entityObject == null) {
-                            entityObject = DBUtils.getObjectByPath(monitor, objectContainer, null, schemaName, entityName);
-                        }
-                    }
-
-                }
-            } else {
-                entityObject = DBUtils.getObjectByPath(monitor, objectContainer, catalogName, schemaName, entityName);
-            }
-        }
+        DBSObject entityObject = DBUtils.getObjectByPath(monitor, objectContainer, catalogName, schemaName, entityName);
         if (entityObject == null) {
             return null;
         } else if (entityObject instanceof DBSEntity) {
