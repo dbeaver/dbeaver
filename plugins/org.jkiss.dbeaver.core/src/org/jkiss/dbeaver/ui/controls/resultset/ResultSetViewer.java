@@ -78,7 +78,6 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.controls.ToolbarVerticalSeparator;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -991,11 +990,11 @@ public class ResultSetViewer extends Viewer
             ToolBarManager editToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
             // handle own commands
-            editToolbar.add(new ToolbarVerticalSeparator());
+            editToolbar.add(new Separator());
             editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES, "Save", null, null, true));
             editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_REJECT_CHANGES, "Cancel", null, null, true));
             editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_GENERATE_SCRIPT, "Script", null, null, true));
-            editToolbar.add(new ToolbarVerticalSeparator());
+            editToolbar.add(new Separator());
             editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
             editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_ADD));
             editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_COPY));
@@ -1006,12 +1005,12 @@ public class ResultSetViewer extends Viewer
         }
         {
             ToolBarManager navToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            navToolbar.add(new ToolbarVerticalSeparator());
+            navToolbar.add(new Separator());
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_FIRST));
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_PREVIOUS));
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_NEXT));
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_LAST));
-            navToolbar.add(new ToolbarVerticalSeparator());
+            navToolbar.add(new Separator());
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_PAGE));
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_ALL));
             navToolbar.createControl(statusBar);
@@ -1019,7 +1018,7 @@ public class ResultSetViewer extends Viewer
         }
         {
             ToolBarManager configToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            configToolbar.add(new ToolbarVerticalSeparator());
+            configToolbar.add(new Separator());
             {
                 //configToolbar.add(new ToggleModeAction());
                 ActionContributionItem item = new ActionContributionItem(new ToggleModeAction());
@@ -1037,9 +1036,9 @@ public class ResultSetViewer extends Viewer
                 ciParam.mode = CommandContributionItem.MODE_FORCE_TEXT;
                 configToolbar.add(new CommandContributionItem(ciParam));
             }
-            configToolbar.add(new ToolbarVerticalSeparator());
+            configToolbar.add(new Separator());
             configToolbar.add(new ConfigAction());
-            configToolbar.add(new ToolbarVerticalSeparator());
+            configToolbar.add(new Separator());
             configToolbar.createControl(statusBar);
             toolbarList.add(configToolbar);
         }
