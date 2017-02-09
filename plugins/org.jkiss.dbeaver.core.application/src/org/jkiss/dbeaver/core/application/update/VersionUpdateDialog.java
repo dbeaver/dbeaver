@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.core.application.update;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -111,6 +110,8 @@ class VersionUpdateDialog extends Dialog {
     protected void createButtonsForButtonBar(Composite parent)
     {
         if (newVersion != null) {
+/*
+            // Disable P2 update. Doesn't work and can't work properly in most cases.
             boolean hasUpdate = Platform.getBundle(CheckForUpdateAction.P2_PLUGIN_ID) != null;
             if (hasUpdate) {
                 createButton(
@@ -119,11 +120,12 @@ class VersionUpdateDialog extends Dialog {
                     "Update",
                     true);
             }
+*/
             createButton(
                 parent,
                 INFO_ID,
                 CoreMessages.dialog_version_update_button_more_info,
-                !hasUpdate);
+                true);
         }
 
         createButton(
