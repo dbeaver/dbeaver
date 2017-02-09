@@ -58,7 +58,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private Listener listener, filter;
     private Font font;
     private Point sizeHint;
-    private Color defBackground;
 
     public CSmartCombo(Composite parent, int style, ILabelProvider labelProvider)
     {
@@ -154,9 +153,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 if (isDisposed()) {
                     return;
                 }
-                defBackground = text.getBackground();
                 text.setEditable(false);
-                setBackground(defBackground);
             }
         });
     }
@@ -197,13 +194,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     @Override
     public void setBackground(Color background)
     {
-        if (background == null) {
-            if (defBackground == null) {
-                // Not yet initialized
-                return;
-            }
-            background = defBackground;
-        }
         super.setBackground(background);
         this.imageLabel.setBackground(background);
         this.text.setBackground(background);

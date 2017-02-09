@@ -21,16 +21,14 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
@@ -45,7 +43,6 @@ import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
-import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
@@ -61,7 +58,6 @@ import java.io.*;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.*;
-import java.util.List;
 
 /**
  * This class controls all aspects of the application's execution
@@ -82,6 +78,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
 
     static final String VERSION_PROP_PRODUCT_NAME = "product-name";
     static final String VERSION_PROP_PRODUCT_VERSION = "product-version";
+    static boolean WORKSPACE_MIGRATED = false;
 
     private static DBeaverApplication instance;
     private IInstanceController instanceServer;
@@ -207,7 +204,9 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             }
             if (previousVersionWorkspaceDir != null) {
                 DBeaverSettingsImporter importer = new DBeaverSettingsImporter(this, getDisplay());
-                importer.migrateFromPreviousVersion(previousVersionWorkspaceDir, homeDir);
+                if (!importer.migrateFromPreviousVersion(previousVersionWorkspaceDir, homeDir)) {
+                    return false;
+                }
             }
         }
         try {
