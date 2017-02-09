@@ -32,6 +32,10 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLDelimiterRule;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.LineCommentRule;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLParameterRule;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLDelimiterSetRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
 import org.jkiss.utils.CommonUtils;
@@ -78,8 +82,8 @@ public class SQLRuleManager extends RuleBasedScanner {
     public void endEval() {
         this.evalMode = false;
         for (IRule rule : fRules) {
-            if (rule instanceof DelimiterRule) {
-                ((DelimiterRule) rule).changeDelimiter(null);
+            if (rule instanceof SQLDelimiterRule) {
+                ((SQLDelimiterRule) rule).changeDelimiter(null);
             }
         }
     }
@@ -191,7 +195,7 @@ public class SQLRuleManager extends RuleBasedScanner {
             rules.add(new NumberRule(numberToken));
         }
 
-        DelimiterRule delimRule = new DelimiterRule(syntaxManager.getStatementDelimiters(), delimiterToken);
+        SQLDelimiterRule delimRule = new SQLDelimiterRule(syntaxManager.getStatementDelimiters(), delimiterToken);
         rules.add(delimRule);
 
         {
@@ -201,7 +205,7 @@ public class SQLRuleManager extends RuleBasedScanner {
                 final SQLSetDelimiterToken setDelimiterToken = new SQLSetDelimiterToken(
                     new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMAND), null, SWT.BOLD));
 
-                rules.add(new SetDelimiterRule(delimRedefine, setDelimiterToken, delimRule));
+                rules.add(new SQLDelimiterSetRule(delimRedefine, setDelimiterToken, delimRule));
             }
         }
 
@@ -251,7 +255,7 @@ public class SQLRuleManager extends RuleBasedScanner {
 
         if (!minimalRules) {
             // Parameter rule
-            rules.add(new ParametersRule(parameterToken));
+            rules.add(new SQLParameterRule(syntaxManager, parameterToken));
         }
 
         IRule[] result = new IRule[rules.size()];
@@ -298,211 +302,6 @@ public class SQLRuleManager extends RuleBasedScanner {
         @Override
         public boolean isWordPart(char c) {
             return delimiter.indexOf(c) != -1;
-        }
-    }
-
-    private static class DelimiterRule implements IRule {
-        private final IToken token;
-        private char[][] delimiters, origDelimiters;
-        private char[] buffer, origBuffer;
-        public DelimiterRule(String[] delimiters, IToken token) {
-            this.token = token;
-            this.origDelimiters = this.delimiters = new char[delimiters.length][];
-            int index = 0, maxLength = 0;
-            for (String delim : delimiters) {
-                this.delimiters[index] = delim.toCharArray();
-                for (int i = 0; i < this.delimiters[index].length; i++) {
-                    this.delimiters[index][i] = Character.toUpperCase(this.delimiters[index][i]);
-                }
-                maxLength = Math.max(maxLength, this.delimiters[index].length);
-                index++;
-            }
-            this.origBuffer = this.buffer = new char[maxLength];
-        }
-
-        @Override
-        public IToken evaluate(ICharacterScanner scanner) {
-            for (int i = 0; ; i++) {
-                int c = scanner.read();
-                boolean matches = false;
-                if (c != ICharacterScanner.EOF) {
-                    c = Character.toUpperCase(c);
-                    for (int k = 0; k < delimiters.length; k++) {
-                        if (i < delimiters[k].length && delimiters[k][i] == c) {
-                            buffer[i] = (char)c;
-                            if (i == delimiters[k].length - 1 && equalsBegin(delimiters[k])) {
-                                // Matched. Check next character
-                                if (Character.isLetterOrDigit(c)) {
-                                    int cn = scanner.read();
-                                    scanner.unread();
-                                    if (Character.isLetterOrDigit(cn)) {
-                                        matches = false;
-                                        continue;
-                                    }
-                                }
-                                return token;
-                            }
-                            matches = true;
-                            break;
-                        }
-                    }
-                }
-                if (!matches) {
-                    for (int k = 0; k <= i; k++) {
-                        scanner.unread();
-                    }
-                    return Token.UNDEFINED;
-                }
-            }
-        }
-
-        private boolean equalsBegin(char[] delimiter) {
-            for (int i = 0; i < delimiter.length; i++) {
-                if (buffer[i] != delimiter[i]) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public void changeDelimiter(String newDelimiter) {
-            if (CommonUtils.isEmpty(newDelimiter)) {
-                this.delimiters = this.origDelimiters;
-                this.buffer = this.origBuffer;
-            } else {
-                this.delimiters = new char[1][];
-                this.delimiters[0] = newDelimiter.toUpperCase(Locale.ENGLISH).toCharArray();
-                this.buffer = new char[newDelimiter.length()];
-            }
-        }
-    }
-
-    private class ParametersRule implements IRule {
-        private final SQLParameterToken parameterToken;
-        private final StringBuilder buffer;
-        private final char anonymousParameterMark;
-        private final char namedParameterPrefix;
-
-        public ParametersRule(SQLParameterToken parameterToken) {
-            this.parameterToken = parameterToken;
-            buffer = new StringBuilder();
-            anonymousParameterMark = syntaxManager.getAnonymousParameterMark();
-            namedParameterPrefix = syntaxManager.getNamedParameterPrefix();
-        }
-
-        @Override
-        public IToken evaluate(ICharacterScanner scanner)
-        {
-            scanner.unread();
-            int prevChar = scanner.read();
-            if (Character.isJavaIdentifierPart(prevChar) ||
-                prevChar == namedParameterPrefix || prevChar == anonymousParameterMark || prevChar == '\\' || prevChar == '/')
-            {
-                return Token.UNDEFINED;
-            }
-            int c = scanner.read();
-            if (c != ICharacterScanner.EOF && (c == anonymousParameterMark || c == namedParameterPrefix)) {
-                buffer.setLength(0);
-                do {
-                    buffer.append((char) c);
-                    c = scanner.read();
-                } while (c != ICharacterScanner.EOF && Character.isJavaIdentifierPart(c));
-                scanner.unread();
-
-                // Check for parameters
-                if (syntaxManager.isAnonymousParametersEnabled()) {
-                    if (buffer.length() == 1 && buffer.charAt(0) == anonymousParameterMark) {
-                        return parameterToken;
-                    }
-                }
-                if (syntaxManager.isParametersEnabled()) {
-                    if (buffer.charAt(0) == namedParameterPrefix && buffer.length() > 1) {
-                        boolean validChars = true;
-                        for (int i = 1; i < buffer.length(); i++) {
-                            if (!Character.isJavaIdentifierPart(buffer.charAt(i))) {
-                                validChars = false;
-                                break;
-                            }
-                        }
-                        if (validChars) {
-                            return parameterToken;
-                        }
-                    }
-                }
-
-                for (int i = buffer.length() - 1; i >= 0; i--) {
-                    scanner.unread();
-                }
-            } else {
-                scanner.unread();
-            }
-            return Token.UNDEFINED;
-        }
-    }
-
-    private static class SetDelimiterRule implements IRule {
-
-        private final String setDelimiterWord;
-        private final SQLSetDelimiterToken setDelimiterToken;
-        private final DelimiterRule delimiterRule;
-
-        public SetDelimiterRule(String setDelimiterWord, SQLSetDelimiterToken setDelimiterToken, DelimiterRule delimiterRule) {
-            this.setDelimiterWord = setDelimiterWord;
-            this.setDelimiterToken = setDelimiterToken;
-            this.delimiterRule = delimiterRule;
-        }
-
-        @Override
-        public IToken evaluate(ICharacterScanner scanner) {
-            // Must be in the beginning of line
-            {
-                scanner.unread();
-                int prevChar = scanner.read();
-                if (prevChar != ICharacterScanner.EOF && prevChar != '\r' && prevChar != '\n') {
-                    return Token.UNDEFINED;
-                }
-            }
-
-            for (int i = 0; i < setDelimiterWord.length(); i++) {
-                char c = setDelimiterWord.charAt(i);
-                final int nextChar = scanner.read();
-                if (Character.toUpperCase(nextChar) != c) {
-                    // Doesn't match
-                    for (int k = 0; k <= i; k++) {
-                        scanner.unread();
-                    }
-                    return Token.UNDEFINED;
-                }
-            }
-            StringBuilder delimBuffer = new StringBuilder();
-
-            int next = scanner.read();
-            if (next == ICharacterScanner.EOF || next == '\n' || next == '\r') {
-                // Empty delimiter
-                scanner.unread();
-            } else {
-                if (!Character.isWhitespace(next)) {
-                    for (int k = 0; k < setDelimiterWord.length() + 1; k++) {
-                        scanner.unread();
-                    }
-                    return Token.UNDEFINED;
-                }
-                // Get everything till the end of line
-                for (; ; ) {
-                    next = scanner.read();
-                    if (next == ICharacterScanner.EOF || next == '\n' || next == '\r') {
-                        break;
-                    }
-                    delimBuffer.append((char) next);
-                }
-                scanner.unread();
-            }
-            if (scanner instanceof SQLRuleManager && ((SQLRuleManager) scanner).isEvalMode()) {
-                final String newDelimiter = delimBuffer.toString().trim();
-                delimiterRule.changeDelimiter(newDelimiter);
-            }
-
-            return setDelimiterToken;
         }
     }
 

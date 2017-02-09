@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.syntax;
+package org.jkiss.dbeaver.ui.editors.sql.syntax.rules;
 
 import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.Token;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 
 public class NestedMultiLineRule extends MultiLineRule
 {
