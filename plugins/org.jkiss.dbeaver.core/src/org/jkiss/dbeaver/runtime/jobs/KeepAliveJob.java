@@ -36,7 +36,7 @@ import java.util.*;
  */
 public class KeepAliveJob extends AbstractJob
 {
-    public static final int MONITOR_INTERVAL = 5000; // once per 5 seconds
+    public static final int MONITOR_INTERVAL = 3000; // once per 3 seconds
 
     private static final Log log = Log.getLog(KeepAliveJob.class);
 
