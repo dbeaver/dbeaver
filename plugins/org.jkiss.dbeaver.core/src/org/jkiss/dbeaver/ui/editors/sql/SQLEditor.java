@@ -302,7 +302,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void releaseExecutionContext() {
-        if (ownContext && executionContext != null) {
+        if (ownContext && executionContext != null && executionContext.isConnected()) {
             // Close context in separate job (otherwise it can block UI)
             new CloseContextJob(executionContext).schedule();
         }

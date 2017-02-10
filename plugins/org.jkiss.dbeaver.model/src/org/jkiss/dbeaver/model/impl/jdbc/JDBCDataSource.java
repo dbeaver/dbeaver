@@ -299,7 +299,7 @@ public abstract class JDBCDataSource
         throws DBException
     {
         if (!container.getDriver().isEmbedded() && container.getPreferenceStore().getBoolean(ModelPreferences.META_SEPARATE_CONNECTION)) {
-            synchronized (this) {
+            synchronized (allContexts) {
                 this.metaContext = new JDBCExecutionContext(this, "Metadata");
                 this.metaContext.connect(monitor, true, null, false);
             }
@@ -343,10 +343,10 @@ public abstract class JDBCDataSource
     {
         // [JDBC] Need sync here because real connection close could take some time
         // while UI may invoke callbacks to operate with connection
-        synchronized (this) {
-            executionContext.close();
-            if (metaContext != null) {
-                metaContext.close();
+        synchronized (allContexts) {
+            List<JDBCExecutionContext> ctxCopy = new ArrayList<>(allContexts);
+            for (JDBCExecutionContext context : ctxCopy) {
+                context.close();
             }
         }
     }
