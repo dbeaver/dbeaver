@@ -118,7 +118,7 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
     }
 
     @Override
-    public void isContextAlive(DBRProgressMonitor monitor) throws DBException {
+    public void checkContextAlive(DBRProgressMonitor monitor) throws DBException {
         // do nothing
     }
 
