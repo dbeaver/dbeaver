@@ -288,7 +288,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
             String filteredQueryText = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(
                 dataSource, originalQuery.getQuery(), dataFilter);
-            sqlQuery = new SQLQuery(filteredQueryText, sqlQuery);
+            sqlQuery = new SQLQuery(executionContext.getDataSource(), filteredQueryText, sqlQuery);
         }
 
         final SQLQueryResult curResult = new SQLQueryResult(sqlQuery);
@@ -430,7 +430,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
 
     private void showExecutionResult(DBCSession session) {
         if (statistics.getStatementsCount() > 1 || resultSetNumber == 0) {
-            SQLQuery query = new SQLQuery("", -1, -1);
+            SQLQuery query = new SQLQuery(session.getDataSource(), "", -1, -1);
             if (queries.size() == 1) {
                 query.setQuery(queries.get(0).getQuery());
             }

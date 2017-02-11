@@ -854,7 +854,7 @@ public final class DBUtils {
         long offset,
         long maxRows) throws DBCException
     {
-        SQLQuery sqlQuery = new SQLQuery(query);
+        SQLQuery sqlQuery = new SQLQuery(session.getDataSource(), query);
         return makeStatement(
             executionSource,
             session,
