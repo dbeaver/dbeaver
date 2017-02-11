@@ -33,6 +33,6 @@ public class SQLQueryTransformerExpression implements SQLQueryTransformer {
         if (dualTableName != null) {
             newQuery += " FROM " + dualTableName;
         }
-        return new SQLQuery(newQuery, query, false);
+        return new SQLQuery(dataSource, newQuery, query, false);
     }
 }

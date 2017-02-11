@@ -464,7 +464,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         String selText = selection.getText().trim();
         selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText);
         if (!CommonUtils.isEmpty(selText)) {
-            sqlQuery = new SQLQuery(selText, selection.getOffset(), selection.getLength());
+            sqlQuery = new SQLQuery(getDataSource(), selText, selection.getOffset(), selection.getLength());
         } else if (selection.getOffset() >= 0) {
             sqlQuery = extractQueryAtPos(selection.getOffset());
         } else {
@@ -759,6 +759,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                     }*/
                     // make script line
                     return new SQLQuery(
+                        getDataSource(),
                         queryText.trim(),
                         statementStart,
                         tokenOffset - statementStart);
