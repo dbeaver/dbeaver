@@ -24,7 +24,7 @@ import java.util.Collection;
 /**
  * Instance container.
  */
-public interface DBSInstanceContainer extends DBSObject, DBPCloseableObject
+public interface DBSInstanceContainer extends DBSObject
 {
     DBSInstance getDefaultInstance();
 

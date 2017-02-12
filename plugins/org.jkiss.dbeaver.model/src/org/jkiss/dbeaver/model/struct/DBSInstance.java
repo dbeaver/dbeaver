@@ -31,7 +31,7 @@ import java.util.Collection;
  *
  * Single datasource may implement DBSInstance or DBSInstanceContainer
  */
-public interface DBSInstance extends DBSObject, DBPCloseableObject
+public interface DBSInstance extends DBSObject
 {
     /**
      * Default execution context
@@ -58,4 +58,5 @@ public interface DBSInstance extends DBSObject, DBPCloseableObject
     @NotNull
     DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException;
 
+    void shutdown(DBRProgressMonitor monitor);
 }
