@@ -1908,16 +1908,21 @@ public class ResultSetViewer extends Viewer
         if (newWindow) {
             openResultsInNewWindow(monitor, targetEntity, newFilter);
         } else {
+            // Workaround for script results
+            // In script mode history state isn't updated so we check for it here
+            if (curState == null) {
+                setNewState(getDataContainer(), model.getDataFilter());
+            }
             runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, false, null);
         }
     }
 
     private void openResultsInNewWindow(DBRProgressMonitor monitor, DBSEntity targetEntity, final DBDDataFilter newFilter) {
-        final DBPDataSource dataSource = getExecutionContext().getDataSource();
-        if (dataSource == null) {
+        final DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext == null) {
             return;
         }
-        final DBNDatabaseNode targetNode = dataSource.getContainer().getPlatform().getNavigatorModel().getNodeByObject(monitor, targetEntity, false);
+        final DBNDatabaseNode targetNode = executionContext.getDataSource().getContainer().getPlatform().getNavigatorModel().getNodeByObject(monitor, targetEntity, false);
         if (targetNode == null) {
             UIUtils.showMessageBox(null, "Open link", "Can't navigate to '" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "' - navigator node not found", SWT.ICON_ERROR);
             return;
@@ -2207,14 +2212,18 @@ public class ResultSetViewer extends Viewer
      * Reads row count and sets value in status label
      */
     private long readRowCount(DBRProgressMonitor monitor) throws DBException {
+        final DBCExecutionContext executionContext = getExecutionContext();
         DBSDataContainer dataContainer = getDataContainer();
-        try (DBCSession session = getExecutionContext().openSession(
+        if (executionContext == null || dataContainer == null) {
+            throw new DBException("Not connected");
+        }
+        try (DBCSession session = executionContext.openSession(
             monitor,
             DBCExecutionPurpose.USER,
             "Read total row count"))
         {
             long rowCount = dataContainer.countData(
-                new AbstractExecutionSource(dataContainer, getExecutionContext(), this),
+                new AbstractExecutionSource(dataContainer, executionContext, this),
                 session,
                 model.getDataFilter());
             model.setTotalRowCount(rowCount);
@@ -2286,6 +2295,7 @@ public class ResultSetViewer extends Viewer
                     @Override
                     public void run() {
                         try {
+                            final Control control = getControl();
                             if (control.isDisposed()) {
                                 return;
                             }
@@ -2310,6 +2320,7 @@ public class ResultSetViewer extends Viewer
                             updatePanelsContent(false);
 
                             if (!scroll) {
+                                // Add new history item
                                 if (saveHistory && error == null) {
                                     setNewState(dataContainer, dataFilter);
                                 }
