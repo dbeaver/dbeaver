@@ -205,7 +205,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     }
 
     @Override
-    public void close() {
+    public void shutdown(DBRProgressMonitor monitor) {
 
     }
 

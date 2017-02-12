@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
@@ -45,8 +46,10 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +73,8 @@ public abstract class JDBCDataSource
         IAdaptable
 {
     private static final Log log = Log.getLog(JDBCDataSource.class);
+
+    public static final int DISCONNECT_TIMEOUT = 5000;
 
     @NotNull
     private final DBPDataSourceContainer container;
@@ -183,26 +188,32 @@ public abstract class JDBCDataSource
         return connectionInfo.getUrl();
     }
 
-    protected void closeConnection(Connection connection)
+    protected void closeConnection(final Connection connection, String purpose)
     {
         if (connection != null) {
-            try {
-                // If we in transaction - rollback it.
-                // Any valuable transaction changes should be commited by UI
-                // so here we do it just in case to avoid error messages on close with open transaction
-                if (!connection.getAutoCommit()) {
-                    connection.rollback();
+            // Close datasource (in async task)
+            RuntimeUtils.runTask(new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    try {
+                        // If we in transaction - rollback it.
+                        // Any valuable transaction changes should be committed by UI
+                        // so here we do it just in case to avoid error messages on close with open transaction
+                        if (!connection.getAutoCommit()) {
+                            connection.rollback();
+                        }
+                    } catch (Throwable e) {
+                        // Do not write warning because connection maybe broken before the moment of close
+                        log.debug("Error closing transaction", e);
+                    }
+                    try {
+                        connection.close();
+                    }
+                    catch (Throwable ex) {
+                        log.error("Error closing connection", ex);
+                    }
                 }
-            } catch (Throwable e) {
-                // Do not write warning because connection maybe broken before the moment of close
-                log.debug("Error closing transaction", e);
-            }
-            try {
-                connection.close();
-            }
-            catch (Throwable ex) {
-                log.error("Error closing connection", ex);
-            }
+            }, "Close JDBC connection (" + purpose + ")", DISCONNECT_TIMEOUT);
         }
     }
 
@@ -339,14 +350,16 @@ public abstract class JDBCDataSource
     }
 
     @Override
-    public void close()
+    public void shutdown(DBRProgressMonitor monitor)
     {
         // [JDBC] Need sync here because real connection close could take some time
         // while UI may invoke callbacks to operate with connection
         synchronized (allContexts) {
             List<JDBCExecutionContext> ctxCopy = new ArrayList<>(allContexts);
             for (JDBCExecutionContext context : ctxCopy) {
+                monitor.subTask("Close context '" + context.getContextName() + "'");
                 context.close();
+                monitor.worked(1);
             }
         }
     }

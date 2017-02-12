@@ -157,8 +157,7 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         if (rootNamespace != null) {
             rootNamespace.close();
             if (rootNamespace.service != null) {
@@ -166,6 +165,12 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
             }
             rootNamespace = null;
         }
+    }
+
+    @Override
+    public void shutdown(DBRProgressMonitor monitor)
+    {
+        this.close();
     }
 
     @Association
@@ -203,4 +208,5 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
     public boolean isPersisted() {
         return true;
     }
+
 }
