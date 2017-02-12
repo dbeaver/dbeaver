@@ -18,21 +18,19 @@
 package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 import java.io.File;
-import java.io.InputStream;
-import java.security.KeyStore;
 
 /**
  * Certificate storage
  */
 public interface DBACertificateStorage
 {
-    KeyStore getKeyStore(String ksId) throws DBException;
+    void addCertificate(DBPDataSourceContainer dataSource, String certType, byte[] caCertStream, byte[] clientCertStream, byte[] keyStream) throws DBException;
 
-    void addCertificate(String ksId, String certId, InputStream certStream) throws DBException;
+    void deleteCertificate(DBPDataSourceContainer dataSource, String certType) throws DBException;
 
-    void deleteCertificate(String ksId, String certId) throws DBException;
+    File getKeyStorePath(DBPDataSourceContainer dataSource, String certType);
 
-    File getKeyStorePath(String ksId);
 }
