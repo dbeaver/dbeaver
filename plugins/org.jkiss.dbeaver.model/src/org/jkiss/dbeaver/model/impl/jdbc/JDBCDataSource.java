@@ -156,6 +156,7 @@ public abstract class JDBCDataSource
                     log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL() - " + url, e);
                 }
             }
+            monitor.subTask("Connecting " + purpose);
             Connection connection;
             if (driverInstance == null) {
                 connection = DriverManager.getConnection(url, connectProps);

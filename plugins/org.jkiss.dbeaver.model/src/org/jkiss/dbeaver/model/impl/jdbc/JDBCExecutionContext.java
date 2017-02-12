@@ -73,7 +73,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             if (this.connection == null) {
                 throw new DBCException("Null connection returned");
             }
-
+            monitor.subTask("Set connection defaults");
             // Get defaults from preferences
             if (autoCommit == null) {
                 autoCommit = dataSource.getContainer().isDefaultAutoCommit();
