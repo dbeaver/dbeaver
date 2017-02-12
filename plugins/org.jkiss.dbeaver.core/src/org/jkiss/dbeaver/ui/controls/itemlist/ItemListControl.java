@@ -97,21 +97,8 @@ public class ItemListControl extends NodeListControl
         if (workbenchSite != null) {
             contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
         }
-        contributionManager.add(new Action(
-            "Pack columns",
-            DBeaverIcons.getImageDescriptor(UIIcon.TREE_EXPAND))
-        {
-            @Override
-            public void run()
-            {
-                ColumnViewer itemsViewer = getItemsViewer();
-                if (itemsViewer instanceof TreeViewer) {
-                    UIUtils.packColumns(((TreeViewer) itemsViewer).getTree());
-                } else {
-                    UIUtils.packColumns(((TableViewer) itemsViewer).getTable());
-                }
-            }
-        });
+        //contributionManager.add(new PackColumnsAction());
+
         if (workbenchSite instanceof MultiPageEditorSite) {
             final MultiPageEditorPart editor = ((MultiPageEditorSite) workbenchSite).getMultiPageEditor();
             if (editor instanceof EntityEditor) {
@@ -390,4 +377,20 @@ public class ItemListControl extends NodeListControl
         }
     }
 
+    private class PackColumnsAction extends Action {
+        public PackColumnsAction() {
+            super("Pack columns", DBeaverIcons.getImageDescriptor(UIIcon.TREE_EXPAND));
+        }
+
+        @Override
+        public void run()
+        {
+            ColumnViewer itemsViewer = getItemsViewer();
+            if (itemsViewer instanceof TreeViewer) {
+                UIUtils.packColumns(((TreeViewer) itemsViewer).getTree());
+            } else {
+                UIUtils.packColumns(((TableViewer) itemsViewer).getTable());
+            }
+        }
+    }
 }
