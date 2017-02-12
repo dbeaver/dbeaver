@@ -21,11 +21,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.utils.Base64;
-import sun.security.util.DerInputStream;
-import sun.security.util.DerValue;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.KeyStore;
@@ -33,7 +30,6 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -133,7 +129,7 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
             }
 
             saveKeyStore(dataSource, certType, keyStore);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new DBException("Error adding certificate to keystore", e);
         }
 
@@ -187,30 +183,7 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
 
             privateKeyPem = privateKeyPem.replace(PEM_RSA_PRIVATE_START, "").replace(PEM_RSA_PRIVATE_END, "");
             privateKeyPem = privateKeyPem.replaceAll("\\s", "");
-
-            DerInputStream derReader = new DerInputStream(Base64.decode(privateKeyPem));
-
-            DerValue[] seq = derReader.getSequence(0);
-
-            if (seq.length < 9) {
-                throw new GeneralSecurityException("Could not parse a PKCS1 private key.");
-            }
-
-            // skip version seq[0];
-            BigInteger modulus = seq[1].getBigInteger();
-            BigInteger publicExp = seq[2].getBigInteger();
-            BigInteger privateExp = seq[3].getBigInteger();
-            BigInteger prime1 = seq[4].getBigInteger();
-            BigInteger prime2 = seq[5].getBigInteger();
-            BigInteger exp1 = seq[6].getBigInteger();
-            BigInteger exp2 = seq[7].getBigInteger();
-            BigInteger crtCoef = seq[8].getBigInteger();
-
-            RSAPrivateCrtKeySpec keySpec = new RSAPrivateCrtKeySpec(modulus, publicExp, privateExp, prime1, prime2, exp1, exp2, crtCoef);
-
-            KeyFactory factory = KeyFactory.getInstance("RSA");
-
-            return factory.generatePrivate(keySpec);
+            return PKCS1Util.loadPrivateKeyFromPKCS1(privateKeyPem);
         } else {
             throw new GeneralSecurityException("Not supported format of a private key");
         }
