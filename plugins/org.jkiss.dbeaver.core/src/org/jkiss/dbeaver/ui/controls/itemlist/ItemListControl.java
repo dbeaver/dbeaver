@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.itemlist;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -25,6 +26,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchSite;
+import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -36,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterConfig;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.ArrayUtils;
 
@@ -108,6 +112,27 @@ public class ItemListControl extends NodeListControl
                 }
             }
         });
+        if (workbenchSite instanceof MultiPageEditorSite) {
+            final MultiPageEditorPart editor = ((MultiPageEditorSite) workbenchSite).getMultiPageEditor();
+            if (editor instanceof EntityEditor) {
+                contributionManager.add(new Separator());
+                contributionManager.add(ActionUtils.makeCommandContribution(
+                    workbenchSite,
+                    IWorkbenchCommandConstants.FILE_SAVE,
+                    null,
+                    UIIcon.SAVE,
+                    null,
+                    true));
+                contributionManager.add(ActionUtils.makeCommandContribution(
+                    workbenchSite,
+                    IWorkbenchCommandConstants.FILE_REVERT,
+                    null,
+                    UIIcon.RESET,
+                    null,
+                    true));
+            }
+            //if (((IEditorSite) site).getPart() instanceof
+        }
     }
 
     @Override

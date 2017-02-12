@@ -233,8 +233,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         gl.marginWidth = 0;
         customControlsComposite.setLayout(gl);
 
-        defaultToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-        customToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+        defaultToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+        customToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
         hideControls(true);
 
