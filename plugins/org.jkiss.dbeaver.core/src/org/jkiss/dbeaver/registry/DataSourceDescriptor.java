@@ -900,6 +900,7 @@ public class DataSourceDescriptor
             return true;
         } finally {
             connecting = false;
+            log.debug("Disconnected (" + getId() + ")");
         }
     }
 
