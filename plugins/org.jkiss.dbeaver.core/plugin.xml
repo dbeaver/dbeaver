@@ -177,6 +177,13 @@
                 restorable="false"
                 icon="icons/misc/shell.png"
                 name="%view.shell.process.title"/>
+        <view
+                id="org.jkiss.dbeaver.core.sqlResults"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.views.SQLResultsView"
+                allowMultiple="true"
+                icon="icons/sql/page_data_grid.png"
+                name="%view.sql.results.title"/>
     </extension>
 
     <extension point="org.eclipse.ui.commands">

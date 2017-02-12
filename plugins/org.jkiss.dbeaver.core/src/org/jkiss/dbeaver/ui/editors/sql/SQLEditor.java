@@ -89,6 +89,7 @@ import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
+import org.jkiss.dbeaver.ui.views.SQLResultsView;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -814,12 +815,13 @@ public class SQLEditor extends SQLEditorBase implements
         if (planView == null) {
             planView = new ExplainPlanViewer(this, resultTabs);
 
-            CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
+            final CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
             item.setControl(planView.getControl());
             item.setText("Exec. Plan");
             item.setToolTipText("Execution plan for\n" + sqlQuery.getQuery());
             item.setImage(IMG_EXPLAIN_PLAN);
             item.setData(planView);
+            UIUtils.disposeControlOnItemDispose(item);
             resultTabs.setSelection(item);
         }
 
@@ -970,11 +972,14 @@ public class SQLEditor extends SQLEditorBase implements
         } else {
             // Use current tab.
             // If current tab was pinned then use first tab
-            if (curQueryProcessor.getFirstResults().isPinned()) {
+            final QueryResultsContainer firstResults = curQueryProcessor.getFirstResults();
+            if (firstResults.isPinned()) {
                 curQueryProcessor = queryProcessors.get(0);
             }
             closeExtraResultTabs(curQueryProcessor);
-            resultTabs.setSelection(curQueryProcessor.getFirstResults().tabItem);
+            if (firstResults.tabItem != null) {
+                resultTabs.setSelection(firstResults.tabItem);
+            }
             curQueryProcessor.processQueries(queries, false, export);
         }
     }
@@ -1333,7 +1338,7 @@ public class SQLEditor extends SQLEditorBase implements
         final QueryProcessor queryProcessor = new QueryProcessor();
         curQueryProcessor = queryProcessor;
         curResultsContainer = queryProcessor.getFirstResults();
-        if (setSelection) {
+        if (setSelection && curResultsContainer.tabItem != null) {
             resultTabs.setSelection(curResultsContainer.tabItem);
         }
 
@@ -1537,20 +1542,18 @@ public class SQLEditor extends SQLEditorBase implements
                     if (statement != null && !resultTabs.isDisposed()) {
                         resultsProvider.query = statement;
                         resultsProvider.lastGoodQuery = statement;
-                        if (!resultsProvider.tabItem.isDisposed()) {
-                            resultsProvider.tabItem.setToolTipText(CommonUtils.truncateString(statement.getQuery(), 1000));
+                        if (resultsProvider.tabItem != null && !resultsProvider.tabItem.isDisposed()) {
+                            String tabName = null;
+                            String toolTip = CommonUtils.truncateString(statement.getQuery(), 1000);
                             // Special statements (not real statements) have their name in data
                             if (isStatsResult) {
-                                String tabName = "Statistics";
+                                tabName = "Statistics";
                                 int queryIndex = queryProcessors.indexOf(QueryProcessor.this);
                                 if (queryIndex > 0) {
                                     tabName += " - " + (queryIndex + 1);
                                 }
-                                resultsProvider.tabItem.setText(tabName);
-                                if (!CommonUtils.isEmpty(statement.getQuery())) {
-                                    resultsProvider.tabItem.setToolTipText(statement.getQuery());
-                                }
                             }
+                            resultsProvider.updateResultsName(tabName, toolTip);
                         }
                     }
                 }
@@ -1574,27 +1577,48 @@ public class SQLEditor extends SQLEditorBase implements
         {
             this.queryProcessor = queryProcessor;
             this.resultSetNumber = resultSetNumber;
-            this.viewer = new ResultSetViewer(resultTabs, getSite(), this);
 
-            int tabCount = resultTabs.getItemCount();
-            int tabIndex = 0;
-            for (int i = tabCount; i > 0; i--) {
-                if (resultTabs.getItem(i - 1).getData() instanceof QueryResultsContainer) {
-                    tabIndex = i;
-                    break;
+            boolean detachedViewer = false;
+            SQLResultsView sqlView = null;
+            if (detachedViewer) {
+                try {
+                    sqlView = (SQLResultsView) getSite().getPage().showView(SQLResultsView.VIEW_ID, null, IWorkbenchPage.VIEW_CREATE);
+                } catch (Throwable e) {
+                    UIUtils.showErrorDialog(getSite().getShell(), "Detached results", "Can't open results view", e);
                 }
             }
-            tabItem = new CTabItem(resultTabs, SWT.NONE, tabIndex);
-            int queryIndex = queryProcessors.indexOf(queryProcessor);
-            String tabName = getResultsTabName(resultSetNumber, queryIndex, null);
-            tabItem.setText(tabName);
-            tabItem.setImage(IMG_DATA_GRID);
-            tabItem.setData(this);
-            if (queryIndex > 0 || resultSetNumber > 0) {
-                tabItem.setShowClose(true);
+
+            if (sqlView != null) {
+                // Detached results viewer
+                sqlView.setContainer(this);
+                this.viewer = sqlView.getViewer();
+                this.tabItem = null;
+            } else {
+                // Embedded results viewer
+                this.viewer = new ResultSetViewer(resultTabs, getSite(), this);
+
+                int tabCount = resultTabs.getItemCount();
+                int tabIndex = 0;
+                for (int i = tabCount; i > 0; i--) {
+                    if (resultTabs.getItem(i - 1).getData() instanceof QueryResultsContainer) {
+                        tabIndex = i;
+                        break;
+                    }
+                }
+                tabItem = new CTabItem(resultTabs, SWT.NONE, tabIndex);
+                int queryIndex = queryProcessors.indexOf(queryProcessor);
+                String tabName = getResultsTabName(resultSetNumber, queryIndex, null);
+                tabItem.setText(tabName);
+                tabItem.setImage(IMG_DATA_GRID);
+                tabItem.setData(this);
+                if (queryIndex > 0 || resultSetNumber > 0) {
+                    tabItem.setShowClose(true);
+                }
+                tabItem.setControl(viewer.getControl());
+                UIUtils.disposeControlOnItemDispose(tabItem);
             }
-            tabItem.setControl(viewer.getControl());
-            tabItem.addDisposeListener(new DisposeListener() {
+
+            viewer.getControl().addDisposeListener(new DisposeListener() {
                 @Override
                 public void widgetDisposed(DisposeEvent e) {
                     QueryResultsContainer.this.queryProcessor.removeResults(QueryResultsContainer.this);
@@ -1605,8 +1629,17 @@ public class SQLEditor extends SQLEditorBase implements
             });
         }
 
+        void updateResultsName(String resultSetName, String toolTip) {
+            if (tabItem != null && !tabItem.isDisposed()) {
+                if (!CommonUtils.isEmpty(resultSetName)) {
+                    tabItem.setText(resultSetName);
+                }
+                tabItem.setToolTipText(toolTip);
+            }
+        }
+
         public boolean isPinned() {
-            return resultTabs.indexOf(tabItem) > 0 && !tabItem.getShowClose();
+            return tabItem != null && resultTabs.indexOf(tabItem) > 0 && !tabItem.getShowClose();
         }
 
         public void setPinned(boolean pinned) {
@@ -1893,14 +1926,9 @@ public class SQLEditor extends SQLEditorBase implements
                 if (scriptMode || queryProcessor.getResultContainers().size() == 1) {
                     QueryResultsContainer results = queryProcessor.getResults(query);
                     if (results != null) {
-                        CTabItem tabItem = results.tabItem;
-                        if (!tabItem.isDisposed()) {
-                            int queryIndex = queryProcessors.indexOf(queryProcessor);
-                            String resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, result.getResultSetName());
-                            if (!CommonUtils.isEmpty(resultSetName)) {
-                                tabItem.setText(resultSetName);
-                            }
-                        }
+                        int queryIndex = queryProcessors.indexOf(queryProcessor);
+                        String resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, result.getResultSetName());
+                        results.updateResultsName(resultSetName, null);
                     }
                 }
             }

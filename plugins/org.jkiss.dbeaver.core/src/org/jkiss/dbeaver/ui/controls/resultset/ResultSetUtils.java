@@ -142,8 +142,6 @@ public class ResultSetUtils
                 if (attrEntity == null) {
                     if (attrEntityMeta != null) {
                         log.debug("Table '" + DBUtils.getSimpleQualifiedName(attrEntityMeta.getCatalogName(), attrEntityMeta.getSchemaName(), attrEntityMeta.getEntityName()) + "' not found in metadata catalog");
-                    } else {
-                        log.debug("Entity meta for attribute '" + binding.getFullyQualifiedName(DBPEvaluationContext.UI) + "' not found in metadata catalog");
                     }
                 } else {
                     DBDPseudoAttribute pseudoAttribute = DBUtils.getPseudoAttribute(attrEntity, attrMeta.getName());
