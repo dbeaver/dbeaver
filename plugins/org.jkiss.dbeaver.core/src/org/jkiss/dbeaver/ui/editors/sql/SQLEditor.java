@@ -1542,19 +1542,17 @@ public class SQLEditor extends SQLEditorBase implements
                     if (statement != null && !resultTabs.isDisposed()) {
                         resultsProvider.query = statement;
                         resultsProvider.lastGoodQuery = statement;
-                        if (resultsProvider.tabItem != null && !resultsProvider.tabItem.isDisposed()) {
-                            String tabName = null;
-                            String toolTip = CommonUtils.truncateString(statement.getQuery(), 1000);
-                            // Special statements (not real statements) have their name in data
-                            if (isStatsResult) {
-                                tabName = "Statistics";
-                                int queryIndex = queryProcessors.indexOf(QueryProcessor.this);
-                                if (queryIndex > 0) {
-                                    tabName += " - " + (queryIndex + 1);
-                                }
+                        String tabName = null;
+                        String toolTip = CommonUtils.truncateString(statement.getQuery(), 1000);
+                        // Special statements (not real statements) have their name in data
+                        if (isStatsResult) {
+                            tabName = "Statistics";
+                            int queryIndex = queryProcessors.indexOf(QueryProcessor.this);
+                            if (queryIndex > 0) {
+                                tabName += " - " + (queryIndex + 1);
                             }
-                            resultsProvider.updateResultsName(tabName, toolTip);
                         }
+                        resultsProvider.updateResultsName(tabName, toolTip);
                     }
                 }
             });
