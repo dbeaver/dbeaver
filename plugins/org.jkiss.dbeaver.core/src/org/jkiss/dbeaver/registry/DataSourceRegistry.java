@@ -75,6 +75,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     @Deprecated
     public static final String DEFAULT_ACTIVE_OBJECT = "default.activeObject"; //$NON-NLS-1$
 
+    public static final long DISCONNECT_ALL_TIMEOUT = 5000;
+
     private static final Log log = Log.getLog(DataSourceRegistry.class);
 
     public static final String OLD_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
@@ -107,8 +109,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             }
             this.dataSourceListeners.clear();
         }
-        // Disconnect in 2 seconds or die
-        closeConnections(DBConstants.DISCONNECT_TIMEOUT);
+        // Disconnect in 5 seconds or die
+        closeConnections(DISCONNECT_ALL_TIMEOUT);
         // Do not save config on shutdown.
         // Some data source might be broken due to misconfiguration
         // and we don't want to loose their config just after restart
