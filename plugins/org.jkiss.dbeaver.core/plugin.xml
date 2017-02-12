@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 
-
 <!--
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
@@ -69,7 +68,7 @@
             class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             namespace="org.jkiss.dbeaver.core.object"
-            properties="canOpen,canCreate,canPaste,canDelete,canRename,canFilter,canFilterObject,hasFilter"
+            properties="canOpen,canCreate,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter"
             type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"

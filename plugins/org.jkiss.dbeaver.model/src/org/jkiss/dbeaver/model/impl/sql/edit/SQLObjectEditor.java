@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.model.impl.sql.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.edit.prop.*;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -144,6 +141,12 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         throw new IllegalStateException("Object rename is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
     }
 
+    protected void addObjectReorderActions(List<DBEPersistAction> actions, ObjectReorderCommand command)
+    {
+        // Not supported by implementation
+        throw new IllegalStateException("Object reorder is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
+    }
+
     protected abstract void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command);
 
     //////////////////////////////////////////////////
@@ -169,6 +172,12 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     {
         ObjectRenameCommand command = new ObjectRenameCommand(object, ModelMessages.model_jdbc_rename_object, newName);
         commandContext.addCommand(command, new RenameObjectReflector(), true);
+    }
+
+    protected void processObjectReorder(DBECommandContext commandContext, OBJECT_TYPE object, int newPosition) throws DBException
+    {
+        ObjectReorderCommand command = new ObjectReorderCommand(object, ModelMessages.model_jdbc_reorder_object, newPosition);
+        commandContext.addCommand(command, new ReorderObjectReflector(), true);
     }
 
     protected class PropertyHandler
@@ -232,6 +241,14 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
         public abstract String getNestedDeclaration(DBSObject owner);
 
+    }
+
+    protected static class EmptyCommand extends DBECommandAbstract<DBPObject>
+    {
+        public EmptyCommand(DBPObject object)
+        {
+            super(object, "Empty"); //$NON-NLS-1$
+        }
     }
 
     protected class ObjectChangeCommand extends NestedObjectCommand<OBJECT_TYPE, PropertyHandler>
@@ -360,23 +377,6 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             addObjectRenameActions(actions, this);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
-
-        @Override
-        public void updateModel()
-        {
-            if (getObject() instanceof DBPNamedObject2) {
-                ((DBPNamedObject2)getObject()).setName(newName);
-                DBUtils.fireObjectUpdate(getObject());
-            }
-        }
-    }
-
-    protected static class EmptyCommand extends DBECommandAbstract<DBPObject>
-    {
-        public EmptyCommand(DBPObject object)
-        {
-            super(object, "Empty"); //$NON-NLS-1$
-        }
     }
 
     public class RenameObjectReflector implements DBECommandReflector<OBJECT_TYPE, ObjectRenameCommand> {
@@ -397,6 +397,53 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
                 ((DBPNamedObject2)command.getObject()).setName(command.oldName);
                 DBUtils.fireObjectUpdate(command.getObject());
             }
+        }
+
+    }
+
+    protected class ObjectReorderCommand extends DBECommandAbstract<OBJECT_TYPE> {
+        private int oldPosition;
+        private int newPosition;
+
+        public ObjectReorderCommand(OBJECT_TYPE object, String title, int newPosition)
+        {
+            super(object, title);
+            this.oldPosition = ((DBPOrderedObject)object).getOrdinalPosition();
+            this.newPosition = newPosition;
+        }
+
+        public int getOldPosition() {
+            return oldPosition;
+        }
+
+        public int getNewPosition() {
+            return newPosition;
+        }
+
+        @Override
+        public DBEPersistAction[] getPersistActions()
+        {
+            List<DBEPersistAction> actions = new ArrayList<>();
+            addObjectReorderActions(actions, this);
+            return actions.toArray(new DBEPersistAction[actions.size()]);
+        }
+
+    }
+
+    public class ReorderObjectReflector implements DBECommandReflector<OBJECT_TYPE, ObjectReorderCommand> {
+
+        @Override
+        public void redoCommand(ObjectReorderCommand command)
+        {
+            ((DBPOrderedObject)command.getObject()).setOrdinalPosition(command.newPosition);
+            DBUtils.fireObjectUpdate(command.getObject());
+        }
+
+        @Override
+        public void undoCommand(ObjectReorderCommand command)
+        {
+            ((DBPOrderedObject)command.getObject()).setOrdinalPosition(command.oldPosition);
+            DBUtils.fireObjectUpdate(command.getObject());
         }
 
     }
