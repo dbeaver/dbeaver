@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -43,6 +44,8 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String PROP_CAN_PASTE = "canPaste";
     public static final String PROP_CAN_DELETE = "canDelete";
     public static final String PROP_CAN_RENAME = "canRename";
+    public static final String PROP_CAN_MOVE_UP = "canMoveUp";
+    public static final String PROP_CAN_MOVE_DOWN = "canMoveDown";
     public static final String PROP_CAN_FILTER = "canFilter";
     public static final String PROP_CAN_FILTER_OBJECT = "canFilterObject";
     public static final String PROP_HAS_FILTER = "hasFilter";
@@ -155,6 +158,20 @@ public class ObjectPropertyTester extends PropertyTester
                             !isReadOnly(object) &&
                             node.getParentNode() instanceof DBNContainer &&
                             getObjectManager(object.getClass(), DBEObjectRenamer.class) != null;
+                }
+                break;
+            }
+            case PROP_CAN_MOVE_UP:
+            case PROP_CAN_MOVE_DOWN: {
+                if (node instanceof DBNDatabaseNode) {
+                    DBSObject object = ((DBNDatabaseNode) node).getObject();
+                    if (object instanceof DBPOrderedObject) {
+                        final int position = ((DBPOrderedObject) object).getOrdinalPosition();
+                        if (property.equals(PROP_CAN_MOVE_UP)) {
+                            return position > 0;
+                        }
+                        return position < ((DBPOrderedObject) object).getMaximumOrdinalPosition();
+                    }
                 }
                 break;
             }
