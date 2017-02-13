@@ -2327,6 +2327,8 @@ public class ResultSetViewer extends Viewer
 
                                 if (dataFilter != null) {
                                     model.updateDataFilter(dataFilter);
+                                    // New data filter may have different columns visibility
+                                    redrawData(true, false);
                                 }
                             }
                             model.setUpdateInProgress(false);
