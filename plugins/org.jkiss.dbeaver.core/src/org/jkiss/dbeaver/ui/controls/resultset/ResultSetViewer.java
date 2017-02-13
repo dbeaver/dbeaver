@@ -1173,7 +1173,7 @@ public class ResultSetViewer extends Viewer
         // Search in history
         for (int i = 0; i < stateHistory.size(); i++) {
             HistoryStateItem item = stateHistory.get(i);
-            if (item.dataContainer == dataContainer && item.filter != null && item.filter.equalFilters(dataFilter)) {
+            if (item.dataContainer == dataContainer && item.filter != null && item.filter.equalFilters(dataFilter, false)) {
                 item.filter = dataFilter; // Update data filter - it may contain some orderings
                 curState = item;
                 historyPosition = i;
