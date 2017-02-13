@@ -52,7 +52,7 @@ import java.util.*;
  */
 public class SQLRuleManager extends RuleBasedScanner {
 
-    private static final long MAX_FILE_LENGTH_FOR_RULES = 1000000;
+    private static final long MAX_FILE_LENGTH_FOR_RULES = 5000000;
 
     @NotNull
     private final IThemeManager themeManager;
