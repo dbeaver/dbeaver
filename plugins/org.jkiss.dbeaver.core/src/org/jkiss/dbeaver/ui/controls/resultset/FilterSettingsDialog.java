@@ -447,7 +447,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         }
         resultSetViewer.setDataFilter(
             dataFilter,
-            !dataFilter.equals(resultSetViewer.getModel().getDataFilter()));
+            true); // TODO: refresh data only if filter was changed
         super.okPressed();
     }
 
