@@ -181,9 +181,9 @@ public class SQLRuleManager extends RuleBasedScanner {
             rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, (char)0));
         }
 
+        // Add rules for multi-line comments
         Pair<String, String> multiLineComments = dialect.getMultiLineComments();
         if (multiLineComments != null) {
-            // Add rules for multi-line comments
             rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), commentToken, (char) 0, true));
         }
 

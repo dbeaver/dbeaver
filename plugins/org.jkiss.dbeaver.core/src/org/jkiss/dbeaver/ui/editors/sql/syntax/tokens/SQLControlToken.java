@@ -17,14 +17,16 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
 
-/**
- * SQLFileIncludeToken
- *
- * @author Serge Rider
- */
-public class SQLFileIncludeToken extends SQLControlToken {
+import org.eclipse.jface.text.rules.Token;
 
-    public SQLFileIncludeToken(Object data)
+/**
+ * SQLControlToken
+ *
+ * Control tokens are used for local SQL script evaluation.
+ */
+public abstract class SQLControlToken extends Token {
+
+    public SQLControlToken(Object data)
     {
         super(data);
     }
