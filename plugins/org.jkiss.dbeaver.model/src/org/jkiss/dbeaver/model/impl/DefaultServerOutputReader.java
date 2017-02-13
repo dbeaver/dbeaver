@@ -64,8 +64,4 @@ public class DefaultServerOutputReader implements DBCServerOutputReader
         }
     }
 
-    @Override
-    public void close() {
-
-    }
 }
