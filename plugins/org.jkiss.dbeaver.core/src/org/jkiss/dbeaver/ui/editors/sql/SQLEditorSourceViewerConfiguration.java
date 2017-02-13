@@ -260,7 +260,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer)
     {
-
         // Create a presentation reconciler to handle handle document changes.
         PresentationReconciler reconciler = new PresentationReconciler();
         String docPartitioning = getConfiguredDocumentPartitioning(sourceViewer);
@@ -275,33 +274,26 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         // rule for multiline comments
         // We just need a scanner that does nothing but returns a token with
         // the corresponding text attributes
-        dr = new DefaultDamagerRepairer(new SingleTokenScanner(
-            new TextAttribute(ruleManager.getColor(SQLConstants.CONFIG_COLOR_COMMENT))));
-        reconciler.setDamager(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_MULTILINE_COMMENT);
-        reconciler.setRepairer(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_MULTILINE_COMMENT);
-
+        addContentTypeDamageRepairer(reconciler, SQLPartitionScanner.CONTENT_TYPE_SQL_MULTILINE_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
         // Add a "damager-repairer" for changes within one-line SQL comments.
-        dr = new DefaultDamagerRepairer(new SingleTokenScanner(
-            new TextAttribute(ruleManager.getColor(SQLConstants.CONFIG_COLOR_COMMENT))));
-        reconciler.setDamager(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_COMMENT);
-        reconciler.setRepairer(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_COMMENT);
-
+        addContentTypeDamageRepairer(reconciler, SQLPartitionScanner.CONTENT_TYPE_SQL_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
         // Add a "damager-repairer" for changes within quoted literals.
-        dr = new DefaultDamagerRepairer(
-            new SingleTokenScanner(
-                new TextAttribute(ruleManager.getColor(SQLConstants.CONFIG_COLOR_STRING))));
-        reconciler.setDamager(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_STRING);
-        reconciler.setRepairer(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_STRING);
-
+        addContentTypeDamageRepairer(reconciler, SQLPartitionScanner.CONTENT_TYPE_SQL_STRING, SQLConstants.CONFIG_COLOR_STRING);
         // Add a "damager-repairer" for changes within quoted literals.
-        dr = new DefaultDamagerRepairer(
-            new SingleTokenScanner(
-                new TextAttribute(ruleManager.getColor(SQLConstants.CONFIG_COLOR_DATATYPE))));
-        reconciler.setDamager(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_QUOTED);
-        reconciler.setRepairer(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_QUOTED);
+        addContentTypeDamageRepairer(reconciler, SQLPartitionScanner.CONTENT_TYPE_SQL_QUOTED, SQLConstants.CONFIG_COLOR_DATATYPE);
 
         return reconciler;
     }
+
+    private void addContentTypeDamageRepairer(PresentationReconciler reconciler, String contentType, String colorId) {
+        DefaultDamagerRepairer dr = new DefaultDamagerRepairer(
+            new SingleTokenScanner(
+                new TextAttribute(ruleManager.getColor(colorId))));
+        reconciler.setDamager(dr, contentType);
+        reconciler.setRepairer(dr, contentType);
+
+    }
+
 
     /**
      * Returns the SQLEditor associated with this object.
