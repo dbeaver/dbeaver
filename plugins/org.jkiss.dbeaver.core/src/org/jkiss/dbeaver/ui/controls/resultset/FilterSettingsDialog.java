@@ -445,9 +445,15 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         } else {
             dataFilter.setWhere(null);
         }
+
+        boolean filtersChanged = true;
+        if (dataFilter.equalFilters(resultSetViewer.getModel().getDataFilter(), true)) {
+            // Only attribute visibility was changed
+            filtersChanged = false;
+        }
         resultSetViewer.setDataFilter(
             dataFilter,
-            true); // TODO: refresh data only if filter was changed
+            filtersChanged);
         super.okPressed();
     }
 

@@ -251,7 +251,7 @@ public class DBDDataFilter {
      * @param source object to compare to
      * @return true if filters equals
      */
-    public boolean equalFilters(DBDDataFilter source)
+    public boolean equalFilters(DBDDataFilter source, boolean compareOrders)
     {
         if (anyConstraint != source.anyConstraint) {
             return false;
@@ -260,7 +260,7 @@ public class DBDDataFilter {
             return false;
         }
         for (int i = 0; i < source.constraints.size(); i++) {
-            if (!constraints.get(i).equalFilters(source.constraints.get(i))) {
+            if (!constraints.get(i).equalFilters(source.constraints.get(i), compareOrders)) {
                 return false;
             }
         }
