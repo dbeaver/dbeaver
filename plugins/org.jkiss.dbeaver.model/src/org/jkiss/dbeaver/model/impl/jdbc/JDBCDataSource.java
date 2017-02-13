@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.SocketException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -598,6 +599,9 @@ public abstract class JDBCDataSource
             SQLState.SQL_08007.getCode().equals(sqlState) ||
             SQLState.SQL_08S01.getCode().equals(sqlState))
         {
+            return ErrorType.CONNECTION_LOST;
+        }
+        if (GeneralUtils.getRootCause(error) instanceof SocketException) {
             return ErrorType.CONNECTION_LOST;
         }
         if (error instanceof DBCConnectException) {
