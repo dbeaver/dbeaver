@@ -646,11 +646,6 @@ public class OracleDataSource extends JDBCDataSource
                 }
             }
         }
-
-        @Override
-        public void close() {
-
-        }
     }
 
     static class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {
