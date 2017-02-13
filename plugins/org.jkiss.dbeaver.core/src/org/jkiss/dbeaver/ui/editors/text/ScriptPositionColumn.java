@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.ui.editors.text;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.JFaceTextUtil;
 import org.eclipse.jface.text.source.AbstractRulerColumn;
-import org.eclipse.jface.text.source.ILineRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.ui.progress.UIJob;
@@ -33,13 +30,11 @@ import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
+
+import java.util.Arrays;
 
 /**
- * The line number ruler contribution. Encapsulates a {@link org.eclipse.jface.text.source.LineNumberChangeRulerColumn} as a
- * contribution to the <code>rulerColumns</code> extension point.
- *
- * @since 3.3
+ * Script position ruler contribution.
  */
 public class ScriptPositionColumn extends AbstractRulerColumn implements IContributedRulerColumn {
 
@@ -95,7 +90,7 @@ public class ScriptPositionColumn extends AbstractRulerColumn implements IContri
                 StyledText textWidget = editor.getTextViewer().getTextWidget();
                 if (textWidget == null || textWidget.isDisposed()) return Status.CANCEL_STATUS;
                 int[] newCurrentLines = editor.getCurrentLines();
-                if (!CommonUtils.equalObjects(newCurrentLines, currentLines) && textWidget.isVisible()) {
+                if (!Arrays.equals(newCurrentLines, currentLines) && textWidget.isVisible()) {
                     currentLines = newCurrentLines;
                     redraw();
                 }
@@ -113,6 +108,15 @@ public class ScriptPositionColumn extends AbstractRulerColumn implements IContri
         visible = false;
     }
 
+    protected void paintLine(GC gc, int modelLine, int widgetLine, int linePixel, int lineHeight) {
+        gc.setBackground(computeBackground(modelLine));
+        gc.fillRectangle(0, linePixel, getWidth(), lineHeight);
+        if (ArrayUtils.contains(currentLines, modelLine)) {
+            gc.drawImage(DBeaverIcons.getImage(UIIcon.RULER_POSITION), 0, linePixel);
+        }
+    }
+
+/*
     @Override
     protected void paint(GC gc, ILineRange lines)
     {
@@ -134,5 +138,6 @@ public class ScriptPositionColumn extends AbstractRulerColumn implements IContri
             }
         }
     }
+*/
 
 }
