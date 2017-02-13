@@ -9,7 +9,7 @@ Free multi-platform database tool for developers, SQL programmers, database admi
 Supports any database which has JDBC driver (which basically means - ANY database). Can work with non-JDBC datasources (WMI, MongoDB, Cassandra, Redis).
 * Has a lot of <a href="http://dbeaver.jkiss.org/docs/features/">features</a>. 
 * Based on <a href="http://www.eclipse.org/">Eclipse</a> platform.
-* Uses plugins architecture and provides additional functionality for the most popular databases (MySQL, PostgreSQL, Oracle, DB2 in version 3.7.x).
+* Uses plugins architecture and provides additional functionality for the following databases: MySQL, PostgreSQL, Oracle, DB2 LUW, Exasol, SQL Server, SQLite, Firebird, H2, Derby, Teradata, Vertica, Netezza, Informix.
 
 <a href="http://dbeaver.jkiss.org/product/dbeaver-ss-classic.png"><img src="http://dbeaver.jkiss.org/product/dbeaver-ss-classic.png" width="400"/></a>
 <a href="http://dbeaver.jkiss.org/product/dbeaver-ss-dark.png"><img src="http://dbeaver.jkiss.org/product/dbeaver-ss-dark.png" width="400"/></a>
@@ -18,6 +18,13 @@ Supports any database which has JDBC driver (which basically means - ANY databas
 
 You can download prebuilt binaries from http://dbeaver.jkiss.org/download/  
 History and release notes: https://github.com/serge-rider/dbeaver/releases
+
+## Running
+
+DBeaver requires Java (JRE) 1.8+ to run.
+* <b>Windows</b> installer includes JRE so just use it and don't think about internals.
+* On <b>Linux</b> you may need to install Java manually (usually by running `sudo apt-get install default-jre` or something similar).
+* On <b>MacOS X</b> you may need to download Java (JDK) from <a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">Oracle web site</a>. Or use <a href="http://stackoverflow.com/questions/24342886/how-to-install-java-8-on-mac">this instructions</a>.
 
 ## Documentation
 
