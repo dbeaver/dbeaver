@@ -4,10 +4,9 @@
 <img src="https://github.com/serge-rider/dbeaver/wiki/images/dbeaver-icon-64x64.png" align="right"/>
 # DBeaver
 
-
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts. 
-Supports any database which has JDBC driver (which basically means - ANY database). Can work with non-JDBC datasources (WMI, MongoDB, Cassandra, Redis).
-* Has a lot of <a href="http://dbeaver.jkiss.org/docs/features/">features</a>. 
+Supports any database which has JDBC driver (which basically means - ANY database). EE version also supports non-JDBC datasources (WMI, MongoDB, Cassandra, Redis).
+* Has a lot of <a href="http://dbeaver.jkiss.org/docs/features/">features</a> including metadata editor, SQL editor, rich data editor, ERD, data export/import/migration, SQL execution plans, etc. 
 * Based on <a href="http://www.eclipse.org/">Eclipse</a> platform.
 * Uses plugins architecture and provides additional functionality for the following databases: MySQL, PostgreSQL, Oracle, DB2 LUW, Exasol, SQL Server, SQLite, Firebird, H2, Derby, Teradata, Vertica, Netezza, Informix.
 
