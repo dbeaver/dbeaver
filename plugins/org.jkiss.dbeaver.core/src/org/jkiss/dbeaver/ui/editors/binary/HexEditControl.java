@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -1856,7 +1857,7 @@ public class HexEditControl extends Composite {
         // very small sizes would compromise responsiveness in large windows, and they are too small
         // to see anyway
         if (font != null) {
-            int newSize = font.getFontData()[0].getHeight();
+            int newSize = UIUtils.getFontHeight(font);
             if (newSize == 1 || newSize == 2)
                 throw new IllegalArgumentException("Font size is " + newSize + ", too small");
         }

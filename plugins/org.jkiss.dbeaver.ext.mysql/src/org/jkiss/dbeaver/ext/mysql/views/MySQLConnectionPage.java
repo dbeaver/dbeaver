@@ -80,7 +80,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
                 }
             }
         };
-        final int fontHeight = composite.getFont().getFontData()[0].getHeight();
+        final int fontHeight = UIUtils.getFontHeight(composite);
 
         Composite addrGroup = UIUtils.createPlaceholder(composite, 2);
         GridLayout gl = new GridLayout(2, false);
