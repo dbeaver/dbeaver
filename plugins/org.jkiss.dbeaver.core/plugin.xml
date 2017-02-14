@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 
-
 <!--
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
@@ -69,7 +68,7 @@
             class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             namespace="org.jkiss.dbeaver.core.object"
-            properties="canOpen,canCreate,canPaste,canDelete,canRename,canFilter,canFilterObject,hasFilter"
+            properties="canOpen,canCreate,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter"
             type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
@@ -177,6 +176,13 @@
                 restorable="false"
                 icon="icons/misc/shell.png"
                 name="%view.shell.process.title"/>
+        <view
+                id="org.jkiss.dbeaver.core.sqlResults"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.views.SQLResultsView"
+                allowMultiple="true"
+                icon="icons/sql/page_data_grid.png"
+                name="%view.sql.results.title"/>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
@@ -1373,24 +1379,12 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewCommandHandler">
+        <handler commandId="org.jkiss.dbeaver.core.resultset.cell.save" class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewCommandHandler">
             <activeWhen>
-                <with variable="activeFocusControlId">
-                    <equals value="org.jkiss.dbeaver.ui.resultset.panel.valueView"/>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.resultset.panel.valueView.active"/>
                 </with>
             </activeWhen>
-            <enabledWhen>
-                <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.resultset.panel.valueView.active"/>
-                </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resultset.cell.save" class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewCommandHandler">
-            <enabledWhen>
-                <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.resultset.panel.valueView.active"/>
-                </with>
-            </enabledWhen>
         </handler>
 
         <!-- Override text commands in RS viewer -->

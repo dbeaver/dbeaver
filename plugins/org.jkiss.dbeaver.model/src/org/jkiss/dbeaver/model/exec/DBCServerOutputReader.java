@@ -25,7 +25,7 @@ import java.io.PrintWriter;
 /**
  * Provides ability to read server logs for certain session
  */
-public interface DBCServerOutputReader extends DBPObject,DBPCloseableObject
+public interface DBCServerOutputReader extends DBPObject
 {
     boolean isServerOutputEnabled();
 

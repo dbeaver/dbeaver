@@ -73,7 +73,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             if (this.connection == null) {
                 throw new DBCException("Null connection returned");
             }
-
+            monitor.subTask("Set connection defaults");
             // Get defaults from preferences
             if (autoCommit == null) {
                 autoCommit = dataSource.getContainer().isDefaultAutoCommit();
@@ -152,7 +152,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     @Override
-    public void isContextAlive(DBRProgressMonitor monitor) throws DBException {
+    public void checkContextAlive(DBRProgressMonitor monitor) throws DBException {
         if (!JDBCUtils.isConnectionAlive(getDataSource(), getConnection())) {
             throw new DBCException("Connection is dead");
         }
@@ -192,7 +192,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         // while UI may invoke callbacks to operate with connection
         synchronized (this) {
             if (connection != null) {
-                this.dataSource.closeConnection(connection);
+                this.dataSource.closeConnection(connection, purpose);
                 connection = null;
             }
             super.closeContext();

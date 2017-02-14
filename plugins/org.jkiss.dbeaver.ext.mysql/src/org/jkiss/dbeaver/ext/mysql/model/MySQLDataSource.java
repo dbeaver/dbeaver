@@ -46,10 +46,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -114,36 +113,27 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         props.put("requireSSL", String.valueOf(CommonUtils.toBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_REQUIRE_SSL))));
 
         final String caCertProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CA_CERT);
+        final String clientCertProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_CERT);
+        final String clientCertKeyProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_KEY);
 
         {
             // Trust keystore
-            String ksId = "ssl-truststore";
-            if (!CommonUtils.isEmpty(caCertProp)) {
-                File caCertFile = new File(caCertProp);
-                try (InputStream is = new FileInputStream(caCertFile)) {
-                    securityManager.addCertificate(ksId, getContainer().getId(), is);
-                }
+            if (!CommonUtils.isEmpty(caCertProp) || !CommonUtils.isEmpty(clientCertProp)) {
+                byte[] caCertData = CommonUtils.isEmpty(caCertProp) ? null : IOUtils.readFileToBuffer(new File(caCertProp));
+                byte[] clientCertData = CommonUtils.isEmpty(clientCertProp) ? null : IOUtils.readFileToBuffer(new File(clientCertProp));
+                byte[] keyData = CommonUtils.isEmpty(clientCertKeyProp) ? null : IOUtils.readFileToBuffer(new File(clientCertKeyProp));
+                securityManager.addCertificate(getContainer(), "ssl", caCertData, clientCertData, keyData);
             } else {
-                securityManager.deleteCertificate(ksId, getContainer().getId());
+                securityManager.deleteCertificate(getContainer(), "ssl");
             }
-            props.put("trustCertificateKeyStoreUrl", makeKeyStorePath(securityManager.getKeyStorePath(ksId)));
+            final String ksPath = makeKeyStorePath(securityManager.getKeyStorePath(getContainer(), "ssl"));
+            props.put("clientCertificateKeyStoreUrl", ksPath);
+            props.put("trustCertificateKeyStoreUrl", ksPath);
         }
-
-        {
-            // Client certificate
-            String ksId = "ssl-clientstore";
-            final String clientCertProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_CERT);
-            if (!CommonUtils.isEmpty(clientCertProp)) {
-                File clientCertFile = new File(clientCertProp);
-                try (InputStream is = new FileInputStream(clientCertFile)) {
-                    securityManager.addCertificate(ksId, getContainer().getId(), is);
-                }
-            } else {
-                securityManager.deleteCertificate(ksId, getContainer().getId());
-            }
-            props.put("clientCertificateKeyStoreUrl", makeKeyStorePath(securityManager.getKeyStorePath(ksId)));
+        final String cipherSuites = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CIPHER_SUITES);
+        if (!CommonUtils.isEmpty(cipherSuites)) {
+            props.put("enabledSSLCipherSuites;", cipherSuites);
         }
-
         final boolean retrievePublicKey = CommonUtils.getBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE), false);
         if (retrievePublicKey) {
             props.put("allowPublicKeyRetrieval", "true");

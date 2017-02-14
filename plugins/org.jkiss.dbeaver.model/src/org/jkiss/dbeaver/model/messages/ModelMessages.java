@@ -108,6 +108,7 @@ public class ModelMessages extends NLS {
 	public static String model_jdbc_read_committed;
 	public static String model_jdbc_read_uncommitted;
 	public static String model_jdbc_rename_object;
+	public static String model_jdbc_reorder_object;
 	public static String model_jdbc_repeatable_read;
 	public static String model_jdbc_save_to_file_;
 	public static String model_jdbc_scale;

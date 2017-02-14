@@ -35,6 +35,7 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.update.Update;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
@@ -51,6 +52,8 @@ public class SQLQuery {
 
     private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("--\\s*(?:NAME|TITLE)\\s*:\\s*(.+)\\s*", Pattern.CASE_INSENSITIVE);
 
+    @Nullable
+    private final DBPDataSource dataSource;
     @NotNull
     private String originalQuery;
     @NotNull
@@ -67,21 +70,21 @@ public class SQLQuery {
     private List<SQLSelectItem> selectItems;
     private String queryTitle;
 
-    public SQLQuery(@NotNull String query)
+    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String query)
     {
-        this(query, 0, query.length());
+        this(dataSource, query, 0, query.length());
     }
 
     /**
      * Copy constructor.
      * Copies query state but sets new query string.
      */
-    public SQLQuery(@NotNull String query, @NotNull SQLQuery sourceQuery) {
-        this(query, sourceQuery, true);
+    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String query, @NotNull SQLQuery sourceQuery) {
+        this(dataSource, query, sourceQuery, true);
     }
 
-    public SQLQuery(@NotNull String query, @NotNull SQLQuery sourceQuery, boolean preserveOriginal) {
-        this(query, sourceQuery.offset, sourceQuery.length);
+    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String query, @NotNull SQLQuery sourceQuery, boolean preserveOriginal) {
+        this(dataSource, query, sourceQuery.offset, sourceQuery.length);
         if (preserveOriginal) {
             this.originalQuery = sourceQuery.originalQuery;
         }
@@ -89,8 +92,9 @@ public class SQLQuery {
         this.data = sourceQuery.data;
     }
 
-    public SQLQuery(@NotNull String query, int offset, int length)
+    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String query, int offset, int length)
     {
+        this.dataSource = dataSource;
         this.originalQuery = this.query = query;
         this.offset = offset;
         this.length = length;
@@ -159,7 +163,7 @@ public class SQLQuery {
         if (name == null) {
             return null;
         }
-        return DBUtils.getUnQuotedIdentifier(name, "\"");
+        return DBUtils.getUnQuotedIdentifier(dataSource, name);
     }
 
     /**
