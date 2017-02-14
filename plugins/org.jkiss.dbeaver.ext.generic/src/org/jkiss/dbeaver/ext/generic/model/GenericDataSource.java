@@ -214,11 +214,12 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public void close()
+    public void shutdown(DBRProgressMonitor monitor)
     {
-        super.close();
+        super.shutdown(monitor);
         String paramShutdown = CommonUtils.toString(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SHUTDOWN_URL_PARAM));
         if (!CommonUtils.isEmpty(paramShutdown)) {
+            monitor.subTask("Shutdown embedded database");
             try {
                 final Driver driver = getDriverInstance(VoidProgressMonitor.INSTANCE); // Use void monitor - driver already loaded
                 if (driver != null) {
@@ -227,6 +228,7 @@ public class GenericDataSource extends JDBCDataSource
             } catch (Exception e) {
                 log.debug(e);
             }
+            monitor.worked(1);
         }
     }
 

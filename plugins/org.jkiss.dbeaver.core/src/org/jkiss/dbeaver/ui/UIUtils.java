@@ -1201,6 +1201,18 @@ public class UIUtils {
         return null;
     }
 
+    public static void disposeControlOnItemDispose(final CTabItem tabItem) {
+        tabItem.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                final Control control = tabItem.getControl();
+                if (!control.isDisposed()) {
+                    control.dispose();
+                }
+            }
+        });
+    }
+
     public static TreeItem getTreeItem(Tree tree, Object data)
     {
         for (TreeItem item : tree.getItems()) {

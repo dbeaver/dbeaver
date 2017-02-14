@@ -207,6 +207,7 @@ public class RuntimeUtils {
                 return Status.OK_STATUS;
             }
         };
+
         monitorJob.schedule();
 
         // Wait for job to finish

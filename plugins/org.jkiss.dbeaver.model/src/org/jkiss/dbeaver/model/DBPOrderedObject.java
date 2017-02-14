@@ -15,22 +15,20 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.app;
+package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-
-import java.io.File;
 
 /**
- * Certificate storage
+ * Object with order.
+ * Supports reordering
  */
-public interface DBACertificateStorage
+public interface DBPOrderedObject
 {
-    void addCertificate(DBPDataSourceContainer dataSource, String certType, byte[] caCertStream, byte[] clientCertStream, byte[] keyStream) throws DBException;
+    int getOrdinalPosition();
 
-    void deleteCertificate(DBPDataSourceContainer dataSource, String certType) throws DBException;
+    int getMaximumOrdinalPosition();
 
-    File getKeyStorePath(DBPDataSourceContainer dataSource, String certType);
+    void setOrdinalPosition(int position);
 
 }

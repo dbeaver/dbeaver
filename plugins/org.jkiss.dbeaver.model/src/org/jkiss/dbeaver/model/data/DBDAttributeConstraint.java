@@ -189,8 +189,14 @@ public class DBDAttributeConstraint {
         this.visualPosition = originalVisualPosition;
     }
 
-    public boolean equalFilters(DBDAttributeConstraint obj)
+    public boolean equalFilters(DBDAttributeConstraint obj, boolean compareOrders)
     {
+        if (compareOrders) {
+            if (this.orderPosition != obj.orderPosition ||
+                this.orderDescending != obj.orderDescending) {
+                return false;
+            }
+        }
         return
             CommonUtils.equalObjects(this.attribute, obj.attribute) &&
             CommonUtils.equalObjects(this.criteria, obj.criteria) &&

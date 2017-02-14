@@ -263,7 +263,10 @@ public final class DBValueFormatting {
         if (value.getClass().isArray()) {
             if (value.getClass().getComponentType() == Byte.TYPE) {
                 byte[] bytes = (byte[]) value;
-                return CommonUtils.toHexString(bytes, 0, 2000);
+                int length = bytes.length;
+                if (length > 2000) length = 2000;
+                String string = CommonUtils.toHexString(bytes, 0, length);
+                return bytes.length > 2000 ? string + "..." : string;
             } else {
                 return GeneralUtils.makeDisplayString(value).toString();
             }

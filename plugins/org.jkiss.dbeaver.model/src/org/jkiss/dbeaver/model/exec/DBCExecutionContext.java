@@ -71,7 +71,7 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
      * @param monitor    monitor
      * @throws DBException on any network errors
      */
-    void isContextAlive(DBRProgressMonitor monitor)
+    void checkContextAlive(DBRProgressMonitor monitor)
         throws DBException;
 
     /**

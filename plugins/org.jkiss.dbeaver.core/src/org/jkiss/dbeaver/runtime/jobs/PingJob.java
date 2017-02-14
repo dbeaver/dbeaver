@@ -18,11 +18,14 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.List;
 
 /**
  * PingJob
@@ -47,12 +50,17 @@ public class PingJob extends AbstractJob
         log.debug("Ping connection " + dataSource.getContainer().getId());
         for (final DBCExecutionContext context : dataSource.getAllContexts()) {
             try {
-                context.isContextAlive(monitor);
+                context.checkContextAlive(monitor);
             } catch (Exception e) {
                 log.debug("Context [" + dataSource.getName() + "::" + context.getContextName() + "] check failed: " + e.getMessage());
+                if (e instanceof DBException) {
+                    final List<InvalidateJob.ContextInvalidateResult> results = InvalidateJob.invalidateDataSource(monitor, dataSource);
+                    log.debug("Connection invalidated: " + results);
+                }
             }
         }
         return Status.OK_STATUS;
     }
+
 
 }

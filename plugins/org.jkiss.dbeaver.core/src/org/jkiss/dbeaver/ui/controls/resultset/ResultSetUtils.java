@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
@@ -37,8 +38,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -140,7 +139,11 @@ public class ResultSetUtils
                 if (attrEntity == null) {
                     attrEntity = entity;
                 }
-                if (attrEntity != null) {
+                if (attrEntity == null) {
+                    if (attrEntityMeta != null) {
+                        log.debug("Table '" + DBUtils.getSimpleQualifiedName(attrEntityMeta.getCatalogName(), attrEntityMeta.getSchemaName(), attrEntityMeta.getEntityName()) + "' not found in metadata catalog");
+                    }
+                } else {
                     DBDPseudoAttribute pseudoAttribute = DBUtils.getPseudoAttribute(attrEntity, attrMeta.getName());
                     if (pseudoAttribute != null) {
                         binding.setPseudoAttribute(pseudoAttribute);
@@ -237,9 +240,6 @@ public class ResultSetUtils
             DBSEntity entity = getEntityFromMetaData(monitor, objectContainer, entityMeta, false);
             if (entity == null) {
                 entity = getEntityFromMetaData(monitor, objectContainer, entityMeta, true);
-            }
-            if (entity == null) {
-                log.debug("Table '" + DBUtils.getSimpleQualifiedName(entityMeta.getCatalogName(), entityMeta.getSchemaName(), entityMeta.getEntityName()) + "' not found in metadata catalog");
             }
             return entity;
         } else {

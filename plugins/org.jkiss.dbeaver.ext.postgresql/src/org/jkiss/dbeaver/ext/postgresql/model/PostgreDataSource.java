@@ -184,7 +184,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         if (searchPathStr != null) {
             for (String str : searchPathStr.replace("$user", activeUser).split(",")) {
                 str = str.trim();
-                this.searchPath.add(DBUtils.getUnQuotedIdentifier(str, "\""));
+                this.searchPath.add(DBUtils.getUnQuotedIdentifier(this, str));
             }
         } else {
             this.searchPath.add(PostgreConstants.PUBLIC_SCHEMA_NAME);

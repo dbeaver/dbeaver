@@ -53,7 +53,7 @@ import java.util.regex.Pattern;
  * GenericDataSource
  */
 public class OracleDataSource extends JDBCDataSource
-    implements DBSObjectSelector, DBCServerOutputReader, DBCQueryPlanner, IAdaptable {
+    implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
     private static final Log log = Log.getLog(OracleDataSource.class);
 
     //private final static Map<String, OCIClassLoader> ociClassLoadersCache = new HashMap<String, OCIClassLoader>();
@@ -64,6 +64,7 @@ public class OracleDataSource extends JDBCDataSource
     final UserCache userCache = new UserCache();
     final ProfileCache profileCache = new ProfileCache();
     final RoleCache roleCache = new RoleCache();
+    final OracleOutputReader outputReader;
 
     private OracleSchema publicSchema;
     private String activeSchemaName;
@@ -77,6 +78,7 @@ public class OracleDataSource extends JDBCDataSource
     public OracleDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException {
         super(monitor, container);
+        this.outputReader = new OracleOutputReader();
     }
 
     public boolean isViewAvailable(@NotNull DBRProgressMonitor monitor, @NotNull String schemaName, @NotNull String viewName) {
@@ -136,10 +138,10 @@ public class OracleDataSource extends JDBCDataSource
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         // Enable DBMS output
-        enableServerOutput(
+        outputReader.enableServerOutput(
             monitor,
             context,
-            isServerOutputEnabled());
+            outputReader.isServerOutputEnabled());
         if (setActiveObject) {
             setCurrentSchema(monitor, context, getDefaultObject());
         }
@@ -441,6 +443,8 @@ public class OracleDataSource extends JDBCDataSource
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new OracleStructureAssistant(this));
+        } else if (adapter == DBCServerOutputReader.class) {
+            return adapter.cast(outputReader);
         }
         return super.getAdapter(adapter);
     }
@@ -533,23 +537,6 @@ public class OracleDataSource extends JDBCDataSource
         return tableName;
     }
 
-    @Override
-    public boolean isServerOutputEnabled() {
-        return getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_DBMS_OUTPUT);
-    }
-
-    @Override
-    public void enableServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, boolean enable) throws DBCException {
-        String sql = enable ?
-            "BEGIN DBMS_OUTPUT.ENABLE(" + OracleConstants.MAXIMUM_DBMS_OUTPUT_SIZE + "); END;" :
-            "BEGIN DBMS_OUTPUT.DISABLE; END;";
-        try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, (enable ? "Enable" : "Disable ") + "DBMS output")) {
-            JDBCUtils.executeSQL((JDBCSession) session, sql);
-        } catch (SQLException e) {
-            throw new DBCException(e, this);
-        }
-    }
-
     @Nullable
     @Override
     public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
@@ -557,30 +544,6 @@ public class OracleDataSource extends JDBCDataSource
             //return new QueryTransformerRowNum();
         }
         return super.createQueryTransformer(type);
-    }
-
-    @Override
-    public void readServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, PrintWriter output) throws DBCException {
-        try (JDBCSession session = (JDBCSession) context.openSession(monitor, DBCExecutionPurpose.UTIL, "Read DBMS output")) {
-            try (CallableStatement getLineProc = session.getOriginal().prepareCall("{CALL DBMS_OUTPUT.GET_LINE(?, ?)}")) {
-                getLineProc.registerOutParameter(1, java.sql.Types.VARCHAR);
-                getLineProc.registerOutParameter(2, java.sql.Types.INTEGER);
-                int status = 0;
-                while (status == 0) {
-                    getLineProc.execute();
-                    status = getLineProc.getInt(2);
-                    if (status == 0) {
-                        String str = getLineProc.getString(1);
-                        if (str != null) {
-                            output.write(str);
-                        }
-                        output.write('\n');
-                    }
-                }
-            } catch (SQLException e) {
-                throw new DBCException(e, this);
-            }
-        }
     }
 
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile("(.+): line ([0-9]+), column ([0-9]+):");
@@ -640,6 +603,49 @@ public class OracleDataSource extends JDBCDataSource
             }
         }
         return null;
+    }
+
+    private class OracleOutputReader implements DBCServerOutputReader {
+        @Override
+        public boolean isServerOutputEnabled() {
+            return getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_DBMS_OUTPUT);
+        }
+
+        @Override
+        public void enableServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, boolean enable) throws DBCException {
+            String sql = enable ?
+                "BEGIN DBMS_OUTPUT.ENABLE(" + OracleConstants.MAXIMUM_DBMS_OUTPUT_SIZE + "); END;" :
+                "BEGIN DBMS_OUTPUT.DISABLE; END;";
+            try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, (enable ? "Enable" : "Disable ") + "DBMS output")) {
+                JDBCUtils.executeSQL((JDBCSession) session, sql);
+            } catch (SQLException e) {
+                throw new DBCException(e, OracleDataSource.this);
+            }
+        }
+
+        @Override
+        public void readServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, PrintWriter output) throws DBCException {
+            try (JDBCSession session = (JDBCSession) context.openSession(monitor, DBCExecutionPurpose.UTIL, "Read DBMS output")) {
+                try (CallableStatement getLineProc = session.getOriginal().prepareCall("{CALL DBMS_OUTPUT.GET_LINE(?, ?)}")) {
+                    getLineProc.registerOutParameter(1, java.sql.Types.VARCHAR);
+                    getLineProc.registerOutParameter(2, java.sql.Types.INTEGER);
+                    int status = 0;
+                    while (status == 0) {
+                        getLineProc.execute();
+                        status = getLineProc.getInt(2);
+                        if (status == 0) {
+                            String str = getLineProc.getString(1);
+                            if (str != null) {
+                                output.write(str);
+                            }
+                            output.write('\n');
+                        }
+                    }
+                } catch (SQLException e) {
+                    throw new DBCException(e, OracleDataSource.this);
+                }
+            }
+        }
     }
 
     static class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {

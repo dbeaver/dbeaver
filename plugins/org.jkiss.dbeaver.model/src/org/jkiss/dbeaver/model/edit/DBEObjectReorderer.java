@@ -15,22 +15,27 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.app;
+package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-
-import java.io.File;
+import org.jkiss.dbeaver.model.DBPOrderedObject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * Certificate storage
+ * Object reorderer.
+ * Provide object's reorder functions
  */
-public interface DBACertificateStorage
-{
-    void addCertificate(DBPDataSourceContainer dataSource, String certType, byte[] caCertStream, byte[] clientCertStream, byte[] keyStream) throws DBException;
+public interface DBEObjectReorderer<OBJECT_TYPE extends DBSObject & DBPOrderedObject> extends DBEObjectManager<OBJECT_TYPE> {
 
-    void deleteCertificate(DBPDataSourceContainer dataSource, String certType) throws DBException;
-
-    File getKeyStorePath(DBPDataSourceContainer dataSource, String certType);
+    /**
+     * Describes object
+     *
+     * @param commandContext command context. Implementation should add new command to it.
+     * @param object object
+     * @param newPosition new position
+     * @throws DBException on any error
+     */
+    void setObjectOrdinalPosition(DBECommandContext commandContext, OBJECT_TYPE object, int newPosition)
+        throws DBException;
 
 }

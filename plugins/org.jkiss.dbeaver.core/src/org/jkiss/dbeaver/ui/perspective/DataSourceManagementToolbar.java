@@ -519,6 +519,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         databaseCombo.setRedraw(false);
         try {
             databaseCombo.removeAll();
+            if (reader.active == null) {
+                databaseCombo.addItem(null);
+            }
             if (!reader.enabled) {
                 databaseCombo.setEnabled(false);
                 return;

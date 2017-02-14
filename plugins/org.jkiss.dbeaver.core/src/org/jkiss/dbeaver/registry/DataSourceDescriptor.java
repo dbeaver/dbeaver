@@ -843,50 +843,9 @@ public class DataSourceDescriptor
 
         connecting = true;
         try {
-            {
-                List<DBPDataSourceUser> usersStamp;
-                synchronized (users) {
-                    usersStamp = new ArrayList<>(users);
-                }
-                int jobCount = 0;
-                // Save all unsaved data
-                for (DBPDataSourceUser user : usersStamp) {
-                    if (user instanceof Job) {
-                        jobCount++;
-                    }
-                    if (user instanceof DBPDataSourceHandler) {
-                        ((DBPDataSourceHandler) user).beforeDisconnect();
-                    }
-                }
-                if (jobCount > 0) {
-                    monitor.beginTask("Waiting for all active tasks to finish", jobCount);
-                    // Stop all jobs
-                    for (DBPDataSourceUser user : usersStamp) {
-                        if (user instanceof Job) {
-                            Job job = (Job) user;
-                            monitor.subTask("Stop '" + job.getName() + "'");
-                            if (job.getState() == Job.RUNNING) {
-                                job.cancel();
-                                try {
-                                    // Wait for 3 seconds
-                                    for (int i = 0; i < 10; i++) {
-                                        Thread.sleep(300);
-                                        if (job.getState() != Job.RUNNING) {
-                                            break;
-                                        }
-                                    }
-                                } catch (InterruptedException e) {
-                                    // its ok, do nothing
-                                }
-                            }
-                            monitor.worked(1);
-                        }
-                    }
-                    monitor.done();
-                }
-            }
+            releaseDataSourceUsers(monitor);
 
-            monitor.beginTask("Disconnect from '" + getName() + "'", 6);
+            monitor.beginTask("Disconnect from '" + getName() + "'", 5 + dataSource.getAllContexts().length);
 
             processEvents(monitor, DBPConnectionEventType.BEFORE_DISCONNECT);
 
@@ -895,7 +854,7 @@ public class DataSourceDescriptor
             // Close datasource
             monitor.subTask("Close connection");
             if (dataSource != null) {
-                dataSource.close();
+                dataSource.shutdown(monitor);
             }
             monitor.worked(1);
 
@@ -904,10 +863,8 @@ public class DataSourceDescriptor
                 monitor.subTask("Close tunnel");
                 try {
                     tunnel.closeTunnel(monitor);
-                } catch (Exception e) {
-                    log.warn("Error closing tunnel", e);
-                } finally {
-                    this.tunnel = null;
+                } catch (Throwable e) {
+                    log.error("Error closing tunnel", e);
                 }
             }
             monitor.worked(1);
@@ -943,6 +900,51 @@ public class DataSourceDescriptor
             return true;
         } finally {
             connecting = false;
+            log.debug("Disconnected (" + getId() + ")");
+        }
+    }
+
+    private void releaseDataSourceUsers(DBRProgressMonitor monitor) {
+        List<DBPDataSourceUser> usersStamp;
+        synchronized (users) {
+            usersStamp = new ArrayList<>(users);
+        }
+
+        int jobCount = 0;
+        // Save all unsaved data
+        for (DBPDataSourceUser user : usersStamp) {
+            if (user instanceof Job) {
+                jobCount++;
+            }
+            if (user instanceof DBPDataSourceHandler) {
+                ((DBPDataSourceHandler) user).beforeDisconnect();
+            }
+        }
+        if (jobCount > 0) {
+            monitor.beginTask("Waiting for all active tasks to finish", jobCount);
+            // Stop all jobs
+            for (DBPDataSourceUser user : usersStamp) {
+                if (user instanceof Job) {
+                    Job job = (Job) user;
+                    monitor.subTask("Stop '" + job.getName() + "'");
+                    if (job.getState() == Job.RUNNING) {
+                        job.cancel();
+                        try {
+                            // Wait for 3 seconds
+                            for (int i = 0; i < 30; i++) {
+                                Thread.sleep(100);
+                                if (job.getState() != Job.RUNNING) {
+                                    break;
+                                }
+                            }
+                        } catch (InterruptedException e) {
+                            // its ok, do nothing
+                        }
+                    }
+                    monitor.worked(1);
+                }
+            }
+            monitor.done();
         }
     }
 

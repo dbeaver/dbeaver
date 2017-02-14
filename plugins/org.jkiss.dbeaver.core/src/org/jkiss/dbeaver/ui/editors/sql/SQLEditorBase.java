@@ -464,7 +464,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         String selText = selection.getText().trim();
         selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText);
         if (!CommonUtils.isEmpty(selText)) {
-            sqlQuery = new SQLQuery(selText, selection.getOffset(), selection.getLength());
+            sqlQuery = new SQLQuery(getDataSource(), selText, selection.getOffset(), selection.getLength());
         } else if (selection.getOffset() >= 0) {
             sqlQuery = extractQueryAtPos(selection.getOffset());
         } else {
@@ -617,6 +617,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         boolean hasBlocks = false;
         boolean hasValuableTokens = false;
         boolean hasBlockHeader = false;
+        String blockTogglePattern = null;
         for (; ; ) {
             IToken token = ruleManager.nextToken();
             int tokenOffset = ruleManager.getTokenOffset();
@@ -666,10 +667,21 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 hasBlocks = true;
                 hasBlockHeader = true;
             } else if (token instanceof SQLBlockToggleToken) {
-                if (bracketDepth == 1) {
+                String togglePattern;
+                try {
+                    togglePattern = document.get(tokenOffset, tokenLength);
+                } catch (BadLocationException e) {
+                    log.warn(e);
+                    togglePattern = "";
+                }
+                // Second toggle pattern must be the same as first one.
+                // Toggles can be nested (PostgreSQL) and we need to count only outer
+                if (bracketDepth == 1 && togglePattern.equals(blockTogglePattern)) {
                     bracketDepth--;
-                } else if (bracketDepth == 0) {
+                    blockTogglePattern = null;
+                } else if (bracketDepth == 0 && blockTogglePattern == null) {
                     bracketDepth++;
+                    blockTogglePattern = togglePattern;
                 } else {
                     log.debug("Block toggle token inside another block. Can't process it");
                 }
@@ -747,6 +759,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                     }*/
                     // make script line
                     return new SQLQuery(
+                        getDataSource(),
                         queryText.trim(),
                         statementStart,
                         tokenOffset - statementStart);
