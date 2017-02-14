@@ -61,13 +61,6 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
                         public void run() {
                             // Save config
                             container.persistConfiguration();
-                            DBeaverUI.syncExec(new Runnable() {
-                                @Override
-                                public void run() {
-                                    // Update actions
-                                    DataSourcePropertyTester.fireCommandRefresh(CoreCommands.CMD_TOGGLE_AUTOCOMMIT);
-                                }
-                            });
                         }
                     });
                 } catch (DBException e) {

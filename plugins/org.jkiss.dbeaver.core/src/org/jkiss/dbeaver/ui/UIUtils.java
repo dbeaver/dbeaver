@@ -454,7 +454,15 @@ public class UIUtils {
     }
 
     public static int getFontHeight(Control control) {
-        return control.getFont().getFontData()[0].getHeight();
+        return getFontHeight(control.getFont());
+    }
+
+    public static int getFontHeight(Font font) {
+        FontData[] fontData = font.getFontData();
+        if (fontData.length == 0) {
+            return 20;
+        }
+        return fontData[0].getHeight();
     }
 
     public static Font makeBoldFont(Font normalFont)
@@ -1579,4 +1587,5 @@ public class UIUtils {
         item.setPreferredSize(preferred);
         return item;
     }
+
 }
