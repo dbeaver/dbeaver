@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.core.application;
 
+import org.eclipse.core.runtime.IExtension;
 import org.eclipse.jface.action.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.*;
@@ -24,6 +25,10 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
+import org.eclipse.ui.internal.WorkbenchPlugin;
+import org.eclipse.ui.internal.registry.ActionSetRegistry;
+import org.eclipse.ui.internal.registry.IActionSetDescriptor;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.application.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -46,6 +51,8 @@ import java.util.TimeZone;
  */
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 {
+    private static final Log log = Log.getLog(ApplicationActionBarAdvisor.class);
+
     public static final String M_ALT_HELP = "dbhelp";
 
     protected IActionDelegate emergentExitAction;
@@ -59,6 +66,34 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         super(configurer);
     }
 
+    private static final String[] actionSetId = new String[] {
+        "org.eclipse.ui.WorkingSetActionSet", //$NON-NLS-1$
+        "org.eclipse.ui.edit.text.actionSet.navigation", //$NON-NLS-1$
+        //"org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo", //$NON-NLS-1$
+        //"org.eclipse.ui.actionSet.openFiles", //$NON-NLS-1$
+        "org.eclipse.ui.edit.text.actionSet.annotationNavigation", //$NON-NLS-1$
+        //"org.eclipse.ui.NavigateActionSet", //$NON-NLS-1$
+        //"org.eclipse.search.searchActionSet" //$NON-NLS-1$
+    };
+
+
+
+
+    private void removeUnWantedActions() {
+        ActionSetRegistry asr = WorkbenchPlugin.getDefault().getActionSetRegistry();
+        IActionSetDescriptor[] actionSets = asr.getActionSets();
+
+        for (IActionSetDescriptor actionSet : actionSets) {
+            for (String element : actionSetId) {
+
+                if (element.equals(actionSet.getId())) {
+                    log.debug("Disable Eclipse action set '" + actionSet.getId() + "'");
+                    IExtension ext = actionSet.getConfigurationElement().getDeclaringExtension();
+                    asr.removeExtension(ext, new Object[] { actionSet });
+                }
+            }
+        }
+    }
     protected boolean isShowAltHelp() {
         return true;
     }
@@ -66,6 +101,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     @Override
     protected void makeActions(final IWorkbenchWindow window)
     {
+        removeUnWantedActions();
+
         register(ActionFactory.SAVE.create(window));
         register(ActionFactory.SAVE_AS.create(window));
         register(ActionFactory.SAVE_ALL.create(window));
