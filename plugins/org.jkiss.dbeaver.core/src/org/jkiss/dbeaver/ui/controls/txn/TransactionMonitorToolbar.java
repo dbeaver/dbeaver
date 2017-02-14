@@ -68,6 +68,7 @@ public class TransactionMonitorToolbar {
             super(parent, SWT.NONE);
             //setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
             setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+            setToolTipText("Transactions monitor");
             addPaintListener(new PaintListener() {
                 @Override
                 public void paintControl(PaintEvent e) {
@@ -84,6 +85,7 @@ public class TransactionMonitorToolbar {
             txnText.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
             txnText.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
             txnText.setText("");
+            txnText.setToolTipText("Transactions monitor");
             GridData gd = new GridData();
             gd.verticalAlignment = GridData.CENTER;
             gd.grabExcessVerticalSpace = true;
