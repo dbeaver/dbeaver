@@ -682,7 +682,7 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <test property="org.jkiss.dbeaver.core.datasource.transactional" value="true"/>
+                        <test property="org.jkiss.dbeaver.core.datasource.transactionActive" value="true"/>
                     </adapt>
                 </with>
             </enabledWhen>
@@ -691,7 +691,7 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <test property="org.jkiss.dbeaver.core.datasource.transactional" value="true"/>
+                        <test property="org.jkiss.dbeaver.core.datasource.transactionActive" value="true"/>
                     </adapt>
                 </with>
             </enabledWhen>
