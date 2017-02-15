@@ -93,5 +93,10 @@ public class DBVColorOverride {
             operator == this.operator &&
             Arrays.equals(this.attributeValues, values);
     }
+
+    @Override
+    public String toString() {
+        return attributeName + " " + operator.toString() + " " + Arrays.toString(attributeValues);
+    }
 }
 

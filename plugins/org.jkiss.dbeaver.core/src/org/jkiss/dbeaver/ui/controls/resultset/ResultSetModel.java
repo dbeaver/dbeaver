@@ -65,7 +65,7 @@ public class ResultSetModel {
     private volatile boolean updateInProgress = false;
 
     // Coloring
-    private Map<DBDAttributeBinding, AttributeColorSettings> colorMapping = new HashMap<>();
+    private Map<DBDAttributeBinding, List<AttributeColorSettings>> colorMapping = new HashMap<>();
 
     private DBCStatistics statistics;
     private DBCTrace trace;
@@ -591,7 +591,12 @@ public class ResultSetModel {
                 for (DBVColorOverride co : coList) {
                     DBDAttributeBinding binding = getAttributeBinding(entity, co.getAttributeName());
                     if (binding != null) {
-                        colorMapping.put(binding, new AttributeColorSettings(co));
+                        List<AttributeColorSettings> cmList = colorMapping.get(binding);
+                        if (cmList == null) {
+                            cmList = new ArrayList<>();
+                            colorMapping.put(binding, cmList);
+                        }
+                        cmList.add(new AttributeColorSettings(co));
                     }
                 }
             }
@@ -606,14 +611,17 @@ public class ResultSetModel {
                 row.background = null;
             }
         } else {
-            for (Map.Entry<DBDAttributeBinding, AttributeColorSettings> entry : colorMapping.entrySet()) {
+            for (Map.Entry<DBDAttributeBinding, List<AttributeColorSettings>> entry : colorMapping.entrySet()) {
                 for (ResultSetRow row : rows) {
                     final DBDAttributeBinding binding = entry.getKey();
                     final Object cellValue = getCellValue(binding, row);
                     //final String cellStringValue = binding.getValueHandler().getValueDisplayString(binding, cellValue, DBDDisplayFormat.NATIVE);
-                    if (entry.getValue().evaluate(cellValue)) {
-                        row.foreground = entry.getValue().colorForeground;
-                        row.background = entry.getValue().colorBackground;
+                    for (AttributeColorSettings acs : entry.getValue()) {
+                        if (acs.evaluate(cellValue)) {
+                            row.foreground = acs.colorForeground;
+                            row.background = acs.colorBackground;
+                            break;
+                        }
                     }
                 }
             }
