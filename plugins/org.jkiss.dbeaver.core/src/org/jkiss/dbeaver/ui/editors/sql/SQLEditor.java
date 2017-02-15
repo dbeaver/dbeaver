@@ -305,6 +305,9 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void releaseExecutionContext() {
         if (ownContext && executionContext != null && executionContext.isConnected()) {
+            // End transaction
+            DataSourceHandler.checkAndCloseActiveTransaction(new DBCExecutionContext[] {executionContext});
+
             // Close context in separate job (otherwise it can block UI)
             new CloseContextJob(executionContext).schedule();
         }
@@ -363,8 +366,13 @@ public class SQLEditor extends SQLEditorBase implements
         protected IStatus run(DBRProgressMonitor monitor) {
             monitor.beginTask("Close SQLEditor isolated connection", 1);
             try {
+                if (QMUtils.isTransactionActive(context)) {
+                    DataSourceHandler.closeActiveTransaction(monitor, context, true);
+                }
+
                 monitor.subTask("Close context " + context.getContextName());
                 context.close();
+
             } finally {
                 monitor.done();
             }
@@ -2139,7 +2147,6 @@ public class SQLEditor extends SQLEditorBase implements
 
     private class SaveJob extends AbstractJob {
         private transient Boolean finished = null;
-
         public SaveJob() {
             super("Save '" + getPartName() + "' data changes...");
             setUser(true);
@@ -2154,11 +2161,6 @@ public class SQLEditor extends SQLEditorBase implements
                         if (rsv != null && rsv.isDirty()) {
                             rsv.doSave(monitor);
                         }
-                    }
-                }
-                if (ownContext && executionContext != null) {
-                    if (QMUtils.isTransactionActive(executionContext)) {
-                        DataSourceHandler.closeActiveTransaction(monitor, executionContext, true);
                     }
                 }
                 finished = true;

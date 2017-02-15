@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -27,6 +28,7 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -45,6 +47,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
 import org.jkiss.dbeaver.ui.perspective.AbstractPartListener;
 
 /**
@@ -54,6 +58,9 @@ public class TransactionMonitorToolbar {
     private static final Log log = Log.getLog(TransactionMonitorToolbar.class);
 
     public static final int MONITOR_UPDATE_DELAY = 250;
+
+    private static final RGB COLOR_FULL = QueryLogViewer.COLOR_LIGHT_RED;
+    private static final RGB COLOR_EMPTY = QueryLogViewer.COLOR_LIGHT_GREEN;
 
     private IWorkbenchWindow workbenchWindow;
 
@@ -133,6 +140,8 @@ public class TransactionMonitorToolbar {
                 }
             });
 
+            ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
+
             refreshJob = new RefreshJob(this);
         }
 
@@ -143,13 +152,26 @@ public class TransactionMonitorToolbar {
 
         private void paint(PaintEvent e) {
             Color bg;
-            if (!txnState.isTransactionMode()) {
+            final int updateCount = txnState == null ? 0 : txnState.getUpdateCount();
+
+            if (txnState == null || !txnState.isTransactionMode()) {
                 bg = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
-            } else if (txnState.getUpdateCount() == 0) {
+            } else if (updateCount == 0) {
                 bg = getDisplay().getSystemColor(SWT.COLOR_WHITE);
             } else {
                 // Use gradient depending on update count
-                bg = getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
+                ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
+
+                int minCount = 0, maxCount = 400;
+                int ratio = ((updateCount - minCount) * 100) / (maxCount - minCount);
+                if (updateCount >= maxCount) {
+                    bg = sharedColors.getColor(COLOR_FULL);
+                } else {
+                    RGB startColor = COLOR_EMPTY;
+                    RGB endColor = COLOR_FULL;
+                    final RGB rgb = UIUtils.blend(endColor, startColor, ratio);
+                    bg = sharedColors.getColor(rgb);
+                }
             }
             Rectangle bounds = getBounds();
             e.gc.setBackground(bg);
@@ -159,8 +181,8 @@ public class TransactionMonitorToolbar {
                 count = "N/A";
             } else if (!txnState.isTransactionMode()) {
                 count = "Auto";
-            } else if (txnState.getUpdateCount() > 0) {
-                count = String.valueOf(txnState.getUpdateCount());
+            } else if (updateCount > 0) {
+                count = String.valueOf(updateCount);
             } else {
                 count = "None";
             }
@@ -244,26 +266,22 @@ public class TransactionMonitorToolbar {
         }
 
         @Override
-        public synchronized void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit)
-        {
+        public synchronized void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit) {
             refreshMonitor();
         }
 
         @Override
-        public synchronized void handleTransactionCommit(@NotNull DBCExecutionContext context)
-        {
+        public synchronized void handleTransactionCommit(@NotNull DBCExecutionContext context) {
             refreshMonitor();
         }
 
         @Override
-        public synchronized void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint)
-        {
+        public synchronized void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint) {
             refreshMonitor();
         }
 
         @Override
-        public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement)
-        {
+        public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement) {
             refreshMonitor();
         }
 
