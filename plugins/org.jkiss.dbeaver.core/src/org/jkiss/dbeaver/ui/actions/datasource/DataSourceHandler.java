@@ -23,22 +23,17 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.ISaveablePart;
-import org.eclipse.ui.ISaveablePart2;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.qm.QMMCollector;
-import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -261,7 +256,7 @@ public class DataSourceHandler
         for (final DBCExecutionContext context : contexts) {
             // First rollback active transaction
             try {
-                if (isContextTransactionAffected(context)) {
+                if (QMUtils.isTransactionActive(context)) {
                     if (commitTxn == null) {
                         // Ask for confirmation
                         TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(container.getName());
@@ -292,6 +287,7 @@ public class DataSourceHandler
         return true;
     }
 
+/*
     public static int checkActiveTransaction(DBCExecutionContext context)
     {
         // First rollback active transaction
@@ -310,6 +306,7 @@ public class DataSourceHandler
         }
         return ISaveablePart2.YES;
     }
+*/
 
     public static void closeActiveTransaction(DBRProgressMonitor monitor, DBCExecutionContext context, boolean commitTxn) {
         try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "End active transaction")) {
@@ -317,47 +314,6 @@ public class DataSourceHandler
             EndTransactionTask task = new EndTransactionTask(session, commitTxn);
             RuntimeUtils.runTask(task, "Close active transactions", END_TRANSACTION_WAIT_TIME);
         }
-    }
-
-    public static boolean isContextTransactionAffected(DBCExecutionContext context) {
-        DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-        if (txnManager == null) {
-            return false;
-        }
-        try {
-            if (txnManager.isAutoCommit()) {
-                return false;
-            }
-        } catch (DBCException e) {
-            log.warn(e);
-            return false;
-        }
-
-        // If there are some executions in last savepoint then ask user about commit/rollback
-        QMMCollector qmm = DBeaverCore.getInstance().getQueryManager().getMetaCollector();
-        if (qmm != null) {
-            QMMSessionInfo qmmSession = qmm.getSessionInfo(context);
-            QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
-            QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
-            if (sp != null && (sp.getPrevious() != null || sp.getLastExecute() != null)) {
-                return true;
-/*
-                boolean hasUserExec = false;
-                if (true) {
-                    // Do not check whether we have user queries, just ask for confirmation
-                    hasUserExec = true;
-                } else {
-                    for (QMMTransactionSavepointInfo psp = sp; psp != null; psp = psp.getPrevious()) {
-                        if (psp.hasUserExecutions()) {
-                            hasUserExec = true;
-                            break;
-                        }
-                    }
-                }
-*/
-            }
-        }
-        return false;
     }
 
     private static class EndTransactionTask implements DBRRunnableWithProgress {

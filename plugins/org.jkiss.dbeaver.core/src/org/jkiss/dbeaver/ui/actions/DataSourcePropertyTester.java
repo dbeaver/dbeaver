@@ -85,17 +85,8 @@ public class DataSourcePropertyTester extends PropertyTester
                 }
             case PROP_TRANSACTION_ACTIVE:
                 if (context != null && context.isConnected()) {
-                    QMMSessionInfo session = DBeaverCore.getInstance().getQueryManager().getMetaCollector().getSessionInfo(context);
-                    QMMTransactionInfo transaction = session.getTransaction();
-                    if (transaction != null) {
-                        QMMTransactionSavepointInfo savepoint = transaction.getCurrentSavepoint();
-                        if (savepoint != null) {
-                            QMMStatementExecuteInfo execute = savepoint.getLastExecute();
-                            if (execute != null) {
-                                return Boolean.TRUE.equals(expectedValue);
-                            }
-                        }
-                    }
+                    boolean isActive = QMUtils.isTransactionActive(context);
+                    return Boolean.valueOf(isActive).equals(expectedValue);
                 }
                 return Boolean.FALSE.equals(expectedValue);
         }
