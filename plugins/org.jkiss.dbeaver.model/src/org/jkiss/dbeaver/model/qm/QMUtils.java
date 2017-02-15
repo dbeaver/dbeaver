@@ -105,7 +105,7 @@ public class QMUtils {
             QMMSessionInfo sessionInfo = application.getQueryManager().getMetaCollector().getSessionInfo(executionContext);
             if (sessionInfo.isClosed()) {
                 txnMode = false;
-            } else {
+            } else if (sessionInfo.isTransactional()) {
                 QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
                 if (txnInfo != null) {
                     txnMode = true;
@@ -119,8 +119,11 @@ public class QMUtils {
                         }
                     }
                 } else {
-                    txnMode = sessionInfo.isTransactional();
+                    // No active transaction?
+                    txnMode = false;
                 }
+            } else {
+                txnMode = false;
             }
         }
         return new QMTransactionState(execCount, updateCount, txnMode, txnStartTime);

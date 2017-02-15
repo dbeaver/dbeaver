@@ -27,11 +27,9 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.*;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.code.NotNull;
@@ -47,7 +45,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.perspective.AbstractPartListener;
 
 /**
@@ -106,11 +103,11 @@ public class TransactionMonitorToolbar {
     private class MonitorPanel extends Composite {
 
         private QMEventsHandler qmHandler;
-        private final Text txnText;
         private RefreshJob refreshJob;
+        private QMTransactionState txnState;
 
         public MonitorPanel(Composite parent) {
-            super(parent, SWT.NONE);
+            super(parent, SWT.BORDER);
             //setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
             setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
             addPaintListener(new PaintListener() {
@@ -119,23 +116,8 @@ public class TransactionMonitorToolbar {
                     paint(e);
                 }
             });
-            GridLayout layout = new GridLayout(1, false);
-            layout.marginHeight = 0;
-            //layout.marginWidth = 0;
-            setLayout(layout);
 
-            txnText = new Text(this, SWT.BORDER | SWT.SINGLE | SWT.CENTER);
-            txnText.setEnabled(false);
-            txnText.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-            txnText.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-            txnText.setText("");
-            setToolTipText("Transactions monitor");
-            GridData gd = new GridData();
-            gd.verticalAlignment = GridData.CENTER;
-            gd.grabExcessVerticalSpace = true;
-            gd.widthHint = UIUtils.getFontHeight(txnText) * 6;
-            txnText.setLayoutData(gd);
-
+            setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
             setToolTipText("Transactions monitor");
 
             qmHandler = new QMEventsHandler(this);
@@ -155,11 +137,33 @@ public class TransactionMonitorToolbar {
         @Override
         public void setToolTipText(String string) {
             super.setToolTipText(string);
-            txnText.setToolTipText(string);
         }
 
         private void paint(PaintEvent e) {
-            //e.gc.drawRectangle(e.x, e.y, e.width, e.height);
+            Color bg;
+            if (!txnState.isTransactionMode()) {
+                bg = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+            } else if (txnState.getUpdateCount() == 0) {
+                bg = getDisplay().getSystemColor(SWT.COLOR_WHITE);
+            } else {
+                // Use gradient depending on update count
+                bg = getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
+            }
+            Rectangle bounds = getBounds();
+            e.gc.setBackground(bg);
+            e.gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
+            String count = "";
+            if (txnState == null) {
+                count = "N/A";
+            } else if (!txnState.isTransactionMode()) {
+                count = "Auto";
+            } else if (txnState.getUpdateCount() > 0) {
+                count = String.valueOf(txnState.getUpdateCount());
+            } else {
+                count = "None";
+            }
+            final Point textSize = e.gc.textExtent(count);
+            e.gc.drawText(count, bounds.x + (bounds.width - textSize.x) / 2 - 2, bounds.y + 2);
         }
 
         @Override
@@ -180,36 +184,23 @@ public class TransactionMonitorToolbar {
                 executionContext = ((DBPContextProvider) activeEditor).getExecutionContext();
             }
 
-            final QMTransactionState txnState = executionContext == null ? null : QMUtils.getTransactionState(executionContext);
+            this.txnState = executionContext == null ? null : QMUtils.getTransactionState(executionContext);
             monitor.done();
 
             // Update UI
             DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    redrawMonitor(txnState);
+                    redraw();
+                    updateToolTipText();
                 }
             });
         }
 
-        private void redrawMonitor(QMTransactionState txnState) {
-            Color bg;
-            if (!txnState.isTransactionMode()) {
-                bg = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
-            } else if (txnState.getUpdateCount() == 0) {
-                bg = getDisplay().getSystemColor(SWT.COLOR_WHITE);
-            } else {
-                // Use gradient depending on update count
-                bg = getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
-            }
-            //setBackground(bg);
-            txnText.setBackground(bg);
-            if (txnState.getUpdateCount() == 0) {
-                txnText.setText("");
-            } else {
-                txnText.setText(String.valueOf(txnState.getUpdateCount()));
-            }
-            if (txnState.isTransactionMode()) {
+        private void updateToolTipText() {
+            if (txnState == null) {
+                setToolTipText("Not connected");
+            } else if (txnState.isTransactionMode()) {
                 final long txnUptime = txnState.getTransactionStartTime() > 0 ?
                     ((System.currentTimeMillis() - txnState.getTransactionStartTime()) / 1000) + 1 : 0;
                 String toolTip = String.valueOf(txnState.getExecuteCount()) + " total statements\n" +
@@ -221,7 +212,6 @@ public class TransactionMonitorToolbar {
             } else {
                 setToolTipText("Auto-commit mode");
             }
-            redraw();
         }
     }
 
@@ -277,6 +267,11 @@ public class TransactionMonitorToolbar {
         @Override
         public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement)
         {
+            refreshMonitor();
+        }
+
+        @Override
+        public void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional) {
             refreshMonitor();
         }
 
