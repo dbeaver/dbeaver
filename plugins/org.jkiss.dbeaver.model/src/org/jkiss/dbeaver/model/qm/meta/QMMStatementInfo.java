@@ -70,4 +70,5 @@ public class QMMStatementInfo extends QMMObject {
     {
         return "STATEMENT";
     }
+
 }

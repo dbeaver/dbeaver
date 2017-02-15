@@ -25,6 +25,7 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -127,7 +128,7 @@ public class TransactionMonitorToolbar {
             //layout.marginWidth = 0;
             setLayout(layout);
 
-            txnText = new Text(this, SWT.BORDER | SWT.SINGLE);
+            txnText = new Text(this, SWT.BORDER | SWT.SINGLE | SWT.CENTER);
             txnText.setEnabled(false);
             txnText.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
             txnText.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
@@ -174,31 +175,57 @@ public class TransactionMonitorToolbar {
             if (activeEditor instanceof DBPContextProvider) {
                 executionContext = ((DBPContextProvider) activeEditor).getExecutionContext();
             }
+            int execCount = 0, updateCount = 0;
+            final boolean isInTransaction;
             if (executionContext == null) {
-                System.out.println("REFRESH MONITOR -> EMPTY");
+                isInTransaction = false;
             } else {
-                System.out.println("REFRESH MONITOR [" + executionContext.getContextName() + "]");
                 QMMSessionInfo sessionInfo = DBeaverCore.getInstance().getQueryManager().getMetaCollector().getSessionInfo(executionContext);
                 QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
                 if (txnInfo != null) {
+                    isInTransaction = true;
                     QMMTransactionSavepointInfo sp = txnInfo.getCurrentSavepoint();
                     QMMStatementExecuteInfo execInfo = sp.getLastExecute();
-                    int execCount = 0, updateCount = 0;
                     for (QMMStatementExecuteInfo exec = execInfo; exec != null ;exec = exec.getPrevious()) {
                         execCount++;
+                        if (exec.isTransactional()) {
+                            updateCount++;
+                        }
                     }
                     System.out.println("\tTXN=" + sp.getName() + " (" + updateCount + "/" + execCount + ")");
+                } else {
+                    isInTransaction = false;
                 }
             }
 
             monitor.done();
             // Update UI
+            final int finalUpdateCount = updateCount;
             DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    redraw();
+                    redrawMonitor(isInTransaction, finalUpdateCount);
                 }
             });
+        }
+
+        private void redrawMonitor(boolean isInTransaction, int finalUpdateCount) {
+            Color bg;
+            if (!isInTransaction) {
+                bg = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+            } else if (finalUpdateCount == 0) {
+                bg = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+            } else {
+                // Use gradient depending on update count
+                bg = getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
+            }
+            txnText.setBackground(bg);
+            if (finalUpdateCount == 0) {
+                txnText.setText("");
+            } else {
+                txnText.setText(String.valueOf(finalUpdateCount));
+            }
+            redraw();
         }
     }
 
