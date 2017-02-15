@@ -81,6 +81,7 @@ import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -1576,7 +1577,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     }
 
-    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IDataSourceContainerProvider {
+    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetListener, IDataSourceContainerProvider {
 
         private final QueryProcessor queryProcessor;
         private final CTabItem tabItem;
@@ -1608,6 +1609,7 @@ public class SQLEditor extends SQLEditorBase implements
             } else {
                 // Embedded results viewer
                 this.viewer = new ResultSetViewer(resultTabs, getSite(), this);
+                this.viewer.addListener(this);
 
                 int tabCount = resultTabs.getItemCount();
                 int tabIndex = 0;
@@ -1827,6 +1829,15 @@ public class SQLEditor extends SQLEditorBase implements
                 query.getOriginalQuery();
         }
 
+        @Override
+        public void handleResultSetLoad() {
+
+        }
+
+        @Override
+        public void handleResultSetChange() {
+            firePropertyChange(IWorkbenchPartConstants.PROP_DIRTY);
+        }
     }
 
     private String getResultsTabName(int resultSetNumber, int queryIndex, String name) {
