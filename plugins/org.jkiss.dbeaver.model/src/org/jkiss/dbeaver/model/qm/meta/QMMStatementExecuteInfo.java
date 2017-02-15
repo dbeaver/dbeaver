@@ -17,10 +17,9 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 import java.sql.SQLException;
-import java.util.Locale;
 
 /**
 * Statement execute info
@@ -52,7 +51,12 @@ public class QMMStatementExecuteInfo extends QMMObject {
         if (savepoint != null) {
             savepoint.setLastExecute(this);
         }
-        this.transactional = !CommonUtils.toString(queryString).toUpperCase(Locale.ENGLISH).startsWith("SELECT");
+        final SQLDialect sqlDialect = statement.getSession().getSQLDialect();
+        if (sqlDialect != null && queryString != null) {
+            this.transactional = sqlDialect.isTransactionModifyingQuery(queryString);
+        } else {
+            this.transactional = true;
+        }
 
     }
 

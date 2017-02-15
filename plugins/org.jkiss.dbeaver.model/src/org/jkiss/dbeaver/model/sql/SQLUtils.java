@@ -121,19 +121,14 @@ public final class SQLUtils {
             }
         }
         query = query.trim();
-        if (mlCommentStart != null && mlCommentEnd != null) {
-            Pattern stripPattern = Pattern.compile(
-                "(\\s*" + Pattern.quote(mlCommentStart) +
-                    "[^" + Pattern.quote(mlCommentEnd) +
-                    "]*" + Pattern.quote(mlCommentEnd) +
-                    "\\s*)[^" + Pattern.quote(mlCommentStart) + "]*");
-            Matcher matcher = stripPattern.matcher(query);
-            if (matcher.matches()) {
-                query = query.substring(matcher.end(1));
+        if (mlCommentStart != null && mlCommentEnd != null && query.startsWith(mlCommentStart)) {
+            int endPos = query.indexOf(mlCommentEnd);
+            if (endPos != -1) {
+                query = query.substring(endPos + mlCommentEnd.length());
             }
         }
-        for (String slComment : slComments) {
-            while (query.startsWith(slComment)) {
+        for (int i = 0; i < slComments.length; i++) {
+            while (query.startsWith(slComments[i])) {
                 int crPos = query.indexOf('\n');
                 if (crPos == -1) {
                     break;

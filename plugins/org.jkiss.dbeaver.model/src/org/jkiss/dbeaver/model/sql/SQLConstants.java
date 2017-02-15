@@ -43,9 +43,10 @@ public class SQLConstants {
         "JOIN"
     };
 
+    public static final String KEYWORD_SELECT = "SELECT";
     public static final String KEYWORD_ON = "ON";
     public static final String[] COLUMN_KEYWORDS = {
-        "SELECT",
+        KEYWORD_SELECT,
         "WHERE",
         "SET",
         KEYWORD_ON,
@@ -58,6 +59,7 @@ public class SQLConstants {
     public static final String[] DDL_KEYWORDS = {
         "CREATE",
         "ALTER",
+        "DROP",
     };
 
     public static final String[] SQL2003_RESERVED_KEYWORDS = {
@@ -248,7 +250,7 @@ public class SQLConstants {
         "SCROLL",
         "SEARCH",
         "SECOND",
-        "SELECT",
+        KEYWORD_SELECT,
         "SENSITIVE",
         "SESSION_USER",
         "SET",
@@ -625,4 +627,5 @@ public class SQLConstants {
     public static final char DEFAULT_PARAMETER_PREFIX = ':';
     public static final String DEFAULT_IDENTIFIER_QUOTE = "\"";
     public static final String KEYWORD_PATTERN_CHARS = "\\*\\";
+
 }

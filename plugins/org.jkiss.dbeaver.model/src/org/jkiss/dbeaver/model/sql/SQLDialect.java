@@ -272,4 +272,6 @@ public interface SQLDialect {
     @Nullable
     String getDualTableName();
 
+    boolean isTransactionModifyingQuery(String queryString);
+
 }

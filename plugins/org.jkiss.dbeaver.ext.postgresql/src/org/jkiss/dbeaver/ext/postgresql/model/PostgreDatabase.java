@@ -327,6 +327,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
 
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState() {
         if (this == dataSource.getDefaultInstance()) {
