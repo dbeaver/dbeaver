@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.ArrayUtils;
@@ -45,6 +46,9 @@ public class BasicSQLDialect implements SQLDialect {
     public static final String[][] DEFAULT_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END}
     };
+    public static final String[] NON_TRANSACTIONAL_KEYWORDS = new String[]{
+        SQLConstants.KEYWORD_SELECT,
+        "WITH", "EXPLAIN", "DESCRIBE", "DESC"};
 
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
@@ -376,6 +380,23 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public String getDualTableName() {
         return null;
+    }
+
+    @Override
+    public boolean isTransactionModifyingQuery(String queryString) {
+        queryString = SQLUtils.stripComments(this, queryString.toUpperCase(Locale.ENGLISH)).trim();
+        String[] ntk = getNonTransactionKeywords();
+        for (int i = 0; i < ntk.length; i++) {
+            if (queryString.startsWith(ntk[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @NotNull
+    protected String[] getNonTransactionKeywords() {
+        return NON_TRANSACTIONAL_KEYWORDS;
     }
 
     @Override

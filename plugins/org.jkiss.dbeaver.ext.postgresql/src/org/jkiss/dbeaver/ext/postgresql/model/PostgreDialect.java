@@ -25,7 +25,9 @@ import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,6 +36,13 @@ import java.util.Collections;
 * PostgreSQL dialect
 */
 class PostgreDialect extends JDBCSQLDialect {
+
+    public static final String[] POSTGRE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
+        BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
+        new String[]{
+            "SHOW", "SET"
+        }
+    );
 
     public PostgreDialect(JDBCDatabaseMetaData metaData) {
         super("PostgreSQL", metaData);
@@ -89,5 +98,11 @@ class PostgreDialect extends JDBCSQLDialect {
     protected void loadDataTypesFromDatabase(JDBCDataSource dataSource) {
         super.loadDataTypesFromDatabase(dataSource);
         addDataTypes(PostgreConstants.DATA_TYPE_ALIASES.keySet());
+    }
+
+    @NotNull
+    @Override
+    protected String[] getNonTransactionKeywords() {
+        return POSTGRE_NON_TRANSACTIONAL_KEYWORDS;
     }
 }

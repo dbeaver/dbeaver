@@ -22,7 +22,9 @@ import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
 
@@ -32,6 +34,13 @@ import java.util.Arrays;
 class OracleSQLDialect extends JDBCSQLDialect {
 
     public static final String[] EXEC_KEYWORDS = new String[]{ "call" };
+
+    public static final String[] ORACLE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
+        BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
+        new String[]{
+            "CREATE", "ALTER", "DROP",
+            "ANALYZE", "VALIDATE"}
+    );
 
     public static final String[][] ORACLE_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
@@ -320,5 +329,11 @@ class OracleSQLDialect extends JDBCSQLDialect {
     @Override
     public String getDualTableName() {
         return "DUAL";
+    }
+
+    @NotNull
+    @Override
+    protected String[] getNonTransactionKeywords() {
+        return ORACLE_NON_TRANSACTIONAL_KEYWORDS;
     }
 }
