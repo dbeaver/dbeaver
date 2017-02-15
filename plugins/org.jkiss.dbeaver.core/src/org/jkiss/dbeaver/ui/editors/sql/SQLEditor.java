@@ -305,9 +305,6 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void releaseExecutionContext() {
         if (ownContext && executionContext != null && executionContext.isConnected()) {
-            // End transaction
-            DataSourceHandler.checkAndCloseActiveTransaction(new DBCExecutionContext[] {executionContext});
-
             // Close context in separate job (otherwise it can block UI)
             new CloseContextJob(executionContext).schedule();
         }
@@ -390,6 +387,9 @@ public class SQLEditor extends SQLEditorBase implements
             if (queryProcessor.isDirty()) {
                 return true;
             }
+        }
+        if (ownContext && QMUtils.isTransactionActive(executionContext)) {
+            return true;
         }
         return false;
     }
@@ -1279,6 +1279,11 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
+        // End transaction
+        if (!DataSourceHandler.checkAndCloseActiveTransaction(new DBCExecutionContext[] {executionContext})) {
+            return ISaveablePart2.CANCEL;
+        }
+
         if (isNonPersistentEditor()) {
             return ISaveablePart2.NO;
         }
@@ -1894,13 +1899,10 @@ public class SQLEditor extends SQLEditorBase implements
             DBeaverUI.runUIJob("Process SQL query result", new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    // Finish query
                     processQueryResult(session, result);
-                    if (!result.hasError() && topOffset >= 0) {
-                        final TextViewer textViewer = getTextViewer();
-                        if (textViewer != null) {
-                            //textViewer.revealRange(topOffset, visibleLength);
-                        }
-                    }
+                    // Update dirty flag
+                    firePropertyChange(IWorkbenchPartConstants.PROP_DIRTY);
                 }
             });
         }
