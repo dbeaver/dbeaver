@@ -17,7 +17,10 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
+import org.jkiss.utils.CommonUtils;
+
 import java.sql.SQLException;
+import java.util.Locale;
 
 /**
 * Statement execute info
@@ -36,6 +39,8 @@ public class QMMStatementExecuteInfo extends QMMObject {
     private long fetchBeginTime;
     private long fetchEndTime;
 
+    private boolean transactional;
+
     private QMMStatementExecuteInfo previous;
 
     QMMStatementExecuteInfo(QMMStatementInfo statement, QMMTransactionSavepointInfo savepoint, String queryString, QMMStatementExecuteInfo previous)
@@ -47,6 +52,8 @@ public class QMMStatementExecuteInfo extends QMMObject {
         if (savepoint != null) {
             savepoint.setLastExecute(this);
         }
+        this.transactional = !CommonUtils.toString(queryString).toUpperCase(Locale.ENGLISH).startsWith("SELECT");
+
     }
 
     void close(long rowCount, Throwable error)
@@ -120,6 +127,10 @@ public class QMMStatementExecuteInfo extends QMMObject {
     public boolean isFetching()
     {
         return fetchBeginTime > 0 && fetchEndTime == 0;
+    }
+
+    public boolean isTransactional() {
+        return transactional;
     }
 
     public QMMStatementExecuteInfo getPrevious()
