@@ -53,6 +53,8 @@ import org.jkiss.dbeaver.ui.perspective.AbstractPartListener;
 public class TransactionMonitorToolbar {
     private static final Log log = Log.getLog(TransactionMonitorToolbar.class);
 
+    public static final int MONITOR_UPDATE_DELAY = 250;
+
     private IWorkbenchWindow workbenchWindow;
 
     public TransactionMonitorToolbar(IWorkbenchWindow workbenchWindow) {
@@ -166,13 +168,8 @@ public class TransactionMonitorToolbar {
             e.gc.drawText(count, bounds.x + (bounds.width - textSize.x) / 2 - 2, bounds.y + 2);
         }
 
-        @Override
-        public Point computeSize(int wHint, int hHint, boolean changed) {
-            return super.computeSize(wHint, hHint, changed);
-        }
-
         public void refresh() {
-            refreshJob.schedule(500);
+            refreshJob.schedule(MONITOR_UPDATE_DELAY);
         }
 
         public void updateTransactionsInfo(DBRProgressMonitor monitor) {
