@@ -20,24 +20,17 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
-import org.jkiss.dbeaver.ui.controls.txn.TransactionLogDialog;
+import org.jkiss.dbeaver.ui.controls.txn.PendingTransactionsDialog;
 
-public class DataSourceTransactionLogHandler extends AbstractDataSourceHandler
+public class DataSourcePendingTransactionsHandler extends AbstractDataSourceHandler
 {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         final Shell activeShell = HandlerUtil.getActiveShell(event);
-        DBCExecutionContext context = getExecutionContext(event, true);
-        if (context != null) {
-            TransactionLogDialog dialog = new TransactionLogDialog(activeShell, context);
-            dialog.open();
-        } else {
-            UIUtils.showErrorDialog(activeShell, "Not connected", "Transaction log is not available.\nConnect to a database.");
-        }
+        PendingTransactionsDialog dialog = new PendingTransactionsDialog(activeShell);
+        dialog.open();
         return null;
     }
 
