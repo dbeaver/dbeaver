@@ -83,13 +83,15 @@ import java.util.Locale;
 /**
  * DataSource Toolbar
  */
-public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEventListener, DBPPreferenceListener, IPageListener, IPartListener, ISelectionListener, INavigatorListener {
+public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEventListener, DBPPreferenceListener, INavigatorListener {
     private static final Log log = Log.getLog(DataSourceManagementToolbar.class);
 
     public static final String EMPTY_SELECTION_TEXT = CoreMessages.toolbar_datasource_selector_empty;
 
     private IWorkbenchWindow workbenchWindow;
     private IWorkbenchPart activePart;
+    private IPageListener pageListener;
+    private IPartListener partListener;
 
     private Text resultSetSize;
     private CSmartCombo<DBPDataSourceContainer> connectionCombo;
@@ -163,6 +165,47 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     public DataSourceManagementToolbar(IWorkbenchWindow workbenchWindow) {
         this.workbenchWindow = workbenchWindow;
         DBeaverCore.getInstance().getNavigatorModel().addListener(this);
+
+        final ISelectionListener selectionListener = new ISelectionListener() {
+            @Override
+            public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+                if (part == activePart && selection instanceof IStructuredSelection) {
+                    final Object element = ((IStructuredSelection) selection).getFirstElement();
+                    if (element != null) {
+                        if (RuntimeUtils.getObjectAdapter(element, DBSObject.class) != null) {
+                            updateControls(false);
+                        }
+                    }
+                }
+            }
+
+        };
+        pageListener = new AbstractPageListener() {
+            @Override
+            public void pageClosed(IWorkbenchPage page) {
+                page.removePartListener(partListener);
+                page.removeSelectionListener(selectionListener);
+            }
+
+            @Override
+            public void pageOpened(IWorkbenchPage page) {
+                page.addPartListener(partListener);
+                page.addSelectionListener(selectionListener);
+            }
+        };
+        partListener = new AbstractPartListener() {
+            @Override
+            public void partActivated(IWorkbenchPart part) {
+                setActivePart(part);
+            }
+
+            @Override
+            public void partClosed(IWorkbenchPart part) {
+                if (part == activePart) {
+                    setActivePart(null);
+                }
+            }
+        };
     }
 
     private void dispose() {
@@ -170,7 +213,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
         IWorkbenchPage activePage = workbenchWindow.getActivePage();
         if (activePage != null) {
-            pageClosed(activePage);
+            pageListener.pageClosed(activePage);
         }
 
         DataSourceProviderRegistry.getInstance().removeDataSourceRegistryListener(this);
@@ -180,7 +223,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
         setActivePart(null);
 
-        this.workbenchWindow.removePageListener(this);
+        this.workbenchWindow.removePageListener(pageListener);
     }
 
     @Override
@@ -639,73 +682,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
     }
 
-    // IPageListener
-
-    @Override
-    public void pageActivated(IWorkbenchPage page) {
-        // do nothing
-    }
-
-    @Override
-    public void pageClosed(IWorkbenchPage page) {
-        page.removePartListener(this);
-        page.removeSelectionListener(this);
-    }
-
-    @Override
-    public void pageOpened(IWorkbenchPage page) {
-        page.addPartListener(this);
-        page.addSelectionListener(this);
-    }
-
-    // IPartListener
-
-    @Override
-    public void partActivated(IWorkbenchPart part) {
-        setActivePart(part);
-    }
-
-    @Override
-    public void partBroughtToTop(IWorkbenchPart part) {
-    }
-
-    @Override
-    public void partClosed(IWorkbenchPart part) {
-        if (part == activePart) {
-            setActivePart(null);
-        }
-    }
-
-    @Override
-    public void partDeactivated(IWorkbenchPart part) {
-        // Do nothing
-
-//        if (part == activePart) {
-//            setActivePart(null);
-//        }
-    }
-
-    @Override
-    public void partOpened(IWorkbenchPart part) {
-    }
-
-    @Override
-    public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-        if (part == activePart && selection instanceof IStructuredSelection) {
-            final Object element = ((IStructuredSelection) selection).getFirstElement();
-            if (element != null) {
-                if (RuntimeUtils.getObjectAdapter(element, DBSObject.class) != null) {
-                    updateControls(false);
-                }
-            }
-        }
-    }
-
     Control createControl(Composite parent) {
-        workbenchWindow.addPageListener(DataSourceManagementToolbar.this);
+        workbenchWindow.addPageListener(pageListener);
         IWorkbenchPage activePage = workbenchWindow.getActivePage();
         if (activePage != null) {
-            pageOpened(activePage);
+            pageListener.pageOpened(activePage);
         }
 
         // Register as datasource listener in all datasources

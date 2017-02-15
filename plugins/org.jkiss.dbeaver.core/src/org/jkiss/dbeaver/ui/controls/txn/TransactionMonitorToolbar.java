@@ -17,21 +17,30 @@
 package org.jkiss.dbeaver.ui.controls.txn;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.*;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.perspective.AbstractPageListener;
+import org.jkiss.dbeaver.ui.perspective.AbstractPartListener;
 
 /**
  * DataSource Toolbar
@@ -45,23 +54,35 @@ public class TransactionMonitorToolbar {
         this.workbenchWindow = workbenchWindow;
     }
 
-/*
-    private void dispose() {
-        IWorkbenchPage activePage = workbenchWindow.getActivePage();
-        if (activePage != null) {
-            pageClosed(activePage);
-        }
-
-        this.workbenchWindow.removePageListener(this);
-    }
-*/
-
     private Control createControl(Composite parent) {
-        return new MonitorPanel(parent);
+        final MonitorPanel monitorPanel = new MonitorPanel(parent);
+
+        final IPartListener partListener = new AbstractPartListener() {
+            @Override
+            public void partActivated(IWorkbenchPart part) {
+                monitorPanel.refresh();
+            }
+
+            @Override
+            public void partDeactivated(IWorkbenchPart part) {
+                monitorPanel.refresh();
+            }
+        };
+        final IWorkbenchPage activePage = this.workbenchWindow.getActivePage();
+        activePage.addPartListener(partListener);
+        monitorPanel.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                activePage.removePartListener(partListener);
+            }
+        });
+
+        return monitorPanel;
     }
 
     private class MonitorPanel extends Composite {
 
+        private QMEventsHandler qmHandler;
         private final Text txnText;
 
         public MonitorPanel(Composite parent) {
@@ -91,6 +112,17 @@ public class TransactionMonitorToolbar {
             gd.grabExcessVerticalSpace = true;
             gd.widthHint = UIUtils.getFontHeight(txnText) * 6;
             txnText.setLayoutData(gd);
+
+            qmHandler = new QMEventsHandler(this);
+            QMUtils.registerHandler(qmHandler);
+
+            addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e) {
+                    QMUtils.unregisterHandler(qmHandler);
+                    qmHandler = null;
+                }
+            });
         }
 
         private void paint(PaintEvent e) {
@@ -100,6 +132,11 @@ public class TransactionMonitorToolbar {
         @Override
         public Point computeSize(int wHint, int hHint, boolean changed) {
             return super.computeSize(wHint, hHint, changed);
+        }
+
+        public void refresh() {
+            //System.out.println("REFRESH MONITOR");
+            //super.redraw();
         }
     }
 
@@ -112,6 +149,50 @@ public class TransactionMonitorToolbar {
         protected Control createControl(Composite parent) {
             TransactionMonitorToolbar toolbar = new TransactionMonitorToolbar(DBeaverUI.getActiveWorkbenchWindow());
             return toolbar.createControl(parent);
+        }
+    }
+
+    private static class QMEventsHandler extends DefaultExecutionHandler {
+        private final MonitorPanel monitorPanel;
+
+        QMEventsHandler(MonitorPanel monitorPanel) {
+            this.monitorPanel = monitorPanel;
+        }
+
+        @NotNull
+        @Override
+        public String getHandlerName() {
+            return QMEventsHandler.class.getName();
+        }
+
+        private void refreshMonitor() {
+            if (!monitorPanel.isDisposed()) {
+                monitorPanel.refresh();
+            }
+        }
+
+        @Override
+        public synchronized void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit)
+        {
+            refreshMonitor();
+        }
+
+        @Override
+        public synchronized void handleTransactionCommit(@NotNull DBCExecutionContext context)
+        {
+            refreshMonitor();
+        }
+
+        @Override
+        public synchronized void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint)
+        {
+            refreshMonitor();
+        }
+
+        @Override
+        public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement)
+        {
+            refreshMonitor();
         }
     }
 

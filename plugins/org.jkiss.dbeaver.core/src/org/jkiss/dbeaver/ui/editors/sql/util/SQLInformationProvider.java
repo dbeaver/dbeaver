@@ -23,30 +23,12 @@ import org.eclipse.jface.text.information.IInformationProviderExtension2;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.perspective.AbstractPartListener;
 
 public class SQLInformationProvider implements IInformationProvider, IInformationProviderExtension, IInformationProviderExtension2 {
 
-    class EditorWatcher implements IPartListener {
+    class EditorWatcher extends AbstractPartListener {
 
-        /**
-         * @see org.eclipse.ui.IPartListener#partOpened(org.eclipse.ui.IWorkbenchPart)
-         */
-        @Override
-        public void partOpened(IWorkbenchPart part)
-        {
-        }
-
-        /**
-         * @see org.eclipse.ui.IPartListener#partDeactivated(org.eclipse.ui.IWorkbenchPart)
-         */
-        @Override
-        public void partDeactivated(IWorkbenchPart part)
-        {
-        }
-
-        /**
-         * @see org.eclipse.ui.IPartListener#partClosed(org.eclipse.ui.IWorkbenchPart)
-         */
         @Override
         public void partClosed(IWorkbenchPart part)
         {
