@@ -243,12 +243,12 @@ public class DataSourceHandler
             return true;
         }
 
-        return checkAndCloseActiveTransaction(container, dataSource.getAllContexts());
+        return checkAndCloseActiveTransaction(dataSource.getAllContexts());
     }
 
-    public static boolean checkAndCloseActiveTransaction(DBPDataSourceContainer container, DBCExecutionContext[] contexts)
+    public static boolean checkAndCloseActiveTransaction(DBCExecutionContext[] contexts)
     {
-        if (container.getDataSource() == null) {
+        if (contexts == null) {
             return true;
         }
 
@@ -259,7 +259,7 @@ public class DataSourceHandler
                 if (QMUtils.isTransactionActive(context)) {
                     if (commitTxn == null) {
                         // Ask for confirmation
-                        TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(container.getName());
+                        TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(context.getDataSource().getContainer().getName());
                         DBeaverUI.syncExec(closeConfirmer);
                         switch (closeConfirmer.result) {
                             case IDialogConstants.YES_ID:
