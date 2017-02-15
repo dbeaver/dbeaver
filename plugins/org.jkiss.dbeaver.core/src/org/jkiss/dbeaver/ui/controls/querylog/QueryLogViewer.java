@@ -559,12 +559,18 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (savepoint == null) {
                 return colorLightGreen;
             } else if (savepoint.isClosed()) {
-                return savepoint.isCommitted() ? colorLightGreen : colorLightRed;
+                return savepoint.isCommitted() ? colorLightGreen : colorLightYellow;
             } else {
                 return null;
             }
         } else if (event.getObject() instanceof QMMTransactionInfo || event.getObject() instanceof QMMTransactionSavepointInfo) {
-            return colorLightYellow;
+            QMMTransactionSavepointInfo savepoint;
+            if (event.getObject() instanceof QMMTransactionInfo) {
+                savepoint = ((QMMTransactionInfo) event.getObject()).getCurrentSavepoint();
+            } else {
+                savepoint = (QMMTransactionSavepointInfo) event.getObject();
+            }
+            return savepoint.isCommitted() ? colorLightGreen : colorLightYellow;
         }
         return null;
     }
