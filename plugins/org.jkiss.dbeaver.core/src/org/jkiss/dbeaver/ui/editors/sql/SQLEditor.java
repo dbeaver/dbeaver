@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -2156,7 +2157,7 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
                 if (ownContext && executionContext != null) {
-                    if (DataSourceHandler.isContextTransactionAffected(executionContext)) {
+                    if (QMUtils.isTransactionActive(executionContext)) {
                         DataSourceHandler.closeActiveTransaction(monitor, executionContext, true);
                     }
                 }

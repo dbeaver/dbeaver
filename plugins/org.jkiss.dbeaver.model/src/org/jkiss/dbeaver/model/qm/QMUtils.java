@@ -18,6 +18,11 @@
 package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 
 import java.util.Collections;
 import java.util.List;
@@ -70,4 +75,55 @@ public class QMUtils {
         QMController queryManager = application.getQueryManager();
         return queryManager == null ? Collections.<QMMetaEvent>emptyList() : queryManager.getPastMetaEvents();
     }
+
+    public static boolean isTransactionActive(DBCExecutionContext executionContext) {
+        if (executionContext == null || application == null) {
+            return false;
+        } else {
+            QMMSessionInfo sessionInfo = application.getQueryManager().getMetaCollector().getSessionInfo(executionContext);
+            QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
+            if (txnInfo != null) {
+                QMMTransactionSavepointInfo sp = txnInfo.getCurrentSavepoint();
+                QMMStatementExecuteInfo execInfo = sp.getLastExecute();
+                for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
+                    if (exec.isTransactional()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public static QMTransactionState getTransactionState(DBCExecutionContext executionContext) {
+        int execCount = 0, updateCount = 0;
+        final boolean txnMode;
+        long txnStartTime = 0;
+        if (executionContext == null || application == null) {
+            txnMode = false;
+        } else {
+            QMMSessionInfo sessionInfo = application.getQueryManager().getMetaCollector().getSessionInfo(executionContext);
+            if (sessionInfo.isClosed()) {
+                txnMode = false;
+            } else {
+                QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
+                if (txnInfo != null) {
+                    txnMode = true;
+                    QMMTransactionSavepointInfo sp = txnInfo.getCurrentSavepoint();
+                    QMMStatementExecuteInfo execInfo = sp.getLastExecute();
+                    for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
+                        execCount++;
+                        if (exec.isTransactional()) {
+                            txnStartTime = exec.getOpenTime();
+                            updateCount++;
+                        }
+                    }
+                } else {
+                    txnMode = sessionInfo.isTransactional();
+                }
+            }
+        }
+        return new QMTransactionState(execCount, updateCount, txnMode, txnStartTime);
+    }
+
 }

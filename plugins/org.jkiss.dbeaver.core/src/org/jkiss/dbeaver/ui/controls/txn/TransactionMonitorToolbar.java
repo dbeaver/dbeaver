@@ -36,17 +36,14 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
-import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.IActionConstants;
@@ -116,7 +113,6 @@ public class TransactionMonitorToolbar {
             super(parent, SWT.NONE);
             //setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
             setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-            setToolTipText("Transactions monitor");
             addPaintListener(new PaintListener() {
                 @Override
                 public void paintControl(PaintEvent e) {
@@ -133,12 +129,14 @@ public class TransactionMonitorToolbar {
             txnText.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
             txnText.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
             txnText.setText("");
-            txnText.setToolTipText("Transactions monitor");
+            setToolTipText("Transactions monitor");
             GridData gd = new GridData();
             gd.verticalAlignment = GridData.CENTER;
             gd.grabExcessVerticalSpace = true;
             gd.widthHint = UIUtils.getFontHeight(txnText) * 6;
             txnText.setLayoutData(gd);
+
+            setToolTipText("Transactions monitor");
 
             qmHandler = new QMEventsHandler(this);
             QMUtils.registerHandler(qmHandler);
@@ -154,6 +152,12 @@ public class TransactionMonitorToolbar {
             refreshJob = new RefreshJob(this);
         }
 
+        @Override
+        public void setToolTipText(String string) {
+            super.setToolTipText(string);
+            txnText.setToolTipText(string);
+        }
+
         private void paint(PaintEvent e) {
             //e.gc.drawRectangle(e.x, e.y, e.width, e.height);
         }
@@ -167,7 +171,7 @@ public class TransactionMonitorToolbar {
             refreshJob.schedule(500);
         }
 
-        public void updateTransactionsInfo(DefaultProgressMonitor monitor) {
+        public void updateTransactionsInfo(DBRProgressMonitor monitor) {
             monitor.beginTask("Extract active transaction info", 1);
 
             DBCExecutionContext executionContext = null;
@@ -175,55 +179,47 @@ public class TransactionMonitorToolbar {
             if (activeEditor instanceof DBPContextProvider) {
                 executionContext = ((DBPContextProvider) activeEditor).getExecutionContext();
             }
-            int execCount = 0, updateCount = 0;
-            final boolean isInTransaction;
-            if (executionContext == null) {
-                isInTransaction = false;
-            } else {
-                QMMSessionInfo sessionInfo = DBeaverCore.getInstance().getQueryManager().getMetaCollector().getSessionInfo(executionContext);
-                QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
-                if (txnInfo != null) {
-                    isInTransaction = true;
-                    QMMTransactionSavepointInfo sp = txnInfo.getCurrentSavepoint();
-                    QMMStatementExecuteInfo execInfo = sp.getLastExecute();
-                    for (QMMStatementExecuteInfo exec = execInfo; exec != null ;exec = exec.getPrevious()) {
-                        execCount++;
-                        if (exec.isTransactional()) {
-                            updateCount++;
-                        }
-                    }
-                    System.out.println("\tTXN=" + sp.getName() + " (" + updateCount + "/" + execCount + ")");
-                } else {
-                    isInTransaction = false;
-                }
-            }
 
+            final QMTransactionState txnState = executionContext == null ? null : QMUtils.getTransactionState(executionContext);
             monitor.done();
+
             // Update UI
-            final int finalUpdateCount = updateCount;
             DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    redrawMonitor(isInTransaction, finalUpdateCount);
+                    redrawMonitor(txnState);
                 }
             });
         }
 
-        private void redrawMonitor(boolean isInTransaction, int finalUpdateCount) {
+        private void redrawMonitor(QMTransactionState txnState) {
             Color bg;
-            if (!isInTransaction) {
+            if (!txnState.isTransactionMode()) {
                 bg = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
-            } else if (finalUpdateCount == 0) {
-                bg = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+            } else if (txnState.getUpdateCount() == 0) {
+                bg = getDisplay().getSystemColor(SWT.COLOR_WHITE);
             } else {
                 // Use gradient depending on update count
                 bg = getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
             }
+            //setBackground(bg);
             txnText.setBackground(bg);
-            if (finalUpdateCount == 0) {
+            if (txnState.getUpdateCount() == 0) {
                 txnText.setText("");
             } else {
-                txnText.setText(String.valueOf(finalUpdateCount));
+                txnText.setText(String.valueOf(txnState.getUpdateCount()));
+            }
+            if (txnState.isTransactionMode()) {
+                final long txnUptime = txnState.getTransactionStartTime() > 0 ?
+                    ((System.currentTimeMillis() - txnState.getTransactionStartTime()) / 1000) + 1 : 0;
+                String toolTip = String.valueOf(txnState.getExecuteCount()) + " total statements\n" +
+                    String.valueOf(txnState.getUpdateCount()) + " modifying statements";
+                if (txnUptime > 0) {
+                    toolTip += "\n" + String.valueOf(txnUptime) + " seconds uptime";
+                }
+                setToolTipText(toolTip);
+            } else {
+                setToolTipText("Auto-commit mode");
             }
             redraw();
         }
@@ -281,6 +277,11 @@ public class TransactionMonitorToolbar {
         @Override
         public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement)
         {
+            refreshMonitor();
+        }
+
+        @Override
+        public void handleContextClose(@NotNull DBCExecutionContext context) {
             refreshMonitor();
         }
     }
