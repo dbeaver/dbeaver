@@ -43,10 +43,17 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private static final long EVENT_DISPATCH_PERIOD = 250;
     private static final int MAX_HISTORY_EVENTS = 1000;
 
+    // Session map
     private Map<String, QMMSessionInfo> sessionMap = new HashMap<>();
+
+    // External listeners
     private List<QMMetaListener> listeners = new ArrayList<>();
+
+    // Temporary event pool
     private List<QMMetaEvent> eventPool = new ArrayList<>();
+    // Sync object
     private final Object historySync = new Object();
+    // History (may be purged when limit reached)
     private List<QMMetaEvent> pastEvents = new ArrayList<>();
     private boolean running = true;
 

@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.controls.txn;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -31,15 +35,21 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.perspective.AbstractPageListener;
 import org.jkiss.dbeaver.ui.perspective.AbstractPartListener;
 
 /**
@@ -80,10 +90,26 @@ public class TransactionMonitorToolbar {
         return monitorPanel;
     }
 
+    private class RefreshJob extends Job {
+        private final MonitorPanel monitorPanel;
+
+        public RefreshJob(MonitorPanel monitorPanel) {
+            super("Refresh transaction monitor");
+            this.monitorPanel = monitorPanel;
+        }
+
+        @Override
+        protected IStatus run(final IProgressMonitor monitor) {
+            monitorPanel.updateTransactionsInfo(new DefaultProgressMonitor(monitor));
+            return Status.OK_STATUS;
+        }
+    }
+
     private class MonitorPanel extends Composite {
 
         private QMEventsHandler qmHandler;
         private final Text txnText;
+        private RefreshJob refreshJob;
 
         public MonitorPanel(Composite parent) {
             super(parent, SWT.NONE);
@@ -123,6 +149,8 @@ public class TransactionMonitorToolbar {
                     qmHandler = null;
                 }
             });
+
+            refreshJob = new RefreshJob(this);
         }
 
         private void paint(PaintEvent e) {
@@ -135,8 +163,42 @@ public class TransactionMonitorToolbar {
         }
 
         public void refresh() {
-            //System.out.println("REFRESH MONITOR");
-            //super.redraw();
+            refreshJob.schedule(500);
+        }
+
+        public void updateTransactionsInfo(DefaultProgressMonitor monitor) {
+            monitor.beginTask("Extract active transaction info", 1);
+
+            DBCExecutionContext executionContext = null;
+            final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
+            if (activeEditor instanceof DBPContextProvider) {
+                executionContext = ((DBPContextProvider) activeEditor).getExecutionContext();
+            }
+            if (executionContext == null) {
+                System.out.println("REFRESH MONITOR -> EMPTY");
+            } else {
+                System.out.println("REFRESH MONITOR [" + executionContext.getContextName() + "]");
+                QMMSessionInfo sessionInfo = DBeaverCore.getInstance().getQueryManager().getMetaCollector().getSessionInfo(executionContext);
+                QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
+                if (txnInfo != null) {
+                    QMMTransactionSavepointInfo sp = txnInfo.getCurrentSavepoint();
+                    QMMStatementExecuteInfo execInfo = sp.getLastExecute();
+                    int execCount = 0, updateCount = 0;
+                    for (QMMStatementExecuteInfo exec = execInfo; exec != null ;exec = exec.getPrevious()) {
+                        execCount++;
+                    }
+                    System.out.println("\tTXN=" + sp.getName() + " (" + updateCount + "/" + execCount + ")");
+                }
+            }
+
+            monitor.done();
+            // Update UI
+            DBeaverUI.asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    redraw();
+                }
+            });
         }
     }
 
