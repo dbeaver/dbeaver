@@ -98,7 +98,8 @@ public class VersionDescriptor {
         programVersion = Version.parseVersion(XMLUtils.getChildElementBody(root, "number"));
         updateTime = XMLUtils.getChildElementBody(root, "date");
         baseURL = XMLUtils.getChildElementBody(root, "base-url");
-        releaseNotes = CommonUtils.toString(XMLUtils.getChildElementBody(root, "release-notes")).trim();
+        Element releaseNotesElem = XMLUtils.getChildElement(root, "release-notes");
+        this.releaseNotes = releaseNotesElem == null ? "" : CommonUtils.toString(releaseNotesElem.getTextContent()).trim();
 
         for (Element dist : XMLUtils.getChildElementList(root, "distribution")) {
             distributions.add(new DistributionDescriptor(dist));
