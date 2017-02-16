@@ -380,6 +380,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(this);
     }
 
+    public void setFilter(QMEventFilter filter) {
+        this.filter = filter;
+    }
+
     private void showEventDetails(QMMetaEvent event)
     {
         EventViewDialog dialog = new EventViewDialog(event);
@@ -616,7 +620,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     break;
                 }
                 QMMetaEvent event = events.get(i - 1);
-                if (!defaultFilter.accept(event) || (filter != null && !filter.accept(event))) {
+                if ((filter != null && !filter.accept(event)) || !defaultFilter.accept(event)) {
                     continue;
                 }
                 QMMObject object = event.getObject();

@@ -16,42 +16,36 @@
  */
 package org.jkiss.dbeaver.ui.controls.txn;
 
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.qm.QMEventFilter;
-import org.jkiss.dbeaver.model.qm.QMMetaEvent;
-import org.jkiss.dbeaver.model.qm.QMUtils;
-import org.jkiss.dbeaver.model.qm.meta.*;
-import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
 
-import java.util.Objects;
-
-public class TransactionLogDialog extends Dialog {
+public class TransactionLogDialog extends TransactionInfoDialog {
 
     private static final String DIALOG_ID = "DBeaver.TransactionLogDialog";//$NON-NLS-1$
 
     private final DBCExecutionContext context;
-    private final IEditorPart activeEditor;
 
-    public TransactionLogDialog(Shell parentShell, DBCExecutionContext context, IEditorPart activeEditor)
+    public TransactionLogDialog(Shell parentShell, DBCExecutionContext context, IWorkbenchPart activeEditor)
     {
-        super(parentShell);
+        super(parentShell, activeEditor);
         this.context = context;
-        this.activeEditor = activeEditor;
     }
 
     @Override
     protected boolean isResizable() {
     	return true;
+    }
+
+    @Override
+    protected DBCExecutionContext getCurrentContext() {
+        return context;
     }
 
     protected IDialogSettings getDialogBoundsSettings()
@@ -66,27 +60,9 @@ public class TransactionLogDialog extends Dialog {
 
         Composite composite = (Composite) super.createDialogArea(parent);
 
-        final QMMTransactionSavepointInfo currentSP = QMUtils.getCurrentTransaction(context);
-        QMEventFilter filter = new QMEventFilter() {
-            @Override
-            public boolean accept(QMMetaEvent event) {
-                QMMObject object = event.getObject();
-                if (object instanceof QMMStatementExecuteInfo) {
-                    QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) object;
-                    return exec.getSavepoint() == currentSP && exec.isTransactional();
-                }
-                return false;
-            }
-        };
-        QueryLogViewer logViewer = new QueryLogViewer(composite, activeEditor.getEditorSite(), filter, false);
+        super.createTransactionLogPanel(composite);
 
         return parent;
-    }
-
-    @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
     }
 
     public static void showDialog(Shell shell, DBCExecutionContext executionContext) {

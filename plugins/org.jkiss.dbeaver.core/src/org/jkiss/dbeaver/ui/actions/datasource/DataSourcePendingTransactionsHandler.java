@@ -29,8 +29,7 @@ public class DataSourcePendingTransactionsHandler extends AbstractDataSourceHand
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         final Shell activeShell = HandlerUtil.getActiveShell(event);
-        PendingTransactionsDialog dialog = new PendingTransactionsDialog(activeShell);
-        dialog.open();
+        PendingTransactionsDialog.showDialog(activeShell);
         return null;
     }
 
