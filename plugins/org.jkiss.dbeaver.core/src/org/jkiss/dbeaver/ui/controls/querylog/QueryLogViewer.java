@@ -499,7 +499,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     @Override
     public void refresh()
     {
-        // Refresh plan
+        reloadEvents();
     }
 
     static String getObjectType(QMMObject object)
