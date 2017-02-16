@@ -19,9 +19,10 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.txn.TransactionLogDialog;
 
@@ -31,13 +32,12 @@ public class DataSourceTransactionLogHandler extends AbstractDataSourceHandler
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         final Shell activeShell = HandlerUtil.getActiveShell(event);
-        DBCExecutionContext context = getExecutionContext(event, true);
-        if (context != null) {
-            TransactionLogDialog dialog = new TransactionLogDialog(activeShell, context);
-            dialog.open();
-        } else {
-            UIUtils.showErrorDialog(activeShell, "Not connected", "Transaction log is not available.\nConnect to a database.");
+        IEditorPart editor = HandlerUtil.getActiveEditor(event);
+        DBCExecutionContext context = null;
+        if (editor instanceof DBPContextProvider) {
+            context = ((DBPContextProvider) editor).getExecutionContext();
         }
+        TransactionLogDialog.showDialog(activeShell, context);
         return null;
     }
 
