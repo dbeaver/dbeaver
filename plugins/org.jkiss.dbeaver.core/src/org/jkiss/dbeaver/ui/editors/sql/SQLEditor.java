@@ -153,6 +153,7 @@ public class SQLEditor extends SQLEditorBase implements
     private final List<SQLQuery> runningQueries = new ArrayList<>();
     private QueryResultsContainer curResultsContainer;
     private Image editorImage;
+    private ToolItem toolLogItem;
 
     public SQLEditor()
     {
@@ -515,25 +516,26 @@ public class SQLEditor extends SQLEditorBase implements
             });
 */
 
-            final ToolItem logItem = new ToolItem(rsToolbar, SWT.CHECK);
-            logItem.setText("Log");
-            logItem.setToolTipText("Query execution log");
-            logItem.setImage(IMG_LOG);
-            logItem.addSelectionListener(new SelectionAdapter() {
+            toolLogItem = new ToolItem(rsToolbar, SWT.CHECK);
+            toolLogItem.setText("Log");
+            toolLogItem.setToolTipText(ActionUtils.findCommandDescription(CoreCommands.CMD_SQL_SHOW_LOG, getSite(), false));
+            toolLogItem.setImage(IMG_LOG);
+            toolLogItem.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    showExtraView(logItem, CoreMessages.editors_sql_execution_log, "SQL query execution log", IMG_LOG, logViewer);
+                    showExecutionLogPanel();
                 }
             });
 
             toolOutputItem = new ToolItem(rsToolbar, SWT.CHECK);
             toolOutputItem.setText("Output");
+            toolOutputItem.setToolTipText(ActionUtils.findCommandDescription(CoreCommands.CMD_SQL_SHOW_OUTPUT, getSite(), false));
             toolOutputItem.setImage(IMG_OUTPUT);
             toolOutputItem.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     toolOutputItem.setImage(IMG_OUTPUT);
-                    showExtraView(toolOutputItem, CoreMessages.editors_sql_output, "Database server output log", IMG_OUTPUT, outputViewer);
+                    showOutputPanel();
                 }
             });
 
@@ -627,28 +629,31 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void showExtraView(final ToolItem toolItem, String name, String toolTip, Image image, Control view) {
-        if (toolItem.getSelection()) {
-            CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
-            item.setControl(view);
-            item.setText(name);
-            item.setToolTipText(toolTip);
-            item.setImage(image);
-            item.setData(view);
-            // De-select tool item on tab close
-            item.addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e) {
-                    toolItem.setSelection(false);
-                }
-            });
-            resultTabs.setSelection(item);
-        } else {
-            for (CTabItem item : resultTabs.getItems()) {
-                if (item.getData() == view) {
-                    item.dispose();
-                }
+        for (CTabItem item : resultTabs.getItems()) {
+            if (item.getData() == view) {
+                item.dispose();
+                toolItem.setSelection(false);
+                return;
             }
         }
+
+        // Create new tab
+        toolItem.setSelection(true);
+
+        CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
+        item.setControl(view);
+        item.setText(name);
+        item.setToolTipText(toolTip);
+        item.setImage(image);
+        item.setData(view);
+        // De-select tool item on tab close
+        item.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                toolItem.setSelection(false);
+            }
+        });
+        resultTabs.setSelection(item);
     }
 
     private void toggleEditorMaximize()
@@ -658,6 +663,20 @@ public class SQLEditor extends SQLEditorBase implements
         } else {
             sashForm.setMaximizedControl(null);
         }
+    }
+
+    public void showOutputPanel() {
+        if (sashForm.getMaximizedControl() != null) {
+            sashForm.setMaximizedControl(null);
+        }
+        showExtraView(toolOutputItem, CoreMessages.editors_sql_output, "Database server output log", IMG_OUTPUT, outputViewer);
+    }
+
+    public void showExecutionLogPanel() {
+        if (sashForm.getMaximizedControl() != null) {
+            sashForm.setMaximizedControl(null);
+        }
+        showExtraView(toolLogItem, CoreMessages.editors_sql_execution_log, "SQL query execution log", IMG_LOG, logViewer);
     }
 
     public void toggleResultPanel() {
