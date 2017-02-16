@@ -63,4 +63,15 @@ public class TransactionLogDialog extends Dialog {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
     }
 
+    public static void showDialog(Shell shell, DBCExecutionContext executionContext) {
+        if (executionContext != null) {
+            final TransactionLogDialog dialog = new TransactionLogDialog(shell, executionContext);
+            dialog.open();
+        } else {
+            UIUtils.showErrorDialog(
+                shell,
+                "Not connected",
+                "Transaction log is not available.\nConnect to a database.");
+        }
+    }
 }

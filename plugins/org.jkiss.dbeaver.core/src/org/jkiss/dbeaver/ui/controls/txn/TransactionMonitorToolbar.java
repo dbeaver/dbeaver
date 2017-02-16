@@ -22,10 +22,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -35,6 +32,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPContextProvider;
@@ -140,7 +138,12 @@ public class TransactionMonitorToolbar {
                 }
             });
 
-            ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseUp(MouseEvent e) {
+                    TransactionLogDialog.showDialog(getShell(), getActiveExecutionContext());
+                }
+            });
 
             refreshJob = new RefreshJob(this);
         }
@@ -197,11 +200,7 @@ public class TransactionMonitorToolbar {
         public void updateTransactionsInfo(DBRProgressMonitor monitor) {
             monitor.beginTask("Extract active transaction info", 1);
 
-            DBCExecutionContext executionContext = null;
-            final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
-            if (activeEditor instanceof DBPContextProvider) {
-                executionContext = ((DBPContextProvider) activeEditor).getExecutionContext();
-            }
+            DBCExecutionContext executionContext = getActiveExecutionContext();
 
             this.txnState = executionContext == null ? null : QMUtils.getTransactionState(executionContext);
             monitor.done();
@@ -214,6 +213,16 @@ public class TransactionMonitorToolbar {
                     updateToolTipText();
                 }
             });
+        }
+
+        @Nullable
+        private DBCExecutionContext getActiveExecutionContext() {
+            DBCExecutionContext executionContext = null;
+            final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
+            if (activeEditor instanceof DBPContextProvider) {
+                executionContext = ((DBPContextProvider) activeEditor).getExecutionContext();
+            }
+            return executionContext;
         }
 
         private void updateToolTipText() {
