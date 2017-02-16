@@ -330,10 +330,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         colorGray = sharedColors.getColor(COLOR_BLACK);
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
+        boolean inDialog = UIUtils.isInDialog(parent);
         // Create log table
         logTable = new Table(
             parent,
-            SWT.MULTI | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
+            SWT.MULTI | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL | (inDialog ? SWT.BORDER : SWT.NONE));
         logTable.setData(this);
         logTable.setLinesVisible(true);
         logTable.setHeaderVisible(true);
