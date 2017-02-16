@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.ui.controls.txn;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
@@ -28,6 +31,7 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.qm.meta.QMMObject;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
 
 public abstract class TransactionInfoDialog extends Dialog {
@@ -58,12 +62,23 @@ public abstract class TransactionInfoDialog extends Dialog {
 
     protected void createTransactionLogPanel(Composite composite) {
         DBCExecutionContext context = getCurrentContext();
-        QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context);
+        QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context, false);
         logViewer = new QueryLogViewer(composite, activeEditor.getSite(), filter, false);
+
+        final Button showAllCheck = UIUtils.createCheckbox(composite, "Show all queries", "Show all transaction queries. Otherwise shows only modifying queries.", false, 1);
+        showAllCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                DBCExecutionContext context = getCurrentContext();
+                QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context, showAllCheck.getSelection());
+                logViewer.setFilter(filter);
+                logViewer.refresh();
+            }
+        });
 
     }
 
-    protected QMEventFilter createContextFilter(DBCExecutionContext executionContext) {
+    protected QMEventFilter createContextFilter(DBCExecutionContext executionContext, final boolean showAll) {
         final QMMTransactionSavepointInfo currentSP = QMUtils.getCurrentTransaction(executionContext);
         QMEventFilter filter = new QMEventFilter() {
             @Override
@@ -71,7 +86,7 @@ public abstract class TransactionInfoDialog extends Dialog {
                 QMMObject object = event.getObject();
                 if (object instanceof QMMStatementExecuteInfo) {
                     QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) object;
-                    return exec.getSavepoint() == currentSP && exec.isTransactional();
+                    return exec.getSavepoint() == currentSP && (showAll || exec.isTransactional());
                 }
                 return false;
             }
