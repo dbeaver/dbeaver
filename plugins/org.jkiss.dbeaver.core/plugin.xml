@@ -2006,10 +2006,11 @@
 
         <!-- Transaction log menu -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.txn.log">
+            <command commandId="org.jkiss.dbeaver.core.txn.log"/>
+            <command commandId="org.jkiss.dbeaver.core.txn.pending"/>
             <command commandId="org.eclipse.ui.views.showView" icon="icons/misc/qm.png" label="Query Manager" style="push">
                 <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.core.queryManager"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.txn.pending"/>
         </menuContribution>
 
         <!-- RSV panels config drop-down menu -->
