@@ -385,6 +385,11 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public boolean isTransactionModifyingQuery(String queryString) {
         queryString = SQLUtils.stripComments(this, queryString.toUpperCase(Locale.ENGLISH)).trim();
+        if (queryString.isEmpty()) {
+            // Empty query - must be some metadata reading or something
+            // anyhow it shouldn't be transactional
+            return false;
+        }
         String[] ntk = getNonTransactionKeywords();
         for (int i = 0; i < ntk.length; i++) {
             if (queryString.startsWith(ntk[i])) {
