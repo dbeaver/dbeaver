@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
@@ -49,9 +50,13 @@ public abstract class BaseSQLDialog extends BaseDialog {
     private SQLEditorBase sqlViewer;
     private StringEditorInput sqlInput;
 
-    public BaseSQLDialog(final IWorkbenchPartSite parentSite, String title, @Nullable DBPImage image)
+    public BaseSQLDialog(final IWorkbenchPartSite parentSite, String title, @Nullable DBPImage image) {
+        this(parentSite.getShell(), parentSite, title, image);
+    }
+
+    public BaseSQLDialog(final Shell shell, final IWorkbenchPartSite parentSite, String title, @Nullable DBPImage image)
     {
-        super(parentSite.getShell(), title, image);
+        super(shell, title, image);
         this.subSite = new SubEditorSite(parentSite);
         this.sqlInput = new StringEditorInput(title, "", true, GeneralUtils.getDefaultFileEncoding());
     }
