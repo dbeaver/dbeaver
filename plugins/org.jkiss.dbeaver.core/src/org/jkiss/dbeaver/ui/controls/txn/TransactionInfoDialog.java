@@ -80,6 +80,9 @@ public abstract class TransactionInfoDialog extends Dialog {
     }
 
     protected QMEventFilter createContextFilter(DBCExecutionContext executionContext) {
+        if (executionContext == null) {
+            return VOID_FILTER;
+        }
         final QMMTransactionSavepointInfo currentSP = QMUtils.getCurrentTransaction(executionContext);
         final boolean showAll = showAllCheck != null && showAllCheck.getSelection();
         QMEventFilter filter = new QMEventFilter() {
