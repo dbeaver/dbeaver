@@ -56,7 +56,7 @@ public class TransactionLogDialog extends TransactionInfoDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Transaction log [" + context.getContextName() + "]");
+        getShell().setText("Transaction log [" + context.getDataSource().getContainer().getName() + " : " + context.getContextName() + "]");
 
         Composite composite = (Composite) super.createDialogArea(parent);
 

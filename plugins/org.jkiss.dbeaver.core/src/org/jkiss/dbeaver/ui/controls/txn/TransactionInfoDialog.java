@@ -46,6 +46,7 @@ public abstract class TransactionInfoDialog extends Dialog {
 
     private final IWorkbenchPart activeEditor;
     protected QueryLogViewer logViewer;
+    private Button showAllCheck;
 
     public TransactionInfoDialog(Shell parentShell, IWorkbenchPart activeEditor)
     {
@@ -62,15 +63,15 @@ public abstract class TransactionInfoDialog extends Dialog {
 
     protected void createTransactionLogPanel(Composite composite) {
         DBCExecutionContext context = getCurrentContext();
-        QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context, false);
+        QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context);
         logViewer = new QueryLogViewer(composite, activeEditor.getSite(), filter, false);
 
-        final Button showAllCheck = UIUtils.createCheckbox(composite, "Show all queries", "Show all transaction queries. Otherwise shows only modifying queries.", false, 1);
+        showAllCheck = UIUtils.createCheckbox(composite, "Show all queries", "Show all transaction queries. Otherwise shows only modifying queries.", false, 1);
         showAllCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 DBCExecutionContext context = getCurrentContext();
-                QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context, showAllCheck.getSelection());
+                QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context);
                 logViewer.setFilter(filter);
                 logViewer.refresh();
             }
@@ -78,8 +79,9 @@ public abstract class TransactionInfoDialog extends Dialog {
 
     }
 
-    protected QMEventFilter createContextFilter(DBCExecutionContext executionContext, final boolean showAll) {
+    protected QMEventFilter createContextFilter(DBCExecutionContext executionContext) {
         final QMMTransactionSavepointInfo currentSP = QMUtils.getCurrentTransaction(executionContext);
+        final boolean showAll = showAllCheck.getSelection();
         QMEventFilter filter = new QMEventFilter() {
             @Override
             public boolean accept(QMMetaEvent event) {
