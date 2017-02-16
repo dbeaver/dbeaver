@@ -22,19 +22,31 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.qm.QMEventFilter;
+import org.jkiss.dbeaver.model.qm.QMMetaEvent;
+import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.qm.meta.*;
+import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
+
+import java.util.Objects;
 
 public class TransactionLogDialog extends Dialog {
 
     private static final String DIALOG_ID = "DBeaver.TransactionLogDialog";//$NON-NLS-1$
 
     private final DBCExecutionContext context;
+    private final IEditorPart activeEditor;
 
-    public TransactionLogDialog(Shell parentShell, DBCExecutionContext context)
+    public TransactionLogDialog(Shell parentShell, DBCExecutionContext context, IEditorPart activeEditor)
     {
         super(parentShell);
         this.context = context;
+        this.activeEditor = activeEditor;
     }
 
     @Override
@@ -54,6 +66,20 @@ public class TransactionLogDialog extends Dialog {
 
         Composite composite = (Composite) super.createDialogArea(parent);
 
+        final QMMTransactionSavepointInfo currentSP = QMUtils.getCurrentTransaction(context);
+        QMEventFilter filter = new QMEventFilter() {
+            @Override
+            public boolean accept(QMMetaEvent event) {
+                QMMObject object = event.getObject();
+                if (object instanceof QMMStatementExecuteInfo) {
+                    QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) object;
+                    return exec.getSavepoint() == currentSP && exec.isTransactional();
+                }
+                return false;
+            }
+        };
+        QueryLogViewer logViewer = new QueryLogViewer(composite, activeEditor.getEditorSite(), filter, false);
+
         return parent;
     }
 
@@ -64,14 +90,20 @@ public class TransactionLogDialog extends Dialog {
     }
 
     public static void showDialog(Shell shell, DBCExecutionContext executionContext) {
-        if (executionContext != null) {
-            final TransactionLogDialog dialog = new TransactionLogDialog(shell, executionContext);
-            dialog.open();
-        } else {
+        IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        if (activeEditor == null) {
+            UIUtils.showErrorDialog(
+                shell,
+                "No editor",
+                "Transaction log is not available.\nOpen database editor.");
+        } else if (executionContext == null) {
             UIUtils.showErrorDialog(
                 shell,
                 "Not connected",
                 "Transaction log is not available.\nConnect to a database.");
+        } else {
+            final TransactionLogDialog dialog = new TransactionLogDialog(shell, executionContext, activeEditor);
+            dialog.open();
         }
     }
 }
