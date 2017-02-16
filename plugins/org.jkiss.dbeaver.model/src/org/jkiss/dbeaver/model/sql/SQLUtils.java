@@ -131,6 +131,8 @@ public final class SQLUtils {
             while (query.startsWith(slComments[i])) {
                 int crPos = query.indexOf('\n');
                 if (crPos == -1) {
+                    // Query is comment line - return empty
+                    query = "";
                     break;
                 } else {
                     query = query.substring(crPos).trim();
