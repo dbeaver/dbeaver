@@ -1892,7 +1892,9 @@ public class SQLEditor extends SQLEditorBase implements
                         visibleLength = getTextViewer().getBottomIndexEndOffset() - topOffset;
                     }
                 });
-                showStatementInEditor(query, false);
+                if (scriptMode) {
+                    showStatementInEditor(query, false);
+                }
                 lastUIUpdateTime = System.currentTimeMillis();
             }
         }
