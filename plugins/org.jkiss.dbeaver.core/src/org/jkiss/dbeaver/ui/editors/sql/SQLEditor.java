@@ -381,9 +381,6 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public boolean isDirty()
     {
-        if (!isNonPersistentEditor() && super.isDirty()) {
-            return true;
-        }
         for (QueryProcessor queryProcessor : queryProcessors) {
             if (queryProcessor.isDirty()) {
                 return true;
@@ -392,7 +389,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (ownContext && QMUtils.isTransactionActive(executionContext)) {
             return true;
         }
-        return false;
+        if (isNonPersistentEditor()) {
+            // Console is never dirty
+            return false;
+        }
+        return super.isDirty();
     }
 
     @Nullable
