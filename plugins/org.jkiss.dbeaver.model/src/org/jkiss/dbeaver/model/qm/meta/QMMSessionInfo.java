@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
  */
 public class QMMSessionInfo extends QMMObject {
 
-    private String containerId;
-    private String containerName;
-    private String driverId;
-    private DBPConnectionConfiguration connectionConfiguration;
-    private String contextName;
+    private final String containerId;
+    private final String containerName;
+    private final String driverId;
+    private final DBPConnectionConfiguration connectionConfiguration;
+    private final String contextName;
     private SQLDialect sqlDialect;
     private boolean transactional;
 

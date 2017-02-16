@@ -95,6 +95,17 @@ public class QMUtils {
         return false;
     }
 
+    public static QMMTransactionSavepointInfo getCurrentTransaction(DBCExecutionContext executionContext) {
+        QMMSessionInfo sessionInfo = application.getQueryManager().getMetaCollector().getSessionInfo(executionContext);
+        if (!sessionInfo.isClosed() && sessionInfo.isTransactional()) {
+            QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
+            if (txnInfo != null) {
+                return txnInfo.getCurrentSavepoint();
+            }
+        }
+        return null;
+    }
+
     public static QMTransactionState getTransactionState(DBCExecutionContext executionContext) {
         int execCount = 0, updateCount = 0;
         final boolean txnMode;
@@ -113,7 +124,7 @@ public class QMUtils {
                     QMMStatementExecuteInfo execInfo = sp.getLastExecute();
                     for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
                         execCount++;
-                        if (exec.isTransactional()) {
+                        if (exec.isTransactional() && !exec.hasError()) {
                             txnStartTime = exec.getOpenTime();
                             updateCount++;
                         }

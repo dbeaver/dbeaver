@@ -941,7 +941,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         protected EventViewDialog(QMMetaEvent object)
         {
-            super(QueryLogViewer.this.site, "Event", null);
+            super(QueryLogViewer.this.getControl().getShell(), QueryLogViewer.this.site, "Event", null);
             setShellStyle(SWT.SHELL_TRIM);
             this.object = object;
         }

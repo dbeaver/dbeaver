@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCFactory;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCObjectValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCDatabaseMetaDataImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -173,6 +174,16 @@ public abstract class JDBCDataSource
                 connection.setReadOnly(true);
             }
 
+            // Initialize SQL dialect. We need to make this ASAP because once datasource is connected
+            // it can be tracked by QM and other monitors. We have to have correct SQL dialect.
+            if (sqlDialect == BasicSQLDialect.INSTANCE) {
+                // Initialize SQL dialect
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Initialize SQL dialect")) {
+                    sqlDialect = createSQLDialect(new JDBCDatabaseMetaDataImpl(session, connection.getMetaData()));
+                } catch (Throwable e) {
+                    log.error("Error creating SQL dialect", e);
+                }
+            }
             return connection;
         }
         catch (SQLException ex) {
@@ -328,11 +339,6 @@ public abstract class JDBCDataSource
             }
 
             try {
-                sqlDialect = createSQLDialect(metaData);
-            } catch (Throwable e) {
-                log.error("Error creating SQL dialect", e);
-            }
-            try {
                 dataSourceInfo = createDataSourceInfo(metaData);
             } catch (Throwable e) {
                 log.error("Error obtaining database info");
@@ -340,10 +346,6 @@ public abstract class JDBCDataSource
         } catch (SQLException ex) {
             throw new DBException("Error getting JDBC meta data", ex, this);
         } finally {
-            if (sqlDialect == null) {
-                log.warn("NULL SQL dialect was created");
-                sqlDialect = BasicSQLDialect.INSTANCE;
-            }
             if (dataSourceInfo == null) {
                 log.warn("NULL datasource info was created");
                 dataSourceInfo = new JDBCDataSourceInfo(container);
