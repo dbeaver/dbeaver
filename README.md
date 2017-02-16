@@ -23,7 +23,7 @@ History and release notes: https://github.com/serge-rider/dbeaver/releases
 DBeaver requires Java (JRE) 1.8+ to run.
 * <b>Windows</b> installer includes JRE so just use it and don't think about internals.
 * On <b>Linux</b> you may need to install Java manually (usually by running `sudo apt-get install default-jre` or something similar).
-* On <b>MacOS X</b> you may need to download Java (JDK) from <a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">Oracle web site</a>. Or use <a href="http://stackoverflow.com/questions/24342886/how-to-install-java-8-on-mac">this instructions</a>.
+* On <b>MacOS X</b> you may need to download Java (JDK) from <a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">Oracle web site</a>. Or use <a href="http://stackoverflow.com/questions/24342886/how-to-install-java-8-on-mac">these instructions</a>.
 
 ## Documentation
 
