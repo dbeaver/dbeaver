@@ -94,6 +94,10 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         return "Meta info collector";
     }
 
+    private String makeContextId(DBCExecutionContext context) {
+        return context.getDataSource().getContainer().getId() + ":" + context.getContextName();
+    }
+
     public synchronized void addListener(QMMetaListener listener)
     {
         listeners.add(listener);
@@ -134,7 +138,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
 
     public QMMSessionInfo getSessionInfo(DBCExecutionContext context)
     {
-        String contextId = context.getDataSource().getContainer().getId() + ":" + context.getContextName();
+        String contextId = makeContextId(context);
         QMMSessionInfo sessionInfo = sessionMap.get(contextId);
         if (sessionInfo == null) {
             log.warn("Can't find sessionInfo meta information: " + contextId);
@@ -152,7 +156,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     @Override
     public synchronized void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional)
     {
-        String contextId = context.getDataSource().getContainer().getId() + ":" + context.getContextName();
+        String contextId = makeContextId(context);
         QMMSessionInfo session = new QMMSessionInfo(
             context,
             transactional,
@@ -175,6 +179,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             session.close();
             fireMetaEvent(session, QMMetaEvent.Action.END);
         }
+        // Remove closed context from map (otherwise we'll be out of memory eventually)
+        String contextId = makeContextId(context);
+        sessionMap.remove(contextId);
     }
 
     @Override
