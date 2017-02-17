@@ -76,9 +76,6 @@ public class ScriptSelectorPanel {
         this.workbenchWindow = workbenchWindow;
         Shell parent = this.workbenchWindow.getShell();
 
-        final Color fg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_FOREGROUND);
-        final Color bg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
-
         popup = new Shell(parent, SWT.RESIZE | SWT.TITLE | SWT.CLOSE);
         if (containers.length == 1) {
             popup.setText("Choose SQL script for '" + containers[0].getName() + "'");
@@ -109,13 +106,11 @@ public class ScriptSelectorPanel {
         //gl.marginHeight = 0;
         //gl.marginWidth = 0;
         composite.setLayout(gl);
-        composite.setForeground(fg);
-        composite.setBackground(bg);
 
         patternText = new Text(composite, SWT.NONE);
         patternText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        patternText.setForeground(fg);
-        patternText.setBackground(bg);
+        //patternText.setForeground(fg);
+        //patternText.setBackground(bg);
         patternText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
@@ -126,6 +121,11 @@ public class ScriptSelectorPanel {
                 filterJob.schedule(250);
             }
         });
+        final Color fg = patternText.getForeground();//parent.getDisplay().getSystemColor(SWT.COLOR_INFO_FOREGROUND);
+        final Color bg = patternText.getBackground();//parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
+
+        composite.setForeground(fg);
+        composite.setBackground(bg);
 
         newButton = new Button(composite, SWT.PUSH | SWT.FLAT);
         newButton.setText("&New Script");
@@ -145,7 +145,7 @@ public class ScriptSelectorPanel {
 
         ((GridData) UIUtils.createHorizontalLine(composite).getLayoutData()).horizontalSpan = 2;
 
-        Tree scriptTree = new Tree(composite, SWT.MULTI | SWT.FULL_SELECTION);
+        Tree scriptTree = new Tree(composite, SWT.SINGLE | SWT.FULL_SELECTION);
         final GridData gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalSpan = 2;
         scriptTree.setLayoutData(gd);
