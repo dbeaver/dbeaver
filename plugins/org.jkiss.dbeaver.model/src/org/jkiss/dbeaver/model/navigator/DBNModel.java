@@ -506,6 +506,9 @@ public class DBNModel implements IResourceChangeListener {
 
     void fireNodeEvent(final DBNEvent event)
     {
+        if (platform.isShuttingDown()) {
+            return;
+        }
         final INavigatorListener[] listenersCopy;
         synchronized (this.listeners) {
             if (listeners.isEmpty()) {

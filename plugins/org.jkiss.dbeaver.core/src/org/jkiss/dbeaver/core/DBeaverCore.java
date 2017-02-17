@@ -24,6 +24,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -151,7 +153,11 @@ public class DBeaverCore implements DBPPlatform {
 
     public static boolean isClosing()
     {
-        return isClosing;
+        if (isClosing) {
+            return true;
+        }
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        return workbench == null || workbench.isClosing();
     }
 
     public static void setClosing(boolean closing)
@@ -398,6 +404,11 @@ public class DBeaverCore implements DBPPlatform {
             }
         }
         return tempFolder;
+    }
+
+    @Override
+    public boolean isShuttingDown() {
+        return isClosing();
     }
 
     @NotNull
