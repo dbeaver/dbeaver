@@ -27,6 +27,7 @@ import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.rulers.IContributedRulerColumn;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.ArrayUtils;
@@ -85,14 +86,19 @@ public class ScriptPositionColumn extends AbstractRulerColumn implements IContri
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor)
             {
+                if (DBeaverCore.isClosing()) {
+                    return Status.CANCEL_STATUS;
+                }
                 BaseTextEditor editor = (BaseTextEditor)getEditor();
                 if (editor == null || editor.getTextViewer() == null) return Status.CANCEL_STATUS;
                 StyledText textWidget = editor.getTextViewer().getTextWidget();
                 if (textWidget == null || textWidget.isDisposed()) return Status.CANCEL_STATUS;
-                int[] newCurrentLines = editor.getCurrentLines();
-                if (!Arrays.equals(newCurrentLines, currentLines) && textWidget.isVisible()) {
-                    currentLines = newCurrentLines;
-                    redraw();
+                if (textWidget.isVisible()) {
+                    int[] newCurrentLines = editor.getCurrentLines();
+                    if (!Arrays.equals(newCurrentLines, currentLines)) {
+                        currentLines = newCurrentLines;
+                        redraw();
+                    }
                 }
                 if (visible) {
                     schedule(100);
