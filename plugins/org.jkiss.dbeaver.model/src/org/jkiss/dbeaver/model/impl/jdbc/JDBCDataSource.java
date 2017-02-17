@@ -81,7 +81,7 @@ public abstract class JDBCDataSource
     @NotNull
     private final DBPDataSourceContainer container;
     @NotNull
-    protected final JDBCExecutionContext executionContext;
+    protected JDBCExecutionContext executionContext;
     @Nullable
     protected JDBCExecutionContext metaContext;
     @NotNull
@@ -94,13 +94,25 @@ public abstract class JDBCDataSource
     private int databaseMajorVersion;
     private int databaseMinorVersion;
 
-    public JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
+    protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
+        throws DBException
+    {
+        this(monitor, container, true);
+    }
+
+    protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, boolean initContext)
         throws DBException
     {
         this.dataSourceInfo = new JDBCDataSourceInfo(container);
         this.sqlDialect = BasicSQLDialect.INSTANCE;
         this.jdbcFactory = createJdbcFactory();
         this.container = container;
+        if (initContext) {
+            initializeMainContext(monitor);
+        }
+    }
+
+    protected void initializeMainContext(@NotNull DBRProgressMonitor monitor) throws DBCException {
         this.executionContext = new JDBCExecutionContext(this, "Main");
         this.executionContext.connect(monitor, null, null, false);
     }

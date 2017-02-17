@@ -81,7 +81,7 @@ public class GenericDataSource extends JDBCDataSource
     public GenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
     {
-        super(monitor, container);
+        super(monitor, container, false);
         this.metaModel = metaModel;
         final DBPDriver driver = container.getDriver();
         this.dataTypeCache = metaModel.createDataTypeCache(container);
@@ -103,6 +103,8 @@ public class GenericDataSource extends JDBCDataSource
         nativeFormatTimestamp = makeNativeFormat(GenericConstants.PARAM_NATIVE_FORMAT_TIMESTAMP);
         nativeFormatTime = makeNativeFormat(GenericConstants.PARAM_NATIVE_FORMAT_TIME);
         nativeFormatDate = makeNativeFormat(GenericConstants.PARAM_NATIVE_FORMAT_DATE);
+
+        initializeMainContext(monitor);
     }
 
     @Override
