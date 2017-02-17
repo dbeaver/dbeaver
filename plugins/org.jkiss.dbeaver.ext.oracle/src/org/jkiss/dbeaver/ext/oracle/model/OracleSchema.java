@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -29,7 +28,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.*;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -361,13 +363,6 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
     public static class TableCache extends JDBCStructLookupCache<OracleSchema, OracleTableBase, OracleTableColumn> {
 
-        private static final Comparator<? super OracleTableColumn> ORDER_COMPARATOR = new Comparator<OracleTableColumn>() {
-            @Override
-            public int compare(OracleTableColumn o1, OracleTableColumn o2) {
-                return o1.getOrdinalPosition() - o2.getOrdinalPosition();
-            }
-        };
-
         protected TableCache()
         {
             super("TABLE_NAME");
@@ -443,7 +438,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
         @Override
         protected void cacheChildren(OracleTableBase parent, List<OracleTableColumn> oracleTableColumns) {
-            Collections.sort(oracleTableColumns, ORDER_COMPARATOR);
+            Collections.sort(oracleTableColumns, DBUtils.orderComparator());
             super.cacheChildren(parent, oracleTableColumns);
         }
 

@@ -212,17 +212,6 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return typeName.equalsIgnoreCase(MySQLConstants.TYPE_NAME_ENUM);
     }
 
-    @Property(viewable = true, order = 15)
-    @Override
-    public int getOrdinalPosition() {
-        return getTable().getCachedAttributes().indexOf(this) + 1;
-    }
-
-    @Override
-    public void setOrdinalPosition(int ordinalPosition) {
-        super.setOrdinalPosition(ordinalPosition);
-    }
-
     //@Property(viewable = true, editable = true, updatable = true, order = 40)
     @Override
     public long getMaxLength()

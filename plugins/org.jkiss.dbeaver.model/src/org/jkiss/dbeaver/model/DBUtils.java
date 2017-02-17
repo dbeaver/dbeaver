@@ -1360,6 +1360,15 @@ public final class DBUtils {
         };
     }
 
+    public static Comparator<? super DBSAttributeBase> orderComparator() {
+        return new Comparator<DBSAttributeBase>() {
+            @Override
+            public int compare(DBSAttributeBase o1, DBSAttributeBase o2) {
+                return o1.getOrdinalPosition() - o2.getOrdinalPosition();
+            }
+        };
+    }
+
     public static <T extends DBPNamedObject> void orderObjects(@NotNull List<T> objects)
     {
         Collections.sort(objects, new Comparator<T>() {
