@@ -514,8 +514,8 @@
                     embedded="true"
                     description="HyperSQL DataBase - Embedded Mode">
                     <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE"/>
+                    <property name="shutdown" value="true"/>
                     <parameter name="create-url-param" value=";create=true"/>
-                    <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                     <parameter name="active-entity-type" value="schema"/>
