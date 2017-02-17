@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * Object reorderer.
  * Provide object's reorder functions
  */
-public interface DBEObjectReorderer<OBJECT_TYPE extends DBSObject & DBPOrderedObject> extends DBEObjectManager<OBJECT_TYPE> {
+public interface DBEObjectReorderer<OBJECT_TYPE extends DBSObject> extends DBEObjectManager<OBJECT_TYPE> {
 
     int getMinimumOrdinalPosition(OBJECT_TYPE object);
 
