@@ -78,13 +78,16 @@ public class DatabaseEditorListener implements INavigatorListener
                     event.getNodeChange() == DBNEvent.NodeChange.LOAD)
                 {
                     if (getTreeNode() == event.getNode()) {
-                        runner = new Runnable() { @Override
-                                                  public void run() {
-                            databaseEditor.refreshPart(
-                                event,
-                                event.getNodeChange() == DBNEvent.NodeChange.REFRESH &&
-                                event.getSource() == DBNNode.FORCE_REFRESH);
-                        }};
+                        runner = new Runnable() {
+                            @Override
+                            public void run()
+                            {
+                                databaseEditor.refreshPart(
+                                    event,
+                                    event.getNodeChange() == DBNEvent.NodeChange.REFRESH &&
+                                    event.getSource() == DBNNode.FORCE_REFRESH);
+                            }
+                        };
                     }
                 } else if (event.getNodeChange() == DBNEvent.NodeChange.UNLOAD) {
                     closeEditor = true;

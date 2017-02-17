@@ -21,6 +21,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.List;
+
 /**
  * Object reorderer.
  * Provide object's reorder functions
@@ -36,10 +38,10 @@ public interface DBEObjectReorderer<OBJECT_TYPE extends DBSObject> extends DBEOb
      *
      * @param commandContext command context. Implementation should add new command to it.
      * @param object object
-     * @param newPosition new position
-     * @throws DBException on any error
+     * @param siblingObjects
+     *@param newPosition new position  @throws DBException on any error
      */
-    void setObjectOrdinalPosition(DBECommandContext commandContext, OBJECT_TYPE object, int newPosition)
+    void setObjectOrdinalPosition(DBECommandContext commandContext, OBJECT_TYPE object, List<OBJECT_TYPE> siblingObjects, int newPosition)
         throws DBException;
 
 }

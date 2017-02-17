@@ -174,9 +174,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         commandContext.addCommand(command, new RenameObjectReflector(), true);
     }
 
-    protected void processObjectReorder(DBECommandContext commandContext, OBJECT_TYPE object, int newPosition) throws DBException
+    protected void processObjectReorder(DBECommandContext commandContext, OBJECT_TYPE object, List<? extends DBPOrderedObject> siblings, int newPosition) throws DBException
     {
-        ObjectReorderCommand command = new ObjectReorderCommand(object, ModelMessages.model_jdbc_reorder_object, newPosition);
+        ObjectReorderCommand command = new ObjectReorderCommand(object, siblings, ModelMessages.model_jdbc_reorder_object, newPosition);
         commandContext.addCommand(command, new ReorderObjectReflector(), true);
     }
 
@@ -402,14 +402,20 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
     protected class ObjectReorderCommand extends DBECommandAbstract<OBJECT_TYPE> {
+        private List<? extends DBPOrderedObject> siblings;
         private int oldPosition;
         private int newPosition;
 
-        public ObjectReorderCommand(OBJECT_TYPE object, String title, int newPosition)
+        public ObjectReorderCommand(OBJECT_TYPE object, List<? extends DBPOrderedObject> siblings, String title, int newPosition)
         {
             super(object, title);
+            this.siblings = siblings;
             this.oldPosition = ((DBPOrderedObject)object).getOrdinalPosition();
             this.newPosition = newPosition;
+        }
+
+        public List<? extends DBPOrderedObject> getSiblings() {
+            return siblings;
         }
 
         public int getOldPosition() {
@@ -435,8 +441,29 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         @Override
         public void redoCommand(ObjectReorderCommand command)
         {
-            ((DBPOrderedObject)command.getObject()).setOrdinalPosition(command.newPosition);
-            DBUtils.fireObjectUpdate(command.getObject());
+            OBJECT_TYPE object = command.getObject();
+
+            // Update positions in sibling objects
+            for (DBPOrderedObject sibling : command.getSiblings()) {
+                if (sibling != object) {
+                    int siblingPosition = sibling.getOrdinalPosition();
+                    if (command.newPosition < command.oldPosition) {
+                        if (siblingPosition >= command.newPosition && siblingPosition < command.oldPosition) {
+                            sibling.setOrdinalPosition(siblingPosition + 1);
+                        }
+                    } else {
+                        if (siblingPosition < command.newPosition && siblingPosition > command.oldPosition) {
+                            sibling.setOrdinalPosition(siblingPosition - 1);
+                        }
+                    }
+                }
+            }
+
+            // Update target object position
+            ((DBPOrderedObject) object).setOrdinalPosition(command.newPosition);
+            // Refresh object AND parent
+            DBUtils.fireObjectUpdate(object);
+            DBUtils.fireObjectUpdate(object.getParentObject());
         }
 
         @Override
