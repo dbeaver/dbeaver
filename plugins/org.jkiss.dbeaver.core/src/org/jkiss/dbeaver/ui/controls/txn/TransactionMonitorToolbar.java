@@ -209,6 +209,9 @@ public class TransactionMonitorToolbar {
             DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
+                    if (isDisposed()) {
+                        return;
+                    }
                     redraw();
                     updateToolTipText();
                 }

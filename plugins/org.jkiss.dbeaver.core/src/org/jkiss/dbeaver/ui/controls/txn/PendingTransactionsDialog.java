@@ -24,15 +24,20 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceCommitHandler;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceRollbackHandler;
 import org.jkiss.utils.ArrayUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +46,8 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
     private static final String DIALOG_ID = "DBeaver.PendingTransactionsDialog";//$NON-NLS-1$
     private Tree contextTree;
     private DBCExecutionContext selectedContext;
+    private Button commitButton;
+    private Button rollbackButton;
 
     public PendingTransactionsDialog(Shell parentShell, IWorkbenchPart activePart) {
         super(parentShell, activePart);
@@ -84,24 +91,63 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
                 } else {
                     selectedContext = null;
                 }
+                boolean hasTransaction = selectedContext != null && QMUtils.isTransactionActive(selectedContext);
+                commitButton.setEnabled(hasTransaction);
+                rollbackButton.setEnabled(hasTransaction);
                 logViewer.setFilter(createContextFilter(selectedContext));
                 logViewer.refresh();
             }
         });
 
-        final Button showAllCheck = UIUtils.createCheckbox(composite, "Show all connections", "Show all datasource connections. Otherwise shows only transactional connections.", false, 1);
-        showAllCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                loadContexts(showAllCheck.getSelection());
-            }
-        });
+        {
+            Composite controlPanel = UIUtils.createPlaceholder(composite, 3);
+            controlPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            final Button showAllCheck = UIUtils.createCheckbox(controlPanel, "Show all connections", "Show all datasource connections. Otherwise shows only transactional connections.", false, 1);
+            showAllCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    loadContexts(showAllCheck.getSelection());
+                }
+            });
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.grabExcessHorizontalSpace = true;
+            showAllCheck.setLayoutData(gd);
+            commitButton = UIUtils.createPushButton(controlPanel, "Commit", DBeaverIcons.getImage(UIIcon.TXN_COMMIT));
+            commitButton.setEnabled(false);
+            commitButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    endTransaction(true);
+                }
+            });
+            rollbackButton = UIUtils.createPushButton(controlPanel, "Rollback", DBeaverIcons.getImage(UIIcon.TXN_ROLLBACK));
+            rollbackButton.setEnabled(false);
+            rollbackButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    endTransaction(false);
+                }
+            });
+        }
 
         super.createTransactionLogPanel(composite);
 
         loadContexts(false);
 
         return parent;
+    }
+
+    private void endTransaction(boolean commit) {
+        if (selectedContext == null) {
+            return;
+        }
+        if (commit) {
+            DataSourceCommitHandler.execute(selectedContext);
+        } else {
+            DataSourceRollbackHandler.execute(selectedContext);
+        }
+        commitButton.setEnabled(false);
+        rollbackButton.setEnabled(false);
     }
 
     private void loadContexts(boolean showAllContexts) {
