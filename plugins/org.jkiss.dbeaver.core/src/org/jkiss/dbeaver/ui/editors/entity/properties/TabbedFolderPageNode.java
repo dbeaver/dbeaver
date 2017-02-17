@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
@@ -85,14 +86,19 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
             public void focusGained(FocusEvent e) {
                 // Update selection provider and selection
                 final ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
-                mainEditor.getSite().setSelectionProvider(selectionProvider);
-                selectionProvider.setSelection(selectionProvider.getSelection());
+                if (mainEditor.getSite().getSelectionProvider() != selectionProvider) {
+                    mainEditor.getSite().setSelectionProvider(selectionProvider);
+                    selectionProvider.setSelection(selectionProvider.getSelection());
+                }
                 itemControl.activate(true);
 
                 // Notify owner MultiPart editor about page change
                 // We need it to update search actions and other contributions provided by node editor
                 if (mainEditor.getSite() instanceof MultiPageEditorSite) {
-                    ((MultiPageEditorSite) mainEditor.getSite()).getMultiPageEditor().setActiveEditor(mainEditor);
+                    MultiPageEditorPart multiPageEditor = ((MultiPageEditorSite) mainEditor.getSite()).getMultiPageEditor();
+                    if (multiPageEditor.getSelectedPage() != mainEditor) {
+                        multiPageEditor.setActiveEditor(mainEditor);
+                    }
                 }
             }
 
