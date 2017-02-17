@@ -226,6 +226,8 @@
         <command id="org.jkiss.dbeaver.core.object.open" name="%command.org.jkiss.dbeaver.core.object.open.name" description="%command.org.jkiss.dbeaver.core.object.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.create" name="%command.org.jkiss.dbeaver.core.object.create.name" description="%command.org.jkiss.dbeaver.core.object.create.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.delete" name="%command.org.jkiss.dbeaver.core.object.delete.name" description="%command.org.jkiss.dbeaver.core.object.delete.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.object.move.up" name="%command.org.jkiss.dbeaver.core.object.move.up.name" description="%command.org.jkiss.dbeaver.core.object.move.up.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.object.move.down" name="%command.org.jkiss.dbeaver.core.object.move.down.name" description="%command.org.jkiss.dbeaver.core.object.move.down.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.goto" name="%command.org.jkiss.dbeaver.core.object.goto.name" description="%command.org.jkiss.dbeaver.core.object.goto.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.core.object.filter.config" name="%command.org.jkiss.dbeaver.core.object.filter.config.name" description="%command.org.jkiss.dbeaver.core.object.filter.config.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -332,6 +334,9 @@
         <image commandId="org.jkiss.dbeaver.core.object.open" icon="icons/edit.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.create" icon="IMG_TOOL_NEW_WIZARD"/>
         <image commandId="org.jkiss.dbeaver.core.object.delete" icon="IMG_ETOOL_DELETE"/>
+        <image commandId="org.jkiss.dbeaver.core.object.move.up" icon="icons/misc/arrow_up.png"/>
+        <image commandId="org.jkiss.dbeaver.core.object.move.down" icon="icons/misc/arrow_down.png"/>
+
         <image commandId="org.jkiss.dbeaver.core.object.filter.config" icon="icons/misc/filter.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.filter.add.exclude" icon="icons/misc/filter_add.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.filter.add.include" icon="icons/misc/filter_add.png"/>
@@ -723,6 +728,8 @@
         <handler commandId="org.jkiss.dbeaver.core.txn.log" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionLogHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.txn.pending" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourcePendingTransactionsHandler"/>
 
+        <!-- Navigator handlers -->
+
         <handler commandId="org.jkiss.dbeaver.core.object.open" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen">
             <enabledWhen>
                 <with variable="selection">
@@ -872,6 +879,34 @@
                 </with>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.object.move.up" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectMove">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+                            <test property="org.jkiss.dbeaver.core.object.canMoveUp"/>
+                        </and>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.object.move.down" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectMove">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+                            <test property="org.jkiss.dbeaver.core.object.canMoveDown"/>
+                        </and>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.object.goto" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectGoto">
             <activeWhen>
@@ -881,6 +916,8 @@
                 </or>
             </activeWhen>
         </handler>
+
+        <!-- SQL editor handlers -->
 
         <handler commandId="org.jkiss.dbeaver.core.sql.editor.open" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler">
             <activeWhen>

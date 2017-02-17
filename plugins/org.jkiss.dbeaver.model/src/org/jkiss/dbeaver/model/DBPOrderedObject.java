@@ -27,8 +27,6 @@ public interface DBPOrderedObject
 {
     int getOrdinalPosition();
 
-    int getMaximumOrdinalPosition();
-
     void setOrdinalPosition(int position);
 
 }

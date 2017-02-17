@@ -27,8 +27,12 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface DBEObjectReorderer<OBJECT_TYPE extends DBSObject & DBPOrderedObject> extends DBEObjectManager<OBJECT_TYPE> {
 
+    int getMinimumOrdinalPosition(OBJECT_TYPE object);
+
+    int getMaximumOrdinalPosition(OBJECT_TYPE object);
+
     /**
-     * Describes object
+     * Changes object ordinal position
      *
      * @param commandContext command context. Implementation should add new command to it.
      * @param object object
