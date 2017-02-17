@@ -81,4 +81,9 @@ public class DBNEvent {
     {
         return node;
     }
+
+    @Override
+    public String toString() {
+        return action + ":" + nodeChange + ":" + node;
+    }
 }

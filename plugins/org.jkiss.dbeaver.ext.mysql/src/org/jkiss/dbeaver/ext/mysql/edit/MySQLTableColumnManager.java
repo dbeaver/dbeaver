@@ -161,7 +161,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    public void setObjectOrdinalPosition(DBECommandContext commandContext, MySQLTableColumn object, int newPosition) throws DBException {
-        processObjectReorder(commandContext, object, newPosition);
+    public void setObjectOrdinalPosition(DBECommandContext commandContext, MySQLTableColumn object, List<MySQLTableColumn> siblingObjects, int newPosition) throws DBException {
+        processObjectReorder(commandContext, object, siblingObjects, newPosition);
     }
 }

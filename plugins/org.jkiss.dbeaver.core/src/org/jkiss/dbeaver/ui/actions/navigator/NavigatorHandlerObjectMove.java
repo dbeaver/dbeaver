@@ -21,18 +21,25 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
+
+    private static final Log log = Log.getLog(NavigatorHandlerObjectMove.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
@@ -42,10 +49,12 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
         if (node == null || !(node.getParentNode() instanceof DBNContainer)) {
             return null;
         }
+        DBNContainer containerNode = (DBNContainer) node.getParentNode();
         DBSObject object = ((DBNDatabaseNode) node).getObject();
         if (!(object instanceof DBPOrderedObject)) {
             return null;
         }
+
         @SuppressWarnings("unchecked")
         DBEObjectReorderer<DBSObject> objectReorderer = EntityEditorsRegistry.getInstance().getObjectManager(object.getClass(), DBEObjectReorderer.class);
         if (objectReorderer == null) {
@@ -53,9 +62,24 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
         }
         DBPOrderedObject orderedObject = (DBPOrderedObject) object;
         try {
+            // Sibling objects - they are involved in reordering process
+            List<DBSObject> siblingObjects = new ArrayList<>();
+            for (DBNNode siblingNode : node.getParentNode().getChildren(VoidProgressMonitor.INSTANCE)) {
+                if (siblingNode instanceof DBNDatabaseNode) {
+                    DBSObject siblingObject = ((DBNDatabaseNode) siblingNode).getObject();
+                    if (siblingObject.getClass() != object.getClass()) {
+                        log.warn("Sibling object class " + siblingObject.getClass() + " differs from moving object class " + object.getClass().getName());
+                    } else {
+                        siblingObjects.add(siblingObject);
+                    }
+                } else {
+                    log.warn("Wrong sibling node type: " + siblingNode);
+                }
+            }
+
             CommandTarget commandTarget = getCommandTarget(
                 HandlerUtil.getActiveWorkbenchWindow(event),
-                (DBNContainer) node.getParentNode(),
+                containerNode,
                 object.getClass(),
                 false);
             String actionId = event.getCommand().getId();
@@ -65,12 +89,14 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
                     objectReorderer.setObjectOrdinalPosition(
                         commandTarget.getContext(),
                         object,
+                        siblingObjects,
                         orderedObject.getOrdinalPosition() - 1);
                     break;
                 case CoreCommands.CMD_OBJECT_MOVE_DOWN:
                     objectReorderer.setObjectOrdinalPosition(
                         commandTarget.getContext(),
                         object,
+                        siblingObjects,
                         orderedObject.getOrdinalPosition() + 1);
                     break;
             }
