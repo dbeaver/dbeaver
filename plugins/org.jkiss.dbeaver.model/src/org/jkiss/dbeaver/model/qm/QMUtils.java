@@ -95,6 +95,10 @@ public class QMUtils {
         return false;
     }
 
+    public static QMMSessionInfo getCurrentSession(DBCExecutionContext executionContext) {
+        return application.getQueryManager().getMetaCollector().getSessionInfo(executionContext);
+    }
+
     public static QMMTransactionSavepointInfo getCurrentTransaction(DBCExecutionContext executionContext) {
         QMMSessionInfo sessionInfo = application.getQueryManager().getMetaCollector().getSessionInfo(executionContext);
         if (!sessionInfo.isClosed() && sessionInfo.isTransactional()) {

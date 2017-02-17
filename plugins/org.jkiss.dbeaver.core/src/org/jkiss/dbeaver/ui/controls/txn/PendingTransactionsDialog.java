@@ -100,7 +100,7 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
         });
 
         {
-            Composite controlPanel = UIUtils.createPlaceholder(composite, 3);
+            Composite controlPanel = UIUtils.createPlaceholder(composite, 3, 5);
             controlPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             final Button showAllCheck = UIUtils.createCheckbox(controlPanel, "Show all connections", "Show all datasource connections. Otherwise shows only transactional connections.", false, 1);
             showAllCheck.addSelectionListener(new SelectionAdapter() {
