@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
@@ -46,7 +47,9 @@ import java.util.Locale;
 /**
  * MySQL table column manager
  */
-public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableColumn, MySQLTableBase> implements DBEObjectRenamer<MySQLTableColumn>  {
+public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableColumn, MySQLTableBase>
+    implements DBEObjectRenamer<MySQLTableColumn>, DBEObjectReorderer<MySQLTableColumn>
+{
 
     protected final ColumnModifier<MySQLTableColumn> MySQLDataTypeModifier = new ColumnModifier<MySQLTableColumn>() {
         @Override
@@ -144,4 +147,21 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
                     getNestedDeclaration(column.getTable(), command)));
     }
 
+    ///////////////////////////////////////////////
+    // Reorder
+
+    @Override
+    public int getMinimumOrdinalPosition(MySQLTableColumn object) {
+        return 1;
+    }
+
+    @Override
+    public int getMaximumOrdinalPosition(MySQLTableColumn object) {
+        return object.getTable().getCachedAttributes().size();
+    }
+
+    @Override
+    public void setObjectOrdinalPosition(DBECommandContext commandContext, MySQLTableColumn object, int newPosition) throws DBException {
+
+    }
 }

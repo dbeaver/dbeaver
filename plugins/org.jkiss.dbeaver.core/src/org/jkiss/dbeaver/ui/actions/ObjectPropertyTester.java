@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -54,6 +55,7 @@ public class ObjectPropertyTester extends PropertyTester
         super();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
 
@@ -65,6 +67,7 @@ public class ObjectPropertyTester extends PropertyTester
             return false;
         }
         DBNNode node = (DBNNode)receiver;
+//System.out.println("TEST " + property + " ON " + node.getName());
 
         switch (property) {
             case PROP_CAN_OPEN:
@@ -166,11 +169,14 @@ public class ObjectPropertyTester extends PropertyTester
                 if (node instanceof DBNDatabaseNode) {
                     DBSObject object = ((DBNDatabaseNode) node).getObject();
                     if (object instanceof DBPOrderedObject) {
-                        final int position = ((DBPOrderedObject) object).getOrdinalPosition();
-                        if (property.equals(PROP_CAN_MOVE_UP)) {
-                            return position > 0;
+                        DBEObjectReorderer objectReorderer = getObjectManager(object.getClass(), DBEObjectReorderer.class);
+                        if (objectReorderer != null) {
+                            final int position = ((DBPOrderedObject) object).getOrdinalPosition();
+                            if (property.equals(PROP_CAN_MOVE_UP)) {
+                                return position > objectReorderer.getMinimumOrdinalPosition(object);
+                            }
+                            return position < objectReorderer.getMaximumOrdinalPosition(object);
                         }
-                        return position < ((DBPOrderedObject) object).getMaximumOrdinalPosition();
                     }
                 }
                 break;

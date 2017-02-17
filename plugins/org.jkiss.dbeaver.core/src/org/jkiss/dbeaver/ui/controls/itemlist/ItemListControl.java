@@ -28,6 +28,9 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -36,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterConfig;
@@ -81,7 +85,8 @@ public class ItemListControl extends NodeListControl
     protected void fillCustomActions(IContributionManager contributionManager)
     {
         super.fillCustomActions(contributionManager);
-        if (getRootNode() instanceof DBNDatabaseFolder && ((DBNDatabaseFolder)getRootNode()).getItemsMeta() != null) {
+        final DBNNode rootNode = getRootNode();
+        if (rootNode instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) rootNode).getItemsMeta() != null) {
             contributionManager.add(new Action(
                 "Filter",
                 DBeaverIcons.getImageDescriptor(UIIcon.FILTER))
@@ -89,7 +94,7 @@ public class ItemListControl extends NodeListControl
                 @Override
                 public void run()
                 {
-                    NavigatorHandlerFilterConfig.configureFilters(getShell(), getRootNode());
+                    NavigatorHandlerFilterConfig.configureFilters(getShell(), rootNode);
                 }
             });
         }
@@ -97,7 +102,26 @@ public class ItemListControl extends NodeListControl
         if (workbenchSite != null) {
             contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
         }
-        //contributionManager.add(new PackColumnsAction());
+
+        if (rootNode instanceof DBNDatabaseNode) {
+            boolean hasReorder = false;
+            List<Class<?>> childrenTypes = ((DBNDatabaseNode) rootNode).getChildrenTypes(null);
+            for (Class<?> chilType : childrenTypes) {
+                if (EntityEditorsRegistry.getInstance().getObjectManager(chilType, DBEObjectReorderer.class) != null) {
+                    hasReorder = true;
+                    break;
+                }
+            }
+            if (hasReorder) {
+                contributionManager.add(new Separator());
+                contributionManager.add(ActionUtils.makeCommandContribution(
+                    workbenchSite,
+                    CoreCommands.CMD_OBJECT_MOVE_UP));
+                contributionManager.add(ActionUtils.makeCommandContribution(
+                    workbenchSite,
+                    CoreCommands.CMD_OBJECT_MOVE_DOWN));
+            }
+        }
 
         if (workbenchSite instanceof MultiPageEditorSite) {
             final MultiPageEditorPart editor = ((MultiPageEditorSite) workbenchSite).getMultiPageEditor();
@@ -118,7 +142,6 @@ public class ItemListControl extends NodeListControl
                     null,
                     true));
             }
-            //if (((IEditorSite) site).getPart() instanceof
         }
     }
 

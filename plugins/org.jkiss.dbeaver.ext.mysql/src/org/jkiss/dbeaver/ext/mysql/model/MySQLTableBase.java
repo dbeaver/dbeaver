@@ -40,6 +40,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * MySQLTable base
@@ -103,6 +105,15 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         throws DBException
     {
         return getContainer().tableCache.getChild(monitor, getContainer(), this, attributeName);
+    }
+
+    public List<MySQLTableColumn> getCachedAttributes()
+    {
+        DBSObjectCache<MySQLTableBase, MySQLTableColumn> childrenCache = getContainer().tableCache.getChildrenCache(this);
+        if (childrenCache != null) {
+            return childrenCache.getCachedObjects();
+        }
+        return Collections.emptyList();
     }
 
     @Override
