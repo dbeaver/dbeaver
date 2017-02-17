@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -28,12 +28,11 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -211,6 +210,17 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
 
     public boolean isTypeEnum() {
         return typeName.equalsIgnoreCase(MySQLConstants.TYPE_NAME_ENUM);
+    }
+
+    @Property(viewable = true, order = 15)
+    @Override
+    public int getOrdinalPosition() {
+        return getTable().getCachedAttributes().indexOf(this) + 1;
+    }
+
+    @Override
+    public void setOrdinalPosition(int ordinalPosition) {
+        super.setOrdinalPosition(ordinalPosition);
     }
 
     //@Property(viewable = true, editable = true, updatable = true, order = 40)
