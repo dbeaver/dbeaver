@@ -107,7 +107,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
                 column.setTypeName(typeName); //$NON-NLS-1$
                 column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
                 column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
-                column.setOrdinalPosition(-1);
+                column.setOrdinalPosition(parent.getCachedAttributes().size() + 1);
                 column.setFullTypeName(DBUtils.getFullTypeName(column));
                 AttributeEditPage page = new AttributeEditPage(null, column);
                 if (!page.edit()) {
@@ -162,6 +162,6 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
 
     @Override
     public void setObjectOrdinalPosition(DBECommandContext commandContext, MySQLTableColumn object, int newPosition) throws DBException {
-
+        processObjectReorder(commandContext, object, newPosition);
     }
 }

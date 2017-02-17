@@ -39,9 +39,7 @@ import java.io.UnsupportedEncodingException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * MySQLTable base
@@ -97,7 +95,9 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     public Collection<MySQLTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().tableCache.getChildren(monitor, getContainer(), this);
+        List<MySQLTableColumn> columns = new ArrayList<>(getContainer().tableCache.getChildren(monitor, getContainer(), this));
+        columns.sort(DBUtils.orderComparator());
+        return columns;
     }
 
     @Override
