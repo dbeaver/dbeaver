@@ -36,12 +36,12 @@ public class DataSourceRollbackHandler extends AbstractDataSourceHandler
     {
         DBCExecutionContext context = getExecutionContext(event, true);
         if (context != null && context.isConnected()) {
-            execute(HandlerUtil.getActiveShell(event), context);
+            execute(context);
         }
         return null;
     }
 
-    public static void execute(Shell shell, final DBCExecutionContext context) {
+    public static void execute(final DBCExecutionContext context) {
         TasksJob.runTask("Rollback transaction", new DBRRunnableWithProgress() {
             @Override
             public void run(DBRProgressMonitor monitor)
