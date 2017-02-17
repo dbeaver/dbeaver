@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.qm.QMEventFilter;
 import org.jkiss.dbeaver.model.qm.QMMetaEvent;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.qm.meta.QMMObject;
+import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -47,6 +48,7 @@ public abstract class TransactionInfoDialog extends Dialog {
     private final IWorkbenchPart activeEditor;
     protected QueryLogViewer logViewer;
     private Button showAllCheck;
+    private Button showPreviousCheck;
 
     public TransactionInfoDialog(Shell parentShell, IWorkbenchPart activeEditor)
     {
@@ -70,28 +72,50 @@ public abstract class TransactionInfoDialog extends Dialog {
         showAllCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DBCExecutionContext context = getCurrentContext();
-                QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context);
-                logViewer.setFilter(filter);
-                logViewer.refresh();
+                updateTransactionFilter();
             }
         });
 
+        showPreviousCheck = UIUtils.createCheckbox(composite, "Show previous transactions", "Show previous transactions. Otherwise shows only active one.", false, 1);
+        showPreviousCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                updateTransactionFilter();
+            }
+        });
+
+    }
+
+    private void updateTransactionFilter() {
+        DBCExecutionContext context = getCurrentContext();
+        QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context);
+        logViewer.setFilter(filter);
+        logViewer.refresh();
     }
 
     protected QMEventFilter createContextFilter(DBCExecutionContext executionContext) {
         if (executionContext == null) {
             return VOID_FILTER;
         }
-        final QMMTransactionSavepointInfo currentSP = QMUtils.getCurrentTransaction(executionContext);
         final boolean showAll = showAllCheck != null && showAllCheck.getSelection();
+        final boolean showPrevious = showPreviousCheck != null && showPreviousCheck.getSelection();
+
+        final QMMSessionInfo currentSession = QMUtils.getCurrentSession(executionContext);
+        final QMMTransactionSavepointInfo currentSP = QMUtils.getCurrentTransaction(executionContext);
+
         QMEventFilter filter = new QMEventFilter() {
             @Override
             public boolean accept(QMMetaEvent event) {
                 QMMObject object = event.getObject();
                 if (object instanceof QMMStatementExecuteInfo) {
                     QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) object;
-                    return exec.getSavepoint() == currentSP && (showAll || exec.isTransactional());
+                    if (!showPrevious && exec.getSavepoint() != currentSP) {
+                        return false;
+                    }
+                    if (exec.getStatement().getSession() != currentSession) {
+                        return false;
+                    }
+                    return (showAll || exec.isTransactional());
                 }
                 return false;
             }
