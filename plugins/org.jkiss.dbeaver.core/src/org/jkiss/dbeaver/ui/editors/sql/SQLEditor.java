@@ -631,9 +631,14 @@ public class SQLEditor extends SQLEditorBase implements
     private void showExtraView(final ToolItem toolItem, String name, String toolTip, Image image, Control view) {
         for (CTabItem item : resultTabs.getItems()) {
             if (item.getData() == view) {
-                item.dispose();
-                toolItem.setSelection(false);
-                return;
+                if (resultTabs.getSelection() == item) {
+                    item.dispose();
+                    toolItem.setSelection(false);
+                    return;
+                } else {
+                    resultTabs.setSelection(item);
+                    return;
+                }
             }
         }
 
