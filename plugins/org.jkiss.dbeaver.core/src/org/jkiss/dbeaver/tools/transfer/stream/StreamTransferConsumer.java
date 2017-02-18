@@ -307,6 +307,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
 
             closeExporter();
+
+            if (!settings.isOutputClipboard() && settings.isExecuteProcessOnFinish()) {
+                executeFinishCommand();
+            }
+
             return;
         }
 
@@ -332,9 +337,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                         UIUtils.launchProgram(settings.getOutputFolder());
                     }
                 });
-            }
-            if (settings.isExecuteProcessOnFinish()) {
-                executeFinishCommand();
             }
         }
     }
