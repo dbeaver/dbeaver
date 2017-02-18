@@ -107,13 +107,13 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
     // from Tables don't have those..
     // -----------------
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return Collections.emptyList();
     }
 
 
     @Override
-    public Collection<ExasolTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException {
+    public Collection<ExasolTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return Collections.emptyList();
     }
 
