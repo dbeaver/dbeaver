@@ -1579,6 +1579,17 @@ public class UIUtils {
         }
     }
 
+    public static void setContentProposalToolTip(Control control, String toolTip, String ... variables) {
+        StringBuilder varsTip = new StringBuilder();
+        for (String var : variables) {
+            if (varsTip.length() > 0) varsTip.append(", ");
+            varsTip.append(GeneralUtils.variablePattern(var));
+        }
+        varsTip.append(".");
+        control.setToolTipText(toolTip + ".\nAllowed variables: " + varsTip);
+
+    }
+
     public static CoolItem createCoolItem(CoolBar coolBar, Control control) {
         CoolItem item = new CoolItem(coolBar, SWT.NONE);
         item.setControl(control);

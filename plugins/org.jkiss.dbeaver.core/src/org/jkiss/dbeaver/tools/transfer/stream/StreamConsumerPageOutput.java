@@ -43,6 +43,8 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
     private Text fileNameText;
     private Button compressCheckbox;
     private Button showFolderCheckbox;
+    private Button execProcessCheckbox;
+    private Text execProcessText;
     private Button clipboardCheck;
 
     public StreamConsumerPageOutput() {
@@ -90,11 +92,10 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             fileNameText = new Text(generalSettings, SWT.BORDER);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
-            fileNameText.setToolTipText("Output file name pattern. Allowed variables: " +
-                GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE) + ", " +
-                GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP) + ", " +
-                GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT) +
-                ".");
+            UIUtils.setContentProposalToolTip(fileNameText, "Output file name pattern",
+                StreamTransferConsumer.VARIABLE_TABLE,
+                StreamTransferConsumer.VARIABLE_TIMESTAMP,
+                StreamTransferConsumer.VARIABLE_PROJECT);
             fileNameText.setLayoutData(gd);
             fileNameText.addModifyListener(new ModifyListener() {
                 @Override
@@ -150,16 +151,48 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         }
 
         {
-            Group generalSettings = UIUtils.createControlGroup(composite, CoreMessages.data_transfer_wizard_output_group_progress, 4, GridData.FILL_HORIZONTAL, 0);
+            Group resultsSettings = UIUtils.createControlGroup(composite, "Results", 2, GridData.FILL_HORIZONTAL, 0);
 
-            showFolderCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.data_transfer_wizard_output_checkbox_open_folder, true);
+            showFolderCheckbox = UIUtils.createCheckbox(resultsSettings, CoreMessages.data_transfer_wizard_output_checkbox_open_folder, true);
             showFolderCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setOpenFolderOnFinish(showFolderCheckbox.getSelection());
                 }
             });
-            showFolderCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+            showFolderCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
+
+            execProcessCheckbox = UIUtils.createCheckbox(resultsSettings, "Execute process on finish", true);
+            execProcessCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setExecuteProcessOnFinish(execProcessCheckbox.getSelection());
+                    toggleExecProcessControls();
+                }
+            });
+            execProcessText = new Text(resultsSettings, SWT.BORDER);
+            execProcessText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            execProcessText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    settings.setFinishProcessCommand(execProcessText.getText());
+                    updatePageCompletion();
+                }
+            });
+            UIUtils.setContentProposalToolTip(execProcessText, "Process command line",
+                StreamTransferConsumer.VARIABLE_FILE,
+                StreamTransferConsumer.VARIABLE_TABLE,
+                StreamTransferConsumer.VARIABLE_TIMESTAMP,
+                StreamTransferConsumer.VARIABLE_PROJECT);
+            UIUtils.installContentProposal(
+                execProcessText,
+                new TextContentAdapter(),
+                new SimpleContentProposalProvider(new String[] {
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT),
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_FILE)
+                }));
         }
 
         setControl(composite);
@@ -175,6 +208,14 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         encodingBOMLabel.setEnabled(!clipboard);
         encodingBOMCheckbox.setEnabled(!clipboard);
         showFolderCheckbox.setEnabled(!clipboard);
+        execProcessCheckbox.setEnabled(!clipboard);
+        execProcessText.setEnabled(!clipboard);
+    }
+
+    private void toggleExecProcessControls() {
+        boolean clipboard = clipboardCheck.getSelection();
+        final boolean isExecCommand = execProcessCheckbox.getSelection();
+        execProcessText.setEnabled(!clipboard && isExecCommand);
     }
 
     @Override
@@ -183,15 +224,18 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
 
         clipboardCheck.setSelection(settings.isOutputClipboard());
-        directoryText.setText(settings.getOutputFolder());
-        fileNameText.setText(settings.getOutputFilePattern());
+        directoryText.setText(CommonUtils.toString(settings.getOutputFolder()));
+        fileNameText.setText(CommonUtils.toString(settings.getOutputFilePattern()));
         compressCheckbox.setSelection(settings.isCompressResults());
-        encodingCombo.setText(settings.getOutputEncoding());
+        encodingCombo.setText(CommonUtils.toString(settings.getOutputEncoding()));
         encodingBOMCheckbox.setSelection(settings.isOutputEncodingBOM());
         showFolderCheckbox.setSelection(settings.isOpenFolderOnFinish());
+        execProcessCheckbox.setSelection(settings.isExecuteProcessOnFinish());
+        execProcessText.setText(CommonUtils.toString(settings.getFinishProcessCommand()));
 
         updatePageCompletion();
         toggleClipboardOutput();
+        toggleExecProcessControls();
     }
 
     @Override
@@ -225,6 +269,9 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         }
         if (CommonUtils.isEmpty(settings.getOutputFilePattern())) {
             valid = false;
+        }
+        if (settings.isExecuteProcessOnFinish() && CommonUtils.isEmpty(settings.getFinishProcessCommand())) {
+            return false;
         }
         return valid;
     }

@@ -35,7 +35,9 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -63,6 +65,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public static final String VARIABLE_TABLE = "table";
     public static final String VARIABLE_TIMESTAMP = "timestamp";
     public static final String VARIABLE_PROJECT = "project";
+    public static final String VARIABLE_FILE = "file";
 
     private IStreamDataExporter processor;
     private StreamConsumerSettings settings;
@@ -320,14 +323,34 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 });
                 outputBuffer = null;
             }
-        } else if (settings.isOpenFolderOnFinish()) {
-            // Last one
-            DBeaverUI.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    UIUtils.launchProgram(settings.getOutputFolder());
-                }
-            });
+        } else {
+            if (settings.isOpenFolderOnFinish()) {
+                // Last one
+                DBeaverUI.asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        UIUtils.launchProgram(settings.getOutputFolder());
+                    }
+                });
+            }
+            if (settings.isExecuteProcessOnFinish()) {
+                executeFinishCommand();
+            }
+        }
+    }
+
+    private void executeFinishCommand() {
+        String commandLine = translatePattern(
+            settings.getFinishProcessCommand(),
+            DBUtils.getObjectOwnerProject(sourceObject),
+            stripObjectName(sourceObject.getName()),
+            outputFile);
+        DBRShellCommand command = new DBRShellCommand(commandLine);
+        DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command);
+        try {
+            processDescriptor.execute();
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(null, "Run process", "Error running process [" + commandLine + "]", e);
         }
     }
 
@@ -340,7 +363,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public String getOutputFileName()
     {
         Object extension = processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
-        String fileName = processTemplate(DBUtils.getObjectOwnerProject(sourceObject), stripObjectName(sourceObject.getName()));
+        String fileName = translatePattern(
+            settings.getOutputFilePattern(),
+            DBUtils.getObjectOwnerProject(sourceObject),
+            stripObjectName(sourceObject.getName()),
+            null);
         if (extension != null) {
             return fileName + "." + extension;
         } else {
@@ -361,11 +388,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return new File(dir, fileName);
     }
 
-    private String processTemplate(final IProject project, final String tableName)
+    private String translatePattern(String pattern, final IProject project, final String tableName, final File targetFile)
     {
         final String timeStamp = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
-        String fileName = settings.getOutputFilePattern();
-        fileName = GeneralUtils.replaceVariables(fileName, new GeneralUtils.IVariableResolver() {
+        pattern = GeneralUtils.replaceVariables(pattern, new GeneralUtils.IVariableResolver() {
             @Override
             public String get(String name) {
                 switch (name) {
@@ -375,13 +401,14 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                         return timeStamp;
                     case VARIABLE_PROJECT:
                         return project == null ? "" : project.getName();
-
+                    case VARIABLE_FILE:
+                        return targetFile == null ? "" : targetFile.getAbsolutePath();
                 }
                 return null;
             }
         });
         // Replace legacy patterns (without dollar prefix)
-        return fileName
+        return pattern
             .replace("{table}", tableName)
             .replace("{timestamp}", timeStamp);
     }
