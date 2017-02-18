@@ -165,7 +165,37 @@ public class PostgreUtils {
             throw new IllegalArgumentException("Unsupported vector type: " + pgVector.getClass().getName());
         }
     }
-    
+
+    public static int[] getIntVector(Object pgObject) {
+        Object pgVector = extractPGObjectValue(pgObject);
+        if (pgVector == null) {
+            return null;
+        }
+        if (pgVector instanceof String) {
+            final String vector = (String) pgVector;
+            if (vector.isEmpty()) {
+                return null;
+            }
+            final String[] strings = vector.split(" ");
+            final int[] ids = new int[strings.length];
+            for (int i = 0; i < strings.length; i++) {
+                ids[i] = Integer.parseInt(strings[i]);
+            }
+            return ids;
+        } else if (pgVector instanceof int[]) {
+            return (int[]) pgVector;
+        } else if (pgVector instanceof Integer[]) {
+            Integer[] objVector = (Integer[]) pgVector;
+            int[] result = new int[objVector.length];
+            for (int i = 0; i < objVector.length; i++) {
+                result[i] = objVector[i];
+            }
+            return result;
+        } else {
+            throw new IllegalArgumentException("Unsupported vector type: " + pgVector.getClass().getName());
+        }
+    }
+
     public static int getAttributePrecision(long typeOid, int typeMod) {
         //typeOid = convertArrayToBaseOid(typeOid);
         switch ((int) typeOid) {

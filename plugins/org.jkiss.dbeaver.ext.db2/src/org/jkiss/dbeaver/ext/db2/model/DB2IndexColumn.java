@@ -105,12 +105,12 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
 
     }
 
-    public DB2IndexColumn(DB2Index db2Index, DB2TableColumn tableColumn, int ordinalPosition)
+    public DB2IndexColumn(DB2Index db2Index, DB2TableColumn tableColumn, int ordinalPosition, boolean ascending)
     {
         this.db2Index = db2Index;
         this.tableColumn = tableColumn;
         this.colSeq = ordinalPosition;
-        this.colOrder = DB2IndexColOrder.A; // Force Ascending ..
+        this.colOrder = ascending ? DB2IndexColOrder.A : DB2IndexColOrder.D; // Force Ascending or Descending ..
         this.virtualCol = DB2IndexColVirtual.N; // Force real column...
     }
 

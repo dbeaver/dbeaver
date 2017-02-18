@@ -100,7 +100,11 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2TableBase> {
 
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    index.addColumn(new DB2IndexColumn(index, (DB2TableColumn) tableColumn, colIndex++));
+                    index.addColumn(new DB2IndexColumn(
+                        index,
+                        (DB2TableColumn) tableColumn,
+                        colIndex++,
+                        !Boolean.TRUE.equals(editPage.getAttributeProperty(tableColumn, EditIndexPage.PROP_DESC))));
                 }
                 return index;
             }

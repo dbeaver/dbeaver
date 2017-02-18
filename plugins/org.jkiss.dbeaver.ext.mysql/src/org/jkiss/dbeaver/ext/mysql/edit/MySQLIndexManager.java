@@ -73,7 +73,6 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
                 idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    final Map<String, Object> attrProps = editPage.getAttributeProperties(tableColumn);
                     if (colIndex == 1) {
                         idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
                     }
@@ -82,7 +81,7 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
                             index,
                             (MySQLTableColumn) tableColumn,
                             colIndex++,
-                            !Boolean.TRUE.equals(attrProps.get(EditIndexPage.PROP_DESC)),
+                            !Boolean.TRUE.equals(editPage.getAttributeProperty(tableColumn, EditIndexPage.PROP_DESC)),
                             false,
                             null));
                 }
