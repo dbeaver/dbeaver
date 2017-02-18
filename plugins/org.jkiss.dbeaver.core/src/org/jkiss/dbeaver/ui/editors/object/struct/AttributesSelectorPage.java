@@ -69,12 +69,24 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             this.position = -1;
         }
 
+        public DBSEntityAttribute getAttribute() {
+            return attribute;
+        }
+
+        public int getPosition() {
+            return position;
+        }
+
         public Object getProperty(String name) {
             return properties.get(name);
         }
 
         public void setProperty(String name, Object value) {
-            properties.put(name, value);
+            if (value == null) {
+                properties.remove(name);
+            } else {
+                properties.put(name, value);
+            }
         }
 
         @Override
@@ -200,10 +212,11 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         colType.addListener(SWT.Selection, new SortListener(2));
     }
 
-    protected void fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo attributeInfo, TableItem columnItem) {
+    protected int fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo attributeInfo, TableItem columnItem) {
         columnItem.setText(0, attribute.getName());
         columnItem.setText(1, String.valueOf(attribute.getOrdinalPosition()));
         columnItem.setText(2, attribute.getFullTypeName());
+        return 2;
     }
 
     protected Control createCellEditor(Table table, int index, TableItem item, AttributeInfo data) {
