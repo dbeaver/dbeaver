@@ -60,6 +60,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private boolean outputClipboard = false;
     private boolean compressResults = false;
     private boolean openFolderOnFinish = true;
+    private boolean executeProcessOnFinish = false;
+    private String finishProcessCommand = null;
 
     public LobExtractType getLobExtractType() {
         return lobExtractType;
@@ -133,6 +135,22 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         this.openFolderOnFinish = openFolderOnFinish;
     }
 
+    public boolean isExecuteProcessOnFinish() {
+        return executeProcessOnFinish;
+    }
+
+    public void setExecuteProcessOnFinish(boolean executeProcessOnFinish) {
+        this.executeProcessOnFinish = executeProcessOnFinish;
+    }
+
+    public String getFinishProcessCommand() {
+        return finishProcessCommand;
+    }
+
+    public void setFinishProcessCommand(String finishProcessCommand) {
+        this.finishProcessCommand = finishProcessCommand;
+    }
+
     public DBDDataFormatterProfile getFormatterProfile() {
         return formatterProfile;
     }
@@ -180,6 +198,12 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         if (dialogSettings.get("openFolderOnFinish") != null) {
             openFolderOnFinish = dialogSettings.getBoolean("openFolderOnFinish");
         }
+        if (dialogSettings.get("executeProcessOnFinish") != null) {
+            executeProcessOnFinish = dialogSettings.getBoolean("executeProcessOnFinish");
+        }
+        if (!CommonUtils.isEmpty(dialogSettings.get("finishProcessCommand"))) {
+            finishProcessCommand = dialogSettings.get("finishProcessCommand");
+        }
 
         if (!CommonUtils.isEmpty(dialogSettings.get("formatterProfile"))) {
             formatterProfile = DataFormatterRegistry.getInstance().getCustomProfile(dialogSettings.get("formatterProfile"));
@@ -198,7 +222,10 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         dialogSettings.put("outputClipboard", outputClipboard);
 
         dialogSettings.put("compressResults", compressResults);
+
         dialogSettings.put("openFolderOnFinish", openFolderOnFinish);
+        dialogSettings.put("executeProcessOnFinish", executeProcessOnFinish);
+        dialogSettings.put("finishProcessCommand", finishProcessCommand);
 
         if (formatterProfile != null) {
             dialogSettings.put("formatterProfile", formatterProfile.getProfileName());

@@ -106,7 +106,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
             }
         });
         outputFileText = UIUtils.createLabelText(outputGroup, "File name pattern", wizard.getOutputFilePattern());
-        outputFileText.setToolTipText("Output file name pattern. Allowed variables: ${host}, ${database}, ${table}, ${timestamp}.");
+        UIUtils.setContentProposalToolTip(outputFileText, "Output file name pattern", "host", "database", "table", "timestamp");
         UIUtils.installContentProposal(
             outputFileText,
             new TextContentAdapter(),
