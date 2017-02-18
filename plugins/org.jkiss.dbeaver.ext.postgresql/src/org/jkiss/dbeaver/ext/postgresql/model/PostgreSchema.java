@@ -667,6 +667,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
             if (keyNumbers == null) {
                 return null;
             }
+            int[] keyOptions = PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, "indoption"));
             String expr = JDBCUtils.safeGetString(dbResult, "expr");
             List<PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
             assert attributes != null;
@@ -683,12 +684,14 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                         log.warn("Bad index attribute index: " + colNumber);
                     }
                 }
+                int options = keyOptions == null || keyOptions.length < keyNumbers.length ? 0 : keyOptions[i];
+
                 PostgreIndexColumn col = new PostgreIndexColumn(
                     object,
                     attr,
                     attrExpression,
                     i,
-                    true,
+                    (options & 0x01) != 0, // This is a kind of lazy hack. Actually this flag depends on access method.
                     false);
                 result[i] = col;
             }

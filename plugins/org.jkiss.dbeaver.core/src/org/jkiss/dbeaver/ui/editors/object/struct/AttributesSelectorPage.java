@@ -100,6 +100,14 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         return Collections.emptyMap();
     }
 
+    public Object getAttributeProperty(DBSEntityAttribute attr, String propName) {
+        for (AttributeInfo attrInfo : attributes) {
+            if (attrInfo.attribute == attr) {
+                return attrInfo.properties.get(propName);
+            }
+        }
+        return null;
+    }
 
     @Override
     protected Composite createPageContents(Composite parent) {

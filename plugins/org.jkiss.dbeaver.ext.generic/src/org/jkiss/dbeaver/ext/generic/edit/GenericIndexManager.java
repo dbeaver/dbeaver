@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * Generic index manager
@@ -62,7 +63,6 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
                 if (!editPage.edit()) {
                     return null;
                 }
-
                 final GenericTableIndex index = parent.getDataSource().getMetaModel().createIndexImpl(
                     parent,
                     !editPage.isUnique(),
@@ -83,7 +83,7 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
                             index,
                             (GenericTableColumn) tableColumn,
                             colIndex++,
-                            true));
+                            !Boolean.TRUE.equals(editPage.getAttributeProperty(tableColumn, EditIndexPage.PROP_DESC))));
                 }
                 idxName.append("_IDX");
                 index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
