@@ -48,6 +48,8 @@ public class EditIndexPage extends AttributesSelectorPage {
     private DBSIndexType selectedIndexType;
     private boolean unique;
 
+    private int descColumnIndex;
+
     public EditIndexPage(
         String title,
         DBSTable table,
@@ -108,15 +110,17 @@ public class EditIndexPage extends AttributesSelectorPage {
     }
 
     @Override
-    protected void fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo attributeInfo, TableItem columnItem) {
-        super.fillAttributeColumns(attribute, attributeInfo, columnItem);
+    protected int fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo attributeInfo, TableItem columnItem) {
+        descColumnIndex = super.fillAttributeColumns(attribute, attributeInfo, columnItem) + 1;
 
         boolean isDesc = Boolean.TRUE.equals(attributeInfo.getProperty(PROP_DESC));
-        columnItem.setText(3, isDesc ? "DESC" : "ASC");
+        columnItem.setText(descColumnIndex, isDesc ? "DESC" : "ASC");
+
+        return descColumnIndex;
     }
 
     protected Control createCellEditor(Table table, int index, TableItem item, AttributeInfo attributeInfo) {
-        if (index == 3) {
+        if (index == descColumnIndex) {
             boolean isDesc = Boolean.TRUE.equals(attributeInfo.getProperty(PROP_DESC));
             CCombo combo = new CCombo(table, SWT.DROP_DOWN | SWT.READ_ONLY);
             combo.add("ASC");
@@ -124,21 +128,17 @@ public class EditIndexPage extends AttributesSelectorPage {
             combo.select(isDesc ? 1 : 0);
             return combo;
         }
-/*
-        final Text text = new Text(table, SWT.BORDER);
-        text.setText(item.getText(index));
-        text.selectAll();
-        return text;
-*/
-        return null;
+        return super.createCellEditor(table, index, item, attributeInfo);
     }
 
     protected void saveCellValue(Control control, int index, TableItem item, AttributeInfo attributeInfo) {
-        if (index == 3) {
+        if (index == descColumnIndex) {
             CCombo combo = (CCombo) control;
             boolean isDesc = combo.getSelectionIndex() == 1;
             item.setText(index, isDesc ? "DESC" : "ASC");
             attributeInfo.setProperty(PROP_DESC, isDesc);
+        } else {
+            super.saveCellValue(control, index, item, attributeInfo);
         }
     }
 

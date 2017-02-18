@@ -70,9 +70,7 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
                 if (!firstColumn) decl.append(","); //$NON-NLS-1$
                 firstColumn = false;
                 decl.append(indexColumn.getName());
-                if (!indexColumn.isAscending()) {
-                    decl.append(" DESC"); //$NON-NLS-1$
-                }
+                appendIndexColumnModifiers(decl, indexColumn);
             }
         } catch (DBException e) {
             log.error(e);
@@ -82,6 +80,12 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
         actions.add(
             new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_index, decl.toString())
         );
+    }
+
+    protected void appendIndexColumnModifiers(StringBuilder decl, DBSTableIndexColumn indexColumn) {
+        if (!indexColumn.isAscending()) {
+            decl.append(" DESC"); //$NON-NLS-1$
+        }
     }
 
     @Override
