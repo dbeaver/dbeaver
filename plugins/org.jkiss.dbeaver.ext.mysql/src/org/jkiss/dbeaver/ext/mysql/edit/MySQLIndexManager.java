@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * MySQL index manager
@@ -72,6 +73,7 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
                 idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
+                    final Map<String, Object> attrProps = editPage.getAttributeProperties(tableColumn);
                     if (colIndex == 1) {
                         idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
                     }
@@ -80,7 +82,7 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
                             index,
                             (MySQLTableColumn) tableColumn,
                             colIndex++,
-                            true,
+                            !Boolean.TRUE.equals(attrProps.get(EditIndexPage.PROP_DESC)),
                             false,
                             null));
                 }

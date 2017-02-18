@@ -19,13 +19,13 @@ package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -41,6 +41,8 @@ import java.util.List;
  * @author Serge Rider
  */
 public class EditIndexPage extends AttributesSelectorPage {
+
+    public static final String PROP_DESC = "desc";
 
     private List<DBSIndexType> indexTypes;
     private DBSIndexType selectedIndexType;
@@ -96,4 +98,48 @@ public class EditIndexPage extends AttributesSelectorPage {
     public boolean isUnique() {
         return unique;
     }
+
+    @Override
+    protected void createAttributeColumns(Table columnsTable) {
+        super.createAttributeColumns(columnsTable);
+
+        TableColumn colDesc = UIUtils.createTableColumn(columnsTable, SWT.NONE, "Order");
+        colDesc.setToolTipText("Ascending/descending");
+    }
+
+    @Override
+    protected void fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo attributeInfo, TableItem columnItem) {
+        super.fillAttributeColumns(attribute, attributeInfo, columnItem);
+
+        boolean isDesc = Boolean.TRUE.equals(attributeInfo.getProperty(PROP_DESC));
+        columnItem.setText(3, isDesc ? "DESC" : "ASC");
+    }
+
+    protected Control createCellEditor(Table table, int index, TableItem item, AttributeInfo attributeInfo) {
+        if (index == 3) {
+            boolean isDesc = Boolean.TRUE.equals(attributeInfo.getProperty(PROP_DESC));
+            CCombo combo = new CCombo(table, SWT.DROP_DOWN | SWT.READ_ONLY);
+            combo.add("ASC");
+            combo.add("DESC");
+            combo.select(isDesc ? 1 : 0);
+            return combo;
+        }
+/*
+        final Text text = new Text(table, SWT.BORDER);
+        text.setText(item.getText(index));
+        text.selectAll();
+        return text;
+*/
+        return null;
+    }
+
+    protected void saveCellValue(Control control, int index, TableItem item, AttributeInfo attributeInfo) {
+        if (index == 3) {
+            CCombo combo = (CCombo) control;
+            boolean isDesc = combo.getSelectionIndex() == 1;
+            item.setText(index, isDesc ? "DESC" : "ASC");
+            attributeInfo.setProperty(PROP_DESC, isDesc);
+        }
+    }
+
 }

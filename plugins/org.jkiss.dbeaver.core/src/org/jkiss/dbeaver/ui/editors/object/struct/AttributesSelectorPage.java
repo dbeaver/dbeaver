@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -52,18 +53,33 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
 
     protected DBSEntity entity;
     protected Table columnsTable;
+
     protected List<AttributeInfo> attributes = new ArrayList<>();
     protected Button toggleButton;
     protected Group columnsGroup;
 
-    private static class AttributeInfo {
+    protected static class AttributeInfo {
         DBSEntityAttribute attribute;
         int position;
+        Map<String, Object> properties = new HashMap<>();
 
         public AttributeInfo(DBSEntityAttribute attribute)
         {
             this.attribute = attribute;
             this.position = -1;
+        }
+
+        public Object getProperty(String name) {
+            return properties.get(name);
+        }
+
+        public void setProperty(String name, Object value) {
+            properties.put(name, value);
+        }
+
+        @Override
+        public String toString() {
+            return attribute.getName();
         }
     }
 
@@ -74,6 +90,16 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         super(NLS.bind(CoreMessages.dialog_struct_columns_select_title, title, entity.getName()));
         this.entity = entity;
     }
+
+    public Map<String, Object> getAttributeProperties(DBSEntityAttribute attr) {
+        for (AttributeInfo attrInfo : attributes) {
+            if (attrInfo.attribute == attr) {
+                return attrInfo.properties;
+            }
+        }
+        return Collections.emptyMap();
+    }
+
 
     @Override
     protected Composite createPageContents(Composite parent) {
@@ -111,14 +137,18 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             }
         });
 
-        TableColumn colName = UIUtils.createTableColumn(columnsTable, SWT.NONE, CoreMessages.dialog_struct_columns_select_column);
-        colName.addListener(SWT.Selection, new SortListener(0));
+        createAttributeColumns(columnsTable);
 
-        TableColumn colPosition = UIUtils.createTableColumn(columnsTable, SWT.CENTER, "#"); //$NON-NLS-1$
-        colPosition.addListener(SWT.Selection, new SortListener(1));
-
-        TableColumn colType = UIUtils.createTableColumn(columnsTable, SWT.RIGHT, "Type"); //$NON-NLS-1$
-        colType.addListener(SWT.Selection, new SortListener(2));
+        final CustomTableEditor tableEditor = new CustomTableEditor(columnsTable) {
+            @Override
+            protected Control createEditor(Table table, final int index, final TableItem item) {
+                return createCellEditor(table, index, item, (AttributeInfo)item.getData());
+            }
+            @Override
+            protected void saveEditorValue(Control control, int index, TableItem item) {
+                saveCellValue(control, index, item, (AttributeInfo)item.getData());
+            }
+        };
 
         toggleButton = new Button(columnsGroup, SWT.PUSH);
         toggleButton.setText("Select All");
@@ -149,6 +179,37 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
                 }
             }
         });
+    }
+
+    protected void createAttributeColumns(Table columnsTable) {
+        TableColumn colName = UIUtils.createTableColumn(columnsTable, SWT.NONE, CoreMessages.dialog_struct_columns_select_column);
+        colName.addListener(SWT.Selection, new SortListener(0));
+
+        TableColumn colPosition = UIUtils.createTableColumn(columnsTable, SWT.CENTER, "#"); //$NON-NLS-1$
+        colPosition.addListener(SWT.Selection, new SortListener(1));
+
+        TableColumn colType = UIUtils.createTableColumn(columnsTable, SWT.RIGHT, "Type"); //$NON-NLS-1$
+        colType.addListener(SWT.Selection, new SortListener(2));
+    }
+
+    protected void fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo attributeInfo, TableItem columnItem) {
+        columnItem.setText(0, attribute.getName());
+        columnItem.setText(1, String.valueOf(attribute.getOrdinalPosition()));
+        columnItem.setText(2, attribute.getFullTypeName());
+    }
+
+    protected Control createCellEditor(Table table, int index, TableItem item, AttributeInfo data) {
+/*
+        final Text text = new Text(table, SWT.BORDER);
+        text.setText(item.getText(index));
+        text.selectAll();
+        return text;
+*/
+        return null;
+    }
+
+    protected void saveCellValue(Control control, int index, TableItem item, AttributeInfo data) {
+        //item.setText(index, control.getText());
     }
 
     protected void fillAttributes(final DBSEntity entity)
@@ -191,9 +252,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             if (attributeNode != null) {
                 columnItem.setImage(0, DBeaverIcons.getImage(attributeNode.getNodeIcon()));
             }
-            columnItem.setText(0, attribute.getName());
-            columnItem.setText(1, String.valueOf(attribute.getOrdinalPosition()));
-            columnItem.setText(2, attribute.getFullTypeName());
+            fillAttributeColumns(attribute, col, columnItem);
             columnItem.setData(col);
             if (isColumnSelected(attribute)) {
                 columnItem.setChecked(true);
