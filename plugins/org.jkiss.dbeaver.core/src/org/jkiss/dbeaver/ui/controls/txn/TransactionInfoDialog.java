@@ -68,6 +68,7 @@ public abstract class TransactionInfoDialog extends Dialog {
         DBCExecutionContext context = getCurrentContext();
         QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context);
         logViewer = new QueryLogViewer(composite, activeEditor.getSite(), filter, false);
+        logViewer.setUseDefaultFilter(false);
         final Object gd = logViewer.getControl().getLayoutData();
         if (gd instanceof GridData) {
             ((GridData) gd).heightHint = logViewer.getControl().getHeaderHeight() + logViewer.getControl().getItemHeight() * 5;

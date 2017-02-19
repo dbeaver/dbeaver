@@ -298,11 +298,15 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         COLUMN_CONTEXT,
     };
 
+    private static QMEventFilter DEFAULT_FILTER = new DefaultEventFilter();;
+
     private final IWorkbenchPartSite site;
     private Table logTable;
     private java.util.List<ColumnDescriptor> columns = new ArrayList<>();
     private LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<>();
+
     private QMEventFilter filter;
+    private boolean useDefaultFilter = true;
 
     private final Color colorLightGreen;
     private final Color colorLightRed;
@@ -311,7 +315,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private final Font boldFont;
     private DragSource dndSource;
 
-    private QMEventFilter defaultFilter;
 
     private int entriesPerPage = MIN_ENTRIES_PER_PAGE;
 
@@ -382,6 +385,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     public void setFilter(QMEventFilter filter) {
         this.filter = filter;
+    }
+
+    public void setUseDefaultFilter(boolean useDefaultFilter) {
+        this.useDefaultFilter = useDefaultFilter;
     }
 
     private void showEventDetails(QMMetaEvent event)
@@ -584,7 +591,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     {
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
-        this.defaultFilter = new DefaultEventFilter();
         this.entriesPerPage = Math.max(MIN_ENTRIES_PER_PAGE, store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE));
 
         clearLog();
@@ -620,7 +626,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     break;
                 }
                 QMMetaEvent event = events.get(i - 1);
-                if ((filter != null && !filter.accept(event)) || !defaultFilter.accept(event)) {
+                if ((filter != null && !filter.accept(event)) || (useDefaultFilter && !DEFAULT_FILTER.accept(event))) {
                     continue;
                 }
                 QMMObject object = event.getObject();
