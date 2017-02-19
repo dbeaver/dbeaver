@@ -82,7 +82,9 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
         colName.setText("Connection");
         TreeColumn colTxn = new TreeColumn(contextTree, SWT.RIGHT);
         colTxn.setText("Transaction");
-        contextTree.setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = contextTree.getHeaderHeight() + contextTree.getItemHeight() * 5;
+        contextTree.setLayoutData(gd);
         contextTree.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -109,7 +111,7 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
                     loadContexts(showAllCheck.getSelection());
                 }
             });
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             showAllCheck.setLayoutData(gd);
             commitButton = UIUtils.createPushButton(controlPanel, "Commit", DBeaverIcons.getImage(UIIcon.TXN_COMMIT));

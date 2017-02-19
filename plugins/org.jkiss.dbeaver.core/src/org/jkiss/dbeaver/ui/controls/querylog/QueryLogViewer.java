@@ -464,7 +464,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     @Override
-    public Control getControl()
+    public Table getControl()
     {
         return logTable;
     }

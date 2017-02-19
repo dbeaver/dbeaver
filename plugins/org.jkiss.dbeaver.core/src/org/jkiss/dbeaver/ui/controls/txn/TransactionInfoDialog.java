@@ -20,6 +20,7 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -67,6 +68,10 @@ public abstract class TransactionInfoDialog extends Dialog {
         DBCExecutionContext context = getCurrentContext();
         QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context);
         logViewer = new QueryLogViewer(composite, activeEditor.getSite(), filter, false);
+        final Object gd = logViewer.getControl().getLayoutData();
+        if (gd instanceof GridData) {
+            ((GridData) gd).heightHint = logViewer.getControl().getHeaderHeight() + logViewer.getControl().getItemHeight() * 5;
+        }
 
         showAllCheck = UIUtils.createCheckbox(composite, "Show all queries", "Show all transaction queries. Otherwise shows only modifying queries.", false, 1);
         showAllCheck.addSelectionListener(new SelectionAdapter() {

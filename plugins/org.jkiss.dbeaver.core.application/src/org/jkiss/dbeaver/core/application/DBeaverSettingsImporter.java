@@ -123,9 +123,9 @@ class DBeaverSettingsImporter {
             iconLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             Label confirmLabel = new Label(infoGroup, SWT.NONE);
             //confirmLabel.setImage(JFaceResources.getImage(org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_INFO));
-            confirmLabel.setText("Settings of previous version (" + oldVersion + ") of " + GeneralUtils.getProductName() + " was found at\n" +
+            confirmLabel.setText("Previous version (" + GeneralUtils.getProductName() + " " + oldVersion + ") settings were found:\n" +
                 oldDir.getAbsolutePath() + "\n" +
-                "Do you want to import previous version settings? (Recommended).\n\n" +
+                "Do you want to import these settings? (Recommended).\n\n" +
                 "Make sure previous version of " + GeneralUtils.getProductName() + " isn't running");
             confirmLabel.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
