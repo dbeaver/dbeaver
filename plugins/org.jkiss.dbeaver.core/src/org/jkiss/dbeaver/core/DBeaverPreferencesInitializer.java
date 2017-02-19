@@ -90,7 +90,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_TIMEOUT, 0);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.READ_EXPENSIVE_PROPERTIES, false);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.EDITOR_SEPARATE_CONNECTION, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.EDITOR_SEPARATE_CONNECTION, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.EDITOR_CONNECT_ON_ACTIVATE, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.EDITOR_CONNECT_ON_EXECUTE, false);
 
