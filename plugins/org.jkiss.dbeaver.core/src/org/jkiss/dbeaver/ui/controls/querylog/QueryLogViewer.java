@@ -677,6 +677,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     {
         for (Iterator<QMMStatementExecuteInfo> i = savepoint.getExecutions(); i.hasNext(); ) {
             QMMStatementExecuteInfo exec = i.next();
+            if (exec.hasError()) {
+                // Do not update color of failed executions (it has to be red)
+                continue;
+            }
             TableItem item = objectToItemMap.get(exec.getObjectId());
             if (item != null && !item.isDisposed()) {
                 item.setFont(getObjectFont(event));
