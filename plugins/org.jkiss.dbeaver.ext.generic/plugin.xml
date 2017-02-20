@@ -860,7 +860,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="indexed">
+        <meta id="indexed" class="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel">
             <object type="catalog">
                 <column id="TABLE_CAT" index="1"/>
             </object>
