@@ -292,8 +292,15 @@ public class TransactionMonitorToolbar {
             refreshMonitor();
         }
 
+/*
         @Override
         public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement) {
+            refreshMonitor();
+        }
+*/
+
+        @Override
+        public void handleStatementExecuteEnd(@NotNull DBCStatement statement, long rows, Throwable error) {
             refreshMonitor();
         }
 
