@@ -64,8 +64,8 @@ public class OracleDataSource extends JDBCDataSource
     final UserCache userCache = new UserCache();
     final ProfileCache profileCache = new ProfileCache();
     final RoleCache roleCache = new RoleCache();
-    final OracleOutputReader outputReader;
 
+    private OracleOutputReader outputReader;
     private OracleSchema publicSchema;
     private String activeSchemaName;
     private boolean isAdmin;
@@ -137,6 +137,9 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
+        if (outputReader == null) {
+            outputReader = new OracleOutputReader();
+        }
         // Enable DBMS output
         outputReader.enableServerOutput(
             monitor,
