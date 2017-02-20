@@ -67,6 +67,8 @@ public class QMMStatementExecuteInfo extends QMMObject {
                 this.errorCode = ((SQLException)error).getErrorCode();
             }
             this.errorMessage = error.getMessage();
+            // SQL error makes ANY statement transactional (PG specific?)
+            this.transactional = true;
         }
         this.rowCount = rowCount;
         super.close();
