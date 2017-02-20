@@ -298,13 +298,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         COLUMN_CONTEXT,
     };
 
-    private static QMEventFilter DEFAULT_FILTER = new DefaultEventFilter();;
-
     private final IWorkbenchPartSite site;
     private Table logTable;
     private java.util.List<ColumnDescriptor> columns = new ArrayList<>();
     private LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<>();
 
+    private QMEventFilter defaultFilter = new DefaultEventFilter();
     private QMEventFilter filter;
     private boolean useDefaultFilter = true;
 
@@ -592,6 +591,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         this.entriesPerPage = Math.max(MIN_ENTRIES_PER_PAGE, store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE));
+        this.defaultFilter = new DefaultEventFilter();
 
         clearLog();
         updateMetaInfo(QMUtils.getPastMetaEvents());
@@ -621,12 +621,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             // Add events in reverse order
             int itemIndex = 0;
             for (int i = events.size(); i > 0; i--) {
-                if (itemIndex >= entriesPerPage) {
+                if (useDefaultFilter && itemIndex >= entriesPerPage) {
                     // Do not add remaining (older) events - they don't fit page anyway
                     break;
                 }
                 QMMetaEvent event = events.get(i - 1);
-                if ((filter != null && !filter.accept(event)) || (useDefaultFilter && !DEFAULT_FILTER.accept(event))) {
+                if ((filter != null && !filter.accept(event)) || (useDefaultFilter && !defaultFilter.accept(event))) {
                     continue;
                 }
                 QMMObject object = event.getObject();
