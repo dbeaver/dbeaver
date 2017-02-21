@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -184,7 +185,7 @@ public abstract class ObjectViewerRenderer {
             } else if (isHyperlink(cellValue)) {
                 // Print link
                 boolean isSelected = gc.getBackground().equals(selectionBackgroundColor);
-                prepareLinkStyle(cellValue, isSelected ? gc.getForeground() : null);
+                prepareLinkStyle(cellValue, isSelected ? gc.getForeground() : JFaceColors.getHyperlinkText(event.item.getDisplay()));
                 Rectangle textBounds;
                 if (event.item instanceof TreeItem) {
                     textBounds = ((TreeItem) event.item).getTextBounds(event.index);
