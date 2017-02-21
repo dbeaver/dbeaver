@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.wmi
-Bundle-Version: 2.0.44
-Bundle-Release-Date: 20170228
+Bundle-Version: 2.0.45
+Bundle-Release-Date: 20170222
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Vendor: %Bundle-Vendor
 Export-Package: org.jkiss.wmi.service
