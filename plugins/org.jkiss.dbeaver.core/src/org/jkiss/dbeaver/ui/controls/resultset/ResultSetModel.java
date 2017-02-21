@@ -834,13 +834,15 @@ public class ResultSetModel {
             }
         }
 
-        // Update visibility
-        for (Iterator<DBDAttributeBinding> iter = visibleAttributes.iterator(); iter.hasNext(); ) {
-            final DBDAttributeBinding attr = iter.next();
-            if (filter.getConstraint(attr, true) == null) {
-                // No constraint for this attribute: use default visibility
-                if (!isVisibleByDefault(attr)) {
-                    iter.remove();
+        if (filter.getConstraints().size() != attributes.length) {
+            // Update visibility
+            for (Iterator<DBDAttributeBinding> iter = visibleAttributes.iterator(); iter.hasNext(); ) {
+                final DBDAttributeBinding attr = iter.next();
+                if (filter.getConstraint(attr, true) == null) {
+                    // No constraint for this attribute: use default visibility
+                    if (!isVisibleByDefault(attr)) {
+                        iter.remove();
+                    }
                 }
             }
         }
