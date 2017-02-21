@@ -511,7 +511,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         editor.createPartControl(editorPH);
         editor.reloadSyntaxRules();
         StyledText textWidget = editor.getTextViewer().getTextWidget();
-        textWidget.setAlwaysShowScrollBars(false);
+        //textWidget.setAlwaysShowScrollBars(false);
 
         panel.setBackground(textWidget.getBackground());
         panel.addDisposeListener(new DisposeListener() {
@@ -614,8 +614,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 }
 
                 @Override
-                public void mouseDown(MouseEvent e) {
-                    showObjectInfoPopup(e);
+                public void mouseDown(final MouseEvent e) {
+                    DBeaverUI.asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            showObjectInfoPopup(e);
+                        }
+                    });
                 }
             });
         }
