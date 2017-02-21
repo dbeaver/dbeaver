@@ -31,10 +31,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
@@ -124,7 +121,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             if (activeDatabase != null) {
                 final PostgreSchema activeSchema = activeDatabase.getDefaultObject();
                 if (activeSchema != null) {
-                    activeDatabase.setSearchPath(monitor, activeSchema, context);
+
+                    // Check default active schema
+                    String curDefSchema;
+                    try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Get context active schema")) {
+                        curDefSchema = JDBCUtils.queryString(session, "SELECT current_schema()");
+                    } catch (SQLException e) {
+                        throw new DBCException(e, getDataSource());
+                    }
+                    if (curDefSchema == null || !curDefSchema.equals(activeSchema.getName())) {
+                        activeDatabase.setSearchPath(monitor, activeSchema, context);
+                    }
                 }
             }
         }
