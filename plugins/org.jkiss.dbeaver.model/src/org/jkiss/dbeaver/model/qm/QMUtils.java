@@ -80,14 +80,16 @@ public class QMUtils {
         if (executionContext == null || application == null) {
             return false;
         } else {
-            QMMSessionInfo sessionInfo = application.getQueryManager().getMetaCollector().getSessionInfo(executionContext);
-            QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
-            if (txnInfo != null) {
-                QMMTransactionSavepointInfo sp = txnInfo.getCurrentSavepoint();
-                QMMStatementExecuteInfo execInfo = sp.getLastExecute();
-                for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
-                    if (exec.isTransactional()) {
-                        return true;
+            QMMSessionInfo sessionInfo = getCurrentSession(executionContext);
+            if (sessionInfo != null) {
+                QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
+                if (txnInfo != null) {
+                    QMMTransactionSavepointInfo sp = txnInfo.getCurrentSavepoint();
+                    QMMStatementExecuteInfo execInfo = sp.getLastExecute();
+                    for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
+                        if (exec.isTransactional()) {
+                            return true;
+                        }
                     }
                 }
             }
@@ -100,8 +102,8 @@ public class QMUtils {
     }
 
     public static QMMTransactionSavepointInfo getCurrentTransaction(DBCExecutionContext executionContext) {
-        QMMSessionInfo sessionInfo = application.getQueryManager().getMetaCollector().getSessionInfo(executionContext);
-        if (!sessionInfo.isClosed() && sessionInfo.isTransactional()) {
+        QMMSessionInfo sessionInfo = getCurrentSession(executionContext);
+        if (sessionInfo != null && !sessionInfo.isClosed() && sessionInfo.isTransactional()) {
             QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
             if (txnInfo != null) {
                 return txnInfo.getCurrentSavepoint();
