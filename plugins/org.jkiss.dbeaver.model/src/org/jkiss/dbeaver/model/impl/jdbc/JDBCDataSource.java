@@ -188,14 +188,7 @@ public abstract class JDBCDataSource
 
             // Initialize SQL dialect. We need to make this ASAP because once datasource is connected
             // it can be tracked by QM and other monitors. We have to have correct SQL dialect.
-            if (sqlDialect == BasicSQLDialect.INSTANCE) {
-                // Initialize SQL dialect
-                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Initialize SQL dialect")) {
-                    sqlDialect = createSQLDialect(new JDBCDatabaseMetaDataImpl(session, connection.getMetaData()));
-                } catch (Throwable e) {
-                    log.error("Error creating SQL dialect", e);
-                }
-            }
+            initializeSQLDialect(monitor, connection);
             return connection;
         }
         catch (SQLException ex) {
@@ -598,6 +591,17 @@ public abstract class JDBCDataSource
     @NotNull
     protected JDBCFactory createJdbcFactory() {
         return new JDBCFactoryDefault();
+    }
+
+    protected final void initializeSQLDialect(@NotNull DBRProgressMonitor monitor, Connection connection) {
+        if (sqlDialect == BasicSQLDialect.INSTANCE) {
+            // Initialize SQL dialect
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Initialize SQL dialect")) {
+                sqlDialect = createSQLDialect(new JDBCDatabaseMetaDataImpl(session, connection.getMetaData()));
+            } catch (Throwable e) {
+                log.error("Error creating SQL dialect", e);
+            }
+        }
     }
 
     /////////////////////////////////////////////////
