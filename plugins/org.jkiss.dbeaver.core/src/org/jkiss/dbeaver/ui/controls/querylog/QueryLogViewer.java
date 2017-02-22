@@ -44,6 +44,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -598,7 +599,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     @Override
-    public void metaInfoChanged(final java.util.List<QMMetaEvent> events) {
+    public void metaInfoChanged(@NotNull final java.util.List<QMMetaEvent> events) {
         if (DBeaverCore.isClosing()) {
             return;
         }

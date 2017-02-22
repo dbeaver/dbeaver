@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.runtime.qm;
 
 import org.eclipse.core.runtime.IStatus;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
@@ -84,7 +85,7 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
     }
 
     @Override
-    public synchronized void metaInfoChanged(List<QMMetaEvent> events)
+    public synchronized void metaInfoChanged(@NotNull List<QMMetaEvent> events)
     {
         if (!enabled || logWriter == null) {
             return;

@@ -37,13 +37,26 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
 {
     private static final Log log = Log.getLog(AbstractExecutionContext.class);
 
+    private static long idSequence = 0;
+
     @NotNull
     protected final DATASOURCE dataSource;
     protected final String purpose;
+    protected final long id;
 
     public AbstractExecutionContext(@NotNull DATASOURCE dataSource, String purpose) {
         this.dataSource = dataSource;
         this.purpose = purpose;
+        this.id = generateContextId();
+    }
+
+    public static synchronized long generateContextId() {
+        return idSequence++;
+    }
+
+    @Override
+    public long getContextId() {
+        return this.id;
     }
 
     @NotNull

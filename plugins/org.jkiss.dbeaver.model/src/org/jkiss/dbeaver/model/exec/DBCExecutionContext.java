@@ -38,6 +38,14 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
         ERROR
     }
 
+    /**
+     * Unique context ID. Generated in the moment of context creation and never changes during context lifetime.
+     */
+    long getContextId();
+
+    /**
+     * Context name. Like MAin, Metadata, Script X, etc.
+     */
     @NotNull
     String getContextName();
 
