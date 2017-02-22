@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.qm;
 
+import org.jkiss.code.NotNull;
+
 import java.util.List;
 
 /**
@@ -24,6 +26,11 @@ import java.util.List;
  */
 public interface QMMetaListener {
 
-    void metaInfoChanged(List<QMMetaEvent> events);
+    /**
+     * Notifies listeners about new events.
+     * Implementation must process all events in sync mode.
+     * QM collector will clean all closed objects after listeners notification.
+     */
+    void metaInfoChanged(@NotNull List<QMMetaEvent> events);
 
 }

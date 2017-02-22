@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.qm.QMMetaListener;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.utils.LongKeyMap;
 
 import java.util.*;
 
@@ -44,7 +45,8 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private static final int MAX_HISTORY_EVENTS = 1000;
 
     // Session map
-    private Map<String, QMMSessionInfo> sessionMap = new HashMap<>();
+    private LongKeyMap<QMMSessionInfo> sessionMap = new LongKeyMap<>();
+    private List<Long> closedSessions = new ArrayList<>();
 
     // External listeners
     private List<QMMetaListener> listeners = new ArrayList<>();
@@ -94,10 +96,6 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         return "Meta info collector";
     }
 
-    private String makeContextId(DBCExecutionContext context) {
-        return context.getDataSource().getContainer().getId() + ":" + context.getContextName();
-    }
-
     public synchronized void addListener(QMMetaListener listener)
     {
         listeners.add(listener);
@@ -138,10 +136,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
 
     public QMMSessionInfo getSessionInfo(DBCExecutionContext context)
     {
-        String contextId = makeContextId(context);
-        QMMSessionInfo sessionInfo = sessionMap.get(contextId);
+        QMMSessionInfo sessionInfo = sessionMap.get(context.getContextId());
         if (sessionInfo == null) {
-            log.warn("Can't find sessionInfo meta information: " + contextId);
+            log.debug("Can't find sessionInfo meta information: " + context.getContextId() + " (" + context.getContextName() + ")");
         }
         return sessionInfo;
     }
@@ -156,21 +153,18 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     @Override
     public synchronized void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional)
     {
-        String contextId = makeContextId(context);
+        final long contextId = context.getContextId();
         if (sessionMap.containsKey(contextId)) {
-            log.debug("Duplicate session '" + contextId + "' open");
+            log.warn("Duplicate session '" + contextId + "' open");
         }
         QMMSessionInfo session = new QMMSessionInfo(
             context,
-            transactional,
-            sessionMap.get(contextId));
+            transactional);
         sessionMap.put(contextId, session);
 
-        if (session.getPrevious() != null && !session.getPrevious().isClosed()) {
-            // Is it really a problem? Maybe better to remove warning at all
-            // Happens when we have open connection and perform another connection test
-            log.debug("Previous '" + contextId + "' session wasn't closed");
-        }
+        // Remove from closed sessions (in case of re-opened connection)
+        closedSessions.remove(contextId);
+        // Notify
         fireMetaEvent(session, QMMetaEvent.Action.BEGIN);
     }
 
@@ -182,9 +176,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             session.close();
             fireMetaEvent(session, QMMetaEvent.Action.END);
         }
-        // Remove closed context from map (otherwise we'll be out of memory eventually)
-        String contextId = makeContextId(context);
-        sessionMap.remove(contextId);
+        closedSessions.add(context.getContextId());
     }
 
     @Override
@@ -328,6 +320,13 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
                         size - MAX_HISTORY_EVENTS,
                         size));
                 }
+            }
+            // Cleanup closed sessions
+            synchronized (QMMCollectorImpl.this) {
+                for (Long sessionId : closedSessions) {
+                    sessionMap.remove(sessionId);
+                }
+                closedSessions.clear();
             }
             if (isRunning()) {
                 this.schedule(EVENT_DISPATCH_PERIOD);

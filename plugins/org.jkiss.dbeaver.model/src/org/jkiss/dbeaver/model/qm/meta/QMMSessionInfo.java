@@ -34,13 +34,12 @@ public class QMMSessionInfo extends QMMObject {
     private SQLDialect sqlDialect;
     private boolean transactional;
 
-    private QMMSessionInfo previous;
     private QMMStatementInfo statementStack;
     private QMMStatementExecuteInfo executionStack;
     private QMMTransactionInfo transaction;
     //private Throwable stack;
 
-    public QMMSessionInfo(DBCExecutionContext context, boolean transactional, QMMSessionInfo previous)
+    public QMMSessionInfo(DBCExecutionContext context, boolean transactional)
     {
         this.containerId = context.getDataSource().getContainer().getId();
         this.containerName = context.getDataSource().getContainer().getName();
@@ -50,7 +49,6 @@ public class QMMSessionInfo extends QMMObject {
         if (context.getDataSource() instanceof SQLDataSource) {
             this.sqlDialect = ((SQLDataSource) context.getDataSource()).getSQLDialect();
         }
-        this.previous = previous;
         this.transactional = transactional;
         if (transactional) {
             this.transaction = new QMMTransactionInfo(this, null);
@@ -244,11 +242,6 @@ public class QMMSessionInfo extends QMMObject {
         return transaction;
     }
 
-    public QMMSessionInfo getPrevious()
-    {
-        return previous;
-    }
-
     public boolean isTransactional()
     {
         return transactional;
@@ -257,7 +250,7 @@ public class QMMSessionInfo extends QMMObject {
     @Override
     public String toString()
     {
-        return "SESSION " + containerId;
+        return "SESSION " + containerName + " [" + contextName + "]";
     }
 
     public SQLDialect getSQLDialect() {
