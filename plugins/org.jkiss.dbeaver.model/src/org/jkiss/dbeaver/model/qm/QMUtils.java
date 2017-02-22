@@ -119,8 +119,8 @@ public class QMUtils {
         if (executionContext == null || application == null) {
             txnMode = false;
         } else {
-            QMMSessionInfo sessionInfo = application.getQueryManager().getMetaCollector().getSessionInfo(executionContext);
-            if (sessionInfo.isClosed()) {
+            QMMSessionInfo sessionInfo = getCurrentSession(executionContext);
+            if (sessionInfo == null || sessionInfo.isClosed()) {
                 txnMode = false;
             } else if (sessionInfo.isTransactional()) {
                 QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
