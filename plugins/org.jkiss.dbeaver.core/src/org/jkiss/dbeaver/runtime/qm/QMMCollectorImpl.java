@@ -157,6 +157,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     public synchronized void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional)
     {
         String contextId = makeContextId(context);
+        if (sessionMap.containsKey(contextId)) {
+            log.debug("Duplicate session '" + contextId + "' open");
+        }
         QMMSessionInfo session = new QMMSessionInfo(
             context,
             transactional,

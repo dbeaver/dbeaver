@@ -109,6 +109,8 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
     {
         DataSourceDescriptor dataSource = getPageSettings().getActiveDataSource();
         DataSourceDescriptor testDataSource = new DataSourceDescriptor(dataSource);
+        // Generate new ID to avoid session conflicts in QM
+        testDataSource.setId(DataSourceDescriptor.generateNewId(dataSource.getDriver()));
         try {
             saveSettings(testDataSource);
 
