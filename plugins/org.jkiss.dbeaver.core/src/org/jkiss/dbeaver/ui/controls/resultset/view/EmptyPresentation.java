@@ -36,8 +36,8 @@ import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
@@ -45,14 +45,13 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
  * Empty presentation.
  * Used when RSV has no results (initially).
  */
-public class EmptyPresentation implements IResultSetPresentation {
+public class EmptyPresentation extends AbstractPresentation {
 
-    private IResultSetController controller;
     private Composite placeholder;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
-        this.controller = controller;
+        super.createPresentation(controller, parent);
 
         UIUtils.createHorizontalLine(parent);
         placeholder = new Canvas(parent, SWT.NONE);
@@ -88,11 +87,8 @@ public class EmptyPresentation implements IResultSetPresentation {
             }
 
         });
-    }
 
-    @Override
-    public IResultSetController getController() {
-        return controller;
+        trackPresentationControl();
     }
 
     @Override
