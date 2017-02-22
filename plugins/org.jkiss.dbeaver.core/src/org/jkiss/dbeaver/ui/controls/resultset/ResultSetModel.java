@@ -834,6 +834,19 @@ public class ResultSetModel {
             }
         }
 
+        if (filter.getConstraints().size() != attributes.length) {
+            // Update visibility
+            for (Iterator<DBDAttributeBinding> iter = visibleAttributes.iterator(); iter.hasNext(); ) {
+                final DBDAttributeBinding attr = iter.next();
+                if (filter.getConstraint(attr, true) == null) {
+                    // No constraint for this attribute: use default visibility
+                    if (!isVisibleByDefault(attr)) {
+                        iter.remove();
+                    }
+                }
+            }
+        }
+
         Collections.sort(this.visibleAttributes, POSITION_SORTER);
 
         this.dataFilter.setWhere(filter.getWhere());
@@ -893,7 +906,7 @@ public class ResultSetModel {
         if (executionSource != null && executionSource.getDataContainer() instanceof DBSEntity) {
             // Filter pseudo attributes if we query single entity
             for (DBDAttributeBinding binding : this.attributes) {
-                if (!binding.isPseudoAttribute()) {
+                if (isVisibleByDefault(binding)) {
                     // Make visible "real" attributes
                     this.visibleAttributes.add(binding);
                 }
@@ -901,6 +914,10 @@ public class ResultSetModel {
         } else {
             Collections.addAll(this.visibleAttributes, this.attributes);
         }
+    }
+
+    private static boolean isVisibleByDefault(DBDAttributeBinding binding) {
+        return !binding.isPseudoAttribute();
     }
 
     public DBCStatistics getStatistics() {

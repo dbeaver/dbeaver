@@ -239,6 +239,10 @@ public class DataSourceDescriptor
         return id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     @NotNull
     @Override
     public DriverDescriptor getDriver()
