@@ -156,8 +156,11 @@ public class MavenRegistry
 
                     final String authUser = repoElement.getAttribute("auth-user");
                     if (!CommonUtils.isEmpty(authUser)) {
+                        repo.getAuthInfo().setUserName(authUser);
                         String authPassword = repoElement.getAttribute("auth-password");
-                        repo.setAuthInfo(new DBAAuthInfo(authUser, CommonUtils.isEmpty(authPassword) ? null : ENCRYPTOR.decrypt(authPassword), true));
+                        if (!CommonUtils.isEmpty(authPassword)) {
+                            repo.getAuthInfo().setUserPassword(ENCRYPTOR.decrypt(authPassword));
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -281,10 +284,10 @@ public class MavenRegistry
                                 }
                             }
                             final DBAAuthInfo authInfo = repository.getAuthInfo();
-                            if (authInfo != null && !CommonUtils.isEmpty(authInfo.getUserName())) {
+                            if (!CommonUtils.isEmpty(authInfo.getUserName())) {
                                 xml.addAttribute("auth-user", authInfo.getUserName());
                                 if (!CommonUtils.isEmpty(authInfo.getUserPassword())) {
-                                    xml.addAttribute("auth-password", ENCRYPTOR.decrypt(authInfo.getUserPassword()));
+                                    xml.addAttribute("auth-password", ENCRYPTOR.encrypt(authInfo.getUserPassword()));
                                 }
                             }
 

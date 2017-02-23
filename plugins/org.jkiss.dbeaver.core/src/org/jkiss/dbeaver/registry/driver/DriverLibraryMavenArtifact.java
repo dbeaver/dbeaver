@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.*;
@@ -237,6 +238,16 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
             //monitor.done();
         }
         super.downloadLibraryFile(monitor, forceUpdate, taskName);
+    }
+
+    @Nullable
+    @Override
+    protected DBAAuthInfo getAuthInfo(DBRProgressMonitor monitor) {
+        MavenArtifactVersion localVersion = getArtifactVersion(monitor);
+        if (localVersion != null) {
+            return localVersion.getArtifact().getRepository().getAuthInfo();
+        }
+        return null;
     }
 
     protected MavenArtifactVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {

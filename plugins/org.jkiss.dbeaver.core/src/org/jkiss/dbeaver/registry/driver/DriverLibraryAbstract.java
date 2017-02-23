@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
@@ -197,7 +199,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
             throw new IOException("Unresolved file reference: " + getPath());
         }
 
-        final URLConnection connection = WebUtils.openConnection(externalURL);
+        final URLConnection connection = WebUtils.openConnection(externalURL, getAuthInfo(monitor));
 
         int contentLength = connection.getContentLength();
         if (contentLength < 0) {
@@ -240,6 +242,11 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
             }
             monitor.done();
         }
+    }
+
+    @Nullable
+    protected DBAAuthInfo getAuthInfo(DBRProgressMonitor monitor) {
+        return null;
     }
 
     @Override
