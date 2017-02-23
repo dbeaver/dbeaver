@@ -58,6 +58,24 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         }
     };
 
+    protected final ColumnModifier<MySQLTableColumn> CharsetModifier = new ColumnModifier<MySQLTableColumn>() {
+        @Override
+        public void appendModifier(MySQLTableColumn column, StringBuilder sql, DBECommandAbstract<MySQLTableColumn> command) {
+            if (column.getCharset() != null) {
+                sql.append(" CHARACTER SET ").append(column.getCharset().getName());
+            }
+        }
+    };
+
+    protected final ColumnModifier<MySQLTableColumn> CollationModifier = new ColumnModifier<MySQLTableColumn>() {
+        @Override
+        public void appendModifier(MySQLTableColumn column, StringBuilder sql, DBECommandAbstract<MySQLTableColumn> command) {
+            if (column.getCollation() != null) {
+                sql.append(" COLLATE ").append(column.getCollation().getName());
+            }
+        }
+    };
+
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, MySQLTableColumn> getObjectsCache(MySQLTableColumn object)
@@ -67,7 +85,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
 
     protected ColumnModifier[] getSupportedModifiers(MySQLTableColumn column)
     {
-        return new ColumnModifier[] {MySQLDataTypeModifier, DefaultModifier, NullNotNullModifier};
+        return new ColumnModifier[] {MySQLDataTypeModifier, CharsetModifier, CollationModifier, DefaultModifier, NullNotNullModifier};
     }
 
     @Override
