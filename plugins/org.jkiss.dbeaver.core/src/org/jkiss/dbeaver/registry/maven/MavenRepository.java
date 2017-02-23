@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -62,6 +63,7 @@ public class MavenRepository
     private int order;
     private boolean enabled = true;
     private String description;
+    private DBAAuthInfo authInfo;
 
     private Map<String, MavenArtifact> cachedArtifacts = new LinkedHashMap<>();
 
@@ -164,6 +166,14 @@ public class MavenRepository
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public DBAAuthInfo getAuthInfo() {
+        return authInfo;
+    }
+
+    public void setAuthInfo(DBAAuthInfo authInfo) {
+        this.authInfo = authInfo;
     }
 
     @Nullable

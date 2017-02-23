@@ -22,7 +22,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
+import org.jkiss.dbeaver.registry.encode.SimpleStringEncrypter;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -60,6 +63,8 @@ public class MavenRegistry
     private MavenRepository localRepository;
     // Cache for not found artifact ids. Avoid multiple remote metadata reading
     private final Set<String> notFoundArtifacts = new HashSet<>();
+
+    private static final PasswordEncrypter ENCRYPTOR = new SimpleStringEncrypter();
 
     private MavenRegistry()
     {
@@ -148,6 +153,12 @@ public class MavenRegistry
 
                     repo.setOrder(CommonUtils.toInt(repoElement.getAttribute("order")));
                     repo.setEnabled(CommonUtils.toBoolean(repoElement.getAttribute("enabled")));
+
+                    final String authUser = repoElement.getAttribute("auth-user");
+                    if (!CommonUtils.isEmpty(authUser)) {
+                        String authPassword = repoElement.getAttribute("auth-password");
+                        repo.setAuthInfo(new DBAAuthInfo(authUser, CommonUtils.isEmpty(authPassword) ? null : ENCRYPTOR.decrypt(authPassword), true));
+                    }
                 }
             } catch (Exception e) {
                 log.error("Error parsing maven repositories configuration", e);
@@ -269,6 +280,14 @@ public class MavenRegistry
                                     xml.addAttribute("group", scope);
                                 }
                             }
+                            final DBAAuthInfo authInfo = repository.getAuthInfo();
+                            if (authInfo != null && !CommonUtils.isEmpty(authInfo.getUserName())) {
+                                xml.addAttribute("auth-user", authInfo.getUserName());
+                                if (!CommonUtils.isEmpty(authInfo.getUserPassword())) {
+                                    xml.addAttribute("auth-password", ENCRYPTOR.decrypt(authInfo.getUserPassword()));
+                                }
+                            }
+
                         }
                     }
                 }

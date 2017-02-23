@@ -17,16 +17,18 @@
 package org.jkiss.dbeaver.runtime;
 
 import org.eclipse.swt.program.Program;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.*;
+import java.util.Base64;
 
 /**
  * WebUtils
@@ -34,13 +36,13 @@ import java.net.*;
 public class WebUtils {
     private static final Log log = Log.getLog(WebUtils.class);
 
-
-    public static InputStream openConnectionStream(String urlString) throws IOException {
-        URLConnection connection = openConnection(urlString);
-        return connection.getInputStream();
+    @NotNull
+    public static URLConnection openConnection(String urlString) throws IOException {
+        return openConnection(urlString, null);
     }
 
-    public static URLConnection openConnection(String urlString) throws IOException {
+    @NotNull
+    public static URLConnection openConnection(String urlString, DBAAuthInfo authInfo) throws IOException {
 
         log.debug("Open [" + urlString + "]");
 
@@ -66,12 +68,19 @@ public class WebUtils {
             connection.setRequestProperty(
                 "User-Agent",  //$NON-NLS-1$
                 GeneralUtils.getProductTitle());
+            if (authInfo != null && !CommonUtils.isEmpty(authInfo.getUserName())) {
+                // Set auth info
+                String encoded = Base64.getEncoder().encodeToString(
+                    (authInfo.getUserName() + ":" + CommonUtils.notEmpty(authInfo.getUserPassword())).getBytes(GeneralUtils.UTF8_CHARSET));
+                connection.setRequestProperty("Authorization", "Basic " + encoded);
+            }
         }
         connection.connect();
         if (connection instanceof HttpURLConnection) {
             final HttpURLConnection httpConnection = (HttpURLConnection) connection;
-            if (httpConnection.getResponseCode() != 200) {
-                throw new IOException("File not found '" + urlString + "': " + httpConnection.getResponseMessage());
+            final int responseCode = httpConnection.getResponseCode();
+            if (responseCode != 200) {
+                throw new IOException("Can't open '" + urlString + "': " + httpConnection.getResponseMessage());
             }
         }
 
