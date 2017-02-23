@@ -29,13 +29,15 @@ public enum DBCLogicalOperator {
     EQUALS("=", 1) {
         @Override
         public boolean evaluate(Object srcValue, Object[] arguments) {
-            return CommonUtils.equalObjects(srcValue, arguments[0]);
+            final Object cmpValue = arguments == null ? null : arguments[0];
+            return CommonUtils.equalObjects(srcValue, cmpValue);
         }
     },
     NOT_EQUALS("<>", 1) {
         @Override
         public boolean evaluate(Object srcValue, Object[] arguments) {
-            return !CommonUtils.equalObjects(srcValue, arguments[0]);
+            final Object cmpValue = arguments == null ? null : arguments[0];
+            return !CommonUtils.equalObjects(srcValue, cmpValue);
         }
     },
     GREATER(">", 1) {
