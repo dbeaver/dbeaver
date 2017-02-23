@@ -52,6 +52,8 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
     private Text nameText;
     private Text urlText;
     private Text scopeText;
+    private Text userNameText;
+    private Text userPasswordText;
     private final Set<MavenRepository> disabledRepositories = new HashSet<>();
     private Button disableButton;
     private Button removeButton;
@@ -202,6 +204,28 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
             });
         }
 
+        {
+            Group authGroup = UIUtils.createControlGroup(composite, "Authentication", 4, GridData.FILL_HORIZONTAL, 0);
+            userNameText = UIUtils.createLabelText(authGroup, "User", "", SWT.BORDER);
+            userNameText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    if (getSelectedRepository() != null) {
+                        getSelectedRepository().getAuthInfo().setUserName(userNameText.getText());
+                    }
+                }
+            });
+            userPasswordText = UIUtils.createLabelText(authGroup, "Password", "", SWT.BORDER | SWT.PASSWORD);
+            userPasswordText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    if (getSelectedRepository() != null) {
+                        getSelectedRepository().getAuthInfo().setUserPassword(userPasswordText.getText());
+                    }
+                }
+            });
+        }
+
         performDefaults();
 
         return composite;
@@ -255,6 +279,11 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
             scopeText.setEnabled(true);
             scopeText.setEditable(isEditable);
             scopeText.setText(CommonUtils.makeString(repo.getScopes(), ','));
+
+            userNameText.setEnabled(true);
+            userNameText.setText(CommonUtils.notEmpty(repo.getAuthInfo().getUserName()));
+            userPasswordText.setEnabled(true);
+            userPasswordText.setText(CommonUtils.notEmpty(repo.getAuthInfo().getUserPassword()));
         } else {
             disableButton.setEnabled(false);
             removeButton.setEnabled(false);
@@ -262,6 +291,8 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
             nameText.setEnabled(false);
             urlText.setEnabled(false);
             scopeText.setEnabled(false);
+            userNameText.setEnabled(false);
+            userPasswordText.setEnabled(false);
         }
         moveUpButton.setEnabled(mavenRepoTable.getSelectionIndex() > 0);
         moveDownButton.setEnabled(mavenRepoTable.getSelectionIndex() < mavenRepoTable.getItemCount() - 1);
