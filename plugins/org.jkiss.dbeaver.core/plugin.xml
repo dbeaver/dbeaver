@@ -595,8 +595,14 @@
         <handler commandId="org.jkiss.dbeaver.core.migrate.connection" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConnectionMigrate"/>
         <handler commandId="org.jkiss.dbeaver.core.new.folder" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerLocalFolderCreate">
             <enabledWhen>
-                <with variable="activePart">
-                    <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
+                <with variable="selection">
+                    <iterate operator="and">
+                        <or>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNProjectDatabases"/>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNLocalFolder"/>
+                        </or>
+                    </iterate>
                 </with>
             </enabledWhen>
         </handler>
