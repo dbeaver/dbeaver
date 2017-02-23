@@ -48,7 +48,7 @@ public class VersionDescriptor {
     public VersionDescriptor(String fileAddr)
         throws IOException
     {
-        try (InputStream inputStream = WebUtils.openConnectionStream(fileAddr)) {
+        try (InputStream inputStream = WebUtils.openConnection(fileAddr).getInputStream()) {
             Document document = XMLUtils.parseDocument(inputStream);
             parseVersionInfo(document);
         } catch (XMLException e) {
