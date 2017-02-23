@@ -276,7 +276,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return enumValues;
     }
 
-    @Property(viewable = false, editable = true, listProvider = CharsetListProvider.class, order = 81)
+    @Property(viewable = false, editable = true, updatable = true, listProvider = CharsetListProvider.class, order = 81)
     public MySQLCharset getCharset()
     {
         return collation == null ? null : collation.getCharset();
@@ -287,7 +287,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         this.collation = charset == null ? null : charset.getDefaultCollation();
     }
 
-    @Property(viewable = false, editable = true, listProvider = CollationListProvider.class, order = 82)
+    @Property(viewable = false, editable = true, updatable = true, listProvider = CollationListProvider.class, order = 82)
     public MySQLCollation getCollation()
     {
         return collation;
