@@ -100,7 +100,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
             return Collections.emptyList();
         }
         List<MySQLTableColumn> columns = new ArrayList<>(childColumns);
-        columns.sort(DBUtils.orderComparator());
+        Collections.sort(columns, DBUtils.orderComparator());
         return columns;
     }
 
