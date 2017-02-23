@@ -300,7 +300,13 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
-            final List<QMMetaEvent> events = obtainEvents();
+            final List<QMMetaEvent> events;
+            List<Long> sessionsToClose;
+            synchronized (QMMCollectorImpl.this) {
+                events = obtainEvents();
+                sessionsToClose = closedSessions;
+                closedSessions.clear();
+            }
             final List<QMMetaListener> listeners = getListeners();
             if (!listeners.isEmpty() && !events.isEmpty()) {
                 // Dispatch all events
@@ -323,10 +329,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             }
             // Cleanup closed sessions
             synchronized (QMMCollectorImpl.this) {
-                for (Long sessionId : closedSessions) {
+                for (Long sessionId : sessionsToClose) {
                     sessionMap.remove(sessionId);
                 }
-                closedSessions.clear();
             }
             if (isRunning()) {
                 this.schedule(EVENT_DISPATCH_PERIOD);
