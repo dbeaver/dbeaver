@@ -984,6 +984,7 @@ public class ResultSetViewer extends Viewer
         toolbarsLayout.center = true;
         toolbarsLayout.wrap = true;
         toolbarsLayout.pack = true;
+        //toolbarsLayout.fill = true;
         statusBar.setLayout(toolbarsLayout);
 
         {
