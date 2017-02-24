@@ -270,6 +270,7 @@ public abstract class LightGrid extends Canvas {
 
     @NotNull
     private Color lineColor;
+    private Color lineSelectedColor;
     private Color backgroundColor;
     private Color foregroundColor;
     @NotNull
@@ -381,6 +382,7 @@ public abstract class LightGrid extends Canvas {
 
         final Display display = getDisplay();
         lineColor = JFaceColors.getErrorBackground(display);
+        lineSelectedColor = JFaceColors.getErrorBorder(display);//SWT.COLOR_WIDGET_DARK_SHADOW;
         //setForeground(JFaceColors.getBannerForeground(display));
         //setBackground(JFaceColors.getBannerBackground(display));
 /*
@@ -977,9 +979,20 @@ public abstract class LightGrid extends Canvas {
      * @return Returns the lineColor.
      */
     @NotNull
-    public Color getLineColor()
-    {
+    public Color getLineColor() {
         return lineColor;
+    }
+
+    public void setLineColor(@NotNull Color lineColor) {
+        this.lineColor = lineColor;
+    }
+
+    public Color getLineSelectedColor() {
+        return lineSelectedColor;
+    }
+
+    public void setLineSelectedColor(Color lineSelectedColor) {
+        this.lineSelectedColor = lineSelectedColor;
     }
 
     /**
@@ -1464,16 +1477,6 @@ public abstract class LightGrid extends Canvas {
         checkWidget();
         this.columnHeadersVisible = show;
         redraw();
-    }
-
-    /**
-     * Sets the line color.
-     *
-     * @param lineColor The lineColor to set.
-     */
-    public void setLineColor(@NotNull Color lineColor)
-    {
-        this.lineColor = lineColor;
     }
 
     /**
@@ -2074,7 +2077,7 @@ public abstract class LightGrid extends Canvas {
         final GridPos testPos = new GridPos(-1, -1);
         final Rectangle cellBounds = new Rectangle(0, 0, 0, 0);
 
-        for (int i = 0; i < visibleRows + (firstVisibleIndex - firstVisibleIndex); i++) {
+        for (int i = 0; i < visibleRows; i++) {
 
             int x = 0;
 

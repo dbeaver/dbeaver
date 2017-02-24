@@ -2455,6 +2455,20 @@
                 value="245, 245, 245">
             <description>Read-only cell background</description>
         </colorDefinition>
+        <colorDefinition
+                label="Grid lines color"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.lines.normal"
+                value="240, 240, 240">
+            <description>Lines color</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Grid selected lines color"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.lines.selected"
+                value="105, 105, 105">
+            <description>Selected lines color</description>
+        </colorDefinition>
 
         <colorDefinition
                 label="SQL keyword color"

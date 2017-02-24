@@ -44,7 +44,6 @@ class GridCellRenderer extends AbstractRenderer
 
     protected Color colorSelected;
     protected Color colorSelectedText;
-    protected Color colorLineForeground;
     protected Color colorLineFocused;
 
     private final RGB colorSelectedRGB;
@@ -56,7 +55,6 @@ class GridCellRenderer extends AbstractRenderer
         colorSelectedText = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
         colorSelected = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
         colorSelectedRGB = colorSelected.getRGB();
-        colorLineForeground = grid.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
     }
 
     public void paint(GC gc, Rectangle bounds, boolean selected, boolean focus, Object col, Object row)
@@ -159,8 +157,7 @@ class GridCellRenderer extends AbstractRenderer
 
         if (grid.isLinesVisible()) {
             if (selected) {
-                //XXX: should be user definable?
-                gc.setForeground(colorLineForeground);
+                gc.setForeground(grid.getLineSelectedColor());
             } else {
                 gc.setForeground(grid.getLineColor());
             }
