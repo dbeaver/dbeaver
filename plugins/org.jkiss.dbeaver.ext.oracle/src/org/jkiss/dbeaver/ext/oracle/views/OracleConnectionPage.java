@@ -317,7 +317,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         };
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = 300;
-        oraHomeSelector.setLayoutData(gd);
+        oraHomeSelector.getPanel().setLayoutData(gd);
 
         Label ph = new Label(bottomControls, SWT.NONE);
         ph.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
