@@ -405,10 +405,14 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTableBase forTable)
             throws SQLException
         {
+            String colsView = "ALL_TAB_COLS";
+            if (!owner.getDataSource().isViewAvailable(session.getProgressMonitor(), "SYS", colsView)) {
+                colsView = "ALL_TAB_COLUMNS";
+            }
             StringBuilder sql = new StringBuilder(500);
             sql
                 .append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append("\nc.* " +
-                    "FROM SYS.ALL_TAB_COLS c\n" +
+                    "FROM SYS.").append(colsView).append(" c\n" +
 //                    "LEFT OUTER JOIN SYS.ALL_COL_COMMENTS cc ON CC.OWNER=c.OWNER AND cc.TABLE_NAME=c.TABLE_NAME AND cc.COLUMN_NAME=c.COLUMN_NAME\n" +
                     "WHERE c.OWNER=?");
             if (forTable != null) {
