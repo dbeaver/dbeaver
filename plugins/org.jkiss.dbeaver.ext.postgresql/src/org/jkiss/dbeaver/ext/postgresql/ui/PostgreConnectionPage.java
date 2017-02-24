@@ -139,7 +139,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             buttonsGroup.setLayout(new GridLayout(2, false));
             homesSelector = new ClientHomesSelector(buttonsGroup, SWT.NONE, "Local Client");
             gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-            homesSelector.setLayoutData(gd);
+            homesSelector.getPanel().setLayoutData(gd);
         }
 
         {

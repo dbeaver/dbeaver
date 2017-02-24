@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -26,6 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.connection.DBPClientManager;
@@ -40,10 +40,11 @@ import java.util.Set;
 /**
  * ClientHomesSelector
  */
-public class ClientHomesSelector extends Composite
+public class ClientHomesSelector
 {
     private static final Log log = Log.getLog(ClientHomesSelector.class);
 
+    private Composite selectorPanel;
     private Combo homesCombo;
     //private Label versionLabel;
     private DBPDriver driver;
@@ -55,13 +56,13 @@ public class ClientHomesSelector extends Composite
         int style,
         String title)
     {
-        super(parent, style);
+        selectorPanel = new Composite(parent, style);
 
-        this.setLayout(new GridLayout(2, false));
+        selectorPanel.setLayout(new GridLayout(2, false));
 
-        UIUtils.createControlLabel(this, title);
+        UIUtils.createControlLabel(selectorPanel, title);
         //label.setFont(UIUtils.makeBoldFont(label.getFont()));
-        homesCombo = new Combo(this, SWT.READ_ONLY);
+        homesCombo = new Combo(selectorPanel, SWT.READ_ONLY);
         //directoryDialog = new DirectoryDialog(selectorContainer.getShell(), SWT.OPEN);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
@@ -85,9 +86,13 @@ public class ClientHomesSelector extends Composite
 //        versionLabel.setLayoutData(gd);
     }
 
+    public Composite getPanel() {
+        return selectorPanel;
+    }
+
     private void manageHomes()
     {
-        String newHomeId = ClientHomesPanel.chooseClientHome(getShell(), driver);
+        String newHomeId = ClientHomesPanel.chooseClientHome(selectorPanel.getShell(), driver);
         if (newHomeId != null) {
             currentHomeId = newHomeId;
         }

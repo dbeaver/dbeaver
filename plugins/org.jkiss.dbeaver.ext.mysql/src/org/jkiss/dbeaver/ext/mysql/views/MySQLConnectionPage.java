@@ -140,7 +140,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
 
             homesSelector = new ClientHomesSelector(clientPanel, SWT.NONE, "Local Client");
             gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-            homesSelector.setLayoutData(gd);
+            homesSelector.getPanel().setLayoutData(gd);
         }
 
         createDriverPanel(addrGroup);
