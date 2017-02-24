@@ -90,10 +90,14 @@ public class OracleDataSource extends JDBCDataSource
         if (available == null) {
             try {
                 try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Check view existence")) {
-                    available = JDBCUtils.executeQuery(
-                        session,
-                        "SELECT 1 FROM " + DBUtils.getQuotedIdentifier(this, schemaName)+ "." +
-                            DBUtils.getQuotedIdentifier(this, viewName) + " WHERE ROWNUM<2") != null;
+                    try (final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT 1 FROM " + DBUtils.getQuotedIdentifier(this, schemaName) + "." +
+                        DBUtils.getQuotedIdentifier(this, viewName)))
+                    {
+                        dbStat.setFetchSize(1);
+                        try (JDBCResultSet dbResults = dbStat.executeQuery()) {
+                            available = dbResults.next();
+                        }
+                    }
                 }
             } catch (SQLException e) {
                 available = false;
