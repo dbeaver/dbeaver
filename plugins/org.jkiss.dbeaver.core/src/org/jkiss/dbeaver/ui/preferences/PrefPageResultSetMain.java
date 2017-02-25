@@ -127,7 +127,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     }
 
     private void updateOptionsEnablement() {
-        readQueryReferences.setEnabled(readQueryMetadata.getSelection());
+        readQueryReferences.setEnabled(readQueryMetadata.isEnabled() && readQueryMetadata.getSelection());
     }
 
     @Override
