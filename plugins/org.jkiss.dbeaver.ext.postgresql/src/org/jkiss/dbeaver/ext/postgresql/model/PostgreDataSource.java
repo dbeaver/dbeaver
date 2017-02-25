@@ -63,7 +63,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     private final DatabaseCache databaseCache = new DatabaseCache();
     private String activeDatabaseName;
     private String activeSchemaName;
-    private boolean databaseSwitchInProgress;
     private final List<String> searchPath = new ArrayList<>();
     private String activeUser;
 
@@ -266,16 +265,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         // 2. Reconnect all open contexts
         // 3. Refresh datasource tree
         activeDatabaseName = object.getName();
-        try {
-            databaseSwitchInProgress = true;
-            for (JDBCExecutionContext context : getAllContexts()) {
-                context.reconnect(monitor);
-            }
-            getDefaultInstance().cacheDataTypes(monitor);
+        for (JDBCExecutionContext context : getAllContexts()) {
+            context.reconnect(monitor);
         }
-        finally {
-            databaseSwitchInProgress = false;
-        }
+        getDefaultInstance().cacheDataTypes(monitor);
 
         if (oldDatabase != null) {
             DBUtils.fireObjectSelect(oldDatabase, false);
@@ -335,8 +328,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBCException {
         Connection pgConnection;
-        if (databaseSwitchInProgress) {
-            final DBPConnectionConfiguration conConfig = getContainer().getActualConnectionConfiguration();
+        final DBPConnectionConfiguration conConfig = getContainer().getActualConnectionConfiguration();
+        if (activeDatabaseName != null && !CommonUtils.equalObjects(activeDatabaseName, conConfig.getDatabaseName())) {
+            // If database was changed then use new name for connection
             final DBPConnectionConfiguration originalConfig = new DBPConnectionConfiguration(conConfig);
             try {
                 // Patch URL with new database name
