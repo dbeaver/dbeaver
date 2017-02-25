@@ -26,6 +26,7 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.ide.IDE;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -38,6 +39,8 @@ import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
  * the perspective id for the initial window.
  */
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
+    private static final Log log = Log.getLog(ApplicationWorkbenchAdvisor.class);
+
     private static final String PERSPECTIVE_ID = "org.jkiss.dbeaver.core.perspective"; //$NON-NLS-1$
     public static final String DBEAVER_SCHEME_NAME = "org.jkiss.dbeaver.defaultKeyScheme"; //$NON-NLS-1$
 
@@ -153,4 +156,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         return true;
     }
 
+    public void eventLoopException(Throwable exception) {
+        super.eventLoopException(exception);
+        log.error("Event loop exception", exception);
+    }
 }
