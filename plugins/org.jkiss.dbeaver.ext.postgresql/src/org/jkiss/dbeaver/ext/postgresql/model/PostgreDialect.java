@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
-import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -29,7 +28,6 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -44,8 +42,13 @@ class PostgreDialect extends JDBCSQLDialect {
         }
     );
 
-    public PostgreDialect(JDBCDatabaseMetaData metaData) {
-        super("PostgreSQL", metaData);
+    public PostgreDialect() {
+        super("PostgreSQL");
+    }
+
+    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+        super.initDriverSettings(dataSource, metaData);
+
         addSQLKeyword("SHOW");
         addSQLKeyword("TYPE");
         addSQLKeyword("USER");

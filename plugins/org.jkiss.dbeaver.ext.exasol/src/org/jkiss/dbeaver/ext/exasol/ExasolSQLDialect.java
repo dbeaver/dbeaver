@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 
 import java.sql.SQLException;
@@ -33,8 +34,12 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
     public static final String[] EXEC_KEYWORDS = new String[]{};
 
 
-    public ExasolSQLDialect(JDBCDatabaseMetaData metaData) {
-        super("Exasol", metaData);
+    public ExasolSQLDialect() {
+        super("Exasol");
+    }
+
+    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+        super.initDriverSettings(dataSource, metaData);
         try {
             for (String kw : metaData.getSQLKeywords().split(",")) {
                 this.addSQLKeyword(kw);

@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
@@ -139,7 +138,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     public DB2DataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException
     {
-        super(monitor, container);
+        super(monitor, container, new DB2SQLDialect());
     }
 
     @Override
@@ -272,12 +271,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         info.setSupportsResultSetScroll(false);
 
         return info;
-    }
-
-    @Override
-    protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData)
-    {
-        return new DB2SQLDialect(metaData);
     }
 
     @Override

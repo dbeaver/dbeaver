@@ -26,19 +26,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider;
 import org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolBaseObjectGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolConnectionGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRoleGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolViewGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.*;
 import org.jkiss.dbeaver.ext.exasol.model.plan.ExasolPlanAnalyser;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -54,25 +48,14 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolSchemaGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolScriptGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolSystemGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolTableGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolTableObjectType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -113,7 +96,7 @@ public class ExasolDataSource extends JDBCDataSource
 	public ExasolDataSource(DBRProgressMonitor monitor,
 			DBPDataSourceContainer container) throws DBException
 	{
-		super(monitor, container);
+		super(monitor, container, new ExasolSQLDialect());
 	}
 
 	@Override
@@ -355,13 +338,6 @@ public class ExasolDataSource extends JDBCDataSource
 		info.setSupportsResultSetScroll(false);
 
 		return info;
-	}
-
-	@Override
-	protected SQLDialect createSQLDialect(
-			@NotNull JDBCDatabaseMetaData metaData)
-	{
-		return new ExasolSQLDialect(metaData);
 	}
 
 	@Override

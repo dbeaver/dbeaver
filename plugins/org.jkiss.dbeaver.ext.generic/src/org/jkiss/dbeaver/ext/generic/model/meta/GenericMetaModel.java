@@ -57,7 +57,7 @@ public class GenericMetaModel {
     }
 
     public GenericDataSource createDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
-        return new GenericDataSource(monitor, container, this);
+        return new GenericDataSource(monitor, container, this, new GenericSQLDialect());
     }
 
     public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container)

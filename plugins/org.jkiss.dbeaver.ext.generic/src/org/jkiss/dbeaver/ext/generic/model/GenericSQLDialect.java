@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.utils.CommonUtils;
 
@@ -32,22 +33,28 @@ public class GenericSQLDialect extends JDBCSQLDialect {
 
     private static String[] EXEC_KEYWORDS =  { "EXEC", "CALL" };
 
-    private final String scriptDelimiter;
-    private final String scriptDelimiterRedefiner;
-    private final boolean legacySQLDialect;
-    private final boolean suportsUpsert;
-    private final boolean quoteReservedWords;
+    private String scriptDelimiter;
+    private String scriptDelimiterRedefiner;
+    private boolean legacySQLDialect;
+    private boolean suportsUpsert;
+    private boolean quoteReservedWords;
     private String dualTable;
     private String testSQL;
 
-    public GenericSQLDialect(GenericDataSource dataSource, JDBCDatabaseMetaData metaData)
-    {
-        super("Generic", metaData);
+    public GenericSQLDialect() {
+        super("Generic");
+    }
+
+    protected GenericSQLDialect(String name) {
+        super(name);
+    }
+
+    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         DBPDriver driver = dataSource.getContainer().getDriver();
         this.scriptDelimiter = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
         this.scriptDelimiterRedefiner = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER_REDEFINER));
         this.legacySQLDialect = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_LEGACY_DIALECT));
-        this.suportsUpsert = dataSource.getMetaModel().supportsUpsertStatement();
+        this.suportsUpsert = ((GenericDataSource)dataSource).getMetaModel().supportsUpsertStatement();
         if (this.suportsUpsert) {
             addSQLKeyword("UPSERT");
         }

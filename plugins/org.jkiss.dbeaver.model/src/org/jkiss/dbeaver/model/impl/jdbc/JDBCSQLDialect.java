@@ -58,10 +58,11 @@ public class JDBCSQLDialect extends BasicSQLDialect {
 
     private transient boolean typesLoaded = false;
 
-    public JDBCSQLDialect(String name, JDBCDatabaseMetaData metaData)
-    {
+    public JDBCSQLDialect(String name) {
         this.name = name;
+    }
 
+    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         try {
             this.identifierQuoteString = metaData.getIdentifierQuoteString();
         } catch (Throwable e) {

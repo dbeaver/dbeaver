@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 
 /**
@@ -34,9 +35,12 @@ public class DB2SQLDialect extends JDBCSQLDialect {
 
     public static final String[] EXEC_KEYWORDS = new String[]{"call"};
 
-    public DB2SQLDialect(JDBCDatabaseMetaData metaData)
-    {
-        super("DB2", metaData);
+    public DB2SQLDialect() {
+        super("DB2 LUW");
+    }
+
+    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+        super.initDriverSettings(dataSource, metaData);
         for (String kw : DB2Constants.ADVANCED_KEYWORDS) {
             this.addSQLKeyword(kw);
         }

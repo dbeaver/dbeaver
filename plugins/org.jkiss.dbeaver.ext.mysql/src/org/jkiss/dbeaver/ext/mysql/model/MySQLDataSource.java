@@ -32,7 +32,10 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.exec.jdbc.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -43,7 +46,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -75,7 +77,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
-        super(monitor, container);
+        super(monitor, container, new MySQLDialect());
         dataTypeCache = new JDBCBasicDataTypeCache(container);
     }
 
@@ -159,11 +161,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                 useDatabase(monitor, context, object);
             }
         }
-    }
-
-    @Override
-    protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData) {
-        return new MySQLDialect(metaData);
     }
 
     public String[] getTableTypes()
