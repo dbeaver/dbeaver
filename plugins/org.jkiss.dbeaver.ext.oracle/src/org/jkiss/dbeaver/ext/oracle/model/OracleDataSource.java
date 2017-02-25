@@ -28,13 +28,15 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.jdbc.*;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -56,8 +58,6 @@ public class OracleDataSource extends JDBCDataSource
     implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
     private static final Log log = Log.getLog(OracleDataSource.class);
 
-    //private final static Map<String, OCIClassLoader> ociClassLoadersCache = new HashMap<String, OCIClassLoader>();
-
     final public SchemaCache schemaCache = new SchemaCache();
     final DataTypeCache dataTypeCache = new DataTypeCache();
     final TablespaceCache tablespaceCache = new TablespaceCache();
@@ -77,7 +77,7 @@ public class OracleDataSource extends JDBCDataSource
 
     public OracleDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException {
-        super(monitor, container);
+        super(monitor, container, new OracleSQLDialect());
         this.outputReader = new OracleOutputReader();
     }
 
@@ -201,15 +201,6 @@ public class OracleDataSource extends JDBCDataSource
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData) {
         return new JDBCDataSourceInfo(metaData);
-    }
-
-    @Override
-    protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData) {
-        JDBCSQLDialect dialect = new OracleSQLDialect(metaData);
-        for (String kw : OracleConstants.ADVANCED_KEYWORDS) {
-            dialect.addSQLKeyword(kw);
-        }
-        return dialect;
     }
 
     @Override

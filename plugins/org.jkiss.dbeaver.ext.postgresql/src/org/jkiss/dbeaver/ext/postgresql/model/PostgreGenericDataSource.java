@@ -33,7 +33,7 @@ public class PostgreGenericDataSource extends GenericDataSource
 {
 
     public PostgreGenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, PostgreMetaModel metaModel) throws DBException {
-        super(monitor, container, metaModel);
+        super(monitor, container, metaModel, new PostgreDialect());
     }
 //    public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
 //        super(monitor, container, new PostgreMetaModel());

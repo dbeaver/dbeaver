@@ -78,10 +78,10 @@ public class GenericDataSource extends JDBCDataSource
     private DBCQueryPlanner queryPlanner;
     private Format nativeFormatTimestamp, nativeFormatTime, nativeFormatDate;
 
-    public GenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
+    public GenericDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull GenericMetaModel metaModel, @NotNull SQLDialect dialect)
         throws DBException
     {
-        super(monitor, container, false);
+        super(monitor, container, dialect, false);
         this.metaModel = metaModel;
         final DBPDriver driver = container.getDriver();
         this.dataTypeCache = metaModel.createDataTypeCache(container);
@@ -208,11 +208,6 @@ public class GenericDataSource extends JDBCDataSource
             this.supportsStructCache = CommonUtils.toBoolean(supportsStructCacheParam);
         }
         return info;
-    }
-
-    @Override
-    protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData) {
-        return new GenericSQLDialect(this, metaData);
     }
 
     @Override

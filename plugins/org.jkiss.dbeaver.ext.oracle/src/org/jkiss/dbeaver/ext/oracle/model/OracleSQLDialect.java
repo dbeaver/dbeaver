@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -47,18 +48,38 @@ class OracleSQLDialect extends JDBCSQLDialect {
         {"IF", SQLConstants.BLOCK_END}
     };
 
-    public OracleSQLDialect(JDBCDatabaseMetaData metaData) {
-        super("Oracle", metaData);
-        addSQLKeyword("ANALYZE");
-        addSQLKeyword("VALIDATE");
-        addSQLKeyword("STRUCTURE");
-        addSQLKeyword("COMPUTE");
-        addSQLKeyword("STATISTICS");
-        addSQLKeyword("LOOP");
-        addSQLKeyword("WHILE");
-        addSQLKeyword("BULK");
-        addSQLKeyword("ELSIF");
-        addSQLKeyword("EXIT");
+    public static final String[] ADVANCED_KEYWORDS = {
+        "PACKAGE",
+        "FUNCTION",
+        "TYPE",
+        "TRIGGER",
+        "MATERIALIZED",
+        "IF",
+        "EACH",
+        "RETURN",
+        "WRAPPED",
+        "AFTER",
+        "BEFORE",
+        "DATABASE",
+        "ANALYZE",
+        "VALIDATE",
+        "STRUCTURE",
+        "COMPUTE",
+        "STATISTICS",
+        "LOOP",
+        "WHILE",
+        "BULK",
+        "ELSIF",
+        "EXIT",
+    };
+
+    public OracleSQLDialect() {
+        super("Oracle");
+    }
+
+    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+        super.initDriverSettings(dataSource, metaData);
+
         addFunctions(
             Arrays.asList(
                 "SUBSTR", "APPROX_COUNT_DISTINCT",
@@ -280,6 +301,10 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
             ));
         removeSQLKeyword("SYSTEM");
+
+        for (String kw : ADVANCED_KEYWORDS) {
+            addSQLKeyword(kw);
+        }
     }
 
     @Override

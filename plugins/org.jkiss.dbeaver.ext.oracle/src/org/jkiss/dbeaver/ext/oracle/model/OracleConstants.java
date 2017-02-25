@@ -119,20 +119,6 @@ public class OracleConstants {
     public static final String PREF_SUPPORT_ROWID = "oracle.support.rowid";
     public static final String PREF_DBMS_OUTPUT = "oracle.dbms.output";
 
-    public static final String[] ADVANCED_KEYWORDS = {
-        "PACKAGE",
-        "FUNCTION",
-        "TYPE",
-        "TRIGGER",
-        "MATERIALIZED",
-        "IF",
-        "EACH",
-        "RETURN",
-        "WRAPPED",
-        "AFTER",
-        "BEFORE",
-        "DATABASE",
-    };
     public static final String NLS_DEFAULT_VALUE = "Default";
     public static final String PREF_KEY_DDL_FORMAT = "oracle.ddl.format";
     public static final int MAXIMUM_DBMS_OUTPUT_SIZE = 1000000;

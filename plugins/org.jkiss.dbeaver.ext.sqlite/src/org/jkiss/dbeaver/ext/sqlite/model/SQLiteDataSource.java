@@ -31,13 +31,9 @@ import java.util.Locale;
 public class SQLiteDataSource extends GenericDataSource {
 
     public SQLiteDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
-        throws DBException {
-        super(monitor, container, metaModel);
-    }
-
-    @Override
-    protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData) {
-        return new SQLiteSQLDialect(this, metaData);
+        throws DBException
+    {
+        super(monitor, container, metaModel, new SQLiteSQLDialect());
     }
 
     @Override

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.utils.ArrayUtils;
@@ -38,8 +39,12 @@ class MySQLDialect extends JDBCSQLDialect {
             "EXPLAIN", "DESCRIBE", "DESC" }
     );
 
-    public MySQLDialect(JDBCDatabaseMetaData metaData) {
-        super("MySQL", metaData);
+    public MySQLDialect() {
+        super("MySQL");
+    }
+
+    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+        super.initDriverSettings(dataSource, metaData);
         //addSQLKeyword("STATISTICS");
         Collections.addAll(tableQueryWords, "EXPLAIN", "DESCRIBE", "DESC");
     }

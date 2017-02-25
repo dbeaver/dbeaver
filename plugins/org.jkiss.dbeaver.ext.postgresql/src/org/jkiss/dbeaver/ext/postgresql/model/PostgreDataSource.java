@@ -70,7 +70,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
-        super(monitor, container);
+        super(monitor, container, new PostgreDialect());
     }
 
     @Override
@@ -135,11 +135,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                 }
             }
         }
-    }
-
-    @Override
-    protected PostgreDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData) {
-        return new PostgreDialect(metaData);
     }
 
     public DatabaseCache getDatabaseCache()

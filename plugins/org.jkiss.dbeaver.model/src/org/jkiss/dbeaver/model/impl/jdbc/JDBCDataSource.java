@@ -88,23 +88,23 @@ public abstract class JDBCDataSource
     private final List<JDBCExecutionContext> allContexts = new ArrayList<>();
     @NotNull
     protected volatile DBPDataSourceInfo dataSourceInfo;
-    protected volatile SQLDialect sqlDialect;
+    protected final SQLDialect sqlDialect;
     protected final JDBCFactory jdbcFactory;
 
     private int databaseMajorVersion;
     private int databaseMinorVersion;
 
-    protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
+    protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect)
         throws DBException
     {
-        this(monitor, container, true);
+        this(monitor, container, dialect, true);
     }
 
-    protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, boolean initContext)
+    protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect, boolean initContext)
         throws DBException
     {
         this.dataSourceInfo = new JDBCDataSourceInfo(container);
-        this.sqlDialect = BasicSQLDialect.INSTANCE;
+        this.sqlDialect = dialect;
         this.jdbcFactory = createJdbcFactory();
         this.container = container;
         if (initContext) {
@@ -186,9 +186,6 @@ public abstract class JDBCDataSource
                 connection.setReadOnly(true);
             }
 
-            // Initialize SQL dialect. We need to make this ASAP because once datasource is connected
-            // it can be tracked by QM and other monitors. We have to have correct SQL dialect.
-            initializeSQLDialect(monitor, connection);
             return connection;
         }
         catch (SQLException ex) {
@@ -335,6 +332,14 @@ public abstract class JDBCDataSource
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
+
+            if (this.sqlDialect instanceof JDBCSQLDialect) {
+                try {
+                    ((JDBCSQLDialect) this.sqlDialect).initDriverSettings(this, metaData);
+                } catch (Throwable e) {
+                    log.error("Error initializing dialect driver settings", e);
+                }
+            }
 
             try {
                 databaseMajorVersion = metaData.getDatabaseMajorVersion();
@@ -568,8 +573,6 @@ public abstract class JDBCDataSource
      * Could be overridden by extenders. May contain any additional connection properties.
      * Note: these properties may be overwritten by connection advanced properties.
      * @return predefined connection properties
-     * @param monitor
-     * @param purpose
      */
     @Nullable
     protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, String purpose)
@@ -583,25 +586,9 @@ public abstract class JDBCDataSource
         return new JDBCDataSourceInfo(metaData);
     }
 
-    protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData)
-    {
-        return new JDBCSQLDialect("JDBC", metaData);
-    }
-
     @NotNull
     protected JDBCFactory createJdbcFactory() {
         return new JDBCFactoryDefault();
-    }
-
-    protected final void initializeSQLDialect(@NotNull DBRProgressMonitor monitor, Connection connection) {
-        if (sqlDialect == BasicSQLDialect.INSTANCE) {
-            // Initialize SQL dialect
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Initialize SQL dialect")) {
-                sqlDialect = createSQLDialect(new JDBCDatabaseMetaDataImpl(session, connection.getMetaData()));
-            } catch (Throwable e) {
-                log.error("Error creating SQL dialect", e);
-            }
-        }
     }
 
     /////////////////////////////////////////////////

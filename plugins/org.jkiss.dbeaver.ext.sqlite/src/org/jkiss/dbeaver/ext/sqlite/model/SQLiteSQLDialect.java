@@ -16,16 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.model;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 
 public class SQLiteSQLDialect extends GenericSQLDialect {
 
-	public SQLiteSQLDialect(GenericDataSource dataSource, JDBCDatabaseMetaData metaData) {
-		super(dataSource, metaData);
+	public SQLiteSQLDialect() {
+		super("SQLite");
 	}
-	
-	
+
+	public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+		super.initDriverSettings(dataSource, metaData);
+	}
 
 }
