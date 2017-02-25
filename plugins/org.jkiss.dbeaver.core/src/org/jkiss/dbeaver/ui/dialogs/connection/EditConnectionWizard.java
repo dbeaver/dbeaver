@@ -138,7 +138,7 @@ public class EditConnectionWizard extends ConnectionWizard
         WizardPrefPage wizardPage = new WizardPrefPage(prefPage, title, description);
         prefPages.add(wizardPage);
         if (prefPage instanceof IWorkbenchPropertyPage) {
-            ((IWorkbenchPropertyPage) prefPage).setElement(dataSource);
+            ((IWorkbenchPropertyPage) prefPage).setElement(originalDataSource);
         }
         addPage(wizardPage);
         return wizardPage;
