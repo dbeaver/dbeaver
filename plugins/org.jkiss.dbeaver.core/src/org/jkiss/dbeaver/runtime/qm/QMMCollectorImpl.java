@@ -334,7 +334,12 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             // Cleanup closed sessions
             synchronized (QMMCollectorImpl.this) {
                 for (Long sessionId : sessionsToClose) {
-                    sessionMap.remove(sessionId);
+                    final QMMSessionInfo session = sessionMap.get(sessionId);
+                    if (session != null && !session.isClosed()) {
+                        // It is possible (rarely) that session was reopened before event dispatcher run
+                        // In that case just ignore it
+                        sessionMap.remove(sessionId);
+                    }
                 }
             }
             if (isRunning()) {
