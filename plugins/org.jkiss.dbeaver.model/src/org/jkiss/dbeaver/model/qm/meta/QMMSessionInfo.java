@@ -73,6 +73,11 @@ public class QMMSessionInfo extends QMMObject {
         super.close();
     }
 
+    public void reopen()
+    {
+        super.close();
+    }
+
     public QMMTransactionInfo changeTransactional(boolean transactional)
     {
         if (this.transactional == transactional) {

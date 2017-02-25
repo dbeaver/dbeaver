@@ -48,6 +48,12 @@ public abstract class QMMObject {
         this.update();
     }
 
+    protected void reopen()
+    {
+        this.closeTime = 0;
+        this.update();
+    }
+
     public long getObjectId()
     {
         return objectId;

@@ -154,13 +154,17 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     public synchronized void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional)
     {
         final long contextId = context.getContextId();
-        if (sessionMap.containsKey(contextId)) {
-            log.warn("Duplicate session '" + contextId + "' open");
+        QMMSessionInfo session = sessionMap.get(contextId);
+        if (session == null) {
+            session = new QMMSessionInfo(
+                context,
+                transactional);
+            sessionMap.put(contextId, session);
+        } else {
+            // This session may already be in cache in case of reconnect/invalidate
+            // (when context closed and reopened without new context object creation)
+            session.reopen();
         }
-        QMMSessionInfo session = new QMMSessionInfo(
-            context,
-            transactional);
-        sessionMap.put(contextId, session);
 
         // Remove from closed sessions (in case of re-opened connection)
         closedSessions.remove(contextId);
