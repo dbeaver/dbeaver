@@ -114,6 +114,8 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         }
 
         setControl(cfgGroup);
+
+        loadSettings();
     }
 
     @Override

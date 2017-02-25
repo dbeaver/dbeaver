@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -23,6 +24,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 
 /**
@@ -43,6 +45,11 @@ public class EditConnectionDialog extends MultiPageWizardDialog
     public ConnectionWizard getWizard()
     {
         return (ConnectionWizard)super.getWizard();
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings() {
+        return UIUtils.getDialogSettings("DBeaver.EditConnectionDialog");
     }
 
     @Override

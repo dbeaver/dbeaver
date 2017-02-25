@@ -132,6 +132,8 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
         });
 
         setControl(cfgGroup);
+
+        loadSettings();
     }
 
     @Override

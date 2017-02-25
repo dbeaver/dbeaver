@@ -56,10 +56,9 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
-        // Set props model
-        if (visible && propsControl != null) {
+    public void loadSettings()
+    {
+        if (propsControl != null) {
             final DBPDataSourceContainer activeDataSource = site.getActiveDataSource();
             if (prevConnectionInfo == activeDataSource.getConnectionConfiguration()) {
                 return;
@@ -103,12 +102,6 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void loadSettings()
-    {
-        // Do nothing
-    }
-
-    @Override
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
         if (propertySource != null) {
@@ -125,6 +118,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     {
         propsControl = new ConnectionPropertiesControl(parent, SWT.NONE);
         setControl(propsControl.getControl());
+        loadSettings();
     }
 
 }

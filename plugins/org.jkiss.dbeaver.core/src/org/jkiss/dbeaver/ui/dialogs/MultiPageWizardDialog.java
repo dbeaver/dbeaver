@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.eclipse.jface.dialogs.ControlEnableState;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.jface.dialogs.*;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.operation.ModalContext;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -123,7 +120,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             .setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true));
 
         pageArea = UIUtils.createPlaceholder(pageContainer, 1);
-        pageArea.setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        pageArea.setLayoutData(gd);
         pageArea.setLayout(new GridLayout(1, true));
 
         wizardSash.setWeights(new int[]{300, 700});
@@ -133,11 +131,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         for (IWizardPage page : pages) {
             addPage(null, page, maxSize);
         }
-        GridData gd = (GridData) pageArea.getLayoutData();
-        //gd.minimumWidth = 200;
-        //gd.minimumHeight = 200;
-        gd.minimumWidth = gd.widthHint = maxSize.x + 10;
-        gd.minimumHeight = gd.heightHint = maxSize.y + 10;
+        gd = (GridData) pageArea.getLayoutData();
+        gd.widthHint = 500;
+        gd.heightHint = 400;
 
         pagesTree.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -186,20 +182,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     private TreeItem addPage(TreeItem parentItem, IDialogPage page, Point maxSize)
     {
-        boolean hasPages = pagesTree.getItemCount() != 0;
-        page.createControl(pageArea);
-        Control control = page.getControl();
-        Point pageSize = control.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        if (pageSize.x > maxSize.x) maxSize.x = pageSize.x;
-        if (pageSize.y > maxSize.y) maxSize.y = pageSize.y;
-        GridData gd = (GridData) control.getLayoutData();
-        if (gd == null) {
-            gd = new GridData(GridData.FILL_BOTH);
-            control.setLayoutData(gd);
-        }
-        gd.exclude = hasPages;
-        control.setVisible(!gd.exclude);
-
         TreeItem item = parentItem == null ?
             new TreeItem(pagesTree, SWT.NONE) :
             new TreeItem(parentItem, SWT.NONE);
@@ -240,8 +222,25 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 prevPage.setVisible(false);
             }
 
+            boolean pageCreated = false;
             IDialogPage page = (IDialogPage) newItem.getData();
-            gd = (GridData) page.getControl().getLayoutData();
+            Control pageControl = page.getControl();
+            if (pageControl == null) {
+                // Create page contents
+                page.createControl(pageArea);
+                pageControl = page.getControl();
+                //Point pageSize = pageControl.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                //if (pageSize.x > maxSize.x) maxSize.x = pageSize.x;
+                //if (pageSize.y > maxSize.y) maxSize.y = pageSize.y;
+                gd = (GridData) pageControl.getLayoutData();
+                if (gd == null) {
+                    gd = new GridData(GridData.FILL_BOTH);
+                    pageControl.setLayoutData(gd);
+                }
+                gd.exclude = false;
+                pageCreated = true;
+            }
+            gd = (GridData) pageControl.getLayoutData();
             gd.exclude = false;
             page.setVisible(true);
             setTitle(page.getTitle());
@@ -249,6 +248,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
             prevPage = page;
             pageArea.layout();
+            if (pageCreated) {
+                resizeShell();
+            }
         } finally {
             pageArea.setRedraw(true);
         }
@@ -304,7 +306,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         for (TreeItem item : pagesTree.getItems()) {
             if (item.getData() instanceof IWizardPage) {
                 IWizardPage page = (IWizardPage) item.getData();
-                if (!page.isPageComplete()) {
+                if (page.getControl() != null && !page.isPageComplete()) {
                     complete = false;
                     break;
                 }
@@ -365,4 +367,17 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             }
         }
     }
+
+    public void resizeShell() {
+        Shell shell = getWizard().getContainer().getShell();
+        Point shellSize = shell.getSize();
+        Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        compSize.y += 20;
+        if (shellSize.y < compSize.y) {
+            shell.setSize(compSize);
+            shell.layout(true);
+        }
+    }
+
+
 }
