@@ -70,10 +70,12 @@ public class PrefPageSQLExecute extends TargetPrefPage
         return
             store.contains(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE) ||
             store.contains(DBeaverPreferences.STATEMENT_TIMEOUT) ||
+
             store.contains(DBeaverPreferences.SCRIPT_COMMIT_TYPE) ||
             store.contains(DBeaverPreferences.SCRIPT_ERROR_HANDLING) ||
             store.contains(DBeaverPreferences.SCRIPT_COMMIT_LINES) ||
             store.contains(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS) ||
+
             store.contains(ModelPreferences.SCRIPT_STATEMENT_DELIMITER) ||
             store.contains(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
             store.contains(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK) ||
@@ -240,9 +242,10 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.STATEMENT_TIMEOUT);
 
         store.setToDefault(DBeaverPreferences.SCRIPT_COMMIT_TYPE);
-        store.setToDefault(DBeaverPreferences.SCRIPT_COMMIT_LINES);
         store.setToDefault(DBeaverPreferences.SCRIPT_ERROR_HANDLING);
+        store.setToDefault(DBeaverPreferences.SCRIPT_COMMIT_LINES);
         store.setToDefault(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS);
+
         store.setToDefault(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE);
 
         store.setToDefault(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
@@ -251,6 +254,11 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(ModelPreferences.SQL_PARAMETERS_ENABLED);
         store.setToDefault(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED);
         store.setToDefault(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK);
+        store.setToDefault(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK);
+
+        store.setToDefault(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
+        store.setToDefault(SQLPreferenceConstants.BEEP_ON_QUERY_END);
+        store.setToDefault(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE);
     }
 
     @Override
