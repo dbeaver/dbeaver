@@ -249,7 +249,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             prevPage = page;
             pageArea.layout();
             if (pageCreated) {
-                resizeShell();
+                UIUtils.resizeShell(getWizard().getContainer().getShell());
             }
         } finally {
             pageArea.setRedraw(true);
@@ -367,17 +367,5 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             }
         }
     }
-
-    public void resizeShell() {
-        Shell shell = getWizard().getContainer().getShell();
-        Point shellSize = shell.getSize();
-        Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        compSize.y += 20;
-        if (shellSize.y < compSize.y) {
-            shell.setSize(compSize);
-            shell.layout(true);
-        }
-    }
-
 
 }

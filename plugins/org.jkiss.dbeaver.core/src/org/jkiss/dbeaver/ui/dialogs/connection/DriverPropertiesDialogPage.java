@@ -56,9 +56,10 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void loadSettings()
-    {
-        if (propsControl != null) {
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        // Set props model
+        if (visible && propsControl != null) {
             final DBPDataSourceContainer activeDataSource = site.getActiveDataSource();
             if (prevConnectionInfo == activeDataSource.getConnectionConfiguration()) {
                 return;
@@ -78,7 +79,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
                 getSite().getRunnableContext().run(true, true, new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                        monitor.beginTask("Load driver properties", 1);
+                        monitor.beginTask("Loading driver properties", 1);
                         try {
                             propertySource = propsControl.makeProperties(
                                 monitor,
@@ -102,6 +103,12 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     }
 
     @Override
+    public void loadSettings()
+    {
+        // Do nothing
+    }
+
+    @Override
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
         if (propertySource != null) {
@@ -118,7 +125,6 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     {
         propsControl = new ConnectionPropertiesControl(parent, SWT.NONE);
         setControl(propsControl.getControl());
-        loadSettings();
     }
 
 }

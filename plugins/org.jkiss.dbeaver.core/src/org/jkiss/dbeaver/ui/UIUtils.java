@@ -1599,4 +1599,14 @@ public class UIUtils {
         return item;
     }
 
+    public static void resizeShell(Shell shell) {
+        Point shellSize = shell.getSize();
+        Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        compSize.y += 20;
+        if (shellSize.y < compSize.y) {
+            shell.setSize(compSize);
+            shell.layout(true);
+        }
+    }
+
 }

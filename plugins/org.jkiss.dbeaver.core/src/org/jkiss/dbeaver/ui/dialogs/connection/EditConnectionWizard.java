@@ -111,6 +111,7 @@ public class EditConnectionWizard extends ConnectionWizard
 
         boolean embedded = dataSource.getDriver().isEmbedded();
         pageGeneral = new ConnectionPageGeneral(this, dataSource);
+
         if (!embedded) {
             pageNetwork = new ConnectionPageNetwork(this);
         }

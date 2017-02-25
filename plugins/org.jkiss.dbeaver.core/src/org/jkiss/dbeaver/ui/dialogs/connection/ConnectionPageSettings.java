@@ -96,6 +96,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     public void activatePage()
     {
+        if (connectionEditor == null) {
+            createProviderPage(getControl().getParent());
+            //UIUtils.resizeShell(getWizard().getContainer().getShell());
+        }
+
         setMessage(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getFullName()));
         DataSourceDescriptor connectionInfo = getActiveDataSource();
         if (!activated.contains(connectionInfo)) {
@@ -180,6 +185,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
                 tabFolder = new TabFolder(parent, SWT.TOP);
                 tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+                setControl(tabFolder);
 
                 for (IDialogPage page : allPages) {
                     TabItem item = new TabItem(tabFolder, SWT.NONE);
@@ -197,7 +203,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         activateCurrentItem();
                     }
                 });
-                setControl(tabFolder);
             } else {
                 // Create single editor control
                 this.connectionEditor.createControl(parent);
