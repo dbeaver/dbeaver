@@ -47,7 +47,7 @@ public class WizardPrefPage extends WizardPage implements ICompositeDialogPage {
     @Override
     public boolean isPageComplete()
     {
-        return preferencePage.isValid();
+        return getControl() == null || preferencePage.isValid();
     }
 
     @Override

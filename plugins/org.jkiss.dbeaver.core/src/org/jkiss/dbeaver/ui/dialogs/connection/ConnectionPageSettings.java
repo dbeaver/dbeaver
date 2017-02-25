@@ -96,10 +96,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     public void activatePage()
     {
-        if (connectionEditor == null) {
-            createProviderPage(getControl().getParent());
-            wizard.resizeShell();
-        }
         setMessage(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getFullName()));
         DataSourceDescriptor connectionInfo = getActiveDataSource();
         if (!activated.contains(connectionInfo)) {
@@ -108,7 +104,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
             if (subPages != null) {
                 for (IDialogPage page : subPages) {
-                    if (page instanceof IDataSourceConnectionEditor) {
+                    Control pageControl = page.getControl();
+//                    if (pageControl == null) {
+//                        page.createControl(getControl().getParent());
+//                    }
+                    if (pageControl != null && page instanceof IDataSourceConnectionEditor) {
                         ((IDataSourceConnectionEditor) page).loadSettings();
                     }
                 }
@@ -139,7 +139,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
         if (subPages != null) {
             for (IDialogPage page : subPages) {
-                if (page instanceof IDataSourceConnectionEditor) {
+                if (page.getControl() != null && page instanceof IDataSourceConnectionEditor) {
                     ((IDataSourceConnectionEditor) page).saveSettings(dataSource);
                 }
             }
@@ -157,7 +157,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     private void createProviderPage(Composite parent) {
-        if (this.connectionEditor != null) {
+        if (this.connectionEditor != null && this.connectionEditor.getControl() != null) {
             return;
         }
         if (getControl() != null) {
@@ -165,8 +165,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         try {
-            this.connectionEditor = viewDescriptor.createView(IDataSourceConnectionEditor.class);
-            this.connectionEditor.setSite(this);
+            if (this.connectionEditor == null) {
+                this.connectionEditor = viewDescriptor.createView(IDataSourceConnectionEditor.class);
+                this.connectionEditor.setSite(this);
+            }
             // init sub pages (if any)
             getSubPages();
 
@@ -305,6 +307,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         if (subPages != null) {
             return subPages;
         }
+        if (this.connectionEditor == null) {
+            this.connectionEditor = viewDescriptor.createView(IDataSourceConnectionEditor.class);
+            this.connectionEditor.setSite(this);
+        }
+
         if (connectionEditor instanceof ICompositeDialogPage) {
             subPages = ((ICompositeDialogPage) connectionEditor).getSubPages();
             if (!ArrayUtils.isEmpty(subPages)) {

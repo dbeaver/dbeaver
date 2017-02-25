@@ -177,19 +177,6 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         return false;
     }
 
-    public void resizeShell() {
-        if (!resized) {
-            Shell shell = getContainer().getShell();
-            Point shellSize = shell.getSize();
-            Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-            if (shellSize.y < compSize.y) {
-                shell.setSize(compSize);
-                shell.layout(true);
-            }
-            resized = true;
-        }
-    }
-
     private class ConnectionTester extends ConnectJob {
         String productName;
         String productVersion;

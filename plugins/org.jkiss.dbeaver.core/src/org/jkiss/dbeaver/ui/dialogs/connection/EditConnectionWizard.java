@@ -257,17 +257,35 @@ public class EditConnectionWizard extends ConnectionWizard
     @Override
     protected void saveSettings(DataSourceDescriptor dataSource)
     {
-        if (pageSettings != null) {
+        if (isPageActive(pageSettings)) {
             pageSettings.saveSettings(dataSource);
         }
         pageGeneral.saveSettings(dataSource);
-        if (pageNetwork != null) {
+        if (isPageActive(pageNetwork)) {
             pageNetwork.saveConfigurations(dataSource);
         }
         pageEvents.saveConfigurations(dataSource);
         for (WizardPrefPage prefPage : prefPages) {
+            savePageSettings(prefPage);
+        }
+    }
+
+    private void savePageSettings(WizardPrefPage prefPage) {
+        if (isPageActive(prefPage)) {
             prefPage.performFinish();
         }
+        final WizardPrefPage[] subPages = prefPage.getSubPages();
+        if (subPages != null) {
+            for (WizardPrefPage subPage : subPages) {
+                if (isPageActive(subPage)) {
+                    subPage.performFinish();
+                }
+            }
+        }
+    }
+
+    private static boolean isPageActive(IDialogPage page) {
+        return page != null && page.getControl() != null;
     }
 
 }
