@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
@@ -264,8 +265,13 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     /**
      * Reorder children nodes
      */
-    public void updateChildrenOrder(DBRProgressMonitor monitor, boolean reflect) throws DBException {
-        refreshNodeContent(monitor, getObject(), this, reflect);
+    public void updateChildrenOrder(boolean reflect) {
+        try {
+            refreshNodeContent(VoidProgressMonitor.INSTANCE, getObject(), this, reflect);
+        } catch (DBException e) {
+            log.error("Error reordering node children", e);
+        }
+
     }
 
     public boolean needsInitialization()
