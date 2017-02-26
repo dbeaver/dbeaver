@@ -143,8 +143,10 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
     protected void addObjectReorderActions(List<DBEPersistAction> actions, ObjectReorderCommand command)
     {
-        // Not supported by implementation
-        throw new IllegalStateException("Object reorder is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
+        if (command.getObject().isPersisted()) {
+            // Not supported by implementation
+            throw new IllegalStateException("Object reorder is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
+        }
     }
 
     protected abstract void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command);
@@ -473,7 +475,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         public void undoCommand(ObjectReorderCommand command)
         {
             ((DBPOrderedObject)command.getObject()).setOrdinalPosition(command.oldPosition);
-            DBUtils.fireObjectUpdate(command.getObject());
+            final DBSObject parentObject = command.getObject().getParentObject();
+            if (parentObject != null) {
+                // We need to update order in navigator model
+                DBUtils.fireObjectUpdate(parentObject, DBPEvent.REORDER);
+            }
         }
 
     }
