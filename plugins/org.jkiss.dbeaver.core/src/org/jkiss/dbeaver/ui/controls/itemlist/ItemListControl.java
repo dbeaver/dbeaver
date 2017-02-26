@@ -112,7 +112,7 @@ public class ItemListControl extends NodeListControl
                     break;
                 }
             }
-            if (hasReorder && false) {
+            if (hasReorder) {
                 contributionManager.add(new Separator());
                 contributionManager.add(ActionUtils.makeCommandContribution(
                     workbenchSite,

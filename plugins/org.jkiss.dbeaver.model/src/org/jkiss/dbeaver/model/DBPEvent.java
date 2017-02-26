@@ -33,6 +33,8 @@ public class DBPEvent
         OBJECT_SELECT,
     }
 
+    public static final Object REORDER = new Object();
+
     private Action action;
 
     private DBSObject object;

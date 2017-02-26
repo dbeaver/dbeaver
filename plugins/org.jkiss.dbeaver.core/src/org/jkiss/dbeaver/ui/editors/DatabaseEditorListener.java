@@ -85,7 +85,7 @@ public class DatabaseEditorListener implements INavigatorListener
                                 databaseEditor.refreshPart(
                                     event,
                                     event.getNodeChange() == DBNEvent.NodeChange.REFRESH &&
-                                    event.getSource() == DBNNode.FORCE_REFRESH);
+                                    event.getSource() == DBNEvent.FORCE_REFRESH);
                             }
                         };
                     }

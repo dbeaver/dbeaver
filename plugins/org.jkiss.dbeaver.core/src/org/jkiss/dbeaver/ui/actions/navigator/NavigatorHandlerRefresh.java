@@ -31,6 +31,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -134,7 +135,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                     }
                     setName("Refresh '" + node.getNodeName() + "'...");
                     try {
-                        DBNNode refreshed = node.refreshNode(monitor, DBNNode.FORCE_REFRESH);
+                        DBNNode refreshed = node.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
                         if (refreshed != null) {
                             refreshedSet.add(refreshed);
                         }

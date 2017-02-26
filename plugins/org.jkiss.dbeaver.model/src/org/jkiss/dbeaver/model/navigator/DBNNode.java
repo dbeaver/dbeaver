@@ -39,8 +39,6 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject, IAd
 {
     static final Log log = Log.getLog(DBNNode.class);
 
-    public static final Object FORCE_REFRESH = new Object();
-
     public enum NodePathType {
         resource,
         folder,
