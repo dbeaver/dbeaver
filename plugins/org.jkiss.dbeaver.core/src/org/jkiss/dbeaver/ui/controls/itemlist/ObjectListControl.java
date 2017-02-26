@@ -865,7 +865,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         @Override
         public Image getImage(Object element) {
             OBJECT_TYPE object = (OBJECT_TYPE) element;
-            final ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, getObjectValue(object));
+            final Object objectValue = getObjectValue(object);
+            if (objectValue == null) {
+                // This may happen if list redraw happens during node dispose
+                return null;
+            }
+            final ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
             if (prop != null && prop.isNameProperty()) {
                 DBPImage objectImage = getObjectImage(object);
                 return objectImage == null ? null : DBeaverIcons.getImage(objectImage);
@@ -883,6 +888,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 return ""; //$NON-NLS-1$
             }
             final Object objectValue = getObjectValue((OBJECT_TYPE) element);
+            if (objectValue == null) {
+                // This may happen if list redraw happens during node dispose
+                return "";
+            }
             final ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
             if (prop != null) {
                 return ObjectViewerRenderer.getCellString(cellValue, prop.isNameProperty());
