@@ -29,7 +29,6 @@ import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -101,6 +100,20 @@ public class ItemListControl extends NodeListControl
         IWorkbenchSite workbenchSite = getWorkbenchSite();
         if (workbenchSite != null) {
             contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
+        }
+
+
+        if (rootNode instanceof DBNDatabaseNode) {
+            contributionManager.add(new Separator());
+            contributionManager.add(ActionUtils.makeCommandContribution(
+                workbenchSite,
+                CoreCommands.CMD_OBJECT_OPEN));
+            contributionManager.add(ActionUtils.makeCommandContribution(
+                workbenchSite,
+                CoreCommands.CMD_OBJECT_CREATE));
+            contributionManager.add(ActionUtils.makeCommandContribution(
+                workbenchSite,
+                CoreCommands.CMD_OBJECT_DELETE));
         }
 
         if (rootNode instanceof DBNDatabaseNode && rootNode.isPersisted()) {
