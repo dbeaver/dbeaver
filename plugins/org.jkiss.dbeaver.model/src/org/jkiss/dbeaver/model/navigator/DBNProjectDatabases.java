@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -27,10 +26,12 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * DBNProjectDatabases
@@ -322,11 +323,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                             nodeChange = DBNEvent.NodeChange.REFRESH;
                         }
                         if (event.getData() == DBPEvent.REORDER) {
-                            try {
-                                dbmNode.updateChildrenOrder(VoidProgressMonitor.INSTANCE, false);
-                            } catch (DBException e) {
-                                log.error(e);
-                            }
+                            dbmNode.updateChildrenOrder(false);
                         }
                     }
                     model.fireNodeUpdate(
