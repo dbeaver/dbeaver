@@ -103,7 +103,7 @@ public class ItemListControl extends NodeListControl
             contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
         }
 
-        if (rootNode instanceof DBNDatabaseNode) {
+        if (rootNode instanceof DBNDatabaseNode && rootNode.isPersisted()) {
             boolean hasReorder = false;
             List<Class<?>> childrenTypes = ((DBNDatabaseNode) rootNode).getChildrenTypes(null);
             for (Class<?> chilType : childrenTypes) {
