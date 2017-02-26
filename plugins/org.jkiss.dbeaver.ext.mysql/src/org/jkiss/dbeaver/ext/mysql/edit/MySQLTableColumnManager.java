@@ -165,6 +165,26 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
                     getNestedDeclaration(column.getTable(), command)));
     }
 
+    @Override
+    protected void addObjectReorderActions(List<DBEPersistAction> actions, ObjectReorderCommand command) {
+        final MySQLTableColumn column = command.getObject();
+        String order = "FIRST";
+        if (column.getOrdinalPosition() > 0) {
+            for (MySQLTableColumn col : command.getObject().getTable().getCachedAttributes()) {
+                if (col.getOrdinalPosition() == column.getOrdinalPosition() - 1) {
+                    order = "AFTER " + DBUtils.getQuotedIdentifier(col);
+                    break;
+                }
+            }
+        }
+        actions.add(
+            new SQLDatabasePersistAction(
+                "Reorder column",
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " CHANGE " +
+                    DBUtils.getQuotedIdentifier(command.getObject()) + " " +
+                    getNestedDeclaration(column.getTable(), command) + " " + order));
+    }
+
     ///////////////////////////////////////////////
     // Reorder
 

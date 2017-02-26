@@ -379,6 +379,20 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             addObjectRenameActions(actions, this);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
+
+        @Override
+        public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams) {
+            // We need very first and very last rename commands. They produce final rename
+            ObjectRenameCommand renameCmd = (ObjectRenameCommand) userParams.get("rename");
+            if (renameCmd == null) {
+                renameCmd = new ObjectRenameCommand(getObject(), getTitle(), newName);
+                userParams.put("rename", renameCmd);
+            } else {
+                renameCmd.newName = newName;
+                return renameCmd;
+            }
+            return super.merge(prevCommand, userParams);
+        }
     }
 
     public class RenameObjectReflector implements DBECommandReflector<OBJECT_TYPE, ObjectRenameCommand> {
@@ -436,6 +450,19 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 
+        @Override
+        public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams) {
+            // We need very first and very last reorder commands. They produce final rename
+            ObjectReorderCommand reorderCmd = (ObjectReorderCommand) userParams.get("reorder");
+            if (reorderCmd == null) {
+                reorderCmd = new ObjectReorderCommand(getObject(), siblings, getTitle(), newPosition);
+                userParams.put("reorder", reorderCmd);
+            } else {
+                reorderCmd.newPosition = newPosition;
+                return reorderCmd;
+            }
+            return super.merge(prevCommand, userParams);
+        }
     }
 
     public class ReorderObjectReflector implements DBECommandReflector<OBJECT_TYPE, ObjectReorderCommand> {
