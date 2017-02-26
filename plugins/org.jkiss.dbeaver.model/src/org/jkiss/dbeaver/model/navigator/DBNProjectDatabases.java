@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.*;
@@ -301,14 +303,14 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
             case OBJECT_UPDATE:
             case OBJECT_SELECT:
             {
-                DBNNode dbmNode = model.getNodeByObject(event.getObject());
+                DBNDatabaseNode dbmNode = model.getNodeByObject(event.getObject());
                 if (dbmNode != null) {
                     DBNEvent.NodeChange nodeChange;
                     Boolean enabled = event.getEnabled();
                     Object source = this;
                     if (event.getAction() == DBPEvent.Action.OBJECT_SELECT) {
                         nodeChange = DBNEvent.NodeChange.REFRESH;
-                        if (enabled != null && enabled) source = FORCE_REFRESH;
+                        if (enabled != null && enabled) source = DBNEvent.FORCE_REFRESH;
                     } else {
                         if (enabled != null) {
                             if (enabled) {
@@ -318,6 +320,13 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                             }
                         } else {
                             nodeChange = DBNEvent.NodeChange.REFRESH;
+                        }
+                        if (event.getData() == DBPEvent.REORDER) {
+                            try {
+                                dbmNode.updateChildrenOrder(VoidProgressMonitor.INSTANCE, false);
+                            } catch (DBException e) {
+                                log.error(e);
+                            }
                         }
                     }
                     model.fireNodeUpdate(
@@ -329,10 +338,12 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                         // Clear disabled node
                         dbmNode.clearNode(false);
                     } else {
-                        if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getObject() instanceof DBPDataSourceContainer) {
-                            // Force reorder
-                            children = null;
-                            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, this));
+                        if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE) {
+                            if (event.getObject() instanceof DBPDataSourceContainer) {
+                                // Force reorder
+                                children = null;
+                                getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, this));
+                            }
                         }
                     }
                 }

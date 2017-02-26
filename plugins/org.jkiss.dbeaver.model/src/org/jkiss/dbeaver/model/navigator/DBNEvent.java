@@ -23,6 +23,9 @@ import org.jkiss.code.NotNull;
  * Navigator model event
  */
 public class DBNEvent {
+
+    public static final Object FORCE_REFRESH = new Object();
+
     public enum Action
     {
         ADD,

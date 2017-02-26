@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -291,7 +292,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {
                             try {
-                                treeNode.refreshNode(monitor, DBNNode.FORCE_REFRESH);
+                                treeNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
                             } catch (DBException e) {
                                 throw new InvocationTargetException(e);
                             }

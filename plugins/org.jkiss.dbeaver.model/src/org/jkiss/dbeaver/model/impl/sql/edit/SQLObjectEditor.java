@@ -452,7 +452,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
                             sibling.setOrdinalPosition(siblingPosition + 1);
                         }
                     } else {
-                        if (siblingPosition < command.newPosition && siblingPosition > command.oldPosition) {
+                        if (siblingPosition <= command.newPosition && siblingPosition > command.oldPosition) {
                             sibling.setOrdinalPosition(siblingPosition - 1);
                         }
                     }
@@ -462,8 +462,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             // Update target object position
             ((DBPOrderedObject) object).setOrdinalPosition(command.newPosition);
             // Refresh object AND parent
-            DBUtils.fireObjectUpdate(object);
-            DBUtils.fireObjectUpdate(object.getParentObject());
+            final DBSObject parentObject = object.getParentObject();
+            if (parentObject != null) {
+                // We need to update order in navigator model
+                DBUtils.fireObjectUpdate(parentObject, DBPEvent.REORDER);
+            }
         }
 
         @Override
