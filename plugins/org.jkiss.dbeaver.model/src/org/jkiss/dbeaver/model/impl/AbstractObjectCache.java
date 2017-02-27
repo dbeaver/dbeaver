@@ -228,9 +228,16 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
             if (objectList == null) {
                 return;
             }
-            for (OBJECT object : objectList) {
+            for (int i = 0; i < objectList.size(); ) {
+                OBJECT object = objectList.get(i);
                 if (object.getParentObject() == parent) {
-                    removeObject(object, true);
+                    this.objectList.remove(object);
+                    if (this.objectMap != null) {
+                        this.objectMap.remove(getObjectName(object));
+                    }
+                    fullCache = false;
+                } else {
+                    i++;
                 }
             }
         }
