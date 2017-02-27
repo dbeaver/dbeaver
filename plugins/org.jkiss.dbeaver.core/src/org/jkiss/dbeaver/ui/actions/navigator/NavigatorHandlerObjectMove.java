@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
@@ -99,6 +100,16 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
                         siblingObjects,
                         orderedObject.getOrdinalPosition() + 1);
                     break;
+            }
+
+            if (object.isPersisted() && commandTarget.getEditor() == null) {
+                if (!showScript(HandlerUtil.getActiveWorkbenchWindow(event), commandTarget.getContext(), "Reorder script")) {
+                    commandTarget.getContext().resetChanges();
+                    return false;
+                } else {
+                    ObjectSaver orderer = new ObjectSaver(commandTarget.getContext());
+                    TasksJob.runTask("Change object '" + object.getName() + "' position", orderer);
+                }
             }
         } catch (DBException e) {
             UIUtils.showErrorDialog(HandlerUtil.getActiveShell(event), "Object move", "Error during object reposition", e);
