@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -55,6 +56,8 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
         this.container = container;
         this.dialect = new WMIDialect();
         this.id = AbstractExecutionContext.generateContextId();
+
+        QMUtils.getDefaultHandler().handleContextOpen(this, false);
     }
 
     @NotNull
@@ -173,6 +176,8 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
             }
             rootNamespace = null;
         }
+
+        QMUtils.getDefaultHandler().handleContextClose(this);
     }
 
     @Override
