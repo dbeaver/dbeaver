@@ -1849,6 +1849,15 @@
                 </command>
             </menu>
 
+<!--
+            <command commandId="org.jkiss.dbeaver.core.object.move.up">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.object.move.down">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+-->
+
             <command commandId="org.jkiss.dbeaver.core.sql.script.associate">
                 <visibleWhen checkEnabled="true"/>
             </command>
