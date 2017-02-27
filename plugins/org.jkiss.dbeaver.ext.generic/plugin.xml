@@ -288,7 +288,7 @@
                     sampleURL="jdbc:as400://{host};[libraries={database};]"
                     defaultPort=""
                     description="DB2 iSeries/AS 400 driver">
-                    <file type="jar" path="maven:/dk.kewill.thirdpartymavencentral:jt400-full:RELEASE"/>
+                    <file type="jar" path="maven:/net.sf.jt400:jt400:RELEASE"/>
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
