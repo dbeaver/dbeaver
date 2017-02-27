@@ -172,8 +172,9 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         }
         String viewText = null;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table status")) {
+            boolean isOracle9 = getDataSource().isAtLeastV9();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE,SUPERVIEW_NAME\n" +
+                "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE" + (isOracle9 ? ",SUPERVIEW_NAME" : "") + "\n" +
                     "FROM SYS.ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?")) {
                 dbStat.setString(1, getContainer().getName());
                 dbStat.setString(2, getName());
@@ -185,10 +186,11 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
                         additionalInfo.setOidText(JDBCUtils.safeGetStringTrimmed(dbResult, "OID_TEXT"));
                         additionalInfo.typeOwner = JDBCUtils.safeGetStringTrimmed(dbResult, "VIEW_TYPE_OWNER");
                         additionalInfo.typeName = JDBCUtils.safeGetStringTrimmed(dbResult, "VIEW_TYPE");
-
-                        String superViewName = JDBCUtils.safeGetString(dbResult, "SUPERVIEW_NAME");
-                        if (!CommonUtils.isEmpty(superViewName)) {
-                            additionalInfo.setSuperView(getContainer().getView(monitor, superViewName));
+                        if (isOracle9) {
+                            String superViewName = JDBCUtils.safeGetString(dbResult, "SUPERVIEW_NAME");
+                            if (!CommonUtils.isEmpty(superViewName)) {
+                                additionalInfo.setSuperView(getContainer().getView(monitor, superViewName));
+                            }
                         }
                     } else {
                         log.warn("Cannot find view '" + getFullyQualifiedName(DBPEvaluationContext.UI) + "' metadata");

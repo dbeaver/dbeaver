@@ -270,6 +270,10 @@ public class OracleDataSource extends JDBCDataSource
         return publicSchema.getRecycledObjects(monitor);
     }
 
+    public boolean isAtLeastV9() {
+        return getInfo().getDatabaseVersion().getMajor() >= 9;
+    }
+
     public boolean isAtLeastV10() {
         return getInfo().getDatabaseVersion().getMajor() >= 10;
     }
