@@ -131,17 +131,17 @@ public class DialogUtils {
         return fileName;
     }
 
-    public static void loadFromFile(final IValueController controller)
+    public static boolean loadFromFile(final IValueController controller)
     {
         if (!(controller.getValue() instanceof DBDContent)) {
             log.error(CoreMessages.model_jdbc_bad_content_value_ + controller.getValue());
-            return;
+            return false;
         }
 
         Shell shell = UIUtils.getShell(controller.getValueSite());
         final File openFile = openFile(shell);
         if (openFile == null) {
-            return;
+            return false;
         }
         final DBDContent value = (DBDContent)controller.getValue();
         DBeaverUI.runInUI(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
@@ -162,6 +162,7 @@ public class DialogUtils {
                 }
             }
         });
+        return true;
     }
 
     public static void saveToFile(IValueController controller)

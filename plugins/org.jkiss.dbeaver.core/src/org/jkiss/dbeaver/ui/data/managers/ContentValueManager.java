@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
@@ -53,7 +54,7 @@ public class ContentValueManager extends BaseValueManager {
 
     public static final String PROP_CATEGORY_CONTENT = "CONTENT";
 
-    public static void contributeContentActions(@NotNull IContributionManager manager, @NotNull final IValueController controller)
+    public static void contributeContentActions(@NotNull IContributionManager manager, @NotNull final IValueController controller, final IValueEditor activeEditor)
         throws DBCException
     {
         if (controller.getValue() instanceof DBDContent && !((DBDContent)controller.getValue()).isNull()) {
@@ -67,7 +68,13 @@ public class ContentValueManager extends BaseValueManager {
         manager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBeaverIcons.getImageDescriptor(UIIcon.LOAD)) {
             @Override
             public void run() {
-                DialogUtils.loadFromFile(controller);
+                if (DialogUtils.loadFromFile(controller)) {
+                    try {
+                        activeEditor.primeEditorValue(controller.getValue());
+                    } catch (DBException e) {
+                        UIUtils.showErrorDialog(null, "Load from file", "Error loading contents from file", e);
+                    }
+                }
             }
         });
         manager.add(new Separator());
@@ -95,7 +102,7 @@ public class ContentValueManager extends BaseValueManager {
         throws DBCException
     {
         super.contributeActions(manager, controller, activeEditor);
-        contributeContentActions(manager, controller);
+        contributeContentActions(manager, controller, activeEditor);
     }
 
     @Override
