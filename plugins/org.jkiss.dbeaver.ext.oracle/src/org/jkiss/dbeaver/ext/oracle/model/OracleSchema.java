@@ -537,11 +537,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             StringBuilder sql = new StringBuilder(500);
             sql.append(
                 "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " \r\n" +
-                "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME,ref.TABLE_NAME as R_TABLE_NAME,c.DELETE_RULE, \n" +
+                "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME,rc.TABLE_NAME as R_TABLE_NAME,c.DELETE_RULE, \n" +
                 "col.COLUMN_NAME,col.POSITION\r\n" +
                 "FROM SYS.ALL_CONSTRAINTS c\n" +
                 "JOIN SYS.ALL_CONS_COLUMNS col ON c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
-                "JOIN SYS.ALL_CONSTRAINTS ref ON ref.OWNER=c.r_OWNER AND ref.CONSTRAINT_NAME=c.R_CONSTRAINT_NAME \n" +
+                "JOIN SYS.ALL_CONSTRAINTS rc ON rc.OWNER=c.r_OWNER AND rc.CONSTRAINT_NAME=c.R_CONSTRAINT_NAME \n" +
                 "WHERE c.CONSTRAINT_TYPE='R' AND c.OWNER=?");
             if (forTable != null) {
                 sql.append(" AND c.TABLE_NAME=?");
