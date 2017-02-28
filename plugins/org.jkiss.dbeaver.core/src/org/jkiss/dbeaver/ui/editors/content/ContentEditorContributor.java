@@ -118,7 +118,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
 
         if (this.activeEditor != null) {
             if (encodingCombo != null && !encodingCombo.isDisposed()) {
-                String curCharset = GeneralUtils.DEFAULT_ENCODING;
+                String curCharset = activeEditor.getEditorInput().getFileCharset();
                 int charsetCount = encodingCombo.getItemCount();
                 for (int i = 0; i < charsetCount; i++) {
                     if (encodingCombo.getItem(i).equals(curCharset)) {

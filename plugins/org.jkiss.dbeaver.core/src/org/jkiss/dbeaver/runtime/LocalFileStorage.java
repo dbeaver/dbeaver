@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.runtime;
 
+import org.eclipse.core.resources.IEncodedStorage;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -32,12 +33,14 @@ import java.io.*;
 /**
  * LocalFileStorage
  */
-public class LocalFileStorage implements IStorage, IPersistentStorage {
+public class LocalFileStorage implements IStorage, IPersistentStorage, IEncodedStorage {
 
     private final File file;
+    private final String charset;
 
-    public LocalFileStorage(File file) {
+    public LocalFileStorage(File file, String charset) {
         this.file = file;
+        this.charset = charset;
     }
 
     @Override
@@ -78,4 +81,8 @@ public class LocalFileStorage implements IStorage, IPersistentStorage {
         return null;
     }
 
+    @Override
+    public String getCharset() throws CoreException {
+        return charset;
+    }
 }

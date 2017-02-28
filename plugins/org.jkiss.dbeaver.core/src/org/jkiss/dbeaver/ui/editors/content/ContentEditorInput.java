@@ -28,6 +28,7 @@ import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPContextProvider;
@@ -63,7 +64,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
     private IEditorPart defaultPart;
     private File contentFile;
     private boolean contentDetached = false;
-    private String fileCharset = GeneralUtils.DEFAULT_ENCODING;
+    private String fileCharset;
 
     public ContentEditorInput(
         IValueController valueController,
@@ -75,6 +76,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
         this.valueController = valueController;
         this.editorParts = editorParts;
         this.defaultPart = defaultPart;
+        this.fileCharset = valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getString(ModelPreferences.CONTENT_HEX_ENCODING);
         this.prepareContent(monitor);
     }
 
@@ -147,7 +149,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
     public <T> T getAdapter(Class<T> adapter)
     {
         if (adapter == IStorage.class) {
-            return adapter.cast(new LocalFileStorage(contentFile));
+            return adapter.cast(new LocalFileStorage(contentFile, fileCharset));
         }
         return null;
     }
@@ -310,11 +312,11 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
             // Create new storage and pass it to content
             try (FileInputStream is = new FileInputStream(contentFile)) {
                 if (storage instanceof StringContentStorage) {
-                    try (Reader reader = new InputStreamReader(is, GeneralUtils.getDefaultFileEncoding())) {
+                    try (Reader reader = new InputStreamReader(is, fileCharset)) {
                         storage = StringContentStorage.createFromReader(reader);
                     }
                 } else {
-                    storage = BytesContentStorage.createFromStream(is, contentFile.length(), GeneralUtils.getDefaultFileEncoding());
+                    storage = BytesContentStorage.createFromStream(is, contentFile.length(), fileCharset);
                 }
                 //StringContentStorage.
                 contentDetached = content.updateContents(localMonitor, storage);
