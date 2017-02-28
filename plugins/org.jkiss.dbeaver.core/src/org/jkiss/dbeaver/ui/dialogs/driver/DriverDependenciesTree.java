@@ -64,7 +64,7 @@ class DriverDependenciesTree {
         filesTree = new Tree(parent, SWT.BORDER | SWT.FULL_SELECTION);
         filesTree.setHeaderVisible(true);
         final GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.minimumHeight = 50;
+        gd.minimumHeight = filesTree.getHeaderHeight() + filesTree.getItemHeight() * 3;
         filesTree.setLayoutData(gd);
         UIUtils.createTreeColumn(filesTree, SWT.LEFT, "File");
         UIUtils.createTreeColumn(filesTree, SWT.LEFT, "Version");
