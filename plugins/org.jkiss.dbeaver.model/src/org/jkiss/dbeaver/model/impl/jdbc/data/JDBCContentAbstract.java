@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -34,6 +35,10 @@ public abstract class JDBCContentAbstract extends AbstractContent implements DBD
     protected JDBCContentAbstract(DBPDataSource dataSource)
     {
         super(dataSource);
+    }
+
+    protected String getDefaultEncoding() {
+        return DBValueFormatting.getDefaultBinaryFileEncoding(dataSource);
     }
 
     public abstract void bindParameter(JDBCSession session, JDBCPreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)

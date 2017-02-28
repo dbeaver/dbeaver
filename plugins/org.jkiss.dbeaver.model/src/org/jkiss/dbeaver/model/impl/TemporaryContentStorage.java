@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.data.DBDContentStorageLocal;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 
@@ -32,11 +33,13 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
 
     private final DBPPlatform platform;
     private File file;
+    private String charset;
 
-    public TemporaryContentStorage(DBPPlatform platform, File file)
+    public TemporaryContentStorage(DBPPlatform platform, File file, String charset)
     {
         this.platform = platform;
         this.file = file;
+        this.charset = CommonUtils.toString(charset, GeneralUtils.DEFAULT_ENCODING);
     }
 
     @Override
@@ -50,7 +53,7 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
     public Reader getContentReader()
         throws IOException
     {
-        return new InputStreamReader(new FileInputStream(file), GeneralUtils.DEFAULT_ENCODING);
+        return new InputStreamReader(new FileInputStream(file), this.charset);
     }
 
     @Override
@@ -62,7 +65,7 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
     @Override
     public String getCharset()
     {
-        return GeneralUtils.DEFAULT_ENCODING;
+        return this.charset;
     }
 
     @Override
@@ -81,7 +84,7 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
             ContentUtils.deleteTempFile(tempFile);
             throw new IOException(e);
         }
-        return new TemporaryContentStorage(platform, tempFile);
+        return new TemporaryContentStorage(platform, tempFile, charset);
     }
 
     @Override

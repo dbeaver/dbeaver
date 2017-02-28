@@ -89,7 +89,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                         storage = BytesContentStorage.createFromStream(
                             bs,
                             contentLength,
-                            platform.getPreferenceStore().getString(ModelPreferences.CONTENT_HEX_ENCODING));
+                            getDefaultEncoding());
                     }
                 } catch (IOException e) {
                     throw new DBCException("IO error while reading content", e);
@@ -116,7 +116,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                     ContentUtils.deleteTempFile(tempFile);
                     throw new DBCException(e, dataSource);
                 }
-                this.storage = new TemporaryContentStorage(platform, tempFile);
+                this.storage = new TemporaryContentStorage(platform, tempFile, getDefaultEncoding());
             }
             // Free blob - we don't need it anymore
             releaseBlob();

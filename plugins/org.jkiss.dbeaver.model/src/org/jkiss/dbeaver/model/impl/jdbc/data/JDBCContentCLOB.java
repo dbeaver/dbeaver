@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.CommonUtils;
 
@@ -103,7 +102,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 catch (IOException e) {
                     throw new DBCException("Can't create temp file", e);
                 }
-                try (Writer os = new OutputStreamWriter(new FileOutputStream(tempFile), GeneralUtils.DEFAULT_ENCODING)) {
+                try (Writer os = new OutputStreamWriter(new FileOutputStream(tempFile), getDefaultEncoding())) {
                     ContentUtils.copyStreams(clob.getCharacterStream(), contentLength, os, monitor);
                 } catch (IOException e) {
                     ContentUtils.deleteTempFile(tempFile);
@@ -112,7 +111,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                     ContentUtils.deleteTempFile(tempFile);
                     throw new DBCException(e, dataSource);
                 }
-                this.storage = new TemporaryContentStorage(platform, tempFile);
+                this.storage = new TemporaryContentStorage(platform, tempFile, getDefaultEncoding());
             }
             // Free lob - we don't need it anymore
             releaseClob();
