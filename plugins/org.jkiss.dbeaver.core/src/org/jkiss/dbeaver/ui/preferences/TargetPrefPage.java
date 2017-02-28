@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
  * TargetPrefPage
@@ -320,6 +321,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
         if (isDataSourcePreferencePage() && !useDataSourceSettings()) {
             // Just delete datasource specific settings
             clearPreferences(store);
+            PrefUtils.savePreferenceStore(store);
         } else {
             savePreferences(store);
         }
