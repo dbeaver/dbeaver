@@ -86,7 +86,7 @@ public class ExternalContentStorage implements DBDContentStorage {
             ContentUtils.deleteTempFile(tempFile);
             throw new IOException(e);
         }
-        return new TemporaryContentStorage(platform, tempFile);
+        return new TemporaryContentStorage(platform, tempFile, charset);
     }
 
     @Override

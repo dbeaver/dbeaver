@@ -28,10 +28,10 @@ import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -76,7 +76,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
         this.valueController = valueController;
         this.editorParts = editorParts;
         this.defaultPart = defaultPart;
-        this.fileCharset = valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getString(ModelPreferences.CONTENT_HEX_ENCODING);
+        this.fileCharset = DBValueFormatting.getDefaultBinaryFileEncoding(valueController.getExecutionContext().getDataSource());
         this.prepareContent(monitor);
     }
 
@@ -325,7 +325,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
             }
         } else {
             // Create new storage and pass it to content
-            storage = new TemporaryContentStorage(DBeaverCore.getInstance(), contentFile);
+            storage = new TemporaryContentStorage(DBeaverCore.getInstance(), contentFile, fileCharset);
             contentDetached = content.updateContents(localMonitor, storage);
         }
     }
