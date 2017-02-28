@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.*;
+import org.eclipse.ui.editors.text.IEncodingSupport;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.WorkbenchPart;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
@@ -195,6 +196,9 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     {
         String charset = GeneralUtils.UTF8_ENCODING;
         IEditorInput editorInput = getEditorInput();
+        if (editorInput instanceof IEncodingSupport) {
+            charset = ((IEncodingSupport) editorInput).getEncoding();
+        }
         File systemFile = null;
         if (editorInput instanceof IPathEditorInput) {
             systemFile = ((IPathEditorInput) editorInput).getPath().toFile();

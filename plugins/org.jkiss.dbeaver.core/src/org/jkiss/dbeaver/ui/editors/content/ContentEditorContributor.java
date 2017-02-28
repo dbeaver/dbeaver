@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -118,7 +117,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
 
         if (this.activeEditor != null) {
             if (encodingCombo != null && !encodingCombo.isDisposed()) {
-                String curCharset = activeEditor.getEditorInput().getFileCharset();
+                String curCharset = activeEditor.getEditorInput().getEncoding();
                 int charsetCount = encodingCombo.getItemCount();
                 for (int i = 0; i < charsetCount; i++) {
                     if (encodingCombo.getItem(i).equals(curCharset)) {
@@ -185,7 +184,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
             {
                 String curCharset = null;
                 if (getEditor() != null) {
-                    curCharset = getEditor().getEditorInput().getFileCharset();
+                    curCharset = getEditor().getEditorInput().getEncoding();
                 }
                 encodingCombo = UIUtils.createEncodingCombo(parent, curCharset);
                 encodingCombo.setToolTipText("Content Encoding");
@@ -197,7 +196,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                             final ContentEditorInput contentEditorInput = contentEditor.getEditorInput();
                             Combo combo = (Combo) e.widget;
                             final String charset = combo.getItem(combo.getSelectionIndex());
-                            contentEditorInput.setFileCharset(charset);
+                            contentEditorInput.setEncoding(charset);
                         }
 
                     }

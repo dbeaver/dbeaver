@@ -216,7 +216,7 @@ public class TextViewDialog extends ValueViewDialog {
         try {
             stringValue = new String(
                 bytes, 0, length,
-                DBValueFormatting.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
+                getDefaultCharset());
         } catch (UnsupportedEncodingException e) {
             log.error(e);
             stringValue = new String(bytes);
@@ -226,15 +226,19 @@ public class TextViewDialog extends ValueViewDialog {
 
     private void setBinaryContent(String stringValue)
     {
+        String charset = getDefaultCharset();
         byte[] bytes;
         try {
-            bytes = stringValue.getBytes(
-                DBValueFormatting.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
+            bytes = stringValue.getBytes(charset);
         } catch (UnsupportedEncodingException e) {
             log.error(e);
             bytes = stringValue.getBytes(Charset.defaultCharset());
         }
-        hexEditControl.setContent(bytes);
+        hexEditControl.setContent(bytes, charset);
+    }
+
+    private String getDefaultCharset() {
+        return DBValueFormatting.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource());
     }
 
     @Override
@@ -303,7 +307,7 @@ public class TextViewDialog extends ValueViewDialog {
             byte[] bytes = (byte[]) value;
             textEdit.setText(GeneralUtils.convertToString(bytes, 0, bytes.length));
             if (hexEditControl != null) {
-                hexEditControl.setContent(bytes);
+                hexEditControl.setContent(bytes, getDefaultCharset());
             }
         } else {
             // Should be string

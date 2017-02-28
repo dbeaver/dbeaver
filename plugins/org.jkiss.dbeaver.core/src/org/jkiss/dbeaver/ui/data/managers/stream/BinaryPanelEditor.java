@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -60,14 +61,18 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
         monitor.beginTask("Prime content value", 1);
         try {
             DBDContentStorage data = value.getContents(monitor);
+            String charset = null;
             monitor.subTask("Read binary value");
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             if (data != null) {
                 try (InputStream contentStream = data.getContentStream()){
                     ContentUtils.copyStreams(contentStream, -1, buffer, monitor);
                 }
+                charset = data.getCharset();
+            } else {
+                charset = DBValueFormatting.getDefaultBinaryFileEncoding(value.getDataSource());
             }
-            control.setContent(buffer.toByteArray());
+            control.setContent(buffer.toByteArray(), charset);
         } catch (IOException e) {
             throw new DBException("Error reading stream value", e);
         } finally {

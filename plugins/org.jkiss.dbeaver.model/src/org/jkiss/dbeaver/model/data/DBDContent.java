@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -29,6 +30,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  * @author Serge Rider
  */
 public interface DBDContent extends DBDValue {
+
+    DBPDataSource getDataSource();
 
     /**
      * Content length in bytes.
