@@ -47,14 +47,14 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
     private StringBuilder buffer;
     private boolean readOnly;
     private IStorage storage;
-    private Charset encoding;
+    private Charset charset;
     private Map<String, Object> properties = new HashMap<>();
 
-    public StringEditorInput(String name, CharSequence value, boolean readOnly, String encoding) {
+    public StringEditorInput(String name, CharSequence value, boolean readOnly, String charset) {
         this.name = name;
         this.buffer = new StringBuilder(value);
         this.readOnly = readOnly;
-        this.encoding = Charset.forName(encoding);
+        this.charset = Charset.forName(charset);
 	}
 
 /*
@@ -151,7 +151,7 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
         @Override
         public InputStream getContents() throws CoreException
         {
-            return new ByteArrayInputStream(buffer.toString().getBytes(encoding));
+            return new ByteArrayInputStream(buffer.toString().getBytes(charset));
         }
 
         @Override
@@ -184,7 +184,7 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
             try {
                 IOUtils.copyStream(stream, baos);
                 buffer.setLength(0);
-                buffer.append(new String(baos.toByteArray(), encoding));
+                buffer.append(new String(baos.toByteArray(), charset));
             } catch (IOException e) {
                 throw new CoreException(GeneralUtils.makeExceptionStatus(e));
             }
@@ -192,7 +192,7 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
 
         @Override
         public String getCharset() throws CoreException {
-            return encoding.name();
+            return charset.name();
         }
     }
 

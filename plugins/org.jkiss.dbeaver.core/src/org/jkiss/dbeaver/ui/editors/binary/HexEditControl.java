@@ -1818,9 +1818,12 @@ public class HexEditControl extends Composite {
         notifyListeners(SWT.Modify, null);
     }
 
-    public void setContent(byte[] data)
+    public void setContent(byte[] data, String charset)
     {
         BinaryContent binaryContent = new BinaryContent();
+        if (charset != null) {
+            setCharset(charset);
+        }
         ByteBuffer byteBuffer = ByteBuffer.wrap(data);
         binaryContent.insert(byteBuffer, 0);
 

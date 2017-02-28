@@ -36,6 +36,11 @@ public abstract class AbstractContent implements DBDContent {
     }
 
     @Override
+    public DBPDataSource getDataSource() {
+        return dataSource;
+    }
+
+    @Override
     public void resetContents()
     {
         // do nothing

@@ -25,6 +25,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
+import org.eclipse.ui.editors.text.IEncodingSupport;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -55,7 +56,7 @@ import java.io.*;
 /**
  * ContentEditorInput
  */
-public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
+public class ContentEditorInput implements IPathEditorInput, DBPContextProvider, IEncodingSupport
 {
     private static final Log log = Log.getLog(ContentEditorInput.class);
 
@@ -76,7 +77,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
         this.valueController = valueController;
         this.editorParts = editorParts;
         this.defaultPart = defaultPart;
-        this.fileCharset = DBValueFormatting.getDefaultBinaryFileEncoding(valueController.getExecutionContext().getDataSource());
+        this.fileCharset = getDefaultEncoding();
         this.prepareContent(monitor);
     }
 
@@ -336,11 +337,16 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
         return valueController.getExecutionContext();
     }
 
-    public String getFileCharset() {
+    public String getEncoding() {
         return fileCharset;
     }
 
-    public void setFileCharset(String fileCharset) {
+    @Override
+    public String getDefaultEncoding() {
+        return DBValueFormatting.getDefaultBinaryFileEncoding(valueController.getExecutionContext().getDataSource());
+    }
+
+    public void setEncoding(String fileCharset) {
         this.fileCharset = fileCharset;
     }
 }
