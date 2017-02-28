@@ -539,10 +539,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " \r\n" +
                 "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME,rc.TABLE_NAME as R_TABLE_NAME,c.DELETE_RULE, \n" +
                 "col.COLUMN_NAME,col.POSITION\r\n" +
-                "FROM SYS.ALL_CONSTRAINTS c\n" +
-                "JOIN SYS.ALL_CONS_COLUMNS col ON c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
-                "JOIN SYS.ALL_CONSTRAINTS rc ON rc.OWNER=c.r_OWNER AND rc.CONSTRAINT_NAME=c.R_CONSTRAINT_NAME \n" +
-                "WHERE c.CONSTRAINT_TYPE='R' AND c.OWNER=?");
+                "FROM SYS.ALL_CONSTRAINTS c, SYS.ALL_CONS_COLUMNS col, SYS.ALL_CONSTRAINTS rc\n" +
+                "WHERE c.CONSTRAINT_TYPE='R' AND c.OWNER=?\n" +
+                "AND c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
+                "AND rc.OWNER=c.r_OWNER AND rc.CONSTRAINT_NAME=c.R_CONSTRAINT_NAME");
             if (forTable != null) {
                 sql.append(" AND c.TABLE_NAME=?");
             }
