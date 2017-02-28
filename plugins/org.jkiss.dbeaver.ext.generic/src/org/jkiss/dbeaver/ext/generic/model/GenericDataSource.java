@@ -220,7 +220,7 @@ public class GenericDataSource extends JDBCDataSource
                     driver.connect(getContainer().getActualConnectionConfiguration().getUrl() + paramShutdown, null);
                 }
             } catch (Exception e) {
-                log.debug(e);
+                log.debug("Shutdown finished: :" + e.getMessage());
             }
             monitor.worked(1);
         }
