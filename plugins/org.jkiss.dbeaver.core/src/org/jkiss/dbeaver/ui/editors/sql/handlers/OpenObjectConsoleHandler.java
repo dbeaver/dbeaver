@@ -19,18 +19,14 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
@@ -58,10 +54,13 @@ public class OpenObjectConsoleHandler extends AbstractHandler {
                 ds = object.getDataSource().getContainer();
             }
         }
-        DBRRunnableWithResult<String> generator = GenerateSQLContributor.SELECT_GENERATOR(entities, false);
+        DBRRunnableWithResult<String> generator = GenerateSQLContributor.SELECT_GENERATOR(entities, true);
         DBeaverUI.runInUI(workbenchWindow, generator);
         String sql = generator.getResult();
-        OpenHandler.openSQLConsole(workbenchWindow, ds, "Query", sql);
+        SQLEditor editor = OpenHandler.openSQLConsole(workbenchWindow, ds, "Query", sql);
+        if (editor != null) {
+            editor.processSQL(false, false);
+        }
         return null;
     }
 
