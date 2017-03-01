@@ -419,6 +419,8 @@
                     webURL="http://www.h2database.com/"
                     description="H2 Server">
                     <file type="jar" path="maven:/com.h2database:h2:RELEASE"/>
+                    <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
                 </driver>
                 <driver
                     id="h2_embedded"
@@ -431,6 +433,8 @@
                     embedded="true"
                     description="H2 Embedded">
                     <file type="jar" path="maven:/com.h2database:h2:RELEASE"/>
+                    <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
                 </driver>
                 <driver
                     id="odbc"
