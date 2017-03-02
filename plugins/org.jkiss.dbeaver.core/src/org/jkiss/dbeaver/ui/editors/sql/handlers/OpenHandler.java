@@ -248,7 +248,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
         }
     }
 
-    public static void openSQLConsole(
+    public static SQLEditor openSQLConsole(
         IWorkbenchWindow workbenchWindow,
         DBPDataSourceContainer dataSourceContainer,
         String name,
@@ -256,20 +256,21 @@ public class OpenHandler extends AbstractDataSourceHandler {
     {
         StringEditorInput sqlInput = new StringEditorInput(name, sqlText, false, GeneralUtils.DEFAULT_ENCODING);
         EditorUtils.setInputDataSource(sqlInput, dataSourceContainer, false);
-        openSQLEditor(workbenchWindow, sqlInput);
+        return openSQLEditor(workbenchWindow, sqlInput);
     }
 
-    public static void openSQLEditor(
+    public static SQLEditor openSQLEditor(
         IWorkbenchWindow workbenchWindow,
         IEditorInput sqlInput)
     {
         try {
-            workbenchWindow.getActivePage().openEditor(
+            return (SQLEditor)workbenchWindow.getActivePage().openEditor(
                 sqlInput,
                 SQLEditor.class.getName());
         } catch (PartInitException e) {
             UIUtils.showErrorDialog(workbenchWindow.getShell(), "Can't open editor", null, e);
         }
+        return null;
     }
 
 }
