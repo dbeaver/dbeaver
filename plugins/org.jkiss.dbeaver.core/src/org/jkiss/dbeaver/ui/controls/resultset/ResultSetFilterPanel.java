@@ -557,7 +557,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     new ContentProposal(
                         content,
                         attribute.getName(),
-                        SQLCompletionProposal.makeObjectDescription(VoidProgressMonitor.INSTANCE, attribute.getAttribute(), false),
+                        SQLCompletionProposal.makeObjectDescription(attribute.getAttribute(), false),
                         content.length()));
             }
         }
