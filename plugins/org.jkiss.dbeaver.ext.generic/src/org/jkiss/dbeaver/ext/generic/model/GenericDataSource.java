@@ -604,7 +604,7 @@ public class GenericDataSource extends JDBCDataSource
                 container = structureContainer;
             }
             if (container == null) {
-                log.error("Schema '" + schemaName + "' not found");
+                log.debug("Schema '" + schemaName + "' not found");
                 return null;
             }
         }
