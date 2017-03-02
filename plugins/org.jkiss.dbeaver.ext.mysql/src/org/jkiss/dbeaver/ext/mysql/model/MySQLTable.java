@@ -50,18 +50,23 @@ public class MySQLTable extends MySQLTableBase
     private static final Log log = Log.getLog(MySQLTable.class);
 
     private static final String INNODB_COMMENT = "InnoDB free";
+    public static final String CATEGORY_STATISTICS = "Statistics";
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
         private long rowCount;
         private long autoIncrement;
         private String description;
-        private java.util.Date createTime;
+        private Date createTime, updateTime, checkTime;
         private MySQLCharset charset;
         private MySQLCollation collation;
         private MySQLEngine engine;
         private long avgRowLength;
         private long dataLength;
+        private long maxDataLength;
+        private long dataFree;
+        private long indexLength;
+        private String rowFormat;
 
         @Property(viewable = true, editable = true, updatable = true, listProvider = EngineListProvider.class, order = 3) public MySQLEngine getEngine() { return engine; }
         @Property(viewable = true, editable = true, updatable = true, order = 4) public long getAutoIncrement() { return autoIncrement; }
@@ -69,10 +74,17 @@ public class MySQLTable extends MySQLTableBase
         @Property(viewable = false, editable = true, updatable = true, listProvider = CollationListProvider.class, order = 6) public MySQLCollation getCollation() { return collation; }
         @Property(viewable = true, editable = true, updatable = true, order = 100) public String getDescription() { return description; }
 
-        @Property(category = "Statistics", viewable = true, order = 10) public long getRowCount() { return rowCount; }
-        @Property(category = "Statistics", viewable = true, order = 11) public long getAvgRowLength() { return avgRowLength; }
-        @Property(category = "Statistics", viewable = true, order = 12) public long getDataLength() { return dataLength; }
-        @Property(category = "Statistics", viewable = false, order = 13) public java.util.Date getCreateTime() { return createTime; }
+        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 10) public long getRowCount() { return rowCount; }
+        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 11) public long getAvgRowLength() { return avgRowLength; }
+        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 12) public long getDataLength() { return dataLength; }
+        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 13) public long getMaxDataLength() { return maxDataLength; }
+        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 14) public long getDataFree() { return dataFree; }
+        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 15) public long getIndexLength() { return indexLength; }
+        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 16) public String getRowFormat() { return rowFormat; }
+
+        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 20) public Date getCreateTime() { return createTime; }
+        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 21) public Date getUpdateTime() { return updateTime; }
+        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 22) public Date getCheckTime() { return checkTime; }
 
         public void setEngine(MySQLEngine engine) { this.engine = engine; }
         public void setAutoIncrement(long autoIncrement) { this.autoIncrement = autoIncrement; }
@@ -281,12 +293,18 @@ public class MySQLTable extends MySQLTableBase
                         additionalInfo.rowCount = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_TABLE_ROWS);
                         additionalInfo.autoIncrement = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AUTO_INCREMENT);
                         additionalInfo.createTime = JDBCUtils.safeGetTimestamp(dbResult, MySQLConstants.COL_CREATE_TIME);
+                        additionalInfo.updateTime = JDBCUtils.safeGetTimestamp(dbResult, "Update_time");
+                        additionalInfo.checkTime = JDBCUtils.safeGetTimestamp(dbResult, "Check_time");
                         additionalInfo.collation = dataSource.getCollation(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLLATION));
                         if (additionalInfo.collation != null) {
                             additionalInfo.charset = additionalInfo.collation.getCharset();
                         }
                         additionalInfo.avgRowLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AVG_ROW_LENGTH);
                         additionalInfo.dataLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_DATA_LENGTH);
+                        additionalInfo.maxDataLength = JDBCUtils.safeGetLong(dbResult, "Max_data_length");
+                        additionalInfo.dataFree = JDBCUtils.safeGetLong(dbResult, "Data_free");
+                        additionalInfo.indexLength = JDBCUtils.safeGetLong(dbResult, "Index_length");
+                        additionalInfo.rowFormat = JDBCUtils.safeGetString(dbResult, "Row_format");
                     }
                     additionalInfo.loaded = true;
                 }
