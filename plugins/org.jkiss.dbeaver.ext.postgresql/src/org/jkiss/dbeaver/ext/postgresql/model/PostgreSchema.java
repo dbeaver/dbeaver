@@ -547,8 +547,8 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                     return null;
                 }
                 Object keyRefNumbers = JDBCUtils.safeGetArray(resultSet, "confkey");
-                List<PostgreTableColumn> attributes = table.getAttributes(monitor);
-                List<PostgreTableColumn> refAttributes = refTable.getAttributes(monitor);
+                Collection<PostgreTableColumn> attributes = table.getAttributes(monitor);
+                Collection<PostgreTableColumn> refAttributes = refTable.getAttributes(monitor);
                 assert attributes != null && refAttributes != null;
                 int colCount = Array.getLength(keyNumbers);
                 PostgreTableForeignKeyColumn[] fkCols = new PostgreTableForeignKeyColumn[colCount];
@@ -571,7 +571,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                 return fkCols;
 
             } else {
-                List<PostgreTableColumn> attributes = table.getAttributes(monitor);
+                Collection<PostgreTableColumn> attributes = table.getAttributes(monitor);
                 assert attributes != null;
                 int colCount = Array.getLength(keyNumbers);
                 PostgreTableConstraintColumn[] cols = new PostgreTableConstraintColumn[colCount];
@@ -669,7 +669,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
             }
             int[] keyOptions = PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, "indoption"));
             String expr = JDBCUtils.safeGetString(dbResult, "expr");
-            List<PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
+            Collection<PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
             assert attributes != null;
             PostgreIndexColumn[] result = new PostgreIndexColumn[keyNumbers.length];
             for (int i = 0; i < keyNumbers.length; i++) {

@@ -130,7 +130,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
      * @throws DBException
      */
     @Override
-    public List<PostgreTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public Collection<PostgreTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().tableCache.getChildren(monitor, getContainer(), this);
