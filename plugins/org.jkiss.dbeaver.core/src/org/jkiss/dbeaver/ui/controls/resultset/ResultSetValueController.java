@@ -170,10 +170,18 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     public IValueManager getValueManager() {
         DBSAttributeBase valueType = binding.getPresentationAttribute();
         final DBCExecutionContext executionContext = getExecutionContext();
+        Class<?> valueObjectType = getValueHandler().getValueObjectType(valueType);
+        if (valueObjectType == Object.class) {
+            // Try to get type from value itself
+            Object value = getValue();
+            if (value != null) {
+                valueObjectType = value.getClass();
+            }
+        }
         return ValueManagerRegistry.findValueManager(
             executionContext == null ? null : executionContext.getDataSource(),
             valueType,
-            getValueHandler().getValueObjectType(valueType));
+            valueObjectType);
     }
 
     @Override
