@@ -77,7 +77,9 @@ class StatusDetailsDialog extends EditTextDialog {
             for (Throwable ex : warnings) {
                 TableItem warnItem = new TableItem(warnTable, SWT.NONE);
                 warnItem.setText(0, ex.getClass().getName());
-                warnItem.setText(1, ex.getMessage());
+                if (ex.getMessage() != null) {
+                    warnItem.setText(1, ex.getMessage());
+                }
                 warnItem.setData(ex);
             }
             exColumn.pack();
