@@ -59,6 +59,10 @@ public abstract class AbstractJob extends Job
         this.cancelTimeout = cancelTimeout;
     }
 
+    public boolean isFinished() {
+        return finished;
+    }
+
     protected Thread getActiveThread()
     {
         final Thread thread = getThread();
