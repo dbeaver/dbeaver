@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -125,8 +126,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     value = resultSet.getByte(index);
                 } else {
                     // bit string
-                    final long longValue = resultSet.getLong(index);
-                    return Long.toString(longValue, 2);
+                    return CommonUtils.toBinaryString(resultSet.getLong(index), type.getPrecision());
                 }
                 break;
             default:
