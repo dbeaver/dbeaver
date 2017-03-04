@@ -70,6 +70,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         "regdictionary",
     };
 
+    private final boolean alias;
+
     private long typeId;
     private PostgreTypeType typeType;
     private PostgreTypeCategory typeCategory;
@@ -101,9 +103,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private final AttributeCache attributeCache;
     private Object[] enumValues;
 
-    public PostgreDataType(@NotNull JDBCSession monitor, @NotNull PostgreSchema owner, long typeId, int valueType, String name, int length, JDBCResultSet dbResult) throws DBException {
+    public PostgreDataType(@NotNull JDBCSession session, @NotNull PostgreSchema owner, long typeId, int valueType, String name, int length, JDBCResultSet dbResult) throws DBException {
         super(owner, valueType, name, null, false, true, length, -1, -1);
-
+        this.alias = false;
         this.typeId = typeId;
         this.typeType = PostgreTypeType.b;
         try {
@@ -165,8 +167,49 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.attributeCache = hasAttributes() ? new AttributeCache() : null;
 
         if (typeCategory == PostgreTypeCategory.E) {
-            readEnumValues(monitor);
+            readEnumValues(session);
         }
+    }
+
+    PostgreDataType(PostgreDataType realType, String aliasName) {
+        super(realType.getParentObject(), realType);
+        setName(aliasName);
+        this.alias = true;
+
+        this.typeId = realType.typeId;
+        this.typeType = realType.typeType;
+        this.typeCategory = realType.typeCategory;
+        this.dataKind = realType.dataKind;
+
+        this.ownerId = realType.ownerId;
+        this.isByValue = realType.isByValue;
+        this.isPreferred = realType.isPreferred;
+        this.arrayDelimiter = realType.arrayDelimiter;
+        this.classId = realType.classId;
+        this.elementTypeId = realType.elementTypeId;
+        this.arrayItemTypeId = realType.arrayItemTypeId;
+        this.inputFunc = realType.inputFunc;
+        this.outputFunc = realType.outputFunc;
+        this.receiveFunc = realType.receiveFunc;
+        this.sendFunc = realType.sendFunc;
+        this.modInFunc = realType.modInFunc;
+        this.modOutFunc = realType.modOutFunc;
+        this.analyzeFunc = realType.analyzeFunc;
+        this.align = realType.align;
+        this.storage = realType.storage;
+        this.isNotNull = realType.isNotNull;
+        this.baseTypeId = realType.baseTypeId;
+        this.typeMod = realType.typeMod;
+        this.arrayDim = realType.arrayDim;
+        this.collationId = realType.collationId;
+        this.defaultValue = realType.defaultValue;
+
+        this.attributeCache = null;
+        this.enumValues = null;
+    }
+
+    public boolean isAlias() {
+        return alias;
     }
 
     private void readEnumValues(JDBCSession session) throws DBException {

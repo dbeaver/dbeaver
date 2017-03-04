@@ -79,7 +79,7 @@ public class PostgreConstants {
     public static final String PG_INSTALL_PROP_DATA_DIRECTORY = "Data Directory";
     public static final String BIN_FOLDER = "bin";
 
-    public static Set<String> SERIAL_TYPES = new HashSet<>();
+    public static Map<String, String> SERIAL_TYPES = new HashMap<>();
     public static Map<String, String> DATA_TYPE_ALIASES = new HashMap<>();
 
     static {
@@ -92,16 +92,10 @@ public class PostgreConstants {
         DATA_TYPE_ALIASES.put("double precision", "float8");
         DATA_TYPE_ALIASES.put("real", "float4");
 
-        DATA_TYPE_ALIASES.put("serial", "int4");
-        DATA_TYPE_ALIASES.put("serial8", "int8");
-        DATA_TYPE_ALIASES.put("serial2", "int2");
-        DATA_TYPE_ALIASES.put("smallserial", "int2");
-        DATA_TYPE_ALIASES.put("bigserial", "int8");
-
-        SERIAL_TYPES.add("serial");
-        SERIAL_TYPES.add("serial8");
-        SERIAL_TYPES.add("serial2");
-        SERIAL_TYPES.add("smallserial");
-        SERIAL_TYPES.add("bigserial");
+        SERIAL_TYPES.put("serial", "int4");
+        SERIAL_TYPES.put("serial8", "int8");
+        SERIAL_TYPES.put("serial2", "int2");
+        SERIAL_TYPES.put("smallserial", "int2");
+        SERIAL_TYPES.put("bigserial", "int8");
     }
 }
