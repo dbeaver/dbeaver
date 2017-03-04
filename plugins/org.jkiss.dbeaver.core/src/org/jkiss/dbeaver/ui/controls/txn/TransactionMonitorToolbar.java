@@ -127,6 +127,8 @@ public class TransactionMonitorToolbar {
             setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
             setToolTipText("Transactions monitor");
 
+            refreshJob = new RefreshJob(this);
+
             qmHandler = new QMEventsHandler(this);
             QMUtils.registerHandler(qmHandler);
 
@@ -144,8 +146,6 @@ public class TransactionMonitorToolbar {
                     TransactionLogDialog.showDialog(getShell(), getActiveExecutionContext());
                 }
             });
-
-            refreshJob = new RefreshJob(this);
         }
 
         @Override
