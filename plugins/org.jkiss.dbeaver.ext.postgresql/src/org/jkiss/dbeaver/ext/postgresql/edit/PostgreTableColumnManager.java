@@ -128,9 +128,10 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                 if (!page.edit()) {
                     return null;
                 }
-                if (column.getDataKind() == DBPDataKind.STRING && !column.getTypeName().contains("text") && column.getMaxLength() <= 0) {
-                    column.setMaxLength(100);
-                }
+                // Varchar length doesn't make much sense for PG
+//                if (column.getDataKind() == DBPDataKind.STRING && !column.getTypeName().contains("text") && column.getMaxLength() <= 0) {
+//                    column.setMaxLength(100);
+//                }
                 return column;
             }
         }.execute();

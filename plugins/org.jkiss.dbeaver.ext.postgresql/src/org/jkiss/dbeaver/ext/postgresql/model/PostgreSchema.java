@@ -28,7 +28,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.*;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -45,6 +48,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreSchema
@@ -313,6 +317,16 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         for (PostgreDataType dt : dataTypeCache.getAllObjects(monitor, this)) {
             if (dt.getParentObject() == this) {
                 types.add(dt);
+            }
+        }
+        if (PostgreConstants.CATALOG_SCHEMA_NAME.equals(this.getName())) {
+            // Add serial data types
+            for (Map.Entry<String,String> serialMapping : PostgreConstants.SERIAL_TYPES.entrySet()) {
+                PostgreDataType realType = dataTypeCache.getCachedObject(serialMapping.getValue());
+                if (realType != null) {
+                    PostgreDataType serialType = new PostgreDataType(realType, serialMapping.getKey());
+                    dataTypeCache.cacheObject(serialType);
+                }
             }
         }
         DBUtils.orderObjects(types);

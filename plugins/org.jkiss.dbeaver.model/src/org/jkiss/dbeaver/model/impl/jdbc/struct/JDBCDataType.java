@@ -94,6 +94,10 @@ public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @Nullable
     @Override
     public String getDescription()
