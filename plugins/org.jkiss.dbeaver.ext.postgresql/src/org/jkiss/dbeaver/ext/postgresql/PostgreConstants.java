@@ -68,6 +68,7 @@ public class PostgreConstants {
     public static final String TYPE_HSTORE = "hstore";
     public static final String TYPE_JSON = "json";
     public static final String TYPE_JSONB = "jsonb";
+    public static final String TYPE_BIT = "bit";
     public static final String HANDLER_SSL = "postgre_ssl";
 
     public static final String EC_PERMISSION_DENIED = "42501";

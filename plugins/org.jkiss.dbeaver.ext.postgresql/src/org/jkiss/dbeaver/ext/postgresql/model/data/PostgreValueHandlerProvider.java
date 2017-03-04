@@ -47,6 +47,8 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
                     return PostgreJSONValueHandler.INSTANCE;
                 case PostgreConstants.TYPE_HSTORE:
                     return PostgreHStoreValueHandler.INSTANCE;
+                case PostgreConstants.TYPE_BIT:
+                    return PostgreBitStringValueHandler.INSTANCE;
                 default:
                     return null;
             }
