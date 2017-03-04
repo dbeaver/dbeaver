@@ -672,6 +672,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                                 break;
                         }
                         break;
+                    case V:
+                        valueType = Types.NUMERIC;
+                        break;
                     default:
                         valueType = Types.OTHER;
                         break;

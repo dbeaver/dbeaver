@@ -208,6 +208,7 @@
             <type name="HSTORE"/>
             <type name="JSON"/>
             <type name="JSONB"/>
+            <type name="BIT"/>
         </provider>
     </extension>
 
