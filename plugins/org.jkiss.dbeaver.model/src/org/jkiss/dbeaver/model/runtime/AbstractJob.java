@@ -32,12 +32,11 @@ public abstract class AbstractJob extends Job
 {
     private static final Log log = Log.getLog(AbstractJob.class);
 
-    public static final int TIMEOUT_BEFORE_BLOCK_CANCEL = 400;
+    public static final int TIMEOUT_BEFORE_BLOCK_CANCEL = 250;
 
     private DBRProgressMonitor progressMonitor;
     private volatile boolean finished = false;
     private volatile boolean blockCanceled = false;
-    private int cancelTimeout = TIMEOUT_BEFORE_BLOCK_CANCEL;
     private AbstractJob attachedJob = null;
 
     // Attached job may be used to "overwrite" current job.
@@ -47,16 +46,6 @@ public abstract class AbstractJob extends Job
     protected AbstractJob(String name)
     {
         super(name);
-    }
-
-    public int getCancelTimeout()
-    {
-        return cancelTimeout;
-    }
-
-    public void setCancelTimeout(int cancelTimeout)
-    {
-        this.cancelTimeout = cancelTimeout;
     }
 
     public boolean isFinished() {
@@ -142,11 +131,11 @@ public abstract class AbstractJob extends Job
                 }
             };
             try {
-                // Cancel it in three seconds
-                cancelJob.schedule(cancelTimeout);
+                // Schedule cancel after short pause
+                cancelJob.schedule(TIMEOUT_BEFORE_BLOCK_CANCEL);
             } catch (Exception e) {
                 // If this happens during shutdown and job manager is not active
-                //log.debug(e);
+                log.debug(e);
             }
         }
     }
