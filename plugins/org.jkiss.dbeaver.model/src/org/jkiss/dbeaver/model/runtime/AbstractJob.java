@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.model.runtime;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -123,29 +123,20 @@ public abstract class AbstractJob extends Job
         }
         // Run canceling job
         if (!blockCanceled) {
-            // Try to interrupt thread first
-            Thread activeThread = getActiveThread();
-            activeThread.interrupt();
-
-            // Schedule block cancel after timeout (let activeThread.interrupt to finish it's job)
             Job cancelJob = new Job("Cancel block") { //$NON-N LS-1$
                 @Override
                 protected IStatus run(IProgressMonitor monitor)
                 {
                     if (!finished && !blockCanceled) {
-                        DBRBlockingObject block = progressMonitor.getActiveBlock();
-                        if (block != null) {
-                            RuntimeUtils.setThreadName("Operation canceler [" + block + "]");
-                            try {
-                                block.cancelBlock();
-                            } catch (DBException e) {
-                                return GeneralUtils.makeExceptionStatus("Can't interrupt operation " + block, e); //$NON-NLS-1$
-                            } catch (Throwable e) {
-                                log.debug("Cancel error", e);
-                                return Status.CANCEL_STATUS;
-                            }
-                            blockCanceled = true;
+                        try {
+                            BlockCanceler.cancelBlock(progressMonitor, getActiveThread());
+                        } catch (DBException e) {
+                            return GeneralUtils.makeExceptionStatus(e);
+                        } catch (Throwable e) {
+                            log.debug("Cancel error", e);
+                            return Status.CANCEL_STATUS;
                         }
+                        blockCanceled = true;
                     }
                     return Status.OK_STATUS;
                 }
