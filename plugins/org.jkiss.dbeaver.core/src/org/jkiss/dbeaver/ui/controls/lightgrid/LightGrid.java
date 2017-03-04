@@ -3449,7 +3449,7 @@ public abstract class LightGrid extends Canvas {
             showItem(newSelection);
 
             GridCell newPos;
-            if (newSelection >= 0) {
+            if (newSelection >= 0 && newSelection < rowElements.length) {
                 newPos = new GridCell(newColumnFocus.getElement(), rowElements[newSelection]);
             } else {
                 newPos = null;
