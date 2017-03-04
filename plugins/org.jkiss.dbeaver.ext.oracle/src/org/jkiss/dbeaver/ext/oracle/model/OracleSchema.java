@@ -467,9 +467,8 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 .append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append("\n" +
                     "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.SEARCH_CONDITION," +
                     "col.COLUMN_NAME,col.POSITION\n" +
-                    "FROM SYS.ALL_CONSTRAINTS c\n" +
-                    "JOIN SYS.ALL_CONS_COLUMNS col ON c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
-                    "WHERE c.CONSTRAINT_TYPE<>'R' AND c.OWNER=?");
+                    "FROM SYS.ALL_CONSTRAINTS c, SYS.ALL_CONS_COLUMNS col\n" +
+                    "WHERE c.CONSTRAINT_TYPE<>'R' AND c.OWNER=? AND c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME");
             if (forTable != null) {
                 sql.append(" AND c.TABLE_NAME=?");
             }
@@ -606,13 +605,12 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " " +
                     "i.OWNER,i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,\n" +
                     "ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND\n" +
-                    "FROM SYS.ALL_INDEXES i \n" +
-                    "JOIN SYS.ALL_IND_COLUMNS ic ON ic.INDEX_OWNER=i.OWNER AND ic.INDEX_NAME=i.INDEX_NAME\n" +
-                    "WHERE ");
+                    "FROM SYS.ALL_INDEXES i, SYS.ALL_IND_COLUMNS ic\n" +
+                    "WHERE ic.INDEX_OWNER=i.OWNER AND ic.INDEX_NAME=i.INDEX_NAME AND ");
             if (forTable == null) {
-                sql.append(" i.OWNER=?");
+                sql.append("i.OWNER=?");
             } else {
-                sql.append(" i.TABLE_OWNER=? AND i.TABLE_NAME=?");
+                sql.append("i.TABLE_OWNER=? AND i.TABLE_NAME=?");
             }
             sql.append("\nORDER BY i.INDEX_NAME,ic.COLUMN_POSITION");
 
@@ -763,10 +761,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " s.*,O.OBJECT_TYPE \n" +
-                "FROM ALL_SYNONYMS S\n" +
-                "JOIN ALL_OBJECTS O ON  O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n" +
+                "SELECT s.*,O.OBJECT_TYPE \n" +
+                "FROM ALL_SYNONYMS S, ALL_OBJECTS O\n" +
                 "WHERE S.OWNER=? AND O.OBJECT_TYPE NOT IN ('JAVA CLASS','PACKAGE BODY')\n" +
+                "AND O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n" +
                 "ORDER BY S.SYNONYM_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
