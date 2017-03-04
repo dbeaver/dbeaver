@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.DBException;
  */
 public class BlockCanceler extends Job
 {
-    private static final long INTERRUPT_TIMEOUT = 3000;
+    private static final long INTERRUPT_TIMEOUT = 2000;
 
     private final Thread thread;
     private boolean blockCanceled = false;
