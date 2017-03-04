@@ -135,7 +135,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     log.debug(e);
                 }
                 if (value == null && !gotValue) {
-                    if (type.getScale() >= 0) {
+                    if (type.getScale() > 0) {
                         value = resultSet.getDouble(index);
                     } else {
                         value = resultSet.getLong(index);
@@ -155,6 +155,9 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType,
                                  int paramIndex, Object value) throws SQLException
     {
+        if (value instanceof String) {
+            value = DBValueFormatting.convertStringToNumber((String)value, getNumberType(paramType), formatter);
+        }
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
         } else {
