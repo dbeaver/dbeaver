@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 
 /**
@@ -29,22 +30,33 @@ import java.sql.ResultSet;
  */
 public class OracleSequence extends OracleSchemaObject implements DBSSequence {
 
-    private Number minValue;
-    private Number maxValue;
+    private BigDecimal minValue;
+    private BigDecimal maxValue;
     private long incrementBy;
     private long cacheSize;
-    private Number lastValue;
+    private BigDecimal lastValue;
     private boolean flagCycle;
     private boolean flagOrder;
+
+    public OracleSequence(OracleSchema schema, String name) {
+        super(schema, name, false);
+        this.minValue = null;
+        this.maxValue = null;
+        this.incrementBy = 0;
+        this.cacheSize = 0;
+        this.lastValue = new BigDecimal(0);
+        this.flagCycle = false;
+        this.flagOrder = false;
+    }
 
     public OracleSequence(OracleSchema schema, ResultSet dbResult)
     {
         super(schema, JDBCUtils.safeGetString(dbResult, "SEQUENCE_NAME"), true);
-        this.minValue = (Number) JDBCUtils.safeGetObject(dbResult, "MIN_VALUE");
-        this.maxValue = (Number) JDBCUtils.safeGetObject(dbResult, "MAX_VALUE");
+        this.minValue = JDBCUtils.safeGetBigDecimal(dbResult, "MIN_VALUE");
+        this.maxValue = JDBCUtils.safeGetBigDecimal(dbResult, "MAX_VALUE");
         this.incrementBy = JDBCUtils.safeGetLong(dbResult, "INCREMENT_BY");
         this.cacheSize = JDBCUtils.safeGetLong(dbResult, "CACHE_SIZE");
-        this.lastValue = (Number) JDBCUtils.safeGetObject(dbResult, "LAST_NUMBER");
+        this.lastValue = JDBCUtils.safeGetBigDecimal(dbResult, "LAST_NUMBER");
         this.flagCycle = JDBCUtils.safeGetBoolean(dbResult, "CYCLE_FLAG", "Y");
         this.flagOrder = JDBCUtils.safeGetBoolean(dbResult, "ORDER_FLAG", "Y");
     }
@@ -57,46 +69,73 @@ public class OracleSequence extends OracleSchemaObject implements DBSSequence {
         return super.getName();
     }
 
-    @Property(viewable = true, editable = true, order = 2)
-    public Number getLastValue()
+    @Property(viewable = true, editable = true, updatable = true, order = 2)
+    public BigDecimal getLastValue()
     {
         return lastValue;
     }
 
-    @Property(viewable = true, editable = true, order = 3)
-    public Number getMinValue()
+    public void setLastValue(BigDecimal lastValue) {
+        this.lastValue = lastValue;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 3)
+    public BigDecimal getMinValue()
     {
         return minValue;
     }
 
-    @Property(viewable = true, editable = true, order = 4)
-    public Number getMaxValue()
+    public void setMinValue(BigDecimal minValue) {
+        this.minValue = minValue;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 4)
+    public BigDecimal getMaxValue()
     {
         return maxValue;
     }
 
-    @Property(viewable = true, editable = true, order = 5)
-    public Number getIncrementBy()
+    public void setMaxValue(BigDecimal maxValue) {
+        this.maxValue = maxValue;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 5)
+    public Long getIncrementBy()
     {
         return incrementBy;
     }
 
-    @Property(viewable = true, editable = true, order = 6)
+    public void setIncrementBy(Long incrementBy) {
+        this.incrementBy = incrementBy;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 6)
     public long getCacheSize()
     {
         return cacheSize;
     }
 
-    @Property(viewable = true, editable = true, order = 7)
+    public void setCacheSize(long cacheSize) {
+        this.cacheSize = cacheSize;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 7)
     public boolean isCycle()
     {
         return flagCycle;
     }
 
-    @Property(viewable = true, editable = true, order = 8)
+    public void setCycle(boolean flagCycle) {
+        this.flagCycle = flagCycle;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 8)
     public boolean isOrder()
     {
         return flagOrder;
     }
 
+    public void setOrder(boolean flagOrder) {
+        this.flagOrder = flagOrder;
+    }
 }
