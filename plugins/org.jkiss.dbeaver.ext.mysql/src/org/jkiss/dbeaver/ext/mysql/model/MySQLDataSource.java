@@ -74,6 +74,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MySQLCharset> charsets;
     private Map<String, MySQLCollation> collations;
     private String activeCatalogName;
+    private SQLHelpProvider helpProvider;
 
     public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -582,7 +583,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new MySQLStructureAssistant(this));
         } else if (adapter == SQLHelpProvider.class) {
-            return adapter.cast(new MySQLHelpProvider(this));
+            if (helpProvider == null) {
+                helpProvider = new MySQLHelpProvider(this);
+            }
+            return adapter.cast(helpProvider);
         } else if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new MySQLSessionManager(this));
         }
