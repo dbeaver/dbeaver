@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.utils.ArrayUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -47,6 +48,7 @@ class MySQLDialect extends JDBCSQLDialect {
         super.initDriverSettings(dataSource, metaData);
         //addSQLKeyword("STATISTICS");
         Collections.addAll(tableQueryWords, "EXPLAIN", "DESCRIBE", "DESC");
+        addFunctions(Arrays.asList("SLEEP"));
     }
 
     @Nullable

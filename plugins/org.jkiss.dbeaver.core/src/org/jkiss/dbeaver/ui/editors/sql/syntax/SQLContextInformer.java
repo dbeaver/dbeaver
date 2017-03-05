@@ -121,7 +121,7 @@ public class SQLContextInformer
             return;
         }
 
-        SQLIdentifierDetector wordDetector = new SQLIdentifierDetector(syntaxManager.getStructSeparator(), syntaxManager.getQuoteSymbol());
+        SQLWordPartDetector wordDetector = new SQLWordPartDetector(document, syntaxManager, region.getOffset());
         wordRegion = wordDetector.detectIdentifier(document, region);
 
         if (wordRegion.word.length() == 0) {

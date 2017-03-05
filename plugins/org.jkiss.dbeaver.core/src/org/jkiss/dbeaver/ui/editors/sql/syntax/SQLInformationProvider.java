@@ -20,6 +20,7 @@ import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.information.IInformationProvider;
 import org.eclipse.jface.text.information.IInformationProviderExtension;
 import org.eclipse.jface.text.information.IInformationProviderExtension2;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
@@ -105,7 +106,10 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
     @Override
     public IRegion getSubject(ITextViewer textViewer, int offset)
     {
-
+        final Point selectedRange = textViewer.getSelectedRange();
+        if (selectedRange.y > 1) {
+            return new Region(selectedRange.x, selectedRange.y);
+        }
         if (implementation != null) {
             return implementation.getHoverRegion(textViewer, offset);
         }

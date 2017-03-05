@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -27,6 +26,8 @@ import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
 import org.jkiss.dbeaver.model.sql.SQLHelpTopic;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * MySQLHelpProvider
@@ -36,6 +37,7 @@ public class MySQLHelpProvider implements SQLHelpProvider
     private static final Log log = Log.getLog(MySQLHelpProvider.class);
 
     private final MySQLDataSource dataSource;
+    private final Map<String, SQLHelpTopic> topicCache = new HashMap<>();
 
     public MySQLHelpProvider(MySQLDataSource dataSource) {
         this.dataSource = dataSource;
@@ -57,16 +59,26 @@ public class MySQLHelpProvider implements SQLHelpProvider
     }
 
     private SQLHelpTopic selectHelpTopic(DBRProgressMonitor monitor, String topic) {
+        SQLHelpTopic helpTopic;
+        synchronized (topicCache) {
+            helpTopic = topicCache.get(topic);
+        }
+        if (helpTopic != null) {
+            return helpTopic;
+        }
         try (final JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read MySQL help topic")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT description, example, url FROM mysql.help_topic WHERE name=?")) {
                 dbStat.setString(1, topic);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        SQLHelpTopic helpTopic = new SQLHelpTopic();
+                        helpTopic = new SQLHelpTopic();
                         helpTopic.setContents("<pre>" + dbResult.getString(1) + "</pre>");
                         helpTopic.setExample(dbResult.getString(2));
                         helpTopic.setUrl(dbResult.getString(3));
+                        synchronized (topicCache) {
+                            topicCache.put(topic, helpTopic);
+                        }
                         return helpTopic;
                     }
                 }
