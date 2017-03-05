@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLAnnotationHover;
 import org.jkiss.dbeaver.ui.perspective.AbstractPartListener;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 public class SQLInformationProvider implements IInformationProvider, IInformationProviderExtension, IInformationProviderExtension2 {
 
@@ -152,10 +152,10 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                 // Can't resolve
                 return e.getMessage();
             }
-        } else if (CommonUtils.isEmpty(informer.getKeyword())) {
+        } else if (ArrayUtils.isEmpty(informer.getKeywords())) {
             return null;
         }
-        return SQLContextInformer.readAdditionalProposalInfo(null, editor.getDataSource(), object, informer.getKeyword(), informer.getKeywordType());
+        return SQLContextInformer.readAdditionalProposalInfo(null, editor.getDataSource(), object, informer.getKeywords(), informer.getKeywordType());
     }
 
     /*

@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -25,10 +25,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface SQLHelpProvider {
 
-    SQLHelpTopic findKeywordHelp(DBRProgressMonitor monitor, String keyword);
-
-    SQLHelpTopic findProcedureHelp(DBRProgressMonitor monitor, String procedure);
-
-    SQLHelpTopic findTypeHelp(DBRProgressMonitor monitor, String typeName);
+    SQLHelpTopic findHelpTopic(DBRProgressMonitor monitor, String keyword, DBPKeywordType keywordType);
 
 }
