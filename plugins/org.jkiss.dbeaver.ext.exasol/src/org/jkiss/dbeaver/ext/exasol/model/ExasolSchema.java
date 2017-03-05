@@ -30,13 +30,13 @@ import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableForeignKeyCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableUniqueKeyCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolViewCache;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolJDBCObjectSimpleCacheLiterals;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -66,12 +66,12 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
     public ExasolSchema(ExasolDataSource exasolDataSource, String name) {
         super(exasolDataSource, true);
         this.name = name;
-        this.scriptCache = new JDBCObjectSimpleCache<>(
+        this.scriptCache = new ExasolJDBCObjectSimpleCacheLiterals<>(
         		ExasolScript.class,
         		"select "
         		+ "script_name,script_owner,script_language,script_type,script_result_type,script_text,script_comment,b.created "
         		+ "from EXA_ALL_SCRIPTS a inner join EXA_ALL_OBJECTS b "
-        		+ "on a.script_name = b.object_name and a.script_schema = b.root_name where a.script_schema = ? order by script_name",
+        		+ "on a.script_name = b.object_name and a.script_schema = b.root_name where a.script_schema = '%s' order by script_name",
         		name);
 
     }

@@ -22,9 +22,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.*;
 import org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSession;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.utils.CommonUtils;
@@ -42,13 +43,19 @@ import java.util.List;
 public class ExasolUtils {
 
     // select columns of tables
-    private static final String TABLE_QUERY_COLUMNS = "SELECT * FROM EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA=? AND COLUMN_TABLE=? ORDER BY COLUMN_ORDINAL_POSITION";
+    private static final String TABLE_QUERY_COLUMNS = "SELECT * FROM EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA='%s' AND COLUMN_TABLE='%s' ORDER BY COLUMN_ORDINAL_POSITION";
 
     // list sessions
     private static final String SESS_DBA_QUERY = "select * from exa_dba_sessions";
     private static final String SESS_ALL_QUERY = "select * from exa_ALL_sessions";
 
     private static final Log LOG = Log.getLog(ExasolUtils.class);
+    
+    // double single quotes for sql literals  
+    public static String quoteString(String input)
+    {
+    	return input.replaceAll("'", "''");
+    }
 
     public static String humanReadableByteCount(long bytes, boolean si) {
         int unit = si ? 1000 : 1024;
@@ -58,18 +65,18 @@ public class ExasolUtils {
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
-    public static String generateDDLforTable(DBRProgressMonitor monitor, ExasolDataSource dataSource,
+    @SuppressWarnings("rawtypes")
+	public static String generateDDLforTable(DBRProgressMonitor monitor, ExasolDataSource dataSource,
                                              ExasolTable exasolTable) throws DBException {
 
         StringBuilder ddlOutput = new StringBuilder();
         ddlOutput.append("CREATE TABLE \"" + exasolTable.getSchema().getName() + "\".\"" + exasolTable.getName() + "\" (");
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Get Table DDL")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(TABLE_QUERY_COLUMNS)) {
-                dbStat.setString(1, exasolTable.getSchema().getName());
-                dbStat.setString(2, exasolTable.getName());
-
-                JDBCResultSet rs = dbStat.executeQuery();
+            try (JDBCStatement dbStat = session.createStatement()) {
+            	
+            	
+                JDBCResultSet rs = dbStat.executeQuery(String.format(TABLE_QUERY_COLUMNS, quoteString(exasolTable.getSchema().getName()), quoteString(exasolTable.getName())));
 
                 // column infos
                 List<String> columns = new ArrayList<String>();
@@ -183,8 +190,8 @@ public class ExasolUtils {
 
         //check dba view
         try {
-            try(JDBCPreparedStatement dbStat = session.prepareStatement(SESS_DBA_QUERY)) {
-	            try(JDBCResultSet dbResult = dbStat.executeQuery()) {
+            try(JDBCStatement dbStat = session.createStatement()) {
+	            try(JDBCResultSet dbResult = dbStat.executeQuery(SESS_DBA_QUERY)) {
 		            while (dbResult.next()) {
 		                listSessions.add(new ExasolServerSession(dbResult));
 		            }
@@ -193,8 +200,8 @@ public class ExasolUtils {
             
             //now try all view
         } catch (SQLException e) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(SESS_ALL_QUERY)) {
-	            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+            try (JDBCStatement dbStat = session.createStatement()) {
+	            try (JDBCResultSet dbResult = dbStat.executeQuery(SESS_ALL_QUERY)) {
 		            while (dbResult.next()) {
 		                listSessions.add(new ExasolServerSession(dbResult));
 		            }
