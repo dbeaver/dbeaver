@@ -16,15 +16,20 @@
  */
 package org.jkiss.dbeaver.core.application;
 
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
@@ -33,6 +38,9 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
+import org.osgi.framework.Bundle;
+
+import java.net.URL;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -76,7 +84,28 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         // register workspace IDE adapters
         IDE.registerAdapters();
 
+        declareWorkbenchImages(configurer);
+
         TrayDialog.setDialogHelpAvailable(true);
+    }
+
+    /**
+     * This is a bit hacky. Copied from IDEWorkbenchAdvisor.
+     * Adds standard Eclipse icons mappings
+     */
+    private void declareWorkbenchImages(IWorkbenchConfigurer configurer) {
+
+        Bundle ideBundle = Platform.getBundle(IDEWorkbenchPlugin.IDE_WORKBENCH);
+        final String ICONS_PATH = "$nl$/icons/full/";//$NON-NLS-1$
+        final String PATH_OBJECT = ICONS_PATH + "obj16/"; // Model object //$NON-NLS-1$
+        declareWorkbenchImage(configurer, ideBundle, IDE.SharedImages.IMG_OBJ_PROJECT,
+            PATH_OBJECT + "prj_obj.png", true); //$NON-NLS-1$
+    }
+
+    private void declareWorkbenchImage(IWorkbenchConfigurer configurer, Bundle ideBundle, String symbolicName, String path, boolean shared) {
+        URL url = FileLocator.find(ideBundle, new Path(path), null);
+        ImageDescriptor desc = ImageDescriptor.createFromURL(url);
+        configurer.declareImage(symbolicName, desc, shared);
     }
 
     @Override
