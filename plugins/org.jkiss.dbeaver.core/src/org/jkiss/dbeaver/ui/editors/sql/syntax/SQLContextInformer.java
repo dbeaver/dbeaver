@@ -34,9 +34,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.DirectObjectReference;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.SystemJob;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
 import org.jkiss.dbeaver.model.sql.SQLHelpTopic;
@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -239,41 +240,29 @@ public class SQLContextInformer
         final PropertiesReader reader = new PropertiesReader(object, html);
 
         if (monitor == null) {
-            AbstractJob searchJob = new AbstractJob("Extract object properties info") {
-                {
-                    setUser(false);
-                }
-                @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
-                    reader.run(monitor);
-                    return Status.OK_STATUS;
-                }
-            };
+            SystemJob searchJob = new SystemJob("Extract object properties info", reader);
             searchJob.schedule();
-
-            // Wait until job finished
-            Display display = Display.getCurrent();
-            while (!searchJob.isFinished()) {
-                if (!display.readAndDispatch()) {
-                    display.sleep();
-                }
-            }
-            display.update();
+            UIUtils.waitJobCompletion(searchJob);
         } else {
             reader.run(monitor);
         }
         return reader.getPropertiesInfo();
     }
 
-    public static String readAdditionalProposalInfo(@Nullable DBRProgressMonitor monitor, DBPDataSource dataSource, DBPNamedObject object, String keyword, DBPKeywordType keywordType) {
+    public static String readAdditionalProposalInfo(@Nullable DBRProgressMonitor monitor, final DBPDataSource dataSource, DBPNamedObject object, final String keyword, final DBPKeywordType keywordType) {
         if (object != null) {
             return makeObjectDescription(monitor, object, true);
         } else if (keywordType != null && dataSource != null) {
-            String info = readDataSourceHelp(monitor, dataSource, keywordType, keyword);
-            if (CommonUtils.isEmpty(info)) {
-                return "<b>" + keyword + "</b> (" + keywordType.name() + ")";
+            HelpReader helpReader = new HelpReader(dataSource, keywordType, keyword);
+            if (monitor == null) {
+                SystemJob searchJob = new SystemJob("Read help topic", helpReader);
+                searchJob.schedule();
+                UIUtils.waitJobCompletion(searchJob);
+            } else {
+                helpReader.run(monitor);
             }
-            return info;
+
+            return helpReader.info;
         } else {
             return keyword;
         }
@@ -287,13 +276,13 @@ public class SQLContextInformer
         SQLHelpTopic helpTopic = null;
         switch (keywordType) {
             case KEYWORD:
-                helpTopic = helpProvider.findKeywordHelp(monitor, dataSource, keyword);
+                helpTopic = helpProvider.findKeywordHelp(monitor, keyword);
                 break;
             case FUNCTION:
-                helpTopic = helpProvider.findProcedureHelp(monitor, dataSource, keyword);
+                helpTopic = helpProvider.findProcedureHelp(monitor, keyword);
                 break;
             case TYPE:
-                helpTopic = helpProvider.findTypeHelp(monitor, dataSource, keyword);
+                helpTopic = helpProvider.findTypeHelp(monitor, keyword);
                 break;
         }
         if (helpTopic == null) {
@@ -361,6 +350,27 @@ public class SQLContextInformer
             }
         }
 
+    }
+
+    private static class HelpReader implements DBRRunnableWithProgress {
+        private final DBPDataSource dataSource;
+        private final DBPKeywordType keywordType;
+        private final String keyword;
+        private String info;
+
+        public HelpReader(DBPDataSource dataSource, DBPKeywordType keywordType, String keyword) {
+            this.dataSource = dataSource;
+            this.keywordType = keywordType;
+            this.keyword = keyword;
+        }
+
+        @Override
+        public void run(DBRProgressMonitor monitor) {
+            info = readDataSourceHelp(monitor, dataSource, keywordType, keyword);
+            if (CommonUtils.isEmpty(info)) {
+                info = "<b>" + keyword + "</b> (" + keywordType.name() + ")";
+            }
+        }
     }
 
     private class TablesFinderJob extends DataSourceJob {

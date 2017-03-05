@@ -1250,14 +1250,8 @@ public class SQLEditor extends SQLEditorBase implements
             saveJob.schedule();
 
             // Wait until job finished
-            Display display = Display.getCurrent();
-            while (saveJob.finished == null) {
-                if (!display.readAndDispatch()) {
-                    display.sleep();
-                }
-            }
-            display.update();
-            if (!saveJob.finished) {
+            UIUtils.waitJobCompletion(saveJob);
+            if (!saveJob.success) {
                 monitor.setCanceled(true);
                 return;
             }
@@ -2186,7 +2180,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private class SaveJob extends AbstractJob {
-        private transient Boolean finished = null;
+        private transient Boolean success = null;
         public SaveJob() {
             super("Save '" + getPartName() + "' data changes...");
             setUser(true);
@@ -2203,15 +2197,15 @@ public class SQLEditor extends SQLEditorBase implements
                         }
                     }
                 }
-                finished = true;
+                success = true;
                 return Status.OK_STATUS;
             } catch (Throwable e) {
-                finished = false;
+                success = false;
                 log.error(e);
                 return GeneralUtils.makeExceptionStatus(e);
             } finally {
-                if (finished == null) {
-                    finished = true;
+                if (success == null) {
+                    success = true;
                 }
             }
         }

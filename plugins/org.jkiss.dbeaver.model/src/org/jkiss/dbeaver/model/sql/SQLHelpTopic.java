@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.model.sql;
 public class SQLHelpTopic {
 
     private String contents;
+    private String example;
     private String url;
 
     public SQLHelpTopic() {
@@ -33,6 +34,14 @@ public class SQLHelpTopic {
 
     public void setContents(String contents) {
         this.contents = contents;
+    }
+
+    public String getExample() {
+        return example;
+    }
+
+    public void setExample(String example) {
+        this.example = example;
     }
 
     public String getUrl() {
