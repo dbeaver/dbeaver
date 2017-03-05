@@ -72,7 +72,7 @@ public class SQLContextInformer
 
     private static final Map<SQLEditorBase, Map<String, ObjectLookupCache>> linksCache = new HashMap<>();
 
-    private String keyword;
+    private String[] keywords;
     private DBPKeywordType keywordType;
     private List<DBSObjectReference> objectReferences;
 
@@ -90,8 +90,8 @@ public class SQLContextInformer
         return wordRegion;
     }
 
-    public String getKeyword() {
-        return keyword;
+    public String[] getKeywords() {
+        return keywords;
     }
 
     public DBPKeywordType getKeywordType() {
@@ -165,7 +165,7 @@ public class SQLContextInformer
         final SQLDialect dialect = syntaxManager.getDialect();
 
         keywordType = dialect.getKeywordType(fullName);
-        keyword = fullName;
+        keywords = new String[] { fullName };
         if (keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.FUNCTION) {
             // Skip keywords
             return;
@@ -249,11 +249,11 @@ public class SQLContextInformer
         return reader.getPropertiesInfo();
     }
 
-    public static String readAdditionalProposalInfo(@Nullable DBRProgressMonitor monitor, final DBPDataSource dataSource, DBPNamedObject object, final String keyword, final DBPKeywordType keywordType) {
+    public static String readAdditionalProposalInfo(@Nullable DBRProgressMonitor monitor, final DBPDataSource dataSource, DBPNamedObject object, final String[] keywords, final DBPKeywordType keywordType) {
         if (object != null) {
             return makeObjectDescription(monitor, object, true);
         } else if (keywordType != null && dataSource != null) {
-            HelpReader helpReader = new HelpReader(dataSource, keywordType, keyword);
+            HelpReader helpReader = new HelpReader(dataSource, keywordType, keywords);
             if (monitor == null) {
                 SystemJob searchJob = new SystemJob("Read help topic", helpReader);
                 searchJob.schedule();
@@ -264,7 +264,7 @@ public class SQLContextInformer
 
             return helpReader.info;
         } else {
-            return keyword;
+            return keywords.length == 0 ? null : keywords[0];
         }
     }
 
@@ -273,18 +273,7 @@ public class SQLContextInformer
         if (helpProvider == null) {
             return null;
         }
-        SQLHelpTopic helpTopic = null;
-        switch (keywordType) {
-            case KEYWORD:
-                helpTopic = helpProvider.findKeywordHelp(monitor, keyword);
-                break;
-            case FUNCTION:
-                helpTopic = helpProvider.findProcedureHelp(monitor, keyword);
-                break;
-            case TYPE:
-                helpTopic = helpProvider.findTypeHelp(monitor, keyword);
-                break;
-        }
+        final SQLHelpTopic helpTopic = helpProvider.findHelpTopic(monitor, keyword, keywordType);
         if (helpTopic == null) {
             return null;
         }
@@ -355,20 +344,25 @@ public class SQLContextInformer
     private static class HelpReader implements DBRRunnableWithProgress {
         private final DBPDataSource dataSource;
         private final DBPKeywordType keywordType;
-        private final String keyword;
+        private final String[] keywords;
         private String info;
 
-        public HelpReader(DBPDataSource dataSource, DBPKeywordType keywordType, String keyword) {
+        public HelpReader(DBPDataSource dataSource, DBPKeywordType keywordType, String[] keywords) {
             this.dataSource = dataSource;
             this.keywordType = keywordType;
-            this.keyword = keyword;
+            this.keywords = keywords;
         }
 
         @Override
         public void run(DBRProgressMonitor monitor) {
-            info = readDataSourceHelp(monitor, dataSource, keywordType, keyword);
+            for (String keyword : keywords) {
+                info = readDataSourceHelp(monitor, dataSource, keywordType, keyword);
+                if (info != null) {
+                    break;
+                }
+            }
             if (CommonUtils.isEmpty(info)) {
-                info = "<b>" + keyword + "</b> (" + keywordType.name() + ")";
+                info = "<b>" + keywords[0] + "</b> (" + keywordType.name() + ")";
             }
         }
     }

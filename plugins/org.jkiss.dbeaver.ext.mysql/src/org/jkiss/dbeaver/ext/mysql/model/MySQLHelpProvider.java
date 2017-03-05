@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -38,54 +39,48 @@ public class MySQLHelpProvider implements SQLHelpProvider
 
     private final MySQLDataSource dataSource;
     private final Map<String, SQLHelpTopic> topicCache = new HashMap<>();
+    private boolean isLoaded = false;
 
     public MySQLHelpProvider(MySQLDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @Override
-    public SQLHelpTopic findKeywordHelp(DBRProgressMonitor monitor, String keyword) {
+    public SQLHelpTopic findHelpTopic(DBRProgressMonitor monitor, String keyword, DBPKeywordType keywordType) {
         return selectHelpTopic(monitor, keyword);
     }
 
-    @Override
-    public SQLHelpTopic findProcedureHelp(DBRProgressMonitor monitor, String procedure) {
-        return selectHelpTopic(monitor, procedure);
-    }
-
-    @Override
-    public SQLHelpTopic findTypeHelp(DBRProgressMonitor monitor, String typeName) {
-        return selectHelpTopic(monitor, typeName);
-    }
-
     private SQLHelpTopic selectHelpTopic(DBRProgressMonitor monitor, String topic) {
-        SQLHelpTopic helpTopic;
+        if (!isLoaded) {
+            loadTopics(monitor);
+        }
         synchronized (topicCache) {
-            helpTopic = topicCache.get(topic);
+            return topicCache.get(topic);
         }
-        if (helpTopic != null) {
-            return helpTopic;
-        }
-        try (final JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read MySQL help topic")) {
+    }
+
+    private void loadTopics(DBRProgressMonitor monitor) {
+        try (final JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read MySQL help topicc")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT description, example, url FROM mysql.help_topic WHERE name=?")) {
-                dbStat.setString(1, topic);
+                "SELECT name, description, example, url FROM mysql.help_topic")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        helpTopic = new SQLHelpTopic();
-                        helpTopic.setContents("<pre>" + dbResult.getString(1) + "</pre>");
-                        helpTopic.setExample(dbResult.getString(2));
-                        helpTopic.setUrl(dbResult.getString(3));
+                    while (dbResult.next()) {
+                        String topicName = dbResult.getString(1);
+                        SQLHelpTopic helpTopic = new SQLHelpTopic();
+                        helpTopic.setContents("<pre>" + dbResult.getString(2) + "</pre>");
+                        helpTopic.setExample(dbResult.getString(3));
+                        helpTopic.setUrl(dbResult.getString(4));
                         synchronized (topicCache) {
-                            topicCache.put(topic, helpTopic);
+                            topicCache.put(topicName, helpTopic);
                         }
-                        return helpTopic;
                     }
                 }
             } catch (SQLException e) {
-                log.error("Error reading help topic", e);
+                log.error("Error reading help topics", e);
             }
-            return null;
+        }
+        finally {
+            isLoaded = true;
         }
     }
 
