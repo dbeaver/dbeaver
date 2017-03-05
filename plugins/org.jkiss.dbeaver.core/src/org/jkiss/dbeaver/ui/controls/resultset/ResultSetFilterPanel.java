@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -557,7 +556,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     new ContentProposal(
                         content,
                         attribute.getName(),
-                        SQLCompletionProposal.makeObjectDescription(attribute.getAttribute(), false),
+                        SQLCompletionProposal.makeObjectDescription(null, attribute.getAttribute(), false),
                         content.length()));
             }
         }
