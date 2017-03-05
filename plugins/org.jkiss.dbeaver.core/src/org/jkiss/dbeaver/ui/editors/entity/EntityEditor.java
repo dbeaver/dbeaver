@@ -229,14 +229,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 saveJob.schedule();
 
                 // Wait until job finished
-                Display display = Display.getCurrent();
-                while (saveJob.finished == null) {
-                    if (!display.readAndDispatch()) {
-                        display.sleep();
-                    }
-                }
-                display.update();
-                if (!saveJob.finished) {
+                UIUtils.waitJobCompletion(saveJob);
+                if (!saveJob.success) {
                     monitor.setCanceled(true);
                     return;
                 }
@@ -877,7 +871,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     }
 
     private class SaveJob extends AbstractJob {
-        private transient Boolean finished = null;
+        private transient Boolean success = null;
 
         public SaveJob() {
             super("Save '" + getPartName() + "' changes...");
@@ -903,19 +897,19 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
                 final DBECommandContext commandContext = getCommandContext();
                 if (commandContext != null && commandContext.isDirty()) {
-                    finished = saveCommandContext(monitor);
+                    success = saveCommandContext(monitor);
                 } else {
-                    finished = true;
+                    success = true;
                 }
 
-                return finished ? Status.OK_STATUS : Status.CANCEL_STATUS;
+                return success ? Status.OK_STATUS : Status.CANCEL_STATUS;
             } catch (Throwable e) {
-                finished = false;
+                success = false;
                 log.error(e);
                 return GeneralUtils.makeExceptionStatus(e);
             } finally {
-                if (finished == null) {
-                    finished = true;
+                if (success == null) {
+                    success = true;
                 }
             }
         }

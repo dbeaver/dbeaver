@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -580,6 +581,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new MySQLStructureAssistant(this));
+        } else if (adapter == SQLHelpProvider.class) {
+            return adapter.cast(new MySQLHelpProvider(this));
         } else if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new MySQLSessionManager(this));
         }
