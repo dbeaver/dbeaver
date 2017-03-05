@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -24,6 +26,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension5;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -39,6 +42,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -46,7 +50,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -54,11 +57,18 @@ import java.util.Locale;
 /**
  * SQL Completion proposal
  */
-public class SQLCompletionProposal implements ICompletionProposal, ICompletionProposalExtension2 {
+public class SQLCompletionProposal implements ICompletionProposal, ICompletionProposalExtension2,ICompletionProposalExtension5 {
 
     private static final Log log = Log.getLog(SQLCompletionProposal.class);
-    private final DBPDataSource dataSource;
 
+    public enum ProposalType {
+        OBJECT,
+        KEYWORD,
+        PROCEDURE,
+        OTHER
+    }
+
+    private final DBPDataSource dataSource;
     private SQLSyntaxManager syntaxManager;
 
     /** The string to be displayed in the completion proposal popup. */
@@ -77,7 +87,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     private Image image;
     /** The context information of this proposal. */
     private IContextInformation contextInformation;
-    /** The additional info of this proposal. */
+    private ProposalType proposalType;
     private String additionalProposalInfo;
     private boolean simpleMode;
 
@@ -90,7 +100,8 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         int cursorPosition,
         @Nullable Image image,
         IContextInformation contextInformation,
-        String additionalProposalInfo,
+        ProposalType proposalType,
+        String description,
         DBPNamedObject object)
     {
         this.dataSource = request.editor.getDataSource();
@@ -107,7 +118,8 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         this.cursorPosition = cursorPosition;
         this.image = image;
         this.contextInformation = contextInformation;
-        this.additionalProposalInfo = additionalProposalInfo;
+        this.proposalType = proposalType;
+        this.additionalProposalInfo = description;
 
         setPosition(request.wordDetector);
 
@@ -115,10 +127,10 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         this.simpleMode = request.simpleMode;
     }
 
-    public static String makeObjectDescription(DBPNamedObject object, boolean html) {
+    public static String makeObjectDescription(@Nullable DBRProgressMonitor monitor, DBPNamedObject object, boolean html) {
         final PropertiesReader reader = new PropertiesReader(object, html);
 
-        if (reader.hasRemoteProperties()) {
+        if (monitor == null) {
             AbstractJob searchJob = new AbstractJob("Extract object properties info") {
                 {
                     setUser(false);
@@ -140,7 +152,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
             }
             display.update();
         } else {
-            reader.run(null);
+            reader.run(monitor);
         }
         return reader.getPropertiesInfo();
     }
@@ -211,12 +223,30 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     }
 
     @Override
-    public String getAdditionalProposalInfo()
-    {
-        if (additionalProposalInfo == null && object != null) {
-            additionalProposalInfo = makeObjectDescription(object, true);
+    public Object getAdditionalProposalInfo(IProgressMonitor monitor) {
+        if (additionalProposalInfo == null) {
+            if (object != null) {
+                additionalProposalInfo = makeObjectDescription(new DefaultProgressMonitor(monitor), object, true);
+            } else {
+                String defInfo = "<b>" + replacementString + "</b> (" + proposalType.name() + ")";
+                switch (proposalType) {
+                    case KEYWORD:
+                    case PROCEDURE:
+                        additionalProposalInfo = defInfo;
+                        break;
+                    default:
+                        additionalProposalInfo = "";
+                        break;
+                }
+            }
         }
         return additionalProposalInfo;
+    }
+
+    @Override
+    public String getAdditionalProposalInfo()
+    {
+        return CommonUtils.toString(getAdditionalProposalInfo(new NullProgressMonitor()));
     }
 
     @Override
@@ -306,6 +336,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     public String toString() {
         return displayString;
     }
+
 
     private static class PropertiesReader implements DBRRunnableWithProgress {
 
