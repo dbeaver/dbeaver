@@ -354,7 +354,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     public JDBCResultSet executeQuery(String sql)
         throws SQLException
     {
-        if (this instanceof JDBCPreparedStatementImpl) {
+        if (this instanceof JDBCPreparedStatementImpl || this instanceof JDBCStatementImpl) {
             setQueryString(sql);
             this.beforeExecute();
             try {
