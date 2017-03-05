@@ -21,13 +21,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.*;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
@@ -56,8 +57,8 @@ public final class ExasolTableForeignKeyCache
             "			EXA_ALL_CONSTRAINTS pk\r\n" +
             "    on REFERENCED_SCHEMA = PK.CONSTRAINT_SCHEMA AND REFERENCED_TABLE = PK.CONSTRAINT_TABLE AND PK.CONSTRAINT_TYPE = 'PRIMARY KEY'\r\n" +
             "	where\r\n" +
-            "		CONSTRAINT_SCHEMA = ? and\r\n" +
-            "		CONSTRAINT_TYPE = 'FOREIGN KEY'AND CONSTRAINT_TABLE = ? \r\n" +
+            "		CONSTRAINT_SCHEMA = '%s' and\r\n" +
+            "		CONSTRAINT_TYPE = 'FOREIGN KEY'AND CONSTRAINT_TABLE = '%s' \r\n" +
             "	order by\r\n" +
             "		ORDINAL_POSITION";
     private static final String SQL_FK_ALL =
@@ -77,7 +78,7 @@ public final class ExasolTableForeignKeyCache
             "			EXA_ALL_CONSTRAINTS pk\r\n" +
             "    on REFERENCED_SCHEMA = PK.CONSTRAINT_SCHEMA AND REFERENCED_TABLE = PK.CONSTRAINT_TABLE AND PK.CONSTRAINT_TYPE = 'PRIMARY KEY'\r\n" +
             "	where\r\n" +
-            "		CONSTRAINT_SCHEMA = ? and\r\n" +
+            "		CONSTRAINT_SCHEMA = '%s' and\r\n" +
             "		CONSTRAINT_TYPE = 'FOREIGN KEY' \r\n" +
             "	order by\r\n" +
             "		ORDINAL_POSITION";
@@ -86,21 +87,21 @@ public final class ExasolTableForeignKeyCache
         super(tableCache, ExasolTable.class, "CONSTRAINT_TABLE", "CONSTRAINT_NAME");
     }
 
-    @NotNull
+    @SuppressWarnings("rawtypes")
+	@NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, ExasolSchema exasolSchema, ExasolTable forTable)
         throws SQLException {
         String sql;
         if (forTable != null) {
-            sql = SQL_FK_TAB;
+            sql = String.format(SQL_FK_TAB,ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(forTable.getName()));
         } else {
-            sql = SQL_FK_ALL;
+            sql = String.format(SQL_FK_ALL,ExasolUtils.quoteString(exasolSchema.getName()));
         }
-        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-        dbStat.setString(1, exasolSchema.getName());
-        if (forTable != null) {
-            dbStat.setString(2, forTable.getName());
-        }
+        JDBCStatement dbStat = session.createStatement();
+        
+        ((JDBCStatementImpl) dbStat).setQueryString(sql);
+        
         return dbStat;
 
     }
@@ -120,7 +121,7 @@ public final class ExasolTableForeignKeyCache
         String colName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
         ExasolTableColumn tableColumn = ExasolTable.getAttribute(session.getProgressMonitor(), colName);
         if (tableColumn == null) {
-            log.debug("ExasolTableForeignKeyCache : Column '" + colName + "' not found in table '" + ExasolTable.getFullyQualifiedName(DBPEvaluationContext.UI)
+            log.info("ExasolTableForeignKeyCache : Column '" + colName + "' not found in table '" + ExasolTable.getFullyQualifiedName(DBPEvaluationContext.UI)
                 + "' ??");
             return null;
         } else {
