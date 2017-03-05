@@ -336,7 +336,6 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
 
         @Override
         public void run(DBRProgressMonitor monitor) {
-            RuntimeUtils.pause(10000);
             for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
                 Object propValue = collector.getPropertyValue(monitor, descriptor.getId());
                 if (propValue == null) {
