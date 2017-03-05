@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.util;
+package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.information.IInformationProvider;
@@ -23,6 +23,8 @@ import org.eclipse.jface.text.information.IInformationProviderExtension2;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProposal;
+import org.jkiss.dbeaver.ui.editors.sql.util.SQLAnnotationHover;
 import org.jkiss.dbeaver.ui.perspective.AbstractPartListener;
 
 public class SQLInformationProvider implements IInformationProvider, IInformationProviderExtension, IInformationProviderExtension2 {
@@ -38,9 +40,6 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
             }
         }
 
-        /**
-         * @see org.eclipse.ui.IPartListener#partActivated(org.eclipse.ui.IWorkbenchPart)
-         */
         @Override
         public void partActivated(IWorkbenchPart part)
         {
@@ -126,7 +125,8 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                 return s;
             }
         }
-        return null;
+        //SQLCompletionProposal proposal = new SQLCompletionProposal();
+        return "HAHAHA";
     }
 
     /*

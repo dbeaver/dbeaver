@@ -21,6 +21,7 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.editors.text.TextEditorActionContributor;
 import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
@@ -36,16 +37,18 @@ import java.util.ResourceBundle;
 /**
  * SQL Editor contributor
  */
-public class SQLEditorContributor extends BasicTextEditorActionContributor
+public class SQLEditorContributor extends TextEditorActionContributor
 {
     static final String ACTION_CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal"; //$NON-NLS-1$
     static final String ACTION_CONTENT_ASSIST_TIP = "ContentAssistTip"; //$NON-NLS-1$
+    static final String ACTION_CONTENT_ASSIST_INFORMATION = "ContentAssistInfo"; //$NON-NLS-1$
     static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal"; //$NON-NLS-1$
 
     private SQLEditorBase activeEditorPart;
 
     private RetargetTextEditorAction contentAssistProposal;
     private RetargetTextEditorAction contentAssistTip;
+    private RetargetTextEditorAction contentAssistInformation;
     private RetargetTextEditorAction contentFormatProposal;
     private CopyUnformattedTextAction copyUnformattedTextAction;
 
@@ -74,8 +77,13 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         contentAssistProposal.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         contentFormatProposal = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_FORMAT_PROPOSAL));
         contentFormatProposal.setActionDefinitionId(CoreCommands.CMD_CONTENT_FORMAT);
+
         contentAssistTip = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_ASSIST_TIP));
         contentAssistTip.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
+
+        contentAssistInformation = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_ASSIST_INFORMATION));
+        contentAssistInformation.setActionDefinitionId(ITextEditorActionDefinitionIds.SHOW_INFORMATION);
+
         copyUnformattedTextAction = new CopyUnformattedTextAction();
     }
 
@@ -105,6 +113,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
             // Update editor actions
             contentAssistProposal.setAction(getAction(activeEditorPart, ACTION_CONTENT_ASSIST_PROPOSAL)); //$NON-NLS-1$
             contentAssistTip.setAction(getAction(activeEditorPart, ACTION_CONTENT_ASSIST_TIP)); //$NON-NLS-1$
+            contentAssistInformation.setAction(getAction(activeEditorPart, ACTION_CONTENT_ASSIST_INFORMATION)); //$NON-NLS-1$
             contentFormatProposal.setAction(getAction(activeEditorPart, ACTION_CONTENT_FORMAT_PROPOSAL)); //$NON-NLS-1$
             copyUnformattedTextAction.setEditor(activeEditorPart);
         }
@@ -130,6 +139,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
                 editMenu.insertAfter(IWorkbenchActionConstants.MB_ADDITIONS, ActionUtils.makeCommandContribution(window, ITextEditorActionDefinitionIds.BLOCK_SELECTION_MODE));
                 editMenu.add(contentAssistProposal);
                 editMenu.add(contentAssistTip);
+                editMenu.add(contentAssistInformation);
                 MenuManager formatMenu = new MenuManager(CoreMessages.actions_menu_edit_ContentFormat);
                 editMenu.add(formatMenu);
                 formatMenu.add(contentFormatProposal);
