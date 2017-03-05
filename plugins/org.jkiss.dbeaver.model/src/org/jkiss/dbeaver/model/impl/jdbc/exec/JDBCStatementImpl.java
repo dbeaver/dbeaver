@@ -354,18 +354,14 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     public JDBCResultSet executeQuery(String sql)
         throws SQLException
     {
-        if (this instanceof JDBCPreparedStatementImpl || this instanceof JDBCStatementImpl) {
-            setQueryString(sql);
-            this.beforeExecute();
-            try {
-                return makeResultSet(getOriginal().executeQuery(sql));
-            } catch (Throwable e) {
-                throw this.handleExecuteError(e);
-            } finally {
-                this.afterExecute();
-            }
-        } else {
-            throw new SQLFeatureNotSupportedException();
+        setQueryString(sql);
+        this.beforeExecute();
+        try {
+            return makeResultSet(getOriginal().executeQuery(sql));
+        } catch (Throwable e) {
+            throw this.handleExecuteError(e);
+        } finally {
+            this.afterExecute();
         }
     }
 
