@@ -27,9 +27,9 @@ import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -83,7 +83,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
 									            "		o.root_name = s.root_name and" +
 									            "		o.object_name = s.object_name and" +
 									            "		o.object_type = s.object_type" +
-									            "   where o.root_name = ? and o.object_name = ? and t.table_schema = ? and t.table_name = ?" +
+									            "   where o.root_name = '%s' and o.object_name = '%s' and t.table_schema = '%s' and t.table_name = '%s'" +
 									            " union all "
 									            + " select schema_name as table_schema,"
 									            + " object_name as table_name,"
@@ -96,7 +96,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
 									            + " 0 as raw_object_size,"
 									            + " 0 as mem_object_size,"
 									            + " object_type"
-									            + " from SYS.EXA_SYSCAT WHERE object_type = 'TABLE' and schema_name = ? and object_name = ?"
+									            + " from SYS.EXA_SYSCAT WHERE object_type = 'TABLE' and schema_name = '%s' and object_name = '%s'"
 									            + ") as o"
 									            + "	order by table_schema,o.table_name";
     
@@ -116,16 +116,18 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     private void read(DBRProgressMonitor monitor) throws DBCException
     {
     	JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read Table Details");
-    	try (JDBCPreparedStatement stmt = session.prepareStatement(readAdditionalInfo))
+    	try (JDBCStatement stmt = session.createStatement())
     	{
-    		stmt.setString(1, this.getSchema().getName());
-    		stmt.setString(2, this.getName());
-    		stmt.setString(3, this.getSchema().getName());
-    		stmt.setString(4, this.getName());
-    		stmt.setString(5, this.getSchema().getName());
-    		stmt.setString(6, this.getName());
+    		String sql = String.format(readAdditionalInfo,
+    				ExasolUtils.quoteString(this.getSchema().getName()),
+    				ExasolUtils.quoteString(this.getName()),
+    				ExasolUtils.quoteString(this.getSchema().getName()),
+    				ExasolUtils.quoteString(this.getName()),
+    				ExasolUtils.quoteString(this.getSchema().getName()),
+    				ExasolUtils.quoteString(this.getName())
+    				);
     		
-    		try (JDBCResultSet dbResult = stmt.executeQuery()) 
+    		try (JDBCResultSet dbResult = stmt.executeQuery(sql)) 
     		{
     			dbResult.next();
     	        this.hasDistKey = JDBCUtils.safeGetBoolean(dbResult, "TABLE_HAS_DISTRIBUTION_KEY");
@@ -140,10 +142,6 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     	} catch (SQLException e) {
     		throw new DBCException(e,getDataSource());
 		}
-    	
-    	
-    	
-    	
     }
     
     @Override
