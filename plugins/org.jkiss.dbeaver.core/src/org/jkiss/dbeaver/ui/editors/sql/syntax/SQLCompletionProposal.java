@@ -232,7 +232,10 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
                 switch (proposalType) {
                     case KEYWORD:
                     case PROCEDURE:
-                        additionalProposalInfo = defInfo;
+                        additionalProposalInfo = readDataSourceHelp(new DefaultProgressMonitor(monitor));
+                        if (CommonUtils.isEmpty(additionalProposalInfo)) {
+                            additionalProposalInfo = defInfo;
+                        }
                         break;
                     default:
                         additionalProposalInfo = "";
@@ -241,6 +244,10 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
             }
         }
         return additionalProposalInfo;
+    }
+
+    private String readDataSourceHelp(DBRProgressMonitor monitor) {
+        return null;
     }
 
     @Override

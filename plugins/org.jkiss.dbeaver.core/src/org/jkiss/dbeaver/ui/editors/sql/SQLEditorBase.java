@@ -334,6 +334,14 @@ public abstract class SQLEditorBase extends BaseTextEditor {
 
         a = new TextOperationAction(
             bundle,
+            SQLEditorContributor.getActionResourcePrefix(SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION),
+            this,
+            ISourceViewer.INFORMATION);
+        a.setActionDefinitionId(ITextEditorActionDefinitionIds.SHOW_INFORMATION);
+        setAction(SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION, a);
+
+        a = new TextOperationAction(
+            bundle,
             SQLEditorContributor.getActionResourcePrefix(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL),
             this,
             ISourceViewer.FORMAT);
