@@ -51,6 +51,7 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
     private Boolean isInDistKey;
     private String formatType;
     private Boolean changed = false;
+    private Boolean oriRequired;
 
     // -----------------
     // Constructors
@@ -77,7 +78,7 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
         this.remarks = JDBCUtils.safeGetString(dbResult, "COLUMN_COMMENT");
         this.dataType = tableBase.getDataSource().getDataType(monitor, JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
 
-        // drivers > 5 have the issue that an cast from decimal without scale is made to matching integer in sql
+        // drivers > 5 have the issue that a cast from decimal without scale is made to matching integer in sql
         // so meta data queries have to handle this case
         if 	(tableBase.getDataSource().getDriverMajorVersion() > 5 && this.dataType.getName().equals("DECIMAL") && super.getScale() == 0)
         {
@@ -212,6 +213,8 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
     }
 
     public void setRequired(boolean required) {
+    	if (changed && oriRequired == null)
+    		oriRequired = super.isRequired();
         super.setRequired(required);
     }
 
@@ -301,6 +304,12 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
 		}
 		return false;
 	}
+
+	@Property(hidden = true)
+    public Boolean isOriRequired()
+    {
+    	return oriRequired;
+    }
 
 	@Override
 	public boolean isInReferenceKey()
