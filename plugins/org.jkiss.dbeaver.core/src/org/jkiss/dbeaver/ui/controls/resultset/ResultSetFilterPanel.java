@@ -57,7 +57,7 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProposal;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLContextInformer;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordPartDetector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -556,7 +556,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     new ContentProposal(
                         content,
                         attribute.getName(),
-                        SQLCompletionProposal.makeObjectDescription(null, attribute.getAttribute(), false),
+                        SQLContextInformer.makeObjectDescription(null, attribute.getAttribute(), false),
                         content.length()));
             }
         }

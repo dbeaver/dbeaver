@@ -22,12 +22,19 @@ import org.eclipse.jface.text.information.IInformationProviderExtension;
 import org.eclipse.jface.text.information.IInformationProviderExtension2;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLAnnotationHover;
 import org.jkiss.dbeaver.ui.perspective.AbstractPartListener;
+import org.jkiss.utils.CommonUtils;
 
 public class SQLInformationProvider implements IInformationProvider, IInformationProviderExtension, IInformationProviderExtension2 {
+
+    //private static final Log log = Log.getLog(SQLInformationProvider.class);
 
     class EditorWatcher extends AbstractPartListener {
 
@@ -53,7 +60,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
         }
     }
 
-    protected IEditorPart editor;
+    protected SQLEditorBase editor;
     protected IPartListener partListener;
 
     protected String currentPerspective;
@@ -126,7 +133,25 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
             }
         }
         //SQLCompletionProposal proposal = new SQLCompletionProposal();
-        return "HAHAHA";
+        SQLContextInformer informer = new SQLContextInformer(editor, editor.getSyntaxManager());
+        informer.searchInformation(subject);
+
+        DBSObject object = null;
+        if (informer.hasObjects()) {
+            // Make object description
+            DBRProgressMonitor monitor = VoidProgressMonitor.INSTANCE;
+            final DBSObjectReference objectRef = informer.getObjectReferences().get(0);
+
+            try {
+                object = objectRef.resolveObject(monitor);
+            } catch (DBException e) {
+                // Can't resolve
+                return e.getMessage();
+            }
+        } else if (CommonUtils.isEmpty(informer.getKeyword())) {
+            return null;
+        }
+        return SQLContextInformer.readAdditionalProposalInfo(null, editor.getDataSource(), object, informer.getKeyword(), informer.getKeywordType());
     }
 
     /*
@@ -137,23 +162,11 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
     @Override
     public IInformationControlCreator getInformationPresenterControlCreator()
     {
-/*
-        IInformationControlCreator controlCreator = null;
-        if (implementation != null) {
-            controlCreator = implementation.getInformationPresenterControlCreator();
-        }
-        if (controlCreator != null) {
-            return controlCreator;
-        }
-
-*/
         if (informationControlCreator == null) {
             informationControlCreator = new IInformationControlCreator() {
                 @Override
                 public IInformationControl createInformationControl(Shell shell)
                 {
-                    //boolean cutDown = false;
-                    //int style = cutDown ? SWT.NONE : (SWT.V_SCROLL | SWT.H_SCROLL);
                     return new DefaultInformationControl(shell, true);
                 }
             };

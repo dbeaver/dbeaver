@@ -160,8 +160,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                             request,
                             keyWord,
                             keyWord,
-                            keywordType == DBPKeywordType.KEYWORD ?
-                                SQLCompletionProposal.ProposalType.KEYWORD : SQLCompletionProposal.ProposalType.PROCEDURE,
+                            keywordType,
                             null,
                             false,
                             null)
