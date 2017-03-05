@@ -22,11 +22,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.editors.ExasolObjectType;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -55,10 +56,10 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
 
 
 
-    private static final String SQL_TABLES_ALL = "SELECT table_schem,table_name,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_NAME = ? AND TABLE_TYPE IN (%s)";
-    private static final String SQL_TABLES_SCHEMA = "SELECT table_schem,table_name,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = ? AND TABLE_NAME LIKE ? AND TABLE_TYPE IN (%s)";
-    private static final String SQL_COLS_ALL = "SELECT TABLE_SCHEM,TABLE_NAME,COLUMN_NAME from \"$ODBCJDBC\".ALL_COLUMNS WHERE COLUMN_NAME LIKE ?";
-    private static final String SQL_COLS_SCHEMA = "SELECT TABLE_SCHEM,TABLE_NAME,COLUMN_NAME from \"$ODBCJDBC\".ALL_COLUMNS WHERE TABLE_SCHEM = ? and COLUMN_NAME LIKE ?";
+    private static final String SQL_TABLES_ALL = "SELECT table_schem,table_name,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_NAME = '%s' AND TABLE_TYPE IN (%s)";
+    private static final String SQL_TABLES_SCHEMA = "SELECT table_schem,table_name,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' AND TABLE_NAME LIKE ? AND TABLE_TYPE IN (%s)";
+    private static final String SQL_COLS_ALL = "SELECT TABLE_SCHEM,TABLE_NAME,COLUMN_NAME from \"$ODBCJDBC\".ALL_COLUMNS WHERE COLUMN_NAME LIKE '%s'";
+    private static final String SQL_COLS_SCHEMA = "SELECT TABLE_SCHEM,TABLE_NAME,COLUMN_NAME from \"$ODBCJDBC\".ALL_COLUMNS WHERE TABLE_SCHEM = '%s' and COLUMN_NAME LIKE '%s'";
 
 
     private ExasolDataSource dataSource;
@@ -170,25 +171,14 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
     private void searchTables(JDBCSession session, ExasolSchema schema, String searchObjectNameMask,
                               List<ExasolObjectType> exasolObjectTypes, int maxResults, List<DBSObjectReference> objects, int nbResults) throws SQLException,
         DBException {
-        String baseSQL;
+        String sql;
         if (schema != null) {
-            baseSQL = SQL_TABLES_SCHEMA;
+            sql = String.format(SQL_TABLES_SCHEMA, ExasolUtils.quoteString(schema.getName()),ExasolUtils.quoteString(searchObjectNameMask), buildTableTypes(exasolObjectTypes)) ;
         } else {
-            baseSQL = SQL_TABLES_ALL;
+            sql = String.format(SQL_TABLES_ALL, ExasolUtils.quoteString(searchObjectNameMask), buildTableTypes(exasolObjectTypes));
         }
 
-
-        String sql = buildTableSQL(baseSQL, exasolObjectTypes);
-
-
-        int n = 1;
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            if (schema != null) {
-                dbStat.setString(n++, schema.getName());
-            }
-            dbStat.setString(n++, searchObjectNameMask);
-
-
+        try (JDBCStatement dbStat = session.createStatement()) {
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
 
 
@@ -198,7 +188,7 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
             ExasolObjectType objectType;
 
 
-            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+            try (JDBCResultSet dbResult = dbStat.executeQuery(sql)) {
                 while (dbResult.next()) {
                     if (session.getProgressMonitor().isCanceled()) {
                         break;
@@ -233,18 +223,13 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
                                int maxResults, List<DBSObjectReference> objects, int nbResults) throws SQLException, DBException {
         String sql;
         if (schema != null) {
-            sql = SQL_COLS_SCHEMA;
+            sql = String.format(SQL_COLS_SCHEMA, ExasolUtils.quoteString(schema.getName()), ExasolUtils.quoteString(searchObjectNameMask));
         } else {
-            sql = SQL_COLS_ALL;
+            sql = String.format(SQL_COLS_ALL, ExasolUtils.quoteString(searchObjectNameMask));
         }
 
 
-        int n = 1;
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            if (schema != null) {
-                dbStat.setString(n++, schema.getName());
-            }
-            dbStat.setString(n++, searchObjectNameMask);
+        try (JDBCStatement dbStat = session.createStatement()) {
 
 
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
@@ -257,7 +242,7 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
             ExasolTable exasolTable;
 
 
-            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+            try (JDBCResultSet dbResult = dbStat.executeQuery(sql)) {
                 while (dbResult.next()) {
                     if (session.getProgressMonitor().isCanceled()) {
                         break;
@@ -341,7 +326,7 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
     }
 
 
-    private String buildTableSQL(String baseStatement, List<ExasolObjectType> objectTypes) {
+    private String buildTableTypes(List<ExasolObjectType> objectTypes) {
         List<String> types = new ArrayList<>();
         for (ExasolObjectType objectType : objectTypes) {
             if (objectType.equals(ExasolObjectType.TABLE)) {
@@ -353,7 +338,7 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
 
 
         }
-        return String.format(baseStatement, CommonUtils.joinStrings(",", types));
+        return CommonUtils.joinStrings(",", types);
     }
 
 

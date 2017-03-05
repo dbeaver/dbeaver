@@ -23,28 +23,25 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
 import java.sql.SQLException;
 
-/**
- * @author Karl
- */
 public final class ExasolTableCache
 		extends JDBCStructCache<ExasolSchema, ExasolTable, ExasolTableColumn> {
 
 	private static final String SQL_COLS_TAB = "select " + "	c.* " + "from "
 			+ "		 \"$ODBCJDBC\".\"ALL_COLUMNS\" c " + "where "
-			+ "	table_schem = ? and " + "	table_name = ? " + "order by "
+			+ "	table_schem = '%s' and " + "	table_name = '%s' " + "order by "
 			+ "	c.ordinal_position";
 	private static final String SQL_COLS_ALL = "select " + "	c.* " + "from "
 			+ "		 \"$ODBCJDBC\".\"ALL_COLUMNS\" c " + "where "
-			+ "	table_schem = ?" + "order by "
+			+ "	table_schem = '%s'" + "order by "
 			+ "	table_name,c.ordinal_position";
 
 	public ExasolTableCache()
@@ -63,6 +60,7 @@ public final class ExasolTableCache
 				new String[] { "TABLE" }).getSourceStatement();
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	protected JDBCStatement prepareChildrenStatement(
 			@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema,
@@ -71,14 +69,13 @@ public final class ExasolTableCache
 		String sql;
 
 		if (exasolTable != null)
-			sql = SQL_COLS_TAB;
+			sql = String.format(SQL_COLS_TAB,ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(exasolTable.getName()));
 		else
-			sql = SQL_COLS_ALL;
+			sql = String.format(SQL_COLS_ALL,ExasolUtils.quoteString(exasolSchema.getName()));
 
-		JDBCPreparedStatement dbstat = session.prepareStatement(sql);
-		dbstat.setString(1, exasolSchema.getName());
-		if (exasolTable != null)
-			dbstat.setString(2, exasolTable.getName());
+		JDBCStatement dbstat = session.createStatement();
+		
+		((JDBCStatementImpl) dbstat).setQueryString(sql);
 
 		return dbstat;
 	}
