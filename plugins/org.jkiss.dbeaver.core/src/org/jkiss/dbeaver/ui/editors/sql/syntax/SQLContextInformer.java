@@ -28,15 +28,22 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPKeywordType;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.DirectObjectReference;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
+import org.jkiss.dbeaver.model.sql.SQLHelpTopic;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -49,7 +56,7 @@ import java.util.*;
 /**
  * SQLContextInformer
  */
-class SQLContextInformer
+public class SQLContextInformer
 {
     private static final Log log = Log.getLog(SQLContextInformer.class);
 
@@ -154,7 +161,9 @@ class SQLContextInformer
             }
         }
 
-        keywordType = syntaxManager.getDialect().getKeywordType(fullName);
+        final SQLDialect dialect = syntaxManager.getDialect();
+
+        keywordType = dialect.getKeywordType(fullName);
         keyword = fullName;
         if (keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.FUNCTION) {
             // Skip keywords
@@ -226,8 +235,132 @@ class SQLContextInformer
         }
     }
 
-    public void dispose()
-    {
+    public static String makeObjectDescription(@Nullable DBRProgressMonitor monitor, DBPNamedObject object, boolean html) {
+        final PropertiesReader reader = new PropertiesReader(object, html);
+
+        if (monitor == null) {
+            AbstractJob searchJob = new AbstractJob("Extract object properties info") {
+                {
+                    setUser(false);
+                }
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    reader.run(monitor);
+                    return Status.OK_STATUS;
+                }
+            };
+            searchJob.schedule();
+
+            // Wait until job finished
+            Display display = Display.getCurrent();
+            while (!searchJob.isFinished()) {
+                if (!display.readAndDispatch()) {
+                    display.sleep();
+                }
+            }
+            display.update();
+        } else {
+            reader.run(monitor);
+        }
+        return reader.getPropertiesInfo();
+    }
+
+    public static String readAdditionalProposalInfo(@Nullable DBRProgressMonitor monitor, DBPDataSource dataSource, DBPNamedObject object, String keyword, DBPKeywordType keywordType) {
+        if (object != null) {
+            return makeObjectDescription(monitor, object, true);
+        } else if (keywordType != null && dataSource != null) {
+            String info = readDataSourceHelp(monitor, dataSource, keywordType, keyword);
+            if (CommonUtils.isEmpty(info)) {
+                return "<b>" + keyword + "</b> (" + keywordType.name() + ")";
+            }
+            return info;
+        } else {
+            return keyword;
+        }
+    }
+
+    private static String readDataSourceHelp(DBRProgressMonitor monitor, DBPDataSource dataSource, DBPKeywordType keywordType, String keyword) {
+        final SQLHelpProvider helpProvider = DBUtils.getAdapter(SQLHelpProvider.class, dataSource);
+        if (helpProvider == null) {
+            return null;
+        }
+        SQLHelpTopic helpTopic = null;
+        switch (keywordType) {
+            case KEYWORD:
+                helpTopic = helpProvider.findKeywordHelp(monitor, dataSource, keyword);
+                break;
+            case FUNCTION:
+                helpTopic = helpProvider.findProcedureHelp(monitor, dataSource, keyword);
+                break;
+            case TYPE:
+                helpTopic = helpProvider.findTypeHelp(monitor, dataSource, keyword);
+                break;
+        }
+        if (helpTopic == null) {
+            return null;
+        }
+        if (!CommonUtils.isEmpty(helpTopic.getContents())) {
+            return helpTopic.getContents();
+        } else if (!CommonUtils.isEmpty(helpTopic.getUrl())) {
+            return "<a href=\"" + helpTopic.getUrl() + "\">" + keyword + "</a>";
+        } else {
+            return null;
+        }
+    }
+
+    private static class PropertiesReader implements DBRRunnableWithProgress {
+
+        private StringBuilder info = new StringBuilder();
+        private DBPNamedObject object;
+        private boolean html;
+        private final PropertyCollector collector;
+
+        public PropertiesReader(DBPNamedObject object, boolean html) {
+            this.object = object;
+            this.html = html;
+            collector = new PropertyCollector(object, false);
+            collector.collectProperties();
+        }
+
+        boolean hasRemoteProperties() {
+            for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
+                if (descriptor.isRemote()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        String getPropertiesInfo() {
+            return info.toString();
+        }
+
+        @Override
+        public void run(DBRProgressMonitor monitor) {
+            for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
+                Object propValue = collector.getPropertyValue(monitor, descriptor.getId());
+                if (propValue == null) {
+                    continue;
+                }
+                String propString;
+                if (propValue instanceof DBPNamedObject) {
+                    propString = ((DBPNamedObject) propValue).getName();
+                } else {
+                    propString = DBValueFormatting.getDefaultValueDisplayString(propValue, DBDDisplayFormat.UI);
+                }
+                if (CommonUtils.isEmpty(propString)) {
+                    continue;
+                }
+                if (html) {
+                    info.append("<b>").append(descriptor.getDisplayName()).append(":  </b>");
+                    info.append(propString);
+                    info.append("<br>");
+                } else {
+                    info.append(descriptor.getDisplayName()).append(": ").append(propString).append("\n");
+                }
+            }
+        }
+
     }
 
     private class TablesFinderJob extends DataSourceJob {

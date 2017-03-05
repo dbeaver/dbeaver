@@ -428,7 +428,7 @@ class SQLCompletionAnalyzer
                         request,
                         replaceString,
                         replaceString,
-                        SQLCompletionProposal.ProposalType.OTHER,
+                        DBPKeywordType.OTHER,
                         "All objects"));
                 } else if (!matchedObjects.isEmpty()) {
                     if (startPart != null) {
@@ -532,7 +532,7 @@ class SQLCompletionAnalyzer
             request,
             replaceString,
             objectName,
-            SQLCompletionProposal.ProposalType.OBJECT,
+            DBPKeywordType.OTHER,
             objectIcon,
             isSingleObject,
             object);
@@ -545,7 +545,7 @@ class SQLCompletionAnalyzer
         CompletionRequest request,
         String replaceString,
         String displayString,
-        SQLCompletionProposal.ProposalType proposalType,
+        DBPKeywordType proposalType,
         @Nullable DBPImage image,
         boolean isObject,
         @Nullable DBPNamedObject object)
@@ -599,7 +599,7 @@ class SQLCompletionAnalyzer
         CompletionRequest request,
         String replaceString,
         String displayString,
-        SQLCompletionProposal.ProposalType proposalType,
+        DBPKeywordType proposalType,
         String description)
     {
         return new SQLCompletionProposal(

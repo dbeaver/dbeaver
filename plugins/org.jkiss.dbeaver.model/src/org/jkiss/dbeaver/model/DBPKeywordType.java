@@ -23,5 +23,6 @@ package org.jkiss.dbeaver.model;
 public enum DBPKeywordType {
     KEYWORD,
     FUNCTION,
-    TYPE
+    TYPE,
+    OTHER
 }

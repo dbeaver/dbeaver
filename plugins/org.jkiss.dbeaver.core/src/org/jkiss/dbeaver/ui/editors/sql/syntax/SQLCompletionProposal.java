@@ -17,9 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -30,24 +28,14 @@ import org.eclipse.jface.text.contentassist.ICompletionProposalExtension5;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.utils.CommonUtils;
@@ -60,13 +48,6 @@ import java.util.Locale;
 public class SQLCompletionProposal implements ICompletionProposal, ICompletionProposalExtension2,ICompletionProposalExtension5 {
 
     private static final Log log = Log.getLog(SQLCompletionProposal.class);
-
-    public enum ProposalType {
-        OBJECT,
-        KEYWORD,
-        PROCEDURE,
-        OTHER
-    }
 
     private final DBPDataSource dataSource;
     private SQLSyntaxManager syntaxManager;
@@ -87,7 +68,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     private Image image;
     /** The context information of this proposal. */
     private IContextInformation contextInformation;
-    private ProposalType proposalType;
+    private DBPKeywordType proposalType;
     private String additionalProposalInfo;
     private boolean simpleMode;
 
@@ -100,7 +81,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         int cursorPosition,
         @Nullable Image image,
         IContextInformation contextInformation,
-        ProposalType proposalType,
+        DBPKeywordType proposalType,
         String description,
         DBPNamedObject object)
     {
@@ -125,36 +106,6 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
 
         this.object = object;
         this.simpleMode = request.simpleMode;
-    }
-
-    public static String makeObjectDescription(@Nullable DBRProgressMonitor monitor, DBPNamedObject object, boolean html) {
-        final PropertiesReader reader = new PropertiesReader(object, html);
-
-        if (monitor == null) {
-            AbstractJob searchJob = new AbstractJob("Extract object properties info") {
-                {
-                    setUser(false);
-                }
-                @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
-                    reader.run(monitor);
-                    return Status.OK_STATUS;
-                }
-            };
-            searchJob.schedule();
-
-            // Wait until job finished
-            Display display = Display.getCurrent();
-            while (!searchJob.isFinished()) {
-                if (!display.readAndDispatch()) {
-                    display.sleep();
-                }
-            }
-            display.update();
-        } else {
-            reader.run(monitor);
-        }
-        return reader.getPropertiesInfo();
     }
 
     public DBPNamedObject getObject() {
@@ -225,29 +176,9 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     @Override
     public Object getAdditionalProposalInfo(IProgressMonitor monitor) {
         if (additionalProposalInfo == null) {
-            if (object != null) {
-                additionalProposalInfo = makeObjectDescription(new DefaultProgressMonitor(monitor), object, true);
-            } else {
-                String defInfo = "<b>" + replacementString + "</b> (" + proposalType.name() + ")";
-                switch (proposalType) {
-                    case KEYWORD:
-                    case PROCEDURE:
-                        additionalProposalInfo = readDataSourceHelp(new DefaultProgressMonitor(monitor));
-                        if (CommonUtils.isEmpty(additionalProposalInfo)) {
-                            additionalProposalInfo = defInfo;
-                        }
-                        break;
-                    default:
-                        additionalProposalInfo = "";
-                        break;
-                }
-            }
+            additionalProposalInfo = SQLContextInformer.readAdditionalProposalInfo(new DefaultProgressMonitor(monitor), dataSource, object, displayString, proposalType);
         }
         return additionalProposalInfo;
-    }
-
-    private String readDataSourceHelp(DBRProgressMonitor monitor) {
-        return null;
     }
 
     @Override
@@ -345,55 +276,4 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     }
 
 
-    private static class PropertiesReader implements DBRRunnableWithProgress {
-
-        private StringBuilder info = new StringBuilder();
-        private DBPNamedObject object;
-        private boolean html;
-        private final PropertyCollector collector;
-
-        public PropertiesReader(DBPNamedObject object, boolean html) {
-            this.object = object;
-            this.html = html;
-            collector = new PropertyCollector(object, false);
-            collector.collectProperties();
-        }
-
-        boolean hasRemoteProperties() {
-            for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
-                if (descriptor.isRemote()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        String getPropertiesInfo() {
-            return info.toString();
-        }
-
-        @Override
-        public void run(DBRProgressMonitor monitor) {
-            for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
-                Object propValue = collector.getPropertyValue(monitor, descriptor.getId());
-                if (propValue == null) {
-                    continue;
-                }
-                String propString;
-                if (propValue instanceof DBPNamedObject) {
-                    propString = ((DBPNamedObject) propValue).getName();
-                } else {
-                    propString = DBValueFormatting.getDefaultValueDisplayString(propValue, DBDDisplayFormat.UI);
-                }
-                if (html) {
-                    info.append("<b>").append(descriptor.getDisplayName()).append(":  </b>");
-                    info.append(propString);
-                    info.append("<br>");
-                } else {
-                    info.append(descriptor.getDisplayName()).append(": ").append(propString).append("\n");
-                }
-            }
-        }
-
-    }
 }
