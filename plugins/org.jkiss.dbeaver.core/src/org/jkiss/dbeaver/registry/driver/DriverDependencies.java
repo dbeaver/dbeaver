@@ -111,7 +111,9 @@ public class DriverDependencies implements DBPDriverDependencies
 
                 DependencyNode prevNode = libMap.get(node.library.getId());
                 if (prevNode == null || prevNode.depth > node.depth) {
-                    libMap.put(node.library.getId(), node);
+                    //if (node.library.isDownloadable()) {
+                        libMap.put(node.library.getId(), node);
+                    //}
                     if (prevNode != null) {
                         prevNode.duplicate = true;
                     }
