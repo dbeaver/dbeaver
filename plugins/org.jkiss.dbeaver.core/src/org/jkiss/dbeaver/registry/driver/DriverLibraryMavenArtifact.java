@@ -85,6 +85,9 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     @Override
     public boolean isDownloadable()
     {
+        if (localVersion != null) {
+            //return !"pom".equals(localVersion.getPackaging());
+        }
         return true;
     }
 
