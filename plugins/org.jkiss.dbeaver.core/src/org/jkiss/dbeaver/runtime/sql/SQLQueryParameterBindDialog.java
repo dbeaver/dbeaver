@@ -137,9 +137,6 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 String newValue = ((Text) control).getText();
                 item.setText(2, newValue);
 
-                if (newValue.isEmpty()) {
-                    newValue = null;
-                }
                 param.setValue(newValue);
                 if (param.isNamed()) {
                     final List<SQLQueryParameter> dups = dupParameters.get(param.getName());
