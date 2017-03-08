@@ -60,6 +60,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     private PostgreDatabase database;
     private long oid;
     private String name;
+    private String description;
     private long ownerId;
     private boolean persisted;
 
@@ -92,6 +93,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "nspowner");
+        this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.persisted = true;
     }
 
@@ -124,11 +126,11 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         return PostgreUtils.getObjectById(monitor, database.roleCache, database, ownerId);
     }
 
+    @Property(viewable = true, order = 100)
     @Nullable
     @Override
-    public String getDescription()
-    {
-        return null;
+    public String getDescription() {
+        return description;
     }
 
     @Override
