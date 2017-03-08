@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.hsqldb.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -26,6 +27,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -36,6 +39,8 @@ import java.util.List;
  */
 public class HSQLMetaModel extends GenericMetaModel
 {
+    private static final Log log = Log.getLog(HSQLMetaModel.class);
+
     public HSQLMetaModel() {
         super();
     }
@@ -63,6 +68,38 @@ public class HSQLMetaModel extends GenericMetaModel
     }
 
     @Override
+    public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
+        GenericDataSource dataSource = container.getDataSource();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read HSQLDB procedure source")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA=?"))
+            {
+                dbStat.setString(1, container.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.nextRow()) {
+                        DBSProcedureType routineType = DBSProcedureType.PROCEDURE;
+                        try {
+                            routineType = DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, "ROUTINE_TYPE"));
+                        } catch (IllegalArgumentException e) {
+                            log.warn(e);
+                        }
+                        final GenericProcedure procedure = createProcedureImpl(
+                            container,
+                            JDBCUtils.safeGetString(dbResult, "ROUTINE_NAME"),
+                            JDBCUtils.safeGetString(dbResult, "SPECIFIC_NAME"),
+                            null,
+                            routineType,
+                            null);
+                        container.addProcedure(procedure);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, dataSource);
+        }
+    }
+
+    @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read HSQLDB procedure source")) {
@@ -74,7 +111,11 @@ public class HSQLMetaModel extends GenericMetaModel
                 dbStat.setString(2, sourceObject.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.nextRow()) {
-                        return dbResult.getString(1);
+                        String definition = dbResult.getString(1);
+                        if (definition != null) {
+                            definition = SQLUtils.formatSQL(dataSource, definition);
+                        }
+                        return definition;
                     }
                     return "-- HSQLDB procedure definition not found";
                 }

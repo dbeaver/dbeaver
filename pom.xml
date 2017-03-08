@@ -33,6 +33,7 @@
         <module>plugins/org.jkiss.dbeaver.ext.generic</module>
         <module>plugins/org.jkiss.dbeaver.ext.import-config</module>
         <module>plugins/org.jkiss.dbeaver.ext.h2</module>
+        <module>plugins/org.jkiss.dbeaver.ext.hsqldb</module>
         <module>plugins/org.jkiss.dbeaver.ext.informix</module>
         <module>plugins/org.jkiss.dbeaver.ext.mssql</module>
         <module>plugins/org.jkiss.dbeaver.ext.mysql</module>
