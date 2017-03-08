@@ -427,11 +427,19 @@
                     <with variable="selection">
                         <count value="+"/>
                         <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
+                            <!-- Here and below we use double check - adapt + instanceof.
+                                sing <adapt> with final (Oracle-specific) type will force plugin activation (since E4.6)
+                                see https://bugs.eclipse.org/bugs/show_bug.cgi?id=485569
+                            -->
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                                <instanceof value="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
+                            </adapt>
                         </iterate>
                     </with>
                     <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <instanceof value="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
+                        </adapt>
                     </with>
                 </or>
             </enabledWhen>
@@ -441,7 +449,10 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <instanceof value="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
+                        </adapt>
+                        <!--<adapt type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>-->
                     </iterate>
                 </with>
             </enabledWhen>
