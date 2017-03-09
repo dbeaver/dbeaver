@@ -159,6 +159,7 @@ public class ObjectPropertyTester extends PropertyTester
                     return
                         object != null &&
                             !isReadOnly(object) &&
+                            object.isPersisted() &&
                             node.getParentNode() instanceof DBNContainer &&
                             getObjectManager(object.getClass(), DBEObjectRenamer.class) != null;
                 }
