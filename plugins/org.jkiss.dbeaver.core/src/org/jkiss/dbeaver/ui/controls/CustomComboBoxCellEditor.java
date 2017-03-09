@@ -126,7 +126,7 @@ public class CustomComboBoxCellEditor extends CellEditor {
 
         proposalProvider = new SimpleContentProposalProvider(comboBox.getItems());
         proposalProvider.setFiltering(true);
-        UIUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider);
+        UIUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider, true);
 
         return comboBox;
     }
