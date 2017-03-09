@@ -1580,6 +1580,9 @@ public class UIUtils {
         }
     }
 
+    public static void updateContentProposal(Control control, IContentProposalProvider provider) {
+
+    }
     public static void setContentProposalToolTip(Control control, String toolTip, String ... variables) {
         StringBuilder varsTip = new StringBuilder();
         for (String var : variables) {
