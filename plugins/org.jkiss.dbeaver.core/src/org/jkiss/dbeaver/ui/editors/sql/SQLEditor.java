@@ -1943,12 +1943,13 @@ public class SQLEditor extends SQLEditorBase implements
             if (!scriptMode) {
                 runPostExecuteActions(result);
             }
+            SQLQuery query = result.getStatement();
             Throwable error = result.getError();
             if (error != null) {
                 setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
-                if (!scrollCursorToError(session, result, error)) {
-                    int errorQueryOffset = result.getStatement().getOffset();
-                    int errorQueryLength = result.getStatement().getLength();
+                if (!scrollCursorToError(session, query, error)) {
+                    int errorQueryOffset = query.getOffset();
+                    int errorQueryLength = query.getLength();
                     if (errorQueryOffset >= 0 && errorQueryLength > 0) {
                         getSelectionProvider().setSelection(new TextSelection(errorQueryOffset, errorQueryLength));
                     }
@@ -1957,7 +1958,6 @@ public class SQLEditor extends SQLEditorBase implements
                 getSelectionProvider().setSelection(originalSelection);
             }
             // Get results window (it is possible that it was closed till that moment
-            SQLQuery query = result.getStatement();
             {
                 for (QueryResultsContainer cr : queryProcessor.resultContainers) {
                     cr.viewer.updateFiltersText(false);
@@ -2008,7 +2008,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private boolean scrollCursorToError(@NotNull DBCSession session, @NotNull SQLQueryResult result, @NotNull Throwable error) {
+    private boolean scrollCursorToError(@NotNull DBCSession session, @NotNull SQLQuery query, @NotNull Throwable error) {
         DBCExecutionContext context = getExecutionContext();
         if (context == null) {
             return false;
@@ -2017,7 +2017,6 @@ public class SQLEditor extends SQLEditorBase implements
             boolean scrolled = false;
             DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, context.getDataSource());
             if (errorAssistant != null) {
-                SQLQuery query = result.getStatement();
                 DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(session, query.getQuery(), error);
                 if (positions != null && positions.length > 0) {
                     int queryStartOffset = query.getOffset();
