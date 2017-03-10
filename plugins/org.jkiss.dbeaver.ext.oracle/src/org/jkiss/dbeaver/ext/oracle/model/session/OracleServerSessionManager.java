@@ -57,9 +57,10 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
     {
         try {
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
-                "SELECT s.*,sq.SQL_TEXT FROM V$SESSION s\n" +
-                    "LEFT OUTER JOIN V$SQL sq ON sq.SQL_ID=s.SQL_ID\n" +
-                    "WHERE s.TYPE='USER'")) {
+                "SELECT s.*, sq.SQL_TEXT\n" +
+                "FROM V$SESSION s, V$SQL sq\n" +
+                "WHERE sq.ADDRESS(+) = s.SQL_ADDRESS AND s.TYPE = 'USER'"))
+            {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<OracleServerSession> sessions = new ArrayList<>();
                     while (dbResult.next()) {
