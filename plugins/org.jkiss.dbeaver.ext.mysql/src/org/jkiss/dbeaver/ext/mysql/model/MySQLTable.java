@@ -75,12 +75,12 @@ public class MySQLTable extends MySQLTableBase
         @Property(viewable = true, editable = true, updatable = true, order = 100) public String getDescription() { return description; }
 
         @Property(category = CATEGORY_STATISTICS, viewable = true, order = 10) public long getRowCount() { return rowCount; }
-        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 11) public long getAvgRowLength() { return avgRowLength; }
+        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 11) public long getAvgRowLength() { return avgRowLength; }
         @Property(category = CATEGORY_STATISTICS, viewable = true, order = 12) public long getDataLength() { return dataLength; }
-        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 13) public long getMaxDataLength() { return maxDataLength; }
-        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 14) public long getDataFree() { return dataFree; }
-        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 15) public long getIndexLength() { return indexLength; }
-        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 16) public String getRowFormat() { return rowFormat; }
+        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 13) public long getMaxDataLength() { return maxDataLength; }
+        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 14) public long getDataFree() { return dataFree; }
+        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 15) public long getIndexLength() { return indexLength; }
+        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 16) public String getRowFormat() { return rowFormat; }
 
         @Property(category = CATEGORY_STATISTICS, viewable = false, order = 20) public Date getCreateTime() { return createTime; }
         @Property(category = CATEGORY_STATISTICS, viewable = false, order = 21) public Date getUpdateTime() { return updateTime; }
