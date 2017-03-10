@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -248,7 +249,7 @@ public class ExasolDataSource extends JDBCDataSource
     
     @Nullable
     @Override
-    public ErrorPosition[] getErrorPosition(@NotNull DBCSession session, @NotNull String query, @NotNull Throwable error) {
+    public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
         while (error instanceof DBException) {
             if (error.getCause() == null) {
                 return null;

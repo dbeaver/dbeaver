@@ -301,6 +301,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
             if (error == null) {
                 return true;
             } else {
+                // Try to handle error in nested editors
+
+
+                // Show error dialog
                 UIUtils.showErrorDialog(getSite().getShell(), "Can't save '" + getDatabaseObject().getName() + "'", null, error);
                 return false;
             }

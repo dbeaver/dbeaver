@@ -898,7 +898,8 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             boolean scrolled = false;
             DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, session.getExecutionContext().getDataSource());
             if (errorAssistant != null) {
-                DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(session, query.getQuery(), error);
+                DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(
+                    session.getProgressMonitor(), session.getExecutionContext(), query.getQuery(), error);
                 if (positions != null && positions.length > 0) {
                     int queryStartOffset = query.getOffset();
                     int queryLength = query.getLength();
