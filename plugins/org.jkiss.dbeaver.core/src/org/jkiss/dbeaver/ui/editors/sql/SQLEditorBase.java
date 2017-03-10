@@ -48,9 +48,9 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
@@ -893,13 +893,14 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     /**
      * Error handling
      */
-    protected boolean scrollCursorToError(@NotNull DBCSession session, @NotNull SQLQuery query, @NotNull Throwable error) {
+    protected boolean scrollCursorToError(@NotNull DBRProgressMonitor monitor, @NotNull SQLQuery query, @NotNull Throwable error) {
         try {
+            DBCExecutionContext context = getExecutionContext();
             boolean scrolled = false;
-            DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, session.getExecutionContext().getDataSource());
+            DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, context.getDataSource());
             if (errorAssistant != null) {
                 DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(
-                    session.getProgressMonitor(), session.getExecutionContext(), query.getQuery(), error);
+                    monitor, context, query.getQuery(), error);
                 if (positions != null && positions.length > 0) {
                     int queryStartOffset = query.getOffset();
                     int queryLength = query.getLength();
