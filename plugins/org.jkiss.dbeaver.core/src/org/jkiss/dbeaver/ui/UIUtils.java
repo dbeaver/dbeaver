@@ -1566,14 +1566,18 @@ public class UIUtils {
     }
 
     public static void installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider) {
+        installContentProposal(control, contentAdapter, provider, false);
+    }
+
+    public static void installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider, boolean autoActivation) {
         try {
-            KeyStroke keyStroke = KeyStroke.getInstance("Ctrl+Space");
+            KeyStroke keyStroke = autoActivation ? null : KeyStroke.getInstance("Ctrl+Space");
             final ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(
                 control,
                 contentAdapter,
                 provider,
                 keyStroke,
-                new char[]{'.', '('});
+                autoActivation ? ".abcdefghijklmnopqrstuvwxyz_$(".toCharArray() : ".(".toCharArray());
             proposalAdapter.setPopupSize(new Point(300, 200));
         } catch (ParseException e) {
             log.error("Error installing filters content assistant");
