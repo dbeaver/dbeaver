@@ -360,6 +360,12 @@ public class JDBCSQLDialect extends BasicSQLDialect {
             for (String func : makeStringList(metaData.getTimeDateFunctions())) {
                 allFunctions.add(func.toUpperCase());
             }
+            // Remove functions which clashes with keywords
+            for (Iterator<String> fIter = allFunctions.iterator(); fIter.hasNext(); ) {
+                if (getKeywordType(fIter.next())== DBPKeywordType.KEYWORD) {
+                    fIter.remove();
+                }
+            }
             addFunctions(allFunctions);
         }
         catch (Throwable e) {
