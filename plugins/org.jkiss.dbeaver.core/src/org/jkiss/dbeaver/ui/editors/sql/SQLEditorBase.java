@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
+import org.jkiss.dbeaver.ui.IErrorVisualizer;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
@@ -72,7 +73,7 @@ import java.util.ResourceBundle;
 /**
  * SQL Executor
  */
-public abstract class SQLEditorBase extends BaseTextEditor {
+public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisualizer {
     static protected final Log log = Log.getLog(SQLEditorBase.class);
 
     @NotNull
@@ -888,6 +889,13 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         more[ids.length + 4] = PrefPageSQLTemplates.PAGE_ID;
         System.arraycopy(ids, 0, more, 0, ids.length);
         return more;
+    }
+
+    @Override
+    public boolean visualizeError(@NotNull DBRProgressMonitor monitor, @NotNull Throwable error) {
+        Document document = getDocument();
+        SQLQuery query = new SQLQuery(getDataSource(), document.get(), 0, document.getLength());
+        return scrollCursorToError(monitor, query, error);
     }
 
     /**

@@ -552,14 +552,14 @@ public class OracleDataSource extends JDBCDataSource
         return super.createQueryTransformer(type);
     }
 
-    private Pattern ERROR_POSITION_PATTERN = Pattern.compile("(.+): line ([0-9]+), column ([0-9]+):");
+    private Pattern ERROR_POSITION_PATTERN = Pattern.compile(".+\\s+line ([0-9]+), column ([0-9]+)");
 
     @Nullable
     @Override
     public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
         while (error instanceof DBException) {
             if (error.getCause() == null) {
-                return null;
+                break;
             }
             error = error.getCause();
         }
@@ -570,8 +570,8 @@ public class OracleDataSource extends JDBCDataSource
             while (matcher.find()) {
                 DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
                 pos.info = matcher.group(1);
-                pos.line = Integer.parseInt(matcher.group(2)) - 1;
-                pos.position = Integer.parseInt(matcher.group(3)) - 1;
+                pos.line = Integer.parseInt(matcher.group(1)) - 1;
+                pos.position = Integer.parseInt(matcher.group(2)) - 1;
                 positions.add(pos);
             }
             if (!positions.isEmpty()) {
