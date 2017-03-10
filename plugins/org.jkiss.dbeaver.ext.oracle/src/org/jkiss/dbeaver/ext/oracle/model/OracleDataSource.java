@@ -282,6 +282,10 @@ public class OracleDataSource extends JDBCDataSource
         return getInfo().getDatabaseVersion().getMajor() >= 11;
     }
 
+    public boolean isAtLeastV12() {
+        return getInfo().getDatabaseVersion().getMajor() >= 12;
+    }
+
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor)
         throws DBException {

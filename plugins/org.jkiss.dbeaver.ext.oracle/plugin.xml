@@ -121,7 +121,7 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePackage" label="%tree.packages.node.name" icon="#packages" description="Packages">
                             <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
-                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure" visibleIf="object.dataSource.isAtLeastV10()">
                                     <handler action="open" command="org.jkiss.dbeaver.ext.oracle.code.package.navigate"/>
                                     <!-- Proc arguments. Not inline because arguments reading is expensive -->
                                     <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
@@ -152,7 +152,7 @@
                         <!--folder type="org.jkiss.dbeaver.ext.oracle.model.OracleJavaClass" label="Java" icon="#java" description="Java Classes">
                             <items label="Java Class" path="class" property="javaClasses" icon="#javaClass"/>
                         </folder-->
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="%tree.recycle_bin.node.name" icon="#recycle_bin" description="Recycle Bin" visibleIf="object.dataSource.adminVisible">
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="%tree.recycle_bin.node.name" icon="#recycle_bin" description="Recycle Bin" visibleIf="object.dataSource.adminVisible &amp;&amp; object.dataSource.isAtLeastV10()">
                             <items label="%tree.recycled_object.node.name" path="object" property="recycledObjects" icon="#recycle_bin"/>
                         </folder>
                     </items>
