@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
@@ -25,6 +26,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.text.MessageFormat;
@@ -34,201 +36,209 @@ import java.text.MessageFormat;
  */
 public class CustomComboBoxCellEditor extends CellEditor {
 
-	private String[] items;
-	private CCombo comboBox;
+    private String[] items;
+    private CCombo comboBox;
+    private SimpleContentProposalProvider proposalProvider;
 
-	private static final int defaultStyle = SWT.NONE;
+    private static final int defaultStyle = SWT.NONE;
 
-	public CustomComboBoxCellEditor() {
-		setStyle(defaultStyle);
-	}
+    public CustomComboBoxCellEditor() {
+        setStyle(defaultStyle);
+    }
 
-	public CustomComboBoxCellEditor(Composite parent, String[] items) {
-		this(parent, items, defaultStyle);
-	}
+    public CustomComboBoxCellEditor(Composite parent, String[] items) {
+        this(parent, items, defaultStyle);
+    }
 
-	public CustomComboBoxCellEditor(Composite parent, String[] items, int style) {
-		super(parent, style);
-		setItems(items);
-	}
+    public CustomComboBoxCellEditor(Composite parent, String[] items, int style) {
+        super(parent, style);
+        setItems(items);
+    }
 
-	/**
-	 * Returns the list of choices for the combo box
-	 *
-	 * @return the list of choices for the combo box
-	 */
-	public String[] getItems() {
-		return this.items;
-	}
+    /**
+     * Returns the list of choices for the combo box
+     *
+     * @return the list of choices for the combo box
+     */
+    public String[] getItems() {
+        return this.items;
+    }
 
-	/**
-	 * Sets the list of choices for the combo box
-	 *
-	 * @param items
-	 *            the list of choices for the combo box
-	 */
-	public void setItems(String[] items) {
-		Assert.isNotNull(items);
-		this.items = items;
-		populateComboBoxItems();
-	}
+    /**
+     * Sets the list of choices for the combo box
+     *
+     * @param items the list of choices for the combo box
+     */
+    public void setItems(String[] items) {
+        Assert.isNotNull(items);
+        this.items = items;
+        populateComboBoxItems();
+        if (proposalProvider != null) {
+            proposalProvider.setProposals(items);
+        }
+    }
 
-	@Override
+    @Override
     protected Control createControl(Composite parent) {
 
-		comboBox = new CCombo(parent, getStyle());
+        comboBox = new CCombo(parent, getStyle());
         //comboBox.setEditable((getStyle() & SWT.READ_ONLY) == 0);
         comboBox.setVisibleItemCount(15);
-		comboBox.setFont(parent.getFont());
+        comboBox.setFont(parent.getFont());
         comboBox.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 
-		populateComboBoxItems();
+        populateComboBoxItems();
 
-		comboBox.addKeyListener(new KeyAdapter() {
-			@Override
+        comboBox.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyPressed(KeyEvent e) {
-				keyReleaseOccured(e);
-			}
-		});
+                keyReleaseOccured(e);
+            }
+        });
 
-		comboBox.addSelectionListener(new SelectionAdapter() {
-			@Override
+        comboBox.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetDefaultSelected(SelectionEvent event) {
-				applyEditorValueAndDeactivate();
-			}
-			@Override
+                applyEditorValueAndDeactivate();
+            }
+
+            @Override
             public void widgetSelected(SelectionEvent event) {
-			}
-		});
+            }
+        });
 
-		comboBox.addTraverseListener(new TraverseListener() {
-			@Override
+        comboBox.addTraverseListener(new TraverseListener() {
+            @Override
             public void keyTraversed(TraverseEvent e) {
-				if (e.detail == SWT.TRAVERSE_ESCAPE
-						|| e.detail == SWT.TRAVERSE_RETURN) {
-					e.doit = false;
-				}
-			}
-		});
+                if (e.detail == SWT.TRAVERSE_ESCAPE
+                    || e.detail == SWT.TRAVERSE_RETURN) {
+                    e.doit = false;
+                }
+            }
+        });
 
-		comboBox.addFocusListener(new FocusAdapter() {
-			@Override
+        comboBox.addFocusListener(new FocusAdapter() {
+            @Override
             public void focusLost(FocusEvent e) {
-				CustomComboBoxCellEditor.this.focusLost();
-			}
-		});
-		return comboBox;
-	}
+                CustomComboBoxCellEditor.this.focusLost();
+            }
+        });
 
-	@Override
+        proposalProvider = new SimpleContentProposalProvider(comboBox.getItems());
+        proposalProvider.setFiltering(true);
+        UIUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider, true);
+
+        return comboBox;
+    }
+
+    @Override
     protected Object doGetValue() {
-		return comboBox.getText();
-	}
+        return comboBox.getText();
+    }
 
-	/*
-	 * (non-Javadoc) Method declared on CellEditor.
-	 */
-	@Override
+    /*
+     * (non-Javadoc) Method declared on CellEditor.
+     */
+    @Override
     protected void doSetFocus() {
-		comboBox.setFocus();
+        comboBox.setFocus();
         fireEnablementChanged(DELETE);
         fireEnablementChanged(COPY);
         fireEnablementChanged(CUT);
         fireEnablementChanged(PASTE);
-	}
+    }
 
-	@Override
+    @Override
     public LayoutData getLayoutData() {
-		LayoutData layoutData = super.getLayoutData();
-		if ((comboBox == null) || comboBox.isDisposed()) {
-			layoutData.minimumWidth = 60;
-		} else {
-			// make the comboBox 10 characters wide
-			GC gc = new GC(comboBox);
-			layoutData.minimumWidth = (gc.getFontMetrics()
-					.getAverageCharWidth() * 10) + 10;
-			gc.dispose();
-		}
-		return layoutData;
-	}
+        LayoutData layoutData = super.getLayoutData();
+        if ((comboBox == null) || comboBox.isDisposed()) {
+            layoutData.minimumWidth = 60;
+        } else {
+            // make the comboBox 10 characters wide
+            GC gc = new GC(comboBox);
+            layoutData.minimumWidth = (gc.getFontMetrics()
+                .getAverageCharWidth() * 10) + 10;
+            gc.dispose();
+        }
+        return layoutData;
+    }
 
-	/**
-	 * The <code>ComboBoxCellEditor</code> implementation of this
-	 * <code>CellEditor</code> framework method accepts a zero-based index of
-	 * a selection.
-	 *
-	 * @param value
-	 *            the zero-based index of the selection wrapped as an
-	 *            <code>Integer</code>
-	 */
-	@Override
+    /**
+     * The <code>ComboBoxCellEditor</code> implementation of this
+     * <code>CellEditor</code> framework method accepts a zero-based index of
+     * a selection.
+     *
+     * @param value the zero-based index of the selection wrapped as an
+     *              <code>Integer</code>
+     */
+    @Override
     protected void doSetValue(Object value) {
-		if (value == null) {
-			comboBox.setText("");
-		} else {
-			Assert.isTrue(comboBox != null && (value instanceof String || value instanceof DBPNamedObject || value instanceof Enum));
-			if (value instanceof DBPNamedObject) {
-				comboBox.setText(((DBPNamedObject) value).getName());
-			} else if (value instanceof Enum) {
-				comboBox.setText(((Enum) value).name());
-			} else {
-				comboBox.setText(CommonUtils.toString(value));
-			}
-		}
-	}
+        if (value == null) {
+            comboBox.setText("");
+        } else {
+            Assert.isTrue(comboBox != null && (value instanceof String || value instanceof DBPNamedObject || value instanceof Enum));
+            if (value instanceof DBPNamedObject) {
+                comboBox.setText(((DBPNamedObject) value).getName());
+            } else if (value instanceof Enum) {
+                comboBox.setText(((Enum) value).name());
+            } else {
+                comboBox.setText(CommonUtils.toString(value));
+            }
+        }
+    }
 
-	/**
-	 * Updates the list of choices for the combo box for the current control.
-	 */
-	private void populateComboBoxItems() {
-		if (comboBox != null && items != null) {
-			comboBox.removeAll();
-			for (int i = 0; i < items.length; i++) {
-				comboBox.add(items[i], i);
-			}
+    /**
+     * Updates the list of choices for the combo box for the current control.
+     */
+    private void populateComboBoxItems() {
+        if (comboBox != null && items != null) {
+            comboBox.removeAll();
+            for (int i = 0; i < items.length; i++) {
+                comboBox.add(items[i], i);
+            }
 
-			setValueValid(true);
-		}
-	}
+            setValueValid(true);
+        }
+    }
 
-	/**
-	 * Applies the currently selected value and deactivates the cell editor
-	 */
-	void applyEditorValueAndDeactivate() {
-		// must set the selection before getting value
-		Object newValue = doGetValue();
-		markDirty();
-		boolean isValid = isCorrect(newValue);
-		setValueValid(isValid);
+    /**
+     * Applies the currently selected value and deactivates the cell editor
+     */
+    void applyEditorValueAndDeactivate() {
+        // must set the selection before getting value
+        Object newValue = doGetValue();
+        markDirty();
+        boolean isValid = isCorrect(newValue);
+        setValueValid(isValid);
 
-		if (!isValid) {
-            setErrorMessage(MessageFormat.format(getErrorMessage(), comboBox.getText() ));
-		}
+        if (!isValid) {
+            setErrorMessage(MessageFormat.format(getErrorMessage(), comboBox.getText()));
+        }
 
-		fireApplyEditorValue();
-		deactivate();
-	}
+        fireApplyEditorValue();
+        deactivate();
+    }
 
-	@Override
+    @Override
     protected void focusLost() {
-		if (isActivated()) {
-			applyEditorValueAndDeactivate();
-		}
-	}
+        if (isActivated()) {
+            applyEditorValueAndDeactivate();
+        }
+    }
 
-	@Override
+    @Override
     protected void keyReleaseOccured(KeyEvent keyEvent) {
-		if (keyEvent.character == '\u001b') { // Escape character
-			fireCancelEditor();
-		} else if (keyEvent.character == SWT.TAB) { // tab key
-			applyEditorValueAndDeactivate();
+        if (keyEvent.character == '\u001b') { // Escape character
+            fireCancelEditor();
+        } else if (keyEvent.character == SWT.TAB) { // tab key
+            applyEditorValueAndDeactivate();
         } else if (keyEvent.character == SWT.DEL) { // delete key
-			if ((comboBox.getStyle() & SWT.READ_ONLY) != 0) {
-				comboBox.setText("");
-				keyEvent.doit = false;
-			}
-		}
-	}
+            if ((comboBox.getStyle() & SWT.READ_ONLY) != 0) {
+                comboBox.setText("");
+                keyEvent.doit = false;
+            }
+        }
+    }
 
     @Override
     public boolean isCopyEnabled() {
@@ -270,7 +280,7 @@ public class CustomComboBoxCellEditor extends CellEditor {
         comboBox.paste();
     }
 
-	protected int getDoubleClickTimeout() {
-		return 0;
-	}
+    protected int getDoubleClickTimeout() {
+        return 0;
+    }
 }
