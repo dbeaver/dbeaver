@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
@@ -186,7 +187,7 @@ public class DataSourceHandler
         // Save users
         for (DBPDataSourceUser user : dataSourceContainer.getUsers()) {
             if (user instanceof ISaveablePart) {
-                if (!UIUtils.validateAndSave(VoidProgressMonitor.INSTANCE, (ISaveablePart) user)) {
+                if (!SaveChangesHandler.validateAndSave(VoidProgressMonitor.INSTANCE, (ISaveablePart) user)) {
                     return;
                 }
             }
