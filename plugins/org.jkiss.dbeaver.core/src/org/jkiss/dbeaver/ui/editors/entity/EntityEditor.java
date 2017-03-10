@@ -245,7 +245,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private boolean saveCommandContext(DBRProgressMonitor monitor)
+    private boolean saveCommandContext(final DBRProgressMonitor monitor)
     {
         int previewResult = IDialogConstants.PROCEED_ID;
         if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW)) {
@@ -302,7 +302,16 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 return true;
             } else {
                 // Try to handle error in nested editors
-
+                final Throwable vError = error;
+                DBeaverUI.syncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        final IErrorVisualizer errorVisualizer = getAdapter(IErrorVisualizer.class);
+                        if (errorVisualizer != null) {
+                            errorVisualizer.visualizeError(monitor, vError);
+                        }
+                    }
+                });
 
                 // Show error dialog
                 UIUtils.showErrorDialog(getSite().getShell(), "Can't save '" + getDatabaseObject().getName() + "'", null, error);
