@@ -2008,59 +2008,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private boolean scrollCursorToError(@NotNull DBCSession session, @NotNull SQLQuery query, @NotNull Throwable error) {
-        DBCExecutionContext context = getExecutionContext();
-        if (context == null) {
-            return false;
-        }
-        try {
-            boolean scrolled = false;
-            DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, context.getDataSource());
-            if (errorAssistant != null) {
-                DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(session, query.getQuery(), error);
-                if (positions != null && positions.length > 0) {
-                    int queryStartOffset = query.getOffset();
-                    int queryLength = query.getLength();
-
-                    DBPErrorAssistant.ErrorPosition pos = positions[0];
-                    if (pos.line < 0) {
-                        if (pos.position >= 0) {
-                            // Only position
-                            getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 1));
-                            scrolled = true;
-                        }
-                    } else {
-                        // Line + position
-                        Document document = getDocument();
-                        if (document != null) {
-                            int startLine = document.getLineOfOffset(queryStartOffset);
-                            int errorOffset = document.getLineOffset(startLine + pos.line);
-                            int errorLength;
-                            if (pos.position >= 0) {
-                                errorOffset += pos.position;
-                                errorLength = 1;
-                            } else {
-                                errorLength = document.getLineLength(startLine + pos.line);
-                            }
-                            if (errorOffset < queryStartOffset) errorOffset = queryStartOffset;
-                            if (errorLength > queryLength) errorLength = queryLength;
-                            getSelectionProvider().setSelection(new TextSelection(errorOffset, errorLength));
-                            scrolled = true;
-                        }
-                    }
-                }
-            }
-            return scrolled;
-//            if (!scrolled) {
-//                // Can't position on error - let's just select entire problem query
-//                showStatementInEditor(result.getStatement(), true);
-//            }
-        } catch (Exception e) {
-            log.warn("Error positioning on query error", e);
-            return false;
-        }
-    }
-
     private class FindReplaceTarget extends DynamicFindReplaceTarget {
         private boolean lastFocusInEditor = true;
         @Override
