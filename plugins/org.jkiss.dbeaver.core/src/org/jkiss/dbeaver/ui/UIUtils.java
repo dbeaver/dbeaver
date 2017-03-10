@@ -1258,16 +1258,6 @@ public class UIUtils {
         return control.getShell().getData() instanceof org.eclipse.jface.dialogs.Dialog;
     }
 
-    public static boolean validateAndSave(DBRProgressMonitor monitor, ISaveablePart saveable)
-    {
-        if (!saveable.isDirty()) {
-            return true;
-        }
-        SaveRunner saveRunner = new SaveRunner(monitor, saveable);
-        DBeaverUI.syncExec(saveRunner);
-        return saveRunner.getResult();
-    }
-
     public static Link createLink(Composite parent, String text, SelectionListener listener) {
         Link link = new Link(parent, SWT.NONE);
         link.setText(text);
@@ -1442,72 +1432,6 @@ public class UIUtils {
         @Override
         public void run() {
             styledText.invokeAction(action);
-        }
-    }
-
-    private static class SaveRunner implements Runnable {
-        private final DBRProgressMonitor monitor;
-        private final ISaveablePart saveable;
-        private boolean result;
-
-        private SaveRunner(DBRProgressMonitor monitor, ISaveablePart saveable)
-        {
-            this.monitor = monitor;
-            this.saveable = saveable;
-        }
-
-        public boolean getResult()
-        {
-            return result;
-        }
-
-        @Override
-        public void run()
-        {
-            int choice = -1;
-            if (saveable instanceof ISaveablePart2) {
-                choice = ((ISaveablePart2) saveable).promptToSaveOnClose();
-            }
-            if (choice == -1 || choice == ISaveablePart2.DEFAULT) {
-                Shell shell;
-                String saveableName;
-                if (saveable instanceof IWorkbenchPart) {
-                    shell = ((IWorkbenchPart) saveable).getSite().getShell();
-                    saveableName = ((IWorkbenchPart) saveable).getTitle();
-                } else {
-                    shell = DBeaverUI.getActiveWorkbenchShell();
-                    saveableName = CommonUtils.toString(saveable);
-                }
-                int confirmResult = ConfirmationDialog.showConfirmDialog(
-                    shell,
-                    DBeaverPreferences.CONFIRM_EDITOR_CLOSE,
-                    ConfirmationDialog.QUESTION_WITH_CANCEL,
-                    saveableName);
-                switch (confirmResult) {
-                    case IDialogConstants.YES_ID:
-                        choice = ISaveablePart2.YES;
-                        break;
-                    case IDialogConstants.NO_ID:
-                        choice = ISaveablePart2.NO;
-                        break;
-                    default:
-                        choice = ISaveablePart2.CANCEL;
-                        break;
-                }
-            }
-            switch (choice) {
-                case ISaveablePart2.YES: //yes
-                    saveable.doSave(RuntimeUtils.getNestedMonitor(monitor));
-                    result = !saveable.isDirty();
-                    break;
-                case ISaveablePart2.NO: //no
-                    result = true;
-                    break;
-                case ISaveablePart2.CANCEL: //cancel
-                default:
-                    result = false;
-                    break;
-            }
         }
     }
 
