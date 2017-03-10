@@ -45,7 +45,10 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
@@ -885,6 +888,58 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         more[ids.length + 4] = PrefPageSQLTemplates.PAGE_ID;
         System.arraycopy(ids, 0, more, 0, ids.length);
         return more;
+    }
+
+    /**
+     * Error handling
+     */
+    protected boolean scrollCursorToError(@NotNull DBCSession session, @NotNull SQLQuery query, @NotNull Throwable error) {
+        try {
+            boolean scrolled = false;
+            DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, session.getExecutionContext().getDataSource());
+            if (errorAssistant != null) {
+                DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(session, query.getQuery(), error);
+                if (positions != null && positions.length > 0) {
+                    int queryStartOffset = query.getOffset();
+                    int queryLength = query.getLength();
+
+                    DBPErrorAssistant.ErrorPosition pos = positions[0];
+                    if (pos.line < 0) {
+                        if (pos.position >= 0) {
+                            // Only position
+                            getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 1));
+                            scrolled = true;
+                        }
+                    } else {
+                        // Line + position
+                        Document document = getDocument();
+                        if (document != null) {
+                            int startLine = document.getLineOfOffset(queryStartOffset);
+                            int errorOffset = document.getLineOffset(startLine + pos.line);
+                            int errorLength;
+                            if (pos.position >= 0) {
+                                errorOffset += pos.position;
+                                errorLength = 1;
+                            } else {
+                                errorLength = document.getLineLength(startLine + pos.line);
+                            }
+                            if (errorOffset < queryStartOffset) errorOffset = queryStartOffset;
+                            if (errorLength > queryLength) errorLength = queryLength;
+                            getSelectionProvider().setSelection(new TextSelection(errorOffset, errorLength));
+                            scrolled = true;
+                        }
+                    }
+                }
+            }
+            return scrolled;
+//            if (!scrolled) {
+//                // Can't position on error - let's just select entire problem query
+//                showStatementInEditor(result.getStatement(), true);
+//            }
+        } catch (Exception e) {
+            log.warn("Error positioning on query error", e);
+            return false;
+        }
     }
 
 }
