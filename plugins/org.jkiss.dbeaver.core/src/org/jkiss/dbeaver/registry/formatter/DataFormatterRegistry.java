@@ -213,7 +213,7 @@ public class DataFormatterRegistry
         }
     }
 
-    private class FormattersParser implements SAXListener
+    private class FormattersParser extends SAXListener.BaseListener
     {
         private String profileName;
         private SimplePreferenceStore curStore;
@@ -232,12 +232,6 @@ public class DataFormatterRegistry
                         atts.getValue(RegistryConstants.ATTR_VALUE));
                 }
             }
-        }
-
-        @Override
-        public void saxText(SAXReader reader, String data)
-            throws XMLException
-        {
         }
 
         @Override

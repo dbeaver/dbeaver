@@ -24,19 +24,19 @@ import org.xml.sax.Attributes;
 */
 public interface SAXListener {
 
-	public void saxStartElement(
+	void saxStartElement(
         SAXReader reader,
         String namespaceURI,
         String localName,
         org.xml.sax.Attributes atts)
 		throws XMLException;
 
-	public void saxText(
+	void saxText(
         SAXReader reader,
         String data)
 		throws XMLException;
 
-	public void saxEndElement(
+	void saxEndElement(
         SAXReader reader,
         String namespaceURI,
         String localName)
@@ -46,7 +46,7 @@ public interface SAXListener {
     /**
      * Empty listener supposed to skip element subtrees
      */
-    public static class EmptyListener implements SAXListener {
+    class BaseListener implements SAXListener {
 
         @Override
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
@@ -60,6 +60,6 @@ public interface SAXListener {
         public void saxEndElement(SAXReader reader, String namespaceURI, String localName) throws XMLException {
         }
     }
-    public static final SAXListener EMPTY_LISTENER = new EmptyListener();
+    SAXListener EMPTY_LISTENER = new BaseListener();
 
 }
