@@ -16,6 +16,11 @@
  */
 package org.jkiss.utils.xml;
 
+import org.xml.sax.*;
+
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +29,7 @@ import java.util.Map;
 /**
  * SAX document reader
  */
-public final class SAXReader implements org.xml.sax.ContentHandler {
+public final class SAXReader implements ContentHandler, EntityResolver, DTDHandler {
 
     public static final int DEFAULT_POOL_SIZE = 10;
 
@@ -32,7 +37,7 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
     private static List<Parser> parsersPool = new ArrayList<>();
 
     private org.xml.sax.InputSource inputSource;
-    private org.xml.sax.Locator locator;
+    private Locator locator;
 
     private Map<String, Object> attributes = new HashMap<>();
     private List<SAXListener> elementLayers = new ArrayList<>();
@@ -52,8 +57,7 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
      * Standard constructor.
      * Initialize parser and prepare input stream for reading.
      */
-    public SAXReader(
-        java.io.InputStream stream) {
+    public SAXReader(InputStream stream) {
         this();
         inputSource = new org.xml.sax.InputSource(stream);
     }
@@ -62,8 +66,7 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
      * Standard constructor.
      * Initialize parser and prepare input stream for reading.
      */
-    public SAXReader(
-        java.io.Reader reader) {
+    public SAXReader(Reader reader) {
         this();
         inputSource = new org.xml.sax.InputSource(reader);
     }
@@ -77,35 +80,36 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
         handleWhiteSpaces = flag;
     }
 
-    public org.xml.sax.Locator getLocator() {
+    public Locator getLocator() {
         return locator;
     }
 
     /**
      * Parse input stream and handle XML tags.
      */
-    public void parse(
-        SAXListener listener)
-        throws java.io.IOException, XMLException {
+    public void parse(SAXListener listener)
+        throws IOException, XMLException {
         // Initialize SAX parser
         Parser parser = acquireParser();
 
         // Get reader and parse using SAX2 API
         try {
-            org.xml.sax.XMLReader saxReader = parser.getSAXParser().getXMLReader();
+            XMLReader saxReader = parser.getSAXParser().getXMLReader();
             saxReader.setErrorHandler(new ParseErrorHandler());
             saxReader.setContentHandler(this);
+            saxReader.setEntityResolver(this);
+            saxReader.setDTDHandler(this);
 
             curListener = listener;
 
             elementLayers.add(listener);
 
             saxReader.parse(inputSource);
-        } catch (org.xml.sax.SAXParseException toCatch) {
+        } catch (SAXParseException toCatch) {
             throw new XMLException(
                 "Document parse error (line " + toCatch.getLineNumber() + ", pos " + toCatch.getColumnNumber(),
                 toCatch);
-        } catch (org.xml.sax.SAXException toCatch) {
+        } catch (SAXException toCatch) {
             throw new XMLException(
                 "Document reading SAX exception",
                 XMLUtils.adaptSAXException(toCatch));
@@ -114,15 +118,14 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
         }
     }
 
-    public synchronized static Parser acquireParser()
-        throws XMLException {
+    public synchronized static Parser acquireParser() throws XMLException {
         try {
             if (saxParserFactory == null) {
                 try {
                     saxParserFactory = javax.xml.parsers.SAXParserFactory.newInstance();
                     saxParserFactory.setNamespaceAware(true);
                     saxParserFactory.setValidating(false);
-                } catch (javax.xml.parsers.FactoryConfigurationError toCatch) {
+                } catch (FactoryConfigurationError toCatch) {
                     throw new XMLException(
                         "SAX factory configuration error",
                         toCatch);
@@ -150,11 +153,11 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
             Parser parser = new Parser(saxParserFactory.newSAXParser(), true);
             parsersPool.add(parser);
             return parser;
-        } catch (javax.xml.parsers.ParserConfigurationException toCatch) {
+        } catch (ParserConfigurationException toCatch) {
             throw new XMLException(
                 "SAX Parser Configuration error",
                 toCatch);
-        } catch (org.xml.sax.SAXException toCatch) {
+        } catch (SAXException toCatch) {
             throw new XMLException(
                 "SAX Parser error",
                 toCatch);
@@ -203,14 +206,14 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
     }
 
     private void handleText()
-        throws org.xml.sax.SAXException {
+        throws SAXException {
         curListener = elementLayers.get(elementLayers.size() - 1);
         try {
             String value = textValue.toString();
 
             curListener.saxText(this, value);
         } catch (Exception toCatch) {
-            throw new org.xml.sax.SAXException(toCatch);
+            throw new SAXException(toCatch);
         } finally {
             textValue.setLength(0);
         }
@@ -236,7 +239,7 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
         String localName,
         String qName,
         org.xml.sax.Attributes attributes)
-        throws org.xml.sax.SAXException {
+        throws SAXException {
         if (depth++ > 0) {
             this.handleText();
         }
@@ -246,7 +249,7 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
         try {
             curListener.saxStartElement(this, namespaceURI, localName, attributes);
         } catch (XMLException toCatch) {
-            throw new org.xml.sax.SAXException(toCatch);
+            throw new SAXException(toCatch);
         }
 
         elementLayers.add(curListener);
@@ -257,7 +260,7 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
         String namespaceURI,
         String localName,
         String qName)
-        throws org.xml.sax.SAXException {
+        throws SAXException {
         this.handleText();
 
         elementLayers.remove(elementLayers.size() - 1);
@@ -266,59 +269,62 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
         try {
             curListener.saxEndElement(this, namespaceURI, localName);
         } catch (XMLException toCatch) {
-            throw new org.xml.sax.SAXException(toCatch);
+            throw new SAXException(toCatch);
         }
         depth--;
     }
 
     @Override
-    public void startPrefixMapping(
-        String prefix,
-        String uri) {
+    public void startPrefixMapping(String prefix, String uri) {
         // just do-nothing
     }
 
     @Override
-    public void endPrefixMapping(
-        String prefix) {
+    public void endPrefixMapping(String prefix) {
         // just do-nothing
     }
 
     @Override
-    public void characters(
-        char[] ch,
-        int start,
-        int length) {
+    public void characters(char[] ch, int start, int length) {
         textValue.append(ch, start, length);
     }
 
     @Override
-    public void ignorableWhitespace(
-        char[] ch,
-        int start,
-        int length) {
+    public void ignorableWhitespace(char[] ch, int start, int length) {
         if (handleWhiteSpaces) {
             textValue.append(ch, start, length);
         }
     }
 
     @Override
-    public void processingInstruction(
-        String target,
-        String data) {
+    public void processingInstruction(String target, String data) {
         // just do-nothing
     }
 
     @Override
-    public void setDocumentLocator(
-        org.xml.sax.Locator locator) {
+    public void setDocumentLocator(Locator locator) {
         this.locator = locator;
     }
 
     @Override
-    public void skippedEntity(
-        String name) {
+    public void skippedEntity(String name) {
         // just do-nothing
+    }
+
+    @Override
+    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        // Return empty stream - we don't need entities by default
+        return new InputSource(new StringReader(""));
+    }
+
+    @Override
+    public void notationDecl(String name, String publicId, String systemId) throws SAXException {
+        // do nothing
+    }
+
+    @Override
+    public void unparsedEntityDecl(String name, String publicId, String systemId, String notationName) throws SAXException {
+        // do nothing
     }
 
     static public class Parser {
@@ -354,17 +360,17 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
     static class ParseErrorHandler implements org.xml.sax.ErrorHandler {
 
         @Override
-        public void error(org.xml.sax.SAXParseException exception) {
+        public void error(SAXParseException exception) {
 
         }
 
         @Override
-        public void fatalError(org.xml.sax.SAXParseException exception) {
+        public void fatalError(SAXParseException exception) {
 
         }
 
         @Override
-        public void warning(org.xml.sax.SAXParseException exception) {
+        public void warning(SAXParseException exception) {
 
         }
 
