@@ -75,7 +75,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     @Deprecated
     public static final String DEFAULT_ACTIVE_OBJECT = "default.activeObject"; //$NON-NLS-1$
 
-    public static final long DISCONNECT_ALL_TIMEOUT = 5000;
+    private static final long DISCONNECT_ALL_TIMEOUT = 5000;
 
     private static final Log log = Log.getLog(DataSourceRegistry.class);
 
@@ -126,7 +126,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    public void closeConnections(long waitTime)
+    private void closeConnections(long waitTime)
     {
         boolean hasConnections = false;
         synchronized (dataSources) {
@@ -274,7 +274,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         dataSourceFolders.remove(folderImpl);
     }
 
-    DataSourceFolder findRootFolder(String name) {
+    private DataSourceFolder findRootFolder(String name) {
         for (DataSourceFolder root : getRootFolders()) {
             if (root.getName().equals(name)) {
                 return root;
@@ -283,7 +283,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return null;
     }
 
-    DataSourceFolder findFolderByPath(String path, boolean create) {
+    private DataSourceFolder findFolderByPath(String path, boolean create) {
         DataSourceFolder parent = null;
         for (String name : path.split("/")) {
             DataSourceFolder folder = parent == null ? findRootFolder(name) : parent.getChild(name);
@@ -359,7 +359,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    public void fireDataSourceEvent(
+    private void fireDataSourceEvent(
         DBPEvent.Action action,
         DBSObject object)
     {
@@ -514,7 +514,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         updateProjectNature();
     }
 
-    void saveDataSources()
+    private void saveDataSources()
     {
         updateProjectNature();
         final IProgressMonitor progressMonitor = new NullProgressMonitor();
