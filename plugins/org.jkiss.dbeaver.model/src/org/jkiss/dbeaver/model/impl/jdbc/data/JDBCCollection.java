@@ -184,6 +184,20 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
         return new JDBCCollection(elementType, elementValueHandler, contents);
     }
 
+    @NotNull
+    public static DBDCollection makePseudoArray(@NotNull JDBCSession session, String value) throws DBCException {
+        String stringType = DBUtils.getDefaultDataTypeName(session.getDataSource(), DBPDataKind.STRING);
+        if (stringType == null) {
+            throw new DBCException("String data type not supported by database");
+        }
+        DBSDataType dataType = DBUtils.getLocalDataType(session.getDataSource(), stringType);
+        if (dataType == null) {
+            throw new DBCException("String data type '" + stringType + "' not supported by database");
+        }
+        DBDValueHandler valueHandler = DBUtils.findValueHandler(session, dataType);
+        return new JDBCCollectionUnsupported(dataType, valueHandler, value);
+    }
+
     public JDBCCollection(DBSDataType type, DBDValueHandler valueHandler, @Nullable Object[] contents) {
         this.type = type;
         this.valueHandler = valueHandler;
