@@ -727,7 +727,7 @@
                     id="apache_hive2"
                     label="Apache Hive"
                     class="org.apache.hive.jdbc.HiveDriver"
-                    sampleURL="jdbc:hive2://{host}[:{port}]/{database}"
+                    sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                     defaultPort="10000"
                     description="Apache Hive JDBC"
                     webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
