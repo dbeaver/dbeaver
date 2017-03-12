@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Fake array holder
@@ -28,7 +29,7 @@ public class JDBCCollectionUnsupported implements DBDCollection {
 
     private final DBSDataType type;
     private final DBDValueHandler valueHandler;
-    private final String value;
+    private String value;
 
     public JDBCCollectionUnsupported(DBSDataType type, DBDValueHandler valueHandler, String value) {
         this.type = type;
@@ -43,7 +44,7 @@ public class JDBCCollectionUnsupported implements DBDCollection {
 
     @Override
     public boolean isNull() {
-        return false;
+        return value != null;
     }
 
     @Override
@@ -75,7 +76,7 @@ public class JDBCCollectionUnsupported implements DBDCollection {
 
     @Override
     public void setItem(int index, Object value) {
-
+        this.value = CommonUtils.toString(value);
     }
 
     @Override
