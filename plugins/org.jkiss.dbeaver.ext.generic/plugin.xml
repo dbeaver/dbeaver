@@ -727,12 +727,24 @@
                     id="apache_hive2"
                     label="Apache Hive"
                     class="org.apache.hive.jdbc.HiveDriver"
-                    sampleURL="jdbc:hive2://{host}[:{port}]/{database}"
+                    sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                     defaultPort="10000"
                     description="Apache Hive JDBC"
                     webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
                     category="Hadoop">
                     <file type="jar" path="maven:/org.apache.hive:hive-jdbc:RELEASE"/>
+                    <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
+                </driver>
+                <driver
+                    id="spark_hive"
+                    label="Spark Hive"
+                    class="org.apache.hive.jdbc.HiveDriver"
+                    sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
+                    defaultPort="10000"
+                    description="Spark Thrift Server connector"
+                    webURL="https://jaceklaskowski.gitbooks.io/mastering-apache-spark/spark-sql-thrift-server.html"
+                    category="Hadoop">
+                    <file type="jar" path="maven:/org.spark-project.hive:hive-jdbc:RELEASE"/>
                     <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
                 </driver>
                 <driver

@@ -96,7 +96,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         try {
             supportsSubqueries = metaData.supportsCorrelatedSubqueries();
         } catch (SQLException e) {
-            log.debug(e);
+            log.debug(e.getMessage());
         }
 
         try {
