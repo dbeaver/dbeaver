@@ -62,9 +62,12 @@ public class CustomComboBoxCellEditor extends ComboBoxCellEditor {
         comboBox.setFont(parent.getFont());
         comboBox.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 
-        proposalProvider = new SimpleContentProposalProvider(comboBox.getItems());
-        proposalProvider.setFiltering(true);
-        UIUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider, true);
+        if ((getStyle() & SWT.READ_ONLY) == 0) {
+            // Install proposal provider for editable combos
+            proposalProvider = new SimpleContentProposalProvider(comboBox.getItems());
+            proposalProvider.setFiltering(true);
+            UIUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider, true);
+        }
 
         return comboBox;
     }
