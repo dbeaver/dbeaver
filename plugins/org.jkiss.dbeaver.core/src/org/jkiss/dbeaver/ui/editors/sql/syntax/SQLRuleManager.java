@@ -27,6 +27,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -118,7 +119,7 @@ public class SQLRuleManager extends RuleBasedScanner {
         return posList;
     }
 
-    public void refreshRules(DBPDataSource dataSource, IEditorInput editorInput)
+    public void refreshRules(@Nullable DBPDataSource dataSource, IEditorInput editorInput)
     {
         boolean minimalRules = false;
         File file = EditorUtils.getLocalFileFromInput(editorInput);
@@ -215,11 +216,13 @@ public class SQLRuleManager extends RuleBasedScanner {
             for (String reservedWord : dialect.getReservedWords()) {
                 wordRule.addWord(reservedWord, keywordToken);
             }
-            for (String function : dialect.getFunctions(dataSource)) {
-                wordRule.addWord(function, typeToken);
-            }
-            for (String type : dialect.getDataTypes(dataSource)) {
-                wordRule.addWord(type, typeToken);
+            if (dataSource != null) {
+                for (String function : dialect.getFunctions(dataSource)) {
+                    wordRule.addWord(function, typeToken);
+                }
+                for (String type : dialect.getDataTypes(dataSource)) {
+                    wordRule.addWord(type, typeToken);
+                }
             }
             final String blockHeaderString = dialect.getBlockHeaderString();
             if (!CommonUtils.isEmpty(blockHeaderString)) {

@@ -159,7 +159,7 @@ class ViewerColumnRegistry {
 
     }
 
-    private class ColumnsParser implements SAXListener {
+    private class ColumnsParser extends SAXListener.BaseListener {
 
         private List<ColumnState> curColumnState = null;
 
@@ -188,12 +188,5 @@ class ViewerColumnRegistry {
             }
         }
 
-        @Override
-        public void saxText(SAXReader reader, String data) throws XMLException {
-        }
-
-        @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) throws XMLException {
-        }
     }
 }

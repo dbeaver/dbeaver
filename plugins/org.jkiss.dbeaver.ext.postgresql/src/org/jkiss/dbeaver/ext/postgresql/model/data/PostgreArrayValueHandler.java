@@ -42,7 +42,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     public static final PostgreArrayValueHandler INSTANCE = new PostgreArrayValueHandler();
 
     @Override
-    public JDBCCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object != null) {
             String className = object.getClass().getName();
@@ -69,8 +69,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 }
             }
         }
-        JDBCCollection collection = super.getValueFromObject(session, type, object, copy);
-        return collection;
+        return super.getValueFromObject(session, type, object, copy);
     }
 
     private JDBCCollection convertStringToArray(@NotNull DBCSession session, @NotNull PostgreDataType itemType, @NotNull String value) {

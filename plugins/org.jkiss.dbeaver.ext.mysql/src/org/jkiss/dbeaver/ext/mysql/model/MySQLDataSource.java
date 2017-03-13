@@ -317,7 +317,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     @Override
     public MySQLCatalog getDefaultObject()
     {
-        return getCatalog(activeCatalogName);
+        return CommonUtils.isEmpty(activeCatalogName) ? null : getCatalog(activeCatalogName);
     }
 
     @Override
