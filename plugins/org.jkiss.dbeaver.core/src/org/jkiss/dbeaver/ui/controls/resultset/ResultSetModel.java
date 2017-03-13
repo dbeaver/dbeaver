@@ -828,7 +828,11 @@ public class ResultSetModel {
                     visibleAttributes.remove(filterConstraint.getAttribute());
                 } else {
                     if (!visibleAttributes.contains(filterConstraint.getAttribute())) {
-                        visibleAttributes.add((DBDAttributeBinding)filterConstraint.getAttribute());
+                        DBDAttributeBinding attribute = (DBDAttributeBinding) filterConstraint.getAttribute();
+                        if (attribute.getParentObject() == null) {
+                            // Add only root attributes
+                            visibleAttributes.add(attribute);
+                        }
                     }
                 }
             }
