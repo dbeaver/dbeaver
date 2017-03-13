@@ -1137,6 +1137,7 @@
                 </with>
             </enabledWhen>
         </handler>
+<!--
         <handler commandId="org.eclipse.ui.edit.text.contentAssist.proposals" class="org.jkiss.dbeaver.ui.editors.entity.handlers.PreviewChangesHandler">
             <activeWhen>
                 <with variable="activeEditor">
@@ -1146,6 +1147,7 @@
                 </with>
             </activeWhen>
         </handler>
+-->
         <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ui.editors.entity.handlers.UndoChangesHandler">
             <enabledWhen>
                 <with variable="activeEditor">
