@@ -67,6 +67,8 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
     boolean removeDefiner;
     boolean binariesInHex;
     boolean showViews;
+    private String extraCommandArgs;
+
     public List<MySQLDatabaseExportInfo> objects = new ArrayList<>();
 
     private MySQLExportWizardPageObjects objectsPage;
@@ -91,6 +93,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
         removeDefiner = CommonUtils.getBoolean(store.getString("MySQL.export.removeDefiner"), false);
         binariesInHex = CommonUtils.getBoolean(store.getString("MySQL.export.binariesInHex"), false);
         showViews = CommonUtils.getBoolean(store.getString("MySQL.export.showViews"), false);
+        extraCommandArgs = store.getString("MySQL.export.extraArgs");
     }
 
     @Override
@@ -133,14 +136,12 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
         UIUtils.launchProgram(outputFolder.getAbsolutePath());
 	}
 
-    private String extraCommandArgs;
+    public String getExtraCommandArgs() {
+        return extraCommandArgs;
+    }
 
     public void setExtraCommandArgs(String extraCommandArgs) {
         this.extraCommandArgs = extraCommandArgs;
-    }
-
-    public String getExtraCommandArgs() {
-        return extraCommandArgs;
     }
 
     @Override
@@ -178,8 +179,8 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
         if (dumpEvents) cmd.add("--events"); //$NON-NLS-1$
         if (comments) cmd.add("--comments"); //$NON-NLS-1$
 	    
-        if (null != getExtraCommandArgs() && getExtraCommandArgs().trim().length() > 0){
-            cmd.add(getExtraCommandArgs());
+        if (!CommonUtils.isEmptyTrimmed(extraCommandArgs)) {
+            cmd.add(extraCommandArgs);
         }
     }
 
@@ -205,6 +206,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
         store.setValue("MySQL.export.removeDefiner", removeDefiner);
         store.setValue("MySQL.export.binariesInHex", binariesInHex);
         store.setValue("MySQL.export.showViews", showViews);
+        store.setValue("MySQL.export.extraArgs", extraCommandArgs);
 
         return super.performFinish();
     }

@@ -119,7 +119,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
             }
         });
 
-        extraCommandArgsText = UIUtils.createLabelText(outputGroup, "Extra command args", "--no-data");
+        extraCommandArgsText = UIUtils.createLabelText(outputGroup, "Extra command args", wizard.getExtraCommandArgs());
         extraCommandArgsText.setToolTipText("Set extra command args for mysqldump.");
         UIUtils.installContentProposal(
                 extraCommandArgsText,
