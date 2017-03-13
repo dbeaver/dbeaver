@@ -345,7 +345,10 @@ public class JDBCSQLDialect extends BasicSQLDialect {
                     addSQLKeyword(keyword.toUpperCase());
                 }
             }
-
+        } catch (SQLException e) {
+            log.debug("Error reading SQL keywords: " + e.getMessage());
+        }
+        try {
             // Functions
             Set<String> allFunctions = new HashSet<>();
             for (String func : makeStringList(metaData.getNumericFunctions())) {
@@ -369,7 +372,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
             addFunctions(allFunctions);
         }
         catch (Throwable e) {
-            log.error(e);
+            log.debug("Error reading SQL functions: " + e.getMessage());
         }
     }
 
