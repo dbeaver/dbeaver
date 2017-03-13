@@ -48,6 +48,11 @@ public class JDBCCollectionUnsupported implements DBDCollection {
     }
 
     @Override
+    public boolean isModified() {
+        return false;
+    }
+
+    @Override
     public void release() {
 
     }
