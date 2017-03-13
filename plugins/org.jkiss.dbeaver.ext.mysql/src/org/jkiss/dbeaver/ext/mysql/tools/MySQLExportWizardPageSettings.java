@@ -36,6 +36,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
 
     private Text outputFolderText;
     private Text outputFileText;
+    private Text extraCommandArgsText;
     private Combo methodCombo;
     private Button noCreateStatementsCheck;
     private Button addDropStatementsCheck;
@@ -117,6 +118,20 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
                 wizard.setOutputFilePattern(outputFileText.getText());
             }
         });
+
+        extraCommandArgsText = UIUtils.createLabelText(outputGroup, "Extra command args", "--no-data");
+        extraCommandArgsText.setToolTipText("Set extra command args for mysqldump.");
+        UIUtils.installContentProposal(
+                extraCommandArgsText,
+                new TextContentAdapter(),
+                new SimpleContentProposalProvider(new String[]{}));
+        extraCommandArgsText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                wizard.setExtraCommandArgs(extraCommandArgsText.getText());
+            }
+        });
+        
         if (wizard.getOutputFolder() != null) {
             outputFolderText.setText(wizard.getOutputFolder().getAbsolutePath());
         }
@@ -131,6 +146,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         String fileName = outputFolderText.getText();
         wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
         wizard.setOutputFilePattern(outputFileText.getText());
+        wizard.setExtraCommandArgs(extraCommandArgsText.getText());
         switch (methodCombo.getSelectionIndex()) {
             case 0: wizard.method = MySQLExportWizard.DumpMethod.ONLINE; break;
             case 1: wizard.method = MySQLExportWizard.DumpMethod.LOCK_ALL_TABLES; break;
