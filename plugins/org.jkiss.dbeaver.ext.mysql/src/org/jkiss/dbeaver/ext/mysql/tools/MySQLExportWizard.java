@@ -133,6 +133,16 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
         UIUtils.launchProgram(outputFolder.getAbsolutePath());
 	}
 
+    private String extraCommandArgs;
+
+    public void setExtraCommandArgs(String extraCommandArgs) {
+        this.extraCommandArgs = extraCommandArgs;
+    }
+
+    public String getExtraCommandArgs() {
+        return extraCommandArgs;
+    }
+
     @Override
     public void fillProcessParameters(List<String> cmd, MySQLDatabaseExportInfo arg) throws IOException
     {
@@ -167,6 +177,10 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
         }
         if (dumpEvents) cmd.add("--events"); //$NON-NLS-1$
         if (comments) cmd.add("--comments"); //$NON-NLS-1$
+	    
+        if (null != getExtraCommandArgs() && getExtraCommandArgs().trim().length() > 0){
+            cmd.add(getExtraCommandArgs());
+        }
     }
 
     @Override
