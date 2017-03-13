@@ -39,6 +39,7 @@ import java.io.*;
 public class DBDDocumentXML implements DBDDocument {
 
     private Document document;
+    private boolean modified;
 
     public DBDDocumentXML(Document document) {
         this.document = document;
@@ -89,6 +90,7 @@ public class DBDDocumentXML implements DBDDocument {
                 new StreamSource(new InputStreamReader(stream, encoding)),
                 output);
             document = (Document) output.getNode();
+            modified = true;
         } catch (Exception e) {
             throw new DBException("Error transforming XML document", e);
         }
@@ -102,6 +104,11 @@ public class DBDDocumentXML implements DBDDocument {
     @Override
     public boolean isNull() {
         return document == null;
+    }
+
+    @Override
+    public boolean isModified() {
+        return modified;
     }
 
     @Override

@@ -44,6 +44,11 @@ public class JDBCCursor extends JDBCResultSetImpl implements DBDCursor {
     }
 
     @Override
+    public boolean isModified() {
+        return false;
+    }
+
+    @Override
     public void release()
     {
         super.close();

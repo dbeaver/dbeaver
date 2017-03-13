@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 public abstract class AbstractContent implements DBDContent {
 
     protected final DBPDataSource dataSource;
+    protected boolean modified = false;
 
     protected AbstractContent(DBPDataSource dataSource)
     {
@@ -53,4 +54,8 @@ public abstract class AbstractContent implements DBDContent {
         return displayString == null ? DBConstants.NULL_VALUE_LABEL : displayString;
     }
 
+    @Override
+    public boolean isModified() {
+        return modified;
+    }
 }
