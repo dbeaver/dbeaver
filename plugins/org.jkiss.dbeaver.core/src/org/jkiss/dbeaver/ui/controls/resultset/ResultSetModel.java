@@ -390,7 +390,7 @@ public class ResultSetModel {
                 log.error("Error getting [" + attr.getName() + "] value", e);
             }
         }
-        if ((value instanceof DBDValue && value == oldValue) || !CommonUtils.equalObjects(oldValue, value)) {
+        if ((value instanceof DBDValue && value == oldValue && ((DBDValue) value).isModified()) || !CommonUtils.equalObjects(oldValue, value)) {
             // If DBDValue was updated (kind of CONTENT?) or actual value was changed
             if (ownerValue == null && DBUtils.isNullValue(oldValue) && DBUtils.isNullValue(value)) {
                 // Both nulls - nothing to update
