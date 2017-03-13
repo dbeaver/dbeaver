@@ -87,7 +87,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 connection.setAutoCommit(autoCommit);
                 this.autoCommit = autoCommit;
             } catch (Throwable e) {
-                log.warn("Can't set auto-commit state", e); //$NON-NLS-1$
+                log.warn("Can't set auto-commit state: " + e.getMessage()); //$NON-NLS-1$
             }
             {
                 // Cache auto-commit
