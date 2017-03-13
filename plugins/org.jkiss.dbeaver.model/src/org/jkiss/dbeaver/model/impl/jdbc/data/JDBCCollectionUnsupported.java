@@ -44,7 +44,7 @@ public class JDBCCollectionUnsupported implements DBDCollection {
 
     @Override
     public boolean isNull() {
-        return value != null;
+        return value == null;
     }
 
     @Override
@@ -82,5 +82,10 @@ public class JDBCCollectionUnsupported implements DBDCollection {
     @Override
     public void setContents(Object[] contents) {
 
+    }
+
+    @Override
+    public String toString() {
+        return value;
     }
 }
