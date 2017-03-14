@@ -43,7 +43,7 @@ public class PhoenixArrayValueHandler extends JDBCArrayValueHandler {
     public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object != null && object.getClass().getSimpleName().contains(PHOENIX_ARRAY_TYPE)) {
-            return JDBCCollection.makeArray((JDBCSession) session, type, (Array) object);
+            return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, (Array) object);
         }
         return super.getValueFromObject(session, type, object, copy);
     }

@@ -25,13 +25,13 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Fake array holder
  */
-public class JDBCCollectionUnsupported implements DBDCollection {
+public class JDBCCollectionString implements DBDCollection {
 
     private final DBSDataType type;
     private final DBDValueHandler valueHandler;
     private String value;
 
-    public JDBCCollectionUnsupported(DBSDataType type, DBDValueHandler valueHandler, String value) {
+    public JDBCCollectionString(DBSDataType type, DBDValueHandler valueHandler, String value) {
         this.type = type;
         this.valueHandler = valueHandler;
         this.value = value;

@@ -52,15 +52,15 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
-            return JDBCCollection.makeArray((JDBCSession) session, type, null);
+            return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, null);
         } else if (object instanceof JDBCCollection) {
             return (JDBCCollection)(copy ? ((JDBCCollection) object).cloneValue(session.getProgressMonitor()) : object);
         } else if (object instanceof Array) {
-            return JDBCCollection.makeArray((JDBCSession) session, type, (Array) object);
+            return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, (Array) object);
         } else if (object instanceof String) {
-            return JDBCCollection.makePseudoArray((JDBCSession) session, (String)object);
+            return JDBCCollection.makeCollectionFromString((JDBCSession) session, (String)object);
         } else {
-            return JDBCCollection.makePseudoArray((JDBCSession) session, CommonUtils.toString(object));
+            return JDBCCollection.makeCollectionFromString((JDBCSession) session, CommonUtils.toString(object));
         }
     }
 
