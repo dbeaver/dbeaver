@@ -54,6 +54,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     protected DBSEntityAttribute[] attributes;
     @NotNull
     protected Object[] values;
+    protected boolean modified;
 
     protected JDBCComposite() {
     }
@@ -80,6 +81,11 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
             }
         }
         return true;
+    }
+
+    @Override
+    public boolean isModified() {
+        return modified;
     }
 
     @Override
@@ -162,7 +168,10 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
 
     @Override
     public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) {
-        values[attribute.getOrdinalPosition()] = value;
+        if (!CommonUtils.equalObjects(values[attribute.getOrdinalPosition()], value)) {
+            this.values[attribute.getOrdinalPosition()] = value;
+            this.modified = true;
+        }
     }
 
     protected class StructType extends AbstractStructDataType<DBPDataSource> implements DBSEntity {

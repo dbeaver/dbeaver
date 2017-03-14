@@ -1137,6 +1137,7 @@
                 </with>
             </enabledWhen>
         </handler>
+<!--
         <handler commandId="org.eclipse.ui.edit.text.contentAssist.proposals" class="org.jkiss.dbeaver.ui.editors.entity.handlers.PreviewChangesHandler">
             <activeWhen>
                 <with variable="activeEditor">
@@ -1146,6 +1147,7 @@
                 </with>
             </activeWhen>
         </handler>
+-->
         <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ui.editors.entity.handlers.UndoChangesHandler">
             <enabledWhen>
                 <with variable="activeEditor">
@@ -3113,7 +3115,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository id="maven-central" name="Central Repository" url="http://central.maven.org/maven2/" order="0"/>
+        <repository id="maven-central" name="Central Repository" url="https://repo1.maven.org/maven2/" order="0"/>
     </extension>
 
     <extension

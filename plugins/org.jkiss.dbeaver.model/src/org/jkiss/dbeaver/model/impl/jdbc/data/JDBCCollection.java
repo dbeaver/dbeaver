@@ -58,6 +58,7 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
     private Object[] contents;
     private final DBSDataType type;
     private final DBDValueHandler valueHandler;
+    private boolean modified;
 
     @NotNull
     public static JDBCCollection makeArray(@NotNull JDBCSession session, @NotNull DBSTypedObject column, Array array) throws DBCException {
@@ -232,6 +233,11 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
     }
 
     @Override
+    public boolean isModified() {
+        return modified;
+    }
+
+    @Override
     public void release() {
         contents = null;
     }
@@ -279,11 +285,13 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
     @Override
     public void setItem(int index, Object value) {
         contents[index] = value;
+        modified = true;
     }
 
     @Override
     public void setContents(Object[] contents) {
         this.contents = contents;
+        this.modified = true;
     }
 
     public Array getArrayValue() throws DBCException {
