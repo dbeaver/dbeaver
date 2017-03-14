@@ -17,23 +17,24 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * Fake array holder
  */
-public class JDBCCollectionString implements DBDCollection {
+public class JDBCCollectionString extends JDBCCollection {
 
-    private final DBSDataType type;
-    private final DBDValueHandler valueHandler;
     private String value;
 
-    public JDBCCollectionString(DBSDataType type, DBDValueHandler valueHandler, String value) {
-        this.type = type;
-        this.valueHandler = valueHandler;
+    JDBCCollectionString(DBSDataType type, DBDValueHandler valueHandler, String value) {
+        super(type, valueHandler, new Object[] { value });
+        this.value = value;
+    }
+
+    JDBCCollectionString(DBSDataType type, DBDValueHandler valueHandler, String value, Object[] contents) {
+        super(type, valueHandler, contents);
         this.value = value;
     }
 
@@ -47,46 +48,12 @@ public class JDBCCollectionString implements DBDCollection {
         return value == null;
     }
 
-    @Override
-    public boolean isModified() {
-        return false;
-    }
-
-    @Override
-    public void release() {
-
-    }
-
     @NotNull
-    @Override
-    public DBSDataType getComponentType() {
-        return type;
-    }
-
-    @NotNull
-    @Override
-    public DBDValueHandler getComponentValueHandler() {
-        return valueHandler;
-    }
-
-    @Override
-    public int getItemCount() {
-        return 1;
-    }
-
-    @Override
-    public Object getItem(int index) {
+    public String makeArrayString(DBDDisplayFormat format) {
+        if (isModified()) {
+            return super.makeArrayString(format);
+        }
         return value;
-    }
-
-    @Override
-    public void setItem(int index, Object value) {
-        this.value = CommonUtils.toString(value);
-    }
-
-    @Override
-    public void setContents(Object[] contents) {
-
     }
 
     @Override

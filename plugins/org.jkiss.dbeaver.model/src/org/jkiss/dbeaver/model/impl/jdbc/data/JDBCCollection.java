@@ -335,7 +335,7 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
                     items.add(token);
                 }
 
-                return new JDBCCollection(dataType, valueHandler, items.toArray() );
+                return new JDBCCollectionString(dataType, valueHandler, value, items.toArray() );
             }
         }
         return new JDBCCollectionString(dataType, valueHandler, value);
