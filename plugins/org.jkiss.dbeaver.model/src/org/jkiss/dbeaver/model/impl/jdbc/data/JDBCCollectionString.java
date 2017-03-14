@@ -22,30 +22,21 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 /**
- * Fake array holder
+ * Collection made from string.
+ * Original string representation provided by driver.
  */
 public class JDBCCollectionString extends JDBCCollection {
 
     private String value;
 
     JDBCCollectionString(DBSDataType type, DBDValueHandler valueHandler, String value) {
-        super(type, valueHandler, new Object[] { value });
+        super(type, valueHandler, value == null ? null : new Object[] { value });
         this.value = value;
     }
 
     JDBCCollectionString(DBSDataType type, DBDValueHandler valueHandler, String value, Object[] contents) {
         super(type, valueHandler, contents);
         this.value = value;
-    }
-
-    @Override
-    public Object getRawValue() {
-        return value;
-    }
-
-    @Override
-    public boolean isNull() {
-        return value == null;
     }
 
     @NotNull
@@ -56,8 +47,4 @@ public class JDBCCollectionString extends JDBCCollection {
         return value;
     }
 
-    @Override
-    public String toString() {
-        return value;
-    }
 }
