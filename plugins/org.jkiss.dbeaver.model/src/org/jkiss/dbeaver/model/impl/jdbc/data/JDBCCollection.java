@@ -323,6 +323,7 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
         // Try to divide on string elements
         if (!CommonUtils.isEmpty(value)) {
             if (value.startsWith("[") && value.endsWith("]")) {
+                // FIXME: use real parser (nested arrays, quotes escape, etc)
                 String arrayString = value.substring(1, value.length() - 1);
                 List<Object> items = new ArrayList<>();
                 StringTokenizer st = new StringTokenizer(arrayString, ",", false);
