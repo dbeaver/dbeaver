@@ -114,18 +114,20 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
         if (editor != null && editor.isDisposed()) {
             editor = null;
         }
-        if (e.detail == SWT.TRAVERSE_RETURN && editOnEnter) {
+        if (e.detail == SWT.TRAVERSE_RETURN) {
             if (editor != null) {
                 saveEditorValue(editor, columnIndex, tableEditor.getItem());
                 closeEditor();
-            } else {
+            } else if (editOnEnter) {
                 TableItem[] selection = table.getSelection();
                 if (selection != null && selection.length >= 1) {
                     showEditor(selection[0]);
                 }
             }
-            e.doit = false;
-            e.detail = SWT.TRAVERSE_NONE;
+            if (editOnEnter) {
+                e.doit = false;
+                e.detail = SWT.TRAVERSE_NONE;
+            }
         } else if (e.detail == SWT.TRAVERSE_TAB_NEXT && editor != null) {
             TableItem item = tableEditor.getItem();
             if (item != null) {

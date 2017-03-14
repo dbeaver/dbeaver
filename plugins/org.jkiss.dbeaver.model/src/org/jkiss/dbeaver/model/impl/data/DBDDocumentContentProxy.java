@@ -101,6 +101,11 @@ public abstract class DBDDocumentContentProxy implements DBDDocument {
     }
 
     @Override
+    public boolean isModified() {
+        return document.isModified();
+    }
+
+    @Override
     public void release() {
         document.release();
     }

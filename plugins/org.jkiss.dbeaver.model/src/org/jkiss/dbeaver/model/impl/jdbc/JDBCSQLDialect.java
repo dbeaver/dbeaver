@@ -66,7 +66,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         try {
             this.identifierQuoteString = metaData.getIdentifierQuoteString();
         } catch (Throwable e) {
-            log.debug(e.getMessage());
+            log.debug("Error getting identifierQuoteString: " + e.getMessage());
             this.identifierQuoteString = SQLConstants.DEFAULT_IDENTIFIER_QUOTE;
         }
         if (identifierQuoteString != null) {
@@ -89,26 +89,26 @@ public class JDBCSQLDialect extends BasicSQLDialect {
                     break;
             }
         } catch (Throwable e) {
-            log.debug(e.getMessage());
+            log.debug("Error getting sqlStateType: " + e.getMessage());
             this.sqlStateType = SQLStateType.UNKNOWN;
         }
 
         try {
             supportsSubqueries = metaData.supportsCorrelatedSubqueries();
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            log.debug("Error getting supportsSubqueries: " + e.getMessage());
         }
 
         try {
             this.supportsUnquotedMixedCase = metaData.supportsMixedCaseIdentifiers();
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            log.debug("Error getting supportsUnquotedMixedCase:" + e.getMessage());
             this.supportsUnquotedMixedCase = false;
         }
         try {
             this.supportsQuotedMixedCase = metaData.supportsMixedCaseQuotedIdentifiers();
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            log.debug("Error getting supportsQuotedMixedCase: " + e.getMessage());
             this.supportsQuotedMixedCase = false;
         }
         try {
@@ -120,7 +120,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
                 this.unquotedIdentCase = DBPIdentifierCase.MIXED;
             }
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            log.debug("Error getting unquotedIdentCase:" + e.getMessage());
             this.unquotedIdentCase = DBPIdentifierCase.MIXED;
         }
         try {
@@ -132,13 +132,13 @@ public class JDBCSQLDialect extends BasicSQLDialect {
                 this.quotedIdentCase = DBPIdentifierCase.MIXED;
             }
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            log.debug("Error getting quotedIdentCase:" + e.getMessage());
             this.quotedIdentCase = DBPIdentifierCase.MIXED;
         }
         try {
             this.searchStringEscape = metaData.getSearchStringEscape();
         } catch (Throwable e) {
-            log.debug(e.getMessage());
+            log.debug("Error getting searchStringEscape:" + e.getMessage());
             this.searchStringEscape = "\\"; //$NON-NLS-1$
         }
         try {
@@ -147,7 +147,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
                 this.catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
             }
         } catch (Throwable e) {
-            log.debug(e.getMessage());
+            log.debug("Error getting catalogSeparator:" + e.getMessage());
             this.catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
         }
         try {
@@ -158,7 +158,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
                     (metaData.supportsCatalogsInIndexDefinitions() ? SQLDialect.USAGE_INDEX : 0) |
                     (metaData.supportsCatalogsInPrivilegeDefinitions() ? SQLDialect.USAGE_PRIV : 0);
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            log.debug("Error getting catalogUsage:" + e.getMessage());
             catalogUsage = SQLDialect.USAGE_NONE;
         }
         try {
@@ -169,20 +169,20 @@ public class JDBCSQLDialect extends BasicSQLDialect {
                     (metaData.supportsSchemasInIndexDefinitions() ? SQLDialect.USAGE_INDEX : 0) |
                     (metaData.supportsSchemasInPrivilegeDefinitions() ? SQLDialect.USAGE_PRIV : 0);
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            log.debug("Error getting schemaUsage:" + e.getMessage());
             schemaUsage = SQLDialect.USAGE_DDL | SQLDialect.USAGE_DML;
         }
         try {
             validCharacters = metaData.getExtraNameCharacters();
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            log.debug("Error getting validCharacters:" + e.getMessage());
             validCharacters = ""; //$NON-NLS-1$
         }
 
         try {
             this.isCatalogAtStart = metaData.isCatalogAtStart();
         } catch (Throwable e) {
-            log.debug(e.getMessage());
+            log.debug("Error getting isCatalogAtStart:" + e.getMessage());
             this.isCatalogAtStart = true;
         }
 
@@ -345,7 +345,10 @@ public class JDBCSQLDialect extends BasicSQLDialect {
                     addSQLKeyword(keyword.toUpperCase());
                 }
             }
-
+        } catch (SQLException e) {
+            log.debug("Error reading SQL keywords: " + e.getMessage());
+        }
+        try {
             // Functions
             Set<String> allFunctions = new HashSet<>();
             for (String func : makeStringList(metaData.getNumericFunctions())) {
@@ -369,7 +372,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
             addFunctions(allFunctions);
         }
         catch (Throwable e) {
-            log.error(e);
+            log.debug("Error reading SQL functions: " + e.getMessage());
         }
     }
 
