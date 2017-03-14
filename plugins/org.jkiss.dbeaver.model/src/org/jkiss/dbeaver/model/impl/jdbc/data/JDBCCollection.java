@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.Array;
 import java.sql.Connection;
@@ -47,6 +48,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Array holder
@@ -122,13 +124,14 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
             return valueHandler.getValueDisplayString(type, contents[0], format);
         } else {
             StringBuilder str = new StringBuilder(contents.length * 32);
-            for (Object item : contents) {
-                if (str.length() > 0) {
-                    str.append(' '); //$NON-NLS-1$
-                }
+            str.append("[");
+            for (int i = 0; i < contents.length; i++) {
+                Object item = contents[i];
+                if (i > 0) str.append(','); //$NON-NLS-1$
                 String itemString = valueHandler.getValueDisplayString(type, item, format);
                 SQLUtils.appendValue(str, type, itemString);
             }
+            str.append("]");
             return str.toString();
         }
     }
@@ -316,6 +319,24 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
             throw new DBCException("String data type '" + stringType + "' not supported by database");
         }
         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, dataType);
+
+        // Try to divide on string elements
+        if (!CommonUtils.isEmpty(value)) {
+            if (value.startsWith("[") && value.endsWith("]")) {
+                String arrayString = value.substring(1, value.length() - 1);
+                List<Object> items = new ArrayList<>();
+                StringTokenizer st = new StringTokenizer(arrayString, ",", false);
+                while (st.hasMoreTokens()) {
+                    String token = st.nextToken().trim();
+                    if (token.startsWith("\"") && token.endsWith("\"")) {
+                        token = token.substring(1, token.length() - 1);
+                    }
+                    items.add(token);
+                }
+
+                return new JDBCCollection(dataType, valueHandler, items.toArray() );
+            }
+        }
         return new JDBCCollectionString(dataType, valueHandler, value);
     }
 
