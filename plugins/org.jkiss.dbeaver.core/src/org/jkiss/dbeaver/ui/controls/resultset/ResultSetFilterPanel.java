@@ -286,10 +286,15 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     }
 
     private void enablePanelControls(boolean enable) {
-        filterToolbar.setEnabled(enable);
-        refreshPanel.setEnabled(enable);
-        historyPanel.setEnabled(enable);
-        filtersText.setEditable(enable && viewer.supportsDataFilter());
+        setRedraw(false);
+        try {
+            filterToolbar.setEnabled(enable);
+            refreshPanel.setEnabled(enable);
+            historyPanel.setEnabled(enable);
+            filtersText.setEditable(enable && viewer.supportsDataFilter());
+        } finally {
+            setRedraw(true);
+        }
     }
 
     private boolean isFiltersAvailable() {

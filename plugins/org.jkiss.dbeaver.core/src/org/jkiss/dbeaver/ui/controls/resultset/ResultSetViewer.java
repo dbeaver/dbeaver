@@ -183,76 +183,81 @@ public class ResultSetViewer extends Viewer
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
+        this.viewerPanel.setRedraw(false);
 
-        this.filtersPanel = new ResultSetFilterPanel(this);
-        this.findReplaceTarget = new DynamicFindReplaceTarget();
+        try {
+            this.filtersPanel = new ResultSetFilterPanel(this);
+            this.findReplaceTarget = new DynamicFindReplaceTarget();
 
-        this.viewerSash = UIUtils.createPartDivider(site.getPart(), viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
-        this.viewerSash.setLayoutData(new GridData(GridData.FILL_BOTH));
+            this.viewerSash = UIUtils.createPartDivider(site.getPart(), viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
+            this.viewerSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        this.presentationPanel = UIUtils.createPlaceholder(this.viewerSash, 1);
-        this.presentationPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+            this.presentationPanel = UIUtils.createPlaceholder(this.viewerSash, 1);
+            this.presentationPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        this.panelFolder = new CTabFolder(this.viewerSash, SWT.FLAT | SWT.TOP);
-        this.panelFolder.marginWidth = 0;
-        this.panelFolder.marginHeight = 0;
-        this.panelFolder.setMinimizeVisible(true);
-        this.panelFolder.setMRUVisible(true);
-        this.panelFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+            this.panelFolder = new CTabFolder(this.viewerSash, SWT.FLAT | SWT.TOP);
+            this.panelFolder.marginWidth = 0;
+            this.panelFolder.marginHeight = 0;
+            this.panelFolder.setMinimizeVisible(true);
+            this.panelFolder.setMRUVisible(true);
+            this.panelFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
-        ToolBar panelToolbarControl = this.panelToolBar.createControl(panelFolder);
-        this.panelFolder.setTopRight(panelToolbarControl, SWT.RIGHT | SWT.WRAP);
-        this.panelFolder.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                CTabItem activeTab = panelFolder.getSelection();
-                if (activeTab != null) {
-                    setActivePanel((String) activeTab.getData());
+            this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
+            ToolBar panelToolbarControl = this.panelToolBar.createControl(panelFolder);
+            this.panelFolder.setTopRight(panelToolbarControl, SWT.RIGHT | SWT.WRAP);
+            this.panelFolder.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    CTabItem activeTab = panelFolder.getSelection();
+                    if (activeTab != null) {
+                        setActivePanel((String) activeTab.getData());
+                    }
                 }
-            }
-        });
-        this.panelFolder.addListener(SWT.Resize, new Listener() {
-            @Override
-            public void handleEvent(Event event)
-            {
-                if (!viewerSash.isDisposed()) {
-                    int[] weights = viewerSash.getWeights();
-                    getPresentationSettings().panelRatio = weights[1];
+            });
+            this.panelFolder.addListener(SWT.Resize, new Listener() {
+                @Override
+                public void handleEvent(Event event)
+                {
+                    if (!viewerSash.isDisposed()) {
+                        int[] weights = viewerSash.getWeights();
+                        getPresentationSettings().panelRatio = weights[1];
+                    }
                 }
-            }
-        });
-        this.panelFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
-            @Override
-            public void close(CTabFolderEvent event) {
-                CTabItem item = (CTabItem) event.item;
-                String panelId = (String) item.getData();
-                removePanel(panelId);
-            }
+            });
+            this.panelFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
+                @Override
+                public void close(CTabFolderEvent event) {
+                    CTabItem item = (CTabItem) event.item;
+                    String panelId = (String) item.getData();
+                    removePanel(panelId);
+                }
 
-            @Override
-            public void minimize(CTabFolderEvent event) {
-                showPanels(false);
-            }
+                @Override
+                public void minimize(CTabFolderEvent event) {
+                    showPanels(false);
+                }
 
-            @Override
-            public void maximize(CTabFolderEvent event) {
+                @Override
+                public void maximize(CTabFolderEvent event) {
 
-            }
-        });
+                }
+            });
 
-        setActivePresentation(new EmptyPresentation());
+            setActivePresentation(new EmptyPresentation());
 
-        createStatusBar();
+            createStatusBar();
 
-        this.viewerPanel.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                dispose();
-            }
-        });
+            this.viewerPanel.addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e) {
+                    dispose();
+                }
+            });
 
-        changeMode(false);
+            changeMode(false);
+        } finally {
+            this.viewerPanel.setRedraw(true);
+        }
         updateFiltersText();
     }
 
@@ -284,29 +289,38 @@ public class ResultSetViewer extends Viewer
 
     public void updateFiltersText(boolean resetFilterValue)
     {
-        boolean enableFilters = false;
-        DBCExecutionContext context = getExecutionContext();
-        if (context != null) {
-            if (activePresentation instanceof StatisticsPresentation) {
-                enableFilters = false;
-            } else {
-                StringBuilder where = new StringBuilder();
-                SQLUtils.appendConditionString(model.getDataFilter(), context.getDataSource(), null, where, true);
-                String whereCondition = where.toString().trim();
-                if (resetFilterValue) {
-                    filtersPanel.setFilterValue(whereCondition);
-                    if (!whereCondition.isEmpty()) {
-                        filtersPanel.addFiltersHistory(whereCondition);
+        if (this.viewerPanel.isDisposed()) {
+            return;
+        }
+
+        this.viewerPanel.setRedraw(false);
+        try {
+            boolean enableFilters = false;
+            DBCExecutionContext context = getExecutionContext();
+            if (context != null) {
+                if (activePresentation instanceof StatisticsPresentation) {
+                    enableFilters = false;
+                } else {
+                    StringBuilder where = new StringBuilder();
+                    SQLUtils.appendConditionString(model.getDataFilter(), context.getDataSource(), null, where, true);
+                    String whereCondition = where.toString().trim();
+                    if (resetFilterValue) {
+                        filtersPanel.setFilterValue(whereCondition);
+                        if (!whereCondition.isEmpty()) {
+                            filtersPanel.addFiltersHistory(whereCondition);
+                        }
+                    }
+
+                    if (container.isReadyToRun() && !model.isUpdateInProgress()) {
+                        enableFilters = true;
                     }
                 }
-
-                if (container.isReadyToRun() && !model.isUpdateInProgress()) {
-                    enableFilters = true;
-                }
             }
+            filtersPanel.enableFilters(enableFilters);
+            //presentationSwitchToolbar.setEnabled(enableFilters);
+        } finally {
+            this.viewerPanel.setRedraw(true);
         }
-        filtersPanel.enableFilters(enableFilters);
-        //presentationSwitchToolbar.setEnabled(enableFilters);
     }
 
     void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
@@ -1230,7 +1244,7 @@ public class ResultSetViewer extends Viewer
 
     public void setStatus(String status, DBPMessageType messageType)
     {
-        if (statusLabel.isDisposed()) {
+        if (statusLabel == null || statusLabel.isDisposed()) {
             return;
         }
         statusLabel.setStatus(status, messageType);

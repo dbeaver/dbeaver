@@ -1219,6 +1219,14 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    private int getTotalQueryRunning() {
+        int jobsRunning = 0;
+        for (QueryProcessor queryProcessor : queryProcessors) {
+            jobsRunning += queryProcessor.curJobRunning.get();
+        }
+        return jobsRunning;
+    }
+
     @Override
     public void handleDataSourceEvent(final DBPEvent event)
     {
@@ -1277,10 +1285,7 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public int promptToSaveOnClose()
     {
-        int jobsRunning = 0;
-        for (QueryProcessor queryProcessor : queryProcessors) {
-            jobsRunning += queryProcessor.curJobRunning.get();
-        }
+        int jobsRunning = getTotalQueryRunning();
         if (jobsRunning > 0) {
             log.warn("There are " + jobsRunning + " SQL job(s) still running in the editor");
 //            MessageBox messageBox = new MessageBox(getSite().getShell(), SWT.ICON_WARNING | SWT.OK);
@@ -1897,7 +1902,10 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void onStartQuery(DBCSession session, final SQLQuery query) {
-            setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
+            boolean isInExecute = getTotalQueryRunning() > 0;
+            if (!isInExecute) {
+                setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
+            }
             queryProcessor.curJobRunning.incrementAndGet();
             synchronized (runningQueries) {
                 runningQueries.add(query);
@@ -1919,11 +1927,13 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void onEndQuery(final DBCSession session, final SQLQueryResult result) {
-            setTitleImage(editorImage);
             synchronized (runningQueries) {
                 runningQueries.remove(result.getStatement());
             }
             queryProcessor.curJobRunning.decrementAndGet();
+            if (getTotalQueryRunning() <= 0) {
+                setTitleImage(editorImage);
+            }
 
             if (isDisposed()) {
                 return;
