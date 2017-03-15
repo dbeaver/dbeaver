@@ -32,9 +32,9 @@ public class DriverDependencies implements DBPDriverDependencies
 {
     private static final Log log = Log.getLog(DriverDependencies.class);
 
-    final List<DBPDriverLibrary> rootLibraries;
-    final List<DependencyNode> rootNodes = new ArrayList<>();
-    final List<DependencyNode> libraryList = new ArrayList<>();
+    private final List<DBPDriverLibrary> rootLibraries;
+    private final List<DependencyNode> rootNodes = new ArrayList<>();
+    private final List<DependencyNode> libraryList = new ArrayList<>();
 
     public DriverDependencies(Collection<? extends DBPDriverLibrary> rootLibraries) {
         this.rootLibraries = new ArrayList<>(rootLibraries);
