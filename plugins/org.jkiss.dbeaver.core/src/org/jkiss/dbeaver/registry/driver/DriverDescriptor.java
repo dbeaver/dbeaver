@@ -23,7 +23,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -858,7 +858,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         this.classLoader = null;
 
-        List<File> allLibraryFiles = validateFilesPresence();
+        List<File> allLibraryFiles = validateFilesPresence(false);
 
         List<URL> libraryURLs = new ArrayList<>();
         // Load libraries
@@ -881,16 +881,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public void updateFiles()
     {
-        resetDriverInstance();
-        for (DBPDriverLibrary library : libraries) {
-            if (!library.isDisabled()) {
-                library.resetVersion();
-            }
-        }
-        validateFilesPresence();
+        validateFilesPresence(true);
     }
 
-    public List<File> validateFilesPresence()
+    @NotNull
+    private List<File> validateFilesPresence(boolean resetVersions)
     {
         boolean localLibsExists = false;
         final List<DBPDriverLibrary> downloadCandidates = new ArrayList<>();
@@ -905,14 +900,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
             if (library.isDownloadable()) {
                 boolean allExists = true;
-                List<DriverFileInfo> files = resolvedFiles.get(library);
-                if (files == null) {
+                if (resetVersions) {
                     allExists = false;
                 } else {
-                    for (DriverFileInfo file : files) {
-                        if (!file.file.exists()) {
-                            allExists = false;
-                            break;
+                    List<DriverFileInfo> files = resolvedFiles.get(library);
+                    if (files == null) {
+                        allExists = false;
+                    } else {
+                        for (DriverFileInfo file : files) {
+                            if (file.file == null || !file.file.exists()) {
+                                allExists = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -935,12 +934,26 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         boolean downloaded = false;
         if (!downloadCandidates.isEmpty() || (!localLibsExists && !fileSources.isEmpty())) {
             final DriverDependencies dependencies = new DriverDependencies(downloadCandidates);
-            DBeaverUI.syncExec(new Runnable() {
+            boolean downloadOk = new UITask<Boolean>() {
                 @Override
-                public void run() {
-                    DriverDownloadDialog.downloadDriverFiles(null, DriverDescriptor.this, dependencies);
+                protected Boolean runTask() {
+                    return DriverDownloadDialog.downloadDriverFiles(null, DriverDescriptor.this, dependencies);
                 }
-            });
+            }.execute();
+            if (!downloadOk) {
+                return Collections.emptyList();
+            }
+            if (resetVersions) {
+                resetDriverInstance();
+
+/*
+                for (DBPDriverLibrary library : libraries) {
+                    if (!library.isDisabled()) {
+                        library.resetVersion();
+                    }
+                }
+*/
+            }
             downloaded = true;
             for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryMap()) {
                 List<DriverFileInfo> info = new ArrayList<>();
@@ -949,6 +962,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
             providerDescriptor.getRegistry().saveDrivers();
         }
+
         List<File> result = new ArrayList<>();
 
         for (DBPDriverLibrary library : libraries) {
@@ -1461,15 +1475,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 case RegistryConstants.TAG_FILE: {
                     if (curDriver != null && curLibrary != null) {
                         String path = atts.getValue(RegistryConstants.ATTR_PATH);
-                        path = replacePathVariables(path);
-                        if (CommonUtils.isEmpty(path)) {
-                            log.warn("Empty path for library file");
-                        } else {
-                            DriverFileInfo info = new DriverFileInfo(
-                                atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_ID)),
-                                atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_VERSION)),
-                                new File(path));
-                            curDriver.addLibraryFile(curLibrary, info);
+                        if (path != null) {
+                            path = replacePathVariables(path);
+                            if (CommonUtils.isEmpty(path)) {
+                                log.warn("Empty path for library file");
+                            } else {
+                                DriverFileInfo info = new DriverFileInfo(
+                                        atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_ID)),
+                                        atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_VERSION)),
+                                        new File(path));
+                                curDriver.addLibraryFile(curLibrary, info);
+                            }
                         }
                     }
                     break;
