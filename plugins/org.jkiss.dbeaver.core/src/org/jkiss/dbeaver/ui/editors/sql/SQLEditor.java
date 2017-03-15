@@ -1951,7 +1951,9 @@ public class SQLEditor extends SQLEditorBase implements
                     int errorQueryOffset = query.getOffset();
                     int errorQueryLength = query.getLength();
                     if (errorQueryOffset >= 0 && errorQueryLength > 0) {
-                        getSelectionProvider().setSelection(new TextSelection(errorQueryOffset, errorQueryLength));
+                        if (scriptMode) {
+                            getSelectionProvider().setSelection(new TextSelection(errorQueryOffset, errorQueryLength));
+                        }
                     }
                 }
             } else if (!scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
