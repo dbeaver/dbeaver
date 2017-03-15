@@ -182,13 +182,6 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         setControl(composite);
     }
 
-    private void createCheckButtons(Composite buttonsPanel, final Table table) {
-        Button selectAll = UIUtils.createPushButton(buttonsPanel, "All", null);
-        selectAll.addSelectionListener(new CheckListener(table, true));
-        Button clearSelection = UIUtils.createPushButton(buttonsPanel, "None", null);
-        clearSelection.addSelectionListener(new CheckListener(table, false));
-    }
-
     private void updateCheckedTables() {
         Set<MySQLTableBase> checkedTables = new HashSet<>();
         TableItem[] tableItems = tablesTable.getItems();
@@ -284,20 +277,4 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         setPageComplete(complete);
     }
 
-    private static class CheckListener extends SelectionAdapter {
-        private final Table table;
-        private final boolean check;
-
-        public CheckListener(Table table, boolean check) {
-            this.table = table;
-            this.check = check;
-        }
-
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-            for (TableItem item : table.getItems()) {
-                item.setChecked(check);
-            }
-        }
-    }
 }
