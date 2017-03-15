@@ -1953,6 +1953,8 @@ public class SQLEditor extends SQLEditorBase implements
                     if (errorQueryOffset >= 0 && errorQueryLength > 0) {
                         if (scriptMode) {
                             getSelectionProvider().setSelection(new TextSelection(errorQueryOffset, errorQueryLength));
+                        } else {
+                            getSelectionProvider().setSelection(originalSelection);
                         }
                     }
                 }
