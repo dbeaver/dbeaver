@@ -52,9 +52,9 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -73,7 +73,6 @@ import org.jkiss.utils.LongKeyMap;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -106,6 +105,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             this.widthHint = widthHint;
         }
         abstract String getText(QMMetaEvent event);
+        String getToolTipText(QMMetaEvent event) {
+            return getText(event);
+        }
     }
 
     private static class ColumnDescriptor {
@@ -119,12 +121,16 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
     }
 
-    private static LogColumn COLUMN_TIME = new LogColumn("time", CoreMessages.controls_querylog_column_time_name, CoreMessages.controls_querylog_column_time_tooltip, 80) {
-        private DateFormat timeFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIME_FORMAT, Locale.getDefault()); //$NON-NLS-1$
+    private LogColumn COLUMN_TIME = new LogColumn("time", CoreMessages.controls_querylog_column_time_name, CoreMessages.controls_querylog_column_time_tooltip, 80) {
+        private final DateFormat timeFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIME_FORMAT, Locale.getDefault()); //$NON-NLS-1$
+        private final DateFormat timestampFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT, Locale.getDefault()); //$NON-NLS-1$
         @Override
         String getText(QMMetaEvent event)
         {
-            return timeFormat.format(new Date(event.getObject().getOpenTime()));
+            return timeFormat.format(event.getObject().getOpenTime());
+        }
+        String getToolTipText(QMMetaEvent event) {
+            return timestampFormat.format(event.getObject().getOpenTime());
         }
     };
     private static LogColumn COLUMN_TYPE = new LogColumn("type", CoreMessages.controls_querylog_column_type_name, CoreMessages.controls_querylog_column_type_tooltip, 100) {
@@ -289,7 +295,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             return contextName;
         }
     };
-    private static LogColumn[] ALL_COLUMNS = new LogColumn[] {
+    private LogColumn[] ALL_COLUMNS = new LogColumn[] {
         COLUMN_TIME,
         COLUMN_TYPE,
         COLUMN_TEXT,
@@ -345,7 +351,13 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         GridData gd = new GridData(GridData.FILL_BOTH);
         logTable.setLayoutData(gd);
 
-        new TableToolTip(logTable);
+        new TableToolTip(logTable) {
+            @Override
+            public String getItemToolTip(TableItem item, int selectedColumn) {
+                LogColumn column = (LogColumn) logTable.getColumn(selectedColumn).getData();
+                return column.getToolTipText((QMMetaEvent) item.getData());
+            }
+        };
 
         createColumns(showConnection);
 
@@ -414,6 +426,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 continue;
             }
             final TableColumn tableColumn = UIUtils.createTableColumn(logTable, SWT.NONE, logColumn.title);
+            tableColumn.setData(logColumn);
             final String colWidth = dialogSettings.get("column-" + logColumn.id);
             if (colWidth != null) {
                 tableColumn.setWidth(Integer.parseInt(colWidth));
