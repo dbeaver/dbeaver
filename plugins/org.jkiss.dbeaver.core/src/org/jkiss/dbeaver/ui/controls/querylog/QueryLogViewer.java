@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -111,7 +112,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         LogColumn logColumn;
         TableColumn tableColumn;
 
-        public ColumnDescriptor(LogColumn logColumn, TableColumn tableColumn)
+        ColumnDescriptor(LogColumn logColumn, TableColumn tableColumn)
         {
             this.logColumn = logColumn;
             this.tableColumn = tableColumn;
@@ -396,16 +397,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     {
         EventViewDialog dialog = new EventViewDialog(event);
         dialog.open();
-/*
-        EventSelectionProvider eventSelectionProvider = new EventSelectionProvider();
-        //TableViewer viewer = new TableViewer(logTable);
-        IMemento memento = new XMLMemento(null, null);
-        EventDetailsDialogAction detailsAction = new EventDetailsDialogAction(
-            logTable.getShell(),
-            eventSelectionProvider,
-            memento);
-        detailsAction.run();
-*/
     }
 
     private void createColumns(boolean showConnection)
@@ -417,6 +408,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         final IDialogSettings dialogSettings = UIUtils.getDialogSettings(VIEWER_ID);
 
+        int colIndex = 0;
         for (final LogColumn logColumn : ALL_COLUMNS) {
             if (!showConnection && (logColumn == COLUMN_DATA_SOURCE || logColumn == COLUMN_CONTEXT)) {
                 continue;
@@ -433,6 +425,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             final ColumnDescriptor cd = new ColumnDescriptor(logColumn, tableColumn);
             columns.add(cd);
 
+            tableColumn.addListener(SWT.Selection, new TableColumnSortListener(logTable, colIndex));
             tableColumn.addListener(SWT.Resize, new Listener() {
                 @Override
                 public void handleEvent(Event event) {
@@ -441,25 +434,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 }
             });
 
-//            tableColumn.addListener(SWT.Move, new Listener() {
-//                @Override
-//                public void handleEvent(Event event) {
-//
-//                }
-//            });
+            colIndex++;
         }
-
-/*
-        logTable.addListener(SWT.Resize, new Listener() {
-            @Override
-            public void handleEvent(Event event) {
-                for (ColumnDescriptor cd : columns) {
-                    final int width = cd.tableColumn.getWidth();
-                    dialogSettings.put("column-" + cd.logColumn.id, String.valueOf(width));
-                }
-            }
-        });
-*/
     }
 
     private void dispose()
@@ -510,7 +486,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         reloadEvents();
     }
 
-    static String getObjectType(QMMObject object)
+    private static String getObjectType(QMMObject object)
     {
         if (object instanceof QMMSessionInfo) {
             return CoreMessages.model_navigator_Connection;
