@@ -140,7 +140,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             //UIUtils.applyCustomTolTips(table);
             //itemsEditor = new TableEditor(table);
             editorActivationStrategy = new EditorActivationStrategy(tableViewer);
-            TableViewerEditor.create(tableViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
+            TableViewerEditor.create(tableViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_VERTICAL | ColumnViewerEditor.TABBING_HORIZONTAL);
             table.addTraverseListener(traverseListener);
         }
         //editorActivationStrategy.setEnableEditorActivationWithKeyboard(true);
