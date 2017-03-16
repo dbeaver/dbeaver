@@ -532,7 +532,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         return ""; //$NON-NLS-1$
     }
 
-    Font getObjectFont(QMMetaEvent event)
+    private Font getObjectFont(QMMetaEvent event)
     {
         if (event.getObject() instanceof QMMStatementExecuteInfo) {
             QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) event.getObject();
@@ -543,7 +543,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         return null;
     }
 
-    Color getObjectForeground(QMMetaEvent event)
+    private Color getObjectForeground(QMMetaEvent event)
     {
         if (getObjectBackground(event) != null) {
             return colorGray;
@@ -561,7 +561,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         return null;
     }
 
-    Color getObjectBackground(QMMetaEvent event)
+    private Color getObjectBackground(QMMetaEvent event)
     {
         if (event.getObject() instanceof QMMStatementExecuteInfo) {
             QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) event.getObject();
@@ -826,7 +826,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
     }
 
-    public void addDragAndDropSupport()
+    private void addDragAndDropSupport()
     {
         Transfer[] types = new Transfer[] {TextTransfer.getInstance()};
         int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
@@ -937,7 +937,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     private class ConfigRefreshJob extends AbstractUIJob {
-        protected ConfigRefreshJob()
+        ConfigRefreshJob()
         {
             super(CoreMessages.controls_querylog_job_refresh);
         }
@@ -956,7 +956,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         private final QMMetaEvent object;
 
-        protected EventViewDialog(QMMetaEvent object)
+        EventViewDialog(QMMetaEvent object)
         {
             super(QueryLogViewer.this.getControl().getShell(), QueryLogViewer.this.site, "Event", null);
             setShellStyle(SWT.SHELL_TRIM);
