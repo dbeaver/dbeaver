@@ -164,14 +164,20 @@ public abstract class ObjectViewerRenderer {
         if (cellValue != null ) {
             GC gc = event.gc;
             if (cellValue instanceof Boolean) {
-                //int columnWidth = event.width;
+                int columnWidth;
+                if (event.gc.isClipped()) {
+                    columnWidth = event.gc.getClipping().width;
+                } else {
+                    columnWidth = isTree ? getTree().getColumn(columnIndex).getWidth() : getTable().getColumn(columnIndex).getWidth();
+                }
                 int columnHeight = isTree ? getTree().getItemHeight() : getTable().getItemHeight();
-                Image image = (Boolean)cellValue ?
-                    ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff();
+                Image image = editable ?
+                    ((Boolean)cellValue ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff()) :
+                    ((Boolean)cellValue ? ImageUtils.getImageCheckboxDisabledOn() : ImageUtils.getImageCheckboxDisabledOff());
                     //(editable ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxDisabledOn()) :
                     //(editable ? ImageUtils.getImageCheckboxEnabledOff() : ImageUtils.getImageCheckboxDisabledOff());
                 final Rectangle imageBounds = image.getBounds();
-                gc.drawImage(image, event.x + 4 /*+ (columnWidth - imageBounds.width) / 2*/, event.y + 2);
+                gc.drawImage(image, event.x + (columnWidth - imageBounds.width) / 2, event.y + 2);
                 event.doit = false;
 //                            System.out.println("PAINT " + cellValue + " " + System.currentTimeMillis());
             } else if (isHyperlink(cellValue)) {
