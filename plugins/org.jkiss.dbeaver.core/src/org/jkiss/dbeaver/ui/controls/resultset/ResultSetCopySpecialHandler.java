@@ -83,7 +83,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
         private Button copyHeaderCheck;
         private Button copyRowsCheck;
         private Button quoteCellsCheck;
-        private Combo formatCombo;
+        private ValueFormatSelector formatSelector;
         private Combo colDelimCombo;
         private Combo rowDelimCombo;
 
@@ -136,12 +136,8 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             copyRowsCheck = UIUtils.createCheckbox(group, "Copy row numbers", null, copySettings.isCopyRowNumbers(), 2);
             quoteCellsCheck = UIUtils.createCheckbox(group, "Quote cell values", "Place cell value in quotes if it contains column or row delimiter", copySettings.isQuoteCells(), 2);
 
-            UIUtils.createControlLabel(group, "Format");
-            formatCombo = new Combo(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            formatCombo.add("Display (default)");
-            formatCombo.add("Editable");
-            formatCombo.add("Database native");
-            formatCombo.select(copySettings.getFormat() == DBDDisplayFormat.UI ? 0 : copySettings.getFormat() == DBDDisplayFormat.EDIT ? 1 : 2);
+            formatSelector = new ValueFormatSelector(group);
+            formatSelector.select(copySettings.getFormat());
 
             colDelimCombo = createDelimiterCombo(group, "Column Delimiter", new String[] {"\t", ";", ","}, copySettings.getColumnDelimiter());
             rowDelimCombo = createDelimiterCombo(group, "Row Delimiter", new String[] {"\n", "|", "^"}, copySettings.getRowDelimiter());
@@ -183,20 +179,14 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             copySettings.setCopyHeader(copyHeaderCheck.getSelection());
             copySettings.setCopyRowNumbers(copyRowsCheck.getSelection());
             copySettings.setQuoteCells(quoteCellsCheck.getSelection());
-            DBDDisplayFormat format = DBDDisplayFormat.UI;
-            switch (formatCombo.getSelectionIndex()) {
-                case 0: format = DBDDisplayFormat.UI; break;
-                case 1: format = DBDDisplayFormat.EDIT; break;
-                case 2: format = DBDDisplayFormat.NATIVE; break;
-            }
-            copySettings.setFormat(format);
+            copySettings.setFormat(formatSelector.getSelection());
             copySettings.setColumnDelimiter(convertDelimiterFromDisplay(colDelimCombo.getText()));
             copySettings.setRowDelimiter(convertDelimiterFromDisplay(rowDelimCombo.getText()));
 
             settings.put(PARAM_COPY_HEADER, copySettings.isCopyHeader());
             settings.put(PARAM_COPY_ROWS, copySettings.isCopyRowNumbers());
             settings.put(PARAM_QUOTE_CELLS, copySettings.isQuoteCells());
-            settings.put(PARAM_FORMAT, format.name());
+            settings.put(PARAM_FORMAT, copySettings.getFormat().name());
             settings.put(PARAM_COL_DELIMITER, copySettings.getColumnDelimiter());
             settings.put(PARAM_ROW_DELIMITER, copySettings.getRowDelimiter());
             super.okPressed();
