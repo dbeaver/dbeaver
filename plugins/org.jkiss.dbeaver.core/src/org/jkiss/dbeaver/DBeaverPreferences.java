@@ -123,6 +123,7 @@ public final class DBeaverPreferences
     public static final String RESULT_SET_PRESENTATION = "resultset.presentation.active"; //$NON-NLS-1$
 
     public static final String RESULT_TEXT_MAX_COLUMN_SIZE = "resultset.text.max.column.size"; //$NON-NLS-1$
+    public static final String RESULT_TEXT_VALUE_FORMAT = "resultset.text.value.format"; //$NON-NLS-1$
 
     public static final String DEFAULT_RESOURCE_ENCODING = "resource.encoding.default";
 }

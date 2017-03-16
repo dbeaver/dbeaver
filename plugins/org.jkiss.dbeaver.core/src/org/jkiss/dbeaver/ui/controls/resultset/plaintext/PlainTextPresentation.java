@@ -203,6 +203,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
     private void printGrid(boolean append) {
         int maxColumnSize = getController().getPreferenceStore().getInt(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
+        DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(getController().getPreferenceStore().getString(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT));
+
         StringBuilder grid = new StringBuilder(512);
         ResultSetModel model = controller.getModel();
         List<DBDAttributeBinding> attrs = model.getVisibleAttributes();
@@ -216,7 +218,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 DBDAttributeBinding attr = attrs.get(i);
                 colWidths[i] = getAttributeName(attr).length();
                 for (ResultSetRow row : allRows) {
-                    String displayString = getCellString(model, attr, row);
+                    String displayString = getCellString(model, attr, row, displayFormat);
                     colWidths[i] = Math.max(colWidths[i], displayString.length());
                 }
             }
@@ -261,7 +263,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             ResultSetRow row = allRows.get(i);
             for (int k = 0; k < attrs.size(); k++) {
                 DBDAttributeBinding attr = attrs.get(k);
-                String displayString = getCellString(model, attr, row);
+                String displayString = getCellString(model, attr, row, displayFormat);
                 if (displayString.length() >= colWidths[k] - 1) {
                     displayString = CommonUtils.truncateString(displayString, colWidths[k] - 1);
                 }
@@ -292,12 +294,14 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         }
     }
 
-    private String getCellString(ResultSetModel model, DBDAttributeBinding attr, ResultSetRow row) {
-        String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), DBDDisplayFormat.EDIT);
+    private String getCellString(ResultSetModel model, DBDAttributeBinding attr, ResultSetRow row, DBDDisplayFormat displayFormat) {
+        String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), displayFormat);
         return TextUtils.getSingleLineString(displayString);
     }
 
     private void printRecord() {
+        DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(getController().getPreferenceStore().getString(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT));
+
         StringBuilder grid = new StringBuilder(512);
         ResultSetModel model = controller.getModel();
         List<DBDAttributeBinding> attrs = model.getVisibleAttributes();
@@ -309,7 +313,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         for (int i = 0; i < attrs.size(); i++) {
             DBDAttributeBinding attr = attrs.get(i);
             nameWidth = Math.max(nameWidth, getAttributeName(attr).length());
-            values[i] = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, currentRow), DBDDisplayFormat.EDIT);
+            values[i] = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, currentRow), displayFormat);
             valueWidth = Math.max(valueWidth, values[i].length());
         }
 
