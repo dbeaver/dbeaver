@@ -83,7 +83,7 @@ public class TableToolTip {
                         }
 
                         if (item != null && selectedColumn >= 0) {
-                            String toolTip = item.getText(selectedColumn);
+                            String toolTip = getItemToolTip(item, selectedColumn);
                             if (toolTip != null) {
                                 toolTip = toolTip.trim();
                             }
@@ -114,6 +114,10 @@ public class TableToolTip {
         table.addListener (SWT.KeyDown, tableListener);
         table.addListener (SWT.MouseMove, tableListener);
         table.addListener (SWT.MouseHover, tableListener);
+    }
+
+    public String getItemToolTip(TableItem item, int selectedColumn) {
+        return item.getText(selectedColumn);
     }
 
 }
