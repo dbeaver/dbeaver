@@ -585,7 +585,7 @@ public class ViewerColumnController {
             }
             final ILabelProvider labelProvider = (ILabelProvider)columnInfo.labelProvider;
 
-            viewer.setSorter(new ViewerSorter(collator) {
+            viewer.setComparator(new ViewerComparator(collator) {
                 private final NumberFormat numberFormat = NumberFormat.getInstance();
                 @Override
                 public int compare(Viewer v, Object e1, Object e2)
