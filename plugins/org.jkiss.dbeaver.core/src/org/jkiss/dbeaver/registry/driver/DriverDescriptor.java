@@ -66,13 +66,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 {
     private static final Log log = Log.getLog(DriverDescriptor.class);
 
-    public static final String DRIVERS_FOLDER = "drivers"; //$NON-NLS-1$
-    public static final String PROP_DRIVERS_LOCATION = "DRIVERS_LOCATION";
+    private static final String DRIVERS_FOLDER = "drivers"; //$NON-NLS-1$
+    private static final String PROP_DRIVERS_LOCATION = "DRIVERS_LOCATION";
 
-    public static final char URL_GROUP_START = '{'; //$NON-NLS-1$
-    public static final char URL_GROUP_END = '}'; //$NON-NLS-1$
-    public static final char URL_OPTIONAL_START = '['; //$NON-NLS-1$
-    public static final char URL_OPTIONAL_END = ']'; //$NON-NLS-1$
+    private static final char URL_GROUP_START = '{'; //$NON-NLS-1$
+    private static final char URL_GROUP_END = '}'; //$NON-NLS-1$
+    private static final char URL_OPTIONAL_START = '['; //$NON-NLS-1$
+    private static final char URL_OPTIONAL_END = ']'; //$NON-NLS-1$
+
     public static final String PROP_HOST = "host"; //$NON-NLS-1$
     public static final String PROP_PORT = "port"; //$NON-NLS-1$
     public static final String PROP_DATABASE = "database"; //$NON-NLS-1$
@@ -89,12 +90,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         private final String version;
         private final File file;
 
-        public DriverFileInfo(String id, String version, File file) {
+        DriverFileInfo(String id, String version, File file) {
             this.id = id;
             this.version = version;
             this.file = file;
         }
-        public DriverFileInfo(DBPDriverLibrary library) {
+        DriverFileInfo(DBPDriverLibrary library) {
             this.id = library.getId();
             this.version = library.getVersion();
             this.file = library.getLocalFile();
@@ -507,7 +508,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.resolvedFiles.clear();
     }
 
-    Object createDriverInstance()
+    private Object createDriverInstance()
         throws DBException
     {
         try {
@@ -598,7 +599,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return providerDescriptor.getTreeDescriptor();
     }
 
-    public void setCustomDriverLoader(boolean customDriverLoader)
+    void setCustomDriverLoader(boolean customDriverLoader)
     {
         this.customDriverLoader = customDriverLoader;
     }
@@ -629,7 +630,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         clientHomeIds.addAll(homeIds);
     }
 
-    public void addClientHomeId(String homeId)
+    void addClientHomeId(String homeId)
     {
         clientHomeIds.add(homeId);
     }
@@ -651,7 +652,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return filtered;
     }
 
-    public DBPDriverLibrary getDriverLibrary(String path)
+    DBPDriverLibrary getDriverLibrary(String path)
     {
         for (DBPDriverLibrary lib : libraries) {
             if (lib.getPath().equals(path)) {
@@ -1269,7 +1270,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return pathList.toArray(new String[pathList.size()]);
     }
 
-    public static String getDriversPrimarySource()
+    static String getDriversPrimarySource()
     {
         String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.UI_DRIVERS_SOURCES);
         int divPos = sourcesString.indexOf('|');
