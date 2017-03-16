@@ -833,7 +833,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 tree.setSortColumn(column);
                 tree.setSortDirection(sortDirection);
 
-                PropertyTreeViewer.this.setSorter(new ViewerSorter(collator) {
+                PropertyTreeViewer.this.setComparator(new ViewerComparator(collator) {
                     @Override
                     public int compare(Viewer viewer, Object e1, Object e2)
                     {

@@ -17,7 +17,10 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.resource.JFaceColors;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.AbstractTreeViewer;
+import org.eclipse.jface.viewers.ColumnViewer;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -32,8 +35,6 @@ import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.text.Collator;
-
 /**
  * ObjectListControl
  */
@@ -46,8 +47,6 @@ public abstract class ObjectViewerRenderer {
     private transient int selectedColumn = -1;
 
     private ColumnViewer itemsViewer;
-
-    private SortListener sortListener;
 
     private final TextLayout linkLayout;
     //private final Color linkColor;
@@ -73,18 +72,11 @@ public abstract class ObjectViewerRenderer {
 
         itemsViewer.getControl().addMouseTrackListener(mouseListener);
         itemsViewer.getControl().addMouseMoveListener(mouseListener);
-
-        sortListener = new SortListener();
     }
 
     public boolean isTree()
     {
         return isTree;
-    }
-
-    public SortListener getSortListener()
-    {
-        return sortListener;
     }
 
     private TableItem detectTableItem(int x, int y)
@@ -194,56 +186,6 @@ public abstract class ObjectViewerRenderer {
                 }
                 linkLayout.draw(gc, textBounds.x, textBounds.y + 1);
             }
-        }
-    }
-
-    //////////////////////////////////////////////////////
-    // List sorter
-
-    private class SortListener implements Listener
-    {
-        int sortDirection = SWT.UP;
-        Item prevColumn = null;
-
-        @Override
-        public void handleEvent(Event e) {
-            Collator collator = Collator.getInstance();
-            Item column = (Item)e.widget;
-            final int colIndex = isTree ? getTree().indexOf((TreeColumn) column) : getTable().indexOf((TableColumn)column );
-            if (prevColumn == column) {
-                // Set reverse order
-                sortDirection = sortDirection == SWT.UP ? SWT.DOWN : SWT.UP;
-            }
-            prevColumn = column;
-            if (isTree) {
-                getTree().setSortColumn((TreeColumn) column);
-                getTree().setSortDirection(sortDirection);
-            } else {
-                getTable().setSortColumn((TableColumn) column);
-                getTable().setSortDirection(sortDirection);
-            }
-
-            itemsViewer.setSorter(new ViewerSorter(collator) {
-                @Override
-                public int compare(Viewer viewer, Object e1, Object e2)
-                {
-                    int result;
-                    Object value1 = getCellValue(e1, colIndex);
-                    Object value2 = getCellValue(e2, colIndex);
-                    if (value1 == null && value2 == null) {
-                        result = 0;
-                    } else if (value1 == null) {
-                        result = -1;
-                    } else if (value2 == null) {
-                        result = 1;
-                    } else if (value1 instanceof Comparable && value1.getClass() == value2.getClass()) {
-                        result = ((Comparable)value1).compareTo(value2);
-                    } else {
-                        result = value1.toString().compareToIgnoreCase(value2.toString());
-                    }
-                    return sortDirection == SWT.UP ? result : -result;
-                }
-            });
         }
     }
 
