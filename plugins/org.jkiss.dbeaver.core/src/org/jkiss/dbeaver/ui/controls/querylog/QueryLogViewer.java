@@ -348,6 +348,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         createColumns(showConnection);
 
+
         {
             // Register control in focus service (to provide handlers binding)
             UIUtils.addFocusTracker(site, QUERY_LOG_CONTROL_ID, logTable);
