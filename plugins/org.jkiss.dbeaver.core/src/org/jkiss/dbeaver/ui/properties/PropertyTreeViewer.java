@@ -328,9 +328,8 @@ public class PropertyTreeViewer extends TreeViewer {
         // Make an editor
         final Tree treeControl = super.getTree();
         treeEditor = new TreeEditor(treeControl);
-        treeEditor.horizontalAlignment = SWT.RIGHT;
+        treeEditor.horizontalAlignment = SWT.CENTER;
         treeEditor.verticalAlignment = SWT.CENTER;
-        treeEditor.grabHorizontal = true;
         treeEditor.minimumWidth = 50;
 
         treeControl.addSelectionListener(new SelectionListener() {
@@ -457,6 +456,11 @@ public class PropertyTreeViewer extends TreeViewer {
                         }
                     }
                 });
+                treeEditor.verticalAlignment = cellEditor.getLayoutData().verticalAlignment;
+                treeEditor.horizontalAlignment = cellEditor.getLayoutData().horizontalAlignment;
+                treeEditor.minimumWidth = cellEditor.getLayoutData().minimumWidth;
+                treeEditor.grabHorizontal = cellEditor.getLayoutData().grabHorizontal;
+
                 treeEditor.setEditor(editorControl, item, 1);
             }
             if (isDef) {
