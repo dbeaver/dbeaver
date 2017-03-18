@@ -17,15 +17,24 @@
  */
 package org.jkiss.dbeaver.ext.exasol.editors;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 
-public interface ExasolSourceObject extends DBPScriptObject, DBSObject {
-
-    void setObjectDefinitionText(String sourceText)
-    throws DBException;
+public class ExasolSourceViewEditor extends SQLSourceViewer<ExasolSourceObject> {
+    public ExasolSourceViewEditor()
+    {
+    }
+    
+    @Override
+    protected boolean isReadOnly()
+    {
+        return false;
+    }
+    
+    @Override
+    protected void setSourceText(DBRProgressMonitor monitor, String sourceText)
+    {
+        getEditorInput().getPropertySource().setPropertyValue(monitor, "objectDefinitionText", sourceText);
+    }
 
 }
-
-
