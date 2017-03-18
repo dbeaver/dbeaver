@@ -52,6 +52,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 applyEditorValue();
+                // This is needed for MacOS
                 fireApplyEditorValue();
             }
         });
