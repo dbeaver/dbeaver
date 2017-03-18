@@ -240,15 +240,15 @@ public class UIUtils {
                     return;
                 }
             }
+            Rectangle clientArea = tree.getClientArea();
+            if (clientArea.isEmpty()) {
+                return;
+            }
             int totalWidth = 0;
             final TreeColumn[] columns = tree.getColumns();
             for (TreeColumn column : columns) {
                 column.pack();
                 totalWidth += column.getWidth();
-            }
-            Rectangle clientArea = tree.getClientArea();
-            if (clientArea.isEmpty()) {
-                return;
             }
             if (fit) {
                 int areaWidth = clientArea.width;
