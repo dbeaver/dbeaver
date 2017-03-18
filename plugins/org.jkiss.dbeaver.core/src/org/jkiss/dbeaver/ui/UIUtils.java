@@ -441,7 +441,7 @@ public class UIUtils {
             @Override
             public Boolean runTask() {
                 Shell activeShell = shell != null ? shell : DBeaverUI.getActiveWorkbenchShell();
-                MessageBox messageBox = new MessageBox(activeShell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+                MessageBox messageBox = new MessageBox(activeShell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
                 messageBox.setMessage(question);
                 messageBox.setText(title);
                 int response = messageBox.open();
