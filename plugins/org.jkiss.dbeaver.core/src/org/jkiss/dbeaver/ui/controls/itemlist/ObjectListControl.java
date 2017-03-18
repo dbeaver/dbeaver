@@ -752,11 +752,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     // Clipboard
 
     @Override
-    public void addClipboardData(ClipboardData clipboardData) {
+    public void addClipboardData(CopyMode mode, ClipboardData clipboardData) {
         String selectedText;
-        // Cope selected cells
-        IStructuredSelection selection = itemsViewer.getStructuredSelection();
-        if (selection.size() > 1) {
+        if (mode == CopyMode.ADVANCED) {
             // Multiple rows selected
             // Copy all of them in tsv format
             selectedText = copyGridToText();

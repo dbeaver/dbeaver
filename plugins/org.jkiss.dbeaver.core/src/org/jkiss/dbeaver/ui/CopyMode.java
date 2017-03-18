@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.ui;
 
 /**
- * IClipboardSource
+ * Copy mode
  */
-public interface IClipboardSource {
-
-    void addClipboardData(CopyMode mode, ClipboardData clipboardData);
-
+public enum CopyMode {
+    DEFAULT,
+    ADVANCED
 }
