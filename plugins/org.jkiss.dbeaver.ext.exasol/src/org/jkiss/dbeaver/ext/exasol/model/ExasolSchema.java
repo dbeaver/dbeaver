@@ -56,6 +56,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
 
     // ExasolSchema's children
     public final DBSObjectCache<ExasolSchema, ExasolScript> scriptCache;
+    public final DBSObjectCache<ExasolSchema, ExasolFunction> functionCache;
     private ExasolViewCache viewCache = new ExasolViewCache();
     private ExasolTableCache tableCache = new ExasolTableCache();
 
@@ -73,6 +74,21 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
         		+ "from EXA_ALL_SCRIPTS a inner join EXA_ALL_OBJECTS b "
         		+ "on a.script_name = b.object_name and a.script_schema = b.root_name where a.script_schema = '%s' order by script_name",
         		name);
+        
+        this.functionCache = new ExasolJDBCObjectSimpleCacheLiterals<>(ExasolFunction.class,
+                "SELECT\n" + 
+                "    F.*,\n" + 
+                "    O.CREATED\n" + 
+                "FROM\n" + 
+                "    SYS.EXA_ALL_FUNCTIONS F\n" + 
+                "INNER JOIN SYS.EXA_ALL_OBJECTS O ON\n" + 
+                "    F.FUNCTION_SCHEMA = O.ROOT_NAME\n" + 
+                "    AND F.FUNCTION_NAME = O.OBJECT_NAME\n" + 
+                "WHERE\n" + 
+                "    F.FUNCTION_SCHEMA = '%s'\n" + 
+                "ORDER BY\n" + 
+                "    FUNCTION_NAME\n", 
+                name);
 
     }
 
@@ -179,16 +195,27 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
 
         return scriptCache.getAllObjects(monitor, this);
     }
-
+    
+    
     @Override
     public ExasolScript getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
 
         return scriptCache.getObject(monitor, this, uniqueName);
     }
 
+    public Collection<ExasolFunction> getFunctions(DBRProgressMonitor monitor) throws DBException {
+        return functionCache.getAllObjects(monitor, this);
+    }
+    
+    public ExasolFunction getFunction(DBRProgressMonitor monitor,String name) throws DBException {
+        return functionCache.getObject(monitor, this, name);
+    }
+
+    
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
 
+        functionCache.clearCache();
         scriptCache.clearCache();
         tableCache.clearCache();
         viewCache.clearCache();
@@ -246,6 +273,11 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
 			throws DBException
 	{
 		return ExasolUtils.generateDDLforSchema(monitor, this);
+	}
+	
+	public Boolean isPhysicalSchema()
+	{
+	    return true;
 	}
 
 

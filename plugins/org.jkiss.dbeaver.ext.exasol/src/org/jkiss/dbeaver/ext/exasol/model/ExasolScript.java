@@ -153,7 +153,10 @@ public class ExasolScript extends AbstractProcedure<ExasolDataSource, ExasolSche
     @Override
     public DBSProcedureType getProcedureType() {
 
-        return DBSProcedureType.PROCEDURE;
+        if (script_type == "SCRIPTING" || script_type == "ADAPTER")
+            return DBSProcedureType.PROCEDURE;
+        else
+            return DBSProcedureType.FUNCTION;
     }
 
     @Override

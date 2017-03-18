@@ -23,19 +23,15 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.editors.ExasolSourceObject;
-import org.jkiss.dbeaver.ext.exasol.editors.ExasolStatefulObject;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.utils.CommonUtils;
 
-public class ExasolVirtualSchema extends ExasolSchema implements ExasolStatefulObject  {
+public class ExasolVirtualSchema extends ExasolSchema  {
 	
 	private String adapterScriptSchema;
 	private String adapterScriptName;
@@ -116,22 +112,15 @@ public class ExasolVirtualSchema extends ExasolSchema implements ExasolStatefulO
 		return this.adapterNotes.replaceAll(",", ",\n");
 	}
 
-	@Override
-	public ExasolSchema getSchema()
-	{
-		return this;
-	}
 
 	@Override
-	public DBSObjectState getObjectState()
+	public Boolean isPhysicalSchema()
 	{
-		return DBSObjectState.NORMAL;
+	    return false;
 	}
 
-	@Override
-	public void refreshObjectState(DBRProgressMonitor monitor)
-			throws DBCException
-	{
-	}
+
+	
+	
 
 }
