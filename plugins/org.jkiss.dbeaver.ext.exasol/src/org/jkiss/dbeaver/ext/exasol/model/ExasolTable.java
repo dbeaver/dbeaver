@@ -21,10 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
-import org.jkiss.dbeaver.ext.exasol.editors.ExasolSourceObject;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -47,7 +47,7 @@ import java.util.Collection;
 /**
  * @author Karl
  */
-public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject, DBPNamedObject2, ExasolSourceObject {
+public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject, DBPNamedObject2, DBPScriptObject {
 
     private Boolean hasDistKey;
     private Timestamp lastCommit;

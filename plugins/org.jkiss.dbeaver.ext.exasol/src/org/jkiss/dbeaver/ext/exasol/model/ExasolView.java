@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.Collection;
@@ -49,7 +50,14 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
     public ExasolView(DBRProgressMonitor monitor, ExasolSchema schema, ResultSet dbResult) {
         super(monitor, schema, dbResult);
         this.text = JDBCUtils.safeGetString(dbResult, "VIEW_TEXT");
+        this.description = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
+    }
+    
+    public ExasolView(ExasolSchema schema)
+    {
+        super(schema,null,false);
+        text = "";
     }
 
 
@@ -60,7 +68,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
 
 
     @Override
-    @Property(viewable = true, editable = false, order = 40)
+    @Property(viewable = true, editable = false, updatable = false, order = 40)
     public String getDescription() {
         return this.description;
     }
@@ -124,10 +132,20 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
     }
 
     @Override
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
         return SQLUtils.formatSQL(getDataSource(), this.text);
 
     }
-
-
+    
+    @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException
+    {
+        this.text = sourceText;
+    }
+    
+    public String getSource()
+    {
+        return this.text;
+    }
 }
