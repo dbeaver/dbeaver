@@ -23,10 +23,16 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.ui.CopyMode;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 public class NavigatorHandlerCopyObject extends NavigatorHandlerCopyAbstract {
+
+    @Override
+    protected CopyMode getCopyMode() {
+        return CopyMode.DEFAULT;
+    }
 
     @Override
     protected String getObjectDisplayString(Object object)
