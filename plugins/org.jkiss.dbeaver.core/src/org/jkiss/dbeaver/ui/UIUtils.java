@@ -240,21 +240,21 @@ public class UIUtils {
                     return;
                 }
             }
+            Rectangle clientArea = tree.getClientArea();
+            if (clientArea.isEmpty()) {
+                return;
+            }
             int totalWidth = 0;
             final TreeColumn[] columns = tree.getColumns();
             for (TreeColumn column : columns) {
                 column.pack();
                 totalWidth += column.getWidth();
             }
-            Rectangle clientArea = tree.getBounds();
-            if (clientArea.isEmpty()) {
-                return;
-            }
             if (fit) {
                 int areaWidth = clientArea.width;
-                if (tree.getVerticalBar() != null) {
-                    areaWidth -= tree.getVerticalBar().getSize().x;
-                }
+//                if (tree.getVerticalBar() != null) {
+//                    areaWidth -= tree.getVerticalBar().getSize().x;
+//                }
                 if (totalWidth > areaWidth) {
                     GC gc = new GC(tree);
                     try {
@@ -441,7 +441,7 @@ public class UIUtils {
             @Override
             public Boolean runTask() {
                 Shell activeShell = shell != null ? shell : DBeaverUI.getActiveWorkbenchShell();
-                MessageBox messageBox = new MessageBox(activeShell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+                MessageBox messageBox = new MessageBox(activeShell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
                 messageBox.setMessage(question);
                 messageBox.setText(title);
                 int response = messageBox.open();
