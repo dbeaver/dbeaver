@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.editors.ExasolSourceObject;
+import org.jkiss.dbeaver.ext.exasol.editors.ExasolStatefulObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -34,7 +35,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.utils.CommonUtils;
 
-public class ExasolVirtualSchema extends ExasolSchema implements ExasolSourceObject {
+public class ExasolVirtualSchema extends ExasolSchema implements ExasolStatefulObject  {
 	
 	private String adapterScriptSchema;
 	private String adapterScriptName;

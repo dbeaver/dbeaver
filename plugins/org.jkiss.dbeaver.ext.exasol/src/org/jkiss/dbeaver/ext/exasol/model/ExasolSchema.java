@@ -55,7 +55,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
 
 
     // ExasolSchema's children
-    private DBSObjectCache<ExasolSchema, ExasolScript> scriptCache;
+    public final DBSObjectCache<ExasolSchema, ExasolScript> scriptCache;
     private ExasolViewCache viewCache = new ExasolViewCache();
     private ExasolTableCache tableCache = new ExasolTableCache();
 
