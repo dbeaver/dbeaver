@@ -26,10 +26,13 @@ import org.jkiss.dbeaver.ext.exasol.model.dict.ExasolScriptLanguage;
 import org.jkiss.dbeaver.ext.exasol.model.dict.ExasolScriptResultType;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -41,13 +44,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Collection;
 
-/**
- * Exasol Scripts
- *
- * @author Karl Griesser
- */
-
-public class ExasolScript extends ExasolObject<DBSObject> implements DBSProcedure, DBPRefreshableObject, ExasolSourceObject {
+public class ExasolScript extends AbstractProcedure<ExasolDataSource, ExasolSchema> implements DBSProcedure, DBPRefreshableObject, ExasolSourceObject {
 
 
     private String remarks;
@@ -59,8 +56,8 @@ public class ExasolScript extends ExasolObject<DBSObject> implements DBSProcedur
     private String script_type;
     private ExasolSchema exasolSchema;
 
-    public ExasolScript(DBSObject owner, ResultSet dbResult) {
-        super(owner, JDBCUtils.safeGetString(dbResult, "SCRIPT_NAME"), true);
+    public ExasolScript(ExasolSchema schema, ResultSet dbResult) {
+    	super(schema, true);
         this.owner = JDBCUtils.safeGetString(dbResult, "SCRIPT_OWNER");
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
         this.remarks = JDBCUtils.safeGetString(dbResult, "SCRIPT_COMMENT");
@@ -69,27 +66,23 @@ public class ExasolScript extends ExasolObject<DBSObject> implements DBSProcedur
         this.scriptSQL = JDBCUtils.safeGetString(dbResult, "SCRIPT_TEXT");
         this.name = JDBCUtils.safeGetString(dbResult, "SCRIPT_NAME");
         this.script_type = JDBCUtils.safeGetString(dbResult, "SCRIPT_TYPE");
-        exasolSchema = (ExasolSchema) owner;
+        exasolSchema = schema;
 
+    }
+    
+    public ExasolScript(ExasolSchema schema)
+    {
+        super(schema, false);
+        exasolSchema = schema;
+        scriptSQL = "";
     }
 
 
-    // -----------------
-    // Business Contract
-    // -----------------
-    @NotNull
     @Override
-    public DBSObjectState getObjectState() {
-        return DBSObjectState.UNKNOWN;
-    }
-
-    @Override
-    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
-    }
-
-    @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return this;
+    public ExasolScript refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        getContainer().scriptCache.clearCache();
+        getContainer().scriptCache.getAllObjects(monitor, getSchema());
+        return getContainer().scriptCache.getObject(monitor, exasolSchema, getName());
     }
 
 
@@ -122,7 +115,7 @@ public class ExasolScript extends ExasolObject<DBSObject> implements DBSProcedur
 
     @Nullable
     @Override
-    @Property(viewable = false, order = 11)
+    @Property(viewable = true, editable = true, updatable = true, order = 11)
     public String getDescription() {
         return this.remarks;
     }
@@ -135,7 +128,7 @@ public class ExasolScript extends ExasolObject<DBSObject> implements DBSProcedur
     }
 
     @NotNull
-    @Property(hidden = true)
+    @Property(hidden = true, editable = true, updatable = true)
     public String getSql() {
         return this.scriptSQL;
     }
@@ -153,30 +146,42 @@ public class ExasolScript extends ExasolObject<DBSObject> implements DBSProcedur
 
 
     @Override
-    public DBSObject getContainer() {
+    public ExasolSchema getContainer() {
         return exasolSchema;
     }
 
     @Override
     public DBSProcedureType getProcedureType() {
 
-        return null;
+        return DBSProcedureType.PROCEDURE;
     }
 
     @Override
     public Collection<? extends DBSProcedureParameter> getParameters(DBRProgressMonitor monitor) throws DBException {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
-        return name;
+        return DBUtils.getFullQualifiedName(getDataSource(), getContainer(),this);
     }
 
     @Override
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
         return this.scriptSQL;
+    }
+
+    @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException
+    {
+        this.scriptSQL = sourceText;
+    }
+    
+    @Override
+    public void setDescription(String description)
+    {
+        this.remarks = description;
     }
 
 
