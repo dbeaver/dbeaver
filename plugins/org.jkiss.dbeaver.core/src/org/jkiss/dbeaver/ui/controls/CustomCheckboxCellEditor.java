@@ -18,15 +18,15 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -54,6 +54,14 @@ public class CustomCheckboxCellEditor extends CellEditor {
                 applyEditorValue();
             }
         });
+
+        checkBox.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                CustomCheckboxCellEditor.this.focusLost();
+            }
+        });
+
         return checkBox;
     }
 
@@ -78,7 +86,6 @@ public class CustomCheckboxCellEditor extends CellEditor {
         LayoutData layoutData = super.getLayoutData();
         layoutData.grabHorizontal = false;
         layoutData.horizontalAlignment = SWT.CENTER;
-        //layoutData.minimumWidth = 100;
         return layoutData;
     }
 

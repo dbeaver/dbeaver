@@ -159,27 +159,22 @@ public abstract class ObjectViewerRenderer {
     //////////////////////////////////////////////////////
     // List sorter
 
-    public void paintCell(Event event, Object element, int columnIndex, boolean editable) {
+    public void paintCell(Event event, Object element, Widget item, int columnIndex, boolean editable) {
         Object cellValue = getCellValue(element, columnIndex);
         if (cellValue != null ) {
             GC gc = event.gc;
             if (cellValue instanceof Boolean) {
-                int columnWidth;
-                if (event.gc.isClipped()) {
-                    columnWidth = event.gc.getClipping().width;
-                } else {
-                    columnWidth = isTree ? getTree().getColumn(columnIndex).getWidth() : getTable().getColumn(columnIndex).getWidth();
-                }
-                int columnHeight = isTree ? getTree().getItemHeight() : getTable().getItemHeight();
                 Image image = editable ?
                     ((Boolean)cellValue ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff()) :
                     ((Boolean)cellValue ? ImageUtils.getImageCheckboxDisabledOn() : ImageUtils.getImageCheckboxDisabledOff());
-                    //(editable ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxDisabledOn()) :
-                    //(editable ? ImageUtils.getImageCheckboxEnabledOff() : ImageUtils.getImageCheckboxDisabledOff());
                 final Rectangle imageBounds = image.getBounds();
+
+                int columnWidth = isTree ? ((TreeItem)item).getBounds(columnIndex).width : ((TableItem)item).getBounds(columnIndex).width;
+
                 gc.drawImage(image, event.x + (columnWidth - imageBounds.width) / 2, event.y + 2);
+                //gc.drawImage(image, event.x + 2, event.y + 2);
                 event.doit = false;
-//                            System.out.println("PAINT " + cellValue + " " + System.currentTimeMillis());
+
             } else if (isHyperlink(cellValue)) {
                 // Print link
                 boolean isSelected = gc.getBackground().equals(selectionBackgroundColor);

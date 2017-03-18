@@ -220,7 +220,7 @@ public class PropertyTreeViewer extends TreeViewer {
         }
 
         disposeOldEditor();
-        UIUtils.packColumns(getTree(), true, new float[]{0.1f, 0.9f});
+        UIUtils.packColumns(getTree(), true, new float[]{0.5f, 0.5f});
     }
 
     private Map<String, TreeNode> loadTreeNodes(@Nullable DBRProgressMonitor monitor, TreeNode parent, DBPPropertySource propertySource)
@@ -906,7 +906,7 @@ public class PropertyTreeViewer extends TreeViewer {
                         }
                         final TreeNode node = (TreeNode) event.item.getData();
                         if (node != null && node.property != null) {
-                            renderer.paintCell(event, node, event.index, node.isEditable());
+                            renderer.paintCell(event, node, event.item, event.index, node.isEditable());
                         }
                     }
                     break;
