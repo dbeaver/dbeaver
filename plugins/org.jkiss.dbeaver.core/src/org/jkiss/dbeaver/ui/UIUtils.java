@@ -246,15 +246,15 @@ public class UIUtils {
                 column.pack();
                 totalWidth += column.getWidth();
             }
-            Rectangle clientArea = tree.getBounds();
+            Rectangle clientArea = tree.getClientArea();
             if (clientArea.isEmpty()) {
                 return;
             }
             if (fit) {
                 int areaWidth = clientArea.width;
-                if (tree.getVerticalBar() != null) {
-                    areaWidth -= tree.getVerticalBar().getSize().x;
-                }
+//                if (tree.getVerticalBar() != null) {
+//                    areaWidth -= tree.getVerticalBar().getSize().x;
+//                }
                 if (totalWidth > areaWidth) {
                     GC gc = new GC(tree);
                     try {

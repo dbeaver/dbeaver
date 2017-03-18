@@ -980,7 +980,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                                     // Do not paint over active editor
                                     return;
                                 }
-                                renderer.paintCell(e, object, e.index, prop.isEditable(objectValue));
+                                renderer.paintCell(e, object, e.item, e.index, prop.isEditable(objectValue));
                             }
                         }
                         break;
