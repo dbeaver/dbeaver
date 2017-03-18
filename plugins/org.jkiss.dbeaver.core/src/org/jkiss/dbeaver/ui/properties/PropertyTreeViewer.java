@@ -220,7 +220,7 @@ public class PropertyTreeViewer extends TreeViewer {
         }
 
         disposeOldEditor();
-        UIUtils.packColumns(getTree(), true, new float[]{0.1f, 0.9f});
+        UIUtils.packColumns(getTree(), true, new float[]{0.5f, 0.5f});
     }
 
     private Map<String, TreeNode> loadTreeNodes(@Nullable DBRProgressMonitor monitor, TreeNode parent, DBPPropertySource propertySource)
@@ -328,9 +328,8 @@ public class PropertyTreeViewer extends TreeViewer {
         // Make an editor
         final Tree treeControl = super.getTree();
         treeEditor = new TreeEditor(treeControl);
-        treeEditor.horizontalAlignment = SWT.RIGHT;
+        treeEditor.horizontalAlignment = SWT.CENTER;
         treeEditor.verticalAlignment = SWT.CENTER;
-        treeEditor.grabHorizontal = true;
         treeEditor.minimumWidth = 50;
 
         treeControl.addSelectionListener(new SelectionListener() {
@@ -457,6 +456,11 @@ public class PropertyTreeViewer extends TreeViewer {
                         }
                     }
                 });
+                treeEditor.verticalAlignment = cellEditor.getLayoutData().verticalAlignment;
+                treeEditor.horizontalAlignment = cellEditor.getLayoutData().horizontalAlignment;
+                treeEditor.minimumWidth = cellEditor.getLayoutData().minimumWidth;
+                treeEditor.grabHorizontal = cellEditor.getLayoutData().grabHorizontal;
+
                 treeEditor.setEditor(editorControl, item, 1);
             }
             if (isDef) {
@@ -902,7 +906,7 @@ public class PropertyTreeViewer extends TreeViewer {
                         }
                         final TreeNode node = (TreeNode) event.item.getData();
                         if (node != null && node.property != null) {
-                            renderer.paintCell(event, node, event.index, node.isEditable());
+                            renderer.paintCell(event, node, event.item, event.index, node.isEditable());
                         }
                     }
                     break;
