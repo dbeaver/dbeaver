@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: PostgreSQL Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.postgresql;singleton:=true
 Bundle-Version: 2.1.27
-Bundle-Release-Date: 20170315
+Bundle-Release-Date: 20170319
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.views,
