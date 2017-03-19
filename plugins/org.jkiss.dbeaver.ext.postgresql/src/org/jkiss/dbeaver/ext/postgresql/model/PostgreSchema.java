@@ -28,7 +28,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.*;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -45,6 +48,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreSchema
@@ -56,6 +60,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     private PostgreDatabase database;
     private long oid;
     private String name;
+    private String description;
     private long ownerId;
     private boolean persisted;
 
@@ -88,6 +93,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "nspowner");
+        this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.persisted = true;
     }
 
@@ -120,11 +126,11 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         return PostgreUtils.getObjectById(monitor, database.roleCache, database, ownerId);
     }
 
+    @Property(viewable = true, order = 100)
     @Nullable
     @Override
-    public String getDescription()
-    {
-        return null;
+    public String getDescription() {
+        return description;
     }
 
     @Override
@@ -313,6 +319,16 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         for (PostgreDataType dt : dataTypeCache.getAllObjects(monitor, this)) {
             if (dt.getParentObject() == this) {
                 types.add(dt);
+            }
+        }
+        if (PostgreConstants.CATALOG_SCHEMA_NAME.equals(this.getName())) {
+            // Add serial data types
+            for (Map.Entry<String,String> serialMapping : PostgreConstants.SERIAL_TYPES.entrySet()) {
+                PostgreDataType realType = dataTypeCache.getCachedObject(serialMapping.getValue());
+                if (realType != null) {
+                    PostgreDataType serialType = new PostgreDataType(realType, serialMapping.getKey());
+                    dataTypeCache.cacheObject(serialType);
+                }
             }
         }
         DBUtils.orderObjects(types);
@@ -547,8 +563,8 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                     return null;
                 }
                 Object keyRefNumbers = JDBCUtils.safeGetArray(resultSet, "confkey");
-                List<PostgreTableColumn> attributes = table.getAttributes(monitor);
-                List<PostgreTableColumn> refAttributes = refTable.getAttributes(monitor);
+                Collection<PostgreTableColumn> attributes = table.getAttributes(monitor);
+                Collection<PostgreTableColumn> refAttributes = refTable.getAttributes(monitor);
                 assert attributes != null && refAttributes != null;
                 int colCount = Array.getLength(keyNumbers);
                 PostgreTableForeignKeyColumn[] fkCols = new PostgreTableForeignKeyColumn[colCount];
@@ -571,7 +587,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                 return fkCols;
 
             } else {
-                List<PostgreTableColumn> attributes = table.getAttributes(monitor);
+                Collection<PostgreTableColumn> attributes = table.getAttributes(monitor);
                 assert attributes != null;
                 int colCount = Array.getLength(keyNumbers);
                 PostgreTableConstraintColumn[] cols = new PostgreTableConstraintColumn[colCount];
@@ -669,7 +685,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
             }
             int[] keyOptions = PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, "indoption"));
             String expr = JDBCUtils.safeGetString(dbResult, "expr");
-            List<PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
+            Collection<PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
             assert attributes != null;
             PostgreIndexColumn[] result = new PostgreIndexColumn[keyNumbers.length];
             for (int i = 0; i < keyNumbers.length; i++) {

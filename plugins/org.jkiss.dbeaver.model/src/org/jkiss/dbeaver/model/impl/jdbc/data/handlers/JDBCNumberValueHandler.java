@@ -30,10 +30,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.SQLException;
+import java.sql.Types;
 
 /**
  * JDBC number value handler
@@ -90,11 +92,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     {
         Number value;
         switch (type.getTypeID()) {
-            case java.sql.Types.DOUBLE:
-            case java.sql.Types.REAL:
+            case Types.DOUBLE:
+            case Types.REAL:
                 value = resultSet.getDouble(index);
                 break;
-            case java.sql.Types.FLOAT:
+            case Types.FLOAT:
                 try {
                     // Read value with maximum precision. Some drivers reports FLOAT but means double [JDBC:SQLite]
                     value = resultSet.getDouble(index);
@@ -102,7 +104,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     value = resultSet.getFloat(index);
                 }
                 break;
-            case java.sql.Types.INTEGER:
+            case Types.INTEGER:
                 try {
                     // Read value with maximum precision. Some drivers reports INTEGER but means long [JDBC:SQLite]
                     value = resultSet.getLong(index);
@@ -110,16 +112,22 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     value = resultSet.getInt(index);
                 }
                 break;
-            case java.sql.Types.SMALLINT:
+            case Types.SMALLINT:
                 // Read int in case of unsigned shorts
                 value = resultSet.getInt(index);
                 break;
-            case java.sql.Types.TINYINT:
+            case Types.TINYINT:
                 // Read short in case of unsigned byte
                 value = resultSet.getShort(index);
                 break;
-            case java.sql.Types.BIT:
-                value = resultSet.getByte(index);
+            case Types.BIT:
+                if (type.getPrecision() <= 1) {
+                    // single bit
+                    value = resultSet.getByte(index);
+                } else {
+                    // bit string
+                    return CommonUtils.toBinaryString(resultSet.getLong(index), type.getPrecision());
+                }
                 break;
             default:
                 // Here may be any numeric value. BigDecimal or BigInteger for example
@@ -135,7 +143,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     log.debug(e);
                 }
                 if (value == null && !gotValue) {
-                    if (type.getScale() >= 0) {
+                    if (type.getScale() > 0) {
                         value = resultSet.getDouble(index);
                     } else {
                         value = resultSet.getLong(index);
@@ -155,12 +163,25 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType,
                                  int paramIndex, Object value) throws SQLException
     {
+        if (value instanceof String) {
+            if (paramType.getTypeID() == Types.BIT) {
+                // Bit string
+                try {
+                    value = Long.parseLong((String) value, 2);
+                } catch (NumberFormatException e) {
+                    throw new SQLException("Can't convert value '" + value + "' into bit string", e);
+                }
+            } else {
+                // Some number. Actually we shouldn't be here
+                value = DBValueFormatting.convertStringToNumber((String) value, getNumberType(paramType), formatter);
+            }
+        }
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
         } else {
             Number number = (Number) value;
             switch (paramType.getTypeID()) {
-                case java.sql.Types.BIGINT:
+                case Types.BIGINT:
                     if (number instanceof BigInteger) {
                         statement.setBigDecimal(paramIndex, new BigDecimal((BigInteger) number));
                     } else {
@@ -168,26 +189,30 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     }
                     statement.setLong(paramIndex, number.longValue());
                     break;
-                case java.sql.Types.FLOAT:
+                case Types.FLOAT:
                     statement.setFloat(paramIndex, number.floatValue());
                     break;
-                case java.sql.Types.DOUBLE:
-                case java.sql.Types.REAL:
+                case Types.DOUBLE:
+                case Types.REAL:
                     statement.setDouble(paramIndex, number.doubleValue());
                     break;
-                case java.sql.Types.INTEGER:
+                case Types.INTEGER:
                     statement.setInt(paramIndex, number.intValue());
                     break;
-                case java.sql.Types.SMALLINT:
+                case Types.SMALLINT:
                     statement.setShort(paramIndex, number.shortValue());
                     break;
-                case java.sql.Types.TINYINT:
+                case Types.TINYINT:
                     statement.setShort(paramIndex, number.shortValue());
                     break;
-                case java.sql.Types.BIT:
-                    statement.setByte(paramIndex, number.byteValue());
+                case Types.BIT:
+                    if (paramType.getPrecision() <= 1) {
+                        statement.setByte(paramIndex, number.byteValue());
+                    } else {
+                        statement.setLong(paramIndex, number.longValue());
+                    }
                     break;
-                case java.sql.Types.NUMERIC:
+                case Types.NUMERIC:
                     if (number instanceof Long) {
                         statement.setLong(paramIndex, number.longValue());
                     } else if (number instanceof Integer) {
@@ -242,22 +267,27 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
     public Class<? extends Number> getNumberType(DBSTypedObject type) {
         switch (type.getTypeID()) {
-            case java.sql.Types.BIGINT:
+            case Types.BIGINT:
                 return Long.class;
-            case java.sql.Types.DECIMAL:
-            case java.sql.Types.DOUBLE:
-            case java.sql.Types.REAL:
+            case Types.DECIMAL:
+            case Types.DOUBLE:
+            case Types.REAL:
                 return Double.class;
-            case java.sql.Types.FLOAT:
+            case Types.FLOAT:
                 return Float.class;
-            case java.sql.Types.INTEGER:
+            case Types.INTEGER:
                 return Integer.class;
-            case java.sql.Types.SMALLINT:
-            case java.sql.Types.TINYINT:
+            case Types.SMALLINT:
+            case Types.TINYINT:
                 return Short.class;
-            case java.sql.Types.BIT:
-                return Byte.class;
-            case java.sql.Types.NUMERIC:
+            case Types.BIT:
+                if (type.getPrecision() <= 1) {
+                    return Byte.class;
+                } else {
+                    // bit string (hopefully long is enough)
+                    return Long.class;
+                }
+            case Types.NUMERIC:
                 return BigDecimal.class;
             default:
                 if (type.getScale() > 0) {

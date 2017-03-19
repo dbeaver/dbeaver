@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -181,7 +180,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         }
 
         getWizard().getDriver().setModified(true);
-        DataSourceProviderRegistry.getInstance().saveDrivers();
+        //DataSourceProviderRegistry.getInstance().saveDrivers();
     }
 
     private class DownloadRetry implements Runnable {

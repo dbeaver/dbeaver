@@ -187,11 +187,18 @@ public abstract class ObjectAttributeDescriptor {
     static void extractAnnotations(DBPPropertySource source, ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps, IPropertyFilter filter)
     {
         Method[] methods = theClass.getMethods();
-        Set<String> passedNames = new HashSet<>();
+        Map<String, Method> passedNames = new HashMap<>();
         for (Method method : methods) {
             String methodFullName = method.getDeclaringClass().getName() + "." + method.getName();
-            if (passedNames.contains(methodFullName)) {
-                continue;
+            final Method prevMethod = passedNames.get(methodFullName);
+            if (prevMethod != null) {
+                // The same method but probably with another return type
+                final Class<?> prevReturnType = prevMethod.getReturnType();
+                final Class<?> newReturnType = method.getReturnType();
+                if (newReturnType == null || prevReturnType == null || newReturnType == prevReturnType || !prevReturnType.isAssignableFrom(newReturnType)) {
+                    continue;
+                }
+                // Let it another chance. New return types seems to be subclass of previous
             }
             final PropertyGroup propGroupInfo = method.getAnnotation(PropertyGroup.class);
             if (propGroupInfo != null && method.getReturnType() != null) {
@@ -208,8 +215,16 @@ public abstract class ObjectAttributeDescriptor {
                 if (filter != null && !filter.select(desc)) {
                     continue;
                 }
+                if (prevMethod != null) {
+                    // Remove previous anno
+                    for (Iterator<ObjectPropertyDescriptor> iter = annoProps.iterator(); iter.hasNext(); ) {
+                        if (iter.next().getId().equals(desc.getId())) {
+                            iter.remove();
+                        }
+                    }
+                }
                 annoProps.add(desc);
-                passedNames.add(methodFullName);
+                passedNames.put(methodFullName, method);
             }
         }
         Collections.sort(annoProps, ATTRIBUTE_DESCRIPTOR_COMPARATOR);

@@ -48,7 +48,9 @@ public class EditTextDialog extends BaseDialog {
         Composite composite = super.createDialogArea(parent);
         createControlsBeforeText(composite);
         textControl = new Text(composite, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
-        textControl.setText(text);
+        if (text != null) {
+            textControl.setText(text);
+        }
         textControl.setEditable(!readonly);
         GridData gd = new GridData(GridData.FILL_BOTH);
         if (textWidth > 0) {

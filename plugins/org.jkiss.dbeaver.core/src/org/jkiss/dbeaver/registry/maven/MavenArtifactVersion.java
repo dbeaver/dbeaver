@@ -52,6 +52,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     private MavenArtifact artifact;
     private String name;
     private String version;
+    private String packaging;
     private String description;
     private String url;
     private MavenArtifactVersion parent;
@@ -129,6 +130,11 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     @Override
     public String getId() {
         return MavenArtifactReference.makeId(this);
+    }
+
+    @Nullable
+    public String getPackaging() {
+        return packaging;
     }
 
     public String getDescription() {
@@ -247,6 +253,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         name = XMLUtils.getChildElementBody(root, "name");
         url = XMLUtils.getChildElementBody(root, "url");
         version = XMLUtils.getChildElementBody(root, "version");
+        packaging = XMLUtils.getChildElementBody(root, "packaging");
         description = XMLUtils.getChildElementBody(root, "description");
         if (description != null) {
             description = TextUtils.compactWhiteSpaces(description.trim());

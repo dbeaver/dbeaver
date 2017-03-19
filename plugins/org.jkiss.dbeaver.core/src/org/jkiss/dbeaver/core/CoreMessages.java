@@ -44,6 +44,10 @@ public class CoreMessages extends NLS {
 	public static String actions_ContentAssistTip_tooltip;
 	public static String actions_ContentAssistTip_description;
 
+	public static String actions_ContentAssistInfo_label;
+	public static String actions_ContentAssistInfo_tooltip;
+	public static String actions_ContentAssistInfo_description;
+
 	public static String actions_ContentFormatProposal_label;
 	public static String actions_ContentFormatProposal_tooltip;
 	public static String actions_ContentFormatProposal_description;

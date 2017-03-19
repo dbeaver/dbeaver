@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Standalone
 Bundle-SymbolicName: org.jkiss.dbeaver.core.application;singleton:=true
-Bundle-Version: 4.0.2
-Bundle-Release-Date: 20170301
+Bundle-Version: 4.0.3
+Bundle-Release-Date: 20170315
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: .
 Bundle-Vendor: JKISS
@@ -20,6 +20,7 @@ Require-Bundle: org.jkiss.dbeaver.core,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.help,
  org.eclipse.core.filesystem,
+ org.eclipse.ui.editors,
  org.eclipse.ui.ide,
  org.eclipse.e4.ui.css.core,
  org.eclipse.e4.ui.css.swt,

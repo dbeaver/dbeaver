@@ -651,7 +651,8 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
             return session.prepareStatement(
                 "SELECT n.oid,n.* FROM pg_catalog.pg_namespace n ORDER BY nspname");
 */
-            StringBuilder catalogQuery = new StringBuilder("SELECT n.oid,n.* FROM pg_catalog.pg_namespace n");
+            StringBuilder catalogQuery = new StringBuilder("SELECT n.oid,n.*,d.description FROM pg_catalog.pg_namespace n\n" +
+                "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=n.oid\n");
             DBSObjectFilter catalogFilters = database.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
             if ((catalogFilters != null && !catalogFilters.isNotApplicable()) || object != null || objectName != null) {
                 if (object != null || objectName != null) {

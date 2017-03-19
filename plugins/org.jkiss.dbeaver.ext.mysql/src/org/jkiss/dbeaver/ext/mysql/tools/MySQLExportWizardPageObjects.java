@@ -77,44 +77,65 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         SashForm sash = new CustomSashForm(objectsGroup, SWT.VERTICAL);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        catalogTable = new Table(sash, SWT.BORDER | SWT.CHECK);
-        catalogTable.addListener(SWT.Selection, new Listener() {
-            public void handleEvent(Event event) {
-                TableItem item = (TableItem) event.item;
-                MySQLCatalog catalog = (MySQLCatalog) item.getData();
-                if (event.detail == SWT.CHECK) {
-                    catalogTable.select(catalogTable.indexOf(item));
-                    checkedObjects.remove(catalog);
+        {
+            Composite catPanel = UIUtils.createPlaceholder(sash, 1);
+            catPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+            catalogTable = new Table(catPanel, SWT.BORDER | SWT.CHECK);
+            catalogTable.addListener(SWT.Selection, new Listener() {
+                public void handleEvent(Event event) {
+                    TableItem item = (TableItem) event.item;
+                    if (item != null) {
+                        MySQLCatalog catalog = (MySQLCatalog) item.getData();
+                        if (event.detail == SWT.CHECK) {
+                            catalogTable.select(catalogTable.indexOf(item));
+                            checkedObjects.remove(catalog);
+                        }
+                        loadTables(catalog);
+                        updateState();
+                    }
                 }
-                loadTables(catalog);
-                updateState();
-            }
-        });
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 50;
-        catalogTable.setLayoutData(gd);
+            });
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 50;
+            catalogTable.setLayoutData(gd);
 
-        tablesTable = new Table(sash, SWT.BORDER | SWT.CHECK);
-        gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 50;
-        tablesTable.setLayoutData(gd);
-        tablesTable.addListener(SWT.Selection, new Listener() {
-            public void handleEvent(Event event) {
-                if (event.detail == SWT.CHECK) {
-                    updateCheckedTables();
-                    updateState();
+            Composite buttonsPanel = UIUtils.createPlaceholder(catPanel, 3, 5);
+            buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            new Label(buttonsPanel, SWT.NONE).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
+            createCheckButtons(buttonsPanel, catalogTable);
+        }
+
+        final Button exportViewsCheck;
+        {
+            Composite tablesPanel = UIUtils.createPlaceholder(sash, 1);
+            tablesPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            tablesTable = new Table(tablesPanel, SWT.BORDER | SWT.CHECK);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 50;
+            tablesTable.setLayoutData(gd);
+            tablesTable.addListener(SWT.Selection, new Listener() {
+                public void handleEvent(Event event) {
+                    if (event.detail == SWT.CHECK) {
+                        updateCheckedTables();
+                        updateState();
+                    }
                 }
-            }
-        });
+            });
+            Composite buttonsPanel = UIUtils.createPlaceholder(tablesPanel, 3, 5);
+            buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        final Button exportViewsCheck = UIUtils.createCheckbox(objectsGroup, "Show views", false);
-        exportViewsCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                wizard.showViews = exportViewsCheck.getSelection();
-                loadTables(null);
-            }
-        });
+            exportViewsCheck = UIUtils.createCheckbox(buttonsPanel, "Show views", false);
+            exportViewsCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    wizard.showViews = exportViewsCheck.getSelection();
+                    loadTables(null);
+                }
+            });
+            exportViewsCheck.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
+            createCheckButtons(buttonsPanel, tablesTable);
+        }
 
         MySQLDataSource dataSource = null;
         Set<MySQLCatalog> activeCatalogs = new LinkedHashSet<>();

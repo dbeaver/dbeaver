@@ -146,20 +146,10 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     {
         if (attributeMappings.isEmpty()) {
             try {
-                DBeaverUI.run(runnableContext, true, true, new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                        try {
-                            readAttributes(monitor);
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    }
-                });
-            } catch (InvocationTargetException e) {
-                UIUtils.showErrorDialog(null, "Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source, DBPEvaluationContext.UI), e.getTargetException());
-            } catch (InterruptedException e) {
-                // Skip it
+                // Do not use runnable context! It changes active focus and locks UI which breakes whole jface editing framework
+                readAttributes(VoidProgressMonitor.INSTANCE);
+            } catch (DBException e) {
+                UIUtils.showErrorDialog(null, "Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source, DBPEvaluationContext.UI), e);
             }
         }
         return attributeMappings;

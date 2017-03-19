@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.Array;
 import java.sql.SQLException;
@@ -43,22 +43,24 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
 
     @NotNull
     @Override
-    public Class<JDBCCollection> getValueObjectType(@NotNull DBSTypedObject attribute)
+    public Class<DBDCollection> getValueObjectType(@NotNull DBSTypedObject attribute)
     {
-        return JDBCCollection.class;
+        return DBDCollection.class;
     }
 
     @Override
-    public JDBCCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
-            return JDBCCollection.makeArray((JDBCSession) session, type, null);
+            return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, null);
         } else if (object instanceof JDBCCollection) {
             return (JDBCCollection)(copy ? ((JDBCCollection) object).cloneValue(session.getProgressMonitor()) : object);
         } else if (object instanceof Array) {
-            return JDBCCollection.makeArray((JDBCSession) session, type, (Array) object);
+            return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, (Array) object);
+        } else if (object instanceof String) {
+            return JDBCCollection.makeCollectionFromString((JDBCSession) session, (String)object);
         } else {
-            throw new DBCException(ModelMessages.model_jdbc_exception_unsupported_array_type_ + object.getClass().getName());
+            return JDBCCollection.makeCollectionFromString((JDBCSession) session, CommonUtils.toString(object));
         }
     }
 

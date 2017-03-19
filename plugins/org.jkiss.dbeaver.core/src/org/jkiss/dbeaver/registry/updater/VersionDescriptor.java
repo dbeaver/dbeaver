@@ -18,12 +18,11 @@
 package org.jkiss.dbeaver.registry.updater;
 
 import org.jkiss.dbeaver.runtime.WebUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.SAXListener;
+import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLException;
-import org.jkiss.utils.xml.XMLUtils;
 import org.osgi.framework.Version;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.xml.sax.Attributes;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,8 +48,7 @@ public class VersionDescriptor {
         throws IOException
     {
         try (InputStream inputStream = WebUtils.openConnection(fileAddr).getInputStream()) {
-            Document document = XMLUtils.parseDocument(inputStream);
-            parseVersionInfo(document);
+            parseVersionInfo(inputStream);
         } catch (XMLException e) {
             throw new IOException("XML parse error", e);
         }
@@ -91,22 +89,34 @@ public class VersionDescriptor {
         return updateSites;
     }
 
-    private void parseVersionInfo(Document document)
-    {
-        Element root = document.getDocumentElement();
-        programName = XMLUtils.getChildElementBody(root, "name");
-        programVersion = Version.parseVersion(XMLUtils.getChildElementBody(root, "number"));
-        updateTime = XMLUtils.getChildElementBody(root, "date");
-        baseURL = XMLUtils.getChildElementBody(root, "base-url");
-        Element releaseNotesElem = XMLUtils.getChildElement(root, "release-notes");
-        this.releaseNotes = releaseNotesElem == null ? "" : CommonUtils.toString(releaseNotesElem.getTextContent()).trim();
-
-        for (Element dist : XMLUtils.getChildElementList(root, "distribution")) {
-            distributions.add(new DistributionDescriptor(dist));
-        }
-
-        for (Element dist : XMLUtils.getChildElementList(root, "site")) {
-            updateSites.add(new UpdateSiteDescriptor(dist));
-        }
+    private void parseVersionInfo(InputStream inputStream) throws IOException, XMLException {
+        SAXReader parser = new SAXReader(inputStream);
+        SAXListener dsp = new SAXListener() {
+            private String lastTag;
+            private StringBuilder textBuffer = new StringBuilder();
+            @Override
+            public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
+                lastTag = localName;
+                textBuffer.setLength(0);
+            }
+            @Override
+            public void saxText(SAXReader reader, String data) throws XMLException {
+                textBuffer.append(data);
+            }
+            @Override
+            public void saxEndElement(SAXReader reader, String namespaceURI, String localName) throws XMLException {
+                final String text = textBuffer.toString();
+                switch (lastTag) {
+                    case "name": programName = text; break;
+                    case "number": programVersion = Version.parseVersion(text); break;
+                    case "date": updateTime = text; break;
+                    case "base-url": baseURL = text; break;
+                    case "release-notes": releaseNotes = text; break;
+                }
+                textBuffer.setLength(0);
+            }
+        };
+        parser.parse(dsp);
     }
+
 }

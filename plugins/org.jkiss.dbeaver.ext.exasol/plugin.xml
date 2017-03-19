@@ -59,10 +59,19 @@
                         <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolScript" label="%tree.scripts.node.name"
                                 icon="#procedures" description="Scripts">
                             <items label="%tree.script.node.name" path="script" property="procedures" icon="#procedure">
-                                <items label="Parameters" itemLabel="%tree.column.node.name" path="column"
-                                       property="parameters" navigable="false" inline="true">
-                                </items>
                             </items>
+                        </folder>
+                        <folder
+                              description="Functions"
+                              icon="#procedures"
+                              label="%tree.functions.node.name"
+                              type="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction">
+                           <items
+                                 icon="#procedure"
+                                 label="%tree.function.node.name"
+                                 path="function"
+                                 property="functions">
+                           </items>
                         </folder>
                     </items>
                 </folder>
@@ -366,15 +375,6 @@
            <objectType
                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable">
            </objectType>
-           <objectType
-                 name="org.jkiss.dbeaver.ext.exasol.model.ExasolView">
-           </objectType>
-           <objectType
-                 name="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema">
-           </objectType>
-           <objectType
-                 name="org.jkiss.dbeaver.ext.exasol.model.ExasolScript">
-           </objectType>
         </editor>
         <manager
                 class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTableManager"
@@ -398,6 +398,37 @@
                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema">
            </objectType>
         </editor>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolScriptManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolScript">
+        </manager>
+        <editor
+              class="org.jkiss.dbeaver.ext.exasol.editors.ExasolSourceViewEditor"
+              contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
+              description="Source code"
+              icon="#sql_text"
+              id="exasol.source.view"
+              label="Source"
+              position="additions_middle"
+              type="folder">
+           <objectType
+                 name="org.jkiss.dbeaver.ext.exasol.model.ExasolView">
+           </objectType>
+           <objectType
+                 name="org.jkiss.dbeaver.ext.exasol.model.ExasolScript">
+           </objectType>
+           <objectType
+                 name="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction">
+           </objectType>
+        </editor>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolViewManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolView">
+        </manager>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolFunctionManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction">
+        </manager>
     </extension>
     <extension point="org.eclipse.ui.editors">
         <editor

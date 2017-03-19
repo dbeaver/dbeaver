@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.model.data;
 
 /**
- * DBDvalue
+ * DBDValue
  */
 public interface DBDValue extends DBDObject {
 
@@ -29,6 +29,11 @@ public interface DBDValue extends DBDObject {
      * @return true for NULL values
      */
     boolean isNull();
+
+    /**
+     * Checks if this value was modified on client-side.
+     */
+    boolean isModified();
 
     /**
      * Releases allocated resources. Resets to original value

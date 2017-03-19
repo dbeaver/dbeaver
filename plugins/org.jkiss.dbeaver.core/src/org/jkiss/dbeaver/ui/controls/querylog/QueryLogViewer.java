@@ -52,9 +52,9 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -72,7 +73,6 @@ import org.jkiss.utils.LongKeyMap;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -105,25 +105,32 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             this.widthHint = widthHint;
         }
         abstract String getText(QMMetaEvent event);
+        String getToolTipText(QMMetaEvent event) {
+            return getText(event);
+        }
     }
 
     private static class ColumnDescriptor {
         LogColumn logColumn;
         TableColumn tableColumn;
 
-        public ColumnDescriptor(LogColumn logColumn, TableColumn tableColumn)
+        ColumnDescriptor(LogColumn logColumn, TableColumn tableColumn)
         {
             this.logColumn = logColumn;
             this.tableColumn = tableColumn;
         }
     }
 
-    private static LogColumn COLUMN_TIME = new LogColumn("time", CoreMessages.controls_querylog_column_time_name, CoreMessages.controls_querylog_column_time_tooltip, 80) {
-        private DateFormat timeFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIME_FORMAT, Locale.getDefault()); //$NON-NLS-1$
+    private LogColumn COLUMN_TIME = new LogColumn("time", CoreMessages.controls_querylog_column_time_name, CoreMessages.controls_querylog_column_time_tooltip, 80) {
+        private final DateFormat timeFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIME_FORMAT, Locale.getDefault()); //$NON-NLS-1$
+        private final DateFormat timestampFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT, Locale.getDefault()); //$NON-NLS-1$
         @Override
         String getText(QMMetaEvent event)
         {
-            return timeFormat.format(new Date(event.getObject().getOpenTime()));
+            return timeFormat.format(event.getObject().getOpenTime());
+        }
+        String getToolTipText(QMMetaEvent event) {
+            return timestampFormat.format(event.getObject().getOpenTime());
         }
     };
     private static LogColumn COLUMN_TYPE = new LogColumn("type", CoreMessages.controls_querylog_column_type_name, CoreMessages.controls_querylog_column_type_tooltip, 100) {
@@ -288,7 +295,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             return contextName;
         }
     };
-    private static LogColumn[] ALL_COLUMNS = new LogColumn[] {
+    private LogColumn[] ALL_COLUMNS = new LogColumn[] {
         COLUMN_TIME,
         COLUMN_TYPE,
         COLUMN_TEXT,
@@ -344,9 +351,16 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         GridData gd = new GridData(GridData.FILL_BOTH);
         logTable.setLayoutData(gd);
 
-        new TableToolTip(logTable);
+        new TableToolTip(logTable) {
+            @Override
+            public String getItemToolTip(TableItem item, int selectedColumn) {
+                LogColumn column = (LogColumn) logTable.getColumn(selectedColumn).getData();
+                return column.getToolTipText((QMMetaEvent) item.getData());
+            }
+        };
 
         createColumns(showConnection);
+
 
         {
             // Register control in focus service (to provide handlers binding)
@@ -395,16 +409,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     {
         EventViewDialog dialog = new EventViewDialog(event);
         dialog.open();
-/*
-        EventSelectionProvider eventSelectionProvider = new EventSelectionProvider();
-        //TableViewer viewer = new TableViewer(logTable);
-        IMemento memento = new XMLMemento(null, null);
-        EventDetailsDialogAction detailsAction = new EventDetailsDialogAction(
-            logTable.getShell(),
-            eventSelectionProvider,
-            memento);
-        detailsAction.run();
-*/
     }
 
     private void createColumns(boolean showConnection)
@@ -416,11 +420,13 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         final IDialogSettings dialogSettings = UIUtils.getDialogSettings(VIEWER_ID);
 
+        int colIndex = 0;
         for (final LogColumn logColumn : ALL_COLUMNS) {
             if (!showConnection && (logColumn == COLUMN_DATA_SOURCE || logColumn == COLUMN_CONTEXT)) {
                 continue;
             }
             final TableColumn tableColumn = UIUtils.createTableColumn(logTable, SWT.NONE, logColumn.title);
+            tableColumn.setData(logColumn);
             final String colWidth = dialogSettings.get("column-" + logColumn.id);
             if (colWidth != null) {
                 tableColumn.setWidth(Integer.parseInt(colWidth));
@@ -432,6 +438,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             final ColumnDescriptor cd = new ColumnDescriptor(logColumn, tableColumn);
             columns.add(cd);
 
+            tableColumn.addListener(SWT.Selection, new TableColumnSortListener(logTable, colIndex));
             tableColumn.addListener(SWT.Resize, new Listener() {
                 @Override
                 public void handleEvent(Event event) {
@@ -440,25 +447,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 }
             });
 
-//            tableColumn.addListener(SWT.Move, new Listener() {
-//                @Override
-//                public void handleEvent(Event event) {
-//
-//                }
-//            });
+            colIndex++;
         }
-
-/*
-        logTable.addListener(SWT.Resize, new Listener() {
-            @Override
-            public void handleEvent(Event event) {
-                for (ColumnDescriptor cd : columns) {
-                    final int width = cd.tableColumn.getWidth();
-                    dialogSettings.put("column-" + cd.logColumn.id, String.valueOf(width));
-                }
-            }
-        });
-*/
     }
 
     private void dispose()
@@ -509,7 +499,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         reloadEvents();
     }
 
-    static String getObjectType(QMMObject object)
+    private static String getObjectType(QMMObject object)
     {
         if (object instanceof QMMSessionInfo) {
             return CoreMessages.model_navigator_Connection;
@@ -531,7 +521,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         return ""; //$NON-NLS-1$
     }
 
-    Font getObjectFont(QMMetaEvent event)
+    private Font getObjectFont(QMMetaEvent event)
     {
         if (event.getObject() instanceof QMMStatementExecuteInfo) {
             QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) event.getObject();
@@ -542,7 +532,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         return null;
     }
 
-    Color getObjectForeground(QMMetaEvent event)
+    private Color getObjectForeground(QMMetaEvent event)
     {
         if (getObjectBackground(event) != null) {
             return colorGray;
@@ -560,7 +550,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         return null;
     }
 
-    Color getObjectBackground(QMMetaEvent event)
+    private Color getObjectBackground(QMMetaEvent event)
     {
         if (event.getObject() instanceof QMMStatementExecuteInfo) {
             QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) event.getObject();
@@ -825,7 +815,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
     }
 
-    public void addDragAndDropSupport()
+    private void addDragAndDropSupport()
     {
         Transfer[] types = new Transfer[] {TextTransfer.getInstance()};
         int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
@@ -936,7 +926,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     private class ConfigRefreshJob extends AbstractUIJob {
-        protected ConfigRefreshJob()
+        ConfigRefreshJob()
         {
             super(CoreMessages.controls_querylog_job_refresh);
         }
@@ -955,7 +945,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         private final QMMetaEvent object;
 
-        protected EventViewDialog(QMMetaEvent object)
+        EventViewDialog(QMMetaEvent object)
         {
             super(QueryLogViewer.this.getControl().getShell(), QueryLogViewer.this.site, "Event", null);
             setShellStyle(SWT.SHELL_TRIM);

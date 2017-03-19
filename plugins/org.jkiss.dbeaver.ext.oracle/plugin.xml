@@ -121,7 +121,7 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePackage" label="%tree.packages.node.name" icon="#packages" description="Packages">
                             <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
-                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure" visibleIf="object.dataSource.isAtLeastV10()">
                                     <handler action="open" command="org.jkiss.dbeaver.ext.oracle.code.package.navigate"/>
                                     <!-- Proc arguments. Not inline because arguments reading is expensive -->
                                     <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
@@ -152,7 +152,7 @@
                         <!--folder type="org.jkiss.dbeaver.ext.oracle.model.OracleJavaClass" label="Java" icon="#java" description="Java Classes">
                             <items label="Java Class" path="class" property="javaClasses" icon="#javaClass"/>
                         </folder-->
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="%tree.recycle_bin.node.name" icon="#recycle_bin" description="Recycle Bin" visibleIf="object.dataSource.adminVisible">
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="%tree.recycle_bin.node.name" icon="#recycle_bin" description="Recycle Bin" visibleIf="object.dataSource.adminVisible &amp;&amp; object.dataSource.isAtLeastV10()">
                             <items label="%tree.recycled_object.node.name" path="object" property="recycledObjects" icon="#recycle_bin"/>
                         </folder>
                     </items>
@@ -341,6 +341,9 @@
         <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleTableTriggerManager"
             objectType="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.oracle.edit.OracleSequenceManager"
+            objectType="org.jkiss.dbeaver.ext.oracle.model.OracleSequence"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
@@ -424,11 +427,19 @@
                     <with variable="selection">
                         <count value="+"/>
                         <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
+                            <!-- Here and below we use double check - adapt + instanceof.
+                                sing <adapt> with final (Oracle-specific) type will force plugin activation (since E4.6)
+                                see https://bugs.eclipse.org/bugs/show_bug.cgi?id=485569
+                            -->
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                                <instanceof value="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
+                            </adapt>
                         </iterate>
                     </with>
                     <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <instanceof value="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
+                        </adapt>
                     </with>
                 </or>
             </enabledWhen>
@@ -438,7 +449,10 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <instanceof value="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
+                        </adapt>
+                        <!--<adapt type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>-->
                     </iterate>
                 </with>
             </enabledWhen>

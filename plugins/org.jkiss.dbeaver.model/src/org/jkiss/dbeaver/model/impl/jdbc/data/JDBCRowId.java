@@ -53,6 +53,11 @@ public class JDBCRowId implements DBDValue {
     }
 
     @Override
+    public boolean isModified() {
+        return false;
+    }
+
+    @Override
     public void release()
     {
         value = null;

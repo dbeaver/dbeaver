@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.ui.ClipboardData;
+import org.jkiss.dbeaver.ui.CopyMode;
 import org.jkiss.dbeaver.ui.IClipboardSource;
 import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
@@ -49,7 +50,7 @@ import java.util.Map;
 
 public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler implements IElementUpdater {
 
-    public NavigatorHandlerCopyAbstract() {
+    NavigatorHandlerCopyAbstract() {
 
     }
 
@@ -69,13 +70,15 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
         return null;
     }
 
+    protected abstract CopyMode getCopyMode();
+
     private void copySelection(IWorkbenchWindow workbenchWindow, IWorkbenchPart activePart, ISelection selection) {
         ClipboardData clipboardData = new ClipboardData();
 
         {
             IClipboardSource clipboardSource = activePart.getAdapter(IClipboardSource.class);
             if (clipboardSource != null) {
-                clipboardSource.addClipboardData(clipboardData);
+                clipboardSource.addClipboardData(getCopyMode(), clipboardData);
             }
         }
 

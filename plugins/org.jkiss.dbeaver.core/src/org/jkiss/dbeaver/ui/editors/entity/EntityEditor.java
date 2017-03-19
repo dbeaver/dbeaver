@@ -229,14 +229,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 saveJob.schedule();
 
                 // Wait until job finished
-                Display display = Display.getCurrent();
-                while (saveJob.finished == null) {
-                    if (!display.readAndDispatch()) {
-                        display.sleep();
-                    }
-                }
-                display.update();
-                if (!saveJob.finished) {
+                UIUtils.waitJobCompletion(saveJob);
+                if (!saveJob.success) {
                     monitor.setCanceled(true);
                     return;
                 }
@@ -251,7 +245,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private boolean saveCommandContext(DBRProgressMonitor monitor)
+    private boolean saveCommandContext(final DBRProgressMonitor monitor)
     {
         int previewResult = IDialogConstants.PROCEED_ID;
         if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW)) {
@@ -260,58 +254,80 @@ public class EntityEditor extends MultiPageDatabaseEditor
             monitor.done();
         }
 
-        if (previewResult == IDialogConstants.PROCEED_ID) {
-            Throwable error = null;
-            final DBECommandContext commandContext = getCommandContext();
-            if (commandContext == null) {
-                log.warn("Null command context");
-                return true;
-            }
+        if (previewResult != IDialogConstants.PROCEED_ID) {
+            return true;
+        }
+        monitor.beginTask("Save entity", 1);
+        Throwable error = null;
+        final DBECommandContext commandContext = getCommandContext();
+        if (commandContext == null) {
+            log.warn("Null command context");
+            return true;
+        }
+        try {
+            commandContext.saveChanges(monitor);
+        } catch (DBException e) {
+            error = e;
+        }
+        if (getDatabaseObject() instanceof DBPStatefulObject) {
             try {
-                commandContext.saveChanges(monitor);
-            } catch (DBException e) {
-                error = e;
-            }
-            if (getDatabaseObject() instanceof DBPStatefulObject) {
-                try {
-                    ((DBPStatefulObject) getDatabaseObject()).refreshObjectState(monitor);
-                } catch (DBCException e) {
-                    // Just report an error
-                    log.error(e);
-                }
-            }
-
-            if (error == null) {
-                // Refresh underlying node
-                // It'll refresh database object and all it's descendants
-                // So we'll get actual data from database
-                final DBNDatabaseNode treeNode = getEditorInput().getNavigatorNode();
-                try {
-                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                        @Override
-                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                        {
-                            try {
-                                treeNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
-                            } catch (DBException e) {
-                                throw new InvocationTargetException(e);
-                            }
-                        }
-                    });
-                } catch (InvocationTargetException e) {
-                    error = e.getTargetException();
-                } catch (InterruptedException e) {
-                    // ok
-                }
-            }
-            if (error == null) {
-                return true;
-            } else {
-                UIUtils.showErrorDialog(getSite().getShell(), "Can't save '" + getDatabaseObject().getName() + "'", null, error);
-                return false;
+                ((DBPStatefulObject) getDatabaseObject()).refreshObjectState(monitor);
+            } catch (DBCException e) {
+                // Just report an error
+                log.error(e);
             }
         }
-        return true;
+
+        if (error == null) {
+            // Refresh underlying node
+            // It'll refresh database object and all it's descendants
+            // So we'll get actual data from database
+            final DBNDatabaseNode treeNode = getEditorInput().getNavigatorNode();
+            try {
+                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
+                        try {
+                            treeNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                error = e.getTargetException();
+            } catch (InterruptedException e) {
+                // ok
+            }
+        }
+        monitor.done();
+
+        if (error == null) {
+            return true;
+        } else {
+            // Try to handle error in nested editors
+            final Throwable vError = error;
+            DBeaverUI.syncExec(new Runnable() {
+                @Override
+                public void run() {
+                    final IErrorVisualizer errorVisualizer = getAdapter(IErrorVisualizer.class);
+                    if (errorVisualizer != null) {
+                        errorVisualizer.visualizeError(monitor, vError);
+                    }
+                }
+            });
+
+            // Show error dialog
+
+            DBeaverUI.asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    UIUtils.showErrorDialog(getSite().getShell(), "Can't save '" + getDatabaseObject().getName() + "'", null, vError);
+                }
+            });
+            return false;
+        }
     }
 
     public void revertChanges()
@@ -877,7 +893,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     }
 
     private class SaveJob extends AbstractJob {
-        private transient Boolean finished = null;
+        private transient Boolean success = null;
 
         public SaveJob() {
             super("Save '" + getPartName() + "' changes...");
@@ -903,19 +919,19 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
                 final DBECommandContext commandContext = getCommandContext();
                 if (commandContext != null && commandContext.isDirty()) {
-                    finished = saveCommandContext(monitor);
+                    success = saveCommandContext(monitor);
                 } else {
-                    finished = true;
+                    success = true;
                 }
 
-                return finished ? Status.OK_STATUS : Status.CANCEL_STATUS;
+                return success ? Status.OK_STATUS : Status.CANCEL_STATUS;
             } catch (Throwable e) {
-                finished = false;
+                success = false;
                 log.error(e);
                 return GeneralUtils.makeExceptionStatus(e);
             } finally {
-                if (finished == null) {
-                    finished = true;
+                if (success == null) {
+                    success = true;
                 }
             }
         }

@@ -61,7 +61,7 @@ public class DBCCompileError {
         if (line <= 0) {
             return message;
         } else {
-            return "[" + line + ":" + position + "] " + message;
+            return message + "\nCompile error at line " + line + ", column " + position;
         }
     }
 }

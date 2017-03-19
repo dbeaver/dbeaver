@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.data;
 
+import java.util.Locale;
+
 /**
 * Values display format
 */
@@ -23,4 +25,16 @@ public enum DBDDisplayFormat {
     UI,     // To represent in UI
     EDIT,   // Format for editor
     NATIVE  // SQL format
+    ;
+
+    public static DBDDisplayFormat safeValueOf(String string) {
+        if (string == null || string.isEmpty()) {
+            return UI;
+        }
+        try {
+            return valueOf(string.toUpperCase(Locale.ENGLISH));
+        } catch (IllegalArgumentException e) {
+            return UI;
+        }
+    }
 }

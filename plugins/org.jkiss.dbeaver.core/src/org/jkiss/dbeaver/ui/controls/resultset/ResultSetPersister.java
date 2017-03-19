@@ -794,12 +794,16 @@ class ResultSetPersister {
 
                 final DBDAttributeBinding[] curAttributes = viewer.getModel().getAttributes();
                 final AbstractExecutionSource executionSource = new AbstractExecutionSource(dataContainer, getExecutionContext(), this);
+                List<DBDAttributeBinding> idAttributes = rowIdentifier.getAttributes();
+                if (idAttributes.isEmpty()) {
+                    return Status.OK_STATUS;
+                }
                 try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, "Refresh row(s) after insert/update")) {
                     for (int i = 0; i < rows.size(); i++) {
                         ResultSetRow row = rows.get(i);
-                        boolean hasKey = true;
                         List<DBDAttributeConstraint> constraints = new ArrayList<>();
-                        for (DBDAttributeBinding keyAttr : rowIdentifier.getAttributes()) {
+                        boolean hasKey = true;
+                        for (DBDAttributeBinding keyAttr : idAttributes) {
                             final Object keyValue = row.values[keyAttr.getOrdinalPosition()];
                             if (DBUtils.isNullValue(keyValue)) {
                                 hasKey = false;
@@ -837,10 +841,10 @@ class ResultSetPersister {
                         }
                     }
                 });
-                return Status.OK_STATUS;
             } catch (Throwable ex) {
-                return GeneralUtils.makeExceptionStatus(ex);
+                log.warn("Error refreshing rows", ex);
             }
+            return Status.OK_STATUS;
         }
     }
 

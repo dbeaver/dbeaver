@@ -62,6 +62,11 @@ public class JDBCReference implements DBDReference {
     }
 
     @Override
+    public boolean isModified() {
+        return false;
+    }
+
+    @Override
     public void release()
     {
         type = null;

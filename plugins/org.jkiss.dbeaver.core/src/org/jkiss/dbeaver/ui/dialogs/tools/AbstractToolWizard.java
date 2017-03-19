@@ -188,13 +188,16 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     {
         try {
             for (PROCESS_ARG arg : getRunInfo()) {
+                if (monitor.isCanceled()) break;
                 executeProcess(monitor, arg);
             }
-            // Refresh navigator node (script execution can change everything inside)
-            for (BASE_OBJECT object : databaseObjects) {
-                final DBNDatabaseNode node = dataSourceContainer.getPlatform().getNavigatorModel().findNode(object);
-                if (node != null) {
-                    node.refreshNode(monitor, AbstractToolWizard.this);
+            if (!monitor.isCanceled()) {
+                // Refresh navigator node (script execution can change everything inside)
+                for (BASE_OBJECT object : databaseObjects) {
+                    final DBNDatabaseNode node = dataSourceContainer.getPlatform().getNavigatorModel().findNode(object);
+                    if (node != null) {
+                        node.refreshNode(monitor, AbstractToolWizard.this);
+                    }
                 }
             }
         } catch (InterruptedException e) {

@@ -62,6 +62,7 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
             this.originalStorage = this.storage;
         }
         this.storage = storage;
+        this.modified = true;
         return true;
     }
 
@@ -86,6 +87,7 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
                 this.storage.release();
             }
             this.storage = this.originalStorage;
+            this.modified = false;
         }
     }
 

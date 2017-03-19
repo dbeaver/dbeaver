@@ -25,7 +25,6 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.commands.ActionHandler;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
@@ -59,7 +58,6 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
@@ -71,10 +69,9 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.controls.*;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
@@ -243,21 +240,21 @@ public class UIUtils {
                     return;
                 }
             }
+            Rectangle clientArea = tree.getClientArea();
+            if (clientArea.isEmpty()) {
+                return;
+            }
             int totalWidth = 0;
             final TreeColumn[] columns = tree.getColumns();
             for (TreeColumn column : columns) {
                 column.pack();
                 totalWidth += column.getWidth();
             }
-            Rectangle clientArea = tree.getBounds();
-            if (clientArea.isEmpty()) {
-                return;
-            }
             if (fit) {
                 int areaWidth = clientArea.width;
-                if (tree.getVerticalBar() != null) {
-                    areaWidth -= tree.getVerticalBar().getSize().x;
-                }
+//                if (tree.getVerticalBar() != null) {
+//                    areaWidth -= tree.getVerticalBar().getSize().x;
+//                }
                 if (totalWidth > areaWidth) {
                     GC gc = new GC(tree);
                     try {
@@ -444,7 +441,7 @@ public class UIUtils {
             @Override
             public Boolean runTask() {
                 Shell activeShell = shell != null ? shell : DBeaverUI.getActiveWorkbenchShell();
-                MessageBox messageBox = new MessageBox(activeShell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+                MessageBox messageBox = new MessageBox(activeShell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
                 messageBox.setMessage(question);
                 messageBox.setText(title);
                 int response = messageBox.open();
@@ -1257,16 +1254,6 @@ public class UIUtils {
         return control.getShell().getData() instanceof org.eclipse.jface.dialogs.Dialog;
     }
 
-    public static boolean validateAndSave(DBRProgressMonitor monitor, ISaveablePart saveable)
-    {
-        if (!saveable.isDirty()) {
-            return true;
-        }
-        SaveRunner saveRunner = new SaveRunner(monitor, saveable);
-        DBeaverUI.syncExec(saveRunner);
-        return saveRunner.getResult();
-    }
-
     public static Link createLink(Composite parent, String text, SelectionListener listener) {
         Link link = new Link(parent, SWT.NONE);
         link.setText(text);
@@ -1444,72 +1431,6 @@ public class UIUtils {
         }
     }
 
-    private static class SaveRunner implements Runnable {
-        private final DBRProgressMonitor monitor;
-        private final ISaveablePart saveable;
-        private boolean result;
-
-        private SaveRunner(DBRProgressMonitor monitor, ISaveablePart saveable)
-        {
-            this.monitor = monitor;
-            this.saveable = saveable;
-        }
-
-        public boolean getResult()
-        {
-            return result;
-        }
-
-        @Override
-        public void run()
-        {
-            int choice = -1;
-            if (saveable instanceof ISaveablePart2) {
-                choice = ((ISaveablePart2) saveable).promptToSaveOnClose();
-            }
-            if (choice == -1 || choice == ISaveablePart2.DEFAULT) {
-                Shell shell;
-                String saveableName;
-                if (saveable instanceof IWorkbenchPart) {
-                    shell = ((IWorkbenchPart) saveable).getSite().getShell();
-                    saveableName = ((IWorkbenchPart) saveable).getTitle();
-                } else {
-                    shell = DBeaverUI.getActiveWorkbenchShell();
-                    saveableName = CommonUtils.toString(saveable);
-                }
-                int confirmResult = ConfirmationDialog.showConfirmDialog(
-                    shell,
-                    DBeaverPreferences.CONFIRM_EDITOR_CLOSE,
-                    ConfirmationDialog.QUESTION_WITH_CANCEL,
-                    saveableName);
-                switch (confirmResult) {
-                    case IDialogConstants.YES_ID:
-                        choice = ISaveablePart2.YES;
-                        break;
-                    case IDialogConstants.NO_ID:
-                        choice = ISaveablePart2.NO;
-                        break;
-                    default:
-                        choice = ISaveablePart2.CANCEL;
-                        break;
-                }
-            }
-            switch (choice) {
-                case ISaveablePart2.YES: //yes
-                    saveable.doSave(RuntimeUtils.getNestedMonitor(monitor));
-                    result = !saveable.isDirty();
-                    break;
-                case ISaveablePart2.NO: //no
-                    result = true;
-                    break;
-                case ISaveablePart2.CANCEL: //cancel
-                default:
-                    result = false;
-                    break;
-            }
-        }
-    }
-
     @Nullable
     public static Color getSharedColor(@Nullable String rgbString) {
         if (CommonUtils.isEmpty(rgbString)) {
@@ -1565,14 +1486,18 @@ public class UIUtils {
     }
 
     public static void installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider) {
+        installContentProposal(control, contentAdapter, provider, false);
+    }
+
+    public static void installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider, boolean autoActivation) {
         try {
-            KeyStroke keyStroke = KeyStroke.getInstance("Ctrl+Space");
+            KeyStroke keyStroke = autoActivation ? null : KeyStroke.getInstance("Ctrl+Space");
             final ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(
                 control,
                 contentAdapter,
                 provider,
                 keyStroke,
-                new char[]{'.', '('});
+                autoActivation ? ".abcdefghijklmnopqrstuvwxyz_$(".toCharArray() : ".(".toCharArray());
             proposalAdapter.setPopupSize(new Point(300, 200));
         } catch (ParseException e) {
             log.error("Error installing filters content assistant");
@@ -1609,4 +1534,14 @@ public class UIUtils {
         }
     }
 
+    public static void waitJobCompletion(AbstractJob job) {
+        // Wait until job finished
+        Display display = Display.getCurrent();
+        while (!job.isFinished()) {
+            if (!display.readAndDispatch()) {
+                display.sleep();
+            }
+        }
+        display.update();
+    }
 }

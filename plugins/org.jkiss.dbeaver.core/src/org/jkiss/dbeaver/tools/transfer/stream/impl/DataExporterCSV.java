@@ -44,8 +44,8 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private static final String PROP_HEADER = "header";
     private static final String PROP_QUOTE_CHAR = "quoteChar";
     private static final String PROP_NULL_STRING = "nullString";
-    public static final char DEF_DELIMITER = ',';
-    public static final String DEF_QUOTE_CHAR = "\"";
+    private static final char DEF_DELIMITER = ',';
+    private static final String DEF_QUOTE_CHAR = "\"";
 
     enum HeaderPosition {
         none,
@@ -53,7 +53,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
         bottom,
         both
     }
-    private char delimiter;
+    private String delimiter;
     private char quoteChar = '"';
     private boolean useQuotes = true;
     private String rowDelimiter;
@@ -70,18 +70,12 @@ public class DataExporterCSV extends StreamExporterAbstract {
         super.init(site);
         String delimString = String.valueOf(site.getProperties().get(PROP_DELIMITER));
         if (delimString == null || delimString.isEmpty()) {
-            delimiter = DEF_DELIMITER;
-        } else if (delimString.length() == 1) {
-            delimiter = delimString.charAt(0);
-        } else if (delimString.charAt(0) == '\\') {
-            switch (delimString.charAt(1)) {
-                case 't': delimiter = '\t'; break;
-                case 'n': delimiter = '\n'; break;
-                case 'r': delimiter = '\r'; break;
-                default: delimiter = DEF_DELIMITER;
-            }
+            delimiter = String.valueOf(DEF_DELIMITER);
         } else {
-            delimiter = DEF_DELIMITER;
+            delimiter = delimString
+                    .replace("\\t", "\t")
+                    .replace("\\n", "\n")
+                    .replace("\\r", "\r");
         }
         Object quoteProp = site.getProperties().get(PROP_QUOTE_CHAR);
         String quoteStr = quoteProp == null ? DEF_QUOTE_CHAR : quoteProp.toString();

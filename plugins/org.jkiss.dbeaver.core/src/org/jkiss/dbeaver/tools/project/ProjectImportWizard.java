@@ -327,7 +327,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         String projectDescription = projectElement.getAttribute(ExportConstants.ATTR_DESCRIPTION);
         String targetProjectName = data.getTargetProjectName(projectName);
         if (targetProjectName == null) {
-            targetProjectName = projectName;
+            return null;
         }
 
         IProject project = DBeaverCore.getInstance().getWorkspace().getRoot().getProject(targetProjectName);
