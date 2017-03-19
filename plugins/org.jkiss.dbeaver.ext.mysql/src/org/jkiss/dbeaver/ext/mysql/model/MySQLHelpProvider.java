@@ -25,9 +25,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
 import org.jkiss.dbeaver.model.sql.SQLHelpTopic;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -51,11 +53,14 @@ public class MySQLHelpProvider implements SQLHelpProvider
     }
 
     private SQLHelpTopic selectHelpTopic(DBRProgressMonitor monitor, String topic) {
+        if (CommonUtils.isEmpty(topic)) {
+            return null;
+        }
         if (!isLoaded) {
             loadTopics(monitor);
         }
         synchronized (topicCache) {
-            return topicCache.get(topic);
+            return topicCache.get(topic.toUpperCase(Locale.ENGLISH));
         }
     }
 
@@ -70,8 +75,10 @@ public class MySQLHelpProvider implements SQLHelpProvider
                         helpTopic.setContents("<pre>" + dbResult.getString(2) + "</pre>");
                         helpTopic.setExample(dbResult.getString(3));
                         helpTopic.setUrl(dbResult.getString(4));
-                        synchronized (topicCache) {
-                            topicCache.put(topicName, helpTopic);
+                        if (topicName != null) {
+                            synchronized (topicCache) {
+                                topicCache.put(topicName.toUpperCase(Locale.ENGLISH), helpTopic);
+                            }
                         }
                     }
                 }
