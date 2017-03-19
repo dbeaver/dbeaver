@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -73,6 +74,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MySQLCharset> charsets;
     private Map<String, MySQLCollation> collations;
     private String activeCatalogName;
+    private SQLHelpProvider helpProvider;
 
     public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -315,7 +317,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     @Override
     public MySQLCatalog getDefaultObject()
     {
-        return getCatalog(activeCatalogName);
+        return CommonUtils.isEmpty(activeCatalogName) ? null : getCatalog(activeCatalogName);
     }
 
     @Override
@@ -580,6 +582,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new MySQLStructureAssistant(this));
+        } else if (adapter == SQLHelpProvider.class) {
+            if (helpProvider == null) {
+                helpProvider = new MySQLHelpProvider(this);
+            }
+            return adapter.cast(helpProvider);
         } else if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new MySQLSessionManager(this));
         }
@@ -650,7 +657,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     @Nullable
     @Override
-    public ErrorPosition[] getErrorPosition(@NotNull DBCSession session, @NotNull String query, @NotNull Throwable error) {
+    public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
         String message = error.getMessage();
         if (!CommonUtils.isEmpty(message)) {
             Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);

@@ -21,13 +21,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.*;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
@@ -49,9 +50,9 @@ public final class ExasolTableUniqueKeyCache
             "				CONSTRAINT_SCHEMA, CONSTRAINT_TABLE, CONSTRAINT_NAME, CONSTRAINT_OWNER, CONSTRAINT_TYPE\r\n" +
             "			)\r\n" +
             "	where\r\n" +
-            "		CONSTRAINT_SCHEMA = ? and\r\n" +
+            "		CONSTRAINT_SCHEMA = '%s' and\r\n" +
             "		CONSTRAINT_TYPE = 'PRIMARY KEY' and\r\n" +
-            "		CONSTRAINT_TABLE = ?\r\n" +
+            "		CONSTRAINT_TABLE = '%s'\r\n" +
             "	order by\r\n" +
             "		ORDINAL_POSITION";
     private static final String SQL_UK_ALL =
@@ -66,7 +67,7 @@ public final class ExasolTableUniqueKeyCache
             "				CONSTRAINT_SCHEMA, CONSTRAINT_TABLE, CONSTRAINT_NAME, CONSTRAINT_OWNER, CONSTRAINT_TYPE\r\n" +
             "			)\r\n" +
             "	where\r\n" +
-            "		CONSTRAINT_SCHEMA = ? and\r\n" +
+            "		CONSTRAINT_SCHEMA = '%s' and\r\n" +
             "		CONSTRAINT_TYPE = 'PRIMARY KEY' \r\n" +
             "	order by\r\n" +
             "		ORDINAL_POSITION";
@@ -76,22 +77,22 @@ public final class ExasolTableUniqueKeyCache
     }
 
 
-    @NotNull
+    @SuppressWarnings("rawtypes")
+	@NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, ExasolSchema exasolSchema, ExasolTable forTable)
         throws SQLException {
 
         String sql;
         if (forTable != null) {
-            sql = SQL_UK_TAB;
+            sql = String.format(SQL_UK_TAB,ExasolUtils.quoteString(exasolSchema.getName()), ExasolUtils.quoteString(forTable.getName()));
         } else {
-            sql = SQL_UK_ALL;
+            sql = String.format(SQL_UK_ALL,ExasolUtils.quoteString(exasolSchema.getName()));
         }
 
-        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-        dbStat.setString(1, exasolSchema.getName());
-        if (forTable != null)
-            dbStat.setString(2, forTable.getName());
+        JDBCStatement dbStat = session.createStatement();
+        
+        ((JDBCStatementImpl) dbStat).setQueryString(sql);
 
         return dbStat;
 
@@ -111,7 +112,7 @@ public final class ExasolTableUniqueKeyCache
         String columnName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
         ExasolTableColumn tableColumn = exasolTable.getAttribute(session.getProgressMonitor(), columnName);
         if (tableColumn == null) {
-            log.debug("Column '" + columnName + "' not found in table '" + exasolTable.getFullyQualifiedName(DBPEvaluationContext.UI) + "' ??");
+            log.info("Column '" + columnName + "' not found in table '" + exasolTable.getFullyQualifiedName(DBPEvaluationContext.UI) + "' ??");
             return null;
         } else {
             /* verify that the column is not null -> even though it is not in the meta data

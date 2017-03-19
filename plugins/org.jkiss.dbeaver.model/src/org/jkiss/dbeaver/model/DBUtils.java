@@ -589,6 +589,9 @@ public final class DBUtils {
     @Nullable
     public static DBDAttributeBinding findBinding(@NotNull DBDAttributeBinding[] bindings, @Nullable DBSAttributeBase attribute)
     {
+        if (attribute == null) {
+            return null;
+        }
         for (DBDAttributeBinding binding : bindings) {
             if (binding.matches(attribute, true)) {
                 return binding;

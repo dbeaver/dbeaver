@@ -428,6 +428,7 @@ class SQLCompletionAnalyzer
                         request,
                         replaceString,
                         replaceString,
+                        DBPKeywordType.OTHER,
                         "All objects"));
                 } else if (!matchedObjects.isEmpty()) {
                     if (startPart != null) {
@@ -531,7 +532,7 @@ class SQLCompletionAnalyzer
             request,
             replaceString,
             objectName,
-            null,
+            DBPKeywordType.OTHER,
             objectIcon,
             isSingleObject,
             object);
@@ -544,7 +545,7 @@ class SQLCompletionAnalyzer
         CompletionRequest request,
         String replaceString,
         String displayString,
-        String description,
+        DBPKeywordType proposalType,
         @Nullable DBPImage image,
         boolean isObject,
         @Nullable DBPNamedObject object)
@@ -589,7 +590,8 @@ class SQLCompletionAnalyzer
                                 // relative to replacementOffset
             img, //image to display
             new ContextInformation(img, displayString, displayString), //the context information associated with this proposal
-            description,
+            proposalType,
+            null,
             object);
     }
 
@@ -597,6 +599,7 @@ class SQLCompletionAnalyzer
         CompletionRequest request,
         String replaceString,
         String displayString,
+        DBPKeywordType proposalType,
         String description)
     {
         return new SQLCompletionProposal(
@@ -606,6 +609,7 @@ class SQLCompletionAnalyzer
             replaceString.length(), //cursorPosition the position of the cursor following the insert
             null, //image to display
             new ContextInformation(null, displayString, displayString), //the context information associated with this proposal
+            proposalType,
             description,
             null);
     }

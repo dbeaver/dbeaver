@@ -34,7 +34,6 @@ import java.util.List;
  */
 public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, PostgreDataType>
 {
-    private static final Log log = Log.getLog(PostgreDataTypeCache.class);
     private LongKeyMap<PostgreDataType> dataTypeMap = new LongKeyMap<>();
 
     @Override
@@ -55,7 +54,9 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
 
         } else {
             super.cacheObject(object);
-            dataTypeMap.put(object.getObjectId(), object);
+            if (!object.isAlias()) {
+                dataTypeMap.put(object.getObjectId(), object);
+            }
         }
     }
 
@@ -63,7 +64,9 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     public void setCache(List<PostgreDataType> postgreDataTypes) {
         super.setCache(postgreDataTypes);
         for (PostgreDataType dt : postgreDataTypes) {
-            dataTypeMap.put(dt.getObjectId(), dt);
+            if (!dt.isAlias()) {
+                dataTypeMap.put(dt.getObjectId(), dt);
+            }
         }
     }
 

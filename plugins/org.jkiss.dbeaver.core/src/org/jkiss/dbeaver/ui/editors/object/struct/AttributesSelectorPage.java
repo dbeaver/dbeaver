@@ -37,10 +37,10 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
+import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.text.Collator;
 import java.util.*;
 import java.util.List;
 
@@ -203,13 +203,13 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
 
     protected void createAttributeColumns(Table columnsTable) {
         TableColumn colName = UIUtils.createTableColumn(columnsTable, SWT.NONE, CoreMessages.dialog_struct_columns_select_column);
-        colName.addListener(SWT.Selection, new SortListener(0));
+        colName.addListener(SWT.Selection, new TableColumnSortListener(columnsTable, 0));
 
         TableColumn colPosition = UIUtils.createTableColumn(columnsTable, SWT.CENTER, "#"); //$NON-NLS-1$
-        colPosition.addListener(SWT.Selection, new SortListener(1));
+        colPosition.addListener(SWT.Selection, new TableColumnSortListener(columnsTable, 1));
 
         TableColumn colType = UIUtils.createTableColumn(columnsTable, SWT.RIGHT, "Type"); //$NON-NLS-1$
-        colType.addListener(SWT.Selection, new SortListener(2));
+        colType.addListener(SWT.Selection, new TableColumnSortListener(columnsTable, 2));
     }
 
     protected int fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo attributeInfo, TableItem columnItem) {
@@ -398,43 +398,6 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             }
         }
         return false;
-    }
-
-    private class SortListener implements Listener
-    {
-        int columnIndex;
-        int sortDirection = SWT.DOWN;
-        TableColumn prevColumn = null;
-
-        private SortListener(int columnIndex) {
-            this.columnIndex = columnIndex;
-        }
-
-        @Override
-        public void handleEvent(Event e) {
-            final Collator collator = Collator.getInstance(Locale.getDefault());
-            TableColumn column = (TableColumn)e.widget;
-            if (prevColumn == column) {
-                // Set reverse order
-                sortDirection = (sortDirection == SWT.UP ? SWT.DOWN : SWT.UP);
-            }
-            prevColumn = column;
-            columnsTable.setSortColumn(column);
-            columnsTable.setSortDirection(sortDirection);
-            UIUtils.sortTable(columnsTable, new Comparator<TableItem>() {
-                @Override
-                public int compare(TableItem e1, TableItem e2) {
-                    int mul = (sortDirection == SWT.UP ? 1 : -1);
-                    String text1 = e1.getText(columnIndex);
-                    String text2 = e2.getText(columnIndex);
-                    try {
-                        return (int)(Double.parseDouble(text1) - Double.parseDouble(text2)) * mul;
-                    } catch (NumberFormatException e3) {
-                        return collator.compare(text1, text2) * mul;
-                    }
-                }
-            });
-        }
     }
 
 }

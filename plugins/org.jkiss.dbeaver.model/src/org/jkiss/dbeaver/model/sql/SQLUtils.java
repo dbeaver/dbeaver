@@ -569,7 +569,7 @@ public final class SQLUtils {
                 return "(" + maxLength + ')';
             }
         } else if (dataKind == DBPDataKind.NUMERIC) {
-                if (typeName.equals("DECIMAL") || typeName.equals("NUMERIC") || typeName.equals("NUMBER")) {
+            if (typeName.equals("DECIMAL") || typeName.equals("NUMERIC") || typeName.equals("NUMBER")) {
                 int scale = column.getScale();
                 int precision = column.getPrecision();
                 if (precision == 0) {
@@ -577,6 +577,12 @@ public final class SQLUtils {
                 }
                 if (scale >= 0 && precision >= 0 && !(scale == 0 && precision == 0)) {
                     return "(" + precision + ',' + scale + ')';
+                }
+            } else if (typeName.equals("BIT")) {
+                // Bit string?
+                int precision = column.getPrecision();
+                if (precision > 1) {
+                    return "(" + precision + ')';
                 }
             }
         }

@@ -17,6 +17,16 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
@@ -26,7 +36,17 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider;
 import org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect;
-import org.jkiss.dbeaver.ext.exasol.manager.security.*;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolBaseObjectGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolConnectionGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRoleGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolSchemaGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolScriptGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolSystemGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolTableGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolTableObjectType;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolViewGrant;
 import org.jkiss.dbeaver.ext.exasol.model.plan.ExasolPlanAnalyser;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -34,6 +54,7 @@ import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -54,11 +75,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.SQLException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class ExasolDataSource extends JDBCDataSource
 		implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
 
@@ -67,8 +83,8 @@ public class ExasolDataSource extends JDBCDataSource
 	private static final String GET_CURRENT_SCHEMA = "SELECT CURRENT_SCHEMA";
 	private static final String SET_CURRENT_SCHEMA = "OPEN SCHEMA \"%s\"";
 
-	private DBSObjectCache<ExasolDataSource, ExasolSchema> schemaCache;
-	private DBSObjectCache<ExasolDataSource, ExasolVirtualSchema> virtualSchemaCache;
+	public DBSObjectCache<ExasolDataSource, ExasolSchema> schemaCache;
+	public DBSObjectCache<ExasolDataSource, ExasolVirtualSchema> virtualSchemaCache;
 
 	private ExasolCurrentUserPrivileges exasolCurrentUserPrivileges;
 	private DBSObjectCache<ExasolDataSource, ExasolUser> userCache = null;
@@ -248,7 +264,7 @@ public class ExasolDataSource extends JDBCDataSource
     
     @Nullable
     @Override
-    public ErrorPosition[] getErrorPosition(@NotNull DBCSession session, @NotNull String query, @NotNull Throwable error) {
+    public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
         while (error instanceof DBException) {
             if (error.getCause() == null) {
                 return null;

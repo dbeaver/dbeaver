@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -58,7 +57,7 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProposal;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLContextInformer;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordPartDetector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -287,10 +286,15 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     }
 
     private void enablePanelControls(boolean enable) {
-        filterToolbar.setEnabled(enable);
-        refreshPanel.setEnabled(enable);
-        historyPanel.setEnabled(enable);
-        filtersText.setEditable(enable && viewer.supportsDataFilter());
+        setRedraw(false);
+        try {
+            filterToolbar.setEnabled(enable);
+            refreshPanel.setEnabled(enable);
+            historyPanel.setEnabled(enable);
+            filtersText.setEditable(enable && viewer.supportsDataFilter());
+        } finally {
+            setRedraw(true);
+        }
     }
 
     private boolean isFiltersAvailable() {
@@ -557,7 +561,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     new ContentProposal(
                         content,
                         attribute.getName(),
-                        SQLCompletionProposal.makeObjectDescription(VoidProgressMonitor.INSTANCE, attribute.getAttribute(), false),
+                        SQLContextInformer.makeObjectDescription(null, attribute.getAttribute(), false),
                         content.length()));
             }
         }

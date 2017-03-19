@@ -280,6 +280,11 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
+    /**
+     * Inserts data row.
+     * Note: if column value is NULL then it will be skipped (to let default value to be applied)
+     * If ALL columns are null then explicit NULL values will be used for all of them (to let INSERT to execute - it won't work with empty column list)
+     */
     @NotNull
     @Override
     public ExecuteBatch insertData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver, @NotNull final DBCExecutionSource source)
@@ -288,6 +293,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         readRequiredMeta(session.getProgressMonitor());
 
         return new ExecuteBatchImpl(attributes, keysReceiver, true) {
+
+            private boolean allNulls;
 
             @NotNull
             @Override
@@ -298,10 +305,17 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     .append(useUpsert(session) ? "UPSERT" : "INSERT")
                     .append(" INTO ").append(getFullyQualifiedName(DBPEvaluationContext.DML)).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
 
+                allNulls = true;
+                for (int i = 0; i < attributes.length; i++) {
+                    if (!DBUtils.isNullValue(attributeValues[i])) {
+                        allNulls = false;
+                        break;
+                    }
+                }
                 boolean hasKey = false;
                 for (int i = 0; i < attributes.length; i++) {
                     DBSAttributeBase attribute = attributes[i];
-                    if (DBUtils.isPseudoAttribute(attribute) || DBUtils.isNullValue(attributeValues[i])) {
+                    if (DBUtils.isPseudoAttribute(attribute) || (!allNulls && DBUtils.isNullValue(attributeValues[i]))) {
                         continue;
                     }
                     if (hasKey) query.append(","); //$NON-NLS-1$
@@ -312,7 +326,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 hasKey = false;
                 for (int i = 0; i < attributes.length; i++) {
                     DBSAttributeBase attribute = attributes[i];
-                    if (DBUtils.isPseudoAttribute(attribute) || DBUtils.isNullValue(attributeValues[i])) {
+                    if (DBUtils.isPseudoAttribute(attribute) || (!allNulls && DBUtils.isNullValue(attributeValues[i]))) {
                         continue;
                     }
                     if (hasKey) query.append(","); //$NON-NLS-1$
@@ -332,7 +346,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 int paramIndex = 0;
                 for (int k = 0; k < handlers.length; k++) {
                     DBSAttributeBase attribute = attributes[k];
-                    if (DBUtils.isPseudoAttribute(attribute) || DBUtils.isNullValue(attributeValues[k])) {
+                    if (DBUtils.isPseudoAttribute(attribute) || (!allNulls && DBUtils.isNullValue(attributeValues[k]))) {
                         continue;
                     }
                     handlers[k].bindValueObject(statement.getSession(), statement, attribute, paramIndex++, attributeValues[k]);

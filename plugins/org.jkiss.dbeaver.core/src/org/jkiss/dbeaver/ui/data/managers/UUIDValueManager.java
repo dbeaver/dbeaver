@@ -18,13 +18,11 @@ package org.jkiss.dbeaver.ui.data.managers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.UUID;
 
@@ -44,7 +42,20 @@ public class UUIDValueManager extends BaseValueManager {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                return new StringInlineEditor(controller);
+                return new StringInlineEditor(controller) {
+                    @Override
+                    public Object extractEditorValue() throws DBCException {
+                        Object strValue = super.extractEditorValue();
+                        if (strValue instanceof String) {
+                            try {
+                                return UUID.fromString((String) strValue);
+                            } catch (Exception e) {
+                                throw new DBCException("Bad UUID value [" + strValue + "]");
+                            }
+                        }
+                        return strValue;
+                    }
+                };
             case EDITOR:
                 return new TextViewDialog(controller);
             default:

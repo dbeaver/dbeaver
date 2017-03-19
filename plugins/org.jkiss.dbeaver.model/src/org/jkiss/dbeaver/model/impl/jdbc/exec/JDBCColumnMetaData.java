@@ -95,24 +95,24 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
         try {
             this.writable = resultSetMeta.isWritable(ordinalPosition + 1);
         } catch (SQLException e) {
-            log.debug(e);
+            log.debug("Can't get column writable flag: " + e.getMessage());
         }
 
         String fetchedTableName = null;
         try {
             fetchedTableName = resultSetMeta.getTableName(ordinalPosition + 1);
         } catch (SQLException e) {
-            log.debug(e);
+            log.debug("Can't get column table name: " + e.getMessage());
         }
         try {
             catalogName = resultSetMeta.getCatalogName(ordinalPosition + 1);
         } catch (SQLException e) {
-            log.debug(e);
+            log.debug("Can't get column catalog name: " + e.getMessage());
         }
         try {
             schemaName = resultSetMeta.getSchemaName(ordinalPosition + 1);
         } catch (SQLException e) {
-            log.debug(e);
+            log.debug("Can't get column schema name: " + e.getMessage());
         }
 
         // Check for tables name
@@ -143,7 +143,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
             this.notNull = resultSetMeta.isNullable(ordinalPosition + 1) == ResultSetMetaData.columnNoNulls;
         } catch (SQLException e) {
             this.notNull = false;
-            log.debug(e);
+            log.debug("Can't get column nullability: " + e.getMessage());
         }
         try {
             this.displaySize = resultSetMeta.getColumnDisplaySize(ordinalPosition + 1);
@@ -153,7 +153,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
         try {
             this.typeName = resultSetMeta.getColumnTypeName(ordinalPosition + 1);
         } catch (SQLException e) {
-            log.debug(e);
+            log.debug("Can't get column type name: " + e.getMessage());
             this.typeName = "unknown";
         }
         {
@@ -177,7 +177,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
             this.sequence = resultSetMeta.isAutoIncrement(ordinalPosition + 1);
         } catch (SQLException e) {
             this.sequence = false;
-            log.debug(e);
+            log.debug("Can't get column auto increment: " + e.getMessage());
         }
         try {
             this.precision = resultSetMeta.getPrecision(ordinalPosition + 1);

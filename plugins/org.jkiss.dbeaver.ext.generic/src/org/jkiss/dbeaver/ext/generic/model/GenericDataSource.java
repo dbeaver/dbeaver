@@ -604,7 +604,7 @@ public class GenericDataSource extends JDBCDataSource
                 container = structureContainer;
             }
             if (container == null) {
-                log.error("Schema '" + schemaName + "' not found");
+                log.debug("Schema '" + schemaName + "' not found");
                 return null;
             }
         }
@@ -890,7 +890,7 @@ public class GenericDataSource extends JDBCDataSource
 
     @Nullable
     @Override
-    public ErrorPosition[] getErrorPosition(@NotNull DBCSession session, @NotNull String query, @NotNull Throwable error) {
+    public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
         ErrorPosition position = metaModel.getErrorPosition(error);
         return position == null ? null : new ErrorPosition[] { position };
     }

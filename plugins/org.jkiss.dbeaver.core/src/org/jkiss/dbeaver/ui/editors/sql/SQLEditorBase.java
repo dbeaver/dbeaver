@@ -45,12 +45,16 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
+import org.jkiss.dbeaver.ui.IErrorVisualizer;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
@@ -69,7 +73,7 @@ import java.util.ResourceBundle;
 /**
  * SQL Executor
  */
-public abstract class SQLEditorBase extends BaseTextEditor {
+public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisualizer {
     static protected final Log log = Log.getLog(SQLEditorBase.class);
 
     @NotNull
@@ -334,6 +338,14 @@ public abstract class SQLEditorBase extends BaseTextEditor {
 
         a = new TextOperationAction(
             bundle,
+            SQLEditorContributor.getActionResourcePrefix(SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION),
+            this,
+            ISourceViewer.INFORMATION);
+        a.setActionDefinitionId(ITextEditorActionDefinitionIds.SHOW_INFORMATION);
+        setAction(SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION, a);
+
+        a = new TextOperationAction(
+            bundle,
             SQLEditorContributor.getActionResourcePrefix(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL),
             this,
             ISourceViewer.FORMAT);
@@ -365,6 +377,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         menu.add(new Separator("content"));//$NON-NLS-1$
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
+        addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION);
         {
             MenuManager formatMenu = new MenuManager("Format", "format");
             IAction formatAction = getAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL);
@@ -876,6 +889,67 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         more[ids.length + 4] = PrefPageSQLTemplates.PAGE_ID;
         System.arraycopy(ids, 0, more, 0, ids.length);
         return more;
+    }
+
+    @Override
+    public boolean visualizeError(@NotNull DBRProgressMonitor monitor, @NotNull Throwable error) {
+        Document document = getDocument();
+        SQLQuery query = new SQLQuery(getDataSource(), document.get(), 0, document.getLength());
+        return scrollCursorToError(monitor, query, error);
+    }
+
+    /**
+     * Error handling
+     */
+    protected boolean scrollCursorToError(@NotNull DBRProgressMonitor monitor, @NotNull SQLQuery query, @NotNull Throwable error) {
+        try {
+            DBCExecutionContext context = getExecutionContext();
+            boolean scrolled = false;
+            DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, context.getDataSource());
+            if (errorAssistant != null) {
+                DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(
+                    monitor, context, query.getQuery(), error);
+                if (positions != null && positions.length > 0) {
+                    int queryStartOffset = query.getOffset();
+                    int queryLength = query.getLength();
+
+                    DBPErrorAssistant.ErrorPosition pos = positions[0];
+                    if (pos.line < 0) {
+                        if (pos.position >= 0) {
+                            // Only position
+                            getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 1));
+                            scrolled = true;
+                        }
+                    } else {
+                        // Line + position
+                        Document document = getDocument();
+                        if (document != null) {
+                            int startLine = document.getLineOfOffset(queryStartOffset);
+                            int errorOffset = document.getLineOffset(startLine + pos.line);
+                            int errorLength;
+                            if (pos.position >= 0) {
+                                errorOffset += pos.position;
+                                errorLength = 1;
+                            } else {
+                                errorLength = document.getLineLength(startLine + pos.line);
+                            }
+                            if (errorOffset < queryStartOffset) errorOffset = queryStartOffset;
+                            if (errorLength > queryLength) errorLength = queryLength;
+                            getSelectionProvider().setSelection(new TextSelection(errorOffset, errorLength));
+                            scrolled = true;
+                        }
+                    }
+                }
+            }
+            return scrolled;
+//            if (!scrolled) {
+//                // Can't position on error - let's just select entire problem query
+//                showStatementInEditor(result.getStatement(), true);
+//            }
+        } catch (Exception e) {
+            log.warn("Error positioning on query error", e);
+            return false;
+        }
     }
 
 }

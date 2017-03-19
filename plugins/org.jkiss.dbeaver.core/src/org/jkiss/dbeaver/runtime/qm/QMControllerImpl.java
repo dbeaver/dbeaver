@@ -39,7 +39,7 @@ public class QMControllerImpl implements QMController {
 
     private QMExecutionHandler defaultHandler;
     private QMMCollectorImpl metaHandler;
-    private List<QMExecutionHandler> handlers = new ArrayList<>();
+    private final List<QMExecutionHandler> handlers = new ArrayList<>();
 
     public QMControllerImpl() {
         defaultHandler = (QMExecutionHandler) Proxy.newProxyInstance(
@@ -59,9 +59,11 @@ public class QMControllerImpl implements QMController {
             metaHandler = null;
         }
 
-        if (!handlers.isEmpty()) {
-            log.warn("Some QM handlers are still registered: " + handlers);
-            handlers.clear();
+        synchronized (handlers) {
+            if (!handlers.isEmpty()) {
+                log.warn("Some QM handlers are still registered: " + handlers);
+                handlers.clear();
+            }
         }
       	defaultHandler = null;
     }
@@ -78,14 +80,18 @@ public class QMControllerImpl implements QMController {
     }
 
     @Override
-    public synchronized void registerHandler(QMExecutionHandler handler) {
-        handlers.add(handler);
+    public void registerHandler(QMExecutionHandler handler) {
+        synchronized (handlers) {
+            handlers.add(handler);
+        }
     }
 
     @Override
-    public synchronized void unregisterHandler(QMExecutionHandler handler) {
-        if (!handlers.remove(handler)) {
-            log.warn("QM handler '" + handler + "' isn't registered within QM controller");
+    public void unregisterHandler(QMExecutionHandler handler) {
+        synchronized (handlers) {
+            if (!handlers.remove(handler)) {
+                log.warn("QM handler '" + handler + "' isn't registered within QM controller");
+            }
         }
     }
 
@@ -109,36 +115,41 @@ public class QMControllerImpl implements QMController {
 
     List<QMExecutionHandler> getHandlers()
     {
-        return handlers;
+        synchronized (handlers) {
+            return handlers;
+        }
     }
 
     private class NotifyInvocationHandler implements InvocationHandler {
 
         @Override
-        public synchronized Object invoke(Object proxy, Method method, Object[] args)
+        public Object invoke(Object proxy, Method method, Object[] args)
         {
-            if (method.getReturnType() == Void.TYPE && method.getName().startsWith("handle")) {
-                for (QMExecutionHandler handler : getHandlers()) {
-                    try {
-                        method.invoke(handler, args);
-                    } catch (InvocationTargetException e) {
-                        log.debug("Error notifying QM handler '" + handler.getHandlerName() + "'", e.getTargetException());
-                    } catch (Throwable e) {
-                        log.debug("Internal error while notifying QM handler '" + handler.getHandlerName() + "'", e);
+            try {
+                if (method.getReturnType() == Void.TYPE && method.getName().startsWith("handle")) {
+                    QMExecutionHandler[] handlersCopy;
+                    synchronized (handlers) {
+                        handlersCopy = handlers.toArray(new QMExecutionHandler[handlers.size()]);
                     }
-                }
-                return null;
-            } else if (method.getName().equals("getHandlerName")) {
-                return "Default";
-            } else {
-                try {
-                    return method.invoke(this, args);
-                } catch (Throwable e) {
-                    // just ignore it
-                    log.debug("Error executing QM method " + method, e);
+                    for (QMExecutionHandler handler : handlersCopy) {
+                        try {
+                            method.invoke(handler, args);
+                        } catch (InvocationTargetException e) {
+                            log.debug("Error notifying QM handler '" + handler.getHandlerName() + "'", e.getTargetException());
+                        }
+                    }
+
                     return null;
+                } else if (method.getName().equals("getHandlerName")) {
+                    return "Default";
+                } else {
+                    return method.invoke(this, args);
                 }
-            }
+            } catch (Throwable e) {
+            // just ignore it
+            log.debug("Error executing QM method " + method, e);
+            return null;
+        }
         }
 
     }

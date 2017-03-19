@@ -29,10 +29,8 @@ import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * Parameter binding
@@ -42,6 +40,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     private static final String DIALOG_ID = "DBeaver.SQLQueryParameterBindDialog";//$NON-NLS-1$
 
     private List<SQLQueryParameter> parameters;
+    private final Map<String, List<SQLQueryParameter>> dupParameters = new HashMap<>();
 
     private static Map<String, SQLQueryParameterRegistry.ParameterInfo> savedParamValues = new HashMap<>();
 
@@ -99,6 +98,12 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         for (SQLQueryParameter param : parameters) {
             if (param.getPrevious() != null) {
                 // Skip duplicates
+                List<SQLQueryParameter> dups = dupParameters.get(param.getName());
+                if (dups == null) {
+                    dups = new ArrayList<>();
+                    dupParameters.put(param.getName(), dups);
+                }
+                dups.add(param);
                 continue;
             }
             TableItem item = new TableItem(paramTable, SWT.NONE);
@@ -132,10 +137,15 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 String newValue = ((Text) control).getText();
                 item.setText(2, newValue);
 
-                if (newValue.isEmpty()) {
-                    newValue = null;
-                }
                 param.setValue(newValue);
+                if (param.isNamed()) {
+                    final List<SQLQueryParameter> dups = dupParameters.get(param.getName());
+                    if (dups != null) {
+                        for (SQLQueryParameter dup : dups) {
+                            dup.setValue(newValue);
+                        }
+                    }
+                }
 
                 savedParamValues.put(
                     param.getName().toUpperCase(Locale.ENGLISH),

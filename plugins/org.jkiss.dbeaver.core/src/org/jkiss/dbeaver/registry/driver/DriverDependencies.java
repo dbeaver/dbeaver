@@ -32,9 +32,9 @@ public class DriverDependencies implements DBPDriverDependencies
 {
     private static final Log log = Log.getLog(DriverDependencies.class);
 
-    final List<DBPDriverLibrary> rootLibraries;
-    final List<DependencyNode> rootNodes = new ArrayList<>();
-    final List<DependencyNode> libraryList = new ArrayList<>();
+    private final List<DBPDriverLibrary> rootLibraries;
+    private final List<DependencyNode> rootNodes = new ArrayList<>();
+    private final List<DependencyNode> libraryList = new ArrayList<>();
 
     public DriverDependencies(Collection<? extends DBPDriverLibrary> rootLibraries) {
         this.rootLibraries = new ArrayList<>(rootLibraries);
@@ -111,7 +111,9 @@ public class DriverDependencies implements DBPDriverDependencies
 
                 DependencyNode prevNode = libMap.get(node.library.getId());
                 if (prevNode == null || prevNode.depth > node.depth) {
-                    libMap.put(node.library.getId(), node);
+                    //if (node.library.isDownloadable()) {
+                        libMap.put(node.library.getId(), node);
+                    //}
                     if (prevNode != null) {
                         prevNode.duplicate = true;
                     }

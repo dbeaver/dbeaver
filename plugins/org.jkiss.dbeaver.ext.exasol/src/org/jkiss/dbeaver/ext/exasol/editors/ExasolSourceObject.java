@@ -17,10 +17,14 @@
  */
 package org.jkiss.dbeaver.ext.exasol.editors;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public interface ExasolSourceObject extends DBPScriptObject, ExasolStatefulObject {
+public interface ExasolSourceObject extends DBPScriptObject, DBSObject {
 
+    void setObjectDefinitionText(String sourceText)
+    throws DBException;
 
 }
 

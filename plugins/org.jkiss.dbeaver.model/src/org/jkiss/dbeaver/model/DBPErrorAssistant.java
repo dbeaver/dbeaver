@@ -20,7 +20,9 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Error assistant
@@ -52,6 +54,6 @@ public interface DBPErrorAssistant
     ErrorType discoverErrorType(@NotNull DBException error);
 
     @Nullable
-    ErrorPosition[] getErrorPosition(@NotNull DBCSession session, @NotNull String query, @NotNull Throwable error);
+    ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error);
 
 }

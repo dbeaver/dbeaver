@@ -282,6 +282,10 @@ public class OracleDataSource extends JDBCDataSource
         return getInfo().getDatabaseVersion().getMajor() >= 11;
     }
 
+    public boolean isAtLeastV12() {
+        return getInfo().getDatabaseVersion().getMajor() >= 12;
+    }
+
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor)
         throws DBException {
@@ -548,14 +552,14 @@ public class OracleDataSource extends JDBCDataSource
         return super.createQueryTransformer(type);
     }
 
-    private Pattern ERROR_POSITION_PATTERN = Pattern.compile("(.+): line ([0-9]+), column ([0-9]+):");
+    private Pattern ERROR_POSITION_PATTERN = Pattern.compile(".+\\s+line ([0-9]+), column ([0-9]+)");
 
     @Nullable
     @Override
-    public ErrorPosition[] getErrorPosition(@NotNull DBCSession session, @NotNull String query, @NotNull Throwable error) {
+    public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
         while (error instanceof DBException) {
             if (error.getCause() == null) {
-                return null;
+                break;
             }
             error = error.getCause();
         }
@@ -566,8 +570,8 @@ public class OracleDataSource extends JDBCDataSource
             while (matcher.find()) {
                 DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
                 pos.info = matcher.group(1);
-                pos.line = Integer.parseInt(matcher.group(2)) - 1;
-                pos.position = Integer.parseInt(matcher.group(3)) - 1;
+                pos.line = Integer.parseInt(matcher.group(1)) - 1;
+                pos.position = Integer.parseInt(matcher.group(2)) - 1;
                 positions.add(pos);
             }
             if (!positions.isEmpty()) {
@@ -575,33 +579,34 @@ public class OracleDataSource extends JDBCDataSource
             }
         }
         if (error instanceof SQLException && SQLState.SQL_42000.getCode().equals(((SQLException) error).getSQLState())) {
-            try (CallableStatement stat = ((JDBCSession) session).prepareCall(
-                "declare\n" +
-                "  l_cursor integer default dbms_sql.open_cursor; \n" +
-                "begin \n" +
-                "  begin \n" +
-                "  dbms_sql.parse(  l_cursor, ?, dbms_sql.native ); \n" +
-                "    exception \n" +
-                "      when others then ? := dbms_sql.last_error_position; \n" +
-                "    end; \n" +
-                "    dbms_sql.close_cursor( l_cursor );\n" +
-                "end;"))
-            {
-                stat.setString(1, query);
-                stat.registerOutParameter(2, Types.INTEGER);
-                stat.execute();
-                int errorPos = stat.getInt(2);
-                if (errorPos <= 0) {
-                    return null;
+            try (JDBCSession session = (JDBCSession) context.openSession(monitor, DBCExecutionPurpose.UTIL, "Extract last error position")) {
+                try (CallableStatement stat = session.prepareCall(
+                    "declare\n" +
+                        "  l_cursor integer default dbms_sql.open_cursor; \n" +
+                        "begin \n" +
+                        "  begin \n" +
+                        "  dbms_sql.parse(  l_cursor, ?, dbms_sql.native ); \n" +
+                        "    exception \n" +
+                        "      when others then ? := dbms_sql.last_error_position; \n" +
+                        "    end; \n" +
+                        "    dbms_sql.close_cursor( l_cursor );\n" +
+                        "end;")) {
+                    stat.setString(1, query);
+                    stat.registerOutParameter(2, Types.INTEGER);
+                    stat.execute();
+                    int errorPos = stat.getInt(2);
+                    if (errorPos <= 0) {
+                        return null;
+                    }
+
+                    DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
+                    pos.position = errorPos;
+                    return new ErrorPosition[]{pos};
+
+                } catch (SQLException e) {
+                    // Something went wrong
+                    log.debug("Can't extract parse error info: " + e.getMessage());
                 }
-
-                DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
-                pos.position = errorPos;
-                return new ErrorPosition[] { pos };
-
-            } catch (SQLException e) {
-                // Something went wrong
-                log.debug("Can't extract parse error info: " + e.getMessage());
             }
         }
         return null;

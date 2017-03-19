@@ -53,8 +53,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
@@ -73,7 +73,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.ref.SoftReference;
-import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -636,10 +635,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         final String newName = databaseCombo.getItemText(databaseCombo.getSelectionIndex());
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
-            DBeaverUI.runInUI(new DBRRunnableWithProgress() {
+            new AbstractJob("Change active database") {
                 @Override
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException {
+                protected IStatus run(DBRProgressMonitor monitor) {
                     try {
                         DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
                         DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
@@ -666,10 +664,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                             throw new DBException(CoreMessages.toolbar_datasource_selector_error_database_change_not_supported);
                         }
                     } catch (DBException e) {
-                        throw new InvocationTargetException(e);
+                        return GeneralUtils.makeExceptionStatus(e);
                     }
+                    return Status.OK_STATUS;
                 }
-            });
+            }.schedule();
         }
     }
 

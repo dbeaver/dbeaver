@@ -1219,6 +1219,14 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    private int getTotalQueryRunning() {
+        int jobsRunning = 0;
+        for (QueryProcessor queryProcessor : queryProcessors) {
+            jobsRunning += queryProcessor.curJobRunning.get();
+        }
+        return jobsRunning;
+    }
+
     @Override
     public void handleDataSourceEvent(final DBPEvent event)
     {
@@ -1250,14 +1258,8 @@ public class SQLEditor extends SQLEditorBase implements
             saveJob.schedule();
 
             // Wait until job finished
-            Display display = Display.getCurrent();
-            while (saveJob.finished == null) {
-                if (!display.readAndDispatch()) {
-                    display.sleep();
-                }
-            }
-            display.update();
-            if (!saveJob.finished) {
+            UIUtils.waitJobCompletion(saveJob);
+            if (!saveJob.success) {
                 monitor.setCanceled(true);
                 return;
             }
@@ -1283,10 +1285,7 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public int promptToSaveOnClose()
     {
-        int jobsRunning = 0;
-        for (QueryProcessor queryProcessor : queryProcessors) {
-            jobsRunning += queryProcessor.curJobRunning.get();
-        }
+        int jobsRunning = getTotalQueryRunning();
         if (jobsRunning > 0) {
             log.warn("There are " + jobsRunning + " SQL job(s) still running in the editor");
 //            MessageBox messageBox = new MessageBox(getSite().getShell(), SWT.ICON_WARNING | SWT.OK);
@@ -1903,7 +1902,10 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void onStartQuery(DBCSession session, final SQLQuery query) {
-            setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
+            boolean isInExecute = getTotalQueryRunning() > 0;
+            if (!isInExecute) {
+                setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
+            }
             queryProcessor.curJobRunning.incrementAndGet();
             synchronized (runningQueries) {
                 runningQueries.add(query);
@@ -1925,11 +1927,13 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void onEndQuery(final DBCSession session, final SQLQueryResult result) {
-            setTitleImage(editorImage);
             synchronized (runningQueries) {
                 runningQueries.remove(result.getStatement());
             }
             queryProcessor.curJobRunning.decrementAndGet();
+            if (getTotalQueryRunning() <= 0) {
+                setTitleImage(editorImage);
+            }
 
             if (isDisposed()) {
                 return;
@@ -1949,21 +1953,25 @@ public class SQLEditor extends SQLEditorBase implements
             if (!scriptMode) {
                 runPostExecuteActions(result);
             }
+            SQLQuery query = result.getStatement();
             Throwable error = result.getError();
             if (error != null) {
                 setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
-                if (!scrollCursorToError(session, result, error)) {
-                    int errorQueryOffset = result.getStatement().getOffset();
-                    int errorQueryLength = result.getStatement().getLength();
+                if (!scrollCursorToError(session.getProgressMonitor(), query, error)) {
+                    int errorQueryOffset = query.getOffset();
+                    int errorQueryLength = query.getLength();
                     if (errorQueryOffset >= 0 && errorQueryLength > 0) {
-                        getSelectionProvider().setSelection(new TextSelection(errorQueryOffset, errorQueryLength));
+                        if (scriptMode) {
+                            getSelectionProvider().setSelection(new TextSelection(errorQueryOffset, errorQueryLength));
+                        } else {
+                            getSelectionProvider().setSelection(originalSelection);
+                        }
                     }
                 }
             } else if (!scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
                 getSelectionProvider().setSelection(originalSelection);
             }
             // Get results window (it is possible that it was closed till that moment
-            SQLQuery query = result.getStatement();
             {
                 for (QueryResultsContainer cr : queryProcessor.resultContainers) {
                     cr.viewer.updateFiltersText(false);
@@ -2011,60 +2019,6 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
             });
-        }
-    }
-
-    private boolean scrollCursorToError(@NotNull DBCSession session, @NotNull SQLQueryResult result, @NotNull Throwable error) {
-        DBCExecutionContext context = getExecutionContext();
-        if (context == null) {
-            return false;
-        }
-        try {
-            boolean scrolled = false;
-            DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, context.getDataSource());
-            if (errorAssistant != null) {
-                SQLQuery query = result.getStatement();
-                DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(session, query.getQuery(), error);
-                if (positions != null && positions.length > 0) {
-                    int queryStartOffset = query.getOffset();
-                    int queryLength = query.getLength();
-
-                    DBPErrorAssistant.ErrorPosition pos = positions[0];
-                    if (pos.line < 0) {
-                        if (pos.position >= 0) {
-                            // Only position
-                            getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 1));
-                            scrolled = true;
-                        }
-                    } else {
-                        // Line + position
-                        Document document = getDocument();
-                        if (document != null) {
-                            int startLine = document.getLineOfOffset(queryStartOffset);
-                            int errorOffset = document.getLineOffset(startLine + pos.line);
-                            int errorLength;
-                            if (pos.position >= 0) {
-                                errorOffset += pos.position;
-                                errorLength = 1;
-                            } else {
-                                errorLength = document.getLineLength(startLine + pos.line);
-                            }
-                            if (errorOffset < queryStartOffset) errorOffset = queryStartOffset;
-                            if (errorLength > queryLength) errorLength = queryLength;
-                            getSelectionProvider().setSelection(new TextSelection(errorOffset, errorLength));
-                            scrolled = true;
-                        }
-                    }
-                }
-            }
-            return scrolled;
-//            if (!scrolled) {
-//                // Can't position on error - let's just select entire problem query
-//                showStatementInEditor(result.getStatement(), true);
-//            }
-        } catch (Exception e) {
-            log.warn("Error positioning on query error", e);
-            return false;
         }
     }
 
@@ -2186,7 +2140,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private class SaveJob extends AbstractJob {
-        private transient Boolean finished = null;
+        private transient Boolean success = null;
         public SaveJob() {
             super("Save '" + getPartName() + "' data changes...");
             setUser(true);
@@ -2203,15 +2157,15 @@ public class SQLEditor extends SQLEditorBase implements
                         }
                     }
                 }
-                finished = true;
+                success = true;
                 return Status.OK_STATUS;
             } catch (Throwable e) {
-                finished = false;
+                success = false;
                 log.error(e);
                 return GeneralUtils.makeExceptionStatus(e);
             } finally {
-                if (finished == null) {
-                    finished = true;
+                if (success == null) {
+                    success = true;
                 }
             }
         }

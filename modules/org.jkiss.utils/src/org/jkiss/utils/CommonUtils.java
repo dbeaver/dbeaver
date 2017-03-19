@@ -341,6 +341,16 @@ public class CommonUtils {
         return new String(hexChars);
     }
 
+    public static String toBinaryString(long longValue, int bitCount) {
+        String strValue = Long.toString(longValue, 2);
+        if (strValue.length() < bitCount) {
+            char[] headZeroes = new char[bitCount - strValue.length()];
+            Arrays.fill(headZeroes, '0');
+            strValue = String.valueOf(headZeroes) + strValue;
+        }
+        return strValue;
+    }
+
     @NotNull
     public static List<String> splitString(@Nullable String str, char delimiter) {
         if (CommonUtils.isEmpty(str)) {

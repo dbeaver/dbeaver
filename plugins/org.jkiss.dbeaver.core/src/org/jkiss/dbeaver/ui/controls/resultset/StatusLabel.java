@@ -30,6 +30,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -149,7 +150,7 @@ class StatusLabel extends Composite {
             message = "???"; //$NON-NLS-1$
         }
         statusIcon.setImage(JFaceResources.getImage(statusIconId));
-        statusText.setText(message);
+        statusText.setText(TextUtils.getSingleLineString(message));
         if (messageType != DBPMessageType.INFORMATION) {
             statusText.setToolTipText(message);
         } else {

@@ -84,6 +84,8 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         String pkTableCatalog = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_CAT);
         String pkTableSchema = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_SCHEM);
         String pkTableName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_NAME);
+        String fkTableCatalog = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.FKTABLE_CAT);
+        String fkTableSchema = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.FKTABLE_SCHEM);
 
         int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);
         int updateRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.UPDATE_RULE);
@@ -105,11 +107,17 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             log.debug("Null PK table name");
             return null;
         }
-        //String pkTableFullName = DBUtils.getFullyQualifiedName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
+        String pkTableFullName = DBUtils.getSimpleQualifiedName(pkTableCatalog, pkTableSchema, pkTableName);
         GenericTable pkTable = parent.getDataSource().findTable(session.getProgressMonitor(), pkTableCatalog, pkTableSchema, pkTableName);
         if (pkTable == null) {
-            log.warn("Can't find PK table " + pkTableName);
-            return null;
+            // Try to use FK catalog/schema
+            pkTable = parent.getDataSource().findTable(session.getProgressMonitor(), fkTableCatalog, fkTableSchema, pkTableName);
+            if (pkTable == null) {
+                log.warn("Can't find PK table " + pkTableName);
+                return null;
+            } else {
+                log.debug("PK table " + pkTableFullName + " was taken from FK container.");
+            }
         }
 
         // Find PK

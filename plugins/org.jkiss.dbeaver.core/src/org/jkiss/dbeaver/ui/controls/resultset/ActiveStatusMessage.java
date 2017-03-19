@@ -115,7 +115,9 @@ abstract class ActiveStatusMessage extends Composite {
     }
 
     public void updateActionState() {
-        actionItem.setEnabled(isActionEnabled());
+        if (!actionItem.isDisposed()) {
+            actionItem.setEnabled(isActionEnabled());
+        }
     }
 
     public void executeAction() {

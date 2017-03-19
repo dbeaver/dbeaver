@@ -65,18 +65,20 @@ public class OracleUtils {
             schema = ((OracleTableBase)object).getContainer();
         }
         final OracleDataSource dataSource = (OracleDataSource) object.getDataSource();
-        assert(dataSource != null);
+
         monitor.beginTask("Load sources for " + objectType + " '" + objectFullName + "'...", 1);
         try (final JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load source code for " + objectType + " '" + objectFullName + "'")) {
-            JDBCUtils.executeProcedure(
-                session,
-                "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'STORAGE'," + ddlFormat.isShowStorage() + "); end;");
-            JDBCUtils.executeProcedure(
-                session,
-                "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");  end;");
-            JDBCUtils.executeProcedure(
-                session,
-                "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");  end;");
+            if (dataSource.isAtLeastV9()) {
+                JDBCUtils.executeProcedure(
+                    session,
+                    "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'STORAGE'," + ddlFormat.isShowStorage() + "); end;");
+                JDBCUtils.executeProcedure(
+                    session,
+                    "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");  end;");
+                JDBCUtils.executeProcedure(
+                    session,
+                    "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");  end;");
+            }
 /*
             String curSchema = null;
             if (schema != null) {

@@ -178,7 +178,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         } else if (statement instanceof PreparedStatement) {
             return createPreparedStatementImpl((PreparedStatement)statement, null);
         } else {
-            throw new SQLFeatureNotSupportedException();
+            return createStatementImpl(statement);
         }
     }
 

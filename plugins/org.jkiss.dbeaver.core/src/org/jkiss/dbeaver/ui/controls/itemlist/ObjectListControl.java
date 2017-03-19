@@ -40,10 +40,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
@@ -140,7 +143,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             //UIUtils.applyCustomTolTips(table);
             //itemsEditor = new TableEditor(table);
             editorActivationStrategy = new EditorActivationStrategy(tableViewer);
-            TableViewerEditor.create(tableViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
+            TableViewerEditor.create(tableViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_VERTICAL | ColumnViewerEditor.TABBING_HORIZONTAL);
             table.addTraverseListener(traverseListener);
         }
         //editorActivationStrategy.setEnableEditorActivationWithKeyboard(true);
@@ -749,9 +752,18 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     // Clipboard
 
     @Override
-    public void addClipboardData(ClipboardData clipboardData) {
-        // Cope selected cells
-        final String selectedText = getRenderer().getSelectedText();
+    public void addClipboardData(CopyMode mode, ClipboardData clipboardData) {
+        String selectedText;
+        if (mode == CopyMode.ADVANCED) {
+            // Multiple rows selected
+            // Copy all of them in tsv format
+            selectedText = copyGridToText();
+            if (!CommonUtils.isEmpty(selectedText)) {
+                clipboardData.addTransfer(TextTransfer.getInstance(), selectedText);
+            }
+        } else {
+            selectedText = getRenderer().getSelectedText();
+        }
         if (!CommonUtils.isEmpty(selectedText)) {
             clipboardData.addTransfer(TextTransfer.getInstance(), selectedText);
         }
@@ -980,7 +992,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                                     // Do not paint over active editor
                                     return;
                                 }
-                                renderer.paintCell(e, object, e.index, prop.isEditable(objectValue));
+                                renderer.paintCell(e, object, e.item, e.index, prop.isEditable(objectValue));
                             }
                         }
                         break;
@@ -1100,6 +1112,41 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         protected Object getCellValue(Object element, int columnIndex) {
             return ObjectListControl.this.getCellValue(element, columnIndex);
         }
+    }
+
+    private String copyGridToText() {
+        StringBuilder buf = new StringBuilder();
+        int columnsCount = columnController.getColumnsCount();
+        {
+            // Header
+            for (int i = 0; i < columnsCount; i++) {
+                ObjectColumn column = getColumnByIndex(i);
+                if (i > 0) buf.append("\t");
+                buf.append(column.displayName);
+            }
+            buf.append("\n");
+        }
+        List<OBJECT_TYPE> elementList = itemsViewer.getStructuredSelection().toList();
+        for (OBJECT_TYPE element : elementList) {
+            Object object = getObjectValue(element);
+            for (int i = 0; i < columnsCount; i++) {
+                ObjectPropertyDescriptor property = getColumnByIndex(i).getProperty(object);
+                try {
+                    Object cellValue = property == null ? null : property.readValue(object, VoidProgressMonitor.INSTANCE);
+                    if (i > 0) buf.append("\t");
+                    String strValue = DBValueFormatting.getDefaultValueDisplayString(cellValue, DBDDisplayFormat.UI);
+                    if (strValue.contains("\n") || strValue.contains("\t")) {
+                        strValue = '"' + strValue + '"';
+                    }
+                    buf.append(strValue);
+                } catch (Throwable e) {
+                    // ignore
+                }
+            }
+            buf.append("\n");
+        }
+
+        return buf.toString();
     }
 
 }

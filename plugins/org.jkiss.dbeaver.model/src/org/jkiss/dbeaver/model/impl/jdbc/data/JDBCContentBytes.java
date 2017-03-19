@@ -143,15 +143,15 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
                 throw new DBCException("IO error while reading content", e);
             }
         }
+        this.modified = true;
         return false;
     }
 
     @Override
     public void resetContents()
     {
-        if (this.originalData != null) {
-            this.data = this.originalData;
-        }
+        this.data = this.originalData;
+        this.modified = false;
     }
 
     @Override
