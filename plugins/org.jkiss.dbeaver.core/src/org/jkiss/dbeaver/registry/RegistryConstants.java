@@ -166,6 +166,7 @@ public class RegistryConstants {
     public static final String ATTR_HOME = "home"; //$NON-NLS-1$
     public static final String ATTR_SHOW_PANEL = "show-panel"; //$NON-NLS-1$
     public static final String ATTR_WAIT_PROCESS = "wait-process"; //$NON-NLS-1$
+    public static final String ATTR_WAIT_PROCESS_TIMEOUT = "wait-process-timeout"; //$NON-NLS-1$
     public static final String ATTR_TERMINATE_AT_DISCONNECT = "terminate-at-disconnect"; //$NON-NLS-1$
     public static final String ATTR_FOLDER = "folder"; //$NON-NLS-1$
     public static final String TAG_FILTERS = "filters"; //$NON-NLS-1$

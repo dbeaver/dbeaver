@@ -25,10 +25,14 @@ import org.jkiss.utils.CommonUtils;
 public class DBRShellCommand
 {
 
+    public static final int WAIT_PROCESS_TIMEOUT_MAX_SELECTION = 99999;
+    public static final int WAIT_PROCESS_TIMEOUT_FOREVER = -1;
+
     private String command;
     private boolean enabled;
     private boolean showProcessPanel = true;
     private boolean waitProcessFinish;
+    private int waitProcessTimeoutMs = WAIT_PROCESS_TIMEOUT_FOREVER;
     private boolean terminateAtDisconnect = true;
     private String workingDirectory;
 
@@ -43,6 +47,7 @@ public class DBRShellCommand
         this.enabled = command.enabled;
         this.showProcessPanel = command.showProcessPanel;
         this.waitProcessFinish = command.waitProcessFinish;
+        this.waitProcessTimeoutMs = command.waitProcessTimeoutMs;
         this.terminateAtDisconnect = command.terminateAtDisconnect;
         this.workingDirectory = command.workingDirectory;
     }
@@ -87,7 +92,15 @@ public class DBRShellCommand
         this.waitProcessFinish = waitProcessFinish;
     }
 
-    public boolean isTerminateAtDisconnect()
+    public int getWaitProcessTimeoutMs() {
+		return waitProcessTimeoutMs;
+	}
+
+	public void setWaitProcessTimeoutMs(int waitProcessTimeoutMs) {
+		this.waitProcessTimeoutMs = waitProcessTimeoutMs;
+	}
+
+	public boolean isTerminateAtDisconnect()
     {
         return terminateAtDisconnect;
     }
@@ -118,6 +131,7 @@ public class DBRShellCommand
             this.enabled == source.enabled &&
             this.showProcessPanel == source.showProcessPanel &&
             this.waitProcessFinish == source.waitProcessFinish &&
+            this.waitProcessTimeoutMs == source.waitProcessTimeoutMs &&
             this.terminateAtDisconnect == source.terminateAtDisconnect &&
             CommonUtils.equalObjects(this.workingDirectory, source.workingDirectory);
     }

@@ -49,6 +49,7 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
     private Button showProcessCheck;
     private Button terminateCheck;
     private Button waitFinishCheck;
+    private Spinner waitFinishTimeoutMs;
     private Table eventTypeTable;
 
     private final Map<DBPConnectionEventType, DBRShellCommand> eventsCache = new HashMap<>();
@@ -142,6 +143,8 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
             showProcessCheck.addSelectionListener(eventEditAdapter);
             waitFinishCheck = UIUtils.createCheckbox(detailsGroup, CoreMessages.dialog_connection_events_checkbox_wait_finish, false);
             waitFinishCheck.addSelectionListener(eventEditAdapter);
+            waitFinishTimeoutMs = createWaitFinishTimeout(detailsGroup);
+            waitFinishTimeoutMs.addSelectionListener(eventEditAdapter);
             terminateCheck = UIUtils.createCheckbox(detailsGroup, CoreMessages.dialog_connection_events_checkbox_terminate_at_disconnect, false);
             terminateCheck.addSelectionListener(eventEditAdapter);
 
@@ -166,6 +169,24 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
         selectEventType(null);
 
         setControl(group);
+    }
+
+    private static Spinner createWaitFinishTimeout(Composite detailsGroup) {
+        Composite waitFinishGroup = new Composite(detailsGroup, SWT.NONE);
+        GridLayout waitFinishGroupLayout = new GridLayout(2, false);
+        waitFinishGroupLayout.marginWidth = 0;
+        waitFinishGroupLayout.marginHeight = 0;
+        waitFinishGroupLayout.marginLeft = 25;
+        waitFinishGroup.setLayout(waitFinishGroupLayout);
+
+        GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+        waitFinishGroup.setLayoutData(gridData);
+
+        int defaultValue = DBRShellCommand.WAIT_PROCESS_TIMEOUT_FOREVER;
+        int maxSelection = DBRShellCommand.WAIT_PROCESS_TIMEOUT_MAX_SELECTION;
+        Spinner spinner = UIUtils.createSpinner(waitFinishGroup, "-1 to wait forever", 0, defaultValue, maxSelection);
+        UIUtils.createLabel(waitFinishGroup, CoreMessages.dialog_connection_events_checkbox_wait_finish_timeout);
+        return spinner;
     }
 
     private void addVariableLegend(Composite group, String varName, String description) {
@@ -213,6 +234,8 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
                 }
                 command.setShowProcessPanel(showProcessCheck.getSelection());
                 command.setWaitProcessFinish(waitFinishCheck.getSelection());
+                waitFinishTimeoutMs.setEnabled(waitFinishCheck.getSelection());
+                command.setWaitProcessTimeoutMs(waitFinishTimeoutMs.getSelection());
                 command.setTerminateAtDisconnect(terminateCheck.getSelection());
                 if (prevEnabled != command.isEnabled()) {
                     selectEventType(eventType);
@@ -229,17 +252,22 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
         commandText.setEnabled(command != null && command.isEnabled());
         showProcessCheck.setEnabled(command != null && command.isEnabled());
         waitFinishCheck.setEnabled(command != null && command.isEnabled());
+        waitFinishTimeoutMs.setEnabled(waitFinishCheck.isEnabled());
         terminateCheck.setEnabled(command != null && command.isEnabled());
 
         if (command != null) {
             commandText.setText(CommonUtils.toString(command.getCommand()));
             showProcessCheck.setSelection(command.isShowProcessPanel());
             waitFinishCheck.setSelection(command.isWaitProcessFinish());
+            org.jkiss.dbeaver.Log.getLog(getClass()).info("selectEventType command ms :" + eventType + " "+ command.getWaitProcessTimeoutMs() + " "+ command);
+            waitFinishTimeoutMs.setSelection(command.getWaitProcessTimeoutMs());
             terminateCheck.setSelection(command.isTerminateAtDisconnect());
         } else {
             commandText.setText(""); //$NON-NLS-1$
             showProcessCheck.setSelection(false);
             waitFinishCheck.setSelection(false);
+            org.jkiss.dbeaver.Log.getLog(getClass()).info("selectEventType dflt command ms :" + eventType + " WAIT_PROCESS_TIMEOUT_FOREVER");
+            waitFinishTimeoutMs.setSelection(DBRShellCommand.WAIT_PROCESS_TIMEOUT_FOREVER);
             terminateCheck.setSelection(false);
         }
     }

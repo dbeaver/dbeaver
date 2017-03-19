@@ -820,7 +820,11 @@ public class DataSourceDescriptor
             monitor.subTask("Execute process " + processDescriptor.getName());
             DBUserInterface.getInstance().executeProcess(processDescriptor);
             if (command.isWaitProcessFinish()) {
-                processDescriptor.waitFor();
+                if (command.getWaitProcessTimeoutMs() >= 0) {
+                    processDescriptor.waitFor(command.getWaitProcessTimeoutMs());
+                } else {
+                    processDescriptor.waitFor();
+                }
             }
             addChildProcess(processDescriptor);
         }
