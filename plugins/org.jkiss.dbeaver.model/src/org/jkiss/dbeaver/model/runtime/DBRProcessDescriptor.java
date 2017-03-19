@@ -17,13 +17,14 @@
 
 package org.jkiss.dbeaver.model.runtime;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * DBRProcessDescriptor
@@ -129,9 +130,26 @@ public class DBRProcessDescriptor
 
     public int waitFor()
     {
+        return doWaitFor(false, Integer.MAX_VALUE);
+    }
+
+    public int waitFor(int timeoutMs)
+    {
+        return doWaitFor(true, timeoutMs);
+    }
+
+    private int doWaitFor(boolean useTimeout, int timeoutMs)
+    {
         if (this.process != null) {
             try {
-                exitValue = this.process.waitFor();
+                if (useTimeout) {
+                    boolean exited = this.process.waitFor(timeoutMs, TimeUnit.MILLISECONDS);
+                    if (exited) {
+                        exitValue = this.process.exitValue();
+                    }
+                } else {
+                    exitValue = this.process.waitFor();
+                }
             } catch (InterruptedException e) {
                 // Skip
             }
