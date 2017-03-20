@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
@@ -220,7 +221,9 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
             }
             return (DBDContent) object;
         } else {
-            throw new DBCException(ModelMessages.model_jdbc_unsupported_value_type_ + object.getClass().getName());
+            // Give up. Let's show string value
+            return new JDBCContentChars(session.getDataSource(), CommonUtils.toString(object));
+            //throw new DBCException(ModelMessages.model_jdbc_unsupported_value_type_ + object.getClass().getName());
         }
     }
 
