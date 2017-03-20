@@ -558,6 +558,11 @@ public class UIUtils {
             l.setToolTipText(tooltip);
         }
 
+        return createSpinner(parent, tooltip, value, minimum, maximum);
+    }
+
+    @NotNull
+    public static Spinner createSpinner(Composite parent, String tooltip, int value, int minimum, int maximum) {
         Spinner spinner = new Spinner(parent, SWT.BORDER);
         spinner.setMinimum(minimum);
         spinner.setMaximum(maximum);

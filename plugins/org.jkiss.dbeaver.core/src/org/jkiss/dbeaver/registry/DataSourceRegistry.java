@@ -707,6 +707,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.addAttribute(RegistryConstants.ATTR_ENABLED, command.isEnabled());
                 xml.addAttribute(RegistryConstants.ATTR_SHOW_PANEL, command.isShowProcessPanel());
                 xml.addAttribute(RegistryConstants.ATTR_WAIT_PROCESS, command.isWaitProcessFinish());
+                if (command.isWaitProcessFinish()) {
+                    xml.addAttribute(RegistryConstants.ATTR_WAIT_PROCESS_TIMEOUT, command.getWaitProcessTimeoutMs());
+                }
                 xml.addAttribute(RegistryConstants.ATTR_TERMINATE_AT_DISCONNECT, command.isTerminateAtDisconnect());
                 xml.addText(command.getCommand());
                 xml.endElement();
@@ -1124,6 +1127,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         curCommand.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
                         curCommand.setShowProcessPanel(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_PANEL)));
                         curCommand.setWaitProcessFinish(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_WAIT_PROCESS)));
+                        if (curCommand.isWaitProcessFinish()) {
+                            String timeoutString = atts.getValue(RegistryConstants.ATTR_WAIT_PROCESS_TIMEOUT);
+                            int timeoutMs = CommonUtils.toInt(timeoutString, DBRShellCommand.WAIT_PROCESS_TIMEOUT_FOREVER);
+                            curCommand.setWaitProcessTimeoutMs(timeoutMs);
+                        }
                         curCommand.setTerminateAtDisconnect(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_TERMINATE_AT_DISCONNECT)));
                         curDataSource.getConnectionConfiguration().setEvent(eventType, curCommand);
                     }
