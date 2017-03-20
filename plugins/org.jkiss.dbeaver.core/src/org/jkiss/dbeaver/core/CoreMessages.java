@@ -393,6 +393,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_events_checkbox_terminate_at_disconnect;
 
 	public static String dialog_connection_events_checkbox_wait_finish;
+	public static String dialog_connection_events_checkbox_wait_finish_timeout;
 
 	public static String model_connection_events_event_after_connect;
 
