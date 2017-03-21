@@ -259,14 +259,12 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
             commandText.setText(CommonUtils.toString(command.getCommand()));
             showProcessCheck.setSelection(command.isShowProcessPanel());
             waitFinishCheck.setSelection(command.isWaitProcessFinish());
-            org.jkiss.dbeaver.Log.getLog(getClass()).info("selectEventType command ms :" + eventType + " "+ command.getWaitProcessTimeoutMs() + " "+ command);
             waitFinishTimeoutMs.setSelection(command.getWaitProcessTimeoutMs());
             terminateCheck.setSelection(command.isTerminateAtDisconnect());
         } else {
             commandText.setText(""); //$NON-NLS-1$
             showProcessCheck.setSelection(false);
             waitFinishCheck.setSelection(false);
-            org.jkiss.dbeaver.Log.getLog(getClass()).info("selectEventType dflt command ms :" + eventType + " WAIT_PROCESS_TIMEOUT_FOREVER");
             waitFinishTimeoutMs.setSelection(DBRShellCommand.WAIT_PROCESS_TIMEOUT_FOREVER);
             terminateCheck.setSelection(false);
         }
