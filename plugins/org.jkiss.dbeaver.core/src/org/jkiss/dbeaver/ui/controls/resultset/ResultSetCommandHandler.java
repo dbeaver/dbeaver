@@ -67,6 +67,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
 
     public static final String CMD_TOGGLE_PANELS = "org.jkiss.dbeaver.core.resultset.grid.togglePreview";
     public static final String CMD_TOGGLE_MODE = "org.jkiss.dbeaver.core.resultset.toggleMode";
+    public static final String CMD_FOCUS_FILTER = "org.jkiss.dbeaver.core.resultset.focus.filter";
     public static final String CMD_SWITCH_PRESENTATION = "org.jkiss.dbeaver.core.resultset.switchPresentation";
     public static final String CMD_ROW_FIRST = "org.jkiss.dbeaver.core.resultset.row.first";
     public static final String CMD_ROW_PREVIOUS = "org.jkiss.dbeaver.core.resultset.row.previous";
@@ -121,6 +122,9 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 break;
             case CMD_TOGGLE_PANELS:
                 rsv.showPanels(!rsv.isPanelsVisible());
+                break;
+            case CMD_FOCUS_FILTER:
+                rsv.switchFilterFocus();
                 break;
             case CMD_SWITCH_PRESENTATION:
                 rsv.switchPresentation();
