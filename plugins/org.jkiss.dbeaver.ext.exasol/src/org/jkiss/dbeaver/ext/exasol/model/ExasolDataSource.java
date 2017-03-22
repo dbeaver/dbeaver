@@ -115,12 +115,6 @@ public class ExasolDataSource extends JDBCDataSource
 		super(monitor, container, new ExasolSQLDialect());
 	}
 
-	@Override
-	protected boolean isConnectionReadOnlyBroken()
-	{
-		return true;
-	}
-
 	// -----------------------
 	// Initialization/Structure
 	// -----------------------
