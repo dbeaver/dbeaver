@@ -572,23 +572,7 @@ public class SQLEditor extends SQLEditorBase implements
                 @Override
                 public void menuAboutToShow(IMenuManager manager)
                 {
-                    if (sashForm.getMaximizedControl() == null) {
-                        manager.add(new Action("Maximize results") {
-                            @Override
-                            public void run()
-                            {
-                                toggleEditorMaximize();
-                            }
-                        });
-                    } else {
-                        manager.add(new Action("Normalize results") {
-                            @Override
-                            public void run()
-                            {
-                                toggleEditorMaximize();
-                            }
-                        });
-                    }
+                    manager.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_SQL_EDITOR_MAXIMIZE_PANEL));
                     if (resultTabs.getItemCount() > 3) {
                         manager.add(new Action("Close multiple results") {
                             @Override
@@ -661,15 +645,6 @@ public class SQLEditor extends SQLEditorBase implements
         resultTabs.setSelection(item);
     }
 
-    private void toggleEditorMaximize()
-    {
-        if (sashForm.getMaximizedControl() == null) {
-            sashForm.setMaximizedControl(resultTabs);
-        } else {
-            sashForm.setMaximizedControl(null);
-        }
-    }
-
     public void showOutputPanel() {
         if (sashForm.getMaximizedControl() != null) {
             sashForm.setMaximizedControl(null);
@@ -687,6 +662,15 @@ public class SQLEditor extends SQLEditorBase implements
     public void toggleResultPanel() {
         if (sashForm.getMaximizedControl() == null) {
             sashForm.setMaximizedControl(editorControl);
+        } else {
+            sashForm.setMaximizedControl(null);
+        }
+    }
+
+    public void toggleEditorMaximize()
+    {
+        if (sashForm.getMaximizedControl() == null) {
+            sashForm.setMaximizedControl(resultTabs);
         } else {
             sashForm.setMaximizedControl(null);
         }
