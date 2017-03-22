@@ -758,6 +758,9 @@ public class PropertyTreeViewer extends TreeViewer {
                         str.append("]");
                         return str.toString();
                     }
+                    if (propertyValue instanceof Boolean) {
+                        return "";
+                    }
                     return ObjectViewerRenderer.getCellString(propertyValue, isName);
                 } else {
                     return ""; //$NON-NLS-1$

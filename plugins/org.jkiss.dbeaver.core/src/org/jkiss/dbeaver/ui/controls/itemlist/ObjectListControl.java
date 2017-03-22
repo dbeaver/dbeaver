@@ -866,7 +866,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     //////////////////////////////////////////////////////
     // List sorter
 
-    protected class ObjectColumnLabelProvider extends ColumnLabelProvider {
+    protected class ObjectColumnLabelProvider extends ColumnLabelProvider implements ILabelProviderEx {
         protected final ObjectColumn objectColumn;
 
         ObjectColumnLabelProvider(ObjectColumn objectColumn) {
@@ -892,24 +892,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         @Override
         public String getText(Object element) {
-            Object cellValue = getCellValue(element, objectColumn);
-            if (cellValue instanceof LazyValue) {
-                cellValue = ((LazyValue) cellValue).value;
-            }
-            if (!sampleItems && renderer.isHyperlink(cellValue)) {
-                return ""; //$NON-NLS-1$
-            }
-            final Object objectValue = getObjectValue((OBJECT_TYPE) element);
-            if (objectValue == null) {
-                // This may happen if list redraw happens during node dispose
-                return "";
-            }
-            final ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
-            if (prop != null) {
-                return ObjectViewerRenderer.getCellString(cellValue, prop.isNameProperty());
-            } else {
-                return "";
-            }
+            return getText(element, true);
         }
 
         @Override
@@ -924,6 +907,31 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         @Override
         public Color getForeground(Object element) {
             return getObjectForeground((OBJECT_TYPE) element);
+        }
+
+        @Override
+        public String getText(Object element, boolean forUI) {
+            Object cellValue = getCellValue(element, objectColumn);
+            if (cellValue instanceof LazyValue) {
+                cellValue = ((LazyValue) cellValue).value;
+            }
+            if (forUI && !sampleItems && renderer.isHyperlink(cellValue)) {
+                return ""; //$NON-NLS-1$
+            }
+            final Object objectValue = getObjectValue((OBJECT_TYPE) element);
+            if (objectValue == null) {
+                // This may happen if list redraw happens during node dispose
+                return "";
+            }
+            final ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
+            if (prop != null) {
+                if (forUI && cellValue instanceof Boolean) {
+                    return "";
+                }
+                return ObjectViewerRenderer.getCellString(cellValue, prop.isNameProperty());
+            } else {
+                return "";
+            }
         }
     }
 
