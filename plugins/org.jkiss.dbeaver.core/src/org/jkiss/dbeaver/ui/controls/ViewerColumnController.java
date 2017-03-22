@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.ILabelProviderEx;
 import org.jkiss.dbeaver.ui.ILazyLabelProvider;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -584,6 +585,7 @@ public class ViewerColumnController {
                 ((TableViewer)viewer).getTable().setSortDirection(sortDirection);
             }
             final ILabelProvider labelProvider = (ILabelProvider)columnInfo.labelProvider;
+            final ILabelProviderEx exLabelProvider = labelProvider instanceof ILabelProviderEx ? (ILabelProviderEx)labelProvider : null;
 
             viewer.setComparator(new ViewerComparator(collator) {
                 private final NumberFormat numberFormat = NumberFormat.getInstance();
@@ -591,8 +593,15 @@ public class ViewerColumnController {
                 public int compare(Viewer v, Object e1, Object e2)
                 {
                     int result;
-                    String value1 = labelProvider.getText(e1);
-                    String value2 = labelProvider.getText(e2);
+                    String value1;
+                    String value2;
+                    if (exLabelProvider != null) {
+                        value1 = exLabelProvider.getText(e1, false);
+                        value2 = exLabelProvider.getText(e2, false);
+                    } else {
+                        value1 = labelProvider.getText(e1);
+                        value2 = labelProvider.getText(e2);
+                    }
                     if (value1 == null && value2 == null) {
                         result = 0;
                     } else if (value1 == null) {

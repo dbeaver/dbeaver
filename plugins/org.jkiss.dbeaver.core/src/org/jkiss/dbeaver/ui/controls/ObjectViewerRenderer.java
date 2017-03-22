@@ -265,8 +265,6 @@ public abstract class ObjectViewerRenderer {
     {
         if (value == null) {
             return "";
-        } else if (value instanceof Boolean) {
-            value = "";//DBUtils.getBooleanString((Boolean) value);
         } else {
             if (!nameColumn && value instanceof DBPNamedValueObject) {
                 value = ((DBPNamedValueObject) value).getObjectValue();
