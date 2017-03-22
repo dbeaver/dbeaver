@@ -282,6 +282,17 @@ public class ResultSetViewer extends Viewer
         setDataFilter(model.createDataFilter(), refresh);
     }
 
+    void switchFilterFocus() {
+        boolean filterFocused = filtersPanel.getEditControl().isFocusControl();
+        if (filterFocused) {
+            if (activePresentation != null) {
+                activePresentation.getControl().setFocus();
+            }
+        } else {
+            filtersPanel.getEditControl().setFocus();
+        }
+    }
+
     private void updateFiltersText()
     {
         updateFiltersText(true);
@@ -1621,6 +1632,7 @@ public class ResultSetViewer extends Viewer
                     navigateMenu.add(new Separator());
                 }
                 navigateMenu.add(new Separator());
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FOCUS_FILTER));
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, ITextEditorActionDefinitionIds.LINE_GOTO));
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_FIRST));
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_NEXT));
