@@ -2024,6 +2024,7 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
             </menu>
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file" label="File">
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.rename"/>
                 <command commandId="org.eclipse.ui.file.revert"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"/>
