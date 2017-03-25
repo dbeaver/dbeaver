@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
  */
 public class SQLQuery {
 
-    private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("--\\s*(?:NAME|TITLE)\\s*:\\s*(.+)\\s*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("(?:--|/\\*)\\s*(?:NAME|TITLE)\\s*:\\s*(.+)\\s*", Pattern.CASE_INSENSITIVE);
 
     @Nullable
     private final DBPDataSource dataSource;
