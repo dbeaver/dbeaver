@@ -24,7 +24,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * DatabaseDataEditor
  */
-public class DatabaseDataEditor extends AbstractDataEditor
+public class DatabaseDataEditor extends AbstractDataEditor<DBSDataContainer>
 {
     public static final String ATTR_SUSPEND_QUERY = "suspendQuery";
     public static final String ATTR_DATA_FILTER = "dataFilter";

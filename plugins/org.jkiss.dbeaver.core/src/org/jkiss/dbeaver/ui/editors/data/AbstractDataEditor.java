@@ -22,7 +22,7 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 /**
  * AbstractDataEditor
  */
-public abstract class AbstractDataEditor extends AbstractDatabaseObjectEditor<DBSDataContainer>
+public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends AbstractDatabaseObjectEditor<OBJECT_TYPE>
     implements IResultSetContainer,IResultSetListener
 {
     private ResultSetViewer resultSetView;
