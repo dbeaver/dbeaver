@@ -97,6 +97,8 @@ public class TransactionMonitorToolbar {
 
         public RefreshJob(MonitorPanel monitorPanel) {
             super("Refresh transaction monitor");
+            setSystem(true);
+            setUser(false);
             this.monitorPanel = monitorPanel;
         }
 
