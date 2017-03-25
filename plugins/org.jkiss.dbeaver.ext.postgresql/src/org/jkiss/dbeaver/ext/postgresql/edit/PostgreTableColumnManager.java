@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -108,10 +107,6 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         return decl;
     }
 
-    private String escapeComment(String comment) {
-        return comment.replace("'", "\\'");
-    }
-
     @Override
     protected PostgreTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final PostgreTableBase parent, Object copyFrom)
     {
@@ -173,7 +168,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         if (command.getProperty("description") != null) {
             actionList.add(new SQLDatabasePersistAction("Set column comment", "COMMENT ON COLUMN " +
                 DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                " IS '" + SQLUtils.escapeString(CommonUtils.toString(column.getDescription())) + "'"));
+                " IS " + SQLUtils.quoteString(CommonUtils.notEmpty(column.getDescription()))));
         }
     }
 

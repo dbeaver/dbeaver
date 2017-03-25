@@ -110,7 +110,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
                     ddl.append("\nCOLLATE=").append(additionalInfo.getCollation().getName()); //$NON-NLS-1$
                 }
                 if ((!table.isPersisted() || tableProps.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) && table.getDescription() != null) {
-                    ddl.append("\nCOMMENT='").append(SQLUtils.escapeString(table.getDescription())).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
+                    ddl.append("\nCOMMENT=").append(SQLUtils.quoteString(table.getDescription())); //$NON-NLS-1$ //$NON-NLS-2$
                 }
                 if ((!table.isPersisted() || tableProps.getProperty("autoIncrement") != null) && additionalInfo.getAutoIncrement() > 0) { //$NON-NLS-1$
                     ddl.append("\nAUTO_INCREMENT=").append(additionalInfo.getAutoIncrement()); //$NON-NLS-1$

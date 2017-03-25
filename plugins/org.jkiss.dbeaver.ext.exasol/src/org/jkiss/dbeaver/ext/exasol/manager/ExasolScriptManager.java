@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import java.util.List;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolScript;
@@ -30,9 +28,9 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
 
 public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSchema> {
 
@@ -106,8 +104,8 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
     {
         if (command.getProperty("description") != null) {
             actions.add(new SQLDatabasePersistAction("Comment on Script","COMMENT ON SCRIPT " + 
-                            command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS '" +
-                            SQLUtils.escapeString(command.getObject().getDescription()) + "'"));
+                            command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " +
+                            SQLUtils.quoteString(command.getObject().getDescription())));
         }
     }
 

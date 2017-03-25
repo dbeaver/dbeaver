@@ -327,7 +327,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 "SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(owner) +
                     (object == null && objectName == null ?
                         "" :
-                        " LIKE '" + SQLUtils.escapeString(object != null ? object.getName() : objectName) + "'"));
+                        " LIKE " + SQLUtils.quoteString(object != null ? object.getName() : objectName)));
         }
 
         @Override

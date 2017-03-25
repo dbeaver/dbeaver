@@ -58,7 +58,7 @@ public class OracleSequenceManager extends SQLObjectEditor<OracleSequence, Oracl
                 }
 
                 final OracleSequence sequence = new OracleSequence(schema, page.getEntityName());
-                sequence.setIncrementBy(1l);
+                sequence.setIncrementBy(1L);
                 sequence.setMinValue(new BigDecimal(0));
                 sequence.setCycle(false);
                 return sequence;
@@ -140,7 +140,7 @@ public class OracleSequenceManager extends SQLObjectEditor<OracleSequence, Oracl
     private String buildComment(OracleSequence sequence)
     {
         if (!CommonUtils.isEmpty(sequence.getDescription())) {
-            return "COMMENT ON SEQUENCE " + sequence.getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS '" + SQLUtils.escapeString(sequence.getDescription()) + "'";
+            return "COMMENT ON SEQUENCE " + sequence.getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " + SQLUtils.quoteString(sequence.getDescription());
         }
         return null;
     }
