@@ -232,6 +232,9 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     @Override
     public boolean validate(IDocument document, int offset, DocumentEvent event)
     {
+        if (event == null) {
+            return false;
+        }
         final SQLWordPartDetector wordDetector = new SQLWordPartDetector(document, syntaxManager, offset);
         String wordPart = wordDetector.getWordPart();
         int divPos = wordPart.lastIndexOf(syntaxManager.getStructSeparator());
