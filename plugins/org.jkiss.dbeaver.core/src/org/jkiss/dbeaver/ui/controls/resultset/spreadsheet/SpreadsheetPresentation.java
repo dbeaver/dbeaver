@@ -481,11 +481,21 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
                 GridPos focusPos = spreadsheet.getFocusPos();
                 int rowNum = focusPos.row;
-                if (rowNum < 0 || rowNum >= spreadsheet.getItemCount()) {
+                if (rowNum < 0) {
                     return;
                 }
                 try (DBCSession session = DBUtils.openUtilSession(VoidProgressMonitor.INSTANCE, dataSource, "Advanced paste")) {
-                    for (String[] line : parseGridLines(strValue)) {
+
+                    String[][] newLines = parseGridLines(strValue);
+                    // Create new rows on demand
+                    while (rowNum + newLines.length > spreadsheet.getItemCount()) {
+                        controller.addNewRow(false, true);
+                    }
+                    if (rowNum < 0 || rowNum >= spreadsheet.getItemCount()) {
+                        return;
+                    }
+
+                    for (String[] line : newLines) {
                         int colNum = focusPos.col;
                         Object rowElement = spreadsheet.getRowElement(rowNum);
                         for (String value : line) {
@@ -511,6 +521,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         }
                         rowNum++;
                         if (rowNum >= spreadsheet.getItemCount()) {
+                            // Shouldn't be here
                             break;
                         }
                     }
