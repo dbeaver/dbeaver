@@ -678,6 +678,7 @@ public class ResultSetModel {
         this.updateInProgress = updateInProgress;
     }
 
+    @NotNull
     ResultSetRow addNewRow(int rowNum, @NotNull Object[] data) {
         ResultSetRow newRow = new ResultSetRow(curRows.size(), data);
         newRow.setVisualNumber(rowNum);
