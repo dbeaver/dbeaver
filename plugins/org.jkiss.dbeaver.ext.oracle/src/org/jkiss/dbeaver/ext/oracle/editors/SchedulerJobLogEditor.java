@@ -38,7 +38,7 @@ public class SchedulerJobLogEditor extends AbstractDataEditor<OracleSchedulerJob
 {
     private static final Log log = Log.getLog(SchedulerJobLogEditor.class);
 
-    private static final String LOG_VIEW_NAME = "ALL_SCHEDULER_JOB_LOG";
+    private static final String LOG_VIEW_NAME = "ALL_SCHEDULER_JOB_RUN_DETAILS";
 
     @Nullable
     @Override
