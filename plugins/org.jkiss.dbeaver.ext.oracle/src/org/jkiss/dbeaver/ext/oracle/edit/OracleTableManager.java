@@ -83,7 +83,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "COMMENT ON TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS '" + SQLUtils.escapeString(command.getObject().getComment()) + "'"));
+                    " IS " + SQLUtils.quoteString(command.getObject().getComment())));
         }
     }
 

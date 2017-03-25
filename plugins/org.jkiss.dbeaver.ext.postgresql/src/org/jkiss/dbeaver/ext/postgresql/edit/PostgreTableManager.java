@@ -89,13 +89,13 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "COMMENT ON TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS '" + SQLUtils.escapeString(command.getObject().getDescription()) + "'"));
+                    " IS " + SQLUtils.quoteString(command.getObject().getDescription())));
         }
         for (PostgreTableColumn column : command.getObject().getCachedAttributes()) {
             if (!column.isPersisted() && !CommonUtils.isEmpty(column.getDescription())) {
                 actions.add(new SQLDatabasePersistAction("Set column comment", "COMMENT ON COLUMN " +
                     DBUtils.getObjectFullName(command.getObject(), DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                    " IS '" + SQLUtils.escapeString(column.getDescription()) + "'"));
+                    " IS " + SQLUtils.quoteString(column.getDescription())));
             }
         }
     }

@@ -105,8 +105,8 @@ public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, Exaso
     {
         if (command.getProperty("description") != null) {
             actions.add(new SQLDatabasePersistAction("Comment on Script","COMMENT ON FUNCTION " + 
-                            command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS '" +
-                            SQLUtils.escapeString(command.getObject().getDescription()) + "'"));
+                            command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " +
+                            SQLUtils.quoteString(command.getObject().getDescription())));
         }
     }
 

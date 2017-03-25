@@ -18,14 +18,14 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -107,7 +107,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
             }
             String delim = hasSet ? "," : ""; //$NON-NLS-1$ //$NON-NLS-2$
             switch (UserPropertyHandler.valueOf((String) entry.getKey())) {
-                case PASSWORD: script.append(delim).append("Password=PASSWORD('").append(SQLUtils.escapeString(CommonUtils.toString(entry.getValue()))).append("')"); hasSet = true; break; //$NON-NLS-1$ //$NON-NLS-2$
+                case PASSWORD: script.append(delim).append("Password=PASSWORD(").append(SQLUtils.quoteString(CommonUtils.toString(entry.getValue()))).append(")"); hasSet = true; break; //$NON-NLS-1$ //$NON-NLS-2$
                 case MAX_QUERIES: script.append(delim).append("Max_Questions=").append(CommonUtils.toInt(entry.getValue())); hasSet = true; break; //$NON-NLS-1$
                 case MAX_UPDATES: script.append(delim).append("Max_Updates=").append(CommonUtils.toInt(entry.getValue())); hasSet = true; break; //$NON-NLS-1$
                 case MAX_CONNECTIONS: script.append(delim).append("Max_Connections=").append(CommonUtils.toInt(entry.getValue())); hasSet = true; break; //$NON-NLS-1$
@@ -124,7 +124,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
 
         script.append("ALTER USER ").append(getObject().getFullName()); //$NON-NLS-1$
         if (getProperties().containsKey(UserPropertyHandler.PASSWORD.name())) {
-            script.append("\nIDENTIFIED BY '").append(SQLUtils.escapeString(CommonUtils.toString(getProperties().get(UserPropertyHandler.PASSWORD.name())))).append("' ");
+            script.append("\nIDENTIFIED BY ").append(SQLUtils.quoteString(CommonUtils.toString(getProperties().get(UserPropertyHandler.PASSWORD.name())))).append(" ");
             hasSet = true;
         }
         StringBuilder resOptions = new StringBuilder();

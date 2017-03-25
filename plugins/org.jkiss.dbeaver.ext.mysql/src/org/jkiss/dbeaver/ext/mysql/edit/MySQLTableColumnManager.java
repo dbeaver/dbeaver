@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
@@ -102,13 +103,9 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
             decl.append(" AUTO_INCREMENT"); //$NON-NLS-1$
         }
         if (!CommonUtils.isEmpty(column.getComment())) {
-            decl.append(" COMMENT '").append(escapeComment(column.getComment())).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
+            decl.append(" COMMENT ").append(SQLUtils.quoteString(column.getComment())); //$NON-NLS-1$ //$NON-NLS-2$
         }
         return decl;
-    }
-
-    private String escapeComment(String comment) {
-        return comment.replace("'", "\\'");
     }
 
     @Override
