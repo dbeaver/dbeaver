@@ -365,15 +365,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException
     {
-        PostgrePlanAnalyser plan = new PostgrePlanAnalyser(query);
-        plan.explain(session);
+        PostgrePlanAnalyser plan = new PostgrePlanAnalyser(getPlanStyle() == DBCPlanStyle.QUERY, query);
+        if (getPlanStyle() == DBCPlanStyle.PLAN) {
+            plan.explain(session);
+        }
         return plan;
     }
 
     @NotNull
     @Override
     public DBCPlanStyle getPlanStyle() {
-        return DBCPlanStyle.PLAN;
+        return isServerVersionAtLeast(9, 0) ? DBCPlanStyle.PLAN : DBCPlanStyle.QUERY;
     }
 
     @Override

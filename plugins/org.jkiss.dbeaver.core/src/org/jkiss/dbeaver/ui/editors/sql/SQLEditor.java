@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
@@ -96,6 +97,7 @@ import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.views.SQLResultsView;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -824,6 +826,10 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
         DBCPlanStyle planStyle = planner.getPlanStyle();
+        if (planStyle == DBCPlanStyle.QUERY) {
+            explainPlanFromQuery(planner, sqlQuery);
+            return;
+        }
 
         ExplainPlanViewer planView = null;
         for (CTabItem item : resultTabs.getItems()) {
@@ -858,6 +864,25 @@ public class SQLEditor extends SQLEditorBase implements
                 CoreMessages.editors_sql_error_execution_plan_title,
                 CoreMessages.editors_sql_error_execution_plan_message,
                 e);
+        }
+    }
+
+    private void explainPlanFromQuery(final DBCQueryPlanner planner, final SQLQuery sqlQuery) {
+        final String[] planQueryString = new String[1];
+        DBRRunnableWithProgress queryObtainTask = new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Prepare plan query")) {
+                    DBCPlan plan = planner.planQueryExecution(session, sqlQuery.getQuery());
+                    planQueryString[0] = plan.getPlanQueryString();
+                } catch (Exception e) {
+                    log.error(e);
+                }
+            }
+        };
+        if (RuntimeUtils.runTask(queryObtainTask, "Retrieve plan query", 5000) && !CommonUtils.isEmpty(planQueryString[0])) {
+            SQLQuery planQuery = new SQLQuery(getDataSource(), planQueryString[0]);
+            processQueries(Collections.singletonList(planQuery), true, false, true);
         }
     }
 

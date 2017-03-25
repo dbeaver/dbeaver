@@ -42,11 +42,13 @@ public class PostgrePlanAnalyser implements DBCPlan {
 
     private static final Log log = Log.getLog(PostgrePlanAnalyser.class);
 
+    private boolean oldQuery;
     private String query;
     private List<DBCPlanNode> rootNodes;
 
-    public PostgrePlanAnalyser(String query)
+    public PostgrePlanAnalyser(boolean oldQuery, String query)
     {
+        this.oldQuery = oldQuery;
         this.query = query;
     }
 
@@ -58,7 +60,11 @@ public class PostgrePlanAnalyser implements DBCPlan {
 
     @Override
     public String getPlanQueryString() {
-        return "EXPLAIN (FORMAT XML, ANALYSE) " + query;
+        if (oldQuery) {
+            return "EXPLAIN VERBOSE " + query;
+        } else {
+            return "EXPLAIN (FORMAT XML, ANALYSE) " + query;
+        }
     }
 
     @Override

@@ -44,7 +44,7 @@ public class PostgreQueryPlaner implements DBCQueryPlanner
     @NotNull
     @Override
     public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException {
-        PostgrePlanAnalyser plan = new PostgrePlanAnalyser(query);
+        PostgrePlanAnalyser plan = new PostgrePlanAnalyser(getPlanStyle() == DBCPlanStyle.QUERY, query);
         plan.explain(session);
         return plan;
     }
@@ -52,6 +52,6 @@ public class PostgreQueryPlaner implements DBCQueryPlanner
     @NotNull
     @Override
     public DBCPlanStyle getPlanStyle() {
-        return DBCPlanStyle.PLAN;
+        return dataSource.isServerVersionAtLeast(9, 0) ? DBCPlanStyle.PLAN : DBCPlanStyle.QUERY;
     }
 }
