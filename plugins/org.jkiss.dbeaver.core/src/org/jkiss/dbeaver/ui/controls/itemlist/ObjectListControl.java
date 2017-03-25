@@ -39,9 +39,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -762,7 +760,47 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 clipboardData.addTransfer(TextTransfer.getInstance(), selectedText);
             }
         } else {
-            selectedText = getRenderer().getSelectedText();
+            IStructuredSelection selection = itemsViewer.getStructuredSelection();
+            if (selection.size() > 1) {
+                StringBuilder buf = new StringBuilder();
+                for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
+                    Object object = getObjectValue((OBJECT_TYPE) iter.next());
+
+                    ObjectColumn nameColumn = null;
+                    int columnsCount = columnController.getColumnsCount();
+                    for (int i = 0 ; i < columnsCount; i++) {
+                        ObjectColumn column = getColumnByIndex(i);
+                        if (column.isNameColumn(object)) {
+                            nameColumn = column;
+                            break;
+                        }
+                    }
+
+                    String objectName = null;
+                    if (nameColumn != null) {
+                        try {
+                            ObjectPropertyDescriptor nameProperty = nameColumn.getProperty(object);
+                            if (nameProperty != null) {
+                                objectName = CommonUtils.toString(nameProperty.readValue(object, null));
+                            }
+                        } catch (Throwable e) {
+                            log.debug(e);
+                        }
+                    }
+                    if (objectName == null) {
+                        if (object instanceof DBPNamedObject) {
+                            objectName = ((DBPNamedObject) object).getName();
+                        } else {
+                            objectName = DBValueFormatting.getDefaultValueDisplayString(object, DBDDisplayFormat.UI);
+                        }
+                    }
+                    if (buf.length() > 0) buf.append("\n");
+                    buf.append(objectName);
+                }
+                selectedText = buf.toString();
+            } else {
+                selectedText = getRenderer().getSelectedText();
+            }
         }
         if (!CommonUtils.isEmpty(selectedText)) {
             clipboardData.addTransfer(TextTransfer.getInstance(), selectedText);
