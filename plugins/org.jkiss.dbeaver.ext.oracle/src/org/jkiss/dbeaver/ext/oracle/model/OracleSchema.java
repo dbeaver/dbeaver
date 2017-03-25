@@ -66,6 +66,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     final public DBLinkCache dbLinkCache = new DBLinkCache();
     final public ProceduresCache proceduresCache = new ProceduresCache();
     final public JavaCache javaCache = new JavaCache();
+    final public SchedulerJobCache schedulerJobCache = new SchedulerJobCache();
     final public RecycleBin recycleBin = new RecycleBin();
 
     private long id;
@@ -263,6 +264,13 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Association
+    public Collection<OracleSchedulerJob> getSchedulerJobs(DBRProgressMonitor monitor)
+            throws DBException
+    {
+        return schedulerJobCache.getAllObjects(monitor, this);
+    }
+
+    @Association
     public Collection<OracleRecycledObject> getRecycledObjects(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -334,7 +342,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         dataTypeCache.clearCache();
         sequenceCache.clearCache();
         synonymCache.clearCache();
-        javaCache.clearCache();
+        schedulerJobCache.clearCache();
         recycleBin.clearCache();
         return this;
     }
@@ -858,6 +866,27 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException, DBException
         {
             return new OracleJavaClass(owner, dbResult);
+        }
+
+    }
+
+    static class SchedulerJobCache extends JDBCObjectCache<OracleSchema, OracleSchedulerJob> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner)
+                throws SQLException
+        {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT * FROM SYS.ALL_SCHEDULER_JOBS WHERE OWNER=? ");
+            dbStat.setString(1, owner.getName());
+            return dbStat;
+        }
+
+        @Override
+        protected OracleSchedulerJob fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
+                throws SQLException, DBException
+        {
+            return new OracleSchedulerJob(owner, dbResult);
         }
 
     }
