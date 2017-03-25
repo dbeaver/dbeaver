@@ -72,6 +72,11 @@ public class DB2PlanAnalyser implements DBCPlan {
     }
 
     @Override
+    public String getPlanQueryString() {
+        return String.format(PT_EXPLAIN, STMT_NO_GEN.get(), query);
+    }
+
+    @Override
     public Collection<? extends DBCPlanNode> getPlanNodes()
     {
         return listNodes;
@@ -94,7 +99,7 @@ public class DB2PlanAnalyser implements DBCPlan {
             cleanExplainTables(session, stmtNo, planTableSchema);
 
             // Explain
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(String.format(PT_EXPLAIN, stmtNo, query))) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(explainStmt)) {
                 dbStat.execute();
             }
 

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
@@ -437,11 +438,18 @@ public class OracleDataSource extends JDBCDataSource
         }
     }
 
+    @NotNull
     @Override
-    public DBCPlan planQueryExecution(DBCSession session, String query) throws DBCException {
-        OraclePlanAnalyser plan = new OraclePlanAnalyser(this, query);
-        plan.explain((JDBCSession) session);
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBException {
+        OraclePlanAnalyser plan = new OraclePlanAnalyser(this, (JDBCSession) session, query);
+        plan.explain();
         return plan;
+    }
+
+    @NotNull
+    @Override
+    public DBCPlanStyle getPlanStyle() {
+        return DBCPlanStyle.PLAN;
     }
 
     @Nullable
@@ -504,7 +512,8 @@ public class OracleDataSource extends JDBCDataSource
 
     @Nullable
     public String getPlanTableName(JDBCSession session)
-        throws SQLException {
+        throws DBException
+    {
         if (planTableName == null) {
             String[] candidateNames;
             String tableName = getContainer().getPreferenceStore().getString(OracleConstants.PREF_EXPLAIN_TABLE_NAME);
@@ -538,8 +547,12 @@ public class OracleDataSource extends JDBCDataSource
         return planTableName;
     }
 
-    private String createPlanTable(JDBCSession session, String tableName) throws SQLException {
-        JDBCUtils.executeSQL(session, OracleConstants.PLAN_TABLE_DEFINITION.replace("${TABLE_NAME}", tableName));
+    private String createPlanTable(JDBCSession session, String tableName) throws DBException {
+        try {
+            JDBCUtils.executeSQL(session, OracleConstants.PLAN_TABLE_DEFINITION.replace("${TABLE_NAME}", tableName));
+        } catch (SQLException e) {
+            throw new DBException("Error creating PLAN table", e, this);
+        }
         return tableName;
     }
 

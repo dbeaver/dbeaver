@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 
 /**
@@ -39,10 +41,17 @@ public class PostgreQueryPlaner implements DBCQueryPlanner
         return dataSource;
     }
 
+    @NotNull
     @Override
-    public DBCPlan planQueryExecution(DBCSession session, String query) throws DBCException {
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException {
         PostgrePlanAnalyser plan = new PostgrePlanAnalyser(query);
         plan.explain(session);
         return plan;
+    }
+
+    @NotNull
+    @Override
+    public DBCPlanStyle getPlanStyle() {
+        return DBCPlanStyle.PLAN;
     }
 }

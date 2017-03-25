@@ -54,6 +54,11 @@ public class ExasolPlanAnalyser implements DBCPlan {
     }
 
     @Override
+    public String getPlanQueryString() {
+        return "SELECT * FROM EXA_USER_PROFILE_LAST_DAY WHERE SESSION_ID = CURRENT_SESSION AND STMT_ID = (select max(stmt_id) from EXA_USER_PROFILE_LAST_DAY where sql_text = ?)";
+    }
+
+    @Override
     public Collection<ExasolPlanNode> getPlanNodes() {
         return rootNodes;
     }
@@ -85,7 +90,7 @@ public class ExasolPlanAnalyser implements DBCPlan {
             connection.commit();
 
             //retrieve execute info
-            try (JDBCPreparedStatement stmt = connection.prepareStatement("SELECT * FROM EXA_USER_PROFILE_LAST_DAY WHERE SESSION_ID = CURRENT_SESSION AND STMT_ID = (select max(stmt_id) from EXA_USER_PROFILE_LAST_DAY where sql_text = ?)")) {
+            try (JDBCPreparedStatement stmt = connection.prepareStatement(getPlanQueryString())) {
 	            stmt.setString(1, query);
 	            try (JDBCResultSet dbResult = stmt.executeQuery()) {
 		            while (dbResult.next()) {

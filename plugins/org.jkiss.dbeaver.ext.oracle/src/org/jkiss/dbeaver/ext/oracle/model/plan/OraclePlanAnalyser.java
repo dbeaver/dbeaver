@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model.plan;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -36,12 +37,16 @@ import java.util.List;
 public class OraclePlanAnalyser implements DBCPlan {
 
     private OracleDataSource dataSource;
+    private JDBCSession session;
     private String query;
     private List<OraclePlanNode> rootNodes;
+    private String planStmtId;
+    private String planTableName;
 
-    public OraclePlanAnalyser(OracleDataSource dataSource, String query)
+    public OraclePlanAnalyser(OracleDataSource dataSource, JDBCSession session, String query)
     {
         this.dataSource = dataSource;
+        this.session = session;
         this.query = query;
     }
 
@@ -52,21 +57,36 @@ public class OraclePlanAnalyser implements DBCPlan {
     }
 
     @Override
+    public String getPlanQueryString() throws DBException {
+        if (planTableName == null) {
+            // Detect plan table
+            planTableName = dataSource.getPlanTableName(session);
+            if (planTableName == null) {
+                throw new DBCException("Plan table not found - query can't be explained");
+            }
+        }
+
+        if (planStmtId == null) {
+            planStmtId = SecurityUtils.generateUniqueId();
+        }
+
+        return "EXPLAIN PLAN " + "\n" +
+                "SET STATEMENT_ID = '" + planStmtId + "'\n" +
+                "INTO " + planTableName + "\n" +
+                "FOR " + query;
+    }
+
+    @Override
     public Collection<OraclePlanNode> getPlanNodes()
     {
         return rootNodes;
     }
 
-    public void explain(JDBCSession session)
-        throws DBCException
+    public void explain()
+        throws DBException
     {
-        String planStmtId = SecurityUtils.generateUniqueId();
+        String planQuery = getPlanQueryString();
         try {
-            // Detect plan table
-            String planTableName = dataSource.getPlanTableName(session);
-            if (planTableName == null) {
-                throw new DBCException("Plan table not found - query can't be explained");
-            }
 
             // Delete previous statement rows
             // (actually there should be no statement with this id -
@@ -82,13 +102,7 @@ public class OraclePlanAnalyser implements DBCPlan {
             }
 
             // Explain plan
-            StringBuilder explainSQL = new StringBuilder();
-            explainSQL
-                .append("EXPLAIN PLAN ").append("\n")
-                .append("SET STATEMENT_ID = '").append(planStmtId).append("'\n")
-                .append("INTO ").append(planTableName).append("\n")
-                .append("FOR ").append(query);
-            dbStat = session.prepareStatement(explainSQL.toString());
+            dbStat = session.prepareStatement(planQuery);
             try {
                 dbStat.execute();
             } finally {
