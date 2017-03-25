@@ -73,6 +73,14 @@ public class SchedulerJobLogEditor extends AbstractDataEditor<OracleSchedulerJob
                 ac.setValue(job.getName());
                 constraints.add(ac);
             }
+            OracleTableColumn logDateAttr = logView.getAttribute(monitor, "LOG_DATE");
+            if (logDateAttr != null) {
+                DBDAttributeConstraint ac = new DBDAttributeConstraint(logDateAttr, logDateAttr.getOrdinalPosition());
+                ac.setOrderPosition(1);
+                ac.setOrderDescending(true);
+                ac.setVisible(true);
+                constraints.add(ac);
+            }
         } catch (DBException e) {
             log.error(e);
         }
