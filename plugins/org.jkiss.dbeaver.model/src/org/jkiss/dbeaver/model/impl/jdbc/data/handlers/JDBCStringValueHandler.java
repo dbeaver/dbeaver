@@ -84,7 +84,6 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
             // Special workaround for #798 - convert array to string (weird stuff)
             return GeneralUtils.makeDisplayString(object);
         } else {
-            log.debug("Unrecognized type '" + object.getClass().getName() + "' - can't convert to string");
             return object.toString();
         }
     }
