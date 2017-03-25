@@ -23,11 +23,16 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.contexts.IContextActivation;
+import org.eclipse.ui.contexts.IContextService;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -41,6 +46,7 @@ import java.util.List;
 public abstract class AbstractPresentation implements IResultSetPresentation, ISelectionProvider {
 
     private static final String PRESENTATION_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.presentation";
+    public static final String RESULTS_CONTROL_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset.focused";
     public static final StructuredSelection EMPTY_SELECTION = new StructuredSelection();
 
     @NotNull
@@ -144,6 +150,21 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         final Control control = getControl();
         final IWorkbenchPartSite site = controller.getSite();
         UIUtils.addFocusTracker(site, PRESENTATION_CONTROL_ID, control);
+
+        final IContextService contextService = PlatformUI.getWorkbench().getService(IContextService.class);
+        if (contextService != null) {
+            control.addFocusListener(new FocusListener() {
+                IContextActivation activation;
+                @Override
+                public void focusGained(FocusEvent e) {
+                    activation = contextService.activateContext(RESULTS_CONTROL_CONTEXT_ID);
+                }
+                @Override
+                public void focusLost(FocusEvent e) {
+                    contextService.deactivateContext(activation);
+                }
+            });
+        }
         control.addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e) {

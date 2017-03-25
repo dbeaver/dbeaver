@@ -105,10 +105,7 @@ public class ResultSetPropertyTester extends PropertyTester
             case PROP_CHANGED:
                 return rsv.isDirty();
             case PROP_CAN_TOGGLE:
-                return
-                    !actionsDisabled &&
-                        !rsv.getActivePresentation().getControl().isDisposed() &&
-                        rsv.getActivePresentation().getControl().isFocusControl();
+                return !actionsDisabled && rsv.isPresentationInFocus();
             case PROP_CAN_SWITCH_PRESENTATION:
                 return
                     !actionsDisabled &&
