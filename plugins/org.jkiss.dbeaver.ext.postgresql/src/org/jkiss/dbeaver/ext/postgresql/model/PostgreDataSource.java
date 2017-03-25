@@ -244,7 +244,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public PostgreDatabase getDefaultObject()
     {
-        return getDatabase(activeDatabaseName);
+        return activeDatabaseName == null ? null : getDatabase(activeDatabaseName);
     }
 
     @Override
