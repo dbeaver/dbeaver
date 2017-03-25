@@ -154,7 +154,7 @@
                         </folder-->
                         <folder label="%tree.scheduler.node.name" icon="#scheduler_folder" description="Scheduler objects">
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob" label="%tree.scheduler.jobs.node.name" icon="#scheduler_job_folder" description="Scheduler job">
-                                <items label="%tree.scheduler.job.node.name" path="schedulerJob" property="schedulerJobs" icon="#scheduler_job"/>
+                                <items label="%tree.scheduler.job.node.name" path="schedulerJob" property="schedulerJobs" icon="icons/scheduled_job.png"/>
                             </folder>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="%tree.recycle_bin.node.name" icon="#recycle_bin" description="Recycle Bin" visibleIf="object.dataSource.adminVisible &amp;&amp; object.dataSource.isAtLeastV10()">
@@ -310,6 +310,17 @@
             contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
         </editor>
+        <editor
+                id="org.jkiss.dbeaver.ext.oracle.editors.SchedulerJobLogEditor"
+                class="org.jkiss.dbeaver.ext.oracle.editors.SchedulerJobLogEditor"
+                objectType="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"
+                main="false"
+                label="%editor.scheduler.job.log.name"
+                description="%editor.scheduler.job.log.description"
+                position="additions_start"
+                icon="icons/job_log.png">
+        </editor>
+
         <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleDataTypeManager"
             objectType="org.jkiss.dbeaver.ext.oracle.model.OracleDataType"/>

@@ -32,6 +32,7 @@ public class OracleSchedulerJob extends OracleSchemaObject {
     private static final String CAT_EVENTS = "Events";
     private static final String CAT_ADVANCED = "Advanced";
 
+    private String owner;
     private String jobSubName;
     private String jobStyle;
     private String jobCreator;
@@ -94,6 +95,7 @@ public class OracleSchedulerJob extends OracleSchemaObject {
     protected OracleSchedulerJob(OracleSchema schema, ResultSet dbResult) {
         super(schema, JDBCUtils.safeGetString(dbResult, "JOB_NAME"), true);
 
+        owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         jobSubName = JDBCUtils.safeGetString(dbResult, "JOB_SUBNAME");
         jobStyle = JDBCUtils.safeGetString(dbResult, "JOB_STYLE");
         jobCreator = JDBCUtils.safeGetString(dbResult, "JOB_CREATOR");
@@ -150,6 +152,11 @@ public class OracleSchedulerJob extends OracleSchemaObject {
         deferredDrop = JDBCUtils.safeGetString(dbResult, "DEFERRED_DROP");
         allowRunsInRestrictedMode = JDBCUtils.safeGetString(dbResult, "ALLOW_RUNS_IN_RESTRICTED_MODE");
         comments = JDBCUtils.safeGetString(dbResult, "COMMENTS");
+    }
+
+    @Property(viewable = true, order = 9)
+    public String getOwner() {
+        return owner;
     }
 
     @Property(viewable = true, order = 10)
