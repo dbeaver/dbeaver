@@ -182,11 +182,11 @@ public class RuntimeUtils {
 
     public static File getLocalFileFromURL(URL fileURL) throws IOException {
         // Escape spaces to avoid URI syntax error
-        String filePath = fileURL.toString().replace(" ", "%20");
         try {
-            return new File(new URI(filePath));
+            URI filePath = GeneralUtils.makeURIFromFilePath(fileURL.toString());
+            return new File(filePath);
         } catch (URISyntaxException e) {
-            throw new IOException("Bad local file path: " + filePath, e);
+            throw new IOException("Bad local file path: " + fileURL, e);
         }
     }
 

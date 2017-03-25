@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -163,8 +164,8 @@ public class DBIcon implements DBPImage
                 }
                 URL fileURL = FileLocator.toFileURL(new URL(icon.path));
                 try {
-                    String filePath = fileURL.toString().replace(" ", "%20");
-                    File file = new File(new URI(filePath));
+                    URI filePath = GeneralUtils.makeURIFromFilePath(fileURL.toString());
+                    File file = new File(filePath);
                     if (!file.exists()) {
                         log.warn("Bad image '" + icon.getToken() + "' location: " + icon.getLocation());
                         continue;
