@@ -30,13 +30,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgrePermission;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgrePermissionsOwner;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
@@ -57,8 +57,6 @@ import java.util.List;
  */
 public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<PostgrePermissionsOwner>
 {
-    private static final Log log = Log.getLog(PostgresRolePrivilegesEditor.class);
-
     private PageControl pageControl;
 
     private Font boldFont;
@@ -147,7 +145,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     }
 
     private class PageControl extends DatabaseObjectListControl<PostgrePermission> {
-        public PageControl(Composite parent) {
+        PageControl(Composite parent) {
             super(parent, SWT.SHEET, getSite(), new PermissionsContentProvider());
 
         }
@@ -185,7 +183,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         }
 
         private class PermissionLoadService extends DatabaseLoadService<Collection<PostgrePermission>> {
-            public PermissionLoadService() {
+            PermissionLoadService() {
                 super("Load privileges", getExecutionContext());
             }
 

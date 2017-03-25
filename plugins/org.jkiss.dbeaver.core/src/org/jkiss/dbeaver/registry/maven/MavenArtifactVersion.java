@@ -203,7 +203,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     private File getLocalPOM() {
         if (artifact.getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
             try {
-                return new File(new URI(getRemotePOMLocation()));
+                return new File(GeneralUtils.makeURIFromFilePath(getRemotePOMLocation()));
             } catch (URISyntaxException e) {
                 log.warn(e);
             }

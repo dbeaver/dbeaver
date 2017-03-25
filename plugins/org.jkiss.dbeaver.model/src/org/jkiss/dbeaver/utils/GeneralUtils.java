@@ -32,6 +32,8 @@ import org.osgi.framework.Version;
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.NumberFormat;
@@ -509,6 +511,11 @@ public class GeneralUtils {
 
     public static File getMetadataFolder(File workspaceFolder) {
         return new File(workspaceFolder, METADATA_FOLDER);
+    }
+
+    @NotNull
+    public static URI makeURIFromFilePath(@NotNull String path) throws URISyntaxException {
+        return new URI(path.replace(" ", "%20"));
     }
 
 }
