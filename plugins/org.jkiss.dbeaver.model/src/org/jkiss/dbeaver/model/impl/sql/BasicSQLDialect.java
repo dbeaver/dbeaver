@@ -43,23 +43,26 @@ public class BasicSQLDialect implements SQLDialect {
     private static final String[] DEFAULT_LINE_COMMENTS = {SQLConstants.SL_COMMENT};
     private static final String[] EXEC_KEYWORDS = new String[0];
 
-    public static final String[][] DEFAULT_BEGIN_END_BLOCK = new String[][]{
+    private static final String[][] DEFAULT_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END}
     };
-    public static final String[] NON_TRANSACTIONAL_KEYWORDS = new String[]{
+    protected static final String[] NON_TRANSACTIONAL_KEYWORDS = new String[]{
         SQLConstants.KEYWORD_SELECT,
         "WITH", "EXPLAIN", "DESCRIBE", "DESC", "USE", "SET"};
+    private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
+            SQLConstants.KEYWORD_SELECT,
+            };
 
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
 
-    protected final TreeSet<String> reservedWords = new TreeSet<>();
+    private final TreeSet<String> reservedWords = new TreeSet<>();
     private final TreeSet<String> functions = new TreeSet<>();
     protected final TreeSet<String> types = new TreeSet<>();
     protected final TreeSet<String> tableQueryWords = new TreeSet<>();
-    protected final TreeSet<String> columnQueryWords = new TreeSet<>();
+    private final TreeSet<String> columnQueryWords = new TreeSet<>();
     // Comments
-    protected Pair<String, String> multiLineComments = new Pair<>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
+    private Pair<String, String> multiLineComments = new Pair<>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
 
     public static final BasicSQLDialect INSTANCE = new BasicSQLDialect();
 
@@ -87,13 +90,13 @@ public class BasicSQLDialect implements SQLDialect {
         return EXEC_KEYWORDS;
     }
 
-    public void addSQLKeyword(String keyword)
+    protected void addSQLKeyword(String keyword)
     {
         reservedWords.add(keyword);
         allKeywords.put(keyword, DBPKeywordType.KEYWORD);
     }
 
-    public void removeSQLKeyword(String keyword)
+    protected void removeSQLKeyword(String keyword)
     {
         reservedWords.remove(keyword);
         allKeywords.remove(keyword);
@@ -116,7 +119,7 @@ public class BasicSQLDialect implements SQLDialect {
      * @param set     keywords. Must be in upper case.
      * @param type    keyword type
      */
-    public void addKeywords(Collection<String> set, DBPKeywordType type)
+    protected void addKeywords(Collection<String> set, DBPKeywordType type)
     {
         if (set != null) {
             for (String keyword : set) {
@@ -401,7 +404,7 @@ public class BasicSQLDialect implements SQLDialect {
 
     @NotNull
     protected String[] getNonTransactionKeywords() {
-        return NON_TRANSACTIONAL_KEYWORDS;
+        return isStandardSQL() ? NON_TRANSACTIONAL_KEYWORDS : CORE_NON_TRANSACTIONAL_KEYWORDS;
     }
 
     @Override
@@ -413,7 +416,7 @@ public class BasicSQLDialect implements SQLDialect {
         return true;
     }
 
-    protected void loadStandardKeywords()
+    private void loadStandardKeywords()
     {
         // Add default set of keywords
         Set<String> all = new HashSet<>();
