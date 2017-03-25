@@ -48,7 +48,7 @@ public class BasicSQLDialect implements SQLDialect {
     };
     public static final String[] NON_TRANSACTIONAL_KEYWORDS = new String[]{
         SQLConstants.KEYWORD_SELECT,
-        "WITH", "EXPLAIN", "DESCRIBE", "DESC"};
+        "WITH", "EXPLAIN", "DESCRIBE", "DESC", "USE", "SET"};
 
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
