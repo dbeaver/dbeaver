@@ -2485,7 +2485,8 @@ public class ResultSetViewer extends Viewer
         return new ResultSetPersister(this);
     }
 
-    void addNewRow(final boolean copyCurrent, boolean afterCurrent)
+    @NotNull
+    public ResultSetRow addNewRow(final boolean copyCurrent, boolean afterCurrent)
     {
         int rowNum = curRow == null ? 0 : curRow.getVisualNumber();
         if (rowNum >= model.getRowCount()) {
@@ -2497,7 +2498,7 @@ public class ResultSetViewer extends Viewer
 
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null) {
-            return;
+            return null;
         }
 
         // Add new row
@@ -2564,6 +2565,8 @@ public class ResultSetViewer extends Viewer
         redrawData(false, true);
         updateEditControls();
         fireResultSetChange();
+
+        return curRow;
     }
 
     void deleteSelectedRows()
