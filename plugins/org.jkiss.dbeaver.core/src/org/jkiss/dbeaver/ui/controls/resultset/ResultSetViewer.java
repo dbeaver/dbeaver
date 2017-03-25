@@ -918,6 +918,11 @@ public class ResultSetViewer extends Viewer
         });
     }
 
+    public boolean isPresentationInFocus() {
+        Control activeControl = getActivePresentation().getControl();
+        return !activeControl.isDisposed() && activeControl.isFocusControl();
+    }
+
     private boolean checkDoubleLock(Control lockedBy) {
         if (actionsDisabled) {
             log.debug("Internal error: actions double-lock by [" + lockedBy + "]");
