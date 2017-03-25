@@ -36,6 +36,7 @@ import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
@@ -110,7 +111,6 @@ public class ResultSetCommandHandler extends AbstractHandler {
         if (rsv == null) {
             return null;
         }
-        boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event)event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);
         String actionId = event.getCommand().getId();
         IResultSetPresentation presentation = rsv.getActivePresentation();
         switch (actionId) {
@@ -162,10 +162,12 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 }
                 break;
             case CMD_ROW_ADD:
-                rsv.addNewRow(false, shiftPressed);
-                break;
             case CMD_ROW_COPY:
-                rsv.addNewRow(true, shiftPressed);
+                boolean copy = actionId.equals(CMD_ROW_COPY);
+                boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event)event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);
+                boolean insertAfter = rsv.getPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER);
+                if (shiftPressed) insertAfter = !insertAfter;
+                rsv.addNewRow(copy, insertAfter);
                 break;
             case CMD_ROW_DELETE:
             case IWorkbenchCommandConstants.EDIT_DELETE:
