@@ -56,6 +56,8 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
@@ -813,12 +815,16 @@ public class SQLEditor extends SQLEditorBase implements
         explainQueryPlan(sqlQuery);
     }
 
-    public void explainQueryPlan(SQLQuery sqlQuery)
+    private void explainQueryPlan(SQLQuery sqlQuery)
     {
-//        final CTabItem planItem = UIUtils.getTabItem(resultTabs, planView);
-//        if (planItem != null) {
-//            resultTabs.setSelection(planItem);
-//        }
+        // 1. Determine whether planner supports plan extraction
+        DBCQueryPlanner planner = DBUtils.getAdapter(DBCQueryPlanner.class, getDataSource());
+        if (planner == null) {
+            UIUtils.showErrorDialog(getSite().getShell(), "Execution plan", "Execution plan explain isn't supported by current datasource");
+            return;
+        }
+        DBCPlanStyle planStyle = planner.getPlanStyle();
+
         ExplainPlanViewer planView = null;
         for (CTabItem item : resultTabs.getItems()) {
             if (item.getData() instanceof ExplainPlanViewer) {

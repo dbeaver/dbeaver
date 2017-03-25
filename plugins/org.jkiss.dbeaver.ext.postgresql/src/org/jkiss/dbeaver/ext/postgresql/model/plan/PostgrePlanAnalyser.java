@@ -57,6 +57,11 @@ public class PostgrePlanAnalyser implements DBCPlan {
     }
 
     @Override
+    public String getPlanQueryString() {
+        return "EXPLAIN (FORMAT XML, ANALYSE) " + query;
+    }
+
+    @Override
     public Collection<DBCPlanNode> getPlanNodes()
     {
         return rootNodes;
@@ -72,7 +77,7 @@ public class PostgrePlanAnalyser implements DBCPlan {
             if (oldAutoCommit) {
                 connection.setAutoCommit(false);
             }
-            try (JDBCPreparedStatement dbStat = connection.prepareStatement("EXPLAIN (FORMAT XML, ANALYSE) " + query)) {
+            try (JDBCPreparedStatement dbStat = connection.prepareStatement(getPlanQueryString())) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         SQLXML planXML = dbResult.getSQLXML(1);

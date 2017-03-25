@@ -17,8 +17,9 @@
 
 package org.jkiss.dbeaver.model.exec.plan;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 
 /**
@@ -28,7 +29,10 @@ public interface DBCQueryPlanner {
 
     DBPDataSource getDataSource();
 
-    DBCPlan planQueryExecution(DBCSession session, String query)
-        throws DBCException;
+    @NotNull
+    DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query)
+        throws DBException;
 
+    @NotNull
+    DBCPlanStyle getPlanStyle();
 }

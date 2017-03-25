@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -445,8 +446,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     // Plan Tables
     // --------------
 
+    @NotNull
     @Override
-    public DBCPlan planQueryExecution(DBCSession session, String query) throws DBCException
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException
     {
         String ptSchemaname = getExplainTablesSchemaName(session);
         if (ptSchemaname == null) {
@@ -455,6 +457,12 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         DB2PlanAnalyser plan = new DB2PlanAnalyser(query, ptSchemaname);
         plan.explain((JDBCSession) session);
         return plan;
+    }
+
+    @NotNull
+    @Override
+    public DBCPlanStyle getPlanStyle() {
+        return DBCPlanStyle.PLAN;
     }
 
     private String getExplainTablesSchemaName(DBCSession session) throws DBCException

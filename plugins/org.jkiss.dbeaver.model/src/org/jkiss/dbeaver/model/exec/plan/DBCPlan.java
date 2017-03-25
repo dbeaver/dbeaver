@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.exec.plan;
 
+import org.jkiss.dbeaver.DBException;
+
 import java.util.Collection;
 
 /**
@@ -25,6 +27,8 @@ import java.util.Collection;
 public interface DBCPlan {
 
     String getQueryString();
+
+    String getPlanQueryString() throws DBException;
 
     Collection<? extends DBCPlanNode> getPlanNodes();
 

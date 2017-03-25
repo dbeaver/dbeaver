@@ -53,6 +53,11 @@ public class MySQLPlanAnalyser implements DBCPlan {
     }
 
     @Override
+    public String getPlanQueryString() {
+        return "EXPLAIN EXTENDED " + query;
+    }
+
+    @Override
     public Collection<DBCPlanNode> getPlanNodes()
     {
         return rootNodes;
@@ -67,7 +72,7 @@ public class MySQLPlanAnalyser implements DBCPlan {
         }
         JDBCSession connection = (JDBCSession) session;
         try {
-            try (JDBCPreparedStatement dbStat = connection.prepareStatement("EXPLAIN EXTENDED " + query)) {
+            try (JDBCPreparedStatement dbStat = connection.prepareStatement(getPlanQueryString())) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     rootNodes = new ArrayList<>();
                     while (dbResult.next()) {
