@@ -215,11 +215,19 @@ class SQLTokensParser {
             if (fChar == '\'' || fChar == '\"' || (quoteSymbol != null && !quoteSymbol.isEmpty() && fChar == quoteSymbol.charAt(0))) {
                 fPos++;
                 char quoteChar = fChar;
-                StringBuilder s = new StringBuilder(String.valueOf(quoteChar));
+                StringBuilder s = new StringBuilder();
+                s.append(quoteChar);
                 for (;;) {
                     fChar = fBefore.charAt(fPos);
                     s.append(fChar);
                     fPos++;
+                    char fNextChar = fPos >= fBefore.length() - 1 ? 0 : fBefore.charAt(fPos);
+                    if (fChar == quoteChar && fNextChar == quoteChar) {
+                        // Escaped quote
+                        s.append(fChar);
+                        fPos++;
+                        continue;
+                    }
                     if (fChar == quoteChar) {
                         return new FormatterToken(TokenType.VALUE, s.toString(), start_pos);
                     }
