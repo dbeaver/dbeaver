@@ -21,11 +21,14 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IFontProvider;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.*;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -38,19 +41,22 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * TabbedFolderPageProperties
  */
 public class TabbedFolderPageProperties extends TabbedFolderPage implements ILazyPropertyLoadListener, IRefreshablePart, DBPEventListener {
 
+    protected IWorkbenchPart part;
     protected IDatabaseEditorInput input;
 	protected PropertyTreeViewer propertyTree;
     private Font boldFont;
     private UIJob refreshJob = null;
     private DBPPropertySource curPropertySource;
 
-    public TabbedFolderPageProperties(IDatabaseEditorInput input) {
+    public TabbedFolderPageProperties(IWorkbenchPart part, IDatabaseEditorInput input) {
+        this.part = part;
         this.input = input;
     }
 
@@ -62,6 +68,33 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements ILaz
 		propertyTree = new PropertyTreeViewer(parent, SWT.NONE);
         propertyTree.setExtraLabelProvider(new PropertyLabelProvider());
         propertyTree.setExpandMode(PropertyTreeViewer.ExpandMode.FIRST);
+        propertyTree.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                IWorkbenchPartSite site = part.getSite();
+                IActionBars actionBars = null;
+                if (site instanceof IEditorSite) {
+                    actionBars = ((IEditorSite) site).getActionBars();
+                } else if (site instanceof IViewSite) {
+                    actionBars = ((IViewSite) site).getActionBars();
+                }
+                if (actionBars != null) {
+                    String statusText = null;
+                    Object selection = propertyTree.getStructuredSelection().getFirstElement();
+                    DBPPropertyDescriptor prop = propertyTree.getPropertyFromElement(selection);
+                    if (prop != null) {
+                        statusText = prop.getDescription();
+                        if (CommonUtils.isEmpty(statusText)) {
+                            statusText = prop.getDisplayName();
+                        }
+                    }
+                    if (CommonUtils.isEmpty(statusText)) {
+                        statusText = CommonUtils.toString(selection);
+                    }
+                    actionBars.getStatusLineManager().setMessage(CommonUtils.notEmpty(statusText));
+                }
+            }
+        });
         PropertiesContributor.getInstance().addLazyListener(this);
 
         curPropertySource = input.getPropertySource();

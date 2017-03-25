@@ -126,7 +126,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     @Override
     public String getDescription()
     {
-        return null;
+        return getComment();
     }
 
     @NotNull

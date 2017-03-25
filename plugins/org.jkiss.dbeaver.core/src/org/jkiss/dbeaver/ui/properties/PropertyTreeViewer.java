@@ -553,6 +553,13 @@ public class PropertyTreeViewer extends TreeViewer {
 
     }
 
+    public DBPPropertyDescriptor getPropertyFromElement(Object element) {
+        if (element instanceof TreeNode) {
+            return ((TreeNode) element).property;
+        }
+        return null;
+    }
+
     private Object getPropertyValue(TreeNode prop)
     {
         if (prop.category != null) {
