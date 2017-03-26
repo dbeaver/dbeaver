@@ -26,30 +26,29 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import java.sql.ResultSet;
 
 /**
- * OracleSchedulerProgramArgument
+ * OracleSchedulerJobArgument
  */
-public class OracleSchedulerProgramArgument implements DBSParameter
+public class OracleSchedulerJobArgument implements DBSParameter
 {
-    private final OracleSchedulerProgram program;
+    private final OracleSchedulerJob job;
     private String name;
     private int position;
     private final String type;
     private String metadataAttribute;
-    private String defaultValue;
-    private String defaultAnyDataValue;
+    private String value;
+    private String anyDataValue;
     private String outArgument;
 
-    public OracleSchedulerProgramArgument(
-        OracleSchedulerProgram program,
+    public OracleSchedulerJobArgument(
+        OracleSchedulerJob job,
         ResultSet dbResult)
     {
-        this.program = program;
+        this.job = job;
         this.name = JDBCUtils.safeGetString(dbResult, "ARGUMENT_NAME");
         this.position = JDBCUtils.safeGetInt(dbResult, "ARGUMENT_POSITION");
         this.type = JDBCUtils.safeGetString(dbResult, "ARGUMENT_TYPE");
-        this.metadataAttribute = JDBCUtils.safeGetString(dbResult, "METADATA_ATTRIBUTE");
-        this.defaultValue = JDBCUtils.safeGetString(dbResult, "DEFAULT_VALUE");
-        this.defaultAnyDataValue = JDBCUtils.safeGetString(dbResult, "DEFAULT_ANYDATA_VALUE");
+        this.value = JDBCUtils.safeGetString(dbResult, "VALUE");
+        this.anyDataValue = JDBCUtils.safeGetString(dbResult, "ANYDATA_VALUE");
         this.outArgument = JDBCUtils.safeGetString(dbResult, "OUT_ARGUMENT");
     }
 
@@ -64,13 +63,13 @@ public class OracleSchedulerProgramArgument implements DBSParameter
     @Override
     public OracleDataSource getDataSource()
     {
-        return program.getDataSource();
+        return job.getDataSource();
     }
 
     @Override
-    public OracleSchedulerProgram getParentObject()
+    public OracleSchedulerJob getParentObject()
     {
-        return program;
+        return job;
     }
 
     @Override
@@ -103,13 +102,13 @@ public class OracleSchedulerProgramArgument implements DBSParameter
     }
 
     @Property(viewable = true, order = 14)
-    public String getDefaultValue() {
-        return defaultValue;
+    public String getValue() {
+        return value;
     }
 
     @Property(viewable = true, order = 15)
-    public String getDefaultAnyDataValue() {
-        return defaultAnyDataValue;
+    public String getAnyDataValue() {
+        return anyDataValue;
     }
 
     @Property(viewable = true, order = 16)
