@@ -883,7 +883,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM SYS.ALL_SCHEDULER_JOBS WHERE OWNER=? ");
+                    "SELECT * FROM SYS.ALL_SCHEDULER_JOBS WHERE OWNER=? ORDER BY JOB_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
@@ -904,7 +904,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM SYS.ALL_SCHEDULER_PROGRAMS WHERE OWNER=? ");
+                    "SELECT * FROM SYS.ALL_SCHEDULER_PROGRAMS WHERE OWNER=? ORDER BY PROGRAM_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
