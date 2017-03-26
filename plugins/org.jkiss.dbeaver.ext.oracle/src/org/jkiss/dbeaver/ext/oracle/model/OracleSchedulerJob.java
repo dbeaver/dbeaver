@@ -154,7 +154,7 @@ public class OracleSchedulerJob extends OracleSchemaObject {
         comments = JDBCUtils.safeGetString(dbResult, "COMMENTS");
     }
 
-    @Property(viewable = true, order = 9)
+    @Property(viewable = false, order = 10)
     public String getOwner() {
         return owner;
     }
@@ -169,27 +169,27 @@ public class OracleSchedulerJob extends OracleSchemaObject {
         return jobStyle;
     }
 
-    @Property(viewable = true, order = 12)
+    @Property(viewable = false, order = 12)
     public String getJobCreator() {
         return jobCreator;
     }
 
-    @Property(viewable = true, order = 13)
+    @Property(viewable = false, order = 13)
     public String getClientId() {
         return clientId;
     }
 
-    @Property(viewable = true, order = 14)
+    @Property(viewable = false, order = 14)
     public String getGlobalUid() {
         return globalUid;
     }
 
-    @Property(viewable = true, order = 15)
+    @Property(viewable = false, order = 15)
     public String getProgramOwner() {
         return programOwner;
     }
 
-    @Property(viewable = true, order = 16)
+    @Property(viewable = false, order = 16)
     public String getProgramName() {
         return programName;
     }
@@ -199,22 +199,22 @@ public class OracleSchedulerJob extends OracleSchemaObject {
         return jobType;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = true, order = 18)
+    @Property(category = CAT_SETTINGS, viewable = false, order = 18)
     public String getJobAction() {
         return jobAction;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = true, order = 19)
+    @Property(category = CAT_SETTINGS, viewable = false, order = 19)
     public long getNumberOfArguments() {
         return numberOfArguments;
     }
 
-    @Property(viewable = true, order = 20)
+    @Property(viewable = false, order = 20)
     public String getScheduleOwner() {
         return scheduleOwner;
     }
 
-    @Property(viewable = true, order = 21)
+    @Property(viewable = false, order = 21)
     public String getScheduleName() {
         return scheduleName;
     }
@@ -239,202 +239,202 @@ public class OracleSchedulerJob extends OracleSchemaObject {
         return endDate;
     }
 
-    @Property(category = CAT_EVENTS, viewable = true, order = 25)
+    @Property(category = CAT_EVENTS, viewable = false, order = 25)
     public String getEventQueueOwner() {
         return eventQueueOwner;
     }
 
-    @Property(category = CAT_EVENTS, viewable = true, order = 26)
+    @Property(category = CAT_EVENTS, viewable = false, order = 26)
     public String getEventQueueName() {
         return eventQueueName;
     }
 
-    @Property(category = CAT_EVENTS, viewable = true, order = 27)
+    @Property(category = CAT_EVENTS, viewable = false, order = 27)
     public String getEventQueueAgent() {
         return eventQueueAgent;
     }
 
-    @Property(category = CAT_EVENTS, viewable = true, order = 28)
+    @Property(category = CAT_EVENTS, viewable = false, order = 28)
     public String getEventCondition() {
         return eventCondition;
     }
 
-    @Property(category = CAT_EVENTS, viewable = true, order = 29)
+    @Property(category = CAT_EVENTS, viewable = false, order = 29)
     public String getEventRule() {
         return eventRule;
     }
 
-    @Property(category = CAT_EVENTS, viewable = true, order = 30)
+    @Property(category = CAT_EVENTS, viewable = false, order = 30)
     public String getFileWatcherOwner() {
         return fileWatcherOwner;
     }
 
-    @Property(category = CAT_EVENTS, viewable = true, order = 31)
+    @Property(category = CAT_EVENTS, viewable = false, order = 31)
     public String getFileWatcherName() {
         return fileWatcherName;
     }
 
-    @Property(viewable = true, order = 33)
+    @Property(viewable = false, order = 33)
     public String getJobClass() {
         return jobClass;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = true, order = 34)
+    @Property(category = CAT_SETTINGS, viewable = false, order = 34)
     public String getEnabled() {
         return enabled;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = true, order = 35)
+    @Property(category = CAT_SETTINGS, viewable = false, order = 35)
     public String getAutoDrop() {
         return autoDrop;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = true, order = 36)
+    @Property(category = CAT_SETTINGS, viewable = false, order = 36)
     public String getRestartable() {
         return restartable;
     }
 
-    @Property(viewable = true, order = 37)
+    @Property(viewable = false, order = 37)
     public String getState() {
         return state;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = true, order = 38)
+    @Property(category = CAT_SETTINGS, viewable = false, order = 38)
     public int getJobPriority() {
         return jobPriority;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = true, order = 39)
+    @Property(category = CAT_STATISTICS, viewable = false, order = 39)
     public long getRunCount() {
         return runCount;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = true, order = 40)
+    @Property(category = CAT_STATISTICS, viewable = false, order = 40)
     public long getMaxRuns() {
         return maxRuns;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = true, order = 41)
+    @Property(category = CAT_STATISTICS, viewable = false, order = 41)
     public long getFailureCount() {
         return failureCount;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = true, order = 42)
+    @Property(category = CAT_STATISTICS, viewable = false, order = 42)
     public long getMaxFailures() {
         return maxFailures;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = true, order = 43)
+    @Property(category = CAT_STATISTICS, viewable = false, order = 43)
     public long getRetryCount() {
         return retryCount;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = true, order = 44)
+    @Property(category = CAT_STATISTICS, viewable = false, order = 44)
     public String getLastStartDate() {
         return lastStartDate;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = true, order = 45)
+    @Property(category = CAT_STATISTICS, viewable = false, order = 45)
     public String getLastRunDuration() {
         return lastRunDuration;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = true, order = 46)
+    @Property(category = CAT_SETTINGS, viewable = false, order = 46)
     public String getNextRunDate() {
         return nextRunDate;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = true, order = 47)
+    @Property(category = CAT_SETTINGS, viewable = false, order = 47)
     public String getScheduleLimit() {
         return scheduleLimit;
     }
 
-    //@Property(viewable = true, order = 48)
+    //@Property(viewable = false, order = 48)
     public String getMaxRunDuration() {
         return maxRunDuration;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = true, order = 49)
+    @Property(category = CAT_SETTINGS, viewable = false, order = 49)
     public String getLoggingLevel() {
         return loggingLevel;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = true, order = 50)
+    @Property(category = CAT_SETTINGS, viewable = false, order = 50)
     public String getStopOnWindowClose() {
         return stopOnWindowClose;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = true, order = 51)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 51)
     public String getInstanceStickiness() {
         return instanceStickiness;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = true, order = 52)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 52)
     public String getRaiseEvents() {
         return raiseEvents;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = true, order = 53)
+    @Property(category = CAT_SETTINGS, viewable = false, order = 53)
     public String getSystem() {
         return system;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = true, order = 54)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 54)
     public String getJobWeight() {
         return jobWeight;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = true, order = 55)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 55)
     public String getNlsEnv() {
         return nlsEnv;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = true, order = 56)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 56)
     public String getSource() {
         return source;
     }
 
-    //@Property(viewable = true, order = 57)
+    //@Property(viewable = false, order = 57)
     public String getNumberOfDestinations() {
         return numberOfDestinations;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = true, order = 58)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 58)
     public String getDestinationOwner() {
         return destinationOwner;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = true, order = 59)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 59)
     public String getDestination() {
         return destination;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = true, order = 60)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 60)
     public String getCredentialOwner() {
         return credentialOwner;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = true, order = 61)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 61)
     public String getCredentialName() {
         return credentialName;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = true, order = 62)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 62)
     public String getInstanceId() {
         return instanceId;
     }
 
-    @Property(viewable = true, order = 63)
+    @Property(viewable = false, order = 63)
     public String getDeferredDrop() {
         return deferredDrop;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = true, order = 64)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 64)
     public String getAllowRunsInRestrictedMode() {
         return allowRunsInRestrictedMode;
     }
 
-    @Property(viewable = true, order = 200)
+    @Property(viewable = false, order = 200)
     @Nullable
     @Override
     public String getDescription() {

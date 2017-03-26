@@ -153,8 +153,11 @@
                             <items label="Java Class" path="class" property="javaClasses" icon="#javaClass"/>
                         </folder-->
                         <folder label="%tree.scheduler.node.name" icon="#scheduler_folder" description="Scheduler objects">
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob" label="%tree.scheduler.jobs.node.name" icon="#scheduler_job_folder" description="Scheduler job">
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob" label="%tree.scheduler.jobs.node.name" icon="#scheduler_job_folder" description="Scheduler jobs">
                                 <items label="%tree.scheduler.job.node.name" path="schedulerJob" property="schedulerJobs" icon="icons/scheduled_job.png"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerProgram" label="%tree.scheduler.programs.node.name" icon="#scheduler_program_folder" description="Scheduler programs">
+                                <items label="%tree.scheduler.program.node.name" path="schedulerProgram" property="schedulerPrograms" icon="icons/scheduled_program.png"/>
                             </folder>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="%tree.recycle_bin.node.name" icon="#recycle_bin" description="Recycle Bin" visibleIf="object.dataSource.adminVisible &amp;&amp; object.dataSource.isAtLeastV10()">
