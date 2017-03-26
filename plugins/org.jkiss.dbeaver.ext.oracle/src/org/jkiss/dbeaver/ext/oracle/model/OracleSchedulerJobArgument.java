@@ -34,7 +34,6 @@ public class OracleSchedulerJobArgument implements DBSParameter
     private String name;
     private int position;
     private final String type;
-    private String metadataAttribute;
     private String value;
     private String anyDataValue;
     private String outArgument;
@@ -94,11 +93,6 @@ public class OracleSchedulerJobArgument implements DBSParameter
     @Property(viewable = true, order = 12)
     public String getType() {
         return type;
-    }
-
-    @Property(viewable = true, order = 13)
-    public String getMetadataAttribute() {
-        return metadataAttribute;
     }
 
     @Property(viewable = true, order = 14)
