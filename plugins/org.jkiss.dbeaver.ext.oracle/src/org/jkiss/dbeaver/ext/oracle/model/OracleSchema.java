@@ -67,6 +67,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     final public ProceduresCache proceduresCache = new ProceduresCache();
     final public JavaCache javaCache = new JavaCache();
     final public SchedulerJobCache schedulerJobCache = new SchedulerJobCache();
+    final public SchedulerProgramCache schedulerProgramCache = new SchedulerProgramCache();
     final public RecycleBin recycleBin = new RecycleBin();
 
     private long id;
@@ -271,6 +272,13 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Association
+    public Collection<OracleSchedulerProgram> getSchedulerPrograms(DBRProgressMonitor monitor)
+            throws DBException
+    {
+        return schedulerProgramCache.getAllObjects(monitor, this);
+    }
+
+    @Association
     public Collection<OracleRecycledObject> getRecycledObjects(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -359,10 +367,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         return "Schema " + name;
     }
 
-    protected static OracleTableColumn getTableColumn(JDBCSession session, OracleTableBase parent, ResultSet dbResult) throws DBException
+    private static OracleTableColumn getTableColumn(JDBCSession session, OracleTableBase parent, ResultSet dbResult) throws DBException
     {
         String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
-        OracleTableColumn tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
+        OracleTableColumn tableColumn = columnName == null ? null : parent.getAttribute(session.getProgressMonitor(), columnName);
         if (tableColumn == null) {
             log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "'");
         }
@@ -371,7 +379,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
     public static class TableCache extends JDBCStructLookupCache<OracleSchema, OracleTableBase, OracleTableColumn> {
 
-        protected TableCache()
+        TableCache()
         {
             super("TABLE_NAME");
             setListOrderComparator(DBUtils.<OracleTableBase>nameComparator());
@@ -460,7 +468,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
      * Index cache implementation
      */
     class ConstraintCache extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableConstraint, OracleTableConstraintColumn> {
-        protected ConstraintCache()
+        ConstraintCache()
         {
             super(tableCache, OracleTableBase.class, "TABLE_NAME", "CONSTRAINT_NAME");
         }
@@ -520,7 +528,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     class ForeignKeyCache extends JDBCCompositeCache<OracleSchema, OracleTable, OracleTableForeignKey, OracleTableForeignKeyColumn> {
-        protected ForeignKeyCache()
+        ForeignKeyCache()
         {
             super(tableCache, OracleTable.class, "TABLE_NAME", "CONSTRAINT_NAME");
         }
@@ -529,7 +537,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected void loadObjects(DBRProgressMonitor monitor, OracleSchema schema, OracleTable forParent)
             throws DBException
         {
-            // Cache schema constraints in not table specified
+            // Cache schema constraints if not table specified
             if (forParent == null) {
                 constraintCache.getObject(monitor, schema, null);
             }
@@ -542,8 +550,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException
         {
             StringBuilder sql = new StringBuilder(500);
-            sql.append(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " \r\n" +
+            sql.append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append(" \r\n" +
                 "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME,rc.TABLE_NAME as R_TABLE_NAME,c.DELETE_RULE, \n" +
                 "col.COLUMN_NAME,col.POSITION\r\n" +
                 "FROM SYS.ALL_CONSTRAINTS c, SYS.ALL_CONS_COLUMNS col, SYS.ALL_CONSTRAINTS rc\n" +
@@ -598,7 +605,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
      * Index cache implementation
      */
     class IndexCache extends JDBCCompositeCache<OracleSchema, OracleTablePhysical, OracleTableIndex, OracleTableIndexColumn> {
-        protected IndexCache()
+        IndexCache()
         {
             super(tableCache, OracleTablePhysical.class, "TABLE_NAME", "INDEX_NAME");
         }
@@ -609,8 +616,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
-            sql.append(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " " +
+            sql.append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append(" " +
                     "i.OWNER,i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,\n" +
                     "ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND\n" +
                     "FROM SYS.ALL_INDEXES i, SYS.ALL_IND_COLUMNS ic\n" +
@@ -651,7 +657,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, "COLUMN_POSITION");
             boolean isAscending = "ASC".equals(JDBCUtils.safeGetStringTrimmed(dbResult, "DESCEND"));
 
-            OracleTableColumn tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
+            OracleTableColumn tableColumn = columnName == null ? null : parent.getAttribute(session.getProgressMonitor(), columnName);
             if (tableColumn == null) {
                 log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for index '" + object.getName() + "'");
                 return null;
@@ -887,6 +893,27 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 throws SQLException, DBException
         {
             return new OracleSchedulerJob(owner, dbResult);
+        }
+
+    }
+
+    static class SchedulerProgramCache extends JDBCObjectCache<OracleSchema, OracleSchedulerProgram> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner)
+                throws SQLException
+        {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT * FROM SYS.ALL_SCHEDULER_PROGRAMS WHERE OWNER=? ");
+            dbStat.setString(1, owner.getName());
+            return dbStat;
+        }
+
+        @Override
+        protected OracleSchedulerProgram fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
+                throws SQLException, DBException
+        {
+            return new OracleSchedulerProgram(owner, dbResult);
         }
 
     }
