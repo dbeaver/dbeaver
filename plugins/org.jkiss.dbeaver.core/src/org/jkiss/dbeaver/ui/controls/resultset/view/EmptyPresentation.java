@@ -77,12 +77,13 @@ public class EmptyPresentation extends AbstractPresentation {
                     return;
                 }
                 e.gc.setFont(largeFont);
-                UIUtils.drawMessageOverControl(placeholder, e, "No Data", -10);
+                int fontSize = largeFont.getFontData()[0].getHeight();
+                UIUtils.drawMessageOverControl(placeholder, e, "No Data", -(fontSize / 2));
                 e.gc.setFont(normalFont);
                 if (controller.getDataContainer() instanceof SQLEditor.QueryResultsContainer) {
                     String execQuery = ActionUtils.findCommandDescription(CoreCommands.CMD_EXECUTE_STATEMENT, controller.getSite(), true);
                     String execScript = ActionUtils.findCommandDescription(CoreCommands.CMD_EXECUTE_SCRIPT, controller.getSite(), true);
-                    UIUtils.drawMessageOverControl(placeholder, e, "Execute query (" + execQuery + ") or script (" + execScript + ") to see results", 20);
+                    UIUtils.drawMessageOverControl(placeholder, e, "Execute query (" + execQuery + ") or script (" + execScript + ") to see results", fontSize + fontSize / 3);
                 }
             }
 
