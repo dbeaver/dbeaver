@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -26,6 +28,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
@@ -101,14 +104,17 @@ public class PrefPageSQLEditor extends TargetPrefPage
             deleteEmptyCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_delete_empty_scripts, null, false, 2);
             autoFoldersCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, null, false, 2);
             scriptTitlePattern = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_title_pattern, "");
-
-            String[] vars = new String[] {SQLEditor.VAR_CONNECTION_NAME, SQLEditor.VAR_DRIVER_NAME, SQLEditor.VAR_FILE_NAME, SQLEditor.VAR_FILE_EXT};
-            String[] explain = new String[] {"Connection name", "Database driver name", "File name", "File extension"};
-            StringBuilder legend = new StringBuilder("Supported variables: ");
-            for (int i = 0; i <vars.length; i++) {
-                legend.append("\n\t- ${").append(vars[i]).append("}:  ").append(explain[i]);
-            }
-            scriptTitlePattern.setToolTipText(legend.toString());
+            UIUtils.installContentProposal(
+                    scriptTitlePattern,
+                    new TextContentAdapter(),
+                    new SimpleContentProposalProvider(new String[] {
+                            GeneralUtils.variablePattern(SQLEditor.VAR_CONNECTION_NAME),
+                            GeneralUtils.variablePattern(SQLEditor.VAR_DRIVER_NAME),
+                            GeneralUtils.variablePattern(SQLEditor.VAR_FILE_NAME),
+                            GeneralUtils.variablePattern(SQLEditor.VAR_FILE_EXT)
+                    }));
+            UIUtils.setContentProposalToolTip(scriptTitlePattern, "Output file name patterns",
+                    SQLEditor.VAR_CONNECTION_NAME, SQLEditor.VAR_DRIVER_NAME, SQLEditor.VAR_FILE_NAME, SQLEditor.VAR_FILE_EXT);
         }
 
         return composite;

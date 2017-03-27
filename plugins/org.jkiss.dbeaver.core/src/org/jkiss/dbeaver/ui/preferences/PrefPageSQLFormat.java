@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -33,8 +35,8 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.format.external.SQLExternalFormatter;
 import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -176,14 +178,23 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
         // External formatter
         {
-            externalGroup = UIUtils.createPlaceholder(formatterGroup, 2);
-            externalGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            externalGroup = UIUtils.createPlaceholder(formatterGroup, 2, 5);
+            externalGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             externalCmdText = UIUtils.createLabelText(externalGroup, "Command line", "");
             externalCmdText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            UIUtils.installContentProposal(
+                    externalCmdText,
+                    new TextContentAdapter(),
+                    new SimpleContentProposalProvider(new String[] {
+                            GeneralUtils.variablePattern(SQLExternalFormatter.VAR_FILE)
+                    }));
+            UIUtils.setContentProposalToolTip(externalCmdText, "External program with parameters", SQLExternalFormatter.VAR_FILE);
+
             externalUseFile = UIUtils.createLabelCheckbox(externalGroup,
                 "Use temp file",
-                "Use temporary file to pass SQL text.\nTo pass file name in command line use parameter ${file}", false);
+                "Use temporary file to pass SQL text.\nTo pass file name in command line use parameter " + GeneralUtils.variablePattern(SQLExternalFormatter.VAR_FILE),
+                false);
             externalTimeout = UIUtils.createLabelSpinner(externalGroup,
                 "Exec timeout",
                 "Time to wait until formatter process finish (ms)",
