@@ -113,13 +113,13 @@ public class SQLExternalFormatter implements SQLFormatter {
                             stdout.write(source.getBytes(sourceEncoding));
                         }
                     }
-                    int rc = process.waitFor();
                     StringWriter buf = new StringWriter();
                     try (Reader input = new InputStreamReader(process.getInputStream(), sourceEncoding)) {
                         IOUtils.copyText(input, buf);
-                        if (rc != 0) {
-                            log.debug("Formatter result code: " + rc);
-                        }
+                    }
+                    int rc = process.waitFor();
+                    if (rc != 0) {
+                        log.debug("Formatter result code: " + rc);
                     }
                     result = buf.toString();
                 } finally {
