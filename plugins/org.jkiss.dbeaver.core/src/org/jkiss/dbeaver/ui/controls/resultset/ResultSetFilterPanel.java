@@ -709,13 +709,16 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             e.gc.setClipping(e.x, e.y, e.width - 8, e.height);
 
             int textOffset = 2;
+            int panelHeight = getSize().y;
             DBPImage activeObjectImage = getActiveObjectImage();
             if (activeObjectImage != null) {
                 Image icon = DBeaverIcons.getImage(activeObjectImage);
-                e.gc.drawImage(icon, 2, 3);
-                textOffset += icon.getBounds().width + 2;
+                Rectangle iconBounds = icon.getBounds();
+                e.gc.drawImage(icon, 2, (panelHeight - iconBounds.height) / 2);
+                textOffset += iconBounds.width + 2;
             }
-            e.gc.drawText(activeDisplayName, textOffset, 3);
+            int textHeight = e.gc.getFontMetrics().getHeight();
+            e.gc.drawText(activeDisplayName, textOffset, (panelHeight - textHeight) / 2);
             e.gc.setClipping((Rectangle) null);
         }
     }
