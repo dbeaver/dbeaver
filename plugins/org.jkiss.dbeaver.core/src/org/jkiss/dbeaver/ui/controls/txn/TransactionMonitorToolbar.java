@@ -188,7 +188,7 @@ public class TransactionMonitorToolbar {
                 count = "None";
             }
             final Point textSize = e.gc.textExtent(count);
-            e.gc.drawText(count, bounds.x + (bounds.width - textSize.x) / 2 - 2, bounds.y + 2);
+            e.gc.drawText(count, bounds.x + (bounds.width - textSize.x) / 2 - 2, bounds.y + (bounds.height - textSize.y) / 2 - 1);
         }
 
         public void refresh() {
