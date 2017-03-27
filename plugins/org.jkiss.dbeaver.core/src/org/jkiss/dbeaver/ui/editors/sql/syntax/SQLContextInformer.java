@@ -51,6 +51,8 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 
 
@@ -288,18 +290,16 @@ public class SQLContextInformer
 
     private static class PropertiesReader implements DBRRunnableWithProgress {
 
-        private StringBuilder info = new StringBuilder();
-        private DBPNamedObject object;
-        private boolean html;
-        private final PropertyCollector collector;
+        private final StringBuilder info = new StringBuilder();
+        private final DBPNamedObject object;
+        private final boolean html;
 
         public PropertiesReader(DBPNamedObject object, boolean html) {
             this.object = object;
             this.html = html;
-            collector = new PropertyCollector(object, false);
-            collector.collectProperties();
         }
 
+/*
         boolean hasRemoteProperties() {
             for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
                 if (descriptor.isRemote()) {
@@ -308,6 +308,7 @@ public class SQLContextInformer
             }
             return false;
         }
+*/
 
         String getPropertiesInfo() {
             return info.toString();
@@ -315,6 +316,19 @@ public class SQLContextInformer
 
         @Override
         public void run(DBRProgressMonitor monitor) {
+            DBPNamedObject targetObject = object;
+            if (object instanceof DBSObjectReference) {
+                try {
+                    targetObject = ((DBSObjectReference) object).resolveObject(monitor);
+                } catch (DBException e) {
+                    StringWriter buf = new StringWriter();
+                    e.printStackTrace(new PrintWriter(buf, true));
+                    info.append(buf.toString());
+                }
+            }
+            PropertyCollector collector = new PropertyCollector(targetObject, false);
+            collector.collectProperties();
+
             for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
                 Object propValue = collector.getPropertyValue(monitor, descriptor.getId());
                 if (propValue == null) {
