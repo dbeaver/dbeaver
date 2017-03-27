@@ -47,6 +47,9 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.SystemJob;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -62,6 +65,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordPartDetector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -552,19 +556,29 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
         SQLWordPartDetector wordDetector = new SQLWordPartDetector(new Document(contents), syntaxManager, position);
         final String word = wordDetector.getFullWord().toLowerCase(Locale.ENGLISH);
-        List<IContentProposal> proposals = new ArrayList<>();
-        for (DBDAttributeBinding attribute : viewer.getModel().getAttributes()) {
-            final String name = attribute.getName();
-            if (CommonUtils.isEmpty(word) || name.toLowerCase(Locale.ENGLISH).startsWith(word)) {
-                final String content = name.substring(word.length()) + " ";
-                proposals.add(
-                    new ContentProposal(
-                        content,
-                        attribute.getName(),
-                        SQLContextInformer.makeObjectDescription(null, attribute.getAttribute(), false),
-                        content.length()));
+        final List<IContentProposal> proposals = new ArrayList<>();
+
+        final DBRRunnableWithProgress reader = new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                for (DBDAttributeBinding attribute : viewer.getModel().getAttributes()) {
+                    final String name = attribute.getName();
+                    if (CommonUtils.isEmpty(word) || name.toLowerCase(Locale.ENGLISH).startsWith(word)) {
+                        final String content = name.substring(word.length()) + " ";
+                        proposals.add(
+                                new ContentProposal(
+                                        content,
+                                        attribute.getName(),
+                                        SQLContextInformer.makeObjectDescription(monitor, attribute.getAttribute(), false),
+                                        content.length()));
+                    }
+                }
             }
-        }
+        };
+        SystemJob searchJob = new SystemJob("Extract attribute proposals", reader);
+        searchJob.schedule();
+        UIUtils.waitJobCompletion(searchJob);
+
         return proposals.toArray(new IContentProposal[proposals.size()]);
     }
 
