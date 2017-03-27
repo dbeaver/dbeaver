@@ -61,6 +61,8 @@ import java.util.Map;
  */
 public abstract class BaseTextEditor extends AbstractDecoratedTextEditor implements ISingleControlEditor {
 
+    public static final String TEXT_EDITOR_CONTEXT = "org.eclipse.ui.textEditorScope";
+
     public static final String GROUP_SQL_PREFERENCES = "sql.preferences";
     public static final String GROUP_SQL_ADDITIONS = "sql.additions";
     public static final String GROUP_SQL_EXTRAS = "sql.extras";
