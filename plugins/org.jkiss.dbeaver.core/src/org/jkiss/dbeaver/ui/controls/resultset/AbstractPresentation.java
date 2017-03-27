@@ -46,7 +46,7 @@ import java.util.List;
 public abstract class AbstractPresentation implements IResultSetPresentation, ISelectionProvider {
 
     private static final String PRESENTATION_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.presentation";
-    public static final String RESULTS_CONTROL_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset.focused";
+    //public static final String RESULTS_CONTROL_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset.focused";
     public static final StructuredSelection EMPTY_SELECTION = new StructuredSelection();
 
     @NotNull
@@ -151,13 +151,16 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         final IWorkbenchPartSite site = controller.getSite();
         UIUtils.addFocusTracker(site, PRESENTATION_CONTROL_ID, control);
 
-        final IContextService contextService = PlatformUI.getWorkbench().getService(IContextService.class);
+/*
+        final IContextService contextService = site.getService(IContextService.class);
         if (contextService != null) {
             control.addFocusListener(new FocusListener() {
                 IContextActivation activation;
                 @Override
                 public void focusGained(FocusEvent e) {
-                    activation = contextService.activateContext(RESULTS_CONTROL_CONTEXT_ID);
+                    if (activation == null) {
+                        activation = contextService.activateContext(RESULTS_CONTROL_CONTEXT_ID);
+                    }
                 }
                 @Override
                 public void focusLost(FocusEvent e) {
@@ -165,6 +168,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
                 }
             });
         }
+*/
         control.addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e) {
