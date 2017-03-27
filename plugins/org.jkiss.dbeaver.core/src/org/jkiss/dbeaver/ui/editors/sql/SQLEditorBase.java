@@ -75,6 +75,7 @@ import java.util.ResourceBundle;
  */
 public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisualizer {
     static protected final Log log = Log.getLog(SQLEditorBase.class);
+    public static final String SQL_EDITOR_CONTEXT = "org.jkiss.dbeaver.ui.editors.sql";
 
     @NotNull
     private final SQLSyntaxManager syntaxManager;
@@ -111,7 +112,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
         //setDocumentProvider(new SQLDocumentProvider());
         setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(this, getPreferenceStore()));
-        setKeyBindingScopes(new String[]{"org.eclipse.ui.textEditorScope", "org.jkiss.dbeaver.ui.editors.sql"});  //$NON-NLS-1$
+        setKeyBindingScopes(new String[]{TEXT_EDITOR_CONTEXT, SQL_EDITOR_CONTEXT});  //$NON-NLS-1$
     }
 
     @Nullable
