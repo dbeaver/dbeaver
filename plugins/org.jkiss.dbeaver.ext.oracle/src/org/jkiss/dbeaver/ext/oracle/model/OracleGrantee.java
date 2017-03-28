@@ -41,8 +41,8 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
     private static final Log log = Log.getLog(OracleGrantee.class);
 
     final RolePrivCache rolePrivCache = new RolePrivCache();
-    final SystemPrivCache systemPrivCache = new SystemPrivCache();
-    final ObjectPrivCache objectPrivCache = new ObjectPrivCache();
+    private final SystemPrivCache systemPrivCache = new SystemPrivCache();
+    private final ObjectPrivCache objectPrivCache = new ObjectPrivCache();
 
 
     public OracleGrantee(OracleDataSource dataSource) {

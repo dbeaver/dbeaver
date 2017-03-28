@@ -76,6 +76,11 @@
                                         </items>
                                     </items>
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivTable" label="%tree.table_privileges.node.name" icon="#permissions" description="Table Privileges" navigable="false">
+                                    <items label="%tree.privilege.node.name" path="tablePrivs" property="tablePrivs" icon="#privilege">
+                                    </items>
+                                </folder>
+
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleView" label="%tree.views.node.name" icon="#folder_view" description="Views">
@@ -202,11 +207,11 @@
                                 <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#role">
                                 </items>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivSystem" label="%tree.system_privileges.node.name" icon="#folder_privilege" description="System Privileges" navigable="false">
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivSystem" label="%tree.system_privileges.node.name" icon="#permissions" description="System Privileges" navigable="false">
                                 <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege">
                                 </items>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivObject" label="%tree.objects.node.name" icon="#folder_privilege" description="Objects" navigable="false">
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivObject" label="%tree.objects.node.name" icon="#permissions" description="Objects" navigable="false">
                                 <items label="%tree.privilege.node.name" path="objectPriv" property="objectPrivs" icon="#privilege">
                                 </items>
                             </folder>
@@ -218,11 +223,11 @@
                                 <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#role">
                                 </items>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivSystem" label="%tree.system_privileges.node.name" icon="#folder_privilege" description="System Privileges" navigable="false">
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivSystem" label="%tree.system_privileges.node.name" icon="#permissions" description="System Privileges" navigable="false">
                                 <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege">
                                 </items>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivObject" label="%tree.objects.node.name" icon="#folder_privilege" description="Objects" navigable="false">
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivObject" label="%tree.objects.node.name" icon="#permissions" description="Objects" navigable="false">
                                 <items label="%tree.privilege.node.name" path="objectPriv" property="objectPrivs" icon="#privilege">
                                 </items>
                             </folder>

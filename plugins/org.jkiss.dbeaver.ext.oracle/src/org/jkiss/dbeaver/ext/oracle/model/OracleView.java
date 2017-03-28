@@ -107,12 +107,6 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
     }
 
     @Override
-    public OracleSchema getSchema()
-    {
-        return getContainer();
-    }
-
-    @Override
     public OracleSourceType getSourceType()
     {
         return OracleSourceType.VIEW;
