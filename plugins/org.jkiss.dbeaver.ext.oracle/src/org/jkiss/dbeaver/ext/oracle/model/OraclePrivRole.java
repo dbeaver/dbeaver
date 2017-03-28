@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -44,7 +45,7 @@ public class OraclePrivRole extends OraclePriv implements DBSObjectLazy<OracleDa
         return super.getName();
     }
 
-    @Property(viewable = true, order = 2, supportsPreview = true)
+    @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 2, supportsPreview = true)
     public Object getRole(DBRProgressMonitor monitor) throws DBException
     {
         if (monitor == null) {
