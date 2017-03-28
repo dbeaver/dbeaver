@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
@@ -60,7 +61,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public static class TableAdditionalInfo {
         volatile boolean loaded = false;
 
-        public boolean isLoaded() { return loaded; }
+        boolean isLoaded() { return loaded; }
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<OracleTableBase> {
@@ -80,6 +81,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     public final TriggerCache triggerCache = new TriggerCache();
+    private final TablePrivCache tablePrivCache = new TablePrivCache();
 
     public abstract TableAdditionalInfo getAdditionalInfo();
 
@@ -294,9 +296,15 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         }
     }
 
+    @Association
+    public Collection<OraclePrivTable> getTablePrivs(DBRProgressMonitor monitor) throws DBException
+    {
+        return tablePrivCache.getAllObjects(monitor, this);
+    }
+
 
     static class TriggerCache extends JDBCStructCache<OracleTableBase, OracleTableTrigger, OracleTriggerColumn> {
-        protected TriggerCache()
+        TriggerCache()
         {
             super("TRIGGER_NAME");
         }
@@ -354,4 +362,25 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         }
 
     }
+
+    static class TablePrivCache extends JDBCObjectCache<OracleTableBase, OraclePrivTable> {
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleTableBase tableBase) throws SQLException
+        {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT p.*\n" +
+                    "FROM DBA_TAB_PRIVS p\n" +
+                    "WHERE p.OWNER=? AND p.TABLE_NAME =?");
+            dbStat.setString(1, tableBase.getSchema().getName());
+            dbStat.setString(2, tableBase.getName());
+            return dbStat;
+        }
+
+        @Override
+        protected OraclePrivTable fetchObject(@NotNull JDBCSession session, @NotNull OracleTableBase tableBase, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
+        {
+            return new OraclePrivTable(tableBase, resultSet);
+        }
+    }
+
 }
