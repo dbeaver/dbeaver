@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBAUser;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 import java.sql.ResultSet;
@@ -182,6 +184,12 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     public Collection<OraclePrivRole> getRolePrivs(DBRProgressMonitor monitor) throws DBException
     {
         return rolePrivCache.getAllObjects(monitor, this);
+    }
+
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return super.refreshObject(monitor);
     }
 
     public static class ProfileReferenceValidator implements IPropertyCacheValidator<OracleUser> {

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.access.DBARole;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -68,6 +70,13 @@ public class OracleRole extends OracleGrantee implements DBARole
     public Collection<OraclePrivUser> getUserPrivs(DBRProgressMonitor monitor) throws DBException
     {
         return userCache.getAllObjects(monitor, this);
+    }
+
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        userCache.clearCache();
+        return super.refreshObject(monitor);
     }
 
     static class UserCache extends JDBCObjectCache<OracleRole, OraclePrivUser> {
