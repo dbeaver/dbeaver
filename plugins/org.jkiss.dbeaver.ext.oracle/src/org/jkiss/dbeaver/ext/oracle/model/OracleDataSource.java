@@ -256,6 +256,14 @@ public class OracleDataSource extends JDBCDataSource
         return roleCache.getAllObjects(monitor, this);
     }
 
+    public OracleGrantee getGrantee(DBRProgressMonitor monitor, String name) throws DBException {
+        OracleUser user = userCache.getObject(monitor, this, name);
+        if (user != null) {
+            return user;
+        }
+        return roleCache.getObject(monitor, this, name);
+    }
+
     @Association
     public Collection<OracleSynonym> getPublicSynonyms(DBRProgressMonitor monitor) throws DBException {
         return publicSchema.getSynonyms(monitor);

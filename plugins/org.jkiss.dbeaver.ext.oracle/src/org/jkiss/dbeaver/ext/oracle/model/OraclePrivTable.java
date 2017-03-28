@@ -50,16 +50,22 @@ public class OraclePrivTable extends OracleObject<OracleTableBase> implements DB
         return super.getName();
     }
 
-    @Property(order = 5, viewable = true)
-    public Object getGrantee() throws DBException
+    @Property(viewable = true, order = 5, supportsPreview = true)
+    public Object getGrantee(DBRProgressMonitor monitor) throws DBException
     {
-        return grantee;
+        if (monitor == null) {
+            return grantee;
+        }
+        return getDataSource().getGrantee(monitor, grantee);
     }
 
-    @Property(order = 6, viewable = true)
-    public String getGrantor()
+    @Property(viewable = true, order = 6, supportsPreview = true)
+    public Object getGrantor(DBRProgressMonitor monitor) throws DBException
     {
-        return grantor;
+        if (monitor == null) {
+            return grantor;
+        }
+        return getDataSource().getGrantee(monitor, grantor);
     }
 
     @Property(viewable = true, order = 10)

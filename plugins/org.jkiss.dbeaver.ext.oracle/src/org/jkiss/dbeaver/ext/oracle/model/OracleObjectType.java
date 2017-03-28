@@ -233,11 +233,11 @@ public enum OracleObjectType implements DBSObjectType {
         }
         OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
         if (objectType == null) {
-            log.debug("Unrecognized object type: " + objectTypeName);
+            log.debug("Unrecognized Oracle object type: " + objectTypeName);
             return objectName;
         }
         if (!objectType.isBrowsable()) {
-            log.debug("Unsupported object type: " + objectTypeName);
+            log.debug("Unsupported Oracle object type: " + objectTypeName);
             return objectName;
         }
         final OracleSchema schema = dataSource.getSchema(monitor, objectOwner);
