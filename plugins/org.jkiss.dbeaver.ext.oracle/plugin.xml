@@ -218,7 +218,11 @@
                         </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRole" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
-                        <items label="%tree.role.node.name" path="roles" property="roles" icon="#role">
+                        <items label="%tree.role.node.name" path="roles" property="roles" icon="#user_group">
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivUser" label="%tree.users.node.name" icon="#folder_user" description="Users" navigable="false">
+                                <items label="%tree.user.node.name" path="userPrivs" property="userPrivs" icon="#user">
+                                </items>
+                            </folder>
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivRole" label="%tree.roles.node.name" icon="#folder_role" description="Roles" navigable="false">
                                 <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#role">
                                 </items>
