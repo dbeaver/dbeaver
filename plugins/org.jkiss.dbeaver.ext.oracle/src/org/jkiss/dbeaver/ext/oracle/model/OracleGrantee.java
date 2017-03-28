@@ -18,8 +18,10 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -29,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -36,7 +39,7 @@ import java.util.Collection;
 /**
  * OracleGrantee
  */
-public abstract class OracleGrantee extends OracleGlobalObject implements DBAUser, DBPSaveableObject
+public abstract class OracleGrantee extends OracleGlobalObject implements DBAUser, DBPSaveableObject, DBPRefreshableObject
 {
     private static final Log log = Log.getLog(OracleGrantee.class);
 
@@ -65,6 +68,16 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
     public Collection<OraclePrivObject> getObjectPrivs(DBRProgressMonitor monitor) throws DBException
     {
         return objectPrivCache.getAllObjects(monitor, this);
+    }
+
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        rolePrivCache.clearCache();
+        systemPrivCache.clearCache();
+        objectPrivCache.clearCache();
+
+        return this;
     }
 
     static class RolePrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivRole> {
