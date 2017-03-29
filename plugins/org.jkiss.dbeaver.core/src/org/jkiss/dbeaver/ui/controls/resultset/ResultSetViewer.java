@@ -503,6 +503,8 @@ public class ResultSetViewer extends Viewer
     }
 
     private void setActivePresentation(@NotNull IResultSetPresentation presentation) {
+        boolean focusInPresentation = UIUtils.isParent(presentationPanel, viewerPanel.getDisplay().getFocusControl());
+
         // Dispose previous presentation and panels
         for (Control child : presentationPanel.getChildren()) {
             child.dispose();
@@ -556,8 +558,7 @@ public class ResultSetViewer extends Viewer
 
         // Set focus in presentation control
         // Use async exec to avoid focus switch after user UI interaction (e.g. combo)
-        Display display = getControl().getDisplay();
-        if (UIUtils.isParent(viewerPanel, display.getFocusControl())) {
+        if (focusInPresentation) {
             DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
