@@ -3121,7 +3121,7 @@
     <extension point="org.jkiss.dbeaver.mavenRepository">
         <repository id="maven-central" name="Central Repository" url="https://repo1.maven.org/maven2/" order="0"/>
 
-        <!--<repository id="maven-central-unsecure" name="Central Repository (unsecure)" url="http://central.maven.org/maven2/" order="100"/>-->
+        <repository id="maven-central-unsecure" name="Central Repository (unsecure)" url="http://central.maven.org/maven2/" order="99999"/>
     </extension>
 
     <extension

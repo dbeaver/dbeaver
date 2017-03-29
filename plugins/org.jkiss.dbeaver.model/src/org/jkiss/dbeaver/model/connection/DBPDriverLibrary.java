@@ -105,4 +105,6 @@ public interface DBPDriverLibrary
 
     void resetVersion();
 
+    boolean isSecureDownload(DBRProgressMonitor monitor);
+
 }
