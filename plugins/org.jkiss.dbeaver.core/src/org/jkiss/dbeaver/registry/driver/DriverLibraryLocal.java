@@ -58,6 +58,11 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
         // do nothing
     }
 
+    @Override
+    public boolean isSecureDownload(DBRProgressMonitor monitor) {
+        return true;
+    }
+
     protected String getLocalFilePath() {
         return path;
     }

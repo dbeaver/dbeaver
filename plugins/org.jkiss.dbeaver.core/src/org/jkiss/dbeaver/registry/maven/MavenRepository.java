@@ -174,6 +174,13 @@ public class MavenRepository
         return authInfo;
     }
 
+    public boolean isSecureRepository() {
+        if (type == RepositoryType.LOCAL || type == RepositoryType.CUSTOM) {
+            return true;
+        }
+        return url.startsWith("https");
+    }
+
     @Nullable
     public synchronized MavenArtifactVersion findArtifact(DBRProgressMonitor monitor, @NotNull MavenArtifactReference ref) {
         boolean newArtifact = false;

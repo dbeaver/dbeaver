@@ -121,6 +121,20 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         MavenRegistry.getInstance().resetArtifactInfo(reference);
     }
 
+    @Override
+    public boolean isSecureDownload(DBRProgressMonitor monitor) {
+        try {
+            MavenArtifactVersion localVersion = resolveLocalVersion(monitor, false);
+            if (localVersion == null) {
+                return true;
+            }
+            return localVersion.getArtifact().getRepository().isSecureRepository();
+        } catch (IOException e) {
+            log.warn("Error resolving artifact version", e);
+            return true;
+        }
+    }
+
     @Nullable
     protected MavenArtifactVersion getArtifactVersion(DBRProgressMonitor monitor) {
         if (this.localVersion == null) {

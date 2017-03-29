@@ -26,13 +26,14 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
+import org.jkiss.dbeaver.ui.UIConfirmation;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -146,24 +147,54 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         return true;
     }
 
-    private void downloadLibraryFiles(DBRProgressMonitor monitor) throws InterruptedException {
+    private void downloadLibraryFiles(final DBRProgressMonitor monitor) throws InterruptedException {
         if (!getWizard().getDriver().acceptDriverLicenses()) {
             return;
         }
 
+        boolean processUnsecure = false;
         List<DBPDriverDependencies.DependencyNode> nodes = getWizard().getDependencies().getLibraryList();
         for (int i = 0, filesSize = nodes.size(); i < filesSize; ) {
-            DBPDriverLibrary lib = nodes.get(i).library;
+            final DBPDriverLibrary lib = nodes.get(i).library;
+            if (!processUnsecure && !lib.isSecureDownload(monitor)) {
+                boolean process = new UIConfirmation() {
+                    @Override
+                    protected Boolean runTask() {
+                        MessageBox messageBox = new MessageBox(getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
+                        messageBox.setText("Security warning");
+                        messageBox.setMessage(
+                                "Library '" + lib.getDisplayName() + "' wasn't found in secure repositories.\n" +
+                                "Only non-secure version is available: " + lib.getExternalURL(monitor) + ".\n\n" +
+                                "It is not recommended to use non-secure repositories because of possibility of malware infection.\n\n" +
+                                "Are you sure you want to proceed?");
+                        int response = messageBox.open();
+                        return (response == SWT.YES);
+                    }
+                }.execute();
+                if (process) {
+                    processUnsecure = true;
+                } else {
+                    break;
+                }
+            }
             int result = IDialogConstants.OK_ID;
             try {
                 lib.downloadLibraryFile(monitor, getWizard().isForceDownload(), "Download " + (i + 1) + "/" + filesSize);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 if (lib.getType() == DBPDriverLibrary.FileType.license) {
                     result = IDialogConstants.OK_ID;
                 } else {
-                    DownloadRetry retryConfirm = new DownloadRetry(lib, e);
-                    DBeaverUI.syncExec(retryConfirm);
-                    result = retryConfirm.result;
+                    result = new UITask<Integer>() {
+                        @Override
+                        protected Integer runTask() {
+                            DownloadErrorDialog dialog = new DownloadErrorDialog(
+                                    null,
+                                    lib.getDisplayName(),
+                                    "Driver file download failed.\nDo you want to retry?",
+                                    e);
+                            return dialog.open();
+                        }
+                    }.execute();
                 }
             }
             switch (result) {
@@ -183,36 +214,13 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         //DataSourceProviderRegistry.getInstance().saveDrivers();
     }
 
-    private class DownloadRetry implements Runnable {
-        private final DBPDriverLibrary file;
-        private final Throwable error;
-        private int result;
-
-        public DownloadRetry(DBPDriverLibrary file, Throwable error)
-        {
-            this.file = file;
-            this.error = error;
-        }
-
-        @Override
-        public void run()
-        {
-            DownloadErrorDialog dialog = new DownloadErrorDialog(
-                null,
-                file.getDisplayName(),
-                "Driver file download failed.\nDo you want to retry?",
-                error);
-            result = dialog.open();
-        }
-    }
-
     public static class DownloadErrorDialog extends ErrorDialog {
 
-        public DownloadErrorDialog(
-            Shell parentShell,
-            String dialogTitle,
-            String message,
-            Throwable error)
+        DownloadErrorDialog(
+                Shell parentShell,
+                String dialogTitle,
+                String message,
+                Throwable error)
         {
             super(parentShell, dialogTitle, message,
                 GeneralUtils.makeExceptionStatus(error),
