@@ -44,9 +44,7 @@ import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -124,6 +122,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     }
 
     public DBPPreferenceStore getActivePreferenceStore() {
+        if (this instanceof IDataSourceContainerProvider) {
+            DBPDataSourceContainer container = ((IDataSourceContainerProvider) this).getDataSourceContainer();
+            if (container != null) {
+                return container.getPreferenceStore();
+            }
+        }
         DBPDataSource dataSource = getDataSource();
         return dataSource == null ? DBeaverCore.getGlobalPreferenceStore() : dataSource.getContainer().getPreferenceStore();
     }
