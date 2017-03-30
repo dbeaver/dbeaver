@@ -1028,7 +1028,11 @@ public class SQLEditor extends SQLEditorBase implements
             }
             closeExtraResultTabs(curQueryProcessor);
             if (firstResults.tabItem != null) {
-                resultTabs.setSelection(firstResults.tabItem);
+                // Do not switch tab if Output tab is active
+                CTabItem selectedTab = resultTabs.getSelection();
+                if (selectedTab == null || selectedTab.getData() != outputViewer) {
+                    resultTabs.setSelection(firstResults.tabItem);
+                }
             }
             curQueryProcessor.processQueries(queries, false, export);
         }
