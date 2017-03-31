@@ -202,8 +202,10 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 showUtilityObjects.setSelection(dataSourceDescriptor.isShowUtilityObjects());
                 readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
                 isolationLevel.add("");
-                if (dataSourceDescriptor.isConnected()) {
-                    DBPDataSource dataSource = dataSourceDescriptor.getDataSource();
+
+                DataSourceDescriptor originalDataSource = getWizard().getOriginalDataSource();
+                if (originalDataSource != null && originalDataSource.isConnected()) {
+                    DBPDataSource dataSource = originalDataSource.getDataSource();
                     isolationLevel.setEnabled(!autocommit.getSelection());
                     supportedLevels.clear();
                     DBPTransactionIsolation defaultLevel = dataSourceDescriptor.getActiveTransactionsIsolation();

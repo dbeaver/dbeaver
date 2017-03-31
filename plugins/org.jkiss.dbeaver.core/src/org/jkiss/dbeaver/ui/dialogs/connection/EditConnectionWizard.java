@@ -79,6 +79,12 @@ public class EditConnectionWizard extends ConnectionWizard
         return dataSource;
     }
 
+    @NotNull
+    @Override
+    public DataSourceDescriptor getOriginalDataSource() {
+        return originalDataSource;
+    }
+
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
         return dataSource.getRegistry();
