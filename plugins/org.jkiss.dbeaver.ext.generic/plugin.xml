@@ -758,7 +758,7 @@
                     description="Apache Drill JDBC"
                     webURL="https://drill.apache.org/"
                     category="Hadoop">
-                    <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc:RELEASE"/>
+                    <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc-all:RELEASE"/>
                 </driver>
 
                 <!-- Cloudera -->
