@@ -302,7 +302,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
 
             // Check and invalidate connection
             if (!connectionInvalidated && dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
-                executionContext.invalidateContext(session.getProgressMonitor());
+                executionContext.invalidateContext(session.getProgressMonitor(), true);
                 connectionInvalidated = true;
             }
 

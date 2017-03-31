@@ -472,7 +472,7 @@ public class JDBCUtils {
     public static boolean isConnectionAlive(DBPDataSource dataSource, Connection connection)
     {
         try {
-            if (connection.isClosed()) {
+            if (connection == null || connection.isClosed()) {
                 return false;
             }
         } catch (SQLException e) {

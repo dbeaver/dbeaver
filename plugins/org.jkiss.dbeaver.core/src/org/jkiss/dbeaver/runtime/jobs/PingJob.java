@@ -54,7 +54,7 @@ public class PingJob extends AbstractJob
             } catch (Exception e) {
                 log.debug("Context [" + dataSource.getName() + "::" + context.getContextName() + "] check failed: " + e.getMessage());
                 if (e instanceof DBException) {
-                    final List<InvalidateJob.ContextInvalidateResult> results = InvalidateJob.invalidateDataSource(monitor, dataSource);
+                    final List<InvalidateJob.ContextInvalidateResult> results = InvalidateJob.invalidateDataSource(monitor, dataSource, false);
                     log.debug("Connection invalidated: " + results);
                 }
             }
