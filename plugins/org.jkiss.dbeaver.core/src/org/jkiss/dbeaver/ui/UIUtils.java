@@ -863,7 +863,7 @@ public class UIUtils {
     {
         for (IStatus s = status; s != null; ) {
             if (s.getException() instanceof DBException) {
-                if (showDatabaseError(shell, title, message, (DBException) s.getException())) {
+                if (showDatabaseError(shell, message, (DBException) s.getException())) {
                     // If this DB error was handled by some DB-specific way then just don't care about it
                     return;
                 }
@@ -1331,20 +1331,17 @@ public class UIUtils {
         }
     }
 
-    public static boolean showDatabaseError(Shell shell, String title, String message, DBException error)
+    public static boolean showDatabaseError(Shell shell, String message, DBException error)
     {
         DBPDataSource dataSource = error.getDataSource();
-        DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, dataSource);
-        if (errorAssistant != null) {
-            DBPErrorAssistant.ErrorType errorType = ((DBPErrorAssistant) dataSource).discoverErrorType(error);
-            switch (errorType) {
-                case CONNECTION_LOST:
-                    DataSourceInvalidateHandler.showConnectionLostDialog(shell, message, error);
-                    return true;
-                case DRIVER_CLASS_MISSING:
-                    DriverEditDialog.showBadConfigDialog(shell, message, error);
-                    return true;
-            }
+        DBPErrorAssistant.ErrorType errorType = DBUtils.discoverErrorType(dataSource, error);
+        switch (errorType) {
+            case CONNECTION_LOST:
+                DataSourceInvalidateHandler.showConnectionLostDialog(shell, message, error);
+                return true;
+            case DRIVER_CLASS_MISSING:
+                DriverEditDialog.showBadConfigDialog(shell, message, error);
+                return true;
         }
 
         return false;

@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
+import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -650,11 +651,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    public ErrorType discoverErrorType(@NotNull DBException error)
+    public ErrorType discoverErrorType(@NotNull Throwable error)
     {
         if (isMariaDB()) {
             // MariaDB-specific. They have bad SQLState support
-            if ("08".equals(error.getDatabaseState())) {
+            if ("08".equals(SQLState.getStateFromException(error))) {
                 return ErrorType.CONNECTION_LOST;
             }
         }

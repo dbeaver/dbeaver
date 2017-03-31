@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
@@ -202,6 +203,15 @@ public class OracleDataSource extends JDBCDataSource
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData) {
         return new JDBCDataSourceInfo(metaData);
+    }
+
+    @Override
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
+        Throwable rootCause = GeneralUtils.getRootCause(error);
+        if (rootCause instanceof SQLException && ((SQLException) rootCause).getErrorCode() == OracleConstants.EC_FEATURE_NOT_SUPPORTED) {
+            return ErrorType.FEATURE_UNSUPPORTED;
+        }
+        return super.discoverErrorType(error);
     }
 
     @Override

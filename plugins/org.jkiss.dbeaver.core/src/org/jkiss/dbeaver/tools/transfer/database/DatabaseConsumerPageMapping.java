@@ -276,7 +276,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             }
                         }
                     } catch (DBException e1) {
-                        UIUtils.showDatabaseError(getShell(), "Mapping error", "Error mapping table", e1);
+                        UIUtils.showDatabaseError(getShell(), "Error mapping table", e1);
                     }
                 }
             });
@@ -415,7 +415,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     mappingViewer.update(element, null);
                     updatePageCompletion();
                 } catch (DBException e) {
-                    UIUtils.showDatabaseError(getShell(), "Mapping error", "Error setting target table", e);
+                    UIUtils.showDatabaseError(getShell(), "Error setting target table", e);
                 }
             }
         });
@@ -616,7 +616,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         mapping.refreshMappingType(getWizard().getContainer(), DatabaseMappingType.unspecified);
                     }
                 } catch (DBException e) {
-                    UIUtils.showDatabaseError(getShell(), "Mapping error", "Error mapping table", e);
+                    UIUtils.showDatabaseError(getShell(), "Error mapping table", e);
                 }
                 mappingViewer.refresh();
                 updatePageCompletion();
@@ -637,7 +637,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 mappingViewer.refresh();
                 updatePageCompletion();
             } catch (DBException e) {
-                UIUtils.showDatabaseError(getShell(), "Mapping error", "Error mapping new table", e);
+                UIUtils.showDatabaseError(getShell(), "Error mapping new table", e);
             }
         }
     }

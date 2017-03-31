@@ -139,6 +139,11 @@ public class OracleConstants {
     public static final DBSEntityConstraintType CONSTRAINT_SUPPLEMENTAL_LOGGING = new DBSEntityConstraintType("S", "Supplemental logging", null, false, false, false);
 
     /**
+     * Oracle error codes
+     */
+    public static final int EC_FEATURE_NOT_SUPPORTED = 17023;
+
+    /**
      * Connection type
      */
     public enum ConnectionType {
