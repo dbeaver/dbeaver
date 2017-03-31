@@ -102,6 +102,11 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         return info;
     }
 
+    public DataSourceDescriptor getOriginalDataSource() {
+        return null;
+    }
+
+
     public void testConnection()
     {
         DataSourceDescriptor dataSource = getPageSettings().getActiveDataSource();
