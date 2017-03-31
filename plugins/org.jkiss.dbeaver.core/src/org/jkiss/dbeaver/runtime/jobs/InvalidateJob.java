@@ -76,12 +76,12 @@ public class InvalidateJob extends DataSourceJob
     {
         DBPDataSource dataSource = getExecutionContext().getDataSource();
 
-        this.invalidateResults = invalidateDataSource(monitor, dataSource);
+        this.invalidateResults = invalidateDataSource(monitor, dataSource, true);
 
         return Status.OK_STATUS;
     }
 
-    public static List<ContextInvalidateResult> invalidateDataSource(DBRProgressMonitor monitor, DBPDataSource dataSource) {
+    public static List<ContextInvalidateResult> invalidateDataSource(DBRProgressMonitor monitor, DBPDataSource dataSource, boolean disconnectOnFailure) {
         long timeSpent = 0;
         List<ContextInvalidateResult> invalidateResults = new ArrayList<>();
 
@@ -108,7 +108,7 @@ public class InvalidateJob extends DataSourceJob
             for (DBCExecutionContext context : allContexts) {
                 long startTime = System.currentTimeMillis();
                 try {
-                    final DBCExecutionContext.InvalidateResult result = context.invalidateContext(monitor);
+                    final DBCExecutionContext.InvalidateResult result = context.invalidateContext(monitor, disconnectOnFailure);
                     if (result != DBCExecutionContext.InvalidateResult.ERROR) {
                         hasGoodContexts = true;
                     }
@@ -120,7 +120,7 @@ public class InvalidateJob extends DataSourceJob
                 }
             }
         }
-        if (!hasGoodContexts) {
+        if (!hasGoodContexts && disconnectOnFailure) {
             // Close whole datasource. Target host seems to be unavailable
             try {
                 container.disconnect(monitor);

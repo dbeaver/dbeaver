@@ -142,7 +142,7 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
 
     @NotNull
     @Override
-    public InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor) throws DBException
+    public InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor, boolean closeOnFailure) throws DBException
     {
         throw new DBException("Connection invalidate not supported");
     }

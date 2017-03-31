@@ -87,9 +87,10 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
      *
      * @throws org.jkiss.dbeaver.DBException on any error
      * @param monitor progress monitor
+     * @param closeOnFailure
      * @return true if reconnect was applied false if connection is alive and nothing was done.
      */
     @NotNull
-    InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor) throws DBException;
+    InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor, boolean closeOnFailure) throws DBException;
 
 }
