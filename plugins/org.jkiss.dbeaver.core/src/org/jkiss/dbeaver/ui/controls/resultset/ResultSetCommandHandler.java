@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -252,7 +253,11 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     if (buffer.length() > 0) {
                         buffer.append("\t");
                     }
-                    buffer.append(attr.getName());
+                    String colName = attr.getLabel();
+                    if (CommonUtils.isEmpty(colName)) {
+                        colName = attr.getName();
+                    }
+                    buffer.append(colName);
                 }
                 ResultSetUtils.copyToClipboard(buffer.toString());
                 break;
