@@ -593,16 +593,17 @@ public abstract class JDBCDataSource
     // Error assistance
 
     @Override
-    public ErrorType discoverErrorType(@NotNull DBException error)
+    public ErrorType discoverErrorType(@NotNull Throwable error)
     {
-        String sqlState = error.getDatabaseState();
-        if (SQLState.SQL_08000.getCode().equals(sqlState) ||
-            SQLState.SQL_08003.getCode().equals(sqlState) ||
-            SQLState.SQL_08006.getCode().equals(sqlState) ||
-            SQLState.SQL_08007.getCode().equals(sqlState) ||
-            SQLState.SQL_08S01.getCode().equals(sqlState))
-        {
-            return ErrorType.CONNECTION_LOST;
+        String sqlState = SQLState.getStateFromException(error);
+        if (sqlState != null) {
+            if (SQLState.SQL_08000.getCode().equals(sqlState) ||
+                    SQLState.SQL_08003.getCode().equals(sqlState) ||
+                    SQLState.SQL_08006.getCode().equals(sqlState) ||
+                    SQLState.SQL_08007.getCode().equals(sqlState) ||
+                    SQLState.SQL_08S01.getCode().equals(sqlState)) {
+                return ErrorType.CONNECTION_LOST;
+            }
         }
         if (GeneralUtils.getRootCause(error) instanceof SocketException) {
             return ErrorType.CONNECTION_LOST;

@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
@@ -31,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLState;
 
 import java.sql.*;
 import java.util.Map;
@@ -106,6 +109,13 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError e) {
                     return prepareCall(sqlQuery);
                 }
+                catch (SQLException e) {
+                    if (DBUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
+                        return prepareCall(sqlQuery);
+                    } else {
+                        throw e;
+                    }
+                }
             } else if (type == DBCStatementType.SCRIPT) {
                 // Just simplest statement for scripts
                 // Sometimes prepared statements perform additional checks of queries
@@ -145,6 +155,13 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError e) {
                     return prepareStatement(sqlQuery);
                 }
+                catch (SQLException e) {
+                    if (DBUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
+                        return prepareStatement(sqlQuery);
+                    } else {
+                        throw e;
+                    }
+                }
             } else {
                 try {
                     // Generic prepared statement
@@ -155,6 +172,13 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 }
                 catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError e) {
                     return prepareStatement(sqlQuery);
+                }
+                catch (SQLException e) {
+                    if (DBUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
+                        return prepareStatement(sqlQuery);
+                    } else {
+                        throw e;
+                    }
                 }
             }
         }

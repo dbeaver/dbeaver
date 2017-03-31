@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -33,7 +31,8 @@ public interface DBPErrorAssistant
         NORMAL,
         CONNECTION_LOST,
         DRIVER_CLASS_MISSING,
-        PERMISSION_DENIED
+        PERMISSION_DENIED,
+        FEATURE_UNSUPPORTED
     }
 
     class ErrorPosition
@@ -51,7 +50,7 @@ public interface DBPErrorAssistant
         }
     }
 
-    ErrorType discoverErrorType(@NotNull DBException error);
+    ErrorType discoverErrorType(@NotNull Throwable error);
 
     @Nullable
     ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error);

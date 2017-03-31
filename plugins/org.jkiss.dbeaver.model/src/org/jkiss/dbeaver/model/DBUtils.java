@@ -1394,4 +1394,13 @@ public final class DBUtils {
         return purpose == null ? productTitle : productTitle + " - " + purpose;
     }
 
+    @NotNull
+    public static DBPErrorAssistant.ErrorType discoverErrorType(@NotNull DBPDataSource dataSource, @NotNull Throwable error) {
+        DBPErrorAssistant errorAssistant = getAdapter(DBPErrorAssistant.class, dataSource);
+        if (errorAssistant != null) {
+            return ((DBPErrorAssistant) dataSource).discoverErrorType(error);
+        }
+
+        return DBPErrorAssistant.ErrorType.NORMAL;
+    }
 }
