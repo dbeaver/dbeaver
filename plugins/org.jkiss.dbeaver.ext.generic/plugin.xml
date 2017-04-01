@@ -654,6 +654,7 @@
                     <property name="quotechar" value="&quot;"/>
                     <property name="fileExtension" value=".csv"/>
                     <property name="suppressHeaders" value="false"/>
+                    <property name="charset" value="UTF-8"/>
                     <parameter name="supports-stored-code" value="false"/>
                     <!--<file type="jar" path="repo:/drivers/csvjdbc/csvjdbc-1.0-23.jar"/>-->
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE"/>
