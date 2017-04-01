@@ -15,20 +15,24 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
+package org.jkiss.dbeaver.model.sql;
 
-import org.eclipse.jface.text.rules.Token;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * SQLControlToken
- *
- * Control tokens are used for local SQL script evaluation.
+ * SQL script execution context
  */
-public class SQLControlToken extends Token {
+public class SQLScriptContext {
 
-    public SQLControlToken(Object data)
-    {
-        super(data);
+    private final Map<String, Object> variables = new HashMap<>();
+    private final Map<String, Object> pragmas = new HashMap<>();
+
+    public Map<String, Object> getVariables() {
+        return variables;
     }
 
+    public Map<String, Object> getPragmas() {
+        return pragmas;
+    }
 }

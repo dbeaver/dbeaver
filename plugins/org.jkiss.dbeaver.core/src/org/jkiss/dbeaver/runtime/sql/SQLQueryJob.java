@@ -79,6 +79,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     private long rsOffset;
     private long rsMaxRows;
 
+    private SQLScriptContext scriptContext;
     private DBCStatement curStatement;
     private final List<DBCResultSet> curResultSets = new ArrayList<>();
     private Throwable lastError = null;
@@ -144,6 +145,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     {
         RuntimeUtils.setThreadName("SQL script execution");
         statistics = new DBCStatistics();
+        scriptContext = new SQLScriptContext();
         try {
             DBCExecutionContext context = getExecutionContext();
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
@@ -277,7 +279,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         final DBCExecutionContext executionContext = getExecutionContext();
         final DBPDataSource dataSource = executionContext.getDataSource();
 
-        final SQLQuery originalQuery = (SQLQuery) sqlQuery;
+        final SQLQuery originalQuery = sqlQuery;
         long startTime = System.currentTimeMillis();
         boolean startQueryAlerted = false;
 

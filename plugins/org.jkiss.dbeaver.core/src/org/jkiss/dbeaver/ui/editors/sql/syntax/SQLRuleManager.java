@@ -30,6 +30,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -172,10 +173,10 @@ public class SQLRuleManager extends RuleBasedScanner {
         {
             final SQLControlToken controlToken = new SQLControlToken(
                     new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMAND), null, SWT.BOLD));
-            String commandPrefix = SQLControlToken.DEFAULT_PREFIX;
+            String commandPrefix = syntaxManager.getControlCommandPrefix();
 
             // Control rules
-            for (String controlCommand : SQLControlToken.COMMANDS) {
+            for (String controlCommand : SQLControlCommand.COMMANDS) {
                 rules.add(new EndOfLineRule(commandPrefix + controlCommand, controlToken)); //$NON-NLS-1$
             }
         }
