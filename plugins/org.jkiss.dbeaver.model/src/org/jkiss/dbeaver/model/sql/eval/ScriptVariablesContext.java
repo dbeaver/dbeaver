@@ -14,24 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.sql;
+package org.jkiss.dbeaver.model.sql.eval;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.sql.SQLControlCommand;
+import org.apache.commons.jexl2.JexlContext;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 
 /**
- * Control command handler
+ * ScriptVariablesContext
  */
-public interface SQLControlCommandHandler
-{
-    /**
-     *
-     * @param command       command
-     * @param scriptContext script context
-     * @return false if command failed and execution has to be stopped
-     */
-    boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext)
-        throws DBException;
+public class ScriptVariablesContext implements JexlContext {
 
+    private final SQLScriptContext scriptContext;
+
+    public ScriptVariablesContext(SQLScriptContext scriptContext) {
+        this.scriptContext = scriptContext;
+    }
+
+    @Override
+    public Object get(String name) {
+        return scriptContext.getVariables().get(name);
+    }
+
+    @Override
+    public void set(String name, Object value) {
+        scriptContext.getVariables().put(name, value);
+    }
+
+    @Override
+    public boolean has(String name) {
+        return scriptContext.getVariables().containsKey(name);
+    }
 }

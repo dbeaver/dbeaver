@@ -39,6 +39,8 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.registry.sql.SQLCommandHandlerDescriptor;
+import org.jkiss.dbeaver.registry.sql.SQLCommandsRegistry;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIConfirmation;
@@ -66,6 +68,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
 
     private final DBSDataContainer dataContainer;
     private final List<SQLScriptElement> queries;
+    private final SQLScriptContext scriptContext;
     private final SQLResultsConsumer resultsConsumer;
     private final SQLQueryListener listener;
     private final IWorkbenchPartSite partSite;
@@ -79,7 +82,6 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     private long rsOffset;
     private long rsMaxRows;
 
-    private SQLScriptContext scriptContext;
     private DBCStatement curStatement;
     private final List<DBCResultSet> curResultSets = new ArrayList<>();
     private Throwable lastError = null;
@@ -95,6 +97,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSDataContainer dataContainer,
         @NotNull List<SQLScriptElement> queries,
+        @NotNull SQLScriptContext scriptContext,
         @NotNull SQLResultsConsumer resultsConsumer,
         @Nullable SQLQueryListener listener)
     {
@@ -102,6 +105,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         this.dataContainer = dataContainer;
         this.partSite = partSite;
         this.queries = queries;
+        this.scriptContext = scriptContext;
         this.resultsConsumer = resultsConsumer;
         this.listener = listener;
 
@@ -145,7 +149,6 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     {
         RuntimeUtils.setThreadName("SQL script execution");
         statistics = new DBCStatistics();
-        scriptContext = new SQLScriptContext();
         try {
             DBCExecutionContext context = getExecutionContext();
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
@@ -271,7 +274,15 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLScriptElement element, final boolean fireEvents)
     {
         if (element instanceof SQLControlCommand) {
-            return executeControlCommand((SQLControlCommand)element);
+            try {
+                return executeControlCommand((SQLControlCommand)element);
+            } catch (Throwable e) {
+                if (!(e instanceof DBException)) {
+                    log.error("Unexpected error while processing SQL command", e);
+                }
+                lastError = e;
+                return false;
+            }
         }
         SQLQuery sqlQuery = (SQLQuery) element;
         lastError = null;
@@ -431,8 +442,12 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         return true;
     }
 
-    private boolean executeControlCommand(SQLControlCommand command) {
-        return true;
+    private boolean executeControlCommand(SQLControlCommand command) throws DBException {
+        SQLCommandHandlerDescriptor commandHandler = SQLCommandsRegistry.getInstance().getCommandHandler(command.getText());
+        if (commandHandler == null) {
+            throw new DBException("Command '" + command.getText() + "' not supported");
+        }
+        return commandHandler.createHandler().handleCommand(command, scriptContext);
     }
 
     private void showExecutionResult(DBCSession session) {

@@ -742,6 +742,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     String controlText = document.get(tokenOffset, tokenLength);
                     return new SQLControlCommand(
                             getDataSource(),
+                            syntaxManager,
                             controlText.trim(),
                             tokenOffset,
                             tokenLength);
