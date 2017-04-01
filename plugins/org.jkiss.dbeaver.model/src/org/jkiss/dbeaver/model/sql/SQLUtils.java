@@ -204,6 +204,19 @@ public final class SQLUtils {
         return CommonUtils.notEmpty(string).replace("'", "''");
     }
 
+    public static String unQuoteString(String string)
+    {
+        if (string.length() > 1 && string.charAt(0) == '\'' && string.charAt(string.length() - 1) == '\'') {
+            return unEscapeString(string.substring(1, string.length() - 1));
+        }
+        return string;
+    }
+
+    public static String unEscapeString(String string)
+    {
+        return CommonUtils.notEmpty(string).replace("''", "'");
+    }
+
     public static String getFirstKeyword(String query)
     {
         int startPos = 0, endPos = -1;

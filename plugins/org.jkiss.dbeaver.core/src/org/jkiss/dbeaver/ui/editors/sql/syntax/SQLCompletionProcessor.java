@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.Position;
-import org.eclipse.jface.text.Region;
-import org.eclipse.jface.text.TextPresentation;
+import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
 import org.eclipse.jface.text.templates.Template;
 import org.jkiss.code.NotNull;
@@ -101,8 +98,15 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             return makeTemplateProposals(viewer, request);
         }
 
-        if (editor.getSyntaxManager().getControlCommandPrefix().equals(request.wordDetector.getPrevDelimiter())) {
-            return makeCommandProposals(request, request.wordPart);
+        try {
+            String commandPrefix = editor.getSyntaxManager().getControlCommandPrefix();
+            if (request.wordDetector.getStartOffset() >= commandPrefix.length() &&
+                viewer.getDocument().get(request.wordDetector.getStartOffset() - commandPrefix.length(), commandPrefix.length()).equals(commandPrefix))
+            {
+                return makeCommandProposals(request, request.wordPart);
+            }
+        } catch (BadLocationException e) {
+            log.debug(e);
         }
 
         String searchPrefix = request.wordPart;

@@ -52,7 +52,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         // Restore saved values from registry
         SQLQueryParameterRegistry registry = SQLQueryParameterRegistry.getInstance();
         for (SQLQueryParameter param : this.parameters) {
-            if (param.isNamed()) {
+            if (param.isNamed() && param.getValue() == null) {
                 SQLQueryParameterRegistry.ParameterInfo paramInfo = registry.getParameter(param.getName());
                 if (paramInfo != null) {
                     param.setValue(paramInfo.value);
