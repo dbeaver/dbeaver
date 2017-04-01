@@ -48,16 +48,16 @@ import java.util.regex.Pattern;
 /**
  * SQLQuery
  */
-public class SQLQuery {
+public class SQLQuery implements SQLScriptElement {
 
     private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("(?:--|/\\*)\\s*(?:NAME|TITLE)\\s*:\\s*(.+)\\s*", Pattern.CASE_INSENSITIVE);
 
     @Nullable
     private final DBPDataSource dataSource;
     @NotNull
-    private String originalQuery;
+    private String originalText;
     @NotNull
-    private String query;
+    private String text;
     private int offset;
     private int length;
     private Object data;
@@ -70,37 +70,37 @@ public class SQLQuery {
     private List<SQLSelectItem> selectItems;
     private String queryTitle;
 
-    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String query)
+    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text)
     {
-        this(dataSource, query, 0, query.length());
+        this(dataSource, text, 0, text.length());
     }
 
     /**
      * Copy constructor.
      * Copies query state but sets new query string.
      */
-    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String query, @NotNull SQLQuery sourceQuery) {
-        this(dataSource, query, sourceQuery, true);
+    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text, @NotNull SQLQuery sourceQuery) {
+        this(dataSource, text, sourceQuery, true);
     }
 
-    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String query, @NotNull SQLQuery sourceQuery, boolean preserveOriginal) {
-        this(dataSource, query, sourceQuery.offset, sourceQuery.length);
+    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text, @NotNull SQLQuery sourceQuery, boolean preserveOriginal) {
+        this(dataSource, text, sourceQuery.offset, sourceQuery.length);
         if (preserveOriginal) {
-            this.originalQuery = sourceQuery.originalQuery;
+            this.originalText = sourceQuery.originalText;
         }
         this.parameters = sourceQuery.parameters;
         this.data = sourceQuery.data;
     }
 
-    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String query, int offset, int length)
+    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text, int offset, int length)
     {
         this.dataSource = dataSource;
-        this.originalQuery = this.query = query;
+        this.originalText = this.text = text;
         this.offset = offset;
         this.length = length;
 
         try {
-            statement = CCJSqlParserUtil.parse(query);
+            statement = CCJSqlParserUtil.parse(text);
             if (statement instanceof Select) {
                 type = SQLQueryType.SELECT;
                 // Detect single source table
@@ -153,7 +153,7 @@ public class SQLQuery {
         }
         // Extract query title
         queryTitle = null;
-        final Matcher matcher = QUERY_TITLE_PATTERN.matcher(query);
+        final Matcher matcher = QUERY_TITLE_PATTERN.matcher(text);
         if (matcher.find()) {
             queryTitle = matcher.group(1);
         }
@@ -199,18 +199,18 @@ public class SQLQuery {
     }
 
     @NotNull
-    public String getOriginalQuery() {
-        return originalQuery;
+    public String getOriginalText() {
+        return originalText;
     }
 
     @NotNull
-    public String getQuery()
+    public String getText()
     {
-        return query;
+        return text;
     }
 
-    public void setQuery(@NotNull String query) {
-        this.query = query;
+    public void setText(@NotNull String text) {
+        this.text = text;
     }
 
     public String getQueryTitle() {
@@ -264,7 +264,7 @@ public class SQLQuery {
     }
 
     public void reset() {
-        this.query = this.originalQuery;
+        this.text = this.originalText;
         if (this.parameters != null) {
             setParameters(this.parameters);
         }
@@ -273,7 +273,7 @@ public class SQLQuery {
     @Override
     public String toString()
     {
-        return query;
+        return text;
     }
 
     private static class SingleTableMeta implements DBCEntityMetaData {
@@ -338,6 +338,6 @@ public class SQLQuery {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof SQLQuery && query.equals(((SQLQuery) obj).query);
+        return obj instanceof SQLQuery && text.equals(((SQLQuery) obj).text);
     }
 }

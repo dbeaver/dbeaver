@@ -849,7 +849,7 @@ public class SQLEditor extends SQLEditorBase implements
             final CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
             item.setControl(planView.getControl());
             item.setText("Exec. Plan");
-            item.setToolTipText("Execution plan for\n" + sqlQuery.getQuery());
+            item.setToolTipText("Execution plan for\n" + sqlQuery.getText());
             item.setImage(IMG_EXPLAIN_PLAN);
             item.setData(planView);
             UIUtils.disposeControlOnItemDispose(item);
@@ -873,7 +873,7 @@ public class SQLEditor extends SQLEditorBase implements
             @Override
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Prepare plan query")) {
-                    DBCPlan plan = planner.planQueryExecution(session, sqlQuery.getQuery());
+                    DBCPlan plan = planner.planQueryExecution(session, sqlQuery.getText());
                     planQueryString[0] = plan.getPlanQueryString();
                 } catch (Exception e) {
                     log.error(e);
@@ -1375,7 +1375,7 @@ public class SQLEditor extends SQLEditorBase implements
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 if (select) {
                     selectAndReveal(query.getOffset(), query.getLength());
-                    setStatus(query.getQuery(), DBPMessageType.INFORMATION);
+                    setStatus(query.getText(), DBPMessageType.INFORMATION);
                 } else {
                     getSourceViewer().revealRange(query.getOffset(), query.getLength());
                 }
@@ -1601,7 +1601,7 @@ public class SQLEditor extends SQLEditorBase implements
                         resultsProvider.query = statement;
                         resultsProvider.lastGoodQuery = statement;
                         String tabName = null;
-                        String toolTip = CommonUtils.truncateString(statement.getQuery(), 1000);
+                        String toolTip = CommonUtils.truncateString(statement.getText(), 1000);
                         // Special statements (not real statements) have their name in data
                         if (isStatsResult) {
                             tabName = "Statistics";
@@ -1852,7 +1852,7 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public String getName()
         {
-            String name = lastGoodQuery == null ? null : lastGoodQuery.getOriginalQuery();
+            String name = lastGoodQuery == null ? null : lastGoodQuery.getOriginalText();
             if (name == null) {
                 name = "SQL";
             }
@@ -1869,7 +1869,7 @@ public class SQLEditor extends SQLEditorBase implements
         public String toString() {
             return query == null ?
                 "SQL Query / " + SQLEditor.this.getEditorInput().getName() :
-                query.getOriginalQuery();
+                query.getOriginalText();
         }
 
         @Override
@@ -2013,7 +2013,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
                 DBeaverUI.notifyAgent(
                         "Query completed [" + getEditorInput().getName() + "]" + GeneralUtils.getDefaultLineSeparator() +
-                                CommonUtils.truncateString(query.getQuery(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
+                                CommonUtils.truncateString(query.getText(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
             }
         }
 

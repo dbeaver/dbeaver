@@ -264,7 +264,7 @@ class SQLCompletionAnalyzer
         if (request.activeQuery == null) {
             final SQLQuery queryAtPos = request.editor.extractQueryAtPos(request.documentOffset);
             if (queryAtPos != null) {
-                request.activeQuery = queryAtPos.getQuery() + " ";
+                request.activeQuery = queryAtPos.getText() + " ";
             }
         }
         if (request.activeQuery == null) {

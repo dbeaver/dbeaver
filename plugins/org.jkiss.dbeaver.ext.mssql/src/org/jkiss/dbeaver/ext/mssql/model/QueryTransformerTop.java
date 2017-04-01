@@ -71,7 +71,7 @@ public class QueryTransformerTop implements DBCQueryTransformer {
                 log.debug(e);
             }
         }
-        return query.getQuery();
+        return query.getText();
     }
 
     @Override

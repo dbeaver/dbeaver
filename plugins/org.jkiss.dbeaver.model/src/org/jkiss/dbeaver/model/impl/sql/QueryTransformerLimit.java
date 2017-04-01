@@ -55,7 +55,7 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
         boolean plainSelect = query.isPlainSelect();
         if (!plainSelect && query.getType() == SQLQueryType.UNKNOWN) {
             // Not parsed. Try to check with simple matcher
-            String testQuery = query.getQuery().toUpperCase().trim();
+            String testQuery = query.getText().toUpperCase().trim();
             plainSelect = testQuery.startsWith("SELECT") &&
                 !testQuery.contains("LIMIT") &&
                 !testQuery.contains("INTO") &&
@@ -65,13 +65,13 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
         if (!plainSelect) {
             // Do not use limit if it is not a select or it already has LIMIT or it is SELECT INTO statement
             limitSet = false;
-            newQuery = query.getQuery();
+            newQuery = query.getText();
         } else {
             if (supportsOffset) {
-                newQuery = query.getQuery() + "\n" + KEYWORD_LIMIT + " " + offset + ", " + length;
+                newQuery = query.getText() + "\n" + KEYWORD_LIMIT + " " + offset + ", " + length;
             } else {
                 // We can limit only total row number
-                newQuery = query.getQuery() + "\n" + KEYWORD_LIMIT + " " + (offset.longValue() + length.longValue());
+                newQuery = query.getText() + "\n" + KEYWORD_LIMIT + " " + (offset.longValue() + length.longValue());
             }
             limitSet = supportsOffset;
         }

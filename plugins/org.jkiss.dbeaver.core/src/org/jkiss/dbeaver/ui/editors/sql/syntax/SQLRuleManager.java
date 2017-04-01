@@ -169,6 +169,17 @@ public class SQLRuleManager extends RuleBasedScanner {
             }
         }
 
+        {
+            final SQLControlToken controlToken = new SQLControlToken(
+                    new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMAND), null, SWT.BOLD));
+            String commandPrefix = SQLControlToken.DEFAULT_PREFIX;
+
+            // Control rules
+            for (String controlCommand : SQLControlToken.COMMANDS) {
+                rules.add(new EndOfLineRule(commandPrefix + controlCommand, controlToken)); //$NON-NLS-1$
+            }
+        }
+
         // Add rules for delimited identifiers and string literals.
         //char escapeChar = syntaxManager.getEscapeChar();
         String quoteSymbol = syntaxManager.getQuoteSymbol();

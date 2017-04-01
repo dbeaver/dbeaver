@@ -220,8 +220,8 @@ public class ExplainPlanViewer implements IPropertyChangeListener
                 SWT.ICON_ERROR);
             return;
         }
-        sqlText.setText(query.getQuery());
-        planTree.init(this.executionContext, planner, query.getQuery());
+        sqlText.setText(query.getText());
+        planTree.init(this.executionContext, planner, query.getText());
         planTree.loadData();
 
         refreshPlanAction.setEnabled(true);

@@ -490,7 +490,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         }
         // Check query do not ends with delimiter
         // (this may occur if user selected statement including delimiter)
-        if (sqlQuery == null || CommonUtils.isEmpty(sqlQuery.getQuery())) {
+        if (sqlQuery == null || CommonUtils.isEmpty(sqlQuery.getText())) {
             return null;
         }
         if (getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
@@ -641,34 +641,33 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             int tokenOffset = ruleManager.getTokenOffset();
             final int tokenLength = ruleManager.getTokenLength();
             boolean isDelimiter = token instanceof SQLDelimiterToken;
+            boolean isControl = false;
             String delimiterText = null;
             if (isDelimiter) {
+                // Save delimiter text
                 try {
                     delimiterText = document.get(tokenOffset, tokenLength);
                 } catch (BadLocationException e) {
                     log.debug(e);
-                    delimiterText = "";
                 }
-            }
-            if (!isDelimiter) {
-                if (useBlankLines && token.isWhitespace() && tokenLength >= 2) {
-                    // Check for blank line delimiter
-                    try {
-                        int lfCount = 0;
-                        for (int i = tokenOffset; i < tokenOffset + tokenLength; i++) {
-                            if (document.getChar(i) == '\n') {
-                                lfCount++;
-                            }
+            } else if (useBlankLines && token.isWhitespace() && tokenLength >= 2) {
+                // Check for blank line delimiter
+                try {
+                    int lfCount = 0;
+                    for (int i = tokenOffset; i < tokenOffset + tokenLength; i++) {
+                        if (document.getChar(i) == '\n') {
+                            lfCount++;
                         }
-                        if (lfCount >= 2) {
-                            isDelimiter = true;
-                        }
-                    } catch (BadLocationException e) {
-                        log.error(e);
                     }
+                    if (lfCount >= 2) {
+                        isDelimiter = true;
+                    }
+                } catch (BadLocationException e) {
+                    log.error(e);
                 }
             }
             if (tokenLength == 1) {
+                // Check for bracket block begin/end
                 try {
                     char aChar = document.getChar(tokenOffset);
                     if (aChar == '(' || aChar == '{' || aChar == '[') {
@@ -719,11 +718,29 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             } else if (isDelimiter && bracketDepth > 0) {
                 // Delimiter in some brackets - ignore it
                 continue;
-            } else if (token instanceof SQLSetDelimiterToken) {
-                isDelimiter = true;
+            } else if (token instanceof SQLSetDelimiterToken || token instanceof SQLControlToken) {
+                if (hasValuableTokens) {
+                    isDelimiter = true;
+                } else {
+                    isControl = true;
+                }
             }
 
-            if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
+            if (isControl) {
+                // Control query
+                try {
+                    String controlText = document.get(tokenOffset, tokenLength);
+                    return new SQLQuery(
+                            getDataSource(),
+                            controlText.trim(),
+                            tokenOffset,
+                            tokenLength);
+                } catch (BadLocationException e) {
+                    log.warn("Can't extract control statement", e); //$NON-NLS-1$
+                    return null;
+                }
+            }
+            if ((isControl || hasValuableTokens) && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
                 if (tokenOffset > endPos) {
                     tokenOffset = endPos;
                 }
@@ -754,27 +771,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     String queryText = document.get(statementStart, tokenOffset - statementStart);
                     queryText = SQLUtils.fixLineFeeds(queryText);
 
-                    // FIXME: includes last delimiter in query (Oracle?)
                     if (isDelimiter && hasBlocks && dialect.isDelimiterAfterBlock()) {
                         if (delimiterText != null) {
                             queryText += delimiterText;
                         }
                     }
-                    // FIXME: don't remember what is is for. Delimiters are not in queries anyway
-                    /* else {
-                        Collection<String> delimiterTexts;
-                        if (isDelimiter) {
-                            delimiterTexts = Collections.singleton(delimiterText);
-                        } else {
-                            delimiterTexts = syntaxManager.getStatementDelimiters();
-                        }
-
-                        for (String delim : delimiterTexts) {
-                            if (queryText.endsWith(delim)) {
-                                queryText = queryText.substring(0, queryText.length() - delim.length());
-                            }
-                        }
-                    }*/
                     // make script line
                     return new SQLQuery(
                         getDataSource(),
@@ -792,7 +793,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             if (token.isEOF()) {
                 return null;
             }
-            if (!hasValuableTokens && !token.isWhitespace() && !(token instanceof SQLSetDelimiterToken)) {
+            if (!hasValuableTokens && !token.isWhitespace() && !isControl) {
                 if (token instanceof SQLCommentToken) {
                     hasValuableTokens = dialect.supportsCommentQuery();
                 } else {
@@ -803,7 +804,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     }
 
     protected List<SQLQueryParameter> parseParameters(IDocument document, SQLQuery query) {
-        boolean execQuery = SQLUtils.isExecQuery(getSQLDialect(), query.getQuery());
+        boolean execQuery = SQLUtils.isExecQuery(getSQLDialect(), query.getText());
         List<SQLQueryParameter> parameters = null;
         ruleManager.setRange(document, query.getOffset(), query.getLength());
         int blockDepth = 0;
@@ -913,7 +914,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, context.getDataSource());
             if (errorAssistant != null) {
                 DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(
-                    monitor, context, query.getQuery(), error);
+                    monitor, context, query.getText(), error);
                 if (positions != null && positions.length > 0) {
                     int queryStartOffset = query.getOffset();
                     int queryLength = query.getLength();

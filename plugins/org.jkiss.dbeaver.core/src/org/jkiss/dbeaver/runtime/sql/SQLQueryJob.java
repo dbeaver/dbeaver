@@ -287,7 +287,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         // Modify query (filters + parameters)
         if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
             String filteredQueryText = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(
-                dataSource, originalQuery.getQuery(), dataFilter);
+                dataSource, originalQuery.getText(), dataFilter);
             sqlQuery = new SQLQuery(executionContext.getDataSource(), filteredQueryText, sqlQuery);
         }
 
@@ -306,7 +306,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                 connectionInvalidated = true;
             }
 
-            statistics.setQueryText(originalQuery.getQuery());
+            statistics.setQueryText(originalQuery.getText());
 
             // Notify query start
             if (fireEvents && listener != null) {
@@ -432,7 +432,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         if (statistics.getStatementsCount() > 1 || resultSetNumber == 0) {
             SQLQuery query = new SQLQuery(session.getDataSource(), "", -1, -1);
             if (queries.size() == 1) {
-                query.setQuery(queries.get(0).getQuery());
+                query.setText(queries.get(0).getText());
             }
             query.setData(STATS_RESULTS); // It will set tab name to "Stats"
             DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(query, resultSetNumber);
@@ -474,7 +474,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                 fakeResultSet.addColumn("Query", DBPDataKind.STRING);
                 fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
                 fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
-                fakeResultSet.addRow(query.getQuery(), updateCount, new Date());
+                fakeResultSet.addRow(query.getText(), updateCount, new Date());
             } else {
                 fakeResultSet.addColumn("Result", DBPDataKind.NUMERIC);
             }
@@ -496,12 +496,12 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
 
         // Set values for all parameters
         // Replace parameter tokens with parameter values
-        String query = sqlStatement.getQuery();
+        String query = sqlStatement.getText();
         for (int i = parameters.size(); i > 0; i--) {
             SQLQueryParameter parameter = parameters.get(i - 1);
             query = query.substring(0, parameter.getTokenOffset()) + parameter.getValue() + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
         }
-        sqlStatement.setQuery(query);
+        sqlStatement.setText(query);
         return true;
     }
 
@@ -695,14 +695,14 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             query = queries.get(0);
         } else {
             // Script mode
-            //query.getOriginalQuery();
+            //query.getOriginalText();
         }
         // Reset query to original. Otherwise multiple filters will corrupt it
         query.reset();
 
         statistics = new DBCStatistics();
         resultSetNumber = resultNumber;
-        session.getProgressMonitor().beginTask(CommonUtils.truncateString(query.getQuery(), 512), 1);
+        session.getProgressMonitor().beginTask(CommonUtils.truncateString(query.getText(), 512), 1);
         try {
             boolean result = executeSingleQuery(session, query, true);
             if (!result && lastError != null) {

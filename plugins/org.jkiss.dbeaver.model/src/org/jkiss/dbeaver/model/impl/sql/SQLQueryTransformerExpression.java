@@ -29,7 +29,7 @@ public class SQLQueryTransformerExpression implements SQLQueryTransformer {
     @Override
     public SQLQuery transformQuery(SQLDataSource dataSource, SQLQuery query) throws DBException {
         String dualTableName = dataSource.getSQLDialect().getDualTableName();
-        String newQuery = "SELECT " + query.getQuery();
+        String newQuery = "SELECT " + query.getText();
         if (dualTableName != null) {
             newQuery += " FROM " + dualTableName;
         }
