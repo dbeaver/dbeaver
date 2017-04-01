@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -243,7 +243,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     public IContextInformation[] computeContextInformation(
         ITextViewer viewer, int documentOffset)
     {
-        SQLQuery statementInfo = editor.extractQueryAtPos(documentOffset);
+        SQLScriptElement statementInfo = editor.extractQueryAtPos(documentOffset);
         if (statementInfo == null || CommonUtils.isEmpty(statementInfo.getText())) {
             return null;
         }

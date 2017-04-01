@@ -22,7 +22,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
 public class NavigateQueryHandler extends AbstractHandler {
@@ -38,7 +38,7 @@ public class NavigateQueryHandler extends AbstractHandler {
 
         String actionId = event.getCommand().getId();
 
-        SQLQuery nextQuery;
+        SQLScriptElement nextQuery;
         switch (actionId) {
             case CoreCommands.CMD_SQL_QUERY_NEXT:
                 nextQuery = editor.extractNextQuery(true);

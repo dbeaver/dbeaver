@@ -37,10 +37,7 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
-import org.jkiss.dbeaver.model.sql.SQLQueryResult;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -68,7 +65,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     public static final Object STATS_RESULTS = new Object();
 
     private final DBSDataContainer dataContainer;
-    private final List<SQLQuery> queries;
+    private final List<SQLScriptElement> queries;
     private final SQLResultsConsumer resultsConsumer;
     private final SQLQueryListener listener;
     private final IWorkbenchPartSite partSite;
@@ -96,7 +93,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         @NotNull String name,
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSDataContainer dataContainer,
-        @NotNull List<SQLQuery> queries,
+        @NotNull List<SQLScriptElement> queries,
         @NotNull SQLResultsConsumer resultsConsumer,
         @Nullable SQLQueryListener listener)
     {
@@ -122,12 +119,12 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         this.fetchResultSets = fetchResultSets;
     }
 
-    public SQLQuery getLastQuery()
+    public SQLScriptElement getLastQuery()
     {
         return queries.isEmpty() ? null : queries.get(0);
     }
 
-    public SQLQuery getLastGoodQuery() {
+    public SQLScriptElement getLastGoodQuery() {
         return lastGoodQuery;
     }
 
@@ -175,7 +172,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                 resultSetNumber = 0;
                 for (int queryNum = 0; queryNum < queries.size(); ) {
                     // Execute query
-                    SQLQuery query = queries.get(queryNum);
+                    SQLScriptElement query = queries.get(queryNum);
 
                     fetchResultSetNumber = resultSetNumber;
                     boolean runNext = executeSingleQuery(session, query, true);
@@ -269,14 +266,18 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         }
     }
 
-    private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLQuery sqlQuery, final boolean fireEvents)
+    private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLScriptElement element, final boolean fireEvents)
     {
+        if (element instanceof SQLControlCommand) {
+            return executeControlCommand((SQLControlCommand)element);
+        }
+        SQLQuery sqlQuery = (SQLQuery) element;
         lastError = null;
 
         final DBCExecutionContext executionContext = getExecutionContext();
         final DBPDataSource dataSource = executionContext.getDataSource();
 
-        final SQLQuery originalQuery = sqlQuery;
+        final SQLQuery originalQuery = (SQLQuery) sqlQuery;
         long startTime = System.currentTimeMillis();
         boolean startQueryAlerted = false;
 
@@ -425,6 +426,10 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         }
         // Success
         lastGoodQuery = originalQuery;
+        return true;
+    }
+
+    private boolean executeControlCommand(SQLControlCommand command) {
         return true;
     }
 
@@ -682,21 +687,9 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     }
 */
 
-    public void extractData(DBCSession session, SQLQuery query, int resultNumber)
+    public void extractData(@NotNull DBCSession session, @NotNull SQLScriptElement query, int resultNumber)
         throws DBCException
     {
-        // There are two possibilities:
-        // We are in single query mode or
-        // we are in refresh of one of script queries
-        if (queries.isEmpty()) {
-            throw new DBCException("No queries to run");
-        } else if (queries.size() == 1) {
-            // Single query mode = use the one from query list
-            query = queries.get(0);
-        } else {
-            // Script mode
-            //query.getOriginalText();
-        }
         // Reset query to original. Otherwise multiple filters will corrupt it
         query.reset();
 

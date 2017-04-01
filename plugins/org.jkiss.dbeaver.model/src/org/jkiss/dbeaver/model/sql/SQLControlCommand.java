@@ -44,6 +44,12 @@ public class SQLControlCommand implements SQLScriptElement {
 
     @NotNull
     @Override
+    public String getOriginalText() {
+        return command;
+    }
+
+    @NotNull
+    @Override
     public String getText() {
         return command;
     }
@@ -66,5 +72,10 @@ public class SQLControlCommand implements SQLScriptElement {
     @Override
     public void setData(Object data) {
         this.data = data;
+    }
+
+    @Override
+    public void reset() {
+
     }
 }

@@ -25,6 +25,9 @@ import org.jkiss.code.NotNull;
 public interface SQLScriptElement {
 
     @NotNull
+    String getOriginalText();
+
+    @NotNull
     String getText();
 
     int getOffset();
@@ -39,4 +42,5 @@ public interface SQLScriptElement {
 
     void setData(Object data);
 
+    void reset();
 }

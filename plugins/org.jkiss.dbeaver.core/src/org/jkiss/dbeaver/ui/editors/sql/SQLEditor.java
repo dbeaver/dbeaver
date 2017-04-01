@@ -68,10 +68,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLQueryResult;
-import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
@@ -809,12 +806,16 @@ public class SQLEditor extends SQLEditorBase implements
 
     public void explainQueryPlan()
     {
-        final SQLQuery sqlQuery = extractActiveQuery();
-        if (sqlQuery == null) {
+        final SQLScriptElement scriptElement = extractActiveQuery();
+        if (scriptElement == null) {
             setStatus(CoreMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
             return;
         }
-        explainQueryPlan(sqlQuery);
+        if (!(scriptElement instanceof SQLQuery)) {
+            setStatus("Can't explain plan for command", DBPMessageType.ERROR);
+            return;
+        }
+        explainQueryPlan((SQLQuery) scriptElement);
     }
 
     private void explainQueryPlan(SQLQuery sqlQuery)
@@ -882,7 +883,7 @@ public class SQLEditor extends SQLEditorBase implements
         };
         if (RuntimeUtils.runTask(queryObtainTask, "Retrieve plan query", 5000) && !CommonUtils.isEmpty(planQueryString[0])) {
             SQLQuery planQuery = new SQLQuery(getDataSource(), planQueryString[0]);
-            processQueries(Collections.singletonList(planQuery), true, false, true);
+            processQueries(Collections.<SQLScriptElement>singletonList(planQuery), true, false, true);
         }
     }
 
@@ -897,37 +898,42 @@ public class SQLEditor extends SQLEditorBase implements
             setStatus(CoreMessages.editors_sql_status_cant_obtain_document, DBPMessageType.ERROR);
             return;
         }
-        List<SQLQuery> queries;
+        List<SQLScriptElement> elements;
         if (script) {
             // Execute all SQL statements consequently
             ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
             if (selection.getLength() > 1) {
-                queries = extractScriptQueries(selection.getOffset(), selection.getLength());
+                elements = extractScriptQueries(selection.getOffset(), selection.getLength());
             } else {
-                queries = extractScriptQueries(0, document.getLength());
+                elements = extractScriptQueries(0, document.getLength());
             }
         } else {
             // Execute statement under cursor or selected text (if selection present)
-            SQLQuery sqlQuery = extractActiveQuery();
+            SQLScriptElement sqlQuery = extractActiveQuery();
             if (sqlQuery == null) {
                 setStatus(CoreMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
                 return;
             } else {
-                queries = Collections.singletonList(sqlQuery);
+                elements = Collections.singletonList(sqlQuery);
             }
         }
         try {
             if (transformer != null) {
                 DBPDataSource dataSource = getDataSource();
                 if (dataSource instanceof SQLDataSource) {
-                    List<SQLQuery> xQueries = new ArrayList<>(queries.size());
-                    for (int i = 0; i < queries.size(); i++) {
-                        SQLQuery query = transformer.transformQuery((SQLDataSource)dataSource, queries.get(i));
-                        if (query != null) {
-                            xQueries.add(query);
+                    List<SQLScriptElement> xQueries = new ArrayList<>(elements.size());
+                    for (int i = 0; i < elements.size(); i++) {
+                        SQLScriptElement element = elements.get(i);
+                        if (element instanceof SQLQuery) {
+                            SQLQuery query = transformer.transformQuery((SQLDataSource) dataSource, (SQLQuery) element);
+                            if (query != null) {
+                                xQueries.add(query);
+                            }
+                        } else {
+                            xQueries.add(element);
                         }
                     }
-                    queries = xQueries;
+                    elements = xQueries;
                 }
             }
         }
@@ -935,18 +941,23 @@ public class SQLEditor extends SQLEditorBase implements
             UIUtils.showErrorDialog(getSite().getShell(), "Bad query", "Can't execute query", e);
             return;
         }
-        processQueries(queries, newTab, false, true);
+        processQueries(elements, newTab, false, true);
     }
 
     public void exportDataFromQuery()
     {
-        SQLQuery sqlQuery = extractActiveQuery();
-        if (sqlQuery != null) {
+        SQLScriptElement sqlQuery = extractActiveQuery();
+        if (sqlQuery instanceof SQLQuery) {
             processQueries(Collections.singletonList(sqlQuery), false, true, true);
+        } else {
+            UIUtils.showErrorDialog(
+                    getSite().getShell(),
+                    "Extract data",
+                    "Can't extract data from control command");
         }
     }
 
-    private void processQueries(@NotNull final List<SQLQuery> queries, final boolean newTab, final boolean export, final boolean checkSession)
+    private void processQueries(@NotNull final List<SQLScriptElement> queries, final boolean newTab, final boolean export, final boolean checkSession)
     {
         if (queries.isEmpty()) {
             // Nothing to process
@@ -1015,7 +1026,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (newTab) {
             // Execute each query in a new tab
             for (int i = 0; i < queries.size(); i++) {
-                SQLQuery query = queries.get(i);
+                SQLScriptElement query = queries.get(i);
                 QueryProcessor queryProcessor = (i == 0 && !isSingleQuery ? curQueryProcessor : createQueryProcessor(queries.size() == 1));
                 queryProcessor.processQueries(Collections.singletonList(query), true, export);
             }
@@ -1038,9 +1049,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private List<SQLQuery> extractScriptQueries(int startOffset, int length)
+    private List<SQLScriptElement> extractScriptQueries(int startOffset, int length)
     {
-        List<SQLQuery> queryList = new ArrayList<>();
+        List<SQLScriptElement> queryList = new ArrayList<>();
 
         IDocument document = getDocument();
         if (document == null) {
@@ -1050,12 +1061,12 @@ public class SQLEditor extends SQLEditorBase implements
         this.startScriptEvaluation();
         try {
             for (int queryOffset = startOffset; ; ) {
-                SQLQuery query = parseQuery(document, queryOffset, startOffset + length, queryOffset, true);
+                SQLScriptElement query = parseQuery(document, queryOffset, startOffset + length, queryOffset, true);
                 if (query == null) {
                     break;
                 }
                 queryList.add(query);
-                queryOffset = query.getOffset() + query.getLength() + 1;
+                queryOffset = query.getOffset() + query.getLength();
             }
         }
         finally {
@@ -1064,8 +1075,10 @@ public class SQLEditor extends SQLEditorBase implements
 
         if (getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
             // Parse parameters
-            for (SQLQuery query : queryList) {
-                query.setParameters(parseParameters(getDocument(), query));
+            for (SQLScriptElement query : queryList) {
+                if (query instanceof SQLQuery) {
+                    ((SQLQuery)query).setParameters(parseParameters(getDocument(), (SQLQuery) query));
+                }
             }
         }
         return queryList;
@@ -1467,7 +1480,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        void processQueries(final List<SQLQuery> queries, final boolean fetchResults, boolean export)
+        void processQueries(final List<SQLScriptElement> queries, final boolean fetchResults, boolean export)
         {
             if (queries.isEmpty()) {
                 // Nothing to process
@@ -1626,8 +1639,8 @@ public class SQLEditor extends SQLEditorBase implements
         private final CTabItem tabItem;
         private final ResultSetViewer viewer;
         private final int resultSetNumber;
-        private SQLQuery query = null;
-        private SQLQuery lastGoodQuery = null;
+        private SQLScriptElement query = null;
+        private SQLScriptElement lastGoodQuery = null;
 
         private QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber)
         {
@@ -1695,11 +1708,11 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        public boolean isPinned() {
+        boolean isPinned() {
             return tabItem != null && resultTabs.indexOf(tabItem) > 0 && !tabItem.getShowClose();
         }
 
-        public void setPinned(boolean pinned) {
+        void setPinned(boolean pinned) {
             tabItem.setShowClose(!pinned);
             tabItem.setImage(pinned ? IMG_DATA_GRID_LOCKED : IMG_DATA_GRID);
         }
@@ -1796,8 +1809,11 @@ public class SQLEditor extends SQLEditorBase implements
             if (!(dataSource instanceof SQLDataSource)) {
                 throw new DBCException("Query transform is not supported by datasource");
             }
+            if (!(query instanceof SQLQuery)) {
+                throw new DBCException("Can't count rows for control command");
+            }
             try {
-                SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery((SQLDataSource) dataSource, query);
+                SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery((SQLDataSource) dataSource, (SQLQuery) query);
                 try (DBCStatement dbStatement = DBUtils.makeStatement(source, session, DBCStatementType.QUERY, countQuery, 0, 0)) {
                     if (dbStatement.executeStatement()) {
                         try (DBCResultSet rs = dbStatement.openResultSet()) {
