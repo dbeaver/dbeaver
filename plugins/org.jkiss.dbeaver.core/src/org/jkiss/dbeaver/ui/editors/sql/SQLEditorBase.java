@@ -646,7 +646,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         for (; ; ) {
             IToken token = ruleManager.nextToken();
             int tokenOffset = ruleManager.getTokenOffset();
-            final int tokenLength = ruleManager.getTokenLength();
+            int tokenLength = ruleManager.getTokenLength();
             boolean isDelimiter = token instanceof SQLDelimiterToken;
             boolean isControl = false;
             String delimiterText = null;
@@ -745,7 +745,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                             syntaxManager,
                             controlText.trim(),
                             tokenOffset,
-                            tokenLength);
+                            tokenLength,
+                            token instanceof SQLSetDelimiterToken);
                 } catch (BadLocationException e) {
                     log.warn("Can't extract control statement", e); //$NON-NLS-1$
                     return null;
@@ -770,6 +771,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     // remove trailing spaces
                     while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(tokenOffset - 1))) {
                         tokenOffset--;
+                        tokenLength++;
                     }
                     if (tokenOffset == statementStart) {
                         // Empty statement
@@ -787,12 +789,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                             queryText += delimiterText;
                         }
                     }
+                    int queryEndPos = tokenOffset;
+                    if (token instanceof SQLDelimiterToken) {
+                        queryEndPos += tokenLength;
+                    }
                     // make script line
                     return new SQLQuery(
                         getDataSource(),
                         queryText.trim(),
                         statementStart,
-                        tokenOffset + tokenLength - statementStart);
+                            queryEndPos - statementStart);
                 } catch (BadLocationException ex) {
                     log.warn("Can't extract query", ex); //$NON-NLS-1$
                     return null;

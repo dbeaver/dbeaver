@@ -26,15 +26,18 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 public class SQLControlCommand implements SQLScriptElement {
 
     private final DBPDataSource dataSource;
+    private final String text;
     private final String command;
     private final String parameter;
     private final int offset;
     private final int length;
     private Object data;
+    private boolean emptyCommand;
 
-    public SQLControlCommand(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, String text, int offset, int length) {
+    public SQLControlCommand(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, String text, int offset, int length, boolean emptyCommand) {
         this.dataSource = dataSource;
 
+        this.text = text;
         if (text.startsWith(syntaxManager.getControlCommandPrefix())) {
             text = text.substring(syntaxManager.getControlCommandPrefix().length());
         }
@@ -50,6 +53,7 @@ public class SQLControlCommand implements SQLScriptElement {
         this.parameter = divPos == -1 ? null : text.substring(divPos + 1).trim();
         this.offset = offset;
         this.length = length;
+        this.emptyCommand = emptyCommand;
     }
 
     public DBPDataSource getDataSource() {
@@ -65,11 +69,19 @@ public class SQLControlCommand implements SQLScriptElement {
     @NotNull
     @Override
     public String getText() {
+        return text;
+    }
+
+    public String getCommand() {
         return command;
     }
 
     public String getParameter() {
         return parameter;
+    }
+
+    public boolean isEmptyCommand() {
+        return emptyCommand;
     }
 
     @Override
@@ -99,6 +111,6 @@ public class SQLControlCommand implements SQLScriptElement {
 
     @Override
     public String toString() {
-        return command;
+        return text;
     }
 }
