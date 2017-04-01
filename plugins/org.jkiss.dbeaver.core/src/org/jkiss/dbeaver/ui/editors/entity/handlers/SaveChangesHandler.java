@@ -97,6 +97,10 @@ public class SaveChangesHandler extends AbstractHandler
             if (saveable instanceof ISaveablePart2) {
                 choice = ((ISaveablePart2) saveable).promptToSaveOnClose();
             }
+            if (!saveable.isDirty()) {
+                // Actual save could be performed in promptToSaveOnClose (e.g. transaction commit)
+                return;
+            }
             if (choice == -1 || choice == ISaveablePart2.DEFAULT) {
                 Shell shell;
                 String saveableName;
