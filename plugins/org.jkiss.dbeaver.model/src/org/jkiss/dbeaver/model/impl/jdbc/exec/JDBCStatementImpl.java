@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -622,6 +623,13 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
                     break;
                 }
                 warnings.add(warning);
+            }
+            if (!CommonUtils.isEmpty(warnings)) {
+                try {
+                    clearWarnings();
+                } catch (Throwable e) {
+                    log.debug("Internal error during clearWarnings", e);
+                }
             }
             return warnings == null ? null : warnings.toArray(new Throwable[warnings.size()]);
         } catch (SQLException e) {

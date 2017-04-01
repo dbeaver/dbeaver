@@ -113,6 +113,10 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseable
      */
     void setLimit(long offset, long limit) throws DBCException;
 
+    /**
+     * Returns warnings if any.
+     * Also clears these warnings - immediate second invocation won't return any warnings.
+     */
     @Nullable
     Throwable[] getStatementWarnings() throws DBCException;
 
