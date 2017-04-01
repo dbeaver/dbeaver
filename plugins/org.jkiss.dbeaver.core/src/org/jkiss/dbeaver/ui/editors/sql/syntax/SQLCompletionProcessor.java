@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
+import org.jkiss.dbeaver.registry.sql.SQLCommandHandlerDescriptor;
+import org.jkiss.dbeaver.registry.sql.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -99,8 +101,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             return makeTemplateProposals(viewer, request);
         }
 
-        request.queryType = null;
+        if (editor.getSyntaxManager().getControlCommandPrefix().equals(request.wordDetector.getPrevDelimiter())) {
+            return makeCommandProposals(request, request.wordPart);
+        }
+
         String searchPrefix = request.wordPart;
+        request.queryType = null;
         {
             final String prevKeyWord = wordDetector.getPrevKeyWord();
             if (!CommonUtils.isEmpty(prevKeyWord)) {
@@ -201,6 +207,20 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         }
         return ArrayUtils.toArray(ICompletionProposal.class, request.proposals);
+    }
+
+    private ICompletionProposal[] makeCommandProposals(SQLCompletionAnalyzer.CompletionRequest request, String prefix) {
+        final String controlCommandPrefix = editor.getSyntaxManager().getControlCommandPrefix();
+        if (prefix.startsWith(controlCommandPrefix)) {
+            prefix = prefix.substring(controlCommandPrefix.length());
+        }
+        final List<SQLCommandCompletionProposal> commandProposals = new ArrayList<>();
+        for (SQLCommandHandlerDescriptor command : SQLCommandsRegistry.getInstance().getCommandHandlers()) {
+            if (command.getId().startsWith(prefix)) {
+                commandProposals.add(new SQLCommandCompletionProposal(request, command));
+            }
+        }
+        return commandProposals.toArray(new ICompletionProposal[commandProposals.size()]);
     }
 
     @NotNull

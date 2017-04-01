@@ -181,6 +181,8 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     }
 
     private boolean updateKeywordCase(final IDocument document, DocumentCommand command) throws BadLocationException {
+        final String commandPrefix = syntaxManager.getControlCommandPrefix();
+
         // Whitespace - check for keyword
         final int startPos, endPos;
         int pos = command.offset - 1;
@@ -188,7 +190,11 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             pos--;
         }
         endPos = pos + 1;
-        while (pos >= 0 && Character.isJavaIdentifierPart(document.getChar(pos))) {
+        while (pos >= 0) {
+            char ch = document.getChar(pos);
+            if (!Character.isJavaIdentifierPart(ch) && commandPrefix.indexOf(ch) == -1) {
+                break;
+            }
             pos--;
         }
         startPos = pos + 1;

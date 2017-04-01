@@ -25,18 +25,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
  */
 public class SQLControlCommand implements SQLScriptElement {
 
-    public static final String COMMAND_SET = "set";
-    public static final String COMMAND_PARAM = "param";
-    public static final String COMMAND_INCLUDE = "include";
-    public static final String COMMAND_ECHO = "echo";
-
-    public static final String[] COMMANDS = {
-            COMMAND_SET,
-            COMMAND_PARAM,
-            COMMAND_INCLUDE,
-            COMMAND_ECHO
-    };
-
     private final DBPDataSource dataSource;
     private final String command;
     private final int offset;

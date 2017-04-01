@@ -161,7 +161,7 @@ public class SQLSyntaxManager {
             this.namedParameterPrefix = paramPrefixString.charAt(0);
         }
 
-        this.controlCommandPrefix = preferenceStore.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
+        this.controlCommandPrefix = preferenceStore.getString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX);
         if (CommonUtils.isEmpty(this.controlCommandPrefix)) {
             this.controlCommandPrefix = SQLConstants.DEFAULT_CONTROL_COMMAND_PREFIX;
         }

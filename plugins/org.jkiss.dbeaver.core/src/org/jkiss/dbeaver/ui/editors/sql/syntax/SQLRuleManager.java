@@ -30,14 +30,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.registry.sql.SQLCommandHandlerDescriptor;
+import org.jkiss.dbeaver.registry.sql.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLDelimiterRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.LineCommentRule;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLParameterRule;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLDelimiterRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLDelimiterSetRule;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLParameterRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
 import org.jkiss.utils.CommonUtils;
@@ -176,8 +177,8 @@ public class SQLRuleManager extends RuleBasedScanner {
             String commandPrefix = syntaxManager.getControlCommandPrefix();
 
             // Control rules
-            for (String controlCommand : SQLControlCommand.COMMANDS) {
-                rules.add(new EndOfLineRule(commandPrefix + controlCommand, controlToken)); //$NON-NLS-1$
+            for (SQLCommandHandlerDescriptor controlCommand : SQLCommandsRegistry.getInstance().getCommandHandlers()) {
+                rules.add(new EndOfLineRule(commandPrefix + controlCommand.getId(), controlToken)); //$NON-NLS-1$
             }
         }
 
