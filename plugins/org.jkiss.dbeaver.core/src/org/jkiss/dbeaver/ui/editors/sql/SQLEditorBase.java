@@ -750,7 +750,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     return null;
                 }
             }
-            if ((isControl || hasValuableTokens) && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
+            if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
                 if (tokenOffset > endPos) {
                     tokenOffset = endPos;
                 }
