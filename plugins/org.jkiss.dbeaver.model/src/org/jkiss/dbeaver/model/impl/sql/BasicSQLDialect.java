@@ -47,8 +47,8 @@ public class BasicSQLDialect implements SQLDialect {
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END}
     };
     protected static final String[] NON_TRANSACTIONAL_KEYWORDS = new String[]{
-        SQLConstants.KEYWORD_SELECT,
-        "WITH", "EXPLAIN", "DESCRIBE", "DESC", "USE", "SET"};
+        //SQLConstants.KEYWORD_SELECT, "WITH",
+        "EXPLAIN", "DESCRIBE", "DESC", "USE", "SET", "COMMIT", "ROLLBACK" };
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
             SQLConstants.KEYWORD_SELECT,
             };
