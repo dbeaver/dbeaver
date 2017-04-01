@@ -444,9 +444,12 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     }
 
     private boolean executeControlCommand(SQLControlCommand command) throws DBException {
-        SQLCommandHandlerDescriptor commandHandler = SQLCommandsRegistry.getInstance().getCommandHandler(command.getText());
+        if (command.isEmptyCommand()) {
+            return true;
+        }
+        SQLCommandHandlerDescriptor commandHandler = SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommand());
         if (commandHandler == null) {
-            throw new DBException("Command '" + command.getText() + "' not supported");
+            throw new DBException("Command '" + command.getCommand() + "' not supported");
         }
         return commandHandler.createHandler().handleCommand(command, scriptContext);
     }
