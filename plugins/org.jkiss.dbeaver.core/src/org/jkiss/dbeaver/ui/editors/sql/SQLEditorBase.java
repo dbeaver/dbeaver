@@ -792,7 +792,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         getDataSource(),
                         queryText.trim(),
                         statementStart,
-                        tokenOffset - statementStart);
+                        tokenOffset + tokenLength - statementStart);
                 } catch (BadLocationException ex) {
                     log.warn("Can't extract query", ex); //$NON-NLS-1$
                     return null;
