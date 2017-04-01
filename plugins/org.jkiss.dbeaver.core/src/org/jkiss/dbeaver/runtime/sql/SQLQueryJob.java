@@ -54,6 +54,7 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * SQLQueryJob
@@ -530,24 +531,44 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     private boolean fillStatementParameters(final List<SQLQueryParameter> parameters)
     {
         boolean allSet = true;
+        Map<String, Object> scriptVariables = scriptContext.getVariables();
         for (SQLQueryParameter param : parameters) {
             if (param.getValue() == null) {
                 allSet = false;
-                break;
+            }
+            String paramName = param.getTitle();
+            if (scriptVariables.containsKey(paramName)) {
+                Object varValue = scriptVariables.get(paramName);
+                String strValue;
+                if (varValue instanceof String) {
+                    strValue = SQLUtils.quoteString((String) varValue);
+                } else {
+                    strValue = varValue == null ? null : varValue.toString();
+                }
+                param.setValue(strValue);
             }
         }
         if (allSet) {
             return true;
         }
-        return new UIConfirmation() {
+        boolean okPressed = new UIConfirmation() {
             @Override
             public Boolean runTask() {
                 SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
-                    partSite.getShell(),
-                    parameters);
+                        partSite.getShell(),
+                        parameters);
                 return (dialog.open() == IDialogConstants.OK_ID);
             }
         }.execute();
+        if (okPressed) {
+            for (SQLQueryParameter param : parameters) {
+                if (param.isNamed()) {
+                    String strValue = param.getValue();
+                    scriptVariables.put(param.getTitle(), SQLUtils.unQuoteString(strValue));
+                }
+            }
+        }
+        return okPressed;
     }
 
     private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, SQLQueryResult result, DBDDataReceiver dataReceiver, boolean updateStatistics)
