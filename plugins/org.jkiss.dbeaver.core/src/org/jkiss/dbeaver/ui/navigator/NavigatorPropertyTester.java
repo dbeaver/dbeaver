@@ -57,6 +57,6 @@ public class NavigatorPropertyTester extends PropertyTester
                 return getActiveNavigator((IWorkbenchPart) activeFolder);
             }
         }
-        return null;
+        return activePart.getAdapter(INavigatorModelView.class);
     }
 }
