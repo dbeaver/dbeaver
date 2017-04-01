@@ -161,7 +161,7 @@ public class SQLEditor extends SQLEditorBase implements
     {
         super();
 
-        this.scriptContext = new SQLScriptContext();
+        this.scriptContext = new SQLScriptContext(new OutputLogWriter());
     }
 
     @Override
@@ -330,6 +330,34 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    private class OutputLogWriter extends Writer {
+        @Override
+        public void write(@NotNull final char[] cbuf, final int off, final int len) throws IOException {
+            DBeaverUI.syncExec(new Runnable() {
+                @Override
+                public void run() {
+                    if (!outputViewer.isDisposed()) {
+                        outputViewer.getOutputWriter().write(cbuf, off, len);
+                        outputViewer.scrollToEnd();
+                        if (!outputViewer.isVisible()) {
+                            updateOutputViewerIcon(true);
+                        }
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void flush() throws IOException {
+            outputViewer.getOutputWriter().flush();
+        }
+
+        @Override
+        public void close() throws IOException {
+
+        }
+    }
+
     private class OpenContextJob extends AbstractJob {
         private final DBPDataSource dataSource;
         private Throwable error;
@@ -476,9 +504,6 @@ public class SQLEditor extends SQLEditorBase implements
                     if (rsv != null) {
                         //rsv.getActivePresentation().getControl().setFocus();
                     }
-                } else if (data == outputViewer) {
-                    ((CTabItem) e.item).setImage(IMG_OUTPUT);
-                    outputViewer.resetNewOutput();
                 }
             }
         });
@@ -630,6 +655,10 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
+        if (view == outputViewer) {
+            updateOutputViewerIcon(false);
+            outputViewer.resetNewOutput();
+        }
         // Create new tab
         toolItem.setSelection(true);
 
@@ -2160,12 +2189,7 @@ public class SQLEditor extends SQLEditorBase implements
                                 }
                                 if (outputViewer.isHasNewOutput()) {
                                     outputViewer.scrollToEnd();
-                                    CTabItem outputItem = UIUtils.getTabItem(resultTabs, outputViewer);
-                                    if (outputItem != null && outputItem != resultTabs.getSelection()) {
-                                        outputItem.setImage(IMG_OUTPUT_ALERT);
-                                    } else {
-                                        toolOutputItem.setImage(IMG_OUTPUT_ALERT);
-                                    }
+                                    updateOutputViewerIcon(true);
                                 }
                             }
                         });
@@ -2176,6 +2200,16 @@ public class SQLEditor extends SQLEditorBase implements
                 return Status.OK_STATUS;
             }
         }.schedule();
+    }
+
+    private void updateOutputViewerIcon(boolean alert) {
+        Image image = alert ? IMG_OUTPUT_ALERT : IMG_OUTPUT;
+        CTabItem outputItem = UIUtils.getTabItem(resultTabs, outputViewer);
+        if (outputItem != null && outputItem != resultTabs.getSelection()) {
+            outputItem.setImage(image);
+        } else {
+            toolOutputItem.setImage(image);
+        }
     }
 
     private class SaveJob extends AbstractJob {
