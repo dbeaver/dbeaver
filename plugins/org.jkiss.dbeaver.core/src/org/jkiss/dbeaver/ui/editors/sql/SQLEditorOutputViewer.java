@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -50,7 +51,7 @@ public class SQLEditorOutputViewer extends Composite {
         UIUtils.enableHostEditorKeyBindingsSupport(site, text);
         Writer out = new Writer() {
             @Override
-            public void write(char[] cbuf, int off, int len) throws IOException {
+            public void write(final char[] cbuf, final int off, final int len) throws IOException {
                 text.append(String.valueOf(cbuf, off, len));
                 if (len > 0) {
                     hasNewOutput = true;
