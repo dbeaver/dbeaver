@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
@@ -130,7 +131,8 @@ public class QMUtils {
                     QMMStatementExecuteInfo execInfo = sp.getLastExecute();
                     for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
                         execCount++;
-                        if (exec.isTransactional() && !exec.hasError()) {
+                        DBCExecutionPurpose purpose = exec.getStatement().getPurpose();
+                        if (exec.isTransactional() && !exec.hasError() && purpose != DBCExecutionPurpose.META && purpose != DBCExecutionPurpose.UTIL) {
                             txnStartTime = exec.getOpenTime();
                             updateCount++;
                         }
