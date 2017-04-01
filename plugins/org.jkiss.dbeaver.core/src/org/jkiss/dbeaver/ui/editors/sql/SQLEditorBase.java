@@ -482,7 +482,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         String selText = selection.getText().trim();
         selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText);
         if (!CommonUtils.isEmpty(selText)) {
-            SQLScriptElement parsedElement = parseQuery(getDocument(), selection.getOffset(), selection.getLength(), selection.getOffset(), false);
+            SQLScriptElement parsedElement = parseQuery(getDocument(), selection.getOffset(), selection.getOffset() + selection.getLength(), selection.getOffset(), false);
             if (parsedElement instanceof SQLControlCommand) {
                 // This is a command
                 element = parsedElement;
@@ -728,9 +728,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             } else if (token instanceof SQLSetDelimiterToken || token instanceof SQLControlToken) {
                 isDelimiter = true;
                 isControl = true;
+            } else if (token.isWhitespace()) {
+                // Skip leading spaces
+                if (!hasValuableTokens) {
+                    currentPos += tokenLength;
+                }
             }
 
-            if (isControl && currentPos < tokenOffset + tokenLength) {
+            boolean cursorInsideToken = currentPos >= tokenOffset && currentPos < tokenOffset + tokenLength;
+            if (isControl && cursorInsideToken) {
                 // Control query
                 try {
                     String controlText = document.get(tokenOffset, tokenLength);
