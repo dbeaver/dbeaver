@@ -311,7 +311,7 @@ public class NavigatorUtils {
                         }
                         nodes.add((DBNNode)nextSelected);
                         String nodeName;
-                        if (nextSelected instanceof DBNDatabaseNode) {
+                        if (nextSelected instanceof DBNDatabaseNode && !(nextSelected instanceof DBNDataSource)) {
                             DBSObject object = ((DBNDatabaseNode)nextSelected).getObject();
                             if (object == null) {
                                 continue;
