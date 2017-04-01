@@ -719,14 +719,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                 // Delimiter in some brackets - ignore it
                 continue;
             } else if (token instanceof SQLSetDelimiterToken || token instanceof SQLControlToken) {
-                if (hasValuableTokens) {
-                    isDelimiter = true;
-                } else {
-                    isControl = true;
-                }
+                isDelimiter = true;
+                isControl = true;
             }
 
-            if (isControl) {
+            if (isControl && currentPos < tokenOffset + tokenLength) {
                 // Control query
                 try {
                     String controlText = document.get(tokenOffset, tokenLength);
