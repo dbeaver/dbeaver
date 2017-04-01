@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
 import org.jkiss.dbeaver.model.qm.QMMetaEvent;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -119,6 +120,10 @@ public abstract class TransactionInfoDialog extends Dialog {
                         return false;
                     }
                     if (exec.getStatement().getSession() != currentSession) {
+                        return false;
+                    }
+                    DBCExecutionPurpose purpose = exec.getStatement().getPurpose();
+                    if (purpose == DBCExecutionPurpose.META || purpose == DBCExecutionPurpose.UTIL) {
                         return false;
                     }
                     return (showAll || exec.isTransactional());
