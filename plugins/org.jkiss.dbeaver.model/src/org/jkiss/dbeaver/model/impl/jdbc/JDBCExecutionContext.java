@@ -101,7 +101,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
             if (!this.autoCommit && txnLevel != null) {
                 try {
-                    connection.setTransactionIsolation(txnLevel);
+                    this.connection.setTransactionIsolation(txnLevel);
                     this.transactionIsolationLevel = txnLevel;
                 } catch (Throwable e) {
                     log.debug("Can't set transaction isolation level", e); //$NON-NLS-1$
@@ -119,6 +119,18 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 this.dataSource.initializeContextState(monitor, this, forceActiveObject && !connectionReadOnly);
             } catch (DBCException e) {
                 log.error("Error while initializing context state", e);
+            }
+
+            try {
+                // Commit transaction. We can perform init SQL which potentially may lock some resources
+                // Let's free them.
+                if (!this.autoCommit) {
+                    try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "End transaction")) {
+                        session.commit();
+                    }
+                }
+            } catch (Throwable e) {
+                log.error("Error ending transaction after context initialize", e);
             }
 
             if (addContext) {
