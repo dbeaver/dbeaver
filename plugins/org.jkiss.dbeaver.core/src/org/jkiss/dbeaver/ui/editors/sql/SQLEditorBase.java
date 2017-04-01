@@ -475,31 +475,31 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     }
 
     @Nullable
-    protected SQLQuery extractActiveQuery()
+    protected SQLScriptElement extractActiveQuery()
     {
-        SQLQuery sqlQuery;
+        SQLScriptElement element;
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
         String selText = selection.getText().trim();
         selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText);
         if (!CommonUtils.isEmpty(selText)) {
-            sqlQuery = new SQLQuery(getDataSource(), selText, selection.getOffset(), selection.getLength());
+            element = new SQLQuery(getDataSource(), selText, selection.getOffset(), selection.getLength());
         } else if (selection.getOffset() >= 0) {
-            sqlQuery = extractQueryAtPos(selection.getOffset());
+            element = extractQueryAtPos(selection.getOffset());
         } else {
-            sqlQuery = null;
+            element = null;
         }
         // Check query do not ends with delimiter
         // (this may occur if user selected statement including delimiter)
-        if (sqlQuery == null || CommonUtils.isEmpty(sqlQuery.getText())) {
+        if (element == null || CommonUtils.isEmpty(element.getText())) {
             return null;
         }
-        if (getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
-            sqlQuery.setParameters(parseParameters(getDocument(), sqlQuery));
+        if (element instanceof SQLQuery && getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
+            ((SQLQuery)element).setParameters(parseParameters(getDocument(), (SQLQuery)element));
         }
-        return sqlQuery;
+        return element;
     }
 
-    public SQLQuery extractQueryAtPos(int currentPos)
+    public SQLScriptElement extractQueryAtPos(int currentPos)
     {
         Document document = getDocument();
         if (document == null || document.getLength() == 0) {
@@ -552,11 +552,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         return parseQuery(document, startPos, document.getLength(), currentPos, false);
     }
 
-    public SQLQuery extractNextQuery(boolean next) {
+    public SQLScriptElement extractNextQuery(boolean next) {
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
         int offset = selection.getOffset();
-        SQLQuery curQuery = extractQueryAtPos(offset);
-        if (curQuery == null) {
+        SQLScriptElement curElement = extractQueryAtPos(offset);
+        if (curElement == null) {
             return null;
         }
 
@@ -569,7 +569,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             int curPos;
             if (next) {
                 final String[] statementDelimiters = syntaxManager.getStatementDelimiters();
-                curPos = curQuery.getOffset() + curQuery.getLength();
+                curPos = curElement.getOffset() + curElement.getLength();
                 while (curPos < docLength) {
                     char c = document.getChar(curPos);
                     if (!Character.isWhitespace(c)) {
@@ -586,7 +586,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     curPos++;
                 }
             } else {
-                curPos = curQuery.getOffset() - 1;
+                curPos = curElement.getOffset() - 1;
                 while (curPos >= 0) {
                     char c = document.getChar(curPos);
                     if (!Character.isWhitespace(c)) {
@@ -621,7 +621,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         ruleManager.endEval();
     }
 
-    protected SQLQuery parseQuery(IDocument document, int startPos, int endPos, int currentPos, boolean scriptMode) {
+    protected SQLScriptElement parseQuery(IDocument document, int startPos, int endPos, int currentPos, boolean scriptMode) {
         if (endPos - startPos <= 0) {
             return null;
         }
@@ -730,7 +730,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                 // Control query
                 try {
                     String controlText = document.get(tokenOffset, tokenLength);
-                    return new SQLQuery(
+                    return new SQLControlCommand(
                             getDataSource(),
                             controlText.trim(),
                             tokenOffset,

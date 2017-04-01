@@ -27,7 +27,10 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
@@ -262,7 +265,7 @@ class SQLCompletionAnalyzer
             return null;
         }
         if (request.activeQuery == null) {
-            final SQLQuery queryAtPos = request.editor.extractQueryAtPos(request.documentOffset);
+            final SQLScriptElement queryAtPos = request.editor.extractQueryAtPos(request.documentOffset);
             if (queryAtPos != null) {
                 request.activeQuery = queryAtPos.getText() + " ";
             }
