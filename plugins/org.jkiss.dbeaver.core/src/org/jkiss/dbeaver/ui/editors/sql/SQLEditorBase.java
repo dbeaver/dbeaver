@@ -482,7 +482,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         String selText = selection.getText().trim();
         selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText);
         if (!CommonUtils.isEmpty(selText)) {
-            element = new SQLQuery(getDataSource(), selText, selection.getOffset(), selection.getLength());
+            SQLScriptElement parsedElement = parseQuery(getDocument(), selection.getOffset(), selection.getLength(), selection.getOffset(), false);
+            if (parsedElement instanceof SQLControlCommand) {
+                // This is a command
+                element = parsedElement;
+            } else {
+                // Use selected query as is
+                element = new SQLQuery(getDataSource(), selText, selection.getOffset(), selection.getLength());
+            }
         } else if (selection.getOffset() >= 0) {
             element = extractQueryAtPos(selection.getOffset());
         } else {
