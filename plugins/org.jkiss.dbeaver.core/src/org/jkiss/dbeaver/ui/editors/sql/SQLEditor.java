@@ -155,10 +155,13 @@ public class SQLEditor extends SQLEditorBase implements
     private QueryResultsContainer curResultsContainer;
     private Image editorImage;
     private ToolItem toolLogItem;
+    private final SQLScriptContext scriptContext;
 
     public SQLEditor()
     {
         super();
+
+        this.scriptContext = new SQLScriptContext();
     }
 
     @Override
@@ -1515,6 +1518,7 @@ public class SQLEditor extends SQLEditorBase implements
                     executionContext,
                     resultsContainer,
                     queries,
+                    scriptContext,
                     this,
                     listener);
 

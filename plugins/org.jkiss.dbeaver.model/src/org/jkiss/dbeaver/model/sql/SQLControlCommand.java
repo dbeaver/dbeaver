@@ -27,13 +27,27 @@ public class SQLControlCommand implements SQLScriptElement {
 
     private final DBPDataSource dataSource;
     private final String command;
+    private final String parameter;
     private final int offset;
     private final int length;
     private Object data;
 
-    public SQLControlCommand(DBPDataSource dataSource, String command, int offset, int length) {
+    public SQLControlCommand(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, String text, int offset, int length) {
         this.dataSource = dataSource;
-        this.command = command;
+
+        if (text.startsWith(syntaxManager.getControlCommandPrefix())) {
+            text = text.substring(syntaxManager.getControlCommandPrefix().length());
+        }
+        int divPos = -1;
+        for (int i = 0; i < text.length(); i++) {
+            if (Character.isWhitespace(text.charAt(i))) {
+                divPos = i;
+                break;
+            }
+        }
+
+        this.command = divPos == -1 ? text : text.substring(0, divPos);
+        this.parameter = divPos == -1 ? null : text.substring(divPos + 1).trim();
         this.offset = offset;
         this.length = length;
     }
@@ -52,6 +66,10 @@ public class SQLControlCommand implements SQLScriptElement {
     @Override
     public String getText() {
         return command;
+    }
+
+    public String getParameter() {
+        return parameter;
     }
 
     @Override
@@ -77,5 +95,10 @@ public class SQLControlCommand implements SQLScriptElement {
     @Override
     public void reset() {
 
+    }
+
+    @Override
+    public String toString() {
+        return command;
     }
 }

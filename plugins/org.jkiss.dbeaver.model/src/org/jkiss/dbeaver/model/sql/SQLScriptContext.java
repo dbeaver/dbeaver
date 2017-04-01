@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,11 +30,23 @@ public class SQLScriptContext {
     private final Map<String, Object> variables = new HashMap<>();
     private final Map<String, Object> pragmas = new HashMap<>();
 
+    private final Map<String, Object> data = new HashMap<>();
+
+    @NotNull
     public Map<String, Object> getVariables() {
         return variables;
     }
 
+    @NotNull
     public Map<String, Object> getPragmas() {
         return pragmas;
+    }
+
+    public Object getData(String key) {
+        return data.get(key);
+    }
+
+    public void setData(String key, Object value) {
+        this.data.put(key, value);
     }
 }

@@ -16,19 +16,33 @@
  */
 package org.jkiss.dbeaver.runtime.sql.commands;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.sql.eval.ScriptEvaluateEngine;
 import org.jkiss.dbeaver.runtime.sql.SQLControlCommandHandler;
 
 /**
  * Control command handler
  */
-public class SQLCommandSet implements SQLControlCommandHandler
-{
-
+public class SQLCommandSet implements SQLControlCommandHandler {
 
     @Override
-    public boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext) {
-        return false;
+    public boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext) throws DBException {
+        String parameter = command.getParameter();
+        int divPos = parameter.indexOf('=');
+        if (divPos == -1) {
+            throw new DBCException("Bad set syntax. Expected syntax:\n@set varName = value or expression");
+        }
+        String varName = parameter.substring(0, divPos).trim();
+        String varValue = parameter.substring(divPos + 1).trim();
+        Object varEvaluated = ScriptEvaluateEngine.getEngine(scriptContext).evaluateExpression(varValue);
+        scriptContext.getVariables().put(varName, varEvaluated);
+
+        return true;
     }
+
+    ;
+
 }

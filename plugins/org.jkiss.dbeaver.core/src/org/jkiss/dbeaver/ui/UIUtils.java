@@ -1334,7 +1334,7 @@ public class UIUtils {
     public static boolean showDatabaseError(Shell shell, String message, DBException error)
     {
         DBPDataSource dataSource = error.getDataSource();
-        DBPErrorAssistant.ErrorType errorType = DBUtils.discoverErrorType(dataSource, error);
+        DBPErrorAssistant.ErrorType errorType = dataSource == null ? DBPErrorAssistant.ErrorType.NORMAL : DBUtils.discoverErrorType(dataSource, error);
         switch (errorType) {
             case CONNECTION_LOST:
                 DataSourceInvalidateHandler.showConnectionLostDialog(shell, message, error);
