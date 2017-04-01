@@ -904,7 +904,7 @@ public final class DBUtils {
         } else if (fetchAllTransformer != null) {
             queryText = fetchAllTransformer.transformQueryString(sqlQuery);
         } else {
-            queryText = sqlQuery.getQuery();
+            queryText = sqlQuery.getText();
         }
 
         DBCStatement dbStat = statementType == DBCStatementType.SCRIPT ?

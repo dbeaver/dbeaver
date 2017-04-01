@@ -44,7 +44,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     @Override
     public SQLQuery transformQuery(SQLDataSource dataSource, SQLQuery query) throws DBException {
         try {
-            Statement statement = CCJSqlParserUtil.parse(query.getQuery());
+            Statement statement = CCJSqlParserUtil.parse(query.getText());
             if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
                 PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
                 List<SelectItem> selectItems = new ArrayList<>();
@@ -56,7 +56,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 select.setSelectItems(selectItems);
                 return new SQLQuery(dataSource, select.toString(), query, false);
             } else {
-                throw new DBException("Query [" + query.getQuery() + "] can't be modified");
+                throw new DBException("Query [" + query.getText() + "] can't be modified");
             }
         } catch (JSQLParserException e) {
             throw new DBException("Can't transform query to SELECT count(*)", e);

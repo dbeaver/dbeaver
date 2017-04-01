@@ -15,18 +15,28 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
+package org.jkiss.dbeaver.model.sql;
+
+import org.jkiss.code.NotNull;
 
 /**
- * SQLFileIncludeToken
- *
- * @author Serge Rider
+ * SQL command (query or control)
  */
-public class SQLFileIncludeToken extends SQLControlToken {
+public interface SQLScriptElement {
 
-    public SQLFileIncludeToken(Object data)
-    {
-        super(data);
-    }
+    @NotNull
+    String getText();
+
+    int getOffset();
+
+    int getLength();
+
+    /**
+     * User defined data object. May be used to identify statements.
+     * @return data or null
+     */
+    Object getData();
+
+    void setData(Object data);
 
 }

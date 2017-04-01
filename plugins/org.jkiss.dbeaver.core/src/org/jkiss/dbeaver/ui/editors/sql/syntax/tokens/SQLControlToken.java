@@ -24,7 +24,21 @@ import org.eclipse.jface.text.rules.Token;
  *
  * Control tokens are used for local SQL script evaluation.
  */
-public abstract class SQLControlToken extends Token {
+public class SQLControlToken extends Token {
+
+    public static final String DEFAULT_PREFIX = "@";
+
+    public static final String COMMAND_SET = "set";
+    public static final String COMMAND_PARAM = "param";
+    public static final String COMMAND_INCLUDE = "include";
+    public static final String COMMAND_ECHO = "echo";
+
+    public static final String[] COMMANDS = {
+            COMMAND_SET,
+            COMMAND_PARAM,
+            COMMAND_INCLUDE,
+            COMMAND_ECHO
+    };
 
     public SQLControlToken(Object data)
     {

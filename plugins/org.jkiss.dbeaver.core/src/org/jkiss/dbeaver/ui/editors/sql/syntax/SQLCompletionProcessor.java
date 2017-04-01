@@ -244,12 +244,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         ITextViewer viewer, int documentOffset)
     {
         SQLQuery statementInfo = editor.extractQueryAtPos(documentOffset);
-        if (statementInfo == null || CommonUtils.isEmpty(statementInfo.getQuery())) {
+        if (statementInfo == null || CommonUtils.isEmpty(statementInfo.getText())) {
             return null;
         }
 
         IContextInformation[] result = new IContextInformation[1];
-        result[0] = new ContextInformation(statementInfo.getQuery(), statementInfo.getQuery());
+        result[0] = new ContextInformation(statementInfo.getText(), statementInfo.getText());
         return result;
     }
 

@@ -62,7 +62,7 @@ public class QueryTransformerRowNum implements DBCQueryTransformer {
                 log.debug(e);
             }
         }
-        return query.getQuery();
+        return query.getText();
     }
 
     @Override

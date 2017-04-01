@@ -36,7 +36,7 @@ class QueryTransformerFetchAll implements DBCQueryTransformer {
 
     @Override
     public String transformQueryString(SQLQuery query) throws DBCException {
-        return query.getQuery();
+        return query.getText();
     }
 
     @Override
