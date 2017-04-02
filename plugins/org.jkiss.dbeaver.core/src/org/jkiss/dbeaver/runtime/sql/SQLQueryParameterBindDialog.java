@@ -21,6 +21,7 @@ import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -80,7 +81,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         getShell().setText("Bind parameter(s)");
         final Composite composite = (Composite)super.createDialogArea(parent);
 
-        Table paramTable = new Table(composite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        final Table paramTable = new Table(composite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         final GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 400;
         gd.heightHint = 200;
@@ -154,8 +155,13 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         };
 
         if (!parameters.isEmpty()) {
-            paramTable.select(0);
-            tableEditor.showEditor(paramTable.getItem(0), 2);
+            DBeaverUI.asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    paramTable.select(0);
+                    tableEditor.showEditor(paramTable.getItem(0), 2);
+                }
+            });
         }
 
         updateStatus(GeneralUtils.makeInfoStatus("Use Tab to switch. String values must be quoted. You can use expressions in values"));

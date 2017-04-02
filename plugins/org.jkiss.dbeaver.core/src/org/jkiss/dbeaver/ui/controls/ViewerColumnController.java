@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.ILazyLabelProvider;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Array;
@@ -76,10 +77,14 @@ public class ViewerColumnController {
                 public void handleEvent(Event event) {
                     Point pt = control.getDisplay().map(null, control, new Point(event.x, event.y));
                     Rectangle clientArea = ((Composite) control).getClientArea();
-                    if (control instanceof Tree) {
-                        clickOnHeader = clientArea.y <= pt.y && pt.y < (clientArea.y + ((Tree) control).getHeaderHeight());
+                    if (RuntimeUtils.isPlatformMacOS()) {
+                        clickOnHeader = pt.y < 0;
                     } else {
-                        clickOnHeader = clientArea.y <= pt.y && pt.y < (clientArea.y + ((Table) control).getHeaderHeight());
+                        if (control instanceof Tree) {
+                            clickOnHeader = clientArea.y <= pt.y && pt.y < (clientArea.y + ((Tree) control).getHeaderHeight());
+                        } else {
+                            clickOnHeader = clientArea.y <= pt.y && pt.y < (clientArea.y + ((Table) control).getHeaderHeight());
+                        }
                     }
                 }
             };
