@@ -564,8 +564,9 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             }
         }.execute();
         if (okPressed) {
+            // Save values back to script context
             for (SQLQueryParameter param : parameters) {
-                if (param.isNamed()) {
+                if (param.isNamed() && scriptVariables.containsKey(param.getTitle())) {
                     String strValue = param.getValue();
                     scriptVariables.put(param.getTitle(), SQLUtils.unQuoteString(strValue));
                 }
