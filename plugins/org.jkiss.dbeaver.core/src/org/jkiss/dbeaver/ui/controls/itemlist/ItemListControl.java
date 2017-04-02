@@ -87,7 +87,7 @@ public class ItemListControl extends NodeListControl
         final DBNNode rootNode = getRootNode();
         if (rootNode instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) rootNode).getItemsMeta() != null) {
             contributionManager.add(new Action(
-                "Filter",
+                "Filter settings",
                 DBeaverIcons.getImageDescriptor(UIIcon.FILTER))
             {
                 @Override
@@ -96,6 +96,18 @@ public class ItemListControl extends NodeListControl
                     NavigatorHandlerFilterConfig.configureFilters(getShell(), rootNode);
                 }
             });
+        }
+        {
+            Action configColumnsAction = new Action(
+                    "Configure columns",
+                    DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
+                @Override
+                public void run() {
+                    columnController.configureColumns();
+                }
+            };
+            configColumnsAction.setDescription("Configure columns visibility");
+            contributionManager.add(configColumnsAction);
         }
         IWorkbenchSite workbenchSite = getWorkbenchSite();
         if (workbenchSite != null) {

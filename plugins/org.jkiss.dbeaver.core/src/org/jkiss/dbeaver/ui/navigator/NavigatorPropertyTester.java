@@ -45,7 +45,9 @@ public class NavigatorPropertyTester extends PropertyTester
 
     public static INavigatorModelView getActiveNavigator(IWorkbenchPart activePart) {
         //IWorkbenchPart activePart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
-        if (activePart instanceof INavigatorModelView) {
+        if (activePart == null) {
+            return null;
+        } else if (activePart instanceof INavigatorModelView) {
             return ((INavigatorModelView) activePart);
         } else if (activePart instanceof MultiPageAbstractEditor) {
             return getActiveNavigator(((MultiPageAbstractEditor) activePart).getActiveEditor());
