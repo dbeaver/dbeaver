@@ -76,7 +76,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private PropertySourceAbstract listPropertySource;
 
     private ObjectViewerRenderer renderer;
-    private ViewerColumnController columnController;
+    protected ViewerColumnController columnController;
 
     // Sample flag. True only when initial content is packed. Used to provide actual cell data to Tree/Table pack() methods
     // After content is loaded is always false (and all hyperlink cells have empty text)
