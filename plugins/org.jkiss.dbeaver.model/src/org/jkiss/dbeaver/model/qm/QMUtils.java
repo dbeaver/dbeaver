@@ -82,7 +82,7 @@ public class QMUtils {
             return false;
         } else {
             QMMSessionInfo sessionInfo = getCurrentSession(executionContext);
-            if (sessionInfo != null) {
+            if (sessionInfo != null && sessionInfo.isTransactional()) {
                 QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
                 if (txnInfo != null) {
                     QMMTransactionSavepointInfo sp = txnInfo.getCurrentSavepoint();
