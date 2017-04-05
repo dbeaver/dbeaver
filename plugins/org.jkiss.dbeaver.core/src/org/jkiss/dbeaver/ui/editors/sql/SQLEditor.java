@@ -1928,7 +1928,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void handleResultSetChange() {
-            firePropertyChange(IWorkbenchPartConstants.PROP_DIRTY);
+            updateDirtyFlag();
         }
     }
 
@@ -2012,7 +2012,7 @@ public class SQLEditor extends SQLEditorBase implements
                     // Finish query
                     processQueryResult(session, result);
                     // Update dirty flag
-                    firePropertyChange(IWorkbenchPartConstants.PROP_DIRTY);
+                    updateDirtyFlag();
                 }
             });
         }
@@ -2088,6 +2088,10 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             });
         }
+    }
+
+    public void updateDirtyFlag() {
+        firePropertyChange(IWorkbenchPartConstants.PROP_DIRTY);
     }
 
     private class FindReplaceTarget extends DynamicFindReplaceTarget {
