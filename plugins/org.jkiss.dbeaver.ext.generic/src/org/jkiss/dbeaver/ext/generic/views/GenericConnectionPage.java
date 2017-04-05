@@ -464,7 +464,6 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             }
             final Set<String> properties = metaURL.getAvailableProperties();
             urlText.setEditable(false);
-            //urlText.setBackground(urlText.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
             showControlGroup(GROUP_HOST, properties.contains(DriverDescriptor.PROP_HOST));
             showControlGroup(GROUP_SERVER, properties.contains(DriverDescriptor.PROP_SERVER));
@@ -477,8 +476,8 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             showControlGroup(GROUP_DB, false);
             showControlGroup(GROUP_PATH, false);
             urlText.setEditable(true);
-            urlText.setBackground(null);
         }
+        UIUtils.fixReadonlyTextBackground(urlText);
         showControlGroup(GROUP_LOGIN, !driver.isAnonymousAccess());
         updateCreateButton(driver);
 
