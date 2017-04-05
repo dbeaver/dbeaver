@@ -292,4 +292,23 @@ public class TextUtils {
         return score;
     }
 
+    public static String cutExtraLines(String message, int maxLines) {
+        if (message == null || message.indexOf('\n') == -1) {
+            return message;
+        }
+        int lfCount = 0;
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < message.length(); i++) {
+            char c = message.charAt(i);
+            if (c == '\n') {
+                lfCount++;
+            }
+            buf.append(c);
+            if (lfCount == maxLines) {
+                buf.append("...");
+                break;
+            }
+        }
+        return buf.toString();
+    }
 }
