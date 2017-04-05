@@ -189,7 +189,12 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
             dsItem.setExpanded(true);
         }
 
-        UIUtils.packColumns(contextTree);
+        DBeaverUI.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                UIUtils.packColumns(contextTree);
+            }
+        });
     }
 
     public static void showDialog(Shell shell) {
