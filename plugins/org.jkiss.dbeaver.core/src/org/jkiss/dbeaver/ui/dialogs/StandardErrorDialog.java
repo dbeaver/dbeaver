@@ -19,14 +19,19 @@ package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.TextUtils;
 
 /**
  * StandardErrorDialog
  */
 public class StandardErrorDialog extends ErrorDialog {
+
+    private Text messageText;
 
     public StandardErrorDialog(
         @NotNull Shell parentShell,
@@ -37,6 +42,8 @@ public class StandardErrorDialog extends ErrorDialog {
     {
         super(parentShell, dialogTitle, message, status, displayMask);
         setStatus(status);
+        this.message = TextUtils.cutExtraLines(message == null ? status.getMessage()
+                : JFaceResources.format("Reason", message, status.getMessage()), 20); //$NON-NLS-1$
     }
 
 }
