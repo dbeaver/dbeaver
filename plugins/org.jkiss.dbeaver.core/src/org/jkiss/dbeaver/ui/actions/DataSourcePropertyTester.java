@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
@@ -33,6 +35,7 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 /**
  * DatabaseEditorPropertyTester
@@ -147,18 +150,40 @@ public class DataSourcePropertyTester extends PropertyTester
         public synchronized void handleTransactionCommit(@NotNull DBCExecutionContext context)
         {
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
+            updateEditorsDirtyFlag();
         }
 
         @Override
         public synchronized void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint)
         {
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
+            updateEditorsDirtyFlag();
         }
 
         @Override
         public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement)
         {
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
+        }
+    }
+
+    /**
+     * This is a hack.
+     * Editors should listen txn commit/rollback and update their dirty flag (active transaction makes SQL editor dirty).
+     * Making each editor QM listener is too expensive.
+     */
+    private static void updateEditorsDirtyFlag() {
+        IEditorReference[] editors = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+        for (IEditorReference ref : editors) {
+            final IEditorPart editor = ref.getEditor(false);
+            if (editor instanceof SQLEditor) {
+                DBeaverUI.asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((SQLEditor) editor).updateDirtyFlag();
+                    }
+                });
+            }
         }
     }
 
