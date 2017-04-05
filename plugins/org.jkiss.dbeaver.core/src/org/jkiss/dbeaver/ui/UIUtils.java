@@ -540,6 +540,7 @@ public class UIUtils {
         createControlLabel(parent, label);
 
         Text text = new Text(parent, style);
+        fixReadonlyTextBackground(text);
         if (value != null) {
             text.setText(value);
         }
@@ -1546,4 +1547,14 @@ public class UIUtils {
         }
         display.update();
     }
+
+    public static void fixReadonlyTextBackground(Text textField) {
+        if ((textField.getStyle() & SWT.READ_ONLY) == SWT.READ_ONLY) {
+            // Do nothing because in E4.6 there is no good solution: https://bugs.eclipse.org/bugs/show_bug.cgi?id=340889
+            //textField.setBackground(textField.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        } else {
+            textField.setBackground(null);
+        }
+    }
+
 }
