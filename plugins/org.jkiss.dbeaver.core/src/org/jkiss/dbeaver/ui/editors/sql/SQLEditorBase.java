@@ -628,7 +628,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         ruleManager.endEval();
     }
 
-    protected SQLScriptElement parseQuery(IDocument document, int startPos, int endPos, int currentPos, boolean scriptMode) {
+    protected SQLScriptElement parseQuery(final IDocument document, final int startPos, final int endPos, final int currentPos, final boolean scriptMode) {
         if (endPos - startPos <= 0) {
             return null;
         }
@@ -643,6 +643,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         boolean hasValuableTokens = false;
         boolean hasBlockHeader = false;
         String blockTogglePattern = null;
+        int lastTokenLineFeeds = 0;
         for (; ; ) {
             IToken token = ruleManager.nextToken();
             int tokenOffset = ruleManager.getTokenOffset();
@@ -659,20 +660,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                 }
             } else if (useBlankLines && token.isWhitespace() && tokenLength >= 2) {
                 // Check for blank line delimiter
-                try {
-                    int lfCount = 0;
-                    for (int i = tokenOffset; i < tokenOffset + tokenLength; i++) {
-                        if (document.getChar(i) == '\n') {
-                            lfCount++;
-                        }
-                    }
-                    if (lfCount >= 2) {
-                        isDelimiter = true;
-                    }
-                } catch (BadLocationException e) {
-                    log.error(e);
+                if (lastTokenLineFeeds + countLineFeeds(document, tokenOffset, tokenLength) >= 2) {
+                    isDelimiter = true;
                 }
             }
+            lastTokenLineFeeds = 0;
             if (tokenLength == 1) {
                 // Check for bracket block begin/end
                 try {
@@ -728,6 +720,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             } else if (token instanceof SQLSetDelimiterToken || token instanceof SQLControlToken) {
                 isDelimiter = true;
                 isControl = true;
+            } else if (token instanceof SQLCommentToken) {
+                lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenOffset + tokenLength - 2, 2);
             }
 
             boolean cursorInsideToken = currentPos >= tokenOffset && currentPos < tokenOffset + tokenLength;
@@ -813,6 +807,20 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                 }
             }
         }
+    }
+
+    private static int countLineFeeds(final IDocument document, final int offset, final int length) {
+        int lfCount = 0;
+        try {
+            for (int i = offset; i < offset + length; i++) {
+                if (document.getChar(i) == '\n') {
+                    lfCount++;
+                }
+            }
+        } catch (BadLocationException e) {
+            log.error(e);
+        }
+        return lfCount;
     }
 
     protected List<SQLQueryParameter> parseParameters(IDocument document, SQLQuery query) {
