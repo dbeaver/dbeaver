@@ -17,18 +17,16 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
 
-import org.eclipse.jface.text.rules.Token;
-
 /**
  * SQLParameterToken
  *
  * @author Serge Rider
  */
-public class SQLParameterToken extends Token {
+public class SQLParameterToken extends SQLToken {
 
     public SQLParameterToken(Object data)
     {
-        super(data);
+        super(T_PARAMETER, data);
     }
 
 }

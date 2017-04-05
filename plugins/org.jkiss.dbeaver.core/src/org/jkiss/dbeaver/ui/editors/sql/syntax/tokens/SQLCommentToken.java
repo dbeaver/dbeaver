@@ -17,18 +17,16 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
 
-import org.eclipse.jface.text.rules.Token;
-
 /**
  * SQLCommentToken
  *
  * @author Serge Rider
  */
-public class SQLCommentToken extends Token {
+public class SQLCommentToken extends SQLToken {
 
     public SQLCommentToken(Object data)
     {
-        super(data);
+        super(T_COMMENT, data);
     }
 
 }

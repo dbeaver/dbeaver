@@ -17,18 +17,16 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
 
-import org.eclipse.jface.text.rules.Token;
-
 /**
  * SQLSetDelimiterToken
  *
  * @author Serge Rider
  */
-public class SQLSetDelimiterToken extends Token {
+public class SQLSetDelimiterToken extends SQLToken {
 
     public SQLSetDelimiterToken(Object data)
     {
-        super(data);
+        super(T_SET_DELIMITER, data);
     }
 
 }

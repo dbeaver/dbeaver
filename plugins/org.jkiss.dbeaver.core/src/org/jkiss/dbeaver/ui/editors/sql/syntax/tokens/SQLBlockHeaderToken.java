@@ -17,16 +17,14 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
 
-import org.eclipse.jface.text.rules.Token;
-
 /**
  * SQLBlockHeaderToken
  */
-public class SQLBlockHeaderToken extends Token {
+public class SQLBlockHeaderToken extends SQLToken {
 
     public SQLBlockHeaderToken(Object data)
     {
-        super(data);
+        super(T_BLOCK_HEADER, data);
     }
 
 }

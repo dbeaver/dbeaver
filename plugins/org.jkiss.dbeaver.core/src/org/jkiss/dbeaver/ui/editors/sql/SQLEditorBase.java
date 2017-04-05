@@ -56,7 +56,7 @@ import org.jkiss.dbeaver.ui.IErrorVisualizer;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLToken;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
@@ -648,7 +648,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             IToken token = ruleManager.nextToken();
             int tokenOffset = ruleManager.getTokenOffset();
             int tokenLength = ruleManager.getTokenLength();
-            boolean isDelimiter = token instanceof SQLDelimiterToken;
+            int tokenType = token instanceof SQLToken ? ((SQLToken)token).getType() : SQLToken.T_UNKNOWN;
+
+            boolean isDelimiter = tokenType == SQLToken.T_DELIMITER;
             boolean isControl = false;
             String delimiterText = null;
             if (isDelimiter) {
@@ -678,11 +680,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     log.warn(e);
                 }
             }
-            if (token instanceof SQLBlockHeaderToken) {
+            if (tokenType == SQLToken.T_BLOCK_HEADER) {
                 bracketDepth++;
                 hasBlocks = true;
                 hasBlockHeader = true;
-            } else if (token instanceof SQLBlockToggleToken) {
+            } else if (tokenType == SQLToken.T_BLOCK_TOGGLE) {
                 String togglePattern;
                 try {
                     togglePattern = document.get(tokenOffset, tokenLength);
@@ -702,12 +704,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     log.debug("Block toggle token inside another block. Can't process it");
                 }
                 hasBlocks = true;
-            } else if (token instanceof SQLBlockBeginToken) {
+            } else if (tokenType == SQLToken.T_BLOCK_BEGIN) {
                 if (!hasBlockHeader) {
                     bracketDepth++;
                 }
                 hasBlocks = true;
-            } else if (bracketDepth > 0 && token instanceof SQLBlockEndToken) {
+            } else if (bracketDepth > 0 && tokenType == SQLToken.T_BLOCK_END) {
                 // Sometimes query contains END clause without BEGIN. E.g. CASE, IF, etc.
                 // This END doesn't mean block
                 if (hasBlocks) {
@@ -717,10 +719,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             } else if (isDelimiter && bracketDepth > 0) {
                 // Delimiter in some brackets - ignore it
                 continue;
-            } else if (token instanceof SQLSetDelimiterToken || token instanceof SQLControlToken) {
+            } else if (tokenType == SQLToken.T_SET_DELIMITER || tokenType == SQLToken.T_CONTROL) {
                 isDelimiter = true;
                 isControl = true;
-            } else if (token instanceof SQLCommentToken) {
+            } else if (tokenType == SQLToken.T_COMMENT) {
                 lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenOffset + tokenLength - 2, 2);
             }
 
@@ -735,7 +737,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                             controlText.trim(),
                             tokenOffset,
                             tokenLength,
-                            token instanceof SQLSetDelimiterToken);
+                            tokenType == SQLToken.T_SET_DELIMITER);
                 } catch (BadLocationException e) {
                     log.warn("Can't extract control statement", e); //$NON-NLS-1$
                     return null;
@@ -779,7 +781,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         }
                     }
                     int queryEndPos = tokenOffset;
-                    if (token instanceof SQLDelimiterToken) {
+                    if (tokenType == SQLToken.T_DELIMITER) {
                         queryEndPos += tokenLength;
                     }
                     // make script line
@@ -800,7 +802,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                 return null;
             }
             if (!hasValuableTokens && !token.isWhitespace() && !isControl) {
-                if (token instanceof SQLCommentToken) {
+                if (tokenType == SQLToken.T_COMMENT) {
                     hasValuableTokens = dialect.supportsCommentQuery();
                 } else {
                     hasValuableTokens = true;
@@ -836,12 +838,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                 break;
             }
             // Handle only parameters which are not in SQL blocks
-            if (token instanceof SQLBlockBeginToken) {
+            int tokenType = SQLToken.T_UNKNOWN;
+            if (token instanceof SQLToken) {
+                tokenType = ((SQLToken) token).getType();
+            }
+            if (tokenType == SQLToken.T_BLOCK_BEGIN) {
                 blockDepth++;
-            }else if (token instanceof SQLBlockEndToken) {
+            }else if (tokenType == SQLToken.T_BLOCK_END) {
                 blockDepth--;
             }
-            if (token instanceof SQLParameterToken && tokenLength > 0 && blockDepth <= 0) {
+            if (tokenType == SQLToken.T_PARAMETER && tokenLength > 0 && blockDepth <= 0) {
                 try {
                     String paramName = document.get(tokenOffset, tokenLength);
                     if (execQuery && paramName.equals("?")) {

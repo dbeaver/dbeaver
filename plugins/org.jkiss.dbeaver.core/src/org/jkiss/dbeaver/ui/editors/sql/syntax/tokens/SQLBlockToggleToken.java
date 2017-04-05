@@ -17,16 +17,14 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
 
-import org.eclipse.jface.text.rules.Token;
-
 /**
  * SQLBlockToggleToken
  */
-public class SQLBlockToggleToken extends Token {
+public class SQLBlockToggleToken extends SQLToken {
 
     public SQLBlockToggleToken(Object data)
     {
-        super(data);
+        super(T_BLOCK_TOGGLE, data);
     }
 
 }
