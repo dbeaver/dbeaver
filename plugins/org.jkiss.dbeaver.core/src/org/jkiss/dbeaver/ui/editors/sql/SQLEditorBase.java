@@ -728,11 +728,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             } else if (token instanceof SQLSetDelimiterToken || token instanceof SQLControlToken) {
                 isDelimiter = true;
                 isControl = true;
-            } else if (token.isWhitespace()) {
-                // Skip leading spaces
-                if (!hasValuableTokens) {
-                    currentPos += tokenLength;
-                }
             }
 
             boolean cursorInsideToken = currentPos >= tokenOffset && currentPos < tokenOffset + tokenLength;
