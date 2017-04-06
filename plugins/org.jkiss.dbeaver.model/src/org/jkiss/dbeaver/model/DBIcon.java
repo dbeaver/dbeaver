@@ -51,7 +51,6 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_TABLE = new DBIcon("table", "tree/table.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE_ALIAS = new DBIcon("table_alias", "tree/table_alias.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE_LINK = new DBIcon("table_link", "tree/table_link.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_TABLE_SORT = new DBIcon("table_sort", "tree/table_sort.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE_INDEX = new DBIcon("table_index", "tree/table_index.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_VIEW = new DBIcon("view", "tree/view.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_FUNCTION = new DBIcon("function", "tree/function.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -82,7 +81,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_JAVA_CLASS = new DBIcon("javaClass", "tree/java_class.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_JAVA_INTERFACE = new DBIcon("javaInterface", "tree/java_interface.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_LINK = new DBIcon("link", "tree/link.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_FILE = new DBIcon("file", "tree/file.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_FILE = new DBIcon("file", "tree/data_file.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_CLASS = new DBIcon("class", "tree/class.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_ASSOCIATION = new DBIcon("association", "tree/association.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SERVER = new DBIcon("server", "tree/server.png"); //$NON-NLS-1$ //$NON-NLS-2$
