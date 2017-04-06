@@ -159,7 +159,12 @@ public class PostgreLockManager extends LockGraphManager<PostgreLock,Integer> im
         }
     }
 
-	
+    @Override
+    public Class<PostgreLock> getLocksType() {
+        return PostgreLock.class;
+    }
+
+
     @Override
 	public Collection<PostgreLockItem> getLockItems(DBCSession session, Map<String, Object> options)
 			throws DBException {

@@ -26,12 +26,16 @@ import org.jkiss.dbeaver.model.DBPObject;
  */
 public interface DBAServerLock<ID_TYPE> extends DBPObject {
 
-	
-	String getTitle();	
-	ID_TYPE getId();
-	DBAServerLock<ID_TYPE> getHoldBy();
-	void setHoldBy(DBAServerLock<?> lock);
-	ID_TYPE getHoldID();
-	List<DBAServerLock<ID_TYPE>> waitThis();
+    String getTitle();
+
+    ID_TYPE getId();
+
+    DBAServerLock<ID_TYPE> getHoldBy();
+
+    void setHoldBy(DBAServerLock<?> lock);
+
+    ID_TYPE getHoldID();
+
+    List<DBAServerLock<ID_TYPE>> waitThis();
 
 }
