@@ -24,12 +24,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.lock.OracleLock;
 import org.jkiss.dbeaver.ext.oracle.model.lock.OracleLockManager;
+import org.jkiss.dbeaver.ext.ui.locks.edit.AbstractLockEditor;
+import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockItem;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.ui.views.lock.AbstractLockEditor;
-import org.jkiss.dbeaver.ui.views.lock.LockManagerViewer;
 
 public class OracleLockEditor extends AbstractLockEditor{
 	
