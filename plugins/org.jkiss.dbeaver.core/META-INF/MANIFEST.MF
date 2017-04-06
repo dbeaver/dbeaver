@@ -105,8 +105,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.ui.views.plan,
  org.jkiss.dbeaver.ui.views.process,
  org.jkiss.dbeaver.ui.views.qm,
- org.jkiss.dbeaver.ui.views.session,
- org.jkiss.dbeaver.ui.views.lock
+ org.jkiss.dbeaver.ui.views.session
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.filesystem,
@@ -128,7 +127,6 @@ Require-Bundle: org.eclipse.core.runtime,
  com.jcraft.jsch,
  org.objectweb.asm,
  org.eclipse.e4.ui.css.core,
- org.eclipse.e4.ui.css.swt,
- org.eclipse.gef
+ org.eclipse.e4.ui.css.swt
 Bundle-Vendor: JKISS
 Bundle-Localization: plugin
