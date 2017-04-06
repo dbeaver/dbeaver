@@ -143,8 +143,13 @@ public class OracleLockManager extends LockGraphManager<OracleLock,Integer> impl
 	        
 	    }
 
-		
-	    @Override
+    @Override
+    public Class<OracleLock> getLocksType() {
+        return OracleLock.class;
+    }
+
+
+    @Override
 		public Collection<OracleLockItem> getLockItems(DBCSession session, Map<String, Object> options)
 				throws DBException {
 	   	 try {

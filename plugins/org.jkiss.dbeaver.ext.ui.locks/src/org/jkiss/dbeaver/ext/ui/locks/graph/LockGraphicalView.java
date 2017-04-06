@@ -78,7 +78,7 @@ public class LockGraphicalView extends ViewPart {
 		if (g != EMPTY_GRAPH) {
 			g.setLockManagerViewer(viewer);
 		}
-		
+
 		getGraphicalViewer().setContents(g);
 		getGraphicalViewer().getControl().setBackground(ColorConstants.listBackground);
 	}

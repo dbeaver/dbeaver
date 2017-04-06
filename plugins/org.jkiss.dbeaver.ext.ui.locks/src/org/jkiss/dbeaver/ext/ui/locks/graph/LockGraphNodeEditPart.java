@@ -42,7 +42,7 @@ public class LockGraphNodeEditPart extends AbstractGraphicalEditPart {
 	@Override
 	protected IFigure createFigure() {
 		LockGraphNode node = (LockGraphNode) getModel(); 
-		LockGraph graph = (LockGraph)((LockGraphEditPart) getParent()).getModel();
+		LockGraph graph = (LockGraph) getParent().getModel();
 		LockGraphNodeFigure nodeFigure = new LockGraphNodeFigure(node.getTitle(),(node == graph.getSelection()));
 		this.targetAnchor = new LockGraphConnectionAnchor(nodeFigure);
 		this.sourceAnchor = new LockGraphConnectionAnchor(nodeFigure);
@@ -105,27 +105,26 @@ public class LockGraphNodeEditPart extends AbstractGraphicalEditPart {
 		SelectionPolicy selectionPolicy = new SelectionPolicy();
 		selectionPolicy.setDragAllowed(false);
 		installEditPolicy(EditPolicy.SELECTION_FEEDBACK_ROLE, selectionPolicy); 
-	} 
-	
-	
-
-}
-
-class SelectionPolicy extends NonResizableEditPolicy {
-
-	@Override
-	protected void hideSelection() {
 	}
 
-	@Override
-	protected void showSelection() {
-	
-		LockManagerViewer viewer = ((LockGraph)getHost().getParent().getModel()).getLockManagerViewer();
-		
-		if (viewer != null) {
-			viewer.setTableLockSelect(((LockGraphNode)getHost().getModel()).getLock());
+	static class SelectionPolicy extends NonResizableEditPolicy {
+
+		@Override
+		protected void hideSelection() {
 		}
-		
-	}		
+
+		@Override
+		protected void showSelection() {
+
+			LockManagerViewer viewer = ((LockGraph)getHost().getParent().getModel()).getLockManagerViewer();
+
+			if (viewer != null) {
+				viewer.setTableLockSelect(((LockGraphNode)getHost().getModel()).getLock());
+			}
+
+		}
+	}
+
 }
+
 

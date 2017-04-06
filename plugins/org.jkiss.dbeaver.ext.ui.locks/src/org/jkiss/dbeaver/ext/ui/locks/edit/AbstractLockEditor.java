@@ -23,43 +23,40 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
 
 /**
- * AbstractLockEditor for Lock View 
+ * AbstractLockEditor for Lock View
  */
 
-public abstract class AbstractLockEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput>
-	{
-	
-	    private LockManagerViewer lockViewer;
+public abstract class AbstractLockEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput> {
 
-	    public LockManagerViewer getLockViewer() {
-	        return lockViewer;
-	    }
+    private LockManagerViewer lockViewer;
 
-	    @Override
-	    public void dispose()
-	    {
-	        if (lockViewer != null) {
-	            lockViewer.dispose();
-	        }
-	        super.dispose();
-	    }
+    public LockManagerViewer getLockViewer() {
+        return lockViewer;
+    }
 
-	    @Override
-	    public void createPartControl(Composite parent) {
-	    	final DBCExecutionContext executionContext = getExecutionContext();
-	    	if (executionContext != null) {
-        	 setPartName("Lock - " + executionContext.getDataSource().getContainer().getName());
-        	 lockViewer = createLockViewer(executionContext, parent);
-	         lockViewer.refreshLocks(null);
-	    	}
-	    }
+    @Override
+    public void dispose() {
+        if (lockViewer != null) {
+            lockViewer.dispose();
+        }
+        super.dispose();
+    }
 
-	    protected abstract LockManagerViewer createLockViewer(DBCExecutionContext executionContext, Composite parent);
+    @Override
+    public void createPartControl(Composite parent) {
+        final DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext != null) {
+            setPartName("Lock - " + executionContext.getDataSource().getContainer().getName());
+            lockViewer = createLockViewer(executionContext, parent);
+            lockViewer.refreshLocks(null);
+        }
+    }
 
-	    @Override
-	    public void refreshPart(Object source, boolean force)
-	    {
-	        lockViewer.refreshLocks(null);
-	    }
+    protected abstract LockManagerViewer createLockViewer(DBCExecutionContext executionContext, Composite parent);
 
-	}
+    @Override
+    public void refreshPart(Object source, boolean force) {
+        lockViewer.refreshLocks(null);
+    }
+
+}

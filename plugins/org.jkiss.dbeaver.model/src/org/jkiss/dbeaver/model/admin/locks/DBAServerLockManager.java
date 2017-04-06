@@ -40,6 +40,7 @@ public interface DBAServerLockManager<LOCK_TYPE extends DBAServerLock<?>,LOCK_TY
     void alterSession(DBCSession session, LOCK_TYPE sessionType, Map<String, Object> options)
         throws DBException;
 
+    Class<LOCK_TYPE> getLocksType();
 }
 
 
