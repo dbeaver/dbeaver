@@ -113,12 +113,10 @@ public class LockManagerViewer {
 
         lockTable.loadData();
 
-
         SashForm infoSash = UIUtils.createPartDivider(part, sash, SWT.HORIZONTAL | SWT.SMOOTH);
         infoSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Composite cBlocked = new Composite(infoSash, SWT.DOUBLE_BUFFERED);
-        cBlocked.setLayout(new GridLayout(1, true));
+        Composite cBlocked = UIUtils.createPlaceholder(infoSash, 1, 5);
 
         blockedLabel = new Label(cBlocked, SWT.NULL);
         blockedLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -127,8 +125,7 @@ public class LockManagerViewer {
         blockedTable = new LockTableDetail(cBlocked, SWT.SHEET, part.getSite(), lockManager);
         blockedTable.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Composite cBlocking = new Composite(infoSash, SWT.DOUBLE_BUFFERED);
-        cBlocking.setLayout(new GridLayout(1, true));
+        Composite cBlocking = UIUtils.createPlaceholder(infoSash, 1, 5);
 
         blockingLabel = new Label(cBlocking, SWT.NULL);
         blockingLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
