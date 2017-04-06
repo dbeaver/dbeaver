@@ -1,5 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
+ * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,7 +20,6 @@ package org.jkiss.dbeaver.ui.views.lock;
 
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.NotNull;
@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
 
 import java.lang.reflect.InvocationTargetException;
