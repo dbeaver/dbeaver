@@ -29,6 +29,7 @@
         <module>plugins/org.jkiss.dbeaver.ext.db2</module>
         <module>plugins/org.jkiss.dbeaver.ext.derby</module>
         <module>plugins/org.jkiss.dbeaver.ext.erd</module>
+		<module>plugins/org.jkiss.dbeaver.ext.ui.locks</module>
         <module>plugins/org.jkiss.dbeaver.ext.firebird</module>
         <module>plugins/org.jkiss.dbeaver.ext.generic</module>
         <module>plugins/org.jkiss.dbeaver.ext.import-config</module>
@@ -48,7 +49,6 @@
         <module>plugins/org.jkiss.dbeaver.ext.wmi</module>
         <module>plugins/org.jkiss.dbeaver.model</module>
         <module>plugins/org.jkiss.dbeaver.test</module>
-		<module>plugins/org.jkiss.dbeaver.ext.ui.locks</module>
 
         <module>features/org.jkiss.dbeaver.core.feature</module>
         <module>features/org.jkiss.dbeaver.ext.db2.feature</module>
