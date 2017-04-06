@@ -47,10 +47,10 @@ public class OracleSessionEditor extends AbstractSessionEditor
     private DisconnectSessionAction disconnectSessionAction;
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createEditorControl(Composite parent) {
         killSessionAction = new DisconnectSessionAction(true);
         disconnectSessionAction = new DisconnectSessionAction(false);
-        super.createPartControl(parent);
+        super.createEditorControl(parent);
     }
 
     @Override

@@ -30,4 +30,10 @@ public interface IDatabaseEditor extends IEditorPart, DBPDataSourceUser, DBPCont
     @Override
     IDatabaseEditorInput getEditorInput();
 
+    /**
+     * Recreates editor UI.
+     * Used by lazy editor initializer
+     */
+    void recreateEditorControl();
+
 }

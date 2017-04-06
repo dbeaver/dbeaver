@@ -45,10 +45,10 @@ public class DB2ServerApplicationEditor extends AbstractSessionEditor {
     private ForceApplicationAction forceApplicationAction;
 
     @Override
-    public void createPartControl(Composite parent)
+    public void createEditorControl(Composite parent)
     {
         forceApplicationAction = new ForceApplicationAction();
-        super.createPartControl(parent);
+        super.createEditorControl(parent);
     }
 
     @Override

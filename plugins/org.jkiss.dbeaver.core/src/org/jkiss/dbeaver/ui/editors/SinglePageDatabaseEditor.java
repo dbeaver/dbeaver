@@ -16,16 +16,49 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.editors.entity.ProgressEditorPart;
 
 /**
  * SinglePageDatabaseEditor
  */
 public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends AbstractDatabaseEditor<INPUT_TYPE>
 {
+
+    private ProgressEditorPart progressEditorPart;
+
+    @Override
+    public final void createPartControl(Composite parent) {
+        final IDatabaseEditorInput editorInput = getEditorInput();
+        if (editorInput instanceof DatabaseLazyEditorInput) {
+            createLazyEditorPart(parent, (DatabaseLazyEditorInput)editorInput);
+        } else {
+            createEditorControl(parent);
+        }
+    }
+
+    private void createLazyEditorPart(Composite parent, final DatabaseLazyEditorInput input) {
+        progressEditorPart = new ProgressEditorPart(this);
+        progressEditorPart.init(getEditorSite(), input);
+        progressEditorPart.createPartControl(parent);
+    }
+
+    @Override
+    public void recreateEditorControl() {
+        if (progressEditorPart != null) {
+            Composite parent = progressEditorPart.destroyAndReturnParent();
+            progressEditorPart = null;
+            createEditorControl(parent);
+            parent.layout(true, true);
+        }
+    }
+
+    public abstract void createEditorControl(Composite parent);
+
     @Override
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException

@@ -77,6 +77,11 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
     }
 
     @Override
+    public void recreateEditorControl() {
+        // Not supported
+    }
+
+    @Override
     public DBCExecutionContext getExecutionContext() {
         return getEditorInput().getExecutionContext();
     }

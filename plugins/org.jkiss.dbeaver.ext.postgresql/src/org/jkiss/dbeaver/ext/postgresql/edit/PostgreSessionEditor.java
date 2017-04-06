@@ -40,9 +40,9 @@ public class PostgreSessionEditor extends AbstractSessionEditor
     private KillSessionAction terminateQueryAction;
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createEditorControl(Composite parent) {
         terminateQueryAction = new KillSessionAction();
-        super.createPartControl(parent);
+        super.createEditorControl(parent);
     }
 
     @Override

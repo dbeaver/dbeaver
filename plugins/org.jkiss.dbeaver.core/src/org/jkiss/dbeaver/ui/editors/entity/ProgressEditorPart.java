@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.editors.DatabaseLazyEditorInput;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 
 import java.lang.reflect.InvocationTargetException;
@@ -41,11 +42,11 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ProgressEditorPart extends EditorPart {
 
-    private final EntityEditor entityEditor;
+    private final IDatabaseEditor entityEditor;
     private Composite parentControl;
     private Canvas progressCanvas;
 
-    public ProgressEditorPart(EntityEditor entityEditor) {
+    public ProgressEditorPart(IDatabaseEditor entityEditor) {
         this.entityEditor = entityEditor;
     }
 
@@ -114,10 +115,16 @@ public class ProgressEditorPart extends EditorPart {
         }
         try {
             entityEditor.init(entityEditor.getEditorSite(), result);
-            entityEditor.recreatePages();
+            entityEditor.recreateEditorControl();
         } catch (Exception e) {
             UIUtils.showErrorDialog(entityEditor.getSite().getShell(), "Editor init", "Can't initialize editor", e);
         }
+    }
+
+    public Composite destroyAndReturnParent() {
+        Composite parent = progressCanvas.getParent();
+        progressCanvas.dispose();
+        return parent;
     }
 
     private class InitNodeService extends AbstractLoadService<IDatabaseEditorInput> {

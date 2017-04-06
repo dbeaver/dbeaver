@@ -43,7 +43,7 @@ public abstract class AbstractLockEditor extends SinglePageDatabaseEditor<IDatab
     }
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createEditorControl(Composite parent) {
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
             setPartName("Lock - " + executionContext.getDataSource().getContainer().getName());
