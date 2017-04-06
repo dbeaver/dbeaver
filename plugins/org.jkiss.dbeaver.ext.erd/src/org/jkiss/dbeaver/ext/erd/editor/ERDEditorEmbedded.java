@@ -62,6 +62,11 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     }
 
     @Override
+    public void recreateEditorControl() {
+        // Not implemented
+    }
+
+    @Override
     public boolean isReadOnly()
     {
         return true;
@@ -90,7 +95,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     {
         // Do not create controls here - do it on part activation
         this.parent = parent;
-        //super.createPartControl(parent);
+        //super.createEditorControl(parent);
     }
 
     @Override

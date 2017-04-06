@@ -47,10 +47,10 @@ public class ExasolServerSessionEditor extends AbstractSessionEditor {
 
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createEditorControl(Composite parent) {
         killSessionAction = new KillSessionAction(false);
         terminateQueryAction = new KillSessionAction(true);
-        super.createPartControl(parent);
+        super.createEditorControl(parent);
     }
 
     @Override

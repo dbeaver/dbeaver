@@ -42,7 +42,7 @@ public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDa
     }
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createEditorControl(Composite parent) {
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
             setPartName("Sessions - " + executionContext.getDataSource().getContainer().getName());

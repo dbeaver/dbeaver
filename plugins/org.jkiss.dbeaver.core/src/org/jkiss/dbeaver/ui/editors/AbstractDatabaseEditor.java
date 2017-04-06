@@ -42,7 +42,9 @@ public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorI
         editorImage = input.getImageDescriptor().createImage();
         this.setTitleImage(editorImage);
 
-        listener = new DatabaseEditorListener(this);
+        if (listener == null) {
+            listener = new DatabaseEditorListener(this);
+        }
     }
 
     @Override
@@ -52,7 +54,10 @@ public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorI
             editorImage.dispose();
             editorImage = null;
         }
-        listener.dispose();
+        if (listener != null) {
+            listener.dispose();
+            listener = null;
+        }
         super.dispose();
     }
 

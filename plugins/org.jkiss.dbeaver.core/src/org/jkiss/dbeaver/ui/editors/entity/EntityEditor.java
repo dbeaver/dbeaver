@@ -798,6 +798,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
         return DBUtils.getContainer(getDatabaseObject());
     }
 
+    @Override
+    public void recreateEditorControl() {
+        recreatePages();
+    }
+
     private static final int MAX_BREADCRUMBS_MENU_ITEM = 300;
 
     private void createPathRow(ToolBar infoGroup, final DBNDatabaseNode databaseNode)
