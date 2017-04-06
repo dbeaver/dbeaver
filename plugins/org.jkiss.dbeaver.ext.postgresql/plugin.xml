@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
-
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com) 
+ * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+  
 <plugin>
 
     <!--
@@ -130,6 +147,7 @@
 
                     <folder label="%tree.administer.node.name" icon="#folder_admin" description="Administer">
                         <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor"/>
+                        <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor" label="%tree.locks.node.name" icon="#locks" description="Server locks manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor"/>
                     </folder>
 
                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="Information">
@@ -277,6 +295,13 @@
                 class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor"
                 id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor">
         </editor>
+        <editor
+                name="%editor.lock_manager.name"
+                icon="#sessions"
+                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor"
+                id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor">
+        </editor>
+        
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">
