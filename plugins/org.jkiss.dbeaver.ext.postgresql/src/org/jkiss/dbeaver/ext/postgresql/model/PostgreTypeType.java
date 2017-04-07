@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  */
 public enum PostgreTypeType implements DBPNamedObject
 {
+    a("Abstract"),
     b("Base"),
     c("Composite"),
     d("Domain"),

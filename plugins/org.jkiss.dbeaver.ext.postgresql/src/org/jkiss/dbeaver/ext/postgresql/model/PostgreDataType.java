@@ -108,22 +108,22 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.alias = false;
         this.typeId = typeId;
         this.typeType = PostgreTypeType.b;
+        String typTypeStr = JDBCUtils.safeGetString(dbResult, "typtype");
         try {
-            String typTypeStr = JDBCUtils.safeGetString(dbResult, "typtype");
             if (typTypeStr != null && !typTypeStr.isEmpty()) {
                 this.typeType = PostgreTypeType.valueOf(typTypeStr.toLowerCase(Locale.ENGLISH));
             }
         } catch (Exception e) {
-            log.debug(e);
+            log.debug("Invalid type type [" + typTypeStr + "] - " + e.getMessage());
         }
         this.typeCategory = PostgreTypeCategory.X;
+        String typCategoryStr = JDBCUtils.safeGetString(dbResult, "typcategory");
         try {
-            String typCategoryStr = JDBCUtils.safeGetString(dbResult, "typcategory");
             if (typCategoryStr != null && !typCategoryStr.isEmpty()) {
                 this.typeCategory = PostgreTypeCategory.valueOf(typCategoryStr.toUpperCase(Locale.ENGLISH));
             }
         } catch (Exception e) {
-            log.debug(e);
+            log.debug("Invalid type category [" + typCategoryStr + "] - " + e.getMessage());
         }
 
         this.dataKind = JDBCDataSource.getDataKind(getName(), valueType);
@@ -147,15 +147,17 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.modInFunc = JDBCUtils.safeGetString(dbResult, "typmodin");
         this.modOutFunc = JDBCUtils.safeGetString(dbResult, "typmodout");
         this.analyzeFunc = JDBCUtils.safeGetString(dbResult, "typanalyze");
+        String typAlignStr = JDBCUtils.safeGetString(dbResult, "typalign");
         try {
-            this.align = PostgreTypeAlign.valueOf(JDBCUtils.safeGetString(dbResult, "typalign"));
+            this.align = PostgreTypeAlign.valueOf(typAlignStr);
         } catch (Exception e) {
-            log.debug(e);
+            log.debug("Invalid type align [" + typAlignStr + "] - " + e.getMessage());
         }
+        String typStorageStr = JDBCUtils.safeGetString(dbResult, "typstorage");
         try {
-            this.storage = PostgreTypeStorage.valueOf(JDBCUtils.safeGetString(dbResult, "typstorage"));
+            this.storage = PostgreTypeStorage.valueOf(typStorageStr);
         } catch (Exception e) {
-            log.debug(e);
+            log.debug("Invalid type storage [" + typStorageStr + "] - " + e.getMessage());
         }
         this.isNotNull = JDBCUtils.safeGetBoolean(dbResult, "typnotnull");
         this.baseTypeId = JDBCUtils.safeGetLong(dbResult, "typbasetype");
