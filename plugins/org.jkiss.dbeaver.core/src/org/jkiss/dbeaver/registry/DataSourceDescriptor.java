@@ -742,7 +742,11 @@ public class DataSourceDescriptor
                     DataSourceDescriptor.this,
                     true));
             }
-            log.debug("Connected (" + getId() + ")");
+            try {
+                log.debug("Connected (" + getId() + ", " + getPropertyDriver() + ")");
+            } catch (Throwable e) {
+                log.debug("Connected (" + getId() + ", driver unknown)");
+            }
             return true;
         } catch (Exception e) {
             log.debug("Connection failed (" + getId() + ")");
