@@ -13,7 +13,9 @@
       </programArgsLin>
       <programArgsSol>--launcher.GTK_version 2
       </programArgsSol>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      <vmArgs>-Xms64m -Xmx1024m
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread
       </vmArgsMac>
    </launcherArgs>
 
@@ -71,7 +73,7 @@
       <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
       <!-- This is important because simpleconfigurator conflicts with update.configurator -->
-      <plugin id="org.eclipse.update.configurator" />
+      <plugin id="org.eclipse.update.configurator" autoStart="false"  startLevel="10" />
        <!--property name="org.eclipse.update.reconcile" value="false" /-->
    </configurations>
 
