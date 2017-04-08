@@ -526,25 +526,6 @@ public class SQLEditor extends SQLEditorBase implements
         {
             ToolBar rsToolbar = new ToolBar(resultTabs, SWT.HORIZONTAL | SWT.RIGHT | SWT.WRAP);
 
-/*
-            ToolItem planItem = new ToolItem(rsToolbar, SWT.NONE);
-            planItem.setText("Plan");
-            planItem.setImage(IMG_EXPLAIN_PLAN);
-            planItem.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    if (curResultsContainer != null && curResultsContainer.query != null) {
-                        explainQueryPlan(curResultsContainer.query);
-                    } else {
-                        UIUtils.showErrorDialog(
-                            sashForm.getShell(),
-                            CoreMessages.editors_sql_error_execution_plan_title,
-                            "Select tab with SQL query results");
-                    }
-                }
-            });
-*/
-
             toolLogItem = new ToolItem(rsToolbar, SWT.CHECK);
             toolLogItem.setText("Log");
             toolLogItem.setToolTipText(ActionUtils.findCommandDescription(CoreCommands.CMD_SQL_SHOW_LOG, getSite(), false));
@@ -570,8 +551,18 @@ public class SQLEditor extends SQLEditorBase implements
 
             resultTabs.setTopRight(rsToolbar);
         }
-        //resultTabs.getItem(0).addListener();
 
+        resultTabs.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseUp(MouseEvent e) {
+                if (e.button == 2) {
+                    CTabItem item = resultTabs.getItem(new Point(e.x, e.y));
+                    if (item != null && item.getShowClose()) {
+                        item.dispose();
+                    }
+                }
+            }
+        });
         resultTabs.addListener(SWT.MouseDoubleClick, new Listener() {
             @Override
             public void handleEvent(Event event)
