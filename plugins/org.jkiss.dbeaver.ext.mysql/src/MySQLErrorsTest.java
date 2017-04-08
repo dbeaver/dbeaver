@@ -17,7 +17,7 @@
 
 import java.sql.*;
 
-public class MySQLErrorsTest {
+public class    MySQLErrorsTest {
 
     public static void main(String[] args) throws Exception
     {
