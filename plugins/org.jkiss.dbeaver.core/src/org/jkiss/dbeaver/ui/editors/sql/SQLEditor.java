@@ -593,7 +593,7 @@ public class SQLEditor extends SQLEditorBase implements
                 public void menuAboutToShow(IMenuManager manager)
                 {
                     manager.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_SQL_EDITOR_MAXIMIZE_PANEL));
-                    if (resultTabs.getItemCount() > 3) {
+                    if (resultTabs.getItemCount() > 1) {
                         manager.add(new Action("Close multiple results") {
                             @Override
                             public void run()
@@ -624,6 +624,9 @@ public class SQLEditor extends SQLEditorBase implements
                                 }
                             }
                         });
+                    }
+                    if (activeTab != null && activeTab.getShowClose()) {
+                        manager.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_SQL_EDITOR_CLOSE_TAB));
                     }
                 }
             });
@@ -667,6 +670,13 @@ public class SQLEditor extends SQLEditorBase implements
             }
         });
         resultTabs.setSelection(item);
+    }
+
+    public void closeActiveTab() {
+        CTabItem tabItem = resultTabs.getSelection();
+        if (tabItem != null && tabItem.getShowClose()) {
+            tabItem.dispose();
+        }
     }
 
     public void showOutputPanel() {
