@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Collections;
@@ -69,6 +70,16 @@ class PostgreDialect extends JDBCSQLDialect {
         return MultiValueInsertMode.GROUP_ROWS;
     }
 */
+
+    @Override
+    public int getCatalogUsage() {
+        return SQLDialect.USAGE_NONE;
+    }
+
+    @Override
+    public int getSchemaUsage() {
+        return SQLDialect.USAGE_ALL;
+    }
 
     @Nullable
     @Override
