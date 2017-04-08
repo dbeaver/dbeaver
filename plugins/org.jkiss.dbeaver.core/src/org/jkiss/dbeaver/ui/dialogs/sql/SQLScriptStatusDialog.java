@@ -149,6 +149,9 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
 
     @Override
     public void endScriptProcessing() {
+        if (getShell().isDisposed()) {
+            return;
+        }
         getButton(IDialogConstants.CLOSE_ID).setEnabled(true);
 
         Composite progressPanel = progressBar.getParent();
