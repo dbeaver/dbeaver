@@ -56,13 +56,13 @@ import java.util.*;
 public abstract class ExasolBaseTableToolDialog
 		extends GenerateMultiSQLDialog<ExasolTableBase> {
 	
-    public static final String VARIABLE_DATE = "date";
-    public static final String VARIABLE_TABLE = "table";
-    public static final String VARIABLE_SCHEMA = "schema";
+    private static final String VARIABLE_DATE = "date";
+    private static final String VARIABLE_TABLE = "table";
+    private static final String VARIABLE_SCHEMA = "schema";
 	
 
-	public ExasolBaseTableToolDialog(IWorkbenchPartSite partSite, String title,
-			Collection<ExasolTableBase> objects)
+	ExasolBaseTableToolDialog(IWorkbenchPartSite partSite, String title,
+                              Collection<ExasolTableBase> objects)
 	{
 		super(partSite, title, objects, true);
 	}
@@ -102,7 +102,7 @@ public abstract class ExasolBaseTableToolDialog
 	{
         final int nbExtraColumns = getNumberExtraResultingColumns();
 
-        return new SQLScriptStatusDialog<ExasolTableBase>(getShell(), getTitle() + " " + ExasolMessages.dialog_table_tools_progress,null) {
+        return new SQLScriptStatusDialog<ExasolTableBase>(getTitle() + " " + ExasolMessages.dialog_table_tools_progress,null) {
         	@Override
         	protected void createStatusColumns(Tree objectTree)
         	{

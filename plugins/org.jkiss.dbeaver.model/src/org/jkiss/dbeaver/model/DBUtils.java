@@ -1012,6 +1012,15 @@ public final class DBUtils {
         }
     }
 
+    /**
+     * Refresh object in UI
+     */
+    public static void fireObjectRefresh(DBSObject object)
+    {
+        // Select with true parameter is the same as refresh
+        fireObjectSelect(object, true);
+    }
+
     @NotNull
     public static String getObjectUniqueName(@NotNull DBSObject object)
     {

@@ -26,7 +26,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -65,7 +64,7 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<PostgreObje
 
     @Override
     protected SQLScriptProgressListener<PostgreObject> getScriptListener() {
-        return new SQLScriptStatusDialog<PostgreObject>(getShell(), getTitle() + " progress", null) {
+        return new SQLScriptStatusDialog<PostgreObject>(getTitle() + " progress", null) {
             @Override
             protected void createStatusColumns(Tree objectTree) {
                 TreeColumn msgColumn = new TreeColumn(objectTree, SWT.NONE);

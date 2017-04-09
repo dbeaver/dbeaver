@@ -52,9 +52,9 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
     private Collection<T> objects;
     private int processedCount;
 
-    public SQLScriptStatusDialog(final Shell shell, String title, @Nullable DBPImage image)
+    protected SQLScriptStatusDialog(String title, @Nullable DBPImage image)
     {
-        super(shell, title, image);
+        super(DBeaverUI.getActiveWorkbenchShell(), title, image);
     }
 
     @Override

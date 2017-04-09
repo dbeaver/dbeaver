@@ -82,6 +82,12 @@ public class OracleToolTruncate implements IExternalTool
 
             createObjectsSelector(parent);
         }
+
+        @Override
+        protected boolean needsRefreshOnFinish() {
+            return true;
+        }
+
     }
 
 }

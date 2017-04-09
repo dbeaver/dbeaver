@@ -46,7 +46,7 @@ public abstract class OracleMaintenanceDialog<T extends DBSObject> extends Gener
 
     @Override
     protected SQLScriptProgressListener<T> getScriptListener() {
-        return new SQLScriptStatusDialog<T>(getShell(), getTitle() + " progress", null) {
+        return new SQLScriptStatusDialog<T>(getTitle() + " progress", null) {
 
             @Override
             protected void createStatusColumns(Tree objectTree) {

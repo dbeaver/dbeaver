@@ -44,7 +44,7 @@ public class DB2TruncateDialog extends DB2BaseTableToolDialog {
     private Button dlgTriggersDelete;
     private Button dlgTriggersRestrict;
 
-    public DB2TruncateDialog(IWorkbenchPartSite partSite, Collection<DB2Table> selectedTables)
+    DB2TruncateDialog(IWorkbenchPartSite partSite, Collection<DB2Table> selectedTables)
     {
         super(partSite, DB2Messages.dialog_table_tools_truncate_title, selectedTables);
     }
@@ -112,5 +112,10 @@ public class DB2TruncateDialog extends DB2BaseTableToolDialog {
         sb.append(" CONTINUE IDENTITY IMMEDIATE");
 
         lines.add(sb.toString());
+    }
+
+    @Override
+    protected boolean needsRefreshOnFinish() {
+        return true;
     }
 }
