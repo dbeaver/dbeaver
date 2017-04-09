@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLState;
 
 import java.sql.*;
 import java.util.Map;
