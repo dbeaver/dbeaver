@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2017 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 /**
  * DB2 constants
  * 
- * @author Denis Forveille fff
+ * @author Denis Forveille
  */
 public class DB2Constants {
 
@@ -100,6 +100,9 @@ public class DB2Constants {
     // Schema for system datatypes
     public static final String             SYSTEM_DATATYPE_SCHEMA      = "SYSIBM";
     public static final String             SYSTEM_CATALOG_SCHEMA       = "SYSCAT";
+
+    // Preferences
+    public static final String             PREF_KEY_DDL_FORMAT         = "db2.ddl.format";
 
     // Keywords
 

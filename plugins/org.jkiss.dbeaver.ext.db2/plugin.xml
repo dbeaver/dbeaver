@@ -421,7 +421,6 @@
                 type="folder"
                 embeddable="true">
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable"/>
-            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
@@ -436,6 +435,16 @@
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
                 type="folder">
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+        </editor>
+        <editor id="source.routine.ddl" 
+                class="org.jkiss.dbeaver.ext.db2.editors.DB2RoutineDDLEditor"
+                label="%editor.source.ddl.name" 
+                description="%editor.source.ddl.description" 
+                icon="#sql_text" 
+                position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" 
+                type="folder">
+           <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
         </editor>
 
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2AliasManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2Alias"/>

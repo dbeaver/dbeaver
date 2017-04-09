@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2017 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
+import org.jkiss.dbeaver.ext.db2.editors.DB2DDLFormat;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoutineParmsCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
@@ -56,42 +57,42 @@ import java.util.Collection;
  * 
  * @author Denis Forveille
  */
-public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB2SourceObject, DBPRefreshableObject,
-    DBPUniqueObject {
+public class DB2Routine extends DB2Object<DBSObject>
+    implements DBSProcedure, DB2SourceObject, DBPRefreshableObject, DBPUniqueObject {
 
     private final DB2RoutineParmsCache parmsCache = new DB2RoutineParmsCache();
 
-    private String fullyQualifiedName;
+    private String                     fullyQualifiedName;
 
-    private DB2Schema db2Schema;
+    private DB2Schema                  db2Schema;
 
-    private DB2RoutineType type;
+    private DB2RoutineType             type;
 
-    private String routineName;
-    private Integer routineId;
-    private DB2RoutineOrigin origin;
-    private DB2RoutineLanguage language;
-    private String dialect;
-    private String owner;
-    private DB2OwnerType ownerType;
-    private String text;
-    private String remarks;
+    private String                     routineName;
+    private Integer                    routineId;
+    private DB2RoutineOrigin           origin;
+    private DB2RoutineLanguage         language;
+    private String                     dialect;
+    private String                     owner;
+    private DB2OwnerType               ownerType;
+    private String                     text;
+    private String                     remarks;
 
-    private Timestamp createTime;
-    private Timestamp alterTime;
-    private Timestamp lastRegenTime;
+    private Timestamp                  createTime;
+    private Timestamp                  alterTime;
+    private Timestamp                  lastRegenTime;
 
-    private Integer resultSets;
-    private String parameterStyle;
-    private Boolean deterministic;
-    private String externalName;
-    private String debugMode;
+    private Integer                    resultSets;
+    private String                     parameterStyle;
+    private Boolean                    deterministic;
+    private String                     externalName;
+    private String                     debugMode;
 
-    private String jarId;
-    private String jarSchema;
-    private String jarSignature;
-    private String javaClass;
-    private DB2RoutineValidType valid;
+    private String                     jarId;
+    private String                     jarSchema;
+    private String                     jarSignature;
+    private String                     javaClass;
+    private DB2RoutineValidType        valid;
 
     // -----------------------
     // Constructors
@@ -221,7 +222,11 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         if ((language != null) && (language.equals(DB2RoutineLanguage.SQL))) {
-            return DB2Utils.formatSQLProcedureDDL(getDataSource(), text);
+            if (DB2DDLFormat.getCurrentFormat(getDataSource()).needsFormatting()) {
+                return DB2Utils.formatSQLProcedureDDL(getDataSource(), text);
+            } else {
+                return text;
+            }
         } else {
             return DB2Messages.no_ddl_for_nonsql_routines;
         }

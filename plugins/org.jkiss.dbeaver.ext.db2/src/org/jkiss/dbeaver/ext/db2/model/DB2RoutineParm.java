@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2017 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,18 +43,17 @@ import java.sql.ResultSet;
  */
 public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DBSTypedObjectEx {
 
-    private final DB2Routine procedure;
-    private String name;
-    private String remarks;
-    private Integer scale;
-    private Integer length;
+    private final DB2Routine  procedure;
+    private String            name;
+    private String            remarks;
+    private Integer           scale;
+    private Integer           length;
     private DB2RoutineRowType rowType;
 
-    private DB2DataType dataType;
-    private DB2Schema dataTypeSchema;
-    private DB2Schema dataTypeModule;
+    private DB2DataType       dataType;
+    private DB2Schema         dataTypeSchema;
 
-    private String typeName;
+    private String            typeName;
 
     // -----------------------
     // Constructors
@@ -141,7 +140,8 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DB
     }
 
     @Override
-    public String getFullTypeName() {
+    public String getFullTypeName()
+    {
         return DBUtils.getFullTypeName(this);
     }
 
@@ -212,7 +212,8 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DB
 
     @NotNull
     @Override
-    public DBSTypedObject getParameterType() {
+    public DBSTypedObject getParameterType()
+    {
         return this;
     }
 }
