@@ -280,8 +280,8 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         }
         if ((scope & STRUCT_ASSOCIATIONS) != 0) {
             monitor.subTask("Cache constraints");
-            indexCache.getAllObjects(monitor, this);
             constraintCache.getAllObjects(monitor, this);
+            indexCache.getAllObjects(monitor, this);
         }
     }
 
