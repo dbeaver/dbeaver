@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2017 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,11 +16,6 @@
  * limitations under the License.
  */
 package org.jkiss.dbeaver.ext.db2;
-
-import java.sql.Clob;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -57,6 +52,11 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Clob;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * DB2 Utils
  * 
@@ -64,21 +64,21 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DB2Utils {
 
-    private static final Log LOG = Log.getLog(DB2Utils.class);
+    private static final Log    LOG                  = Log.getLog(DB2Utils.class);
 
-    private static final String LINE_SEP = ";\n";
+    private static final String LINE_SEP             = ";\n";
 
     // TODO DF: many things in this class could probably be factorized or generic-field
 
     // DB2LOOK
-    private static final String CALL_DB2LK_GEN = "CALL SYSPROC.DB2LK_GENERATE_DDL(?,?)";
-    private static final String CALL_DB2LK_CLEAN = "CALL SYSPROC.DB2LK_CLEAN_TABLE(?)";
-    private static final String SEL_DB2LK = "SELECT SQL_STMT FROM SYSTOOLS.DB2LOOK_INFO WHERE OP_TOKEN = ? ORDER BY OP_SEQUENCE WITH UR";
-    private static final String DB2LK_COMMAND = "-e -x -xd -td %s -t %s";
+    private static final String CALL_DB2LK_GEN       = "CALL SYSPROC.DB2LK_GENERATE_DDL(?,?)";
+    private static final String CALL_DB2LK_CLEAN     = "CALL SYSPROC.DB2LK_CLEAN_TABLE(?)";
+    private static final String SEL_DB2LK            = "SELECT SQL_STMT FROM SYSTOOLS.DB2LOOK_INFO WHERE OP_TOKEN = ? ORDER BY OP_SEQUENCE WITH UR";
+    private static final String DB2LK_COMMAND        = "-e -x -xd -td %s -t %s";
 
     // EXPLAIN
-    private static final String CALL_INST_OBJ = "CALL SYSPROC.SYSINSTALLOBJECTS(?,?,?,?)";
-    private static final int CALL_INST_OBJ_BAD_RC = -438;
+    private static final String CALL_INST_OBJ        = "CALL SYSPROC.SYSINSTALLOBJECTS(?,?,?,?)";
+    private static final int    CALL_INST_OBJ_BAD_RC = -438;
     private static final String SEL_LIST_TS_EXPLAIN;
 
     static {
@@ -102,14 +102,14 @@ public class DB2Utils {
     private static final String CALL_ADMIN_CMD = "CALL SYSPROC.ADMIN_CMD('%s')";
 
     // DBCFG/DBMCFG/XMLStrings
-    private static final String SEL_DBCFG = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
-    private static final String SEL_DBMCFG = "SELECT * FROM SYSIBMADM.DBMCFG ORDER BY NAME WITH UR";
+    private static final String SEL_DBCFG      = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
+    private static final String SEL_DBMCFG     = "SELECT * FROM SYSIBMADM.DBMCFG ORDER BY NAME WITH UR";
     private static final String SEL_XMLSTRINGS = "SELECT * FROM SYSCAT.XMLSTRINGS ORDER BY STRINGID WITH UR";
 
     // APPLICATIONS
-    private static final String SEL_APP = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
+    private static final String SEL_APP        = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
 
-    private static final String GET_MSG = "VALUES (SYSPROC.SQLERRM(?))";
+    private static final String GET_MSG        = "VALUES (SYSPROC.SQLERRM(?))";
 
     // ------------------------
     // Admin Command
@@ -193,8 +193,7 @@ public class DB2Utils {
                             ddlLength = ddlStmt.length() + 1L;
                             sb.append(ddlStmt.getSubString(ddlStart, ddlLength.intValue()));
                             sb.append(LINE_SEP);
-                        }
-                        finally {
+                        } finally {
                             try {
                                 ddlStmt.free();
                             } catch (Throwable e) {
