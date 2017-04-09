@@ -54,6 +54,11 @@ public class MySQLToolTruncate implements IExternalTool
         }
 
         @Override
+        protected boolean needsRefreshOnFinish() {
+            return true;
+        }
+
+        @Override
         protected void generateObjectCommand(List<String> lines, MySQLTable object) {
             lines.add("TRUNCATE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL));
         }

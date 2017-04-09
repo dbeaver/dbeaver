@@ -49,7 +49,7 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<MySQLTable>
 
     @Override
     protected SQLScriptProgressListener<MySQLTable> getScriptListener() {
-        return new SQLScriptStatusDialog<MySQLTable>(getShell(), getTitle() + " progress", null) {
+        return new SQLScriptStatusDialog<MySQLTable>(getTitle() + " progress", null) {
             @Override
             protected void createStatusColumns(Tree objectTree) {
                 TreeColumn msgColumn = new TreeColumn(objectTree, SWT.NONE);

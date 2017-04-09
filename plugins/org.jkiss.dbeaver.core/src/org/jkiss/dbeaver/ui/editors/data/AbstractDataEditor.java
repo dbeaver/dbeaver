@@ -172,7 +172,7 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
 
     @Override
     public void refreshPart(Object source, boolean force) {
-
+        resultSetView.refresh();
     }
 
 }

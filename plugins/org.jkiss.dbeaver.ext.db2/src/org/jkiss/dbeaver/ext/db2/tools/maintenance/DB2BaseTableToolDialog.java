@@ -60,7 +60,7 @@ public abstract class DB2BaseTableToolDialog extends GenerateMultiSQLDialog<DB2T
     {
         final int nbExtraColumns = getNumberExtraResultingColumns();
 
-        return new SQLScriptStatusDialog<DB2Table>(getShell(), getTitle() + " " + DB2Messages.dialog_table_tools_progress, null) {
+        return new SQLScriptStatusDialog<DB2Table>(getTitle() + " " + DB2Messages.dialog_table_tools_progress, null) {
             @Override
             protected void createStatusColumns(Tree objectTree)
             {

@@ -248,9 +248,18 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
         job.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void done(IJobChangeEvent event) {
+                if (needsRefreshOnFinish()) {
+                    for (T object : selectedObjects) {
+                        DBUtils.fireObjectRefresh(object);
+                    }
+                }
             }
         });
         job.schedule();
+    }
+
+    protected boolean needsRefreshOnFinish() {
+        return false;
     }
 
     protected abstract void generateObjectCommand(List<String> sql, T object);
