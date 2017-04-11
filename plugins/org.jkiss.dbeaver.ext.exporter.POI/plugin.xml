@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension point="org.jkiss.dbeaver.dataTransfer">
+   
+     <node type="consumer"
+              id="poi_consumer"
+              class="org.jkiss.dbeaver.ext.exporter.poi.impl.StreamPOITransferConsumer"
+              icon="icons/file/file.png"
+              label="%dataTransfer.consumer.stream.name"
+              description="%dataTransfer.consumer.stream.description"
+              settings="org.jkiss.dbeaver.ext.exporter.poi.impl.StreamPOIConsumerSettings">
+            <page class="org.jkiss.dbeaver.ext.exporter.poi.impl.StreamPOIConsumerPageSettings"/>
+            <page class="org.jkiss.dbeaver.ext.exporter.poi.impl.StreamPOIConsumerPageOutput"/>            
+          <processor
+                    id="stream.xlsx"
+                    class="org.jkiss.dbeaver.ext.exporter.poi.impl.DataExporterXLSX"
+                    description="%dataTransfer.processor.xlsx.description"
+                    icon="icons/excel.png"
+                    label="%dataTransfer.processor.xlsx.name">
+                <propertyGroup label="General">
+                    <property id="rownumber" label="%dataTransfer.processor.xlsx.property.rowNumber.name" type="boolean" description="%dataTransfer.processor.xlsx.property.rowNumber.description" defaultValue="yes" required="false"/>
+                    <property id="border" label="%dataTransfer.processor.xlsx.property.border.name" type="string" description="%dataTransfer.processor.xlsx.property.border.description" defaultValue="THIN" required="false" validValues="NONE,THIN,THICK"/>
+                    <property id="extension" label="File extension" defaultValue="xlsx"/>
+                    <property id="nullString" label="%dataTransfer.processor.xlsx.property.nullString.name" type="string" description="%dataTransfer.processor.xlsx.property.nullString.description" defaultValue="" required="false"/>
+                    <property id="header" label="%dataTransfer.processor.xlsx.property.header.name" type="boolean" description="%dataTransfer.processor.xlsx.property.header.description" defaultValue="yes" required="true"/>                                        
+                    <property id="headerfont" label="%dataTransfer.processor.xlsx.property.headerFont.name" type="string" description="%dataTransfer.processor.xlsx.property.headerFont.description" defaultValue="BOLD" required="false" validValues="NONE,BOLD,ITALIC,STRIKEOUT,UNDERLINE"/>
+                    <property id="trueString" label="%dataTransfer.processor.xlsx.property.boolStringTrue.name" type="string" description="%dataTransfer.processor.xlsx.property.boolStringTrue.description" defaultValue="+" required="false"/>
+                    <property id="falseString" label="%dataTransfer.processor.xlsx.property.boolStringFalse.name" type="string" description="%dataTransfer.processor.xlsx.property.boolStringFalse.description" defaultValue="-" required="false"/>                                                            
+                </propertyGroup>
+          </processor>
+        </node>
+   </extension>
+
+
+</plugin>
