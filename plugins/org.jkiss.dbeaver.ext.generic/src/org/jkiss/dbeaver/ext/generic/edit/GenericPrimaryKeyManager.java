@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -78,6 +79,7 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
 
     @Override
     protected boolean isLegacyConstraintsSyntax(GenericTable owner) {
-        return ((GenericSQLDialect)owner.getDataSource().getSQLDialect()).isLegacySQLDialect();
+        SQLDialect dialect = owner.getDataSource().getSQLDialect();
+        return dialect instanceof GenericSQLDialect && ((GenericSQLDialect) dialect).isLegacySQLDialect();
     }
 }
