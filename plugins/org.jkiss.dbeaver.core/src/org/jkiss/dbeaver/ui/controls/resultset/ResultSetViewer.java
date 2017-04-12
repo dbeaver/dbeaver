@@ -2316,7 +2316,7 @@ public class ResultSetViewer extends Viewer
 
             @Override
             public void done(IJobChangeEvent event) {
-                ResultSetJobDataRead job = (ResultSetJobDataRead)event.getJob();
+                final ResultSetJobDataRead job = (ResultSetJobDataRead)event.getJob();
                 final Throwable error = job.getError();
                 if (job.getStatistics() != null) {
                     model.setStatistics(job.getStatistics());
@@ -2366,13 +2366,15 @@ public class ResultSetViewer extends Viewer
                                 }
                             }
                             model.setUpdateInProgress(false);
-                            if (error == null) {
-                                // Update status (update execution statistics)
-                                updateStatusMessage();
+                            if (job.getStatistics() == null || job.getStatistics().getStatementsCount() > 0) {
+                                if (error == null) {
+                                    // Update status (update execution statistics)
+                                    updateStatusMessage();
+                                }
+                                updateFiltersText(error == null);
+                                updateToolbar();
+                                fireResultSetLoad();
                             }
-                            updateFiltersText(error == null);
-                            updateToolbar();
-                            fireResultSetLoad();
                         } finally {
                             if (finalizer != null) {
                                 try {
