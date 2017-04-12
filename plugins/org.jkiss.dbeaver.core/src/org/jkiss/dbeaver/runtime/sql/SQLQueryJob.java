@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.runtime.sql;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -28,16 +31,17 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.registry.sql.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.registry.sql.SQLCommandsRegistry;
@@ -45,6 +49,7 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorResponse;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -91,6 +96,8 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     private int fetchResultSetNumber;
     private int resultSetNumber;
     private SQLQuery lastGoodQuery;
+
+    private boolean skipConfirmation;
 
     public SQLQueryJob(
         @NotNull IWorkbenchPartSite partSite,
@@ -150,6 +157,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     {
         RuntimeUtils.setThreadName("SQL script execution");
         statistics = new DBCStatistics();
+        skipConfirmation = false;
         try {
             DBCExecutionContext context = getExecutionContext();
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
@@ -183,10 +191,12 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                     fetchResultSetNumber = resultSetNumber;
                     boolean runNext = executeSingleQuery(session, query, true);
                     if (!runNext) {
-                        // Ask to continue
-                        if (lastError != null) {
-                            log.error(lastError);
+                        if (lastError == null) {
+                            // Execution cancel
+                            break;
                         }
+                        // Ask to continue
+                        log.error(lastError);
                         boolean isQueue = queryNum < queries.size() - 1;
                         ExecutionQueueErrorResponse response = ExecutionQueueErrorJob.showError(
                             isQueue ? "SQL script execution" : "SQL query execution",
@@ -222,7 +232,9 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                     monitor.worked(1);
                     queryNum++;
                 }
-                showExecutionResult(session);
+                if (statistics.getStatementsCount() > 0) {
+                    showExecutionResult(session);
+                }
                 monitor.done();
 
                 // Commit data
@@ -287,6 +299,25 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         }
         SQLQuery sqlQuery = (SQLQuery) element;
         lastError = null;
+
+        if (!skipConfirmation && getDataSourceContainer().getConnectionConfiguration().getConnectionType().isConfirmExecute()) {
+            // Validate all transactional queries
+            if (!SQLSemanticProcessor.isSelectQuery(element.getText())) {
+
+                int confirmResult = confirmQueryExecution((SQLQuery)element, queries.size() > 1);
+                switch (confirmResult) {
+                    case IDialogConstants.NO_ID:
+                        return true;
+                    case IDialogConstants.YES_ID:
+                        break;
+                    case IDialogConstants.YES_TO_ALL_ID:
+                        skipConfirmation = true;
+                        break;
+                    case IDialogConstants.CANCEL_ID:
+                        return false;
+                }
+            }
+        }
 
         final DBCExecutionContext executionContext = getExecutionContext();
         final DBPDataSource dataSource = executionContext.getDataSource();
@@ -746,7 +777,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                 } else {
                     throw new DBCException(lastError, getExecutionContext().getDataSource());
                 }
-            } else if (result) {
+            } else if (result && statistics.getStatementsCount() > 0) {
                 showExecutionResult(session);
             }
         } finally {
@@ -773,4 +804,32 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     public void close() {
         closeStatement();
     }
+
+    private int confirmQueryExecution(@NotNull SQLQuery query, final boolean scriptMode) {
+        return new UITask<Integer>() {
+            @Override
+            protected Integer runTask() {
+                MessageDialog dialog = new MessageDialog(
+                        null,
+                        "Confirm query execution",
+                        JFaceResources.getImage(org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_WARNING),
+                        "Do you confirm execution of selected query?",
+                        MessageDialog.CONFIRM, null, 0)
+                {
+                    @Override
+                    protected void createButtonsForButtonBar(Composite parent)
+                    {
+                        createButton(parent, IDialogConstants.YES_ID, IDialogConstants.YES_LABEL, true);
+                        createButton(parent, IDialogConstants.NO_ID, IDialogConstants.NO_LABEL, false);
+                        if (scriptMode) {
+                            createButton(parent, IDialogConstants.YES_TO_ALL_ID, IDialogConstants.YES_TO_ALL_LABEL, false);
+                            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+                        }
+                    }
+                };
+                return dialog.open();
+            }
+        }.execute();
+    }
+
 }

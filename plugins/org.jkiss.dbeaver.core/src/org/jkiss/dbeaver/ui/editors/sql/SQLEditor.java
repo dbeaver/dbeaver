@@ -26,7 +26,8 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.*;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -69,6 +70,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
@@ -1038,6 +1040,9 @@ public class SQLEditor extends SQLEditorBase implements
                     ex.getMessage());
                 return;
             }
+        }
+        if (dataSourceContainer == null) {
+            return;
         }
 
         if (sashForm.getMaximizedControl() != null) {
