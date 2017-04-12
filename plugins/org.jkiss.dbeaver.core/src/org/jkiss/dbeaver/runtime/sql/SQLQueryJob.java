@@ -18,10 +18,14 @@ package org.jkiss.dbeaver.runtime.sql;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -46,10 +50,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.registry.sql.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.registry.sql.SQLCommandsRegistry;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIConfirmation;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorResponse;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -313,7 +314,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                     case IDialogConstants.YES_TO_ALL_ID:
                         skipConfirmation = true;
                         break;
-                    case IDialogConstants.CANCEL_ID:
+                    default:
                         return false;
                 }
             }
@@ -805,17 +806,39 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         closeStatement();
     }
 
-    private int confirmQueryExecution(@NotNull SQLQuery query, final boolean scriptMode) {
+    private int confirmQueryExecution(@NotNull final SQLQuery query, final boolean scriptMode) {
         return new UITask<Integer>() {
             @Override
             protected Integer runTask() {
                 MessageDialog dialog = new MessageDialog(
                         null,
                         "Confirm query execution",
-                        JFaceResources.getImage(org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_WARNING),
-                        "Do you confirm execution of selected query?",
-                        MessageDialog.CONFIRM, null, 0)
+                        JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_WARNING),
+                        "You are in '" + getDataSourceContainer().getConnectionConfiguration().getConnectionType().getName() + "' connection.\nDo you confirm query execution?",
+                        MessageDialog.WARNING, null, 0)
                 {
+                    @Override
+                    protected boolean isResizable() {
+                        return true;
+                    }
+
+                    @Override
+                    protected void createDialogAndButtonArea(Composite parent) {
+                        dialogArea = createDialogArea(parent);
+                        if (dialogArea.getLayoutData() instanceof GridData) {
+                            ((GridData) dialogArea.getLayoutData()).grabExcessVerticalSpace = false;
+                        }
+                        Text messageText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
+                        messageText.setText(query.getText());
+                        GridData gd = new GridData(GridData.FILL_BOTH);
+                        gd.heightHint = UIUtils.getFontHeight(messageText) * 4 + 10;
+                        gd.horizontalSpan = 2;
+                        messageText.setLayoutData(gd);
+                        buttonBar = createButtonBar(parent);
+                        // Apply to the parent so that the message gets it too.
+                        applyDialogFont(parent);
+                    }
+
                     @Override
                     protected void createButtonsForButtonBar(Composite parent)
                     {
