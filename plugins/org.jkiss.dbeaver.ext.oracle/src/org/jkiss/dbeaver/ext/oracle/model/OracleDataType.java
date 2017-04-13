@@ -535,7 +535,7 @@ public class OracleDataType extends OracleObject<DBSObject>
                 log.error(e);
             }
         } else {
-            type = (OracleDataType)dataSource.getDataType(typeName);
+            type = (OracleDataType)dataSource.getLocalDataType(typeName);
         }
         if (type == null) {
             log.debug("Data type '" + typeName + "' not found - declare new one");
@@ -594,7 +594,7 @@ public class OracleDataType extends OracleObject<DBSObject>
             return dbStat;
         }
         @Override
-        protected OracleDataTypeAttribute fetchObject(@NotNull JDBCSession session, @NotNull OracleDataType owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataTypeAttribute fetchObject(@NotNull JDBCSession session, @NotNull OracleDataType owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataTypeAttribute(session.getProgressMonitor(), OracleDataType.this, resultSet);
         }
@@ -616,7 +616,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         }
 
         @Override
-        protected OracleDataTypeMethod fetchObject(@NotNull JDBCSession session, @NotNull OracleDataType owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataTypeMethod fetchObject(@NotNull JDBCSession session, @NotNull OracleDataType owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataTypeMethod(session.getProgressMonitor(), OracleDataType.this, resultSet);
         }

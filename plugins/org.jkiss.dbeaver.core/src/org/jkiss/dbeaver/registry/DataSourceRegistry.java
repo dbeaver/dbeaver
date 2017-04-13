@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -37,7 +38,6 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -48,7 +48,7 @@ import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SimpleStringEncrypter;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -80,6 +80,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private final List<DataSourceDescriptor> dataSources = new ArrayList<>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
+    private volatile boolean saveInProgress = false;
 
     public DataSourceRegistry(DBPApplication application, IProject project)
     {
@@ -238,7 +239,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     @Override
     public void refreshConfig() {
-        this.loadDataSources(true);
+        if (!saveInProgress) {
+            this.loadDataSources(true);
+        }
     }
 
     @Override
@@ -369,9 +372,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         synchronized (dataSources) {
             localDataSources = CommonUtils.copyList(dataSources);
         }
-        IProgressMonitor progressMonitor = VoidProgressMonitor.INSTANCE.getNestedMonitor();
+        final IProgressMonitor progressMonitor = new NullProgressMonitor();
         PasswordEncrypter encrypter = new SimpleStringEncrypter();
         IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
+        saveInProgress = true;
         try {
             if (localDataSources.isEmpty()) {
                 configFile.delete(true, false, progressMonitor);
@@ -403,6 +407,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             }
         } catch (CoreException ex) {
             log.error("Error saving datasources configuration", ex);
+        } finally {
+            saveInProgress = false;
         }
     }
 

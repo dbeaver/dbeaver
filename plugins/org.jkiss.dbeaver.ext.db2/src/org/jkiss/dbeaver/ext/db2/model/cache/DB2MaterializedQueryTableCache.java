@@ -25,12 +25,12 @@ import org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -73,7 +73,7 @@ public final class DB2MaterializedQueryTableCache extends JDBCStructCache<DB2Sch
     }
 
     @Override
-    protected DB2MaterializedQueryTable fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull ResultSet dbResult)
+    protected DB2MaterializedQueryTable fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         return new DB2MaterializedQueryTable(session.getProgressMonitor(), db2Schema, dbResult);
@@ -100,7 +100,7 @@ public final class DB2MaterializedQueryTableCache extends JDBCStructCache<DB2Sch
 
     @Override
     protected DB2TableColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2MaterializedQueryTable db2MQT,
-        @NotNull ResultSet dbResult) throws SQLException, DBException
+        @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         return new DB2TableColumn(session.getProgressMonitor(), db2MQT, dbResult);
     }

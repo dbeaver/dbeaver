@@ -3145,7 +3145,7 @@ public abstract class LightGrid extends Canvas {
             focusColumn = getColumn(0);
         }
 
-        if (e.character == '\r' && focusItem >= 0 && focusColumn != null) {
+        if (e.character == '\r' && focusItem >= 0 && focusItem < rowElements.length) {
             Event newEvent = new Event();
             newEvent.data = new GridCell(focusColumn.getElement(), rowElements[focusItem]);
 

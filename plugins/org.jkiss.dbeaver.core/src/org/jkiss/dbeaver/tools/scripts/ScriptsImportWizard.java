@@ -31,10 +31,11 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -76,7 +77,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
         final ScriptsImportData importData = pageMain.getImportData();
         final ScriptsImporter importer = new ScriptsImporter(importData);
         try {
-            RuntimeUtils.run(getContainer(), true, true, importer);
+            DBeaverUI.run(getContainer(), true, true, importer);
         }
         catch (InterruptedException ex) {
             return false;
@@ -149,7 +150,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
             if (targetFile.exists()) {
 				if (importData.isOverwriteFiles()) {
 	                log.warn("Overwriting file '" + targetFile.getFullPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-					targetFile.delete(true, true, monitor.getNestedMonitor());
+					targetFile.delete(true, true, RuntimeUtils.getNestedMonitor(monitor));
 				} else {
 	                log.warn("File '" + targetFile.getFullPath() + "' already exists - skipped"); //$NON-NLS-1$ //$NON-NLS-2$
 	                imported--;

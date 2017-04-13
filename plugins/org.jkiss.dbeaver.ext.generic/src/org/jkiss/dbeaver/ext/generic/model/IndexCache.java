@@ -17,19 +17,22 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
@@ -51,6 +54,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         indexObject = tableCache.getDataSource().getMetaObject(GenericConstants.OBJECT_INDEX);
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTable forParent)
         throws SQLException
@@ -76,8 +80,9 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         }
     }
 
+    @Nullable
     @Override
-    protected GenericTableIndex fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String indexName, ResultSet dbResult)
+    protected GenericTableIndex fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String indexName, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         boolean isNonUnique = GenericUtils.safeGetBoolean(indexObject, dbResult, JDBCConstants.NON_UNIQUE);
@@ -120,10 +125,11 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
             true);
     }
 
+    @Nullable
     @Override
-    protected GenericTableIndexColumn fetchObjectRow(
+    protected GenericTableIndexColumn[] fetchObjectRow(
         JDBCSession session,
-        GenericTable parent, GenericTableIndex object, ResultSet dbResult)
+        GenericTable parent, GenericTableIndex object, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         int ordinalPosition = GenericUtils.safeGetInt(indexObject, dbResult, JDBCConstants.ORDINAL_POSITION);
@@ -140,15 +146,15 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
             return null;
         }
 
-        return new GenericTableIndexColumn(
+        return new GenericTableIndexColumn[] { new GenericTableIndexColumn(
             object,
             tableColumn,
             ordinalPosition,
-            !"D".equalsIgnoreCase(ascOrDesc));
+            !"D".equalsIgnoreCase(ascOrDesc)) };
     }
 
     @Override
-    protected void cacheChildren(GenericTableIndex index, List<GenericTableIndexColumn> rows)
+    protected void cacheChildren(DBRProgressMonitor monitor, GenericTableIndex index, List<GenericTableIndexColumn> rows)
     {
         index.setColumns(rows);
     }

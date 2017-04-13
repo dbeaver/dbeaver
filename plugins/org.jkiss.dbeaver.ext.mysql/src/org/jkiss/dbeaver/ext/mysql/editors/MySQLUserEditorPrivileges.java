@@ -34,10 +34,10 @@ import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.edit.MySQLCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -245,7 +245,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
     private void showCatalogTables()
     {
-        RuntimeUtils.createService(
+        LoadingJob.createService(
             new DatabaseLoadService<Collection<MySQLTableBase>>(MySQLMessages.editors_user_editor_privileges_service_load_tables, getExecutionContext()) {
                 @Override
                 public Collection<MySQLTableBase> evaluate()
@@ -287,7 +287,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             return;
         }
         isLoaded = true;
-        RuntimeUtils.createService(
+        LoadingJob.createService(
             new DatabaseLoadService<java.util.List<MySQLPrivilege>>(MySQLMessages.editors_user_editor_privileges_service_load_privileges, getExecutionContext()) {
                 @Override
                 public java.util.List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException {

@@ -376,6 +376,30 @@ public class JDBCUtils {
     }
 
     @Nullable
+    public static Object safeGetArray(ResultSet dbResult, String columnName)
+    {
+        try {
+            Array array = dbResult.getArray(columnName);
+            return array == null ? null : array.getArray();
+        } catch (SQLException e) {
+            debugColumnRead(columnName, e);
+            return null;
+        }
+    }
+
+    @Nullable
+    public static Object safeGetArray(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            Array array = dbResult.getArray(columnIndex);
+            return array == null ? null : array.getArray();
+        } catch (SQLException e) {
+            debugColumnRead(columnIndex, e);
+            return null;
+        }
+    }
+
+    @Nullable
     public static String normalizeIdentifier(@Nullable String value)
     {
         return value == null ? null : value.trim();

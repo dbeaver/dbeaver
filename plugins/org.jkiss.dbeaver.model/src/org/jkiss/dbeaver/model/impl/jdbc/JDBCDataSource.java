@@ -457,7 +457,7 @@ public abstract class JDBCDataSource
     @Override
     public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException
     {
-        return getDataType(typeFullName);
+        return getLocalDataType(typeFullName);
     }
 
     @Override

@@ -17,9 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
@@ -27,50 +26,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * GenericPrimaryKey
+ * PostgreTableConstraint
  */
-public class PostgreTableConstraint extends JDBCTableConstraint<PostgreTable> {
-    private List<PostgreTableConstraintColumn> columns;
+public class PostgreTableConstraint extends PostgreTableConstraintBase {
 
-    public PostgreTableConstraint(PostgreTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
-    {
-        super(table, name, remarks, constraintType, persisted);
+    private List<PostgreTableConstraintColumn> columns = new ArrayList<>();
+
+    public PostgreTableConstraint(PostgreTableBase table, String name, DBSEntityConstraintType constraintType, JDBCResultSet resultSet) throws DBException {
+        super(table, name, constraintType, resultSet);
+    }
+
+    @Override
+    void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children, boolean secondPass) {
+        if (secondPass) {
+            return;
+        }
+        columns.clear();
+        columns.addAll(children);
     }
 
     @Override
     public List<PostgreTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
-    }
-
-    public void addColumn(PostgreTableConstraintColumn column)
-    {
-        if (columns == null) {
-            columns = new ArrayList<>();
-        }
-        this.columns.add(column);
-    }
-
-    void setColumns(List<PostgreTableConstraintColumn> columns)
-    {
-        this.columns = columns;
-    }
-
-    @NotNull
-    @Override
-    public String getFullQualifiedName()
-    {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-            getTable().getContainer(),
-            getTable(),
-            this);
-    }
-
-    @NotNull
-    @Override
-    public PostgreDataSource getDataSource()
-    {
-        return getTable().getDataSource();
     }
 
 }

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -384,7 +385,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleTableBase fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet dbResult)
+        protected OracleTableBase fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
@@ -424,7 +425,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleTableColumn fetchChild(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull OracleTableBase table, @NotNull ResultSet dbResult)
+        protected OracleTableColumn fetchChild(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull OracleTableBase table, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleTableColumn(session.getProgressMonitor(), table, dbResult);
@@ -446,6 +447,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             super(tableCache, OracleTableBase.class, "TABLE_NAME", "CONSTRAINT_NAME");
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTableBase forTable)
             throws SQLException
@@ -471,28 +473,30 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             return dbStat;
         }
 
+        @Nullable
         @Override
-        protected OracleTableConstraint fetchObject(JDBCSession session, OracleSchema owner, OracleTableBase parent, String indexName, ResultSet dbResult)
+        protected OracleTableConstraint fetchObject(JDBCSession session, OracleSchema owner, OracleTableBase parent, String indexName, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleTableConstraint(parent, dbResult);
         }
 
+        @Nullable
         @Override
-        protected OracleTableConstraintColumn fetchObjectRow(
+        protected OracleTableConstraintColumn[] fetchObjectRow(
             JDBCSession session,
-            OracleTableBase parent, OracleTableConstraint object, ResultSet dbResult)
+            OracleTableBase parent, OracleTableConstraint object, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             final OracleTableColumn tableColumn = getTableColumn(session, parent, dbResult);
-            return tableColumn == null ? null : new OracleTableConstraintColumn(
+            return tableColumn == null ? null : new OracleTableConstraintColumn[] { new OracleTableConstraintColumn(
                 object,
                 tableColumn,
-                JDBCUtils.safeGetInt(dbResult, "POSITION"));
+                JDBCUtils.safeGetInt(dbResult, "POSITION")) };
         }
 
         @Override
-        protected void cacheChildren(OracleTableConstraint constraint, List<OracleTableConstraintColumn> rows)
+        protected void cacheChildren(DBRProgressMonitor monitor, OracleTableConstraint constraint, List<OracleTableConstraintColumn> rows)
         {
             constraint.setColumns(rows);
         }
@@ -515,6 +519,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             super.loadObjects(monitor, schema, forParent);
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTable forTable)
             throws SQLException
@@ -541,29 +546,31 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             return dbStat;
         }
 
+        @Nullable
         @Override
-        protected OracleTableForeignKey fetchObject(JDBCSession session, OracleSchema owner, OracleTable parent, String indexName, ResultSet dbResult)
+        protected OracleTableForeignKey fetchObject(JDBCSession session, OracleSchema owner, OracleTable parent, String indexName, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleTableForeignKey(session.getProgressMonitor(), parent, dbResult);
         }
 
+        @Nullable
         @Override
-        protected OracleTableForeignKeyColumn fetchObjectRow(
+        protected OracleTableForeignKeyColumn[] fetchObjectRow(
             JDBCSession session,
-            OracleTable parent, OracleTableForeignKey object, ResultSet dbResult)
+            OracleTable parent, OracleTableForeignKey object, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             OracleTableColumn column = getTableColumn(session, parent, dbResult);
-            return column == null ? null : new OracleTableForeignKeyColumn(
+            return column == null ? null : new OracleTableForeignKeyColumn[] { new OracleTableForeignKeyColumn(
                 object,
                 column,
-                JDBCUtils.safeGetInt(dbResult, "POSITION"));
+                JDBCUtils.safeGetInt(dbResult, "POSITION")) };
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        protected void cacheChildren(OracleTableForeignKey foreignKey, List<OracleTableForeignKeyColumn> rows)
+        protected void cacheChildren(DBRProgressMonitor monitor, OracleTableForeignKey foreignKey, List<OracleTableForeignKeyColumn> rows)
         {
             foreignKey.setColumns((List)rows);
         }
@@ -579,6 +586,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             super(tableCache, OracleTablePhysical.class, "TABLE_NAME", "INDEX_NAME");
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTablePhysical forTable)
             throws SQLException
@@ -608,17 +616,19 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             return dbStat;
         }
 
+        @Nullable
         @Override
-        protected OracleTableIndex fetchObject(JDBCSession session, OracleSchema owner, OracleTablePhysical parent, String indexName, ResultSet dbResult)
+        protected OracleTableIndex fetchObject(JDBCSession session, OracleSchema owner, OracleTablePhysical parent, String indexName, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleTableIndex(owner, parent, indexName, dbResult);
         }
 
+        @Nullable
         @Override
-        protected OracleTableIndexColumn fetchObjectRow(
+        protected OracleTableIndexColumn[] fetchObjectRow(
             JDBCSession session,
-            OracleTablePhysical parent, OracleTableIndex object, ResultSet dbResult)
+            OracleTablePhysical parent, OracleTableIndex object, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
@@ -631,15 +641,15 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 return null;
             }
 
-            return new OracleTableIndexColumn(
+            return new OracleTableIndexColumn[] { new OracleTableIndexColumn(
                 object,
                 tableColumn,
                 ordinalPosition,
-                isAscending);
+                isAscending) };
         }
 
         @Override
-        protected void cacheChildren(OracleTableIndex index, List<OracleTableIndexColumn> rows)
+        protected void cacheChildren(DBRProgressMonitor monitor, OracleTableIndex index, List<OracleTableIndexColumn> rows)
         {
             index.setColumns(rows);
         }
@@ -659,7 +669,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleDataType fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet resultSet) throws SQLException
+        protected OracleDataType fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet resultSet) throws SQLException
         {
             return new OracleDataType(owner, resultSet);
         }
@@ -679,7 +689,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleSequence fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleSequence fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleSequence(owner, resultSet);
         }
@@ -704,7 +714,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleProcedureStandalone fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet dbResult)
+        protected OracleProcedureStandalone fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleProcedureStandalone(owner, dbResult);
@@ -725,7 +735,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OraclePackage fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet dbResult)
+        protected OraclePackage fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OraclePackage(owner, dbResult);
@@ -751,7 +761,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleSynonym fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleSynonym fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleSynonym(owner, resultSet);
         }
@@ -771,7 +781,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleMaterializedView fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet dbResult)
+        protected OracleMaterializedView fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleMaterializedView(owner, dbResult);
@@ -793,7 +803,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleDBLink fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet dbResult)
+        protected OracleDBLink fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleDBLink(session.getProgressMonitor(), owner, dbResult);
@@ -834,7 +844,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleTrigger fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema oracleSchema, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleTrigger fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema oracleSchema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             OracleTableBase table = null;
             String tableName = JDBCUtils.safeGetString(resultSet, "TABLE_NAME");
@@ -864,7 +874,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleTriggerColumn fetchChild(@NotNull JDBCSession session, @NotNull OracleSchema oracleSchema, @NotNull OracleTrigger parent, @NotNull ResultSet dbResult) throws SQLException, DBException
+        protected OracleTriggerColumn fetchChild(@NotNull JDBCSession session, @NotNull OracleSchema oracleSchema, @NotNull OracleTrigger parent, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
         {
             OracleTableBase refTable = OracleTableBase.findTable(
                 session.getProgressMonitor(),
@@ -897,7 +907,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleJavaClass fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet dbResult)
+        protected OracleJavaClass fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleJavaClass(owner, dbResult);
@@ -923,7 +933,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleRecycledObject fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet dbResult)
+        protected OracleRecycledObject fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleRecycledObject(owner, dbResult);

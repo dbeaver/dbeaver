@@ -22,12 +22,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -70,7 +70,7 @@ public final class DB2GranteeCache extends JDBCObjectCache<DB2DataSource, DB2Gra
     }
 
     @Override
-    protected DB2Grantee fetchObject(@NotNull JDBCSession session, @NotNull DB2DataSource db2DataSource, @NotNull ResultSet resultSet) throws SQLException,
+    protected DB2Grantee fetchObject(@NotNull JDBCSession session, @NotNull DB2DataSource db2DataSource, @NotNull JDBCResultSet resultSet) throws SQLException,
         DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();

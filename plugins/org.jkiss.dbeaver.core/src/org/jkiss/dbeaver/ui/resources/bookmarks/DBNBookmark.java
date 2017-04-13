@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.InputStream;
@@ -87,7 +88,7 @@ public class DBNBookmark extends DBNResource
             try {
                 storage.setTitle(newName);
                 InputStream data = storage.serialize();
-                file.setContents(data, true, false, monitor.getNestedMonitor());
+                file.setContents(data, true, false, RuntimeUtils.getNestedMonitor(monitor));
             } catch (Exception e) {
                 throw new DBException("Can't rename bookmark", e);
             }

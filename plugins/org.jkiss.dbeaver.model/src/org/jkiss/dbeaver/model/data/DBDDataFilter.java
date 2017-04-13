@@ -50,7 +50,7 @@ public class DBDDataFilter {
         this.anyConstraint = source.anyConstraint;
     }
 
-    public Collection<DBDAttributeConstraint> getConstraints()
+    public List<DBDAttributeConstraint> getConstraints()
     {
         return constraints;
     }

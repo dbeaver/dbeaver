@@ -17,13 +17,11 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -32,14 +30,14 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 
 import java.sql.Array;
 import java.sql.ResultSet;
@@ -64,14 +62,13 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
             return null;
         }
         DBSDataType type = null;
-        if (session.getDataSource() instanceof DBPDataTypeProvider) {
-            try {
-                String baseTypeName = array.getBaseTypeName();
-                type = session.getDataSource().resolveDataType(session.getProgressMonitor(), baseTypeName);
-            } catch (Exception e) {
-                log.warn("Error resolving data type", e);
-            }
+        try {
+            String baseTypeName = array.getBaseTypeName();
+            type = session.getDataSource().resolveDataType(session.getProgressMonitor(), baseTypeName);
+        } catch (Exception e) {
+            log.warn("Error resolving data type", e);
         }
+
         try {
             if (type == null) {
                 try {
@@ -114,16 +111,13 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
             valueHandler = DBUtils.findValueHandler(session, itemMeta);
         }
         try {
-            DBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(session, null, dbResult, ModelMessages.model_jdbc_array_result_set, true);
-            try {
+            try (DBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(session, null, dbResult, ModelMessages.model_jdbc_array_result_set, true)) {
                 List<Object> data = new ArrayList<>();
                 while (dbResult.next()) {
                     // Fetch second column - it contains value
                     data.add(valueHandler.fetchValueObject(session, resultSet, type, 1));
                 }
                 return new JDBCArray(type, valueHandler, data.toArray());
-            } finally {
-                resultSet.close();
             }
         } finally {
             try {

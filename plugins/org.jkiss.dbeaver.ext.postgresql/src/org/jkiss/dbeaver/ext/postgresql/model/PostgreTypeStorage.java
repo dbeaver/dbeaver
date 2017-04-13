@@ -17,31 +17,26 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * GenericConstraintColumn
+ * PostgreTypeStorage
  */
-public class PostgreTableForeignKeyColumnTable extends PostgreTableConstraintColumn implements DBSTableForeignKeyColumn
+public enum PostgreTypeStorage implements DBPNamedObject
 {
-    private PostgreAttribute referencedColumn;
+    p("p:Plain."),
+    e("e:Secondary"),
+    m("m:Compressed"),
+    x("x:Any");
 
-    public PostgreTableForeignKeyColumnTable(
-        PostgreTableForeignKey constraint,
-        PostgreAttribute tableColumn,
-        int ordinalPosition,
-        PostgreAttribute referencedColumn)
-    {
-        super(constraint, tableColumn, ordinalPosition);
-        this.referencedColumn = referencedColumn;
+    private final String desc;
+
+    PostgreTypeStorage(String desc) {
+        this.desc = desc;
     }
 
     @Override
-    @Property(id = "reference", viewable = true, order = 4)
-    public PostgreAttribute getReferencedColumn()
-    {
-        return referencedColumn;
+    public String getName() {
+        return desc;
     }
-
 }

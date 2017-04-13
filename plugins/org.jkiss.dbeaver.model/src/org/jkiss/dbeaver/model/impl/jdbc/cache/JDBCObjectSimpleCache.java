@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -59,7 +60,7 @@ public final class JDBCObjectSimpleCache<OWNER extends DBSObject, OBJECT extends
     }
 
     @Override
-    protected OBJECT fetchObject(@NotNull JDBCSession session, @NotNull OWNER owner, @NotNull ResultSet resultSet)
+    protected OBJECT fetchObject(@NotNull JDBCSession session, @NotNull OWNER owner, @NotNull JDBCResultSet resultSet)
         throws SQLException, DBException
     {
         try {

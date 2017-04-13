@@ -60,7 +60,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.sql.SQLException;
@@ -306,7 +306,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    public Collection<DB2DataType> getDataTypes()
+    public Collection<DB2DataType> getLocalDataTypes()
     {
         try {
             return getDataTypes(VoidProgressMonitor.INSTANCE);
@@ -317,7 +317,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    public DB2DataType getDataType(String typeName)
+    public DB2DataType getLocalDataType(String typeName)
     {
         try {
             return getDataType(VoidProgressMonitor.INSTANCE, typeName);

@@ -114,7 +114,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     }
 
     @Override
-    public DBCSession getSession()
+    public JDBCSession getSession()
     {
         return session;
     }

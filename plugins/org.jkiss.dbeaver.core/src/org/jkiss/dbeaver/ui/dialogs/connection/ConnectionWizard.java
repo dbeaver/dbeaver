@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -124,7 +124,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                     @Override
                     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         // Wait for job to finish
-                        op.ownerMonitor = new DefaultProgressMonitor(monitor);
+                        op.ownerMonitor = RuntimeUtils.makeMonitor(monitor);
                         op.schedule();
                         while (op.getState() == Job.WAITING || op.getState() == Job.RUNNING) {
                             if (monitor.isCanceled()) {

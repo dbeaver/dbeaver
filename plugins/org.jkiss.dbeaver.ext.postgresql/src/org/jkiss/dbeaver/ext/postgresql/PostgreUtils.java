@@ -22,11 +22,17 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collection;
 
 /**
  * postgresql utils
@@ -35,7 +41,7 @@ public class PostgreUtils {
 
     static final Log log = Log.getLog(PostgreUtils.class);
 
-    public static String getObjectComment(DBRProgressMonitor monitor, GenericDataSource dataSource, String schema, String object)
+    public static String getObjectComment(DBRProgressMonitor monitor, DBPDataSource dataSource, String schema, String object)
         throws DBException
     {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load PostgreSQL description")) {
@@ -62,6 +68,38 @@ public class PostgreUtils {
             case ROWID: return "oid";
             default: return "varchar";
         }
+    }
+
+    private static Method getValueMethod;
+
+    public static PostgreAttribute getAttributeByNum(Collection<PostgreAttribute> attrs, int attNum) {
+        for (PostgreAttribute attr : attrs) {
+            if (attr.getOrdinalPosition() == attNum) {
+                return attr;
+            }
+        }
+        return null;
+    }
+
+    public static <T> T extractValue(Object pgObject) {
+        if (pgObject == null) {
+            return null;
+        }
+        if (getValueMethod == null) {
+            try {
+                getValueMethod = pgObject.getClass().getMethod("getValue");
+            } catch (NoSuchMethodException e) {
+                log.debug(e);
+            }
+        }
+        if (getValueMethod != null) {
+            try {
+                return (T)getValueMethod.invoke(pgObject);
+            } catch (Exception e) {
+                log.debug(e);
+            }
+        }
+        return null;
     }
 
 }

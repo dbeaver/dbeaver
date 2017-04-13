@@ -47,7 +47,6 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -432,13 +431,13 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    public Collection<? extends DBSDataType> getDataTypes()
+    public Collection<? extends DBSDataType> getLocalDataTypes()
     {
         return dataTypeCache.getCachedObjects();
     }
 
     @Override
-    public DBSDataType getDataType(String typeName)
+    public DBSDataType getLocalDataType(String typeName)
     {
         return dataTypeCache.getCachedObject(typeName);
     }
@@ -450,7 +449,7 @@ public class OracleDataSource extends JDBCDataSource
         int divPos = typeFullName.indexOf(SQLConstants.STRUCT_SEPARATOR);
         if (divPos == -1) {
             // Simple type name
-            return getDataType(typeFullName);
+            return getLocalDataType(typeFullName);
         } else {
             String schemaName = typeFullName.substring(0, divPos);
             String typeName = typeFullName.substring(divPos + 1);
@@ -642,7 +641,7 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected OracleSchema fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleSchema fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleSchema(owner, resultSet);
         }
@@ -667,7 +666,7 @@ public class OracleDataSource extends JDBCDataSource
                 "SELECT * FROM SYS.ALL_TYPES WHERE OWNER IS NULL ORDER BY TYPE_NAME");
         }
         @Override
-        protected OracleDataType fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataType fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataType(owner, resultSet);
         }
@@ -694,7 +693,7 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected OracleTablespace fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleTablespace fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleTablespace(owner, resultSet);
         }
@@ -709,7 +708,7 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected OracleUser fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleUser fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleUser(owner, resultSet);
         }
@@ -724,7 +723,7 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected OracleRole fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleRole fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleRole(owner, resultSet);
         }
@@ -744,7 +743,7 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected OracleUserProfile fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleUserProfile fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleUserProfile(owner, resultSet);
         }
@@ -763,7 +762,7 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected OracleUserProfile.ProfileResource fetchChild(@NotNull JDBCSession session, @NotNull OracleDataSource dataSource, @NotNull OracleUserProfile parent, @NotNull ResultSet dbResult) throws SQLException, DBException
+        protected OracleUserProfile.ProfileResource fetchChild(@NotNull JDBCSession session, @NotNull OracleDataSource dataSource, @NotNull OracleUserProfile parent, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
         {
             return new OracleUserProfile.ProfileResource(parent, dbResult);
         }

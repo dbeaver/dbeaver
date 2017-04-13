@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -28,13 +29,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -63,6 +64,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         super.clearCache();
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTable forParent)
         throws SQLException
@@ -76,7 +78,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     @Nullable
     @Override
-    protected GenericTableForeignKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String fkName, ResultSet dbResult)
+    protected GenericTableForeignKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String fkName, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String pkTableCatalog = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_CAT);
@@ -156,10 +158,11 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         return new GenericTableForeignKey(parent, fkName, null, pk, deleteRule, updateRule, defferability, true);
     }
 
+    @Nullable
     @Override
-    protected GenericTableForeignKeyColumnTable fetchObjectRow(
+    protected GenericTableForeignKeyColumnTable[] fetchObjectRow(
         JDBCSession session,
-        GenericTable parent, GenericTableForeignKey foreignKey, ResultSet dbResult)
+        GenericTable parent, GenericTableForeignKey foreignKey, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String pkColumnName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME);
@@ -184,11 +187,12 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             return null;
         }
 
-        return new GenericTableForeignKeyColumnTable(foreignKey, fkColumn, keySeq, pkColumn.getAttribute());
+        return new GenericTableForeignKeyColumnTable[] {
+            new GenericTableForeignKeyColumnTable(foreignKey, fkColumn, keySeq, pkColumn.getAttribute()) };
     }
 
     @Override
-    protected void cacheChildren(GenericTableForeignKey foreignKey, List<GenericTableForeignKeyColumnTable> rows)
+    protected void cacheChildren(DBRProgressMonitor monitor, GenericTableForeignKey foreignKey, List<GenericTableForeignKeyColumnTable> rows)
     {
         foreignKey.setColumns(rows);
     }

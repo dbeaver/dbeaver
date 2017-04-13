@@ -83,7 +83,7 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject {
         // -------------------
 
         // First Search in System/Standard Data Types
-        this.dataType = db2DataSource.getDataType(typeName);
+        this.dataType = db2DataSource.getLocalDataType(typeName);
         if (this.dataType != null) {
             return;
         }

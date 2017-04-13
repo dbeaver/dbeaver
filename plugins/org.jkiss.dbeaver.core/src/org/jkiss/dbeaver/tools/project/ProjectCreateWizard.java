@@ -29,9 +29,10 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -59,10 +60,9 @@ public class ProjectCreateWizard extends Wizard implements INewWizard {
 	@Override
 	public boolean performFinish() {
         try {
-            RuntimeUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+            DBeaverUI.run(getContainer(), true, true, new DBRRunnableWithProgress() {
                 @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         createProject(monitor);
                     } catch (Exception e) {
@@ -92,14 +92,14 @@ public class ProjectCreateWizard extends Wizard implements INewWizard {
         if (project.exists()) {
             throw new DBException(NLS.bind(CoreMessages.dialog_project_create_wizard_error_already_exists, data.getName()));
         }
-        project.create(monitor.getNestedMonitor());
+        project.create(RuntimeUtils.getNestedMonitor(monitor));
 
-        project.open(monitor.getNestedMonitor());
+        project.open(RuntimeUtils.getNestedMonitor(monitor));
 
         if (!CommonUtils.isEmpty(data.getDescription())) {
             final IProjectDescription description = workspace.newProjectDescription(project.getName());
             description.setComment(data.getDescription());
-            project.setDescription(description, monitor.getNestedMonitor());
+            project.setDescription(description, RuntimeUtils.getNestedMonitor(monitor));
         }
     }
 

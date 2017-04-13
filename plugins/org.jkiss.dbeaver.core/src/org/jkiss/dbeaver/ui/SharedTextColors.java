@@ -17,10 +17,12 @@
  */
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.util.HashMap;
@@ -33,40 +35,51 @@ public class SharedTextColors implements ISharedTextColors {
     /**
      * The display table.
      */
-    private Map<Display, Map<RGB, Color>> fDisplayTable;
+    private final Map<Display, Map<RGB, Color>> fDisplayTable = new HashMap<>();
+    private final Map<String, RGB> rgbMap = new HashMap<>();
 
     public SharedTextColors()
     {
         super();
     }
 
-    @Nullable
-    @Override
-    public Color getColor(RGB rgb)
+    @NotNull
+    public Color getColor(String rgbString)
     {
-        if (rgb == null)
-            return null;
+        RGB rgb;
+        synchronized (rgbMap) {
+            rgb = rgbMap.get(rgbString);
+            if (rgb == null) {
+                rgb = StringConverter.asRGB(rgbString);
+                rgbMap.put(rgbString, rgb);
+            }
+        }
+        return getColor(rgb);
+    }
 
-        if (fDisplayTable == null)
-            fDisplayTable = new HashMap<>(2);
-
+    @NotNull
+    @Override
+    public Color getColor(@NotNull RGB rgb)
+    {
         Display display = Display.getCurrent();
         if (display == null) {
             display = Display.getDefault();
         }
         final Display curDisplay = display;
 
-        Map<RGB, Color> colorTable = fDisplayTable.get(display);
-        if (colorTable == null) {
-            colorTable = new HashMap<>(10);
-            fDisplayTable.put(curDisplay, colorTable);
-            display.disposeExec(new Runnable() {
-                @Override
-                public void run()
-                {
-                    dispose(curDisplay);
-                }
-            });
+        Map<RGB, Color> colorTable;
+        synchronized (fDisplayTable) {
+            colorTable = fDisplayTable.get(display);
+            if (colorTable == null) {
+                colorTable = new HashMap<>(10);
+                fDisplayTable.put(curDisplay, colorTable);
+                display.disposeExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        dispose(curDisplay);
+                    }
+                });
+            }
         }
 
         Color color = colorTable.get(rgb);
@@ -81,13 +94,10 @@ public class SharedTextColors implements ISharedTextColors {
     @Override
     public void dispose()
     {
-        if (fDisplayTable == null)
-            return;
-
         for (Map<RGB, Color> rgbColorMap : fDisplayTable.values()) {
             dispose(rgbColorMap);
         }
-        fDisplayTable = null;
+        fDisplayTable.clear();
     }
 
     private void dispose(Display display)

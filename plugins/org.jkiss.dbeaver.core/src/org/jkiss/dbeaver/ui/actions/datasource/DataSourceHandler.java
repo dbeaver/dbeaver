@@ -46,7 +46,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -192,7 +192,7 @@ public class DataSourceHandler
             dataSourceContainer.getConnectionConfiguration().setUserPassword(authInfo.getUserPassword());
             dataSourceContainer.setSavePassword(authInfo.isSavePassword());
         }
-        if (dataSourceContainer.isSavePassword()) {
+        if (authInfo.isSavePassword()) {
             // Update connection properties
             dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
         }

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -30,7 +31,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 
@@ -79,7 +79,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
         }
 
         @Override
-        protected OraclePrivRole fetchObject(@NotNull JDBCSession session, @NotNull OracleGrantee owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OraclePrivRole fetchObject(@NotNull JDBCSession session, @NotNull OracleGrantee owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OraclePrivRole(owner, resultSet);
         }
@@ -96,7 +96,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
         }
 
         @Override
-        protected OraclePrivSystem fetchObject(@NotNull JDBCSession session, @NotNull OracleGrantee owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OraclePrivSystem fetchObject(@NotNull JDBCSession session, @NotNull OracleGrantee owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OraclePrivSystem(owner, resultSet);
         }
@@ -116,7 +116,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
         }
 
         @Override
-        protected OraclePrivObject fetchObject(@NotNull JDBCSession session, @NotNull OracleGrantee owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OraclePrivObject fetchObject(@NotNull JDBCSession session, @NotNull OracleGrantee owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OraclePrivObject(owner, resultSet);
         }

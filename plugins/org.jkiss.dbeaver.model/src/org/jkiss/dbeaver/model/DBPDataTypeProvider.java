@@ -50,10 +50,10 @@ public interface DBPDataTypeProvider
         throws DBException;
 
     /**
-     * Retrieves list of supported datatypes
+     * Retrieves list of supported datatypes.
      * @return list of types
      */
-    Collection<? extends DBSDataType> getDataTypes();
+    Collection<? extends DBSDataType> getLocalDataTypes();
 
     /**
      * Gets data type with specified name
@@ -61,7 +61,7 @@ public interface DBPDataTypeProvider
      * @param typeName type name
      * @return data type of null
      */
-    DBSDataType getDataType(String typeName);
+    DBSDataType getLocalDataType(String typeName);
 
     /**
      * Returns name of default data type for specified data kind

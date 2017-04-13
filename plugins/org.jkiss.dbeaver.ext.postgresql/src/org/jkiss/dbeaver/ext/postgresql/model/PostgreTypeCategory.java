@@ -17,27 +17,30 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * PostgreProcedure
  */
-public enum PostgreTypeCategory 
+public enum PostgreTypeCategory implements DBPNamedObject
 {
 
-    A("Array types"),
-    B("Boolean types"),
-    C("Composite types"),
-    D("Date/time types"),
-    E("Enum types"),
-    G("Geometric types"),
-    I("Network address types"),
-    N("Numeric types"),
-    P("Pseudo-types"),
-    S("String types"),
-    T("Timespan types"),
-    U("User-defined types"),
-    V("Bit-string types"),
-    X("unknown type"),
-    R("?");
+    A("Array"),
+    B("Boolean"),
+    C("Composite"),
+    D("Date/time"),
+    E("Enum"),
+    G("Geometric"),
+    I("Network address"),
+    N("Numeric"),
+    P("Pseudo"),
+    S("String"),
+    T("Timespan"),
+    U("User-defined"),
+    V("Bit-string"),
+    X("Unknown"),
+    R("Range");
 
     private final String desc;
 
@@ -45,7 +48,9 @@ public enum PostgreTypeCategory
         this.desc = desc;
     }
 
-    public String getDesc() {
+    @NotNull
+    @Override
+    public String getName() {
         return desc;
     }
 }

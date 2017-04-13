@@ -51,7 +51,8 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
-import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -218,39 +219,26 @@ public class EntityEditor extends MultiPageDatabaseEditor
         try {
             saveInProgress = true;
 
-            for (IEditorPart editor : editorMap.values()) {
-                editor.doSave(monitor);
-                if (monitor.isCanceled()) {
+            monitor.beginTask("Save changes...", 1);
+            try {
+                monitor.subTask("Save '" + getPartName() + "' changes...");
+                SaveJob saveJob = new SaveJob();
+                saveJob.schedule();
+
+                // Wait until job finished
+                Display display = Display.getCurrent();
+                while (saveJob.finished == null) {
+                    if (!display.readAndDispatch()) {
+                        display.sleep();
+                    }
+                }
+                display.update();
+                if (!saveJob.finished) {
+                    monitor.setCanceled(true);
                     return;
                 }
-            }
-            if (monitor.isCanceled()) {
-                return;
-            }
-
-            final DBECommandContext commandContext = getCommandContext();
-            if (commandContext != null && commandContext.isDirty()) {
-                monitor.beginTask("Save changes...", 1);
-                try {
-                    monitor.subTask("Save '" + getPartName() + "' changes...");
-                    SaveJob saveJob = new SaveJob();
-                    saveJob.schedule();
-
-                    // Wait until job finished
-                    Display display = Display.getCurrent();
-                    while (saveJob.finished == null) {
-                        if (!display.readAndDispatch()) {
-                            display.sleep();
-                        }
-                    }
-                    display.update();
-                    if (!saveJob.finished) {
-                        monitor.setCanceled(true);
-                        return;
-                    }
-                } finally {
-                    monitor.done();
-                }
+            } finally {
+                monitor.done();
             }
 
             firePropertyChange(IEditorPart.PROP_DIRTY);
@@ -843,12 +831,36 @@ public class EntityEditor extends MultiPageDatabaseEditor
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             try {
-                finished = saveCommandContext(monitor);
+                {
+                    // Save nested editors
+                    ProxyProgressMonitor proxyMonitor = new ProxyProgressMonitor(monitor);
+                    for (IEditorPart editor : editorMap.values()) {
+                        editor.doSave(proxyMonitor);
+                        if (monitor.isCanceled()) {
+                            return Status.CANCEL_STATUS;
+                        }
+                    }
+                    if (proxyMonitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
+                }
+
+                final DBECommandContext commandContext = getCommandContext();
+                if (commandContext != null && commandContext.isDirty()) {
+                    finished = saveCommandContext(monitor);
+                } else {
+                    finished = true;
+                }
+
                 return finished ? Status.OK_STATUS : Status.CANCEL_STATUS;
             } catch (Throwable e) {
                 finished = false;
                 log.error(e);
                 return Status.CANCEL_STATUS;
+            } finally {
+                if (finished == null) {
+                    finished = true;
+                }
             }
         }
     }

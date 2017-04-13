@@ -17,17 +17,20 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * PostgreTypeType
  */
-public enum PostgreTypeType
+public enum PostgreTypeType implements DBPNamedObject
 {
-    b("base type"),
-    c("composite type (e.g., a table's row type"),
-    d("domain"),
-    e("enum type"),
-    p("pseudo-type"),
-    r("?");
+    b("Base"),
+    c("Composite"),
+    d("Domain"),
+    e("Enum type"),
+    p("Pseudo-type"),
+    r("Range");
 
     private final String desc;
 
@@ -35,7 +38,9 @@ public enum PostgreTypeType
         this.desc = desc;
     }
 
-    public String getDesc() {
+    @NotNull
+    @Override
+    public String getName() {
         return desc;
     }
 }

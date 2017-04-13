@@ -165,8 +165,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
 
         this.entities.clear();
         for (DBVEntity child : container.getEntities()) {
-            DBVEntity myChild = new DBVEntity(this, child.getName(), child.getDescriptionColumnNames());
-            myChild.copyFrom(child);
+            DBVEntity myChild = new DBVEntity(this, child);
             entities.put(myChild.getName(), myChild);
         }
     }
@@ -195,4 +194,8 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         // do nothing
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
 }

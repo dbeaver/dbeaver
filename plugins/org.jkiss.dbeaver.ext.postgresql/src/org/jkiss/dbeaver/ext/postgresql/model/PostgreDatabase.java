@@ -22,8 +22,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.model.DBPStatefulObject;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -34,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.CommonUtils;
 
@@ -44,7 +48,7 @@ import java.util.Collection;
 /**
  * PostgreDatabase
  */
-public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
+public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObject, PostgreObject {
 
     static final Log log = Log.getLog(PostgreDatabase.class);
 
@@ -60,7 +64,8 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
     private int connectionLimit;
     private int tablespaceId;
 
-    SchemaCache schemaCache = new SchemaCache();
+    final SchemaCache schemaCache = new SchemaCache();
+    final PostgreDataTypeCache datatypeCache = new PostgreDataTypeCache();
 
     public PostgreDatabase(PostgreDataSource dataSource, ResultSet dbResult)
         throws SQLException
@@ -82,6 +87,12 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
         this.allowConnect = JDBCUtils.safeGetBoolean(dbResult, "datallowconn");
         this.connectionLimit = JDBCUtils.safeGetInt(dbResult, "datconnlimit");
         this.tablespaceId = JDBCUtils.safeGetInt(dbResult, "dattablespace");
+    }
+
+    @NotNull
+    @Override
+    public PostgreDatabase getDatabase() {
+        return this;
     }
 
     @Override
@@ -107,7 +118,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
     @Override
     public DBSObject getParentObject()
     {
-        return dataSource;
+        return dataSource.getContainer();
     }
 
     @NotNull
@@ -153,14 +164,40 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
 
     @Association
     public Collection<PostgreSchema> getSchemas(DBRProgressMonitor monitor) throws DBException {
+        if (this != dataSource.getDefaultInstance()) {
+            throw new DBException("Can't access non-default database");
+        }
+        cacheDataTypes(monitor);
+        // Get all schemas
         return schemaCache.getAllObjects(monitor, this);
     }
 
+    private void cacheDataTypes(DBRProgressMonitor monitor) throws DBException {
+        // Cache data types
+        datatypeCache.getAllObjects(monitor, this);
+    }
+
     public PostgreSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException {
+        if (this != dataSource.getDefaultInstance()) {
+            throw new DBException("Can't access non-default database");
+        }
+        cacheDataTypes(monitor);
         return schemaCache.getObject(monitor, this, name);
     }
 
-    PostgreTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName)
+    public PostgreSchema getSchema(DBRProgressMonitor monitor, int oid) throws DBException {
+        if (this != dataSource.getDefaultInstance()) {
+            throw new DBException("Can't access non-default database");
+        }
+        for (PostgreSchema schema : schemaCache.getAllObjects(monitor, this)) {
+            if (schema.getObjectId() == oid) {
+                return schema;
+            }
+        }
+        return null;
+    }
+
+    PostgreTableBase findTable(DBRProgressMonitor monitor, String catalogName, String tableName)
         throws DBException
     {
         if (CommonUtils.isEmpty(catalogName)) {
@@ -173,7 +210,18 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
         }
         return schema.getTable(monitor, tableName);
     }
-    
+
+    PostgreTableBase findTable(DBRProgressMonitor monitor, int schemaId, int tableId)
+        throws DBException
+    {
+        PostgreSchema schema = getSchema(monitor, schemaId);
+        if (schema == null) {
+            log.error("Catalog " + schemaId + " not found");
+            return null;
+        }
+        return schema.getTable(monitor, tableId);
+    }
+
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getSchemas(monitor);
@@ -191,6 +239,20 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
 
     @Override
     public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
+
+    }
+
+    @Override
+    public DBSObjectState getObjectState() {
+        if (this == dataSource.getDefaultInstance()) {
+            return DBSObjectState.NORMAL;
+        } else {
+            return PostgreConstants.STATE_UNAVAILABLE;
+        }
+    }
+
+    @Override
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
 
     }
 
@@ -218,7 +280,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
         }
 
         @Override
-        protected PostgreSchema fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected PostgreSchema fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             String name = JDBCUtils.safeGetString(resultSet, "nspname");
             if (name == null || name.startsWith("pg_toast") || name.startsWith("pg_temp")) {

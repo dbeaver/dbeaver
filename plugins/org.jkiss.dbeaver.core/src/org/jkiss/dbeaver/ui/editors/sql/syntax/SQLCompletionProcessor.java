@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
@@ -24,32 +26,32 @@ import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.jface.text.contentassist.*;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContext;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplateCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -117,31 +119,21 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
         if (queryType != null && wordPart != null) {
             if (editor.getDataSource() != null) {
-                try {
-                    final QueryType qt = queryType;
-                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                        @Override
-                        public void run(DBRProgressMonitor monitor)
-                            throws InvocationTargetException, InterruptedException
-                        {
-                            monitor.beginTask("Seeking for completion proposals", 1);
-                            try {
-                                monitor.subTask("Make structure proposals");
-                                makeStructureProposals(monitor, proposals, wordPart, qt);
-                            } finally {
-                                monitor.done();
-                            }
-                        }
-                    });
-                } catch (InvocationTargetException e) {
-                    log.warn("Error while seeking for structure proposals", e.getTargetException());
-                } catch (InterruptedException e) {
-                    // interrupted - do nothing
+                ProposalSearchJob searchJob = new ProposalSearchJob(proposals, wordPart, queryType);
+                searchJob.schedule();
+
+                // Wait until job finished
+                Display display = Display.getCurrent();
+                while (!searchJob.finished) {
+                    if (!display.readAndDispatch()) {
+                        display.sleep();
+                    }
                 }
+                display.update();
             }
         }
 
-        if (proposals.isEmpty() || !wordPart.isEmpty())  {
+        if (proposals.isEmpty() || !CommonUtils.isEmpty(wordPart))  {
             // Keyword assist
             List<String> matchedKeywords = editor.getSyntaxManager().getDialect().getMatchedKeywords(wordPart);
             for (String keyWord : matchedKeywords) {
@@ -771,4 +763,40 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             return false;
         }
     }
+
+    private class ProposalSearchJob extends AbstractJob {
+        private List<SQLCompletionProposal> proposals;
+        private String wordPart;
+        private QueryType qt;
+        private transient boolean finished = false;
+
+        public ProposalSearchJob(List<SQLCompletionProposal> proposals, String wordPart, QueryType qt) {
+            super("Search proposals...");
+            setUser(true);
+            this.proposals = proposals;
+            this.wordPart = wordPart;
+            this.qt = qt;
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            try {
+                monitor.beginTask("Seeking for completion proposals", 1);
+                try {
+                    monitor.subTask("Make structure proposals");
+                    makeStructureProposals(monitor, proposals, wordPart, qt);
+                } finally {
+                    monitor.done();
+                }
+
+                return Status.OK_STATUS;
+            } catch (Throwable e) {
+                log.error(e);
+                return Status.CANCEL_STATUS;
+            } finally {
+                finished = true;
+            }
+        }
+    }
+
 }

@@ -270,7 +270,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                     Set<String> types = new LinkedHashSet<>();
                     DBPDataSource dataSource = settings.getTargetDataSource(attrMapping);
                     if (dataSource instanceof DBPDataTypeProvider) {
-                        for (DBSDataType type : ((DBPDataTypeProvider) dataSource).getDataTypes()) {
+                        for (DBSDataType type : ((DBPDataTypeProvider) dataSource).getLocalDataTypes()) {
                             types.add(type.getName());
                         }
                     }

@@ -16,27 +16,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.runtime.load;
+package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.lang.reflect.InvocationTargetException;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
- * Lazy loading service
- * @param <RESULT> result type
+ * DBD Value renderer.
+ * Renders value into human readable form
  */
-public interface ILoadService<RESULT> {
+public interface DBDValueRenderer
+{
+    /**
+     * Converts value to human readable format
+     *
+     * @param column column
+     * @param value value
+     * @param format string format
+     * @return formatted string
+     */
+    @NotNull
+    String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format);
 
-    String getServiceName();
-
-    DBRProgressMonitor getProgressMonitor();
-
-    void setProgressMonitor(DBRProgressMonitor monitor);
-
-    RESULT evaluate() throws InvocationTargetException, InterruptedException;
-
-    boolean cancel() throws InvocationTargetException;
-
-    Object getFamily();
 }

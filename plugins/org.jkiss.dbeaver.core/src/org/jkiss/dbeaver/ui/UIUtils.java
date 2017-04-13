@@ -66,8 +66,8 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.RunnableWithResult;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
@@ -365,6 +365,16 @@ public class UIUtils {
 
     public static TableItem getNextTableItem(Table table, TableItem item) {
         TableItem[] items = table.getItems();
+        for (int i = 0; i < items.length - 1; i++) {
+            if (items[i] == item) {
+                return items[i + 1];
+            }
+        }
+        return null;
+    }
+
+    public static TreeItem getNextTreeItem(Tree tree, TreeItem item) {
+        TreeItem[] items = tree.getItems();
         for (int i = 0; i < items.length - 1; i++) {
             if (items[i] == item) {
                 return items[i + 1];
@@ -1400,7 +1410,7 @@ public class UIUtils {
             }
             switch (choice) {
                 case ISaveablePart2.YES: //yes
-                    saveable.doSave(monitor.getNestedMonitor());
+                    saveable.doSave(RuntimeUtils.getNestedMonitor(monitor));
                     result = !saveable.isDirty();
                     break;
                 case ISaveablePart2.NO: //no
@@ -1422,7 +1432,7 @@ public class UIUtils {
         if (CommonUtils.isEmpty(rgbString)) {
             return null;
         }
-        Color connectionColor = DBeaverUI.getSharedTextColors().getColor(StringConverter.asRGB(rgbString));
+        Color connectionColor = DBeaverUI.getSharedTextColors().getColor(rgbString);
         if (connectionColor.getBlue() == 255 && connectionColor.getRed() == 255 && connectionColor.getGreen() == 255) {
             // For white color return just null to avoid explicit color set.
             // It is important for dark themes

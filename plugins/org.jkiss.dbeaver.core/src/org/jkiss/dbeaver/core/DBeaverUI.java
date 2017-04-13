@@ -37,8 +37,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
-import org.jkiss.dbeaver.runtime.RunnableWithResult;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.ui.DBUICallback;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
@@ -84,9 +83,26 @@ public class DBeaverUI implements DBUICallback {
         }
     }
 
-    public static ISharedTextColors getSharedTextColors()
+    public static SharedTextColors getSharedTextColors()
     {
         return getInstance().sharedTextColors;
+    }
+
+    public static void run(
+        IRunnableContext runnableContext,
+        boolean fork,
+        boolean cancelable,
+        final DBRRunnableWithProgress runnableWithProgress)
+        throws InvocationTargetException, InterruptedException
+    {
+        runnableContext.run(fork, cancelable, new IRunnableWithProgress() {
+            @Override
+            public void run(IProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException
+            {
+                runnableWithProgress.run(RuntimeUtils.makeMonitor(monitor));
+            }
+        });
     }
 
     private void dispose()

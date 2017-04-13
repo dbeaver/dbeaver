@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -28,7 +29,6 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -150,10 +150,9 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     {
         if (attributeMappings.isEmpty()) {
             try {
-                RuntimeUtils.run(runnableContext, true, true, new DBRRunnableWithProgress() {
+                DBeaverUI.run(runnableContext, true, true, new DBRRunnableWithProgress() {
                     @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         try {
                             readAttributes(monitor);
                         } catch (DBException e) {

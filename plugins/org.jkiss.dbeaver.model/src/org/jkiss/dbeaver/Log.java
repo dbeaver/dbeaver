@@ -33,7 +33,7 @@ public class Log
 {
     private static String corePluginID = ModelPreferences.PLUGIN_ID;
 
-    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-hh HH:mm:ss.SSS");
+    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     private static final ILog eclipseLog = ModelActivator.getInstance().getLog();
 
     private final String name;

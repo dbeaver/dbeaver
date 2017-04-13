@@ -147,11 +147,15 @@ public final class DBUtils {
         }
 
         // Check for bad characters
-        if (!hasBadChars) {
-            for (int i = 0; i < str.length(); i++) {
-                if (!sqlDialect.validUnquotedCharacter(str.charAt(i))) {
-                    hasBadChars = true;
-                    break;
+        if (!hasBadChars && !str.isEmpty()) {
+            if (str.charAt(0) == '_') {
+                hasBadChars = true;
+            } else {
+                for (int i = 0; i < str.length(); i++) {
+                    if (!sqlDialect.validUnquotedCharacter(str.charAt(i))) {
+                        hasBadChars = true;
+                        break;
+                    }
                 }
             }
         }
@@ -440,11 +444,16 @@ public final class DBUtils {
      * @return object path
      */
     @NotNull
-    public static List<DBSObject> getObjectPath(DBSObject object, boolean includeSelf)
+    public static DBSObject[] getObjectPath(DBSObject object, boolean includeSelf)
     {
-        List<DBSObject> path = new ArrayList<>();
-        for (DBSObject obj = includeSelf ? object : object.getParentObject(); obj != null; obj = obj.getParentObject()) {
-            path.add(0, obj);
+        int depth = 0;
+        final DBSObject root = includeSelf ? object : object.getParentObject();
+        for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
+            depth++;
+        }
+        DBSObject[] path = new DBSObject[depth];
+        for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
+            path[depth-- - 1] = obj;
         }
         return path;
     }
@@ -676,6 +685,48 @@ public final class DBUtils {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    public static DBSEntityConstraint findEntityConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity, @NotNull Collection<? extends DBSEntityAttribute> attributes)
+        throws DBException
+    {
+        // Check constraints
+        Collection<? extends DBSEntityConstraint> constraints = entity.getConstraints(monitor);
+        if (!CommonUtils.isEmpty(constraints)) {
+            for (DBSEntityConstraint constraint : constraints) {
+                if (constraint instanceof DBSEntityReferrer && referrerMatches(monitor, (DBSEntityReferrer)constraint, attributes)) {
+                    return constraint;
+                }
+            }
+        }
+        if (entity instanceof DBSTable) {
+            Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
+            if (!CommonUtils.isEmpty(indexes)) {
+                for (DBSTableIndex index : indexes) {
+                    if (index.isUnique() && referrerMatches(monitor, index, attributes)) {
+                        return index;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static boolean referrerMatches(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer referrer, @NotNull Collection<? extends DBSEntityAttribute> attributes) throws DBException {
+        final List<? extends DBSEntityAttributeRef> refs = referrer.getAttributeReferences(monitor);
+        if (refs != null && !refs.isEmpty()) {
+            Iterator<? extends DBSEntityAttribute> attrIterator = attributes.iterator();
+            for (DBSEntityAttributeRef ref : refs) {
+                if (!attrIterator.hasNext()) {
+                    return false;
+                }
+                if (ref.getAttribute() != attrIterator.next()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     @NotNull
@@ -1235,10 +1286,10 @@ public final class DBUtils {
         }
     }
 
-    public static DBCLogicalOperator[] getDefaultOperators(DBSAttributeBase attribute) {
+    public static DBCLogicalOperator[] getDefaultOperators(DBSTypedObject attribute) {
         List<DBCLogicalOperator> operators = new ArrayList<>();
         DBPDataKind dataKind = attribute.getDataKind();
-        if (!attribute.isRequired()) {
+        if (attribute instanceof DBSAttributeBase && !((DBSAttributeBase)attribute).isRequired()) {
             operators.add(DBCLogicalOperator.IS_NULL);
             operators.add(DBCLogicalOperator.IS_NOT_NULL);
         }

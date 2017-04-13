@@ -168,9 +168,9 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
         DBPDataKind dataKind = source.getDataKind();
         if (targetDataSource instanceof DBPDataTypeProvider) {
             DBPDataTypeProvider dataTypeProvider = (DBPDataTypeProvider) targetDataSource;
-            DBSDataType dataType = dataTypeProvider.getDataType(typeName);
+            DBSDataType dataType = dataTypeProvider.getLocalDataType(typeName);
             if (dataType == null && typeName.equals("DOUBLE")) {
-                dataType = dataTypeProvider.getDataType("DOUBLE PRECISION");
+                dataType = dataTypeProvider.getLocalDataType("DOUBLE PRECISION");
                 if (dataType != null) {
                     typeName = dataType.getTypeName();
                 }
@@ -183,7 +183,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
                 // Type not supported by target database
                 // Let's try to find something similar
                 List<DBSDataType> possibleTypes = new ArrayList<>();
-                for (DBSDataType type : dataTypeProvider.getDataTypes()) {
+                for (DBSDataType type : dataTypeProvider.getLocalDataTypes()) {
                     if (type.getDataKind() == dataKind) {
                         possibleTypes.add(type);
                     }

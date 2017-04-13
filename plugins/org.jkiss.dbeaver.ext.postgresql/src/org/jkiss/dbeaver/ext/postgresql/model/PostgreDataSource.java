@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -118,6 +117,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
 
+        // Read databases
+        databaseCache.getAllObjects(monitor, this);
+
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read internal data types")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT t.oid,t.* \n" +
@@ -127,7 +129,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                     "ORDER by t.oid")) {
                 try (JDBCResultSet rs = dbStat.executeQuery()) {
                     while (rs.nextRow()) {
-                        final PostgreDataType dataType = PostgreDataType.readDataType(this, rs);
+                        final PostgreDataType dataType = PostgreDataType.readDataType(getDefaultInstance(), rs);
                         if (dataType != null) {
                             internalTypes.put(dataType.getName(), dataType);
                         }
@@ -137,9 +139,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                 log.error("Error reading internal types", e);
             }
         }
-
-        // Read catalogs
-        databaseCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -220,17 +219,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     private void useDatabase(DBRProgressMonitor monitor, JDBCExecutionContext context, PostgreDatabase catalog) throws DBCException {
-        if (catalog == null) {
-            log.debug("Null current database");
-            return;
-        }
-        try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("use " + DBUtils.getQuotedIdentifier(catalog))) {
-                dbStat.execute();
-            }
-        } catch (SQLException e) {
-            throw new DBCException(e, this);
-        }
+
     }
 
     @Override
@@ -331,13 +320,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
-    public Collection<? extends DBSDataType> getDataTypes()
+    public Collection<? extends DBSDataType> getLocalDataTypes()
     {
         return internalTypes.values();
     }
 
     @Override
-    public DBSDataType getDataType(String typeName)
+    public DBSDataType getLocalDataType(String typeName)
     {
         return internalTypes.get(typeName);
     }
@@ -376,8 +365,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataSource owner) throws SQLException
         {
             StringBuilder catalogQuery = new StringBuilder(
-                "select db.oid,db.*\n" +
-                "from pg_catalog.pg_database db where datistemplate=false AND datallowconn=true");
+                "SELECT db.oid,db.*\n" +
+                "\nFROM pg_catalog.pg_database db where NOT datistemplate AND datallowconn" +
+                "\nORDER BY db.datname");
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(PostgreDatabase.class, null, false);
             if (catalogFilters != null) {
                 JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", true);
@@ -390,7 +380,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
 
         @Override
-        protected PostgreDatabase fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected PostgreDatabase fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new PostgreDatabase(owner, resultSet);
         }

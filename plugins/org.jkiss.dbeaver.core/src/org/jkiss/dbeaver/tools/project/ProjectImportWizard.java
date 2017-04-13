@@ -29,12 +29,13 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -76,10 +77,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 	@Override
 	public boolean performFinish() {
         try {
-            RuntimeUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+            DBeaverUI.run(getContainer(), true, true, new DBRRunnableWithProgress() {
                 @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         importProjects(monitor);
                     } catch (Exception e) {
@@ -345,11 +345,11 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         }
         ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
         projectRegistry.projectBusy(project, true);
-        project.create(description, 0, monitor.getNestedMonitor());
+        project.create(description, 0, RuntimeUtils.getNestedMonitor(monitor));
 
         try {
             // Open project
-            project.open(monitor.getNestedMonitor());
+            project.open(RuntimeUtils.getNestedMonitor(monitor));
 
             // Set project properties
             loadResourceProperties(monitor, project, projectElement);
@@ -368,7 +368,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         } catch (Exception e) {
             // Cleanup project which was partially imported
             try {
-                project.delete(true, true, monitor.getNestedMonitor());
+                project.delete(true, true, RuntimeUtils.getNestedMonitor(monitor));
             } catch (CoreException e1) {
                 log.error(e1);
             }
@@ -408,7 +408,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 } else {
                     throw new DBException("Unsupported container type '" + resource.getClass().getName() + "'");
                 }
-                folder.create(true, true, monitor.getNestedMonitor());
+                folder.create(true, true, RuntimeUtils.getNestedMonitor(monitor));
                 childResource = folder;
                 importChildResources(monitor, folder, childElement, entryPath, zipFile);
             } else {
@@ -420,7 +420,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 } else {
                     throw new DBException("Unsupported container type '" + resource.getClass().getName() + "'");
                 }
-                file.create(zipFile.getInputStream(resourceEntry), true, monitor.getNestedMonitor());
+                file.create(zipFile.getInputStream(resourceEntry), true, RuntimeUtils.getNestedMonitor(monitor));
                 childResource = file;
             }
             loadResourceProperties(monitor, childResource, childElement);
@@ -432,7 +432,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         if (resource instanceof IFile) {
             final String charset = element.getAttribute(ExportConstants.ATTR_CHARSET);
             if (!CommonUtils.isEmpty(charset)) {
-                ((IFile) resource).setCharset(charset, monitor.getNestedMonitor());
+                ((IFile) resource).setCharset(charset, RuntimeUtils.getNestedMonitor(monitor));
             }
         }
         for (Element attrElement : XMLUtils.getChildElementList(element, ExportConstants.TAG_ATTRIBUTE)) {
@@ -482,7 +482,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             new ByteArrayInputStream(filteredContent.getBytes(GeneralUtils.DEFAULT_FILE_CHARSET)),
             true,
             false,
-            monitor.getNestedMonitor());
+            RuntimeUtils.getNestedMonitor(monitor));
     }
 
 

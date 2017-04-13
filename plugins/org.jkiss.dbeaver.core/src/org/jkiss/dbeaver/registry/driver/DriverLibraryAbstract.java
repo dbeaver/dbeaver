@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
@@ -186,7 +186,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
             throw new IOException("Unresolved file reference: " + getPath());
         }
 
-        final URLConnection connection = RuntimeUtils.openConnection(externalURL);
+        final URLConnection connection = WebUtils.openConnection(externalURL);
 
         int contentLength = connection.getContentLength();
         if (contentLength < 0) {

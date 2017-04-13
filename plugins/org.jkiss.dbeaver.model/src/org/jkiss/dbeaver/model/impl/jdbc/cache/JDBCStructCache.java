@@ -52,7 +52,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     abstract protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull OWNER owner, @Nullable OBJECT forObject)
         throws SQLException;
 
-    abstract protected CHILD fetchChild(@NotNull JDBCSession session, @NotNull OWNER owner, @NotNull OBJECT parent, @NotNull ResultSet dbResult)
+    abstract protected CHILD fetchChild(@NotNull JDBCSession session, @NotNull OWNER owner, @NotNull OBJECT parent, @NotNull JDBCResultSet dbResult)
         throws SQLException, DBException;
 
     protected JDBCStructCache(Object objectNameColumn)

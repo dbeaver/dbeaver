@@ -57,7 +57,7 @@ public class MySQLEnumValue implements DBDEnum {
 
     @Override
     public DBSDataType getElementType() {
-        return column.getDataSource().getDataType(MySQLConstants.TYPE_VARCHAR);
+        return column.getDataSource().getLocalDataType(MySQLConstants.TYPE_VARCHAR);
     }
 
     @Override

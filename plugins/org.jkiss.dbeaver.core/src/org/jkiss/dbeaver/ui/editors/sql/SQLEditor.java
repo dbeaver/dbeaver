@@ -65,8 +65,8 @@ import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
@@ -445,7 +445,7 @@ public class SQLEditor extends SQLEditorBase implements
                     curQueryProcessor = resultsProvider.queryProcessor;
                     ResultSetViewer rsv = resultsProvider.getResultSetViewer();
                     if (rsv != null) {
-                        rsv.getActivePresentation().getControl().setFocus();
+                        //rsv.getActivePresentation().getControl().setFocus();
                     }
                 } else if (data == outputViewer) {
                     ((CTabItem) e.item).setImage(IMG_OUTPUT);
@@ -959,7 +959,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         if (ownContext && executionContext != null) {
             if (DataSourceHandler.isContextTransactionAffected(executionContext)) {
-                DataSourceHandler.closeActiveTransaction(new DefaultProgressMonitor(progressMonitor), executionContext, true);
+                DataSourceHandler.closeActiveTransaction(RuntimeUtils.makeMonitor(progressMonitor), executionContext, true);
             }
 //            releaseExecutionContext();
         }

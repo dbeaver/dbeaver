@@ -193,7 +193,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                     indent--;
                     index += insertReturnAndIndent(argList, index, indent);
                 } else if (tokenString.equals("OR") //$NON-NLS-1$
-                        || tokenString.equals("THEN") //$NON-NLS-1$
+                        || tokenString.equals("WHEN") //$NON-NLS-1$
                         || tokenString.equals("ELSE")) { //$NON-NLS-1$
                     index += insertReturnAndIndent(argList, index, indent);
                 } else if (tokenString.equals("ON") || tokenString.equals("USING")) { //$NON-NLS-1$ //$NON-NLS-2$

@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.IPersistentStorage;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -67,7 +68,7 @@ public class LocalFileStorage implements IStorage, IPersistentStorage {
     @Override
     public void setContents(IProgressMonitor monitor, InputStream stream) throws CoreException {
         try (OutputStream os = new FileOutputStream(file)) {
-            ContentUtils.copyStreams(stream, 0, os, new DefaultProgressMonitor(monitor));
+            ContentUtils.copyStreams(stream, 0, os, RuntimeUtils.makeMonitor(monitor));
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }

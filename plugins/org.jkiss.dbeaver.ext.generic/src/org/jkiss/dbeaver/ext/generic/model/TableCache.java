@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -32,7 +33,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Locale;
@@ -92,7 +92,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
 
     @Nullable
     @Override
-    protected GenericTable fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull ResultSet dbResult)
+    protected GenericTable fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String tableName = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME);
@@ -154,7 +154,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
     }
 
     @Override
-    protected GenericTableColumn fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericTable table, @NotNull ResultSet dbResult)
+    protected GenericTableColumn fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericTable table, @NotNull JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String columnName = GenericUtils.safeGetStringTrimmed(columnObject, dbResult, JDBCConstants.COLUMN_NAME);
@@ -180,7 +180,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
 
         {
             // Fix value type
-            DBSDataType dataType = dataSource.getDataType(typeName);
+            DBSDataType dataType = dataSource.getLocalDataType(typeName);
             if (dataType != null) {
                 valueType = dataType.getTypeID();
             }

@@ -491,10 +491,15 @@ public class PropertyTreeViewer extends TreeViewer {
                                     }
                                 }
                             }
-                            manager.add(new Separator());
-
-                            contributeContextMenu(manager, object, prop.category != null ? prop.category : prop.property.getCategory(), prop.property);
                         }
+                        manager.add(new Separator());
+                        contributeContextMenu(
+                            manager,
+                            object,
+                            prop.category != null ?
+                                prop.category :
+                                (prop.property == null ? null : prop.property.getCategory()),
+                            prop.property);
                     }
                 }
             });
@@ -688,12 +693,10 @@ public class PropertyTreeViewer extends TreeViewer {
                     final Object propertyValue = getPropertyValue(node);
                     if (propertyValue == null || renderer.isHyperlink(propertyValue)) {
                         return ""; //$NON-NLS-1$
-                    } else if (propertyValue instanceof Boolean) {
-                        return "";//DBUtils.getBooleanString((Boolean) propertyValue);
                     } else if (BeanUtils.isCollectionType(propertyValue.getClass())) {
                         return "";
                     }
-                    return CommonUtils.toString(propertyValue);
+                    return ObjectViewerRenderer.getCellString(propertyValue);
                 } else {
                     return ""; //$NON-NLS-1$
                 }

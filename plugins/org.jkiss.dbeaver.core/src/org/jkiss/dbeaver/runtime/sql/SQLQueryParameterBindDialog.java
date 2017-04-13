@@ -79,7 +79,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         DBPDataSource dataSource = executionContext.getDataSource();
         DBPDataTypeProvider dataTypeProvider = DBUtils.getAdapter(DBPDataTypeProvider.class, dataSource);
         if (dataTypeProvider != null) {
-            for (DBSDataType dataType : dataTypeProvider.getDataTypes()) {
+            for (DBSDataType dataType : dataTypeProvider.getLocalDataTypes()) {
                 if (dataType.getDataKind() == DBPDataKind.UNKNOWN) {
                     continue;
                 }

@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.registry.updater;
 
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
@@ -53,7 +53,7 @@ public class VersionDescriptor {
         throws IOException
     {
         try {
-            InputStream inputStream = RuntimeUtils.openConnectionStream(fileAddr);
+            InputStream inputStream = WebUtils.openConnectionStream(fileAddr);
             try {
                 Document document = XMLUtils.parseDocument(inputStream);
                 parseVersionInfo(document);

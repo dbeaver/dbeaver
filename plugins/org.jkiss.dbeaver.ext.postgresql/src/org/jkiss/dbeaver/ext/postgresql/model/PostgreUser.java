@@ -33,7 +33,7 @@ import java.util.Date;
 /**
  * PostgreUser
  */
-public class PostgreUser implements DBAUser, DBPSaveableObject, PostgreObject
+public class PostgreUser implements DBAUser, DBPSaveableObject
 {
     static final Log log = Log.getLog(PostgreUser.class);
 
@@ -68,7 +68,6 @@ public class PostgreUser implements DBAUser, DBPSaveableObject, PostgreObject
         }
     }
 
-    @Override
     @Property(viewable = true, order = 1)
     public int getObjectId() {
         return this.oid;

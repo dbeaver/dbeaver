@@ -34,63 +34,21 @@ import java.util.List;
 /**
  * PostgreIndex
  */
-public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTable>
+public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase>
 {
-    private boolean nonUnique;
-    private String additionalInfo;
-    private String indexComment;
-    private long cardinality;
-    private List<PostgreIndexColumn> columns;
+    private boolean isUnique;
+    private String description;
+    private List<PostgreIndexColumn> columns = new ArrayList<>();
 
-    public PostgreIndex(
-        PostgreTable table,
-        DBSIndexType indexType)
-    {
-        super(table.getContainer(), table, null, indexType, false);
-    }
-
-    public PostgreIndex(
-        PostgreTable table,
-        boolean nonUnique,
-        String indexName,
-        DBSIndexType indexType,
-        String comment)
-    {
-        super(table.getContainer(), table, indexName, indexType, true);
-        this.nonUnique = nonUnique;
-        this.indexComment = comment;
-    }
-
-    /**
-     * Copy constructor
-     * @param source source index
-     */
-    PostgreIndex(PostgreIndex source)
-    {
-        super(source);
-        this.nonUnique = source.nonUnique;
-        this.cardinality = source.cardinality;
-        this.indexComment = source.indexComment;
-        this.additionalInfo = source.additionalInfo;
-        if (source.columns != null) {
-            this.columns = new ArrayList<>(source.columns.size());
-            for (PostgreIndexColumn sourceColumn : source.columns) {
-                this.columns.add(new PostgreIndexColumn(this, sourceColumn));
-            }
-        }
-    }
-
-    public PostgreIndex(PostgreTable parent, String indexName, DBSIndexType indexType, ResultSet dbResult) {
+    public PostgreIndex(PostgreTableBase parent, String indexName, ResultSet dbResult) {
         super(
             parent.getContainer(),
             parent,
             indexName,
-            indexType,
+            DBSIndexType.UNKNOWN,
             true);
-        this.nonUnique = JDBCUtils.safeGetInt(dbResult, PostgreConstants.COL_NON_UNIQUE) != 0;
-        this.cardinality = JDBCUtils.safeGetLong(dbResult, "cardinality");
-        this.indexComment = JDBCUtils.safeGetString(dbResult, "INDEX_COMMENT");
-        this.additionalInfo = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_COMMENT);
+        this.isUnique = JDBCUtils.safeGetBoolean(dbResult, "indisunique");
+        this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
     @NotNull
@@ -104,7 +62,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTable>
     @Property(viewable = true, order = 5)
     public boolean isUnique()
     {
-        return !nonUnique;
+        return !isUnique;
     }
 
     @Nullable
@@ -112,17 +70,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTable>
     @Property(viewable = true, order = 100)
     public String getDescription()
     {
-        return indexComment;
-    }
-
-    @Property(viewable = true, order = 20)
-    public long getCardinality() {
-        return cardinality;
-    }
-
-    @Property(viewable = false, order = 30)
-    public String getAdditionalInfo() {
-        return additionalInfo;
+        return description;
     }
 
     @Override

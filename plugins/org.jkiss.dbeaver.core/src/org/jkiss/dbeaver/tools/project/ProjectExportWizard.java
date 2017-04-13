@@ -29,12 +29,13 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -79,10 +80,9 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 	public boolean performFinish() {
         final ProjectExportData exportData = mainPage.getExportData();
         try {
-            RuntimeUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+            DBeaverUI.run(getContainer(), true, true, new DBRRunnableWithProgress() {
                 @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         exportProjects(monitor, exportData);
                     } catch (Exception e) {
@@ -274,7 +274,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
     {
         monitor.subTask(project.getName());
         // Refresh project
-        project.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
+        project.refreshLocal(IResource.DEPTH_INFINITE, RuntimeUtils.getNestedMonitor(monitor));
 
         // Write meta info
         exportData.meta.startElement(ExportConstants.TAG_PROJECT);

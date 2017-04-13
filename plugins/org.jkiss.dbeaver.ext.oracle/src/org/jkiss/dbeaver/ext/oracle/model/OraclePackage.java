@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -205,7 +206,7 @@ public class OraclePackage extends OracleSchemaObject
         }
 
         @Override
-        protected OracleProcedurePackaged fetchObject(@NotNull JDBCSession session, @NotNull OraclePackage owner, @NotNull ResultSet dbResult)
+        protected OracleProcedurePackaged fetchObject(@NotNull JDBCSession session, @NotNull OraclePackage owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleProcedurePackaged(owner, dbResult);

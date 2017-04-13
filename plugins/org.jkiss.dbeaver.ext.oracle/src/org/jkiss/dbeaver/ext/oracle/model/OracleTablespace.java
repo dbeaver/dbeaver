@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -288,7 +289,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         }
 
         @Override
-        protected OracleDataFile fetchObject(@NotNull JDBCSession session, @NotNull OracleTablespace owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataFile fetchObject(@NotNull JDBCSession session, @NotNull OracleTablespace owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataFile(owner, resultSet, owner.getContents() == Contents.TEMPORARY);
         }
@@ -306,7 +307,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         }
 
         @Override
-        protected OracleSegment<OracleTablespace> fetchObject(@NotNull JDBCSession session, @NotNull OracleTablespace owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleSegment<OracleTablespace> fetchObject(@NotNull JDBCSession session, @NotNull OracleTablespace owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleSegment<>(session.getProgressMonitor(), owner, resultSet);
         }

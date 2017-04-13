@@ -141,7 +141,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
                 configuration = new DBWHandlerConfiguration(descriptor, driver);
             }
             HandlerBlock handlerBlock = configurations.get(descriptor);
-            handlerBlock.useHandlerCheck.setSelection(configuration.isEnabled());
+            //handlerBlock.useHandlerCheck.setSelection(configuration.isEnabled());
             if (selectItem == null && configuration.isEnabled()) {
                 selectItem = handlerBlock.tabItem;
             }
@@ -162,6 +162,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
     {
         HandlerBlock handlerBlock = configurations.get(descriptor);
         DBWHandlerConfiguration handlerConfiguration = handlerBlock.loadedConfigs.get(wizard.getPageSettings().getActiveDataSource().getId());
+        handlerBlock.useHandlerCheck.setSelection(handlerConfiguration.isEnabled());
         if (handlerConfiguration.isEnabled()) {
             if (handlerBlock.blockEnableState != null) {
                 handlerBlock.blockEnableState.restore();

@@ -35,9 +35,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -119,7 +120,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             return;
         }
         String nameMask = ((ObjectFilter)itemsFilter).getNameMask();
-        DefaultProgressMonitor monitor = new DefaultProgressMonitor(progressMonitor);
+        DBRProgressMonitor monitor = RuntimeUtils.makeMonitor(progressMonitor);
         try {
             monitor.beginTask("Search for '" + nameMask + "'", 100);
             List<DBSObjectType> typesToSearch = new ArrayList<>();

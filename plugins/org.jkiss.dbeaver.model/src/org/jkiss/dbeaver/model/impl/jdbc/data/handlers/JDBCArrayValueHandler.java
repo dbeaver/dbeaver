@@ -17,14 +17,13 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCArray;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Array;
@@ -36,8 +35,6 @@ import java.sql.Array;
  * @author Serge Rider
  */
 public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
-
-    static final Log log = Log.getLog(JDBCArrayValueHandler.class);
 
     public static final JDBCArrayValueHandler INSTANCE = new JDBCArrayValueHandler();
 
@@ -67,10 +64,7 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
         if (value instanceof JDBCArray) {
-            String displayString = ((JDBCArray) value).makeArrayString();
-            if (displayString != null) {
-                return displayString;
-            }
+            return ((JDBCArray) value).makeArrayString();
         }
         return super.getValueDisplayString(column, value, format);
     }

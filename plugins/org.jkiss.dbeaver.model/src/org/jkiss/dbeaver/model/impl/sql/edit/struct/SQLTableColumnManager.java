@@ -245,7 +245,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     private static DBSDataType findDataType(DBPDataSource dataSource, String typeName)
     {
         if (dataSource instanceof DBPDataTypeProvider) {
-            return ((DBPDataTypeProvider) dataSource).getDataType(typeName);
+            return ((DBPDataTypeProvider) dataSource).getLocalDataType(typeName);
         }
         return null;
     }
@@ -253,7 +253,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     protected static DBSDataType findBestDataType(DBPDataSource dataSource, String ... typeNames)
     {
         if (dataSource instanceof DBPDataTypeProvider) {
-            return DBUtils.findBestDataType(((DBPDataTypeProvider) dataSource).getDataTypes(), typeNames);
+            return DBUtils.findBestDataType(((DBPDataTypeProvider) dataSource).getLocalDataTypes(), typeNames);
         }
         return null;
     }

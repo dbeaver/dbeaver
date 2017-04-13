@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -75,15 +74,16 @@ public abstract class JDBCCompositeCache<
         this.objectColumnName = objectColumnName;
     }
 
+    @NotNull
     abstract protected JDBCStatement prepareObjectsStatement(JDBCSession session, OWNER owner, PARENT forParent)
         throws SQLException;
 
     @Nullable
-    abstract protected OBJECT fetchObject(JDBCSession session, OWNER owner, PARENT parent, String childName, ResultSet resultSet)
+    abstract protected OBJECT fetchObject(JDBCSession session, OWNER owner, PARENT parent, String childName, JDBCResultSet resultSet)
         throws SQLException, DBException;
 
     @Nullable
-    abstract protected ROW_REF fetchObjectRow(JDBCSession session, PARENT parent, OBJECT forObject, ResultSet resultSet)
+    abstract protected ROW_REF[] fetchObjectRow(JDBCSession session, PARENT parent, OBJECT forObject, JDBCResultSet resultSet)
         throws SQLException, DBException;
 
     protected PARENT getParent(OBJECT object)
@@ -91,7 +91,13 @@ public abstract class JDBCCompositeCache<
         return (PARENT) object.getParentObject();
     }
 
-    abstract protected void cacheChildren(OBJECT object, List<ROW_REF> children);
+    abstract protected void cacheChildren(DBRProgressMonitor monitor, OBJECT object, List<ROW_REF> children);
+
+    // Second cache function. Needed for complex entities which refers to each other (foreign keys)
+    // First cache must cache all unique constraint, second must cache foreign keys references which refers unique keys
+    protected void cacheChildren2(DBRProgressMonitor monitor, OBJECT object, List<ROW_REF> children) {
+
+    }
 
     @NotNull
     @Override
@@ -106,6 +112,18 @@ public abstract class JDBCCompositeCache<
     {
         loadObjects(monitor, owner, forParent);
         return getCachedObjects(forParent);
+    }
+
+    public <TYPE extends OBJECT> Collection<TYPE > getTypedObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent, Class<TYPE> type)
+        throws DBException
+    {
+        List<TYPE> result = new ArrayList<>();
+        for (OBJECT object : getObjects(monitor, owner, forParent)) {
+            if (type.isInstance(object)) {
+                result.add(type.cast(object));
+            }
+        }
+        return result;
     }
 
     public Collection<OBJECT> getCachedObjects(PARENT forParent)
@@ -182,6 +200,7 @@ public abstract class JDBCCompositeCache<
         final OBJECT object;
         final List<ROW_REF> rows = new ArrayList<>();
         public boolean broken;
+        public boolean needsCaching;
 
         public ObjectInfo(OBJECT object)
         {
@@ -273,15 +292,15 @@ public abstract class JDBCCompositeCache<
                             objectInfo = new ObjectInfo(object);
                             objectMap.put(objectName, objectInfo);
                         }
-                        ROW_REF rowRef = fetchObjectRow(session, parent, objectInfo.object, dbResult);
-                        if (rowRef == null) {
+                        ROW_REF[] rowRef = fetchObjectRow(session, parent, objectInfo.object, dbResult);
+                        if (rowRef == null || rowRef.length == 0) {
                             // At least one of rows is broken.
                             // So entire object is broken, let's just skip it.
                             objectInfo.broken = true;
                             log.debug("Object '" + objectName + "' metadata corrupted - NULL child returned");
                             continue;
                         }
-                        objectInfo.rows.add(rowRef);
+                        Collections.addAll(objectInfo.rows, rowRef);
                     }
                 }
                 finally {
@@ -338,10 +357,8 @@ public abstract class JDBCCompositeCache<
                     Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
                     ArrayList<OBJECT> objects = new ArrayList<>(objectInfos.size());
                     for (ObjectInfo objectInfo : objectInfos) {
-//                        if (!objectInfo.broken) {
-                            cacheChildren(objectInfo.object, objectInfo.rows);
-                            objects.add(objectInfo.object);
-//                        }
+                        objectInfo.needsCaching = true;
+                        objects.add(objectInfo.object);
                     }
                     objectCache.put(colEntry.getKey(), objects);
                 }
@@ -354,6 +371,21 @@ public abstract class JDBCCompositeCache<
                     }
                 } else if (!parentObjectMap.containsKey(forParent) && !objectCache.containsKey(forParent)) {
                     objectCache.put(forParent, new ArrayList<OBJECT>());
+                }
+            }
+            // Cache children lists (we do it in the end because children caching may operate with other model objects)
+            for (Map.Entry<PARENT, Map<String, ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
+                for (ObjectInfo objectInfo : colEntry.getValue().values()) {
+                    if (objectInfo.needsCaching) {
+                        cacheChildren(monitor, objectInfo.object, objectInfo.rows);
+                    }
+                }
+            }
+            for (Map.Entry<PARENT, Map<String, ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
+                for (ObjectInfo objectInfo : colEntry.getValue().values()) {
+                    if (objectInfo.needsCaching) {
+                        cacheChildren2(monitor, objectInfo.object, objectInfo.rows);
+                    }
                 }
             }
         }

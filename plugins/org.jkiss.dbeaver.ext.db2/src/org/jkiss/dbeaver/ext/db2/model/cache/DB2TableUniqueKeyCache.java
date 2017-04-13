@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
@@ -25,14 +27,15 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ConstraintType;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -87,6 +90,7 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
         super(tableCache, DB2Table.class, "TABNAME", "CONSTNAME");
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema, DB2Table forTable)
         throws SQLException
@@ -105,18 +109,20 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
         return dbStat;
     }
 
+    @Nullable
     @Override
     protected DB2TableUniqueKey fetchObject(JDBCSession session, DB2Schema db2Schema, DB2Table db2Table, String indexName,
-        ResultSet dbResult) throws SQLException, DBException
+        JDBCResultSet dbResult) throws SQLException, DBException
     {
 
         DBSEntityConstraintType type = DB2ConstraintType.getConstraintType(JDBCUtils.safeGetString(dbResult, "TYPE"));
         return new DB2TableUniqueKey(session.getProgressMonitor(), db2Table, dbResult, type);
     }
 
+    @Nullable
     @Override
-    protected DB2TableKeyColumn fetchObjectRow(JDBCSession session, DB2Table db2Table, DB2TableUniqueKey object,
-        ResultSet dbResult) throws SQLException, DBException
+    protected DB2TableKeyColumn[] fetchObjectRow(JDBCSession session, DB2Table db2Table, DB2TableUniqueKey object,
+                                                 JDBCResultSet dbResult) throws SQLException, DBException
     {
 
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
@@ -125,12 +131,13 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
             log.debug("Column '" + colName + "' not found in table '" + db2Table.getFullQualifiedName() + "' ??");
             return null;
         } else {
-            return new DB2TableKeyColumn(object, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ"));
+            return new DB2TableKeyColumn[] {
+                new DB2TableKeyColumn(object, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ")) };
         }
     }
 
     @Override
-    protected void cacheChildren(DB2TableUniqueKey constraint, List<DB2TableKeyColumn> rows)
+    protected void cacheChildren(DBRProgressMonitor monitor, DB2TableUniqueKey constraint, List<DB2TableKeyColumn> rows)
     {
         constraint.setColumns(rows);
     }

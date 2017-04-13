@@ -25,12 +25,12 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -76,7 +76,7 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
     }
 
     @Override
-    protected DB2View fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull ResultSet dbResult) throws SQLException,
+    protected DB2View fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet dbResult) throws SQLException,
         DBException
     {
         return new DB2View(session.getProgressMonitor(), db2Schema, dbResult);
@@ -102,7 +102,7 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
     }
 
     @Override
-    protected DB2TableColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2View db2View, @NotNull ResultSet dbResult)
+    protected DB2TableColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2View db2View, @NotNull JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         return new DB2TableColumn(session.getProgressMonitor(), db2View, dbResult);

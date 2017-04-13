@@ -192,9 +192,7 @@ public class OCIUtils
                         }
                     }
                 }
-            } catch (IllegalAccessException e) {
-                log.warn("Error reading Windows registry", e);
-            } catch (InvocationTargetException e) {
+            } catch (Exception e) {
                 log.warn("Error reading Windows registry", e);
             }
         }
@@ -215,9 +213,7 @@ public class OCIUtils
                         }
                     }
                 }
-            } catch (IllegalAccessException e) {
-                log.warn("Error reading Windows registry", e);
-            } catch (InvocationTargetException e) {
+            } catch (Exception e) {
                 log.warn("Error reading Windows registry", e);
             }
         }
@@ -299,18 +295,32 @@ public class OCIUtils
                 BufferedReader reader = new BufferedReader(new FileReader(tnsnamesOra));
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    if (!line.isEmpty() && !line.startsWith(" ") && !line.startsWith("#") && line.contains("=")) {
-                        aliases.add(line.substring(0, line.indexOf("=")));
+                    if (!line.isEmpty() && !line.startsWith(" ") && !line.startsWith("\t") && !line.startsWith("(") && !line.startsWith("#") && line.contains("=")) {
+                        final int divPos = line.indexOf("=");
+                        if (divPos < 0) {
+                            continue;
+                        }
+                        final String alias = line.substring(0, divPos);
+                        if (alias.equalsIgnoreCase("IFILE")) {
+                            String filePath = line.substring(divPos + 1).trim();
+                            File extFile = new File(filePath);
+                            if (!extFile.exists()) {
+                                extFile = new File(tnsnamesOra.getParent(), filePath);
+                            }
+                            aliases.addAll(parseTnsNames(extFile.getAbsolutePath()));
+                        } else {
+                            aliases.add(alias.trim());
+                        }
                     }
                 }
-            } catch (FileNotFoundException e) {
-                // do nothing
             } catch (IOException e) {
                 // do nothing
+                log.debug(e);
             }
         }
         else {
             // do nothing
+            log.debug("TNS names file '" + tnsnamesOra + "' doesn't exist");
         }
         Collections.sort(aliases);
         return aliases;

@@ -22,14 +22,14 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -118,7 +118,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             // Do not start new one while old is running
             return;
         }
-        diagramLoadingJob = RuntimeUtils.createService(
+        diagramLoadingJob = LoadingJob.createService(
             new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
                 @Override
                 public EntityDiagram evaluate()
@@ -180,11 +180,21 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         if (root instanceof DBSObjectContainer) {
             monitor.beginTask("Load '" + root.getName() + "' content", 3);
             DBSObjectContainer objectContainer = (DBSObjectContainer) root;
-            objectContainer.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ASSOCIATIONS | DBSObjectContainer.STRUCT_ATTRIBUTES);
+            try {
+                objectContainer.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ASSOCIATIONS | DBSObjectContainer.STRUCT_ATTRIBUTES);
+            } catch (DBException e) {
+                log.error("Error caching structure", e);
+            }
             Collection<? extends DBSObject> entities = objectContainer.getChildren(monitor);
             for (DBSObject entity : CommonUtils.safeCollection(entities)) {
                 if (entity instanceof DBSEntity) {
-                    result.add((DBSEntity) entity);
+                    final DBSEntity entity1 = (DBSEntity) entity;
+                    if (entity1.getEntityType() == DBSEntityType.TABLE ||
+                        entity1.getEntityType() == DBSEntityType.CLASS ||
+                        entity1.getEntityType() == DBSEntityType.VIRTUAL_ENTITY)
+                    {
+                        result.add(entity1);
+                    }
                 }
             }
             monitor.done();
