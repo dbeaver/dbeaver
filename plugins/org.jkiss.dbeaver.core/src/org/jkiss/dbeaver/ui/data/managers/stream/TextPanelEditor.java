@@ -16,19 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.data.managers.stream;
 
-import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.editors.ContentPanelEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 /**
@@ -42,7 +38,7 @@ public class TextPanelEditor extends AbstractTextPanelEditor {
         StyledText text = new StyledText(valueController.getEditPlaceholder(), SWT.MULTI | SWT.V_SCROLL);
         text.setEditable(!valueController.isReadOnly());
         text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        setEditorSettings(text);
+        initEditorSettings(text);
         return text;
     }
 

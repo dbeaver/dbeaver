@@ -944,8 +944,23 @@ public class ResultSetViewer extends Viewer
         }
         // Try to get it from adapter
         if (activePresentation instanceof IAdaptable) {
-            return ((IAdaptable) activePresentation).getAdapter(adapter);
+            T adapted = ((IAdaptable) activePresentation).getAdapter(adapter);
+            if (adapted != null) {
+                return adapted;
+            }
         }
+        // FIXME: Not sure that we should adapt active panel. NOT TESTED YET
+/*
+        if (getVisiblePanel() instanceof IAdaptable) {
+            CTabItem panelTab = panelFolder.getSelection();
+            if (panelTab != null && panelTab.getControl() != null && UIUtils.hasFocus(panelTab.getControl())) {
+                T adapted = ((IAdaptable) getVisiblePanel()).getAdapter(adapter);
+                if (adapted != null) {
+                    return adapted;
+                }
+            }
+        }
+*/
         return null;
     }
 

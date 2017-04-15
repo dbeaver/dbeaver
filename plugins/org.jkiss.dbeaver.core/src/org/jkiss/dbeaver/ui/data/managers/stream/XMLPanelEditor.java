@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
+import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.editors.xml.XMLEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -55,7 +56,7 @@ public class XMLPanelEditor extends AbstractTextPanelEditor {
             return new StyledText(valueController.getEditPlaceholder(), SWT.NONE);
         }
         editor.createPartControl(valueController.getEditPlaceholder());
-        setEditorSettings(editor.getEditorControl());
+        initEditorSettings(editor.getEditorControl());
         return editor.getEditorControl();
     }
 
@@ -67,6 +68,7 @@ public class XMLPanelEditor extends AbstractTextPanelEditor {
             monitor.subTask("Prime XML value");
             IEditorInput sqlInput = new ContentEditorInput(valueController, null, null, monitor);
             editor.init(subSite, sqlInput);
+            applyEditorStyle();
         } catch (Exception e) {
             throw new DBException("Can't load XML vaue", e);
         } finally {
@@ -90,5 +92,8 @@ public class XMLPanelEditor extends AbstractTextPanelEditor {
         }
     }
 
-
+    @Override
+    protected BaseTextEditor getTextEditor() {
+        return editor;
+    }
 }
