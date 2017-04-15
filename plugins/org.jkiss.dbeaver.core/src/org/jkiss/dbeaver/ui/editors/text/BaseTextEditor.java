@@ -115,7 +115,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         super.dispose();
     }
 
-    private void releaseEditorInput() {
+    public void releaseEditorInput() {
         IEditorInput editorInput = getEditorInput();
         if (editorInput instanceof ContentEditorInput) {
             ((ContentEditorInput) editorInput).release();
