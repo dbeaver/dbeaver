@@ -451,4 +451,18 @@ public class ContentUtils {
         }
     }
 
+    public static boolean deleteFileRecursive(File file) {
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (File ch : files) {
+                    if (!deleteFileRecursive(ch)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return file.delete();
+    }
+
 }
