@@ -94,7 +94,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
             .append(" ("); //$NON-NLS-1$
         try {
             // Get columns using void monitor
-            final Collection<? extends DBSEntityAttributeRef> columns = command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE);
+            final Collection<? extends DBSEntityAttributeRef> columns = command.getObject().getAttributeReferences(new VoidProgressMonitor());
             boolean firstColumn = true;
             for (DBSEntityAttributeRef constraintColumn : CommonUtils.safeCollection(columns)) {
                 final DBSEntityAttribute attribute = constraintColumn.getAttribute();
@@ -112,7 +112,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         if (refConstraint instanceof DBSEntityReferrer) {
             try {
                 boolean firstColumn = true;
-                List<? extends DBSEntityAttributeRef> columns = ((DBSEntityReferrer) refConstraint).getAttributeReferences(VoidProgressMonitor.INSTANCE);
+                List<? extends DBSEntityAttributeRef> columns = ((DBSEntityReferrer) refConstraint).getAttributeReferences(new VoidProgressMonitor());
                 for (DBSEntityAttributeRef constraintColumn : CommonUtils.safeCollection(columns)) {
                     if (!firstColumn) decl.append(","); //$NON-NLS-1$
                     firstColumn = false;

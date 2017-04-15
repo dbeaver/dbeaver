@@ -62,7 +62,7 @@ public class StringInlineEditor extends BaseValueEditor<Text> {
 
     @Override
     public Object extractEditorValue() throws DBCException {
-        try (DBCSession session = valueController.getExecutionContext().openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Make string value from editor")) {
+        try (DBCSession session = valueController.getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make string value from editor")) {
             return valueController.getValueHandler().getValueFromObject(
                 session,
                 valueController.getValueType(),

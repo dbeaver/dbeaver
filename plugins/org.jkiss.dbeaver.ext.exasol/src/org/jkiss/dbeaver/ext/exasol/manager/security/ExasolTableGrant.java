@@ -34,7 +34,7 @@ public class ExasolTableGrant extends ExasolBaseObjectGrant {
     @Property(viewable = true, order = 10)
 	public ExasolTable getTable() throws DBException
 	{
-		return super.getSchema().getTable(VoidProgressMonitor.INSTANCE, super.getObjectName());
+		return super.getSchema().getTable(new VoidProgressMonitor(), super.getObjectName());
 	}
 
 

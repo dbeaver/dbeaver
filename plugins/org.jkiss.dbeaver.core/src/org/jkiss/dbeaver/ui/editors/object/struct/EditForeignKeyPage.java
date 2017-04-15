@@ -262,7 +262,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             schemaCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             DBNDatabaseNode selectedNode = null;
-            for (DBNNode node : schemaContainerNode.getChildren(VoidProgressMonitor.INSTANCE)) {
+            for (DBNNode node : schemaContainerNode.getChildren(new VoidProgressMonitor())) {
                 if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSObjectContainer) {
                     schemaCombo.addItem((DBNDatabaseNode) node);
                     if (((DBNDatabaseNode) node).getObject() == ownTable.getParentObject()) {
@@ -287,7 +287,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                         newContainerNode = schemaNode;
                     } else {
                         try {
-                            for (DBNNode child : schemaNode.getChildren(VoidProgressMonitor.INSTANCE)) {
+                            for (DBNNode child : schemaNode.getChildren(new VoidProgressMonitor())) {
                                 if (child instanceof DBNDatabaseNode && ((DBNDatabaseNode) child).getMeta() == tableContainerMeta) {
                                     newContainerNode = (DBNDatabaseNode) child;
                                     break;
@@ -389,13 +389,13 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         curConstraint = curConstraints.get(uniqueKeyCombo.getSelectionIndex());
         try {
             // Read column nodes with void monitor because we already cached them above
-            for (DBSEntityAttributeRef pkColumn : curConstraint.getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
+            for (DBSEntityAttributeRef pkColumn : curConstraint.getAttributeReferences(new VoidProgressMonitor())) {
                 FKColumnInfo fkColumnInfo = new FKColumnInfo(pkColumn.getAttribute());
                 // Try to find matched column in own table
-                Collection<? extends DBSEntityAttribute> tmpColumns = ownTable.getAttributes(VoidProgressMonitor.INSTANCE);
+                Collection<? extends DBSEntityAttribute> tmpColumns = ownTable.getAttributes(new VoidProgressMonitor());
                 ownColumns = tmpColumns == null ?
                     Collections.<DBSTableColumn>emptyList() :
-                    new ArrayList<>(ownTable.getAttributes(VoidProgressMonitor.INSTANCE));
+                    new ArrayList<>(ownTable.getAttributes(new VoidProgressMonitor()));
                 if (!CommonUtils.isEmpty(ownColumns)) {
                     for (DBSEntityAttribute ownColumn : ownColumns) {
                         if (ownColumn.getName().equals(pkColumn.getAttribute().getName()) && ownTable != pkColumn.getAttribute().getParentObject()) {

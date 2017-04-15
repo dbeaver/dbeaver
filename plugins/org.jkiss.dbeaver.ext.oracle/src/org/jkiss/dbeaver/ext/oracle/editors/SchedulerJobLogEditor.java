@@ -56,7 +56,7 @@ public class SchedulerJobLogEditor extends AbstractDataEditor<OracleSchedulerJob
         }
         List<DBDAttributeConstraint> constraints = new ArrayList<>();
         try {
-            DBRProgressMonitor monitor = VoidProgressMonitor.INSTANCE;
+            DBRProgressMonitor monitor = new VoidProgressMonitor();
             OracleTableColumn ownerAttr = logView.getAttribute(monitor, "OWNER");
             if (ownerAttr != null) {
                 DBDAttributeConstraint ac = new DBDAttributeConstraint(ownerAttr, ownerAttr.getOrdinalPosition());
@@ -104,7 +104,7 @@ public class SchedulerJobLogEditor extends AbstractDataEditor<OracleSchedulerJob
     }
 
     private OracleTableBase getJobLogView() {
-        DBRProgressMonitor monitor = VoidProgressMonitor.INSTANCE;
+        DBRProgressMonitor monitor = new VoidProgressMonitor();
 
         try {
             OracleDataSource dataSource = getDatabaseObject().getDataSource();

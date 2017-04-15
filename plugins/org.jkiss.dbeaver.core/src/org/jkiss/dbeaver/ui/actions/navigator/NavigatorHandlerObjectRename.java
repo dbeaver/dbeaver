@@ -65,7 +65,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
         if (node.supportsRename()) {
             try {
                 // Rename with null monitor because it is some local resource
-                node.rename(VoidProgressMonitor.INSTANCE, newName);
+                node.rename(new VoidProgressMonitor(), newName);
                 return true;
 /*
                 final String newNodeName = newName;

@@ -61,7 +61,7 @@ public class DB2Role extends DB2Grantee implements DBPSaveableObject, DBARole, D
 
     public DB2Role(DB2DataSource db2DataSource, ResultSet resultSet)
     {
-        super(VoidProgressMonitor.INSTANCE, db2DataSource, resultSet, "ROLENAME");
+        super(new VoidProgressMonitor(), db2DataSource, resultSet, "ROLENAME");
 
         this.id = JDBCUtils.safeGetInteger(resultSet, "ROLEID");
         this.createTime = JDBCUtils.safeGetTimestamp(resultSet, "CREATE_TIME");

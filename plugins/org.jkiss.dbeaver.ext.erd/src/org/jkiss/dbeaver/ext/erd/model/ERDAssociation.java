@@ -126,7 +126,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
         if (identifying == null) {
             identifying = false;
             try {
-                identifying = DBUtils.isIdentifyingAssociation(VoidProgressMonitor.INSTANCE, getObject());
+                identifying = DBUtils.isIdentifyingAssociation(new VoidProgressMonitor(), getObject());
             } catch (DBException e) {
                 log.debug(e);
             }

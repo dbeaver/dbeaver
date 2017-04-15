@@ -74,7 +74,7 @@ public class DB2Variable extends DB2Object<DBSObject> {
             db2Schema = ((DB2Module) owner).getSchema();
         } else {
             String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "VARSCHEMA");
-            this.db2Schema = ((DB2DataSource) owner).getSchema(VoidProgressMonitor.INSTANCE, schemaName);
+            this.db2Schema = ((DB2DataSource) owner).getSchema(new VoidProgressMonitor(), schemaName);
         }
     }
 

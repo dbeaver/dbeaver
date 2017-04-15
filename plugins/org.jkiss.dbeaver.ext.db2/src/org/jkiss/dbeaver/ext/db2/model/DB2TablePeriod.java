@@ -58,7 +58,7 @@ public class DB2TablePeriod extends DB2Object<DB2Table> {
         this.type = CommonUtils.valueOf(DB2PeriodType.class, JDBCUtils.safeGetString(dbResult, "PERIODTYPE"));
 
         // Lookup related objects
-        VoidProgressMonitor vpm = VoidProgressMonitor.INSTANCE;
+        VoidProgressMonitor vpm = new VoidProgressMonitor();
         beginColumn = db2Table.getAttribute(vpm, beginColumnName);
         endColumn = db2Table.getAttribute(vpm, endColumnName);
         historyTableSchema = db2DataSource.getSchema(vpm, historyTabSchemaName.trim());

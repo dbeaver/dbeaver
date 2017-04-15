@@ -256,7 +256,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
             if (getParent() != null) {
                 // Use void monitor because this object already read by readValue
-                object = getParent().getGroupObject(object, VoidProgressMonitor.INSTANCE);
+                object = getParent().getGroupObject(object, new VoidProgressMonitor());
             }
             if (value == null) {
                 // Check for primitive argument

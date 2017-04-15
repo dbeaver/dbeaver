@@ -97,11 +97,11 @@ public class ContentInlineEditor extends BaseValueEditor<Text> {
         try {
             if (isText) {
                 content.updateContents(
-                    VoidProgressMonitor.INSTANCE,
+                    new VoidProgressMonitor(),
                     new StringContentStorage(newValue));
             } else {
                 content.updateContents(
-                    VoidProgressMonitor.INSTANCE,
+                    new VoidProgressMonitor(),
                     new BytesContentStorage(newValue.getBytes(GeneralUtils.getDefaultFileEncoding()), GeneralUtils.getDefaultFileEncoding()));
             }
         } catch (Exception e) {

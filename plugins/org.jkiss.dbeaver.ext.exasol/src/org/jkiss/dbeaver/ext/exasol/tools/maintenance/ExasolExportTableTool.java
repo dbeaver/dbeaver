@@ -51,7 +51,7 @@ public class ExasolExportTableTool implements IExternalTool {
 		//add tables for all Schemas but ignore views in schema
 		for(ExasolSchema schema : schemas)
 		{
-			tables.addAll(schema.getTables(VoidProgressMonitor.INSTANCE));
+			tables.addAll(schema.getTables(new VoidProgressMonitor()));
 		}
 		
 		// create TableBase Objects list

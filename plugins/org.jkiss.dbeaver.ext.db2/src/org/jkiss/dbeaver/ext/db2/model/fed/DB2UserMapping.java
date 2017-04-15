@@ -48,7 +48,7 @@ public class DB2UserMapping extends DB2GlobalObject {
         this.authId = JDBCUtils.safeGetStringTrimmed(dbResult, "AUTHID");
 
         String remoteServerName = JDBCUtils.safeGetStringTrimmed(dbResult, "SERVERNAME");
-        remoteServer = db2DataSource.getRemoteServer(VoidProgressMonitor.INSTANCE, remoteServerName);
+        remoteServer = db2DataSource.getRemoteServer(new VoidProgressMonitor(), remoteServerName);
 
     }
 

@@ -2527,7 +2527,7 @@ public class ResultSetViewer extends Viewer
 
         // Add new row
         // Copy cell values in new context
-        try (DBCSession session = executionContext.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name)) {
+        try (DBCSession session = executionContext.openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name)) {
 
             final DBDAttributeBinding docAttribute = model.getDocumentAttribute();
             final DBDAttributeBinding[] attributes = model.getAttributes();

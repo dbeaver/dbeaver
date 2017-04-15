@@ -54,9 +54,9 @@ public class ExasolBaseObjectGrant implements DBAPrivilege  {
 		String grants = JDBCUtils.safeGetString(resultSet, "PRIVS");
 		if (type == ExasolTableObjectType.SCHEMA) 
 		{
-			this.schema = dataSource.getChild(VoidProgressMonitor.INSTANCE, JDBCUtils.safeGetString(resultSet, "OBJECT_NAME"));
+			this.schema = dataSource.getChild(new VoidProgressMonitor(), JDBCUtils.safeGetString(resultSet, "OBJECT_NAME"));
 		} else {
-			this.schema = dataSource.getChild(VoidProgressMonitor.INSTANCE, JDBCUtils.safeGetString(resultSet, "OBJECT_SCHEMA"));
+			this.schema = dataSource.getChild(new VoidProgressMonitor(), JDBCUtils.safeGetString(resultSet, "OBJECT_SCHEMA"));
 		}
 		this.name = JDBCUtils.safeGetString(resultSet, "OBJECT_NAME");
 		

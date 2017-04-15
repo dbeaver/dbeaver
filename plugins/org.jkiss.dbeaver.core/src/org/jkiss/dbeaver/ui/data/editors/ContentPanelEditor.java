@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IContributionManager;
@@ -42,6 +43,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -122,7 +124,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             log.warn("NULL content editor.");
         } else {
             try {
-                streamEditor.extractEditorValue(VoidProgressMonitor.INSTANCE, control, content);
+                streamEditor.extractEditorValue(new VoidProgressMonitor(), control, content);
             } catch (Throwable e) {
                 log.debug(e);
                 valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
@@ -274,9 +276,12 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         public void widgetSelected(SelectionEvent e) {
             for (MenuItem item : menu.getItems()) {
                 if (item.getSelection()) {
-                    StreamValueManagerDescriptor newManager = (StreamValueManagerDescriptor) item.getData();
-                    if (newManager != curStreamManager) {
-                        setStreamManager(newManager);
+                    Object itemData = item.getData();
+                    if (itemData instanceof StreamValueManagerDescriptor) {
+                        StreamValueManagerDescriptor newManager = (StreamValueManagerDescriptor) itemData;
+                        if (newManager != curStreamManager) {
+                            setStreamManager(newManager);
+                        }
                     }
                 }
             }

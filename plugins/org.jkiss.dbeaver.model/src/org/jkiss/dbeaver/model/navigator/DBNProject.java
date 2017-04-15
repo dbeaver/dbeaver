@@ -60,7 +60,7 @@ public class DBNProject extends DBNResource
     public DBNProjectDatabases getDatabases()
     {
         try {
-            for (DBNNode db : getChildren(VoidProgressMonitor.INSTANCE)) {
+            for (DBNNode db : getChildren(new VoidProgressMonitor())) {
                 if (db instanceof DBNProjectDatabases) {
                     return (DBNProjectDatabases) db;
                 }
@@ -152,7 +152,7 @@ public class DBNProject extends DBNResource
         DBNResource resNode = this;
         for (IResource res : path) {
             try {
-                resNode.getChildren(VoidProgressMonitor.INSTANCE);
+                resNode.getChildren(new VoidProgressMonitor());
             } catch (DBException e) {
                 log.error(e);
             }

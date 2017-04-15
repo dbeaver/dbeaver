@@ -717,7 +717,7 @@ public class ExasolDataSource extends JDBCDataSource
 	public Collection<? extends DBSDataType> getLocalDataTypes()
 	{
 		try {
-			return getDataTypes(VoidProgressMonitor.INSTANCE);
+			return getDataTypes(new VoidProgressMonitor());
 		} catch (DBException e) {
 			LOG.error("DBException occured when reading system dataTypes: ", e);
 			return null;
@@ -776,7 +776,7 @@ public class ExasolDataSource extends JDBCDataSource
 	public DBSDataType getLocalDataType(String typeName)
 	{
 		try {
-			return getDataType(VoidProgressMonitor.INSTANCE, typeName);
+			return getDataType(new VoidProgressMonitor(), typeName);
 		} catch (DBException e) {
 			LOG.error("DBException occured when reading system dataType: "
 					+ typeName, e);

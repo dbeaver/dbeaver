@@ -117,7 +117,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                 // Read children with null monitor cos' it's not a lazy node
                 // and no blocking process will occur
                 DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(
-                    VoidProgressMonitor.INSTANCE, parentNode, true);
+                    new VoidProgressMonitor(), parentNode, true);
                 if (ArrayUtils.isEmpty(children)) {
                     return EMPTY_CHILDREN;
                 } else {

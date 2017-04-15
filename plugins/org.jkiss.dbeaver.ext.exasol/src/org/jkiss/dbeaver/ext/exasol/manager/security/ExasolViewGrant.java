@@ -32,7 +32,7 @@ public class ExasolViewGrant extends ExasolBaseObjectGrant {
 	@Property(viewable = true, order = 10)
 	public ExasolView getView() throws DBException
 	{
-		return super.getSchema().getView(VoidProgressMonitor.INSTANCE, super.getObjectName());
+		return super.getSchema().getView(new VoidProgressMonitor(), super.getObjectName());
 	}
 		
 

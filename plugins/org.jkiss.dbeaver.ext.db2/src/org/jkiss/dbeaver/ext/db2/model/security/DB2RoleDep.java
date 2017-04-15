@@ -52,13 +52,13 @@ public class DB2RoleDep extends DB2Object<DB2Role> implements DBAPrivilege {
         String granteeName = JDBCUtils.safeGetStringTrimmed(resultSet, "GRANTEE");
         switch (granteeType) {
         case U:
-            this.grantee = getDataSource().getUser(VoidProgressMonitor.INSTANCE, granteeName);
+            this.grantee = getDataSource().getUser(new VoidProgressMonitor(), granteeName);
             break;
         case G:
-            this.grantee = getDataSource().getGroup(VoidProgressMonitor.INSTANCE, granteeName);
+            this.grantee = getDataSource().getGroup(new VoidProgressMonitor(), granteeName);
             break;
         case R:
-            this.grantee = getDataSource().getRole(VoidProgressMonitor.INSTANCE, granteeName);
+            this.grantee = getDataSource().getRole(new VoidProgressMonitor(), granteeName);
             break;
 
         default:

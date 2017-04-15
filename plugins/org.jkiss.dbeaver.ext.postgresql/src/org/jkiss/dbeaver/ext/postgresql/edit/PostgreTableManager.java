@@ -104,7 +104,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     protected void appendTableModifiers(PostgreTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl)
     {
         if (tableBase instanceof PostgreTableRegular) {
-            final VoidProgressMonitor monitor = VoidProgressMonitor.INSTANCE;
+            final VoidProgressMonitor monitor = new VoidProgressMonitor();
             PostgreTableRegular table =(PostgreTableRegular)tableBase;
             try {
                 final List<PostgreTableInheritance> superTables = table.getSuperInheritance(monitor);

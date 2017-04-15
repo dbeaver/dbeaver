@@ -289,7 +289,7 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
 	{
 		ExasolTableBase table = (ExasolTable) getTable();
 		try {
-			final Collection<ExasolTableUniqueKey> uniqueKeysCache = table.getConstraints(VoidProgressMonitor.INSTANCE);
+			final Collection<ExasolTableUniqueKey> uniqueKeysCache = table.getConstraints(new VoidProgressMonitor());
 			if (!CommonUtils.isEmpty(uniqueKeysCache))
 			{
 				for (ExasolTableUniqueKey key : uniqueKeysCache)

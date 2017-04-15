@@ -134,7 +134,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
                 this.db2Schema = ((DB2Module) owner).getSchema();
                 String typeModuleName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPEMODULENAME");
                 if (typeModuleName != null) {
-                    this.db2Module = DB2Utils.findModuleBySchemaNameAndName(VoidProgressMonitor.INSTANCE, db2DataSource,
+                    this.db2Module = DB2Utils.findModuleBySchemaNameAndName(new VoidProgressMonitor(), db2DataSource,
                         db2Schema.getName(), typeModuleName);
                 }
 
@@ -142,7 +142,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
                 // System datatypes
                 String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPESCHEMA");
                 try {
-                    this.db2Schema = db2DataSource.getSchema(VoidProgressMonitor.INSTANCE, schemaName);
+                    this.db2Schema = db2DataSource.getSchema(new VoidProgressMonitor(), schemaName);
                 } catch (DBException e) {
                     LOG.error("Impossible! Schema '" + schemaName + "' for dataType '" + name + "' not found??", e);
                     // In this case, 'this.db2Schema' will be null...

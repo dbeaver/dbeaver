@@ -47,7 +47,7 @@ public class CollectionElementData {
         for (int i = 0; i < count; i++) {
             elements[i] = new DBDAttributeBindingElement(collectionBinding, collection, i);
         }
-        try (DBCSession session = DBUtils.openMetaSession(VoidProgressMonitor.INSTANCE, collectionBinding.getDataSource(), "Collection types read")) {
+        try (DBCSession session = DBUtils.openMetaSession(new VoidProgressMonitor(), collectionBinding.getDataSource(), "Collection types read")) {
             Object[] row = new Object[1];
             List<Object[]> rows = Collections.singletonList(row);
             for (int i = 0; i < count; i++) {

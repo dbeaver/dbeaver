@@ -114,7 +114,7 @@ public class CheckboxTreeManager implements ICheckStateListener {
                 }
                 for (DBNDatabaseNode container : change ? targetContainers : Collections.singletonList((DBNDatabaseNode) element)) {
                     try {
-                        DBNDatabaseNode[] directChildren = container.getChildren(VoidProgressMonitor.INSTANCE);
+                        DBNDatabaseNode[] directChildren = container.getChildren(new VoidProgressMonitor());
                         if (directChildren != null) {
                             boolean missingOne = false, missingAll = true;
                             for (DBNDatabaseNode node : directChildren) {

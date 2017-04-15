@@ -166,7 +166,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
         if (dataSource != null) {
             boolean tablesLoaded = false;
             try {
-                for (PostgreSchema schema : dataSource.getDefaultInstance().getSchemas(VoidProgressMonitor.INSTANCE)) {
+                for (PostgreSchema schema : dataSource.getDefaultInstance().getSchemas(new VoidProgressMonitor())) {
                     if (schema.isSystem() || schema.isUtility()) {
                         continue;
                     }

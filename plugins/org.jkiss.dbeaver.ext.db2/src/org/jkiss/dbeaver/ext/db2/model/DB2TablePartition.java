@@ -89,10 +89,10 @@ public class DB2TablePartition extends DB2Object<DB2Table> {
 
         // Lookup tablespaces
         Integer tablespaceId = JDBCUtils.safeGetInteger(dbResult, "TBSPACEID");
-        this.tablespace = DB2Utils.findTablespaceById(VoidProgressMonitor.INSTANCE, db2Table.getDataSource(), tablespaceId);
+        this.tablespace = DB2Utils.findTablespaceById(new VoidProgressMonitor(), db2Table.getDataSource(), tablespaceId);
         Integer longTablespaceId = JDBCUtils.safeGetInteger(dbResult, "LONG_TBSPACEID");
         this.indexTablespace = DB2Utils
-            .findTablespaceById(VoidProgressMonitor.INSTANCE, db2Table.getDataSource(), longTablespaceId);
+            .findTablespaceById(new VoidProgressMonitor(), db2Table.getDataSource(), longTablespaceId);
         if (db2DataSource.isAtLeastV9_7()) {
             this.statsTime = JDBCUtils.safeGetTimestamp(dbResult, "STATS_TIME");
             this.card = JDBCUtils.safeGetLongNullable(dbResult, "CARD");
@@ -101,7 +101,7 @@ public class DB2TablePartition extends DB2Object<DB2Table> {
             this.overFLow = JDBCUtils.safeGetLongNullable(dbResult, "OVERFLOW");
             this.lastUsed = JDBCUtils.safeGetDate(dbResult, "LASTUSED");
             Integer indexTablespaceId = JDBCUtils.safeGetInteger(dbResult, "INDEX_TBSPACEID");
-            this.longTablespace = DB2Utils.findTablespaceById(VoidProgressMonitor.INSTANCE, db2Table.getDataSource(),
+            this.longTablespace = DB2Utils.findTablespaceById(new VoidProgressMonitor(), db2Table.getDataSource(),
                 indexTablespaceId);
         }
     }

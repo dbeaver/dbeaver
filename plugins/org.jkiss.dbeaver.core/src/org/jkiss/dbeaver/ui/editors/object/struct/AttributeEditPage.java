@@ -123,6 +123,6 @@ public class AttributeEditPage extends BaseObjectEditPage {
 
     @Override
     protected void performFinish() throws DBException {
-        //commandContext.saveChanges(VoidProgressMonitor.INSTANCE);
+        //commandContext.saveChanges(new VoidProgressMonitor());
     }
 }

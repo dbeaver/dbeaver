@@ -1178,7 +1178,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             for (int i = 0; i < columnsCount; i++) {
                 ObjectPropertyDescriptor property = getColumnByIndex(i).getProperty(object);
                 try {
-                    Object cellValue = property == null ? null : property.readValue(object, VoidProgressMonitor.INSTANCE);
+                    Object cellValue = property == null ? null : property.readValue(object, new VoidProgressMonitor());
                     if (i > 0) buf.append("\t");
                     String strValue = DBValueFormatting.getDefaultValueDisplayString(cellValue, DBDDisplayFormat.UI);
                     if (strValue.contains("\n") || strValue.contains("\t")) {

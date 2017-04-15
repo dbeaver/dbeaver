@@ -99,7 +99,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
         if (tableBase instanceof MySQLTable) {
             MySQLTable table =(MySQLTable)tableBase;
             try {
-                final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);
+                final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(new VoidProgressMonitor());
                 if ((!table.isPersisted() || tableProps.getProperty("engine") != null) && additionalInfo.getEngine() != null) { //$NON-NLS-1$
                     ddl.append("\nENGINE=").append(additionalInfo.getEngine().getName()); //$NON-NLS-1$
                 }

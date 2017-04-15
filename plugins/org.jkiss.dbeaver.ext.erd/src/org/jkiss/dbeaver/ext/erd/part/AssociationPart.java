@@ -194,10 +194,10 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         if (association instanceof DBSEntityReferrer && association.getReferencedConstraint() instanceof DBSEntityReferrer) {
             List<AttributePart> sourceAttributes = getEntityAttributes(
                 (EntityPart)getSource(),
-                DBUtils.getEntityAttributes(VoidProgressMonitor.INSTANCE, (DBSEntityReferrer) association.getReferencedConstraint()));
+                DBUtils.getEntityAttributes(new VoidProgressMonitor(), (DBSEntityReferrer) association.getReferencedConstraint()));
             List<AttributePart> targetAttributes = getEntityAttributes(
                 (EntityPart)getTarget(),
-                DBUtils.getEntityAttributes(VoidProgressMonitor.INSTANCE, (DBSEntityReferrer) association));
+                DBUtils.getEntityAttributes(new VoidProgressMonitor(), (DBSEntityReferrer) association));
             Color columnColor = value != EditPart.SELECTED_NONE ? Display.getDefault().getSystemColor(SWT.COLOR_RED) : getViewer().getControl().getForeground();
             for (AttributePart attr : sourceAttributes) {
                 attr.getFigure().setForegroundColor(columnColor);

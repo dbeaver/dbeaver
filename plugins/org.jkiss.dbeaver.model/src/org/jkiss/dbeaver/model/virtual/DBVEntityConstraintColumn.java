@@ -47,7 +47,7 @@ public class DBVEntityConstraintColumn implements DBSEntityAttributeRef {
         // Here we use void monitor.
         // In real life entity columns SHOULD be already read so it doesn't matter
         // But I'm afraid that in some very special cases it does. Thant's too bad.
-        return constraint.getEntity().getAttribute(VoidProgressMonitor.INSTANCE, attributeName);
+        return constraint.getEntity().getAttribute(new VoidProgressMonitor(), attributeName);
     }
 
     public String getAttributeName()

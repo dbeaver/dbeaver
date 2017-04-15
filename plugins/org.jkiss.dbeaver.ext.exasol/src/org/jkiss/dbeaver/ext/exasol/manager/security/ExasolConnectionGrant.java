@@ -50,7 +50,7 @@ public class ExasolConnectionGrant
 	@Property(viewable = true, order = 10)
 	public ExasolConnection getConnection() throws DBException
 	{
-		return dataSource.getConnection(VoidProgressMonitor.INSTANCE, connection);
+		return dataSource.getConnection(new VoidProgressMonitor(), connection);
 	}
 	
 	@Property(viewable = true, order = 90)

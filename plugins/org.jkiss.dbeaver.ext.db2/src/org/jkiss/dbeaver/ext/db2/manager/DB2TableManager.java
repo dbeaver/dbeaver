@@ -105,20 +105,20 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
 
         try {
             // Add Tablespaces infos
-            if (db2Table.getTablespace(VoidProgressMonitor.INSTANCE) != null) {
+            if (db2Table.getTablespace(new VoidProgressMonitor()) != null) {
                 ddl.append(LINE_SEPARATOR);
                 ddl.append(CLAUSE_IN_TS);
-                ddl.append(getTablespaceName(db2Table.getTablespace(VoidProgressMonitor.INSTANCE)));
+                ddl.append(getTablespaceName(db2Table.getTablespace(new VoidProgressMonitor())));
             }
-            if (db2Table.getIndexTablespace(VoidProgressMonitor.INSTANCE) != null) {
+            if (db2Table.getIndexTablespace(new VoidProgressMonitor()) != null) {
                 ddl.append(LINE_SEPARATOR);
                 ddl.append(CLAUSE_IN_TS_IX);
-                ddl.append(getTablespaceName(db2Table.getIndexTablespace(VoidProgressMonitor.INSTANCE)));
+                ddl.append(getTablespaceName(db2Table.getIndexTablespace(new VoidProgressMonitor())));
             }
-            if (db2Table.getLongTablespace(VoidProgressMonitor.INSTANCE) != null) {
+            if (db2Table.getLongTablespace(new VoidProgressMonitor()) != null) {
                 ddl.append(LINE_SEPARATOR);
                 ddl.append(CLAUSE_IN_TS_LONG);
-                ddl.append(getTablespaceName(db2Table.getLongTablespace(VoidProgressMonitor.INSTANCE)));
+                ddl.append(getTablespaceName(db2Table.getLongTablespace(new VoidProgressMonitor())));
             }
         } catch (DBException e) {
             // Never be here

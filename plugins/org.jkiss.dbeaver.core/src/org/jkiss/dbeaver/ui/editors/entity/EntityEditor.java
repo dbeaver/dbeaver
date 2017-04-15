@@ -828,7 +828,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                         }
                         breadcrumbsMenu = new Menu(item.getParent().getShell());
                         try {
-                            final DBNNode[] childNodes = NavigatorUtils.getNodeChildrenFiltered(VoidProgressMonitor.INSTANCE, databaseNode, false);
+                            final DBNNode[] childNodes = NavigatorUtils.getNodeChildrenFiltered(new VoidProgressMonitor(), databaseNode, false);
                             if (!ArrayUtils.isEmpty(childNodes)) {
                                 for (final DBNNode folderItem : childNodes) {
                                     MenuItem childItem = new MenuItem(breadcrumbsMenu, SWT.NONE);

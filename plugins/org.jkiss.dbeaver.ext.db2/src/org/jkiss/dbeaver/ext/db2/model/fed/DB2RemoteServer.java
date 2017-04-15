@@ -63,7 +63,7 @@ public class DB2RemoteServer extends DB2GlobalObject implements DBPRefreshableOb
 
         String db2WrapperName = JDBCUtils.safeGetString(dbResult, "WRAPNAME");
         if (db2WrapperName != null) {
-            this.db2Wrapper = getDataSource().getWrapper(VoidProgressMonitor.INSTANCE, db2WrapperName);
+            this.db2Wrapper = getDataSource().getWrapper(new VoidProgressMonitor(), db2WrapperName);
         }
     }
 
