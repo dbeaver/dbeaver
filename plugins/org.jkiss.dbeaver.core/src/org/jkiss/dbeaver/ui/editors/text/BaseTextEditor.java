@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -46,6 +47,7 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
+import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
@@ -96,11 +98,28 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
 //        return fScriptColumn;
 //    }
 
+
+    @Override
+    protected void doSetInput(IEditorInput input) throws CoreException {
+        if (input != getEditorInput()) {
+            releaseEditorInput();
+        }
+        super.doSetInput(input);
+    }
+
     @Override
     public void dispose()
     {
+        releaseEditorInput();
 //        fLineColumn = null;
         super.dispose();
+    }
+
+    private void releaseEditorInput() {
+        IEditorInput editorInput = getEditorInput();
+        if (editorInput instanceof ContentEditorInput) {
+            ((ContentEditorInput) editorInput).release();
+        }
     }
 
     @Nullable
