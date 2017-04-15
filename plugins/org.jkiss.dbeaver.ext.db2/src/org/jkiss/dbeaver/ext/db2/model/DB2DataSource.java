@@ -334,7 +334,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public Collection<DB2DataType> getLocalDataTypes()
     {
         try {
-            return getDataTypes(VoidProgressMonitor.INSTANCE);
+            return getDataTypes(new VoidProgressMonitor());
         } catch (DBException e) {
             LOG.error("DBException occurred when reading system dataTypes: ", e);
             return null;
@@ -345,7 +345,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public DB2DataType getLocalDataType(String typeName)
     {
         try {
-            return getDataType(VoidProgressMonitor.INSTANCE, typeName);
+            return getDataType(new VoidProgressMonitor(), typeName);
         } catch (DBException e) {
             LOG.error("DBException occurred when reading system dataTYpe : " + typeName, e);
             return null;

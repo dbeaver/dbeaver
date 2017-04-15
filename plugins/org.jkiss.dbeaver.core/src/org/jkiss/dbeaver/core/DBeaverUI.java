@@ -225,7 +225,7 @@ public class DBeaverUI implements DBUICallback {
             return new DBRRunnableContext() {
                 @Override
                 public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
-                    runnable.run(VoidProgressMonitor.INSTANCE);
+                    runnable.run(new VoidProgressMonitor());
                 }
             };
         }

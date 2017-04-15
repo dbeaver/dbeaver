@@ -65,7 +65,7 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
         try {
             // Sibling objects - they are involved in reordering process
             List<DBSObject> siblingObjects = new ArrayList<>();
-            for (DBNNode siblingNode : node.getParentNode().getChildren(VoidProgressMonitor.INSTANCE)) {
+            for (DBNNode siblingNode : node.getParentNode().getChildren(new VoidProgressMonitor())) {
                 if (siblingNode instanceof DBNDatabaseNode) {
                     DBSObject siblingObject = ((DBNDatabaseNode) siblingNode).getObject();
                     if (siblingObject.getClass() != object.getClass()) {

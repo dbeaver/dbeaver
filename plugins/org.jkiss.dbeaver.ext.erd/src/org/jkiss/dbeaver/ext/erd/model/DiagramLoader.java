@@ -488,7 +488,7 @@ public class DiagramLoader
 
                     if (association instanceof ERDLogicalForeignKey) {
                         // Save columns
-                        for (DBSEntityAttributeRef column : ((ERDLogicalForeignKey) association).getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
+                        for (DBSEntityAttributeRef column : ((ERDLogicalForeignKey) association).getAttributeReferences(new VoidProgressMonitor())) {
                             xml.startElement(TAG_COLUMN);
                             xml.addAttribute(ATTR_NAME, column.getAttribute().getName());
                             try {

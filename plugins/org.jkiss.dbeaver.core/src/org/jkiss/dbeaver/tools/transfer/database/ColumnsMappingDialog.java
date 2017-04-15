@@ -117,7 +117,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                         DatabaseMappingAttribute attribute = (DatabaseMappingAttribute) item.getData();
                         attribute.setMappingType(DatabaseMappingType.existing);
                         try {
-                            attribute.updateMappingType(VoidProgressMonitor.INSTANCE);
+                            attribute.updateMappingType(new VoidProgressMonitor());
                         } catch (DBException e1) {
                             updateStatus(GeneralUtils.makeExceptionStatus(e1));
                         }
@@ -185,7 +185,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                             mapping.getParent().getTarget() instanceof DBSEntity)
                         {
                             DBSEntity parentEntity = (DBSEntity)mapping.getParent().getTarget();
-                            for (DBSEntityAttribute attr : CommonUtils.safeCollection(parentEntity.getAttributes(VoidProgressMonitor.INSTANCE))) {
+                            for (DBSEntityAttribute attr : CommonUtils.safeCollection(parentEntity.getAttributes(new VoidProgressMonitor()))) {
                                 items.add(attr.getName());
                             }
                         }
@@ -228,7 +228,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                                 attrMapping.getParent().getTarget() instanceof DBSEntity)
                             {
                                 DBSEntity parentEntity = (DBSEntity)attrMapping.getParent().getTarget();
-                                for (DBSEntityAttribute attr : CommonUtils.safeCollection(parentEntity.getAttributes(VoidProgressMonitor.INSTANCE))) {
+                                for (DBSEntityAttribute attr : CommonUtils.safeCollection(parentEntity.getAttributes(new VoidProgressMonitor()))) {
                                     if (name.equalsIgnoreCase(attr.getName())) {
                                         attrMapping.setTarget(attr);
                                         attrMapping.setMappingType(DatabaseMappingType.existing);

@@ -269,7 +269,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         {
             final List<OracleTablespace> tablespaces = new ArrayList<>();
             try {
-                for (OracleTablespace ts : object.getDataSource().getTablespaces(VoidProgressMonitor.INSTANCE)) {
+                for (OracleTablespace ts : object.getDataSource().getTablespaces(new VoidProgressMonitor())) {
                     tablespaces.add(ts);
                 }
             } catch (DBException e) {

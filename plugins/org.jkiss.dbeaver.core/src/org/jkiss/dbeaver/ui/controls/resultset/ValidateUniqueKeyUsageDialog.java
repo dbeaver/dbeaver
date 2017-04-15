@@ -95,7 +95,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
     {
         // Edit custom key
         try {
-            if (viewer.editEntityIdentifier(VoidProgressMonitor.INSTANCE)) {
+            if (viewer.editEntityIdentifier(new VoidProgressMonitor())) {
                 super.buttonPressed(IDialogConstants.OK_ID);
             }
         } catch (DBException e) {
@@ -122,7 +122,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
 
         try {
             identifier.reloadAttributes(
-                VoidProgressMonitor.INSTANCE,
+                new VoidProgressMonitor(),
                 viewer.getModel().getAttributes());
         } catch (DBException e) {
             UIUtils.showErrorDialog(shell, "Use All Columns", "Can't reload unique columns", e);

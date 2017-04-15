@@ -230,7 +230,7 @@ public class DB2Utils {
 
     public static String getMessageFromCode(DB2DataSource db2DataSource, Integer sqlErrorCode) throws SQLException
     {
-        try (JDBCSession session = DBUtils.openUtilSession(VoidProgressMonitor.INSTANCE, db2DataSource, "Get Error Code")) {
+        try (JDBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), db2DataSource, "Get Error Code")) {
             return JDBCUtils.queryString(session, GET_MSG, sqlErrorCode);
         }
     }

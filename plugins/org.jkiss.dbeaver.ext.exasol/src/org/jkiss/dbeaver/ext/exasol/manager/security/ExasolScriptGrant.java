@@ -33,7 +33,7 @@ public class ExasolScriptGrant extends ExasolBaseObjectGrant {
 	@Property(viewable = true, order = 10)
 	public ExasolScript getProcedure() throws DBException
 	{
-		return super.getSchema().getProcedure(VoidProgressMonitor.INSTANCE, super.getObjectName());
+		return super.getSchema().getProcedure(new VoidProgressMonitor(), super.getObjectName());
 	}
 	
 	@Override

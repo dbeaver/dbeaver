@@ -104,7 +104,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
 
     public void syncRun()
     {
-        run(VoidProgressMonitor.INSTANCE, false);
+        run(new VoidProgressMonitor(), false);
     }
 
     private class LoadFinisher implements Runnable {

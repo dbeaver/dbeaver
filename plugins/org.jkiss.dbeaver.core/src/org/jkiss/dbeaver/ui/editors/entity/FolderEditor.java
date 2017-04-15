@@ -169,7 +169,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         }
         String nodePath = history.get(position);
         try {
-            DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(VoidProgressMonitor.INSTANCE, nodePath);
+            DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(new VoidProgressMonitor(), nodePath);
             if (node != null) {
                 historyPosition = position;
                 itemControl.changeCurrentNode(node);

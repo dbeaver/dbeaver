@@ -86,7 +86,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
             actionList.add(new SQLDatabasePersistAction(
                 "Comment column",
                 "COMMENT ON COLUMN " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                    " IS '" + column.getComment(VoidProgressMonitor.INSTANCE) + "'"));
+                    " IS '" + column.getComment(new VoidProgressMonitor()) + "'"));
         }
     }
 

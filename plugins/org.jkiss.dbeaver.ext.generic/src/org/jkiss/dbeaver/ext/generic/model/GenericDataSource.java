@@ -215,7 +215,7 @@ public class GenericDataSource extends JDBCDataSource
         if (!CommonUtils.isEmpty(paramShutdown)) {
             monitor.subTask("Shutdown embedded database");
             try {
-                final Driver driver = getDriverInstance(VoidProgressMonitor.INSTANCE); // Use void monitor - driver already loaded
+                final Driver driver = getDriverInstance(new VoidProgressMonitor()); // Use void monitor - driver already loaded
                 if (driver != null) {
                     driver.connect(getContainer().getActualConnectionConfiguration().getUrl() + paramShutdown, null);
                 }

@@ -45,7 +45,7 @@ public class HandlerConnectionValidate extends AbstractHandler {
 
     private void validateNode(Shell activeShell, DBPDataSource dataSource) {
         try {
-            final DBCSession session = DBUtils.openUtilSession(VoidProgressMonitor.INSTANCE, dataSource, "test");
+            final DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataSource, "test");
             final DBCStatement dbStat = session.prepareStatement(DBCStatementType.EXEC, "SELECT x.attributes FROM \"public\".entry x LIMIT 200", true, false, false);
             if (dbStat.executeStatement()) {
                 final DBCResultSet dbResult = dbStat.openResultSet();

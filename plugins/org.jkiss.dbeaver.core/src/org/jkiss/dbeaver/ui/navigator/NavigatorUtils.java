@@ -537,7 +537,7 @@ public class NavigatorUtils {
                         return true;
                     }
                     try {
-                        selector.setDefaultObject(VoidProgressMonitor.INSTANCE, dbObject);
+                        selector.setDefaultObject(new VoidProgressMonitor(), dbObject);
                     } catch (Throwable e) {
                         log.debug(e);
                     }

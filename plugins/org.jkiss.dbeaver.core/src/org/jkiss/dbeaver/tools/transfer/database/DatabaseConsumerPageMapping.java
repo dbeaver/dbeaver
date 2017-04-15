@@ -254,7 +254,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                                 if (element instanceof DatabaseMappingAttribute) {
                                     DatabaseMappingAttribute attribute = (DatabaseMappingAttribute) item.getData();
                                     attribute.setMappingType(DatabaseMappingType.existing);
-                                    attribute.updateMappingType(VoidProgressMonitor.INSTANCE);
+                                    attribute.updateMappingType(new VoidProgressMonitor());
                                 } else if (element instanceof DatabaseMappingContainer) {
                                     DatabaseMappingContainer container = (DatabaseMappingContainer) element;
                                     setMappingTarget(container, container.getSource().getName());
@@ -506,7 +506,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             if (settings.getContainer() != null) {
                 // container's tables
                 DBSObjectContainer container = settings.getContainer();
-                for (DBSObject child : container.getChildren(VoidProgressMonitor.INSTANCE)) {
+                for (DBSObject child : container.getChildren(new VoidProgressMonitor())) {
                     if (child instanceof DBSDataManipulator) {
                         items.add(child.getName());
                     }
@@ -524,7 +524,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             }
             if (mapping.getParent().getTarget() instanceof DBSEntity) {
                 DBSEntity parentEntity = (DBSEntity)mapping.getParent().getTarget();
-                for (DBSEntityAttribute attr : parentEntity.getAttributes(VoidProgressMonitor.INSTANCE)) {
+                for (DBSEntityAttribute attr : parentEntity.getAttributes(new VoidProgressMonitor())) {
                     items.add(attr.getName());
                 }
             }
@@ -555,7 +555,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 if (settings.getContainer() != null) {
                     // container's tables
                     DBSObjectContainer container = settings.getContainer();
-                    for (DBSObject child : container.getChildren(VoidProgressMonitor.INSTANCE)) {
+                    for (DBSObject child : container.getChildren(new VoidProgressMonitor())) {
                         if (child instanceof DBSDataManipulator && name.equalsIgnoreCase(child.getName())) {
                             containerMapping.setTarget((DBSDataManipulator)child);
                             containerMapping.refreshMappingType(getWizard().getContainer(), DatabaseMappingType.existing);
@@ -569,7 +569,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) mapping;
                 if (attrMapping.getParent().getTarget() instanceof DBSEntity) {
                     DBSEntity parentEntity = (DBSEntity)attrMapping.getParent().getTarget();
-                    for (DBSEntityAttribute attr : parentEntity.getAttributes(VoidProgressMonitor.INSTANCE)) {
+                    for (DBSEntityAttribute attr : parentEntity.getAttributes(new VoidProgressMonitor())) {
                         if (name.equalsIgnoreCase(attr.getName())) {
                             attrMapping.setMappingType(DatabaseMappingType.existing);
                             attrMapping.setTarget(attr);
@@ -664,7 +664,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
         DBPDataSource dataSource = container.getDataSource();
         try {
-            final String ddl = DatabaseTransferConsumer.generateTargetTableDDL(VoidProgressMonitor.INSTANCE, dataSource, container, mapping);
+            final String ddl = DatabaseTransferConsumer.generateTargetTableDDL(new VoidProgressMonitor(), dataSource, container, mapping);
             ViewSQLDialog dialog = new ViewSQLDialog(
                 DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
                 dataSource.getDefaultContext(true),

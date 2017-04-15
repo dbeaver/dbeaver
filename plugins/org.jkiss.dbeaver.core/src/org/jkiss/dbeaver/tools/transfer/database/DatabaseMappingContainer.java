@@ -81,7 +81,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(context);
         if (!CommonUtils.isEmpty(mappings)) {
             for (DatabaseMappingAttribute attr : mappings) {
-                attr.updateMappingType(VoidProgressMonitor.INSTANCE);
+                attr.updateMappingType(new VoidProgressMonitor());
             }
         }
     }
@@ -147,7 +147,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         if (attributeMappings.isEmpty()) {
             try {
                 // Do not use runnable context! It changes active focus and locks UI which breakes whole jface editing framework
-                readAttributes(VoidProgressMonitor.INSTANCE);
+                readAttributes(new VoidProgressMonitor());
             } catch (DBException e) {
                 UIUtils.showErrorDialog(null, "Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source, DBPEvaluationContext.UI), e);
             }

@@ -73,13 +73,13 @@ public class ExasolVirtualSchema extends ExasolSchema  {
 	@Property(viewable = true, order = 10)
 	public ExasolSchema getAdapterScriptSchema() throws DBException
 	{
-		return dataSource.getSchema(VoidProgressMonitor.INSTANCE, adapterScriptSchema) ;
+		return dataSource.getSchema(new VoidProgressMonitor(), adapterScriptSchema) ;
 	}
 
 	@Property(viewable = true, order = 20)
 	public ExasolScript getAdapterScriptName() throws DBException
 	{
-		return this.getAdapterScriptSchema().getProcedure(VoidProgressMonitor.INSTANCE, adapterScriptName);
+		return this.getAdapterScriptSchema().getProcedure(new VoidProgressMonitor(), adapterScriptName);
 	}
 
 	@Property(viewable = true, order = 30)
@@ -102,7 +102,7 @@ public class ExasolVirtualSchema extends ExasolSchema  {
 	
 	public Collection<ExasolVirtualSchemaParameter> getVirtualSchemaParameters() throws DBException
 	{
-		return virtualSchemaParameterCache.getAllObjects(VoidProgressMonitor.INSTANCE, this);
+		return virtualSchemaParameterCache.getAllObjects(new VoidProgressMonitor(), this);
 	}
 
 	@Override

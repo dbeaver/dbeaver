@@ -24,11 +24,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
  */
 public class VoidProgressMonitor implements DBRProgressMonitor {
 
-    public static final VoidProgressMonitor INSTANCE = new VoidProgressMonitor();
+    private final IProgressMonitor NESTED_INSTANCE = new NullProgressMonitor();
 
-    private static final IProgressMonitor NESTED_INSTANCE = new NullProgressMonitor();
-
-    protected VoidProgressMonitor() {
+    public VoidProgressMonitor() {
     }
 
     @Override

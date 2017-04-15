@@ -143,7 +143,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
         DBSObject object = null;
         if (informer.hasObjects()) {
             // Make object description
-            DBRProgressMonitor monitor = VoidProgressMonitor.INSTANCE;
+            DBRProgressMonitor monitor = new VoidProgressMonitor();
             final DBSObjectReference objectRef = informer.getObjectReferences().get(0);
 
             try {

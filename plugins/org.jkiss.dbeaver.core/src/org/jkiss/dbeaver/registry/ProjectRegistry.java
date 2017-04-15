@@ -186,7 +186,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         }
         // Check resource is synced
         if (resource instanceof IFile && !resource.isSynchronized(IResource.DEPTH_ZERO)) {
-            ContentUtils.syncFile(VoidProgressMonitor.INSTANCE, resource);
+            ContentUtils.syncFile(new VoidProgressMonitor(), resource);
         }
 
         // Find handler

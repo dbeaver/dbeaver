@@ -51,7 +51,7 @@ public class NodeEditorInputFactory implements IElementFactory
         final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
 
         try {
-            final DBNNode node = navigatorModel.getNodeByPath(VoidProgressMonitor.INSTANCE, nodePath);
+            final DBNNode node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), nodePath);
             if (node != null) {
                 return new NodeEditorInput(node);
             }

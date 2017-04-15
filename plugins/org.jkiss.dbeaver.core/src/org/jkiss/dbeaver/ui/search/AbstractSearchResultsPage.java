@@ -71,7 +71,7 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
                     DBeaverUI.syncExec(new Runnable() {
                         @Override
                         public void run() {
-                            populateObjects(VoidProgressMonitor.INSTANCE, newObjects);
+                            populateObjects(new VoidProgressMonitor(), newObjects);
                         }
                     });
                 }

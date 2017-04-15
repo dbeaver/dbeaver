@@ -117,12 +117,12 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
 
             String storageGroupName = JDBCUtils.safeGetString(dbResult, "SGNAME");
             if (storageGroupName != null) {
-                this.storageGroup = db2DataSource.getStorageGroup(VoidProgressMonitor.INSTANCE, storageGroupName);
+                this.storageGroup = db2DataSource.getStorageGroup(new VoidProgressMonitor(), storageGroupName);
             }
         }
 
         Integer bufferpoolId = JDBCUtils.safeGetInteger(dbResult, "BUFFERPOOLID");
-        bufferpool = DB2Utils.findBufferpoolById(VoidProgressMonitor.INSTANCE, db2DataSource, bufferpoolId);
+        bufferpool = DB2Utils.findBufferpoolById(new VoidProgressMonitor(), db2DataSource, bufferpoolId);
 
     }
 

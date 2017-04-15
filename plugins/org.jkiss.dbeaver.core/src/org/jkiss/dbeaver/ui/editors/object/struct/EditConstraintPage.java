@@ -77,7 +77,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
         this.constraint = constraint;
         this.constraintTypes = new DBSEntityConstraintType[] {constraint.getConstraintType()};
         try {
-            this.attributes = constraint.getAttributeReferences(VoidProgressMonitor.INSTANCE);
+            this.attributes = constraint.getAttributeReferences(new VoidProgressMonitor());
         } catch (DBException e) {
             UIUtils.showErrorDialog(null, "Can't get attributes", "Error obtaining entity attributes", e);
         }

@@ -108,7 +108,7 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     private void createOrReplaceProcedureQuery(List<DBEPersistAction> actionList, OraclePackage pack)
     {
         try {
-            String header = pack.getObjectDefinitionText(VoidProgressMonitor.INSTANCE);
+            String header = pack.getObjectDefinitionText(new VoidProgressMonitor());
             if (!CommonUtils.isEmpty(header)) {
                 actionList.add(
                     new OracleObjectValidateAction(
@@ -116,7 +116,7 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
                         "Create package header",
                         header)); //$NON-NLS-1$
             }
-            String body = pack.getExtendedDefinitionText(VoidProgressMonitor.INSTANCE);
+            String body = pack.getExtendedDefinitionText(new VoidProgressMonitor());
             if (!CommonUtils.isEmpty(body)) {
                 actionList.add(
                     new OracleObjectValidateAction(

@@ -42,7 +42,7 @@ public class OracleTableForeignKeyColumn extends OracleTableConstraintColumn imp
     {
         OracleTableConstraint referencedConstraint = ((OracleTableForeignKey) getParentObject()).getReferencedConstraint();
         if (referencedConstraint != null) {
-            List<OracleTableConstraintColumn> ar = referencedConstraint.getAttributeReferences(VoidProgressMonitor.INSTANCE);
+            List<OracleTableConstraintColumn> ar = referencedConstraint.getAttributeReferences(new VoidProgressMonitor());
             if (ar != null) {
                 return ar.get(getOrdinalPosition() - 1).getAttribute();
             }

@@ -46,7 +46,7 @@ public class ExasolRoleGrant implements DBAPrivilege  {
 	@Property(viewable = true, order = 10)
 	public ExasolRole getRole() throws DBException
 	{
-		return dataSource.getRole(VoidProgressMonitor.INSTANCE, role);
+		return dataSource.getRole(new VoidProgressMonitor(), role);
 	}
 	
 	@Property(viewable = true, order = 20)

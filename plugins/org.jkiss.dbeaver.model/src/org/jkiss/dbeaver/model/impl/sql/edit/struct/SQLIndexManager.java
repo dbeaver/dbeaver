@@ -66,7 +66,7 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
         try {
             // Get columns using void monitor
             boolean firstColumn = true;
-            for (DBSTableIndexColumn indexColumn : CommonUtils.safeCollection(command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE))) {
+            for (DBSTableIndexColumn indexColumn : CommonUtils.safeCollection(command.getObject().getAttributeReferences(new VoidProgressMonitor()))) {
                 if (!firstColumn) decl.append(","); //$NON-NLS-1$
                 firstColumn = false;
                 decl.append(indexColumn.getName());

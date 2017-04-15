@@ -534,7 +534,7 @@ public final class SQLUtils {
 
     public static String convertStreamToSQL(DBSAttributeBase attribute, DBDContent content, DBDValueHandler valueHandler, SQLDataSource dataSource) {
         try {
-            DBRProgressMonitor monitor = VoidProgressMonitor.INSTANCE;
+            DBRProgressMonitor monitor = new VoidProgressMonitor();
             if (valueHandler instanceof DBDContentValueHandler) {
                 StringWriter buffer = new StringWriter();
                 ((DBDContentValueHandler) valueHandler).writeStreamValue(monitor, dataSource, attribute, content, buffer);

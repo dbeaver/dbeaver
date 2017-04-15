@@ -379,7 +379,7 @@ public class ResultSetUtils
     {
         DBPDataSource dataSource = attribute.getDataSource();
         Clipboard clipboard = new Clipboard(Display.getCurrent());
-        try (DBCSession session = DBUtils.openUtilSession(VoidProgressMonitor.INSTANCE, dataSource, "Copy from clipboard")) {
+        try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataSource, "Copy from clipboard")) {
             String strValue = (String) clipboard.getContents(TextTransfer.getInstance());
             return attribute.getValueHandler().getValueFromObject(
                 session, attribute.getAttribute(), strValue, true);

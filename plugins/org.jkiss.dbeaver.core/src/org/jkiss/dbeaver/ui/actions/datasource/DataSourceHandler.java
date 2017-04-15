@@ -187,7 +187,7 @@ public class DataSourceHandler
         // Save users
         for (DBPDataSourceUser user : dataSourceContainer.getUsers()) {
             if (user instanceof ISaveablePart) {
-                if (!SaveChangesHandler.validateAndSave(VoidProgressMonitor.INSTANCE, (ISaveablePart) user)) {
+                if (!SaveChangesHandler.validateAndSave(new VoidProgressMonitor(), (ISaveablePart) user)) {
                     return;
                 }
             }

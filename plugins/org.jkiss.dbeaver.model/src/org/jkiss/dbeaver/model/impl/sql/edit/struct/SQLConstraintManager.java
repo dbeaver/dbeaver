@@ -100,7 +100,7 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
         decl.append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
         try {
-            List<? extends DBSEntityAttributeRef> attrs = command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE);
+            List<? extends DBSEntityAttributeRef> attrs = command.getObject().getAttributeReferences(new VoidProgressMonitor());
             if (attrs != null) {
                 boolean firstColumn = true;
                 for (DBSEntityAttributeRef constraintColumn : attrs) {

@@ -267,7 +267,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
      */
     public void updateChildrenOrder(boolean reflect) {
         try {
-            refreshNodeContent(VoidProgressMonitor.INSTANCE, getObject(), this, reflect);
+            refreshNodeContent(new VoidProgressMonitor(), getObject(), this, reflect);
         } catch (DBException e) {
             log.error("Error reordering node children", e);
         }

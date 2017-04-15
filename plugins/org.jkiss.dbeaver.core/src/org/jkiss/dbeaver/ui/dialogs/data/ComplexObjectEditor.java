@@ -325,7 +325,7 @@ public class ComplexObjectEditor extends TreeViewer {
         final ComplexElement[] items = childrenMap.get(complexValue);
         if (complexValue instanceof DBDValueCloneable) {
             try {
-                complexValue = (DBDComplexValue) ((DBDValueCloneable) complexValue).cloneValue(VoidProgressMonitor.INSTANCE);
+                complexValue = (DBDComplexValue) ((DBDValueCloneable) complexValue).cloneValue(new VoidProgressMonitor());
             } catch (DBCException e) {
                 log.error("Error cloning complex value", e);
             }

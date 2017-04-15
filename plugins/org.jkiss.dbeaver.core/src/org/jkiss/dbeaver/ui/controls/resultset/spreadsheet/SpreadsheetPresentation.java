@@ -484,7 +484,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (rowNum < 0) {
                     return;
                 }
-                try (DBCSession session = DBUtils.openUtilSession(VoidProgressMonitor.INSTANCE, dataSource, "Advanced paste")) {
+                try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataSource, "Advanced paste")) {
 
                     String[][] newLines = parseGridLines(strValue);
                     // Create new rows on demand

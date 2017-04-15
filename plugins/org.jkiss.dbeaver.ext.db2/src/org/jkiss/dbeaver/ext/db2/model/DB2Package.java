@@ -102,7 +102,7 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
 
         String defaultSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "DEFAULT_SCHEMA");
-        this.defaultSchema = getDataSource().getSchema(VoidProgressMonitor.INSTANCE, defaultSchemaName);
+        this.defaultSchema = getDataSource().getSchema(new VoidProgressMonitor(), defaultSchemaName);
 
         this.uniqueId = JDBCUtils.safeGetString(dbResult, "UNIQUE_ID");
         this.valid = JDBCUtils.safeGetBoolean(dbResult, "VALID", DB2YesNo.Y.name());

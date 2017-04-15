@@ -76,7 +76,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
         final PostgreSchema schema = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema));
         try {
-            final PostgreRole owner = schema.getOwner(VoidProgressMonitor.INSTANCE);
+            final PostgreRole owner = schema.getOwner(new VoidProgressMonitor());
             if (owner != null) {
                 script.append("\nAUTHORIZATION ").append(owner.getName());
             }

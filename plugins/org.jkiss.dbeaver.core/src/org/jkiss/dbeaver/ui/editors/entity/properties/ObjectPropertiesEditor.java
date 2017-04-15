@@ -463,7 +463,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 if (node.needsInitialization()) {
                     DBeaverUI.runInProgressService(tabsCollector);
                 } else {
-                    tabsCollector.run(VoidProgressMonitor.INSTANCE);
+                    tabsCollector.run(new VoidProgressMonitor());
                 }
             } catch (InvocationTargetException e) {
                 log.error(e.getTargetException());
