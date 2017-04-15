@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 /**
 * TextPanelEditor
 */
-public class TextPanelEditor implements IStreamValueEditor<StyledText> {
+public class TextPanelEditor extends AbstractTextPanelEditor {
 
     @Override
     public StyledText createControl(IValueController valueController)
@@ -42,7 +42,7 @@ public class TextPanelEditor implements IStreamValueEditor<StyledText> {
         StyledText text = new StyledText(valueController.getEditPlaceholder(), SWT.MULTI | SWT.V_SCROLL);
         text.setEditable(!valueController.isReadOnly());
         text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        ContentPanelEditor.setEditorSettings(text);
+        setEditorSettings(text);
         return text;
     }
 
@@ -65,10 +65,6 @@ public class TextPanelEditor implements IStreamValueEditor<StyledText> {
         value.updateContents(
             monitor,
             new StringContentStorage(control.getText()));
-    }
-
-    @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final StyledText control) throws DBCException {
     }
 
 }

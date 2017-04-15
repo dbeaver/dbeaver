@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.data.managers.stream;
 
-import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.ui.IEditorInput;
@@ -26,11 +25,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.editors.ContentPanelEditor;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
@@ -40,7 +36,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 /**
 * XMLPanelEditor
 */
-public class XMLPanelEditor implements IStreamValueEditor<StyledText> {
+public class XMLPanelEditor extends AbstractTextPanelEditor {
 
     private IValueController valueController;
     private IEditorSite subSite;
@@ -59,7 +55,7 @@ public class XMLPanelEditor implements IStreamValueEditor<StyledText> {
             return new StyledText(valueController.getEditPlaceholder(), SWT.NONE);
         }
         editor.createPartControl(valueController.getEditPlaceholder());
-        ContentPanelEditor.setEditorSettings(editor.getEditorControl());
+        setEditorSettings(editor.getEditorControl());
         return editor.getEditorControl();
     }
 
@@ -92,11 +88,6 @@ public class XMLPanelEditor implements IStreamValueEditor<StyledText> {
         } finally {
             monitor.done();
         }
-    }
-
-    @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull StyledText control) throws DBCException {
-
     }
 
 
