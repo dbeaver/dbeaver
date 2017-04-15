@@ -16,9 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.data.managers.stream;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
@@ -26,11 +28,12 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 
 /**
 * AbstractTextPanelEditor
 */
-public abstract class AbstractTextPanelEditor implements IStreamValueEditor<StyledText> {
+public abstract class AbstractTextPanelEditor implements IStreamValueEditor<StyledText>, IAdaptable {
 
     public static final String PREF_TEXT_EDITOR_WORD_WRAP = "content.text.editor.word-wrap";
     public static final String PREF_TEXT_EDITOR_AUTO_FORMAT = "content.text.editor.auto-format";
@@ -60,13 +63,15 @@ public abstract class AbstractTextPanelEditor implements IStreamValueEditor<Styl
             manager.add(wwAction);
         }
 
-        {
+        BaseTextEditor textEditor = getTextEditor();
+        if (textEditor != null) {
             final Action afAction = new Action("Auto Format", Action.AS_CHECK_BOX) {
                 @Override
                 public void run() {
                     boolean newAF = !ViewValuePanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT);
                     setChecked(newAF);
                     ViewValuePanel.getPanelSettings().put(PREF_TEXT_EDITOR_AUTO_FORMAT, newAF);
+                    applyEditorStyle();
                 }
             };
             afAction.setChecked(ViewValuePanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT));
@@ -74,12 +79,33 @@ public abstract class AbstractTextPanelEditor implements IStreamValueEditor<Styl
         }
     }
 
-    protected void setEditorSettings(Control control) {
-        if (control instanceof StyledText) {
-            if (ViewValuePanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP)) {
-                ((StyledText) control).setWordWrap(true);
-            }
+    protected BaseTextEditor getTextEditor() {
+        return null;
+    }
+
+    protected void initEditorSettings(StyledText control) {
+        boolean wwEnabled = ViewValuePanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP);
+        if (wwEnabled != control.getWordWrap()) {
+            control.setWordWrap(wwEnabled);
         }
     }
 
+    protected void applyEditorStyle() {
+        BaseTextEditor textEditor = getTextEditor();
+        if (textEditor != null && ViewValuePanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT)) {
+            textEditor.getViewer().doOperation(ISourceViewer.FORMAT);
+        }
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        BaseTextEditor textEditor = getTextEditor();
+        if (textEditor != null) {
+            if (adapter.isAssignableFrom(textEditor.getClass())) {
+                return adapter.cast(textEditor);
+            }
+            return textEditor.getAdapter(adapter);
+        }
+        return null;
+    }
 }

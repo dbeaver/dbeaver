@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
@@ -59,7 +60,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * RSV value view panel
  */
-public class ViewValuePanel implements IResultSetPanel {
+public class ViewValuePanel implements IResultSetPanel, IAdaptable {
 
     private static final Log log = Log.getLog(ViewValuePanel.class);
 
@@ -379,4 +380,17 @@ public class ViewValuePanel implements IResultSetPanel {
             });
     }
 
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (valueEditor != null) {
+            if (adapter.isAssignableFrom(valueEditor.getClass())) {
+                return adapter.cast(valueEditor);
+            }
+            if (valueEditor instanceof IAdaptable) {
+                return ((IAdaptable) valueEditor).getAdapter(adapter);
+            }
+        }
+
+        return null;
+    }
 }

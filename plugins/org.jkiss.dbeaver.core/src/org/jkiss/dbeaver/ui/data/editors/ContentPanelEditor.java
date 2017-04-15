@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IContributionManager;
@@ -61,7 +62,7 @@ import java.util.List;
 /**
 * ControlPanelEditor
 */
-public class ContentPanelEditor extends BaseValueEditor<Control> {
+public class ContentPanelEditor extends BaseValueEditor<Control> implements IAdaptable {
 
     private static final Log log = Log.getLog(ContentPanelEditor.class);
 
@@ -191,6 +192,19 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
             dsId = valueController.getExecutionContext().getDataSource().getContainer().getId();
         }
         return dsId + ":" + valueId;
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (streamEditor != null) {
+            if (adapter.isAssignableFrom(streamEditor.getClass())) {
+                return adapter.cast(streamEditor);
+            }
+            if (streamEditor instanceof IAdaptable) {
+                return ((IAdaptable) streamEditor).getAdapter(adapter);
+            }
+        }
+        return null;
     }
 
     private class ContentTypeSwitchAction extends Action implements SelectionListener {
