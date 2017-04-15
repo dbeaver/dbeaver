@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -67,7 +68,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
 
     private Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers;
     private StreamValueManagerDescriptor curStreamManager;
-    private IStreamValueEditor streamEditor;
+    private IStreamValueEditor<Control> streamEditor;
     private Control editorControl;
 
     public ContentPanelEditor(IValueController controller) {
@@ -152,52 +153,8 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
     }
 
     private void detectStreamManager(final DBDContent content) {
-        DBeaverUI.runInUI(new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                monitor.beginTask("Detect appropriate editor", 1);
-                try {
-                    streamManagers = ValueManagerRegistry.getInstance().getApplicableStreamManagers(monitor, valueController.getValueType(), content);
-                    String savedManagerId = valueToManagerMap.get(makeValueId());
-                    if (savedManagerId != null) {
-                        curStreamManager = findManager(savedManagerId);
-                    }
-                    if (curStreamManager == null) {
-                        curStreamManager = findManager(IStreamValueManager.MatchType.EXCLUSIVE);
-                        if (curStreamManager == null)
-                            curStreamManager = findManager(IStreamValueManager.MatchType.PRIMARY);
-                        if (curStreamManager == null)
-                            curStreamManager = findManager(IStreamValueManager.MatchType.DEFAULT);
-                        if (curStreamManager == null)
-                            curStreamManager = findManager(IStreamValueManager.MatchType.APPLIES);
-                        if (curStreamManager == null) {
-                            throw new DBException("Can't find appropriate stream manager");
-                        }
-                    }
-                } catch (Exception e) {
-                    valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
-                } finally {
-                    monitor.done();
-                }
-            }
-
-            private StreamValueManagerDescriptor findManager(IStreamValueManager.MatchType matchType) {
-                for (Map.Entry<StreamValueManagerDescriptor, IStreamValueManager.MatchType> entry : streamManagers.entrySet()) {
-                    if (entry.getValue() == matchType) {
-                        return entry.getKey();
-                    }
-                }
-                return null;
-            }
-            private StreamValueManagerDescriptor findManager(String id) {
-                for (Map.Entry<StreamValueManagerDescriptor, IStreamValueManager.MatchType> entry : streamManagers.entrySet()) {
-                    if (entry.getKey().getId().equals(id)) {
-                        return entry.getKey();
-                    }
-                }
-                return null;
-            }
-        });
+        StreamManagerDetectJob detectJob = new StreamManagerDetectJob(content);
+        RuntimeUtils.runTask(detectJob, "Detect stream editor", 5000);
     }
 
     private void setStreamManager(StreamValueManagerDescriptor newManager) {
@@ -327,6 +284,60 @@ public class ContentPanelEditor extends BaseValueEditor<Control> {
         @Override
         public void widgetDefaultSelected(SelectionEvent e) {
 
+        }
+    }
+
+    private class StreamManagerDetectJob implements DBRRunnableWithProgress {
+        private final DBDContent content;
+
+        StreamManagerDetectJob(DBDContent content) {
+            this.content = content;
+        }
+
+        @Override
+        public void run(DBRProgressMonitor monitor) {
+            monitor.beginTask("Detect appropriate editor", 1);
+            try {
+                streamManagers = ValueManagerRegistry.getInstance().getApplicableStreamManagers(monitor, valueController.getValueType(), content);
+                String savedManagerId = valueToManagerMap.get(makeValueId());
+                if (savedManagerId != null) {
+                    curStreamManager = findManager(savedManagerId);
+                }
+                if (curStreamManager == null) {
+                    curStreamManager = findManager(IStreamValueManager.MatchType.EXCLUSIVE);
+                    if (curStreamManager == null)
+                        curStreamManager = findManager(IStreamValueManager.MatchType.PRIMARY);
+                    if (curStreamManager == null)
+                        curStreamManager = findManager(IStreamValueManager.MatchType.DEFAULT);
+                    if (curStreamManager == null)
+                        curStreamManager = findManager(IStreamValueManager.MatchType.APPLIES);
+                    if (curStreamManager == null) {
+                        throw new DBException("Can't find appropriate stream manager");
+                    }
+                }
+            } catch (Exception e) {
+                valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
+            } finally {
+                monitor.done();
+            }
+        }
+
+        private StreamValueManagerDescriptor findManager(IStreamValueManager.MatchType matchType) {
+            for (Map.Entry<StreamValueManagerDescriptor, IStreamValueManager.MatchType> entry : streamManagers.entrySet()) {
+                if (entry.getValue() == matchType) {
+                    return entry.getKey();
+                }
+            }
+            return null;
+        }
+
+        private StreamValueManagerDescriptor findManager(String id) {
+            for (Map.Entry<StreamValueManagerDescriptor, IStreamValueManager.MatchType> entry : streamManagers.entrySet()) {
+                if (entry.getKey().getId().equals(id)) {
+                    return entry.getKey();
+                }
+            }
+            return null;
         }
     }
 }
