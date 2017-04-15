@@ -79,7 +79,7 @@ public class XMLPanelEditor extends AbstractTextPanelEditor {
     @Override
     public void extractEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @NotNull DBDContent value) throws DBException
     {
-        if (!editor.isDirty()) {
+        if (valueController.isReadOnly() || !editor.isDirty()) {
             return;
         }
 
