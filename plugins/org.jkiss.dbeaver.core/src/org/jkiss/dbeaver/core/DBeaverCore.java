@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -286,7 +287,8 @@ public class DBeaverCore implements DBPPlatform {
 
         // Remove temp folder
         if (tempFolder != null) {
-            if (!tempFolder.delete()) {
+
+            if (!ContentUtils.deleteFileRecursive(tempFolder)) {
                 log.warn("Can't delete temp folder '" + tempFolder.getAbsolutePath() + "'");
             }
             tempFolder = null;
