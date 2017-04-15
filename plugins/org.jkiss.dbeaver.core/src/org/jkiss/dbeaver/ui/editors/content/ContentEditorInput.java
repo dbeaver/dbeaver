@@ -174,7 +174,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
         DBDContentStorage storage = content.getContents(monitor);
 
         if (contentDetached) {
-            release(monitor);
+            release();
             contentDetached = false;
         }
         if (storage instanceof DBDContentStorageLocal) {
@@ -223,7 +223,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
         }
     }
 
-    public void release(DBRProgressMonitor monitor)
+    public void release()
     {
         if (contentFile != null && !contentDetached) {
             if (!contentFile.delete()) {

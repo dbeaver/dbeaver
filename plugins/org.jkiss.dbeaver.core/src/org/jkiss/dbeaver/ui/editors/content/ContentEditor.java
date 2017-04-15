@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -298,7 +297,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         if (getEditorInput() != null) {
             // Release CONTENT input resources
             try {
-                getEditorInput().release(VoidProgressMonitor.INSTANCE);
+                getEditorInput().release();
             } catch (Throwable e) {
                 log.warn("Error releasing CONTENT input", e);
             }
