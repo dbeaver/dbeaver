@@ -62,4 +62,7 @@ public interface IStreamValueEditor<CONTROL extends Control>
     void contributeActions(@NotNull IContributionManager manager, @NotNull CONTROL control)
         throws DBCException;
 
+    void contributeSettings(@NotNull IContributionManager manager, @NotNull CONTROL control)
+            throws DBCException;
+
 }

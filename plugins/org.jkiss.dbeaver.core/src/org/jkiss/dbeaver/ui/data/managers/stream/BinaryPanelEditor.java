@@ -105,4 +105,9 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
         });
     }
 
+    @Override
+    public void contributeSettings(@NotNull IContributionManager manager, @NotNull HexEditControl control) throws DBCException {
+
+    }
+
 }

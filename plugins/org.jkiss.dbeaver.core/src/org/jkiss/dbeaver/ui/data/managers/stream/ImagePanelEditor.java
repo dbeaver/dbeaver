@@ -71,4 +71,9 @@ public class ImagePanelEditor implements IStreamValueEditor<ImageViewer> {
         control.fillToolBar(manager);
     }
 
+    @Override
+    public void contributeSettings(@NotNull IContributionManager manager, @NotNull ImageViewer control) throws DBCException {
+
+    }
+
 }
