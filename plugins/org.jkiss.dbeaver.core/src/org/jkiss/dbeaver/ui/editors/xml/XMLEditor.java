@@ -21,6 +21,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.rules.FastPartitioner;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.ITextEditorExtension3;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
@@ -31,7 +32,7 @@ public class XMLEditor extends BaseTextEditor {
 
     public XMLEditor() {
         configureInsertMode(ITextEditorExtension3.SMART_INSERT, false);
-        setSourceViewerConfiguration(new XMLConfiguration());
+        setSourceViewerConfiguration(new XMLSourceViewerConfiguration());
         setDocumentProvider(new FileRefDocumentProvider());
     }
 
@@ -44,6 +45,11 @@ public class XMLEditor extends BaseTextEditor {
     protected void doSetInput(IEditorInput input) throws CoreException {
         super.doSetInput(input);
         setupDocument();
+    }
+
+    @Override
+    public void createPartControl(Composite parent) {
+        super.createPartControl(parent);
     }
 
     protected void setupDocument() {
