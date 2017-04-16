@@ -111,6 +111,7 @@ public class DBCStatistics {
         this.statementsCount++;
     }
 
+
     public String getQueryText() {
         return queryText;
     }
@@ -148,7 +149,7 @@ public class DBCStatistics {
 
     public boolean isEmpty()
     {
-        return executeTime <= 0 && fetchTime <= 0;
+        return executeTime <= 0 && fetchTime <= 0 && statementsCount == 0;
     }
 
     public void accumulate(DBCStatistics stat)

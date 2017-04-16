@@ -150,6 +150,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         String sqlQuery = query.toString();
         statistics.setQueryText(sqlQuery);
+        statistics.addStatementsCount();
 
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_data);
 
