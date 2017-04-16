@@ -1132,6 +1132,22 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public void serialize(XMLBuilder xml, boolean export)
         throws IOException
     {
+        Map<String, String> pathSubstitutions = new HashMap<>();
+        {
+            DriverVariablesResolver varResolver = new DriverVariablesResolver();
+            String[] variables = new String[]{
+                    DriverVariablesResolver.VAR_DRIVERS_HOME,
+                    SystemVariablesResolver.VAR_WORKSPACE,
+                    SystemVariablesResolver.VAR_HOME,
+                    SystemVariablesResolver.VAR_DBEAVER_HOME};
+            for (String varName : variables) {
+                String varValue = varResolver.get(varName);
+                if (!CommonUtils.isEmpty(varValue)) {
+                    pathSubstitutions.put(varValue, varName);
+                }
+            }
+        }
+
         try (XMLBuilder.Element e0 = xml.startElement(RegistryConstants.TAG_DRIVER)) {
             if (export) {
                 xml.addAttribute(RegistryConstants.ATTR_PROVIDER, providerDescriptor.getId());
@@ -1165,7 +1181,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 }
                 try (XMLBuilder.Element e1 = xml.startElement(RegistryConstants.TAG_LIBRARY)) {
                     xml.addAttribute(RegistryConstants.ATTR_TYPE, lib.getType().name());
-                    xml.addAttribute(RegistryConstants.ATTR_PATH, lib.getPath());
+                    xml.addAttribute(RegistryConstants.ATTR_PATH, substitutePathVariables(pathSubstitutions, lib.getPath()));
                     xml.addAttribute(RegistryConstants.ATTR_CUSTOM, lib.isCustom());
                     if (lib.isDisabled()) {
                         xml.addAttribute(RegistryConstants.ATTR_DISABLED, true);
@@ -1186,7 +1202,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                                 if (!CommonUtils.isEmpty(file.version)) {
                                     xml.addAttribute(RegistryConstants.ATTR_VERSION, file.version);
                                 }
-                                xml.addAttribute(RegistryConstants.ATTR_PATH, substitutePathVariables(file.file.getAbsolutePath()));
+                                xml.addAttribute(RegistryConstants.ATTR_PATH, substitutePathVariables(pathSubstitutions, file.file.getAbsolutePath()));
                             }
                         }
                     }
@@ -1452,6 +1468,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                         }
                     }
                     String path = normalizeLibraryPath(atts.getValue(RegistryConstants.ATTR_PATH));
+                    if (!CommonUtils.isEmpty(path)) {
+                        path = replacePathVariables(path);
+                    }
                     boolean custom = CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM), true);
                     String version = atts.getValue(RegistryConstants.ATTR_VERSION);
                     DBPDriverLibrary lib = curDriver.getDriverLibrary(path);
@@ -1568,21 +1587,22 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return GeneralUtils.replaceVariables(path, new DriverVariablesResolver());
     }
 
-    private static String substitutePathVariables(String path) {
-        String workspacePath = SystemVariablesResolver.getWorkspacePath();
-        final String driversHome = getCustomDriversHome().getAbsolutePath();
-        if (path.startsWith(workspacePath)) {
-            path = "${workspace}" + path.substring(workspacePath.length());
-        } else if (path.startsWith(driversHome)) {
-            path = "${drivers_home}" + path.substring(driversHome.length());
+    private static String substitutePathVariables(Map<String, String> pathSubstitutions, String path) {
+        for (Map.Entry<String, String> ps : pathSubstitutions.entrySet()) {
+            if (path.startsWith(ps.getKey())) {
+                path = GeneralUtils.variablePattern(ps.getValue()) + path.substring(ps.getKey().length());
+                break;
+            }
         }
         return path;
     }
 
     private static class DriverVariablesResolver extends SystemVariablesResolver {
+        private static final String VAR_DRIVERS_HOME = "drivers_home";
+
         @Override
         public String get(String name) {
-            if (name.equalsIgnoreCase("drivers_home")) {
+            if (name.equalsIgnoreCase(VAR_DRIVERS_HOME)) {
                 return getCustomDriversHome().getAbsolutePath();
             } else {
                 return super.get(name);
