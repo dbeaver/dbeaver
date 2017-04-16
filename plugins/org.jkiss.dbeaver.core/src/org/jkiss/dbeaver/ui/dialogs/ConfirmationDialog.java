@@ -96,7 +96,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         return dialog.open();
     }
 
-    static String[] getButtonLabels(int kind) {
+    public static String[] getButtonLabels(int kind) {
         switch (kind) {
         case ERROR:
         case INFORMATION:
