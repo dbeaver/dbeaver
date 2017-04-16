@@ -2376,7 +2376,7 @@ public class ResultSetViewer extends Viewer
                                 }
                             }
                             model.setUpdateInProgress(false);
-                            if (job.getStatistics() == null || job.getStatistics().isEmpty()) {
+                            if (job.getStatistics() == null || !job.getStatistics().isEmpty()) {
                                 if (error == null) {
                                     // Update status (update execution statistics)
                                     updateStatusMessage();
