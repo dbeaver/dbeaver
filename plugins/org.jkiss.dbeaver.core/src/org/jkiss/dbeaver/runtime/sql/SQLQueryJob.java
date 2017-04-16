@@ -529,10 +529,10 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             // Single statement
             long updateCount = statistics.getRowsUpdated();
             if (updateCount >= 0) {
-                fakeResultSet.addColumn("Query", DBPDataKind.STRING);
                 fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
+                fakeResultSet.addColumn("Query", DBPDataKind.STRING);
                 fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
-                fakeResultSet.addRow(query.getText(), updateCount, new Date());
+                fakeResultSet.addRow(updateCount, query.getText(), new Date());
             } else {
                 fakeResultSet.addColumn("Result", DBPDataKind.NUMERIC);
             }
