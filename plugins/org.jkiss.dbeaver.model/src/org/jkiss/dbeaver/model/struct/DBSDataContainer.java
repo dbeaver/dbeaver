@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -40,6 +41,9 @@ public interface DBSDataContainer extends DBSObject {
 
     long FLAG_NONE               = 0;
     long FLAG_READ_PSEUDO        = 1 << 1;
+
+    @Nullable
+    DBPDataSource getDataSource();
 
     /**
      * Features supported by implementation

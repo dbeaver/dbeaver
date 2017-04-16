@@ -1888,7 +1888,7 @@ public class SQLEditor extends SQLEditorBase implements
             return getDataSourceContainer();
         }
 
-        @NotNull
+        @Nullable
         @Override
         public DBPDataSource getDataSource()
         {
