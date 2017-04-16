@@ -18,10 +18,10 @@ package org.jkiss.dbeaver.runtime.sql;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -33,9 +33,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -47,10 +49,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.sql.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.registry.sql.SQLCommandsRegistry;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorResponse;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -807,19 +811,26 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     }
 
     private int confirmQueryExecution(@NotNull final SQLQuery query, final boolean scriptMode) {
+        final DBPConnectionType connectionType = getDataSourceContainer().getConnectionConfiguration().getConnectionType();
         return new UITask<Integer>() {
             @Override
             protected Integer runTask() {
-                MessageDialog dialog = new MessageDialog(
-                        null,
+                MessageDialogWithToggle dialog = new MessageDialogWithToggle(
+                        DBeaverUI.getActiveWorkbenchShell(),
                         "Confirm query execution",
-                        JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_WARNING),
-                        "You are in '" + getDataSourceContainer().getConnectionConfiguration().getConnectionType().getName() + "' connection.\nDo you confirm query execution?",
-                        MessageDialog.WARNING, null, 0)
+                        null,
+                        "You are in '" + connectionType.getName() + "' connection.\nDo you confirm query execution?",
+                        MessageDialog.WARNING, ConfirmationDialog.getButtonLabels(ConfirmationDialog.QUESTION_WITH_CANCEL), 0,
+                        "Do not ask for " + connectionType.getName() + " connections", false)
                 {
                     @Override
                     protected boolean isResizable() {
                         return true;
+                    }
+
+                    @Override
+                    protected IDialogSettings getDialogBoundsSettings() {
+                        return UIUtils.getDialogSettings("DBeaver.SQLQueryConfirmDialog"); //$NON-NLS-1$
                     }
 
                     @Override
@@ -850,7 +861,12 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                         }
                     }
                 };
-                return dialog.open();
+                int result = dialog.open();
+                if (dialog.getToggleState()) {
+                    connectionType.setConfirmExecute(false);
+                    DataSourceProviderRegistry.getInstance().saveConnectionTypes();
+                }
+                return result;
             }
         }.execute();
     }
