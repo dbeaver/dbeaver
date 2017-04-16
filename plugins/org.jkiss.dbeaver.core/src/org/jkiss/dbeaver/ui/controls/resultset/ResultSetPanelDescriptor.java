@@ -98,7 +98,7 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
         return showByDefault;
     }
 
-    public boolean supportedBy(DBPDataSource dataSource, ResultSetPresentationDescriptor presentation) {
+    public boolean supportedBy(DBPDataSource dataSource, String presentationId, IResultSetPresentation.PresentationType presentationType) {
         if (!supportedDataSources.isEmpty()) {
             if (dataSource == null) {
                 return false;
@@ -108,13 +108,12 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
                 return false;
             }
         }
-        //if (.getId())
         if (supportedPresentations.isEmpty() && supportedPresentationTypes.isEmpty()) {
             return true;
         }
         return
-            supportedPresentations.contains(presentation.getId()) ||
-            supportedPresentationTypes.contains(presentation.getPresentationType());
+            (presentationId != null && supportedPresentations.contains(presentationId)) ||
+            (presentationType != null && supportedPresentationTypes.contains(presentationType));
     }
 
     public IResultSetPanel createInstance() throws DBException {

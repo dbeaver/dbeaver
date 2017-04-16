@@ -197,11 +197,13 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         }
     }
 
+    @Nullable
     public TextViewer getTextViewer()
     {
         return (TextViewer) getSourceViewer();
     }
 
+    @Nullable
     public SourceViewer getViewer()
     {
         return (SourceViewer) super.getSourceViewer();
