@@ -17,7 +17,10 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.view;
 
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -38,6 +41,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 public class StatisticsPresentation extends AbstractPresentation {
 
     private Table table;
+    private DBDAttributeBinding curAttribute;
 
     @Override
     public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
@@ -47,6 +51,22 @@ public class StatisticsPresentation extends AbstractPresentation {
         table.setLinesVisible(true);
         table.setHeaderVisible(true);
         table.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        table.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                curAttribute = null;
+                TableItem[] selection = table.getSelection();
+                Object[] elements = new Object[selection.length];
+                for (int i = 0; i < selection.length; i++) {
+                    elements[i] = selection[i].getData();
+                    if (curAttribute == null) {
+                        curAttribute = (DBDAttributeBinding) elements[i];
+                    }
+                }
+                fireSelectionChanged(new StructuredSelection(elements));
+            }
+        });
 
         UIUtils.createTableColumn(table, SWT.LEFT, "Name");
         UIUtils.createTableColumn(table, SWT.LEFT, "Value");
@@ -69,6 +89,7 @@ public class StatisticsPresentation extends AbstractPresentation {
             TableItem item = new TableItem(table, SWT.LEFT);
             item.setText(0, attr.getName());
             item.setText(1, DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
+            item.setData(attr);
         }
 
         UIUtils.packColumns(table);
@@ -97,7 +118,7 @@ public class StatisticsPresentation extends AbstractPresentation {
     @Nullable
     @Override
     public DBDAttributeBinding getCurrentAttribute() {
-        return null;
+        return curAttribute;
     }
 
     @Nullable
