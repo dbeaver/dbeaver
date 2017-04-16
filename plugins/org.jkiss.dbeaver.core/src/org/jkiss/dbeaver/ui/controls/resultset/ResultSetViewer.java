@@ -936,9 +936,6 @@ public class ResultSetViewer extends Viewer
     @Override
     public <T> T getAdapter(Class<T> adapter)
     {
-        if (adapter == IFindReplaceTarget.class) {
-            return adapter.cast(findReplaceTarget);
-        }
         if (adapter.isAssignableFrom(activePresentation.getClass())) {
             return adapter.cast(activePresentation);
         }
@@ -949,18 +946,16 @@ public class ResultSetViewer extends Viewer
                 return adapted;
             }
         }
-        // FIXME: Not sure that we should adapt active panel. NOT TESTED YET
-/*
-        if (getVisiblePanel() instanceof IAdaptable) {
-            CTabItem panelTab = panelFolder.getSelection();
-            if (panelTab != null && panelTab.getControl() != null && UIUtils.hasFocus(panelTab.getControl())) {
-                T adapted = ((IAdaptable) getVisiblePanel()).getAdapter(adapter);
-                if (adapted != null) {
-                    return adapted;
-                }
+        IResultSetPanel visiblePanel = getVisiblePanel();
+        if (visiblePanel instanceof IAdaptable) {
+            T adapted = ((IAdaptable) visiblePanel).getAdapter(adapter);
+            if (adapted != null) {
+                return adapted;
             }
         }
-*/
+        if (adapter == IFindReplaceTarget.class) {
+            return adapter.cast(findReplaceTarget);
+        }
         return null;
     }
 
