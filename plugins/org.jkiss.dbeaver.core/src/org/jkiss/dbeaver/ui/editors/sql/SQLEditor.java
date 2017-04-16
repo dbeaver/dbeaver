@@ -26,8 +26,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.*;
-import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -70,7 +69,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
-import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
@@ -363,7 +361,7 @@ public class SQLEditor extends SQLEditorBase implements
     private class OpenContextJob extends AbstractJob {
         private final DBPDataSource dataSource;
         private Throwable error;
-        protected OpenContextJob(DBPDataSource dataSource) {
+        OpenContextJob(DBPDataSource dataSource) {
             super("Open connection to " + dataSource.getContainer().getName());
             this.dataSource = dataSource;
             setUser(true);
@@ -389,7 +387,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private class CloseContextJob extends AbstractJob {
         private final DBCExecutionContext context;
-        protected CloseContextJob(DBCExecutionContext context) {
+        CloseContextJob(DBCExecutionContext context) {
             super("Close context " + context.getContextName());
             this.context = context;
             setUser(true);
@@ -1402,7 +1400,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Nullable
-    public ResultSetViewer getActiveResultSetViewer()
+    private ResultSetViewer getActiveResultSetViewer()
     {
         if (curResultsContainer != null) {
             return curResultsContainer.getResultSetController();
@@ -1475,7 +1473,7 @@ public class SQLEditor extends SQLEditorBase implements
         private final List<QueryResultsContainer> resultContainers = new ArrayList<>();
         private DBDDataReceiver curDataReceiver = null;
 
-        public QueryProcessor() {
+        QueryProcessor() {
             // Create first (default) results provider
             queryProcessors.add(this);
             createResultsProvider(0);
@@ -1988,8 +1986,11 @@ public class SQLEditor extends SQLEditorBase implements
                 DBeaverUI.syncExec(new Runnable() {
                     @Override
                     public void run() {
-                        topOffset = getTextViewer().getTopIndexStartOffset();
-                        visibleLength = getTextViewer().getBottomIndexEndOffset() - topOffset;
+                        TextViewer textViewer = getTextViewer();
+                        if (textViewer != null) {
+                            topOffset = textViewer.getTopIndexStartOffset();
+                            visibleLength = textViewer.getBottomIndexEndOffset() - topOffset;
+                        }
                     }
                 });
                 if (scriptMode) {
@@ -2105,7 +2106,8 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public IFindReplaceTarget getTarget() {
             ResultSetViewer rsv = getActiveResultSetViewer();
-            boolean focusInEditor = getTextViewer().getTextWidget().isFocusControl();
+            TextViewer textViewer = getTextViewer();
+            boolean focusInEditor = textViewer != null && textViewer.getTextWidget().isFocusControl();
             if (!focusInEditor) {
                 if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
                     focusInEditor = false;
@@ -2119,8 +2121,10 @@ public class SQLEditor extends SQLEditorBase implements
                 if (nested != null) {
                     return nested;
                 }
+            } else if (textViewer != null) {
+                return textViewer.getFindReplaceTarget();
             }
-            return getTextViewer().getFindReplaceTarget();
+            return null;
         }
     }
 
@@ -2228,7 +2232,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private class SaveJob extends AbstractJob {
         private transient Boolean success = null;
-        public SaveJob() {
+        SaveJob() {
             super("Save '" + getPartName() + "' data changes...");
             setUser(true);
         }

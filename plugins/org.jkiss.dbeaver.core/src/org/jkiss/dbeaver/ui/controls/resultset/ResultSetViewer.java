@@ -518,7 +518,12 @@ public class ResultSetViewer extends Viewer
         availablePanels.clear();
         activePanels.clear();
         if (activePresentationDescriptor != null) {
-            availablePanels.addAll(ResultSetPresentationRegistry.getInstance().getSupportedPanels(getDataSource(), activePresentationDescriptor));
+            availablePanels.addAll(ResultSetPresentationRegistry.getInstance().getSupportedPanels(
+                    getDataSource(), activePresentationDescriptor.getId(), activePresentationDescriptor.getPresentationType()));
+        } else {
+            // Stats presentation
+            availablePanels.addAll(ResultSetPresentationRegistry.getInstance().getSupportedPanels(
+                    getDataSource(), null, IResultSetPresentation.PresentationType.COLUMNS));
         }
         activePresentation.createPresentation(this, presentationPanel);
 

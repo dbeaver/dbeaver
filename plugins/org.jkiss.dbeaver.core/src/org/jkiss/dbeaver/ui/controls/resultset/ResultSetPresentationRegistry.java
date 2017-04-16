@@ -110,10 +110,10 @@ public class ResultSetPresentationRegistry {
         return panels;
     }
 
-    public List<ResultSetPanelDescriptor> getSupportedPanels(DBPDataSource dataSource, ResultSetPresentationDescriptor presentation) {
+    public List<ResultSetPanelDescriptor> getSupportedPanels(DBPDataSource dataSource, String presentationId, IResultSetPresentation.PresentationType presentationType) {
         List<ResultSetPanelDescriptor> result = new ArrayList<>();
         for (ResultSetPanelDescriptor panel : panels) {
-            if (panel.supportedBy(dataSource, presentation)) {
+            if (panel.supportedBy(dataSource, presentationId, presentationType)) {
                 result.add(panel);
             }
         }
