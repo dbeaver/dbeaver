@@ -29,13 +29,17 @@ import java.net.URL;
  */
 public class SystemVariablesResolver implements GeneralUtils.IVariableResolver {
 
+    public static final String VAR_WORKSPACE = "workspace";
+    public static final String VAR_HOME = "home";
+    public static final String VAR_DBEAVER_HOME = "dbeaver_home";
+
     @Override
     public String get(String name) {
-        if (name.equalsIgnoreCase("home")) {
+        if (name.equalsIgnoreCase(VAR_HOME)) {
             return getUserHome();
-        } else if (name.equalsIgnoreCase("workspace")) {
+        } else if (name.equalsIgnoreCase(VAR_WORKSPACE)) {
             return getWorkspacePath();
-        } else if (name.equalsIgnoreCase("dbeaver_home")) {
+        } else if (name.equalsIgnoreCase(VAR_DBEAVER_HOME)) {
             return getInstallPath();
         }
         return null;
