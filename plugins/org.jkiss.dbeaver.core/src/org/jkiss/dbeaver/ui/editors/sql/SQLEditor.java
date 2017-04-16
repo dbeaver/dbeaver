@@ -2129,7 +2129,8 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public ISelectionProvider getProvider() {
             ResultSetViewer rsv = getActiveResultSetViewer();
-            boolean focusInEditor = getTextViewer().getTextWidget().isFocusControl();
+            TextViewer textViewer = getTextViewer();
+            boolean focusInEditor = textViewer != null && textViewer.getTextWidget().isFocusControl();
             if (!focusInEditor) {
                 if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
                     focusInEditor = false;
@@ -2140,8 +2141,11 @@ public class SQLEditor extends SQLEditorBase implements
             lastFocusInEditor = focusInEditor;
             if (!focusInEditor && rsv != null) {
                 return rsv;
+            } else if (textViewer != null) {
+                return textViewer.getSelectionProvider();
+            } else {
+                return null;
             }
-            return getTextViewer().getSelectionProvider();
         }
     }
 
