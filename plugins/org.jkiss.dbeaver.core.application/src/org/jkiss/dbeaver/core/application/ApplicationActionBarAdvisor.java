@@ -68,15 +68,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
     private static final String[] actionSetId = new String[] {
         "org.eclipse.ui.WorkingSetActionSet", //$NON-NLS-1$
-        "org.eclipse.ui.edit.text.actionSet.navigation", //$NON-NLS-1$
+        //"org.eclipse.ui.edit.text.actionSet.navigation", //$NON-NLS-1$
         //"org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo", //$NON-NLS-1$
         //"org.eclipse.ui.actionSet.openFiles", //$NON-NLS-1$
         "org.eclipse.ui.edit.text.actionSet.annotationNavigation", //$NON-NLS-1$
         //"org.eclipse.ui.NavigateActionSet", //$NON-NLS-1$
         //"org.eclipse.search.searchActionSet" //$NON-NLS-1$
     };
-
-
 
 
     private void removeUnWantedActions() {
