@@ -1039,6 +1039,10 @@
                 </and>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.editors.sql.handlers.CopySourceCodeHandler">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
+        </handler>
+
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.query.next" class="org.jkiss.dbeaver.ui.editors.sql.handlers.NavigateQueryHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
         </handler>
@@ -2036,9 +2040,14 @@
             </menu>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.extras">
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
+            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout" label="Layout">
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
+            </menu>
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=group.copy">
+            <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="Advanced copy"/>
         </menuContribution>
 
         <!-- QM menu & toolbar -->
