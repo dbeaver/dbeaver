@@ -401,9 +401,15 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                     // Fetch data only if we have to fetch all results or if it is rs requested
                     if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
                         if (hasResultSet && fetchResultSets) {
-                            DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
-                            if (dataReceiver != null) {
-                                hasResultSet = fetchQueryData(session, dbcStatement.openResultSet(), curResult, dataReceiver, true);
+                            DBCResultSet resultSet = dbcStatement.openResultSet();
+                            if (resultSet == null) {
+                                // Kind of bug in the driver. It says it has resultset but returns null
+                                break;
+                            } else {
+                                DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
+                                if (dataReceiver != null) {
+                                    hasResultSet = fetchQueryData(session, resultSet, curResult, dataReceiver, true);
+                                }
                             }
                         }
                     }
