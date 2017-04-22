@@ -17,38 +17,25 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.convert;
 
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
-
-import java.util.Map;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * JavaSQLConverter
  */
-public class JavaSQLConverter implements ISQLTextConverter {
+public class JavaSQLConverter extends SourceCodeSQLConverter {
     private static final Log log = Log.getLog(JavaSQLConverter.class);
 
-    @NotNull
+
     @Override
-    public String convertText(
-            @NotNull SQLDialect dialect,
-            @NotNull SQLSyntaxManager syntaxManager,
-            @NotNull SQLRuleManager ruleManager, @NotNull IDocument document,
-            int startPos,
-            int length,
-            @NotNull Map<String, Object> options)
-    {
-        try {
-            return document.get(startPos, length);
-        } catch (BadLocationException e) {
-            log.error(e);
-            return "";
+    protected void convertSourceLines(StringBuilder result, String[] sourceLines, String lineDelimiter) {
+        for (int i = 0; i < sourceLines.length; i++) {
+            String line = sourceLines[i];
+            result.append('"').append(CommonUtils.escapeJavaString(line)).append('"');
+            if (i < sourceLines.length - 1) {
+                result.append(" + ");
+            }
+            result.append("\n");
         }
     }
-
 }

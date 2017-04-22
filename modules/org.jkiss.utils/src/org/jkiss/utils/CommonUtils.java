@@ -39,9 +39,6 @@ public class CommonUtils {
 
     @NotNull
     public static String escapeJavaString(@NotNull String str) {
-        if (str.indexOf('"') == -1 && str.indexOf('\n') == -1) {
-            return str;
-        }
         StringBuilder res = new StringBuilder(str.length() + 5);
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
@@ -53,6 +50,10 @@ public class CommonUtils {
                     res.append("\\n");
                     break;
                 case '\r':
+                    res.append("\\r");
+                    break;
+                case '\t':
+                    res.append("\\t");
                     break;
                 default:
                     res.append(c);
@@ -483,6 +484,11 @@ public class CommonUtils {
             }
         }
         return result;
+    }
+
+    @NotNull
+    public static String unescapeDisplayString(@NotNull final String delim) {
+        return delim.replace("\\t", "\t").replace("\\n", "\n").replace("\\r", "\r");
     }
 
 }

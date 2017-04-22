@@ -28,12 +28,12 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -158,7 +158,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             }
             String[] items = combo.getItems();
             for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-                String delim = convertDelimiterFromDisplay(items[i]);
+                String delim = CommonUtils.unescapeDisplayString(items[i]);
                 if (delim.equals(defDelimiter)) {
                     combo.select(i);
                     break;
@@ -167,21 +167,14 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             return combo;
         }
 
-        @NotNull
-        private String convertDelimiterFromDisplay(final String delim) {
-            if (delim.equals("\\t")) return "\t";
-            if (delim.equals("\\n")) return "\n";
-            return delim;
-        }
-
         @Override
         protected void okPressed() {
             copySettings.setCopyHeader(copyHeaderCheck.getSelection());
             copySettings.setCopyRowNumbers(copyRowsCheck.getSelection());
             copySettings.setQuoteCells(quoteCellsCheck.getSelection());
             copySettings.setFormat(formatSelector.getSelection());
-            copySettings.setColumnDelimiter(convertDelimiterFromDisplay(colDelimCombo.getText()));
-            copySettings.setRowDelimiter(convertDelimiterFromDisplay(rowDelimCombo.getText()));
+            copySettings.setColumnDelimiter(CommonUtils.unescapeDisplayString(colDelimCombo.getText()));
+            copySettings.setRowDelimiter(CommonUtils.unescapeDisplayString(rowDelimCombo.getText()));
 
             settings.put(PARAM_COPY_HEADER, copySettings.isCopyHeader());
             settings.put(PARAM_COPY_ROWS, copySettings.isCopyRowNumbers());
