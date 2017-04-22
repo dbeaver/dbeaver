@@ -151,7 +151,7 @@ public class CopySourceCodeHandler extends AbstractHandler {
                 SashForm sash = new SashForm(previewPanel, SWT.VERTICAL);
                 sash.setLayoutData(new GridData(GridData.FILL_BOTH));
                 createSQLPanel(sash);
-                Composite targetGroup = UIUtils.createPlaceholder(sash, 1);
+                Composite targetGroup = UIUtils.createPlaceholder(sash, 1, 5);
                 targetGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
                 UIUtils.createControlLabel(targetGroup, "Result");
                 targetText = new StyledText(targetGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL | SWT.WRAP);
