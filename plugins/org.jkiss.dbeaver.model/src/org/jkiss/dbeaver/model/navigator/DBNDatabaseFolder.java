@@ -110,7 +110,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return getParentNode() instanceof DBSWrapper ? ((DBSWrapper)getParentNode()).getObject() : null;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPDataSource getDataSource()
     {
