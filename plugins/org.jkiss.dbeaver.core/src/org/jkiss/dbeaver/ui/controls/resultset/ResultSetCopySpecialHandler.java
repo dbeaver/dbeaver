@@ -71,12 +71,12 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
 
     private class ConfigDialog extends Dialog {
 
-        public static final String PARAM_COPY_HEADER = "copyHeader";
-        public static final String PARAM_COPY_ROWS = "copyRows";
-        public static final String PARAM_QUOTE_CELLS = "quoteCells";
-        public static final String PARAM_FORMAT = "format";
-        public static final String PARAM_COL_DELIMITER = "delimiter";
-        public static final String PARAM_ROW_DELIMITER = "rowDelimiter";
+        static final String PARAM_COPY_HEADER = "copyHeader";
+        static final String PARAM_COPY_ROWS = "copyRows";
+        static final String PARAM_QUOTE_CELLS = "quoteCells";
+        static final String PARAM_FORMAT = "format";
+        static final String PARAM_COL_DELIMITER = "delimiter";
+        static final String PARAM_ROW_DELIMITER = "rowDelimiter";
 
         private final IDialogSettings settings;
 
