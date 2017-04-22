@@ -20,9 +20,9 @@ package org.jkiss.dbeaver.ui.editors.sql.convert;
 import org.jkiss.utils.CommonUtils;
 
 /**
- * JavaSQLConverter
+ * CPPSQLConverter
  */
-public class JavaSQLConverter extends SourceCodeSQLConverter {
+public class CPPSQLConverter extends SourceCodeSQLConverter {
 
     @Override
     protected void convertSourceLines(StringBuilder result, String[] sourceLines, String lineDelimiter) {
@@ -30,7 +30,7 @@ public class JavaSQLConverter extends SourceCodeSQLConverter {
             String line = sourceLines[i];
             result.append('"').append(CommonUtils.escapeJavaString(line)).append('"');
             if (i < sourceLines.length - 1) {
-                result.append(" + \n");
+                result.append("\n");
             } else {
                 result.append(";");
             }
