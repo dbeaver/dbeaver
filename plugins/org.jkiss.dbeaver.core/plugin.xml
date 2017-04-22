@@ -34,6 +34,7 @@
     <extension-point id="org.jkiss.dbeaver.resources" name="Resources" schema="schema/org.jkiss.dbeaver.resources.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="Result set presentations" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.panel" name="Result set panels" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sql.covert" name="SQL text conversions" schema="schema/org.jkiss.dbeaver.sql.convert.exsd"/>
     <extension-point id="org.jkiss.dbeaver.tools" name="Tools" schema="schema/org.jkiss.dbeaver.tools.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
@@ -3139,6 +3140,25 @@
         <repository id="maven-central" name="Central Repository" url="https://repo1.maven.org/maven2/" order="0"/>
 
         <repository id="maven-central-unsecure" name="Central Repository (unsecure)" url="http://central.maven.org/maven2/" order="99999"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sql.covert">
+        <target id="unformatted"
+                label="Unformatted text"
+                description="Converts SQL text into unformatted single line plain text"
+                class="org.jkiss.dbeaver.ui.editors.sql.convert.UnformattedSQLConverter"/>
+        <target id="java"
+                label="Java"
+                description="Converts SQL text into Java source code"
+                class="org.jkiss.dbeaver.ui.editors.sql.convert.JavaSQLConverter"/>
+        <target id="cpp"
+                label="C/C++"
+                description="Converts SQL text into C/C++ source code"
+                class="org.jkiss.dbeaver.ui.editors.sql.convert.CPPSQLConverter"/>
+        <target id="html"
+                label="HTML"
+                description="Converts SQL text into colored HTML snippet"
+                class="org.jkiss.dbeaver.ui.editors.sql.convert.HTMLSQLConverter"/>
     </extension>
 
     <extension
