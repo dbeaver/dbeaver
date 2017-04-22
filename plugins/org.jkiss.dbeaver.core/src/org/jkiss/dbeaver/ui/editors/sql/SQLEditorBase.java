@@ -133,7 +133,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     }
 
     @NotNull
-    protected SQLDialect getSQLDialect() {
+    public SQLDialect getSQLDialect() {
         DBPDataSource dataSource = getDataSource();
         // Refresh syntax
         if (dataSource instanceof SQLDataSource) {

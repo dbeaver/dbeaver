@@ -42,13 +42,13 @@ public class UnformattedSQLConverter implements ISQLTextConverter {
     public String convertText(
             @NotNull SQLDialect dialect,
             @NotNull SQLSyntaxManager syntaxManager,
+            @NotNull SQLRuleManager ruleManager,
             @NotNull IDocument document,
             int startPos,
             int length,
             @NotNull Map<String, Object> options)
     {
         StringBuilder result = new StringBuilder();
-        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.setRange(document, startPos, length);
         String[] singleLineComments = dialect.getSingleLineComments();
         Pair<String, String> multiLineComments = dialect.getMultiLineComments();

@@ -17,8 +17,10 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.convert;
 
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
@@ -26,18 +28,27 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
 import java.util.Map;
 
 /**
- * SQL code converter
+ * JavaSQLConverter
  */
-public interface ISQLTextConverter {
+public class JavaSQLConverter implements ISQLTextConverter {
+    private static final Log log = Log.getLog(JavaSQLConverter.class);
 
     @NotNull
-    String convertText(
+    @Override
+    public String convertText(
             @NotNull SQLDialect dialect,
             @NotNull SQLSyntaxManager syntaxManager,
-            @NotNull SQLRuleManager ruleManager,
-            @NotNull IDocument document,
+            @NotNull SQLRuleManager ruleManager, @NotNull IDocument document,
             int startPos,
             int length,
-            @NotNull Map<String, Object> options);
+            @NotNull Map<String, Object> options)
+    {
+        try {
+            return document.get(startPos, length);
+        } catch (BadLocationException e) {
+            log.error(e);
+            return "";
+        }
+    }
 
 }
