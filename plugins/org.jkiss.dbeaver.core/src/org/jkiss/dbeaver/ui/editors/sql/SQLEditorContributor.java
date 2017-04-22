@@ -22,15 +22,12 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.editors.text.TextEditorActionContributor;
-import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
 import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.CopyUnformattedTextAction;
 
 import java.util.ResourceBundle;
 
@@ -50,7 +47,6 @@ public class SQLEditorContributor extends TextEditorActionContributor
     private RetargetTextEditorAction contentAssistTip;
     private RetargetTextEditorAction contentAssistInformation;
     private RetargetTextEditorAction contentFormatProposal;
-    private CopyUnformattedTextAction copyUnformattedTextAction;
 
     public SQLEditorContributor()
     {
@@ -83,8 +79,6 @@ public class SQLEditorContributor extends TextEditorActionContributor
 
         contentAssistInformation = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_ASSIST_INFORMATION));
         contentAssistInformation.setActionDefinitionId(ITextEditorActionDefinitionIds.SHOW_INFORMATION);
-
-        copyUnformattedTextAction = new CopyUnformattedTextAction();
     }
 
     @Override
@@ -115,7 +109,6 @@ public class SQLEditorContributor extends TextEditorActionContributor
             contentAssistTip.setAction(getAction(activeEditorPart, ACTION_CONTENT_ASSIST_TIP)); //$NON-NLS-1$
             contentAssistInformation.setAction(getAction(activeEditorPart, ACTION_CONTENT_ASSIST_INFORMATION)); //$NON-NLS-1$
             contentFormatProposal.setAction(getAction(activeEditorPart, ACTION_CONTENT_FORMAT_PROPOSAL)); //$NON-NLS-1$
-            copyUnformattedTextAction.setEditor(activeEditorPart);
         }
     }
 
@@ -140,10 +133,7 @@ public class SQLEditorContributor extends TextEditorActionContributor
                 editMenu.add(contentAssistProposal);
                 editMenu.add(contentAssistTip);
                 editMenu.add(contentAssistInformation);
-                MenuManager formatMenu = new MenuManager(CoreMessages.actions_menu_edit_ContentFormat);
-                editMenu.add(formatMenu);
-                formatMenu.add(contentFormatProposal);
-                formatMenu.add(copyUnformattedTextAction);
+                editMenu.add(contentFormatProposal);
             }
             IMenuManager navMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_NAVIGATE);
             if (navMenu != null) {
