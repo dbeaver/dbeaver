@@ -220,7 +220,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
     @Nullable
-    @Property(viewable = true, expensive = true, order = 5)
+    @Property(viewable = true, expensive = true, order = 5, category = "Statistics")
     public synchronized Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {
