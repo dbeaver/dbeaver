@@ -60,8 +60,8 @@ public class SQLTargetConverterDescriptor extends AbstractContextDescriptor {
         return icon;
     }
 
-    public ISQLCodeConverter createInstance() throws DBException {
-        return implClass.createInstance(ISQLCodeConverter.class);
+    public ISQLTextConverter createInstance() throws DBException {
+        return implClass.createInstance(ISQLTextConverter.class);
     }
 
     @Override
