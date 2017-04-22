@@ -31,6 +31,9 @@
     <includes id="org.jkiss.dbeaver.ext.db2.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.ext.exasol.feature" version="0.0.0"/>
 
+    <!-- P2 for RCP -->
+    <includes id="org.eclipse.equinox.p2.rcp.feature" version="0.0.0"/>
+
     <requires>
         <import plugin="org.eclipse.core.runtime"/>
         <import plugin="org.eclipse.core.resources"/>

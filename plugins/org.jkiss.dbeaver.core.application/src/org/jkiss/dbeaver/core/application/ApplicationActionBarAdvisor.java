@@ -215,6 +215,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), IWorkbenchCommandConstants.WINDOW_SHOW_KEY_ASSIST));
 
                 helpMenu.add(new Separator());
+                helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.equinox.p2.ui.sdk.install"));
                 helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.ui.help.installationDialog"));
                 helpMenu.add(checkUpdatesAction);
             } else {
