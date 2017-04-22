@@ -114,14 +114,14 @@ public class PropertyTreeViewer extends TreeViewer {
         ColumnViewerToolTipSupport.enableFor(this, ToolTip.NO_RECREATE);
 
         TreeViewerColumn column = new TreeViewerColumn(this, SWT.NONE);
-        column.getColumn().setWidth(200);
+        //column.getColumn().setWidth(200);
         column.getColumn().setMoveable(true);
         column.getColumn().setText(CoreMessages.ui_properties_name);
         column.setLabelProvider(new PropsLabelProvider(true));
         column.getColumn().addListener(SWT.Selection, new SortListener());
 
         column = new TreeViewerColumn(this, SWT.NONE);
-        column.getColumn().setWidth(120);
+        //column.getColumn().setWidth(120);
         column.getColumn().setMoveable(true);
         column.getColumn().setText(CoreMessages.ui_properties_value);
         column.setLabelProvider(new PropsLabelProvider(false));
