@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.hsqldb.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -165,6 +166,53 @@ public class HSQLMetaModel extends GenericMetaModel
     @Override
     public String getAutoIncrementClause(GenericTableColumn column) {
         return "IDENTITY";
+    }
+
+    @Override
+    public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
+        return true;
+    }
+
+    @Override
+    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
+        if (table == null) {
+            throw new DBException("Database level triggers aren't supported for HSQLDB");
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT * FROM INFORMATION_SCHEMA.TRIGGERS\n" +
+                            "WHERE EVENT_OBJECT_SCHEMA=? AND EVENT_OBJECT_TABLE=?")) {
+                dbStat.setString(1, container.getName());
+                dbStat.setString(2, table.getName());
+
+                List<GenericTrigger> result = new ArrayList<>();
+
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String name = JDBCUtils.safeGetString(dbResult, "TRIGGER_NAME");
+                        if (name == null) {
+                            continue;
+                        }
+                        name = name.trim();
+                        HSQLTrigger trigger = new HSQLTrigger(
+                                container,
+                                table,
+                                name,
+                                dbResult);
+                        result.add(trigger);
+                    }
+                }
+                return result;
+
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, container.getDataSource());
+        }
+    }
+
+    @Override
+    public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
+        return ((HSQLTrigger)trigger).getStatement();
     }
 
 }
