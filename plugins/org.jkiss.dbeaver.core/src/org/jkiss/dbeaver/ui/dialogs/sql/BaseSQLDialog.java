@@ -91,7 +91,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
         sqlViewer = new SQLEditorBase() {
             @NotNull
             @Override
-            protected SQLDialect getSQLDialect() {
+            public SQLDialect getSQLDialect() {
                 return BaseSQLDialog.this.getSQLDialect();
             }
 
