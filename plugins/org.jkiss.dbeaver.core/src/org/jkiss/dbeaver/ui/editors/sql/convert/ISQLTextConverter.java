@@ -17,16 +17,24 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.convert;
 
+import org.eclipse.jface.text.IDocument;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 
 import java.util.Map;
 
 /**
  * SQL code converter
  */
-public interface ISQLCodeConverter {
+public interface ISQLTextConverter {
 
     @NotNull
-    String convertSQL(@NotNull String source, @NotNull Map<String, Object> options);
+    String convertText(@NotNull SQLDialect dialect,
+                      @NotNull SQLSyntaxManager syntaxManager,
+                      @NotNull IDocument document,
+                      int startPos,
+                      int length,
+                      @NotNull Map<String, Object> options);
 
 }
