@@ -148,10 +148,10 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         final List<DBDAttributeBinding> visibleAttributes = rsv.getModel().getVisibleAttributes();
         final DBSEntity entity = rsv.getModel().getSingleSource();
         if (dataContainer != null && !visibleAttributes.isEmpty() && entity != null) {
-            final Collection<ResultSetRow> selectedRows = rss.getSelectedRows();
+            final List<ResultSetRow> selectedRows = new ArrayList<>(rss.getSelectedRows());
             if (!CommonUtils.isEmpty(selectedRows)) {
 
-                menu.add(makeAction("SELECT by Unique Key", new ResultSetAnalysisRunner(dataContainer.getDataSource(), rsv.getModel()) {
+                menu.add(makeAction("SELECT .. WHERE .. =", new ResultSetAnalysisRunner(dataContainer.getDataSource(), rsv.getModel()) {
                     @Override
                     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) throws DBException
                     {
@@ -160,7 +160,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
                             sql.append("SELECT ");
                             boolean hasAttr = false;
-                            for (DBSAttributeBase attr : getValueAttributes(monitor, object, keyAttributes)) {
+                            for (DBSAttributeBase attr : getAllAttributes(monitor, object)) {
                                 if (hasAttr) sql.append(", ");
                                 sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
                                 hasAttr = true;
@@ -178,6 +178,49 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         }
                     }
                 }));
+                if (selectedRows.size() > 1) {
+                    menu.add(makeAction("SELECT .. WHERE .. IN", new ResultSetAnalysisRunner(dataContainer.getDataSource(), rsv.getModel()) {
+                        @Override
+                        public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) throws DBException
+                        {
+                            Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
+                            sql.append("SELECT ");
+                            boolean hasAttr = false;
+                            for (DBSAttributeBase attr : getAllAttributes(monitor, object)) {
+                                if (hasAttr) sql.append(", ");
+                                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
+                                hasAttr = true;
+                            }
+                            sql.append("\nFROM ").append(DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML));
+                            sql.append("\nWHERE ");
+                            boolean multiKey = keyAttributes.size() > 1;
+                            if (multiKey) sql.append("(");
+                            hasAttr = false;
+                            for (DBDAttributeBinding binding : keyAttributes) {
+                                if (hasAttr) sql.append(",");
+                                sql.append(DBUtils.getObjectFullName(binding.getAttribute(), DBPEvaluationContext.DML));
+                                hasAttr = true;
+                            }
+                            if (multiKey) sql.append(")");
+                            sql.append(" IN (");
+                            if (multiKey) sql.append("\n");
+                            for (int i = 0; i < selectedRows.size(); i++) {
+                                ResultSetRow firstRow = selectedRows.get(i);
+                                if (multiKey) sql.append("(");
+                                hasAttr = false;
+                                for (DBDAttributeBinding binding : keyAttributes) {
+                                    if (hasAttr) sql.append(",");
+                                    appendAttributeValue(rsv, sql, binding, firstRow);
+                                    hasAttr = true;
+                                }
+                                if (multiKey) sql.append(")");
+                                if (i < selectedRows.size() - 1) sql.append(",");
+                                if (multiKey) sql.append("\n");
+                            }
+                            sql.append(");\n");
+                        }
+                    }));
+                }
                 menu.add(makeAction("INSERT", new ResultSetAnalysisRunner(dataContainer.getDataSource(), rsv.getModel()) {
                     @Override
                     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) throws DBException {

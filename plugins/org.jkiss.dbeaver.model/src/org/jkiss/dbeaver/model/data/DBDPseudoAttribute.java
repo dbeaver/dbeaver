@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -109,7 +107,7 @@ public class DBDPseudoAttribute implements DBPNamedObject {
         return null;
     }
 
-    private class FakeEntityAttribute implements DBSEntityAttribute {
+    private class FakeEntityAttribute implements DBSEntityAttribute, DBPQualifiedObject {
         private DBSEntity owner;
         private DBCAttributeMetaData attribute;
 
@@ -217,6 +215,15 @@ public class DBDPseudoAttribute implements DBPNamedObject {
         public long getMaxLength()
         {
             return attribute.getMaxLength();
+        }
+
+        /**
+         * Implements qualified object to avoid attribute name quoting
+         */
+        @NotNull
+        @Override
+        public String getFullyQualifiedName(DBPEvaluationContext context) {
+            return name;
         }
     }
 }
