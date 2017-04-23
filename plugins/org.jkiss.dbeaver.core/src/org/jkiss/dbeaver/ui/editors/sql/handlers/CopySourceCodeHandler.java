@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
@@ -159,6 +160,7 @@ public class CopySourceCodeHandler extends AbstractHandler {
                 UIUtils.createControlLabel(targetGroup, "Result");
                 targetText = new StyledText(targetGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL | SWT.WRAP);
                 targetText.setLayoutData(new GridData(GridData.FILL_BOTH));
+                targetText.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
             }
 
             updateResult();

@@ -20,8 +20,13 @@ package org.jkiss.dbeaver.ui.editors.sql.convert;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * SQLTargetConverterDescriptor
@@ -33,6 +38,7 @@ public class SQLTargetConverterDescriptor extends AbstractContextDescriptor {
     private final String description;
     private final ObjectType implClass;
     private final DBPImage icon;
+    private List<DBPPropertyDescriptor> properties = new ArrayList<>();
 
     SQLTargetConverterDescriptor(IConfigurationElement config) {
         super(config);
@@ -42,6 +48,8 @@ public class SQLTargetConverterDescriptor extends AbstractContextDescriptor {
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.implClass = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+
+        this.properties.addAll(PropertyDescriptor.extractProperties(config));
     }
 
     public String getId() {
@@ -58,6 +66,10 @@ public class SQLTargetConverterDescriptor extends AbstractContextDescriptor {
 
     public DBPImage getIcon() {
         return icon;
+    }
+
+    public List<DBPPropertyDescriptor> getProperties() {
+        return properties;
     }
 
     public ISQLTextConverter createInstance() throws DBException {
