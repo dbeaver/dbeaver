@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
@@ -126,7 +127,9 @@ public class CopySourceCodeHandler extends AbstractHandler {
                 };
 
                 Composite formatPanel = UIUtils.createPlaceholder(composite, 1);
-                formatPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+                GridData gd = new GridData(GridData.FILL_BOTH);
+                gd.minimumWidth = 200;
+                formatPanel.setLayoutData(gd);
                 Group formatsGroup = UIUtils.createControlGroup(formatPanel, "Format", 1, GridData.FILL_HORIZONTAL, 0);
                 for (SQLTargetConverterDescriptor converter : SQLConverterRegistry.getInstance().getTargetConverters()) {
                     Button formatButton = new Button(formatsGroup, SWT.RADIO);
@@ -181,6 +184,16 @@ public class CopySourceCodeHandler extends AbstractHandler {
             } catch (DBException e) {
                 log.error(e);
                 targetText.setText(CommonUtils.notEmpty(e.getMessage()));
+            }
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(Composite parent)
+        {
+            super.createButtonsForButtonBar(parent);
+            Button okButton = getButton(IDialogConstants.OK_ID);
+            if (okButton != null) {
+                okButton.setText(CoreMessages.dialog_view_sql_button_copy);
             }
         }
 
