@@ -29,9 +29,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -41,8 +41,8 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -65,7 +65,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     private static final Log log = Log.getLog(DatabaseConsumerPageMapping.class);
 
-    public static final String TARGET_NAME_BROWSE = "[browse]";
+    private static final String TARGET_NAME_BROWSE = "[browse]";
     private TreeViewer mappingViewer;
     private Label containerIcon;
     private Text containerName;
@@ -84,11 +84,15 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         setPageComplete(false);
     }
 
+    private DatabaseConsumerSettings getDatabaseConsumerSettings() {
+        return getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
+    }
+
     @Override
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 
-        final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
+        final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
 
         Composite composite = new Composite(parent, SWT.NULL);
         GridLayout gl = new GridLayout();
@@ -385,7 +389,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             {
                 DatabaseMappingObject mapping = (DatabaseMappingObject)element;
                 if (mapping.getMappingType() == DatabaseMappingType.unspecified) {
-                    return mapping.getSource().getName();
+                    return transformTargetName(mapping.getSource().getName());
                 }
                 if (mapping instanceof DatabaseMappingContainer) {
                     if (mapping.getMappingType() == DatabaseMappingType.existing) {
@@ -404,7 +408,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             protected void setValue(final Object element, Object value)
             {
                 try {
-                    final DatabaseConsumerSettings settings = getWizard().getPageSettings(DatabaseConsumerPageMapping.this, DatabaseConsumerSettings.class);
+                    final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
                     String name = CommonUtils.toString(value);
                     DBPDataSource dataSource = settings.getTargetDataSource((DatabaseMappingObject) element);
                     if (!name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE) && dataSource != null) {
@@ -496,7 +500,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     private CellEditor createTargetEditor(Object element) throws DBException
     {
-        final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
+        final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         boolean allowsCreate = true;
         List<String> items = new ArrayList<>();
         if (element instanceof DatabaseMappingContainer) {
@@ -508,7 +512,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 DBSObjectContainer container = settings.getContainer();
                 for (DBSObject child : container.getChildren(new VoidProgressMonitor())) {
                     if (child instanceof DBSDataManipulator) {
-                        items.add(child.getName());
+                        items.add(transformTargetName(child.getName()));
                     }
                 }
 
@@ -525,7 +529,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             if (mapping.getParent().getTarget() instanceof DBSEntity) {
                 DBSEntity parentEntity = (DBSEntity)mapping.getParent().getTarget();
                 for (DBSEntityAttribute attr : parentEntity.getAttributes(new VoidProgressMonitor())) {
-                    items.add(attr.getName());
+                    items.add(transformTargetName(attr.getName()));
                 }
             }
 
@@ -549,7 +553,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         } else if (name.equals(TARGET_NAME_BROWSE)) {
             mapExistingTable((DatabaseMappingContainer) mapping);
         } else {
-            final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
+            name = transformTargetName(name);
+            final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
             if (mapping instanceof DatabaseMappingContainer) {
                 DatabaseMappingContainer containerMapping = (DatabaseMappingContainer)mapping;
                 if (settings.getContainer() != null) {
@@ -585,7 +590,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     private void mapExistingTable(DatabaseMappingContainer mapping)
     {
-        final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
+        final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
         if (activeProject != null) {
             DBNNode rootNode = settings.getContainerNode();
@@ -629,7 +634,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         String tableName = EnterNameDialog.chooseName(
             getShell(),
             "New table name",
-            mapping.getMappingType() == DatabaseMappingType.create ? mapping.getTargetName() : "");
+            transformTargetName(mapping.getMappingType() == DatabaseMappingType.create ? mapping.getTargetName() : ""));
         if (!CommonUtils.isEmpty(tableName)) {
             try {
                 mapping.setTargetName(tableName);
@@ -642,11 +647,19 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
     }
 
+    private String transformTargetName(String name) {
+        DBSObjectContainer container = getDatabaseConsumerSettings().getContainer();
+        if (container == null) {
+            return name;
+        }
+        return DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
+    }
+
     private void mapColumns(DatabaseMappingContainer mapping)
     {
         ColumnsMappingDialog dialog = new ColumnsMappingDialog(
             getWizard(),
-            getWizard().getPageSettings(this, DatabaseConsumerSettings.class),
+            getDatabaseConsumerSettings(),
             mapping);
         if (dialog.open() == IDialogConstants.OK_ID) {
             mappingViewer.refresh();
@@ -657,7 +670,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     private void showDDL(DatabaseMappingContainer mapping)
     {
-        final DatabaseConsumerSettings settings = getWizard().getPageSettings(DatabaseConsumerPageMapping.this, DatabaseConsumerSettings.class);
+        final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         final DBSObjectContainer container = settings.getContainer();
         if (container == null) {
             return;
@@ -688,7 +701,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     @Override
     public void activatePage()
     {
-        final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
+        final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         settings.loadNode(getContainer());
         DBNDatabaseNode containerNode = settings.getContainerNode();
         if (containerNode != null) {
@@ -707,13 +720,13 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     DatabaseMappingContainer mapping;
                     if (pipe.getConsumer() instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject() != null) {
                         try {
-                            mapping = new DatabaseMappingContainer(getContainer(), sourceObject, ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject());
+                            mapping = new DatabaseMappingContainer(getContainer(), getDatabaseConsumerSettings(), sourceObject, ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject());
                         } catch (DBException e) {
                             setMessage(e.getMessage(), IMessageProvider.ERROR);
-                            mapping = new DatabaseMappingContainer(sourceObject);
+                            mapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceObject);
                         }
                     } else {
-                        mapping = new DatabaseMappingContainer(sourceObject);
+                        mapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceObject);
                     }
                     dataMappings.put(sourceObject, mapping);
                 }
@@ -735,7 +748,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     @Override
     protected boolean determinePageCompletion()
     {
-        final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
+        final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         if (settings.getContainerNode() == null) {
             setErrorMessage("Set target container");
             return false;
