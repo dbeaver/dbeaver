@@ -18,19 +18,19 @@ package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -39,23 +39,30 @@ import java.util.List;
 * DatabaseMappingContainer
 */
 class DatabaseMappingContainer implements DatabaseMappingObject {
+    private DatabaseConsumerSettings settings;
     private DBSDataContainer source;
     private DBSDataManipulator target;
     private String targetName;
     private DatabaseMappingType mappingType;
     private List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
 
-    public DatabaseMappingContainer(DBSDataContainer source)
+    public DatabaseMappingContainer(DatabaseConsumerSettings settings, DBSDataContainer source)
     {
+        this.settings = settings;
         this.source = source;
         this.mappingType = DatabaseMappingType.unspecified;
     }
 
-    public DatabaseMappingContainer(IRunnableContext context, DBSDataContainer sourceObject, DBSDataManipulator targetObject) throws DBException
+    public DatabaseMappingContainer(IRunnableContext context, DatabaseConsumerSettings settings, DBSDataContainer sourceObject, DBSDataManipulator targetObject) throws DBException
     {
+        this.settings = settings;
         this.source = sourceObject;
         this.target = targetObject;
         refreshMappingType(context, DatabaseMappingType.existing);
+    }
+
+    public DatabaseConsumerSettings getSettings() {
+        return settings;
     }
 
     @Override

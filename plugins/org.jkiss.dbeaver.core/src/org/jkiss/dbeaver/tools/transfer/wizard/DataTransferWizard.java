@@ -148,6 +148,14 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     }
 
     @Override
+    public boolean performCancel() {
+        // Save settings anyway
+        getSettings().saveTo(getDialogSettings());
+
+        return super.performCancel();
+    }
+
+    @Override
     public boolean performFinish() {
         // Save settings
         getSettings().saveTo(getDialogSettings());

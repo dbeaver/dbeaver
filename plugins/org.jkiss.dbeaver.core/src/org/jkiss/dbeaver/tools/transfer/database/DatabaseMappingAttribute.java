@@ -18,12 +18,10 @@ package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -142,6 +140,14 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
             default:
                 mappingType = DatabaseMappingType.unspecified;
                 break;
+        }
+
+        if (mappingType == DatabaseMappingType.create && !CommonUtils.isEmpty(targetName)) {
+            // Convert target name case (#1516)
+            DBSObjectContainer container = parent.getSettings().getContainer();
+            if (container != null) {
+                targetName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), targetName);
+            }
         }
     }
 
