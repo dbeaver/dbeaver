@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.handlers;
+package org.jkiss.dbeaver.ui.editors.sql.convert;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -38,12 +38,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.registry.sql.SQLConverterRegistry;
+import org.jkiss.dbeaver.registry.sql.SQLTargetConverterDescriptor;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.convert.ISQLTextConverter;
-import org.jkiss.dbeaver.ui.editors.sql.convert.SQLConverterRegistry;
-import org.jkiss.dbeaver.ui.editors.sql.convert.SQLTargetConverterDescriptor;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -89,6 +89,7 @@ public class CopySourceCodeHandler extends AbstractHandler {
         private SQLTargetConverterDescriptor curFormat;
         private Map<String, Object> options = new HashMap<>();
         private String result;
+        private PropertySourceCustom propertySource;
 
         TargetFormatDialog(SQLEditor editor, TextSelection selection) {
             super(editor.getSite(), "Choose format", null);
@@ -171,6 +172,9 @@ public class CopySourceCodeHandler extends AbstractHandler {
         private void updateResult() {
             try {
                 if (curFormat != null) {
+                    propertySource = new PropertySourceCustom(curFormat.getProperties(), options);
+                    propsViewer.loadProperties(propertySource);
+
                     ISQLTextConverter converter = curFormat.createInstance();
                     result = converter.convertText(
                             editor.getSQLDialect(),

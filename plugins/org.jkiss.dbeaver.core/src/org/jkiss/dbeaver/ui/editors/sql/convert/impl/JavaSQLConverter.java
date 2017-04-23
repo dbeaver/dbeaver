@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.convert;
+package org.jkiss.dbeaver.ui.editors.sql.convert.impl;
 
 import org.jkiss.utils.CommonUtils;
 

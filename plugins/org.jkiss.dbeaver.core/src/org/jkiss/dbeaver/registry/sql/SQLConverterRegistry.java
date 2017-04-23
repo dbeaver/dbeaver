@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.convert;
+package org.jkiss.dbeaver.registry.sql;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPresentationDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
