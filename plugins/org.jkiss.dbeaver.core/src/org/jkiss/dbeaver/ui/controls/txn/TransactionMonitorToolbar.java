@@ -79,13 +79,15 @@ public class TransactionMonitorToolbar {
             }
         };
         final IWorkbenchPage activePage = this.workbenchWindow.getActivePage();
-        activePage.addPartListener(partListener);
-        monitorPanel.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                activePage.removePartListener(partListener);
-            }
-        });
+        if (activePage != null) {
+            activePage.addPartListener(partListener);
+            monitorPanel.addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e) {
+                    activePage.removePartListener(partListener);
+                }
+            });
+        }
 
         return monitorPanel;
     }
@@ -218,6 +220,9 @@ public class TransactionMonitorToolbar {
 
         @Nullable
         private DBCExecutionContext getActiveExecutionContext() {
+            if (workbenchWindow == null || workbenchWindow.getActivePage() == null) {
+                return null;
+            }
             DBCExecutionContext executionContext = null;
             final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
             if (activeEditor instanceof DBPContextProvider) {
