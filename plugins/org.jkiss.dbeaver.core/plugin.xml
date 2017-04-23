@@ -1037,7 +1037,7 @@
                 </and>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.editors.sql.handlers.CopySourceCodeHandler">
+        <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.editors.sql.convert.CopySourceCodeHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
         </handler>
 
@@ -3146,19 +3146,19 @@
         <target id="unformatted"
                 label="Unformatted text"
                 description="Converts SQL text into unformatted single line plain text"
-                class="org.jkiss.dbeaver.ui.editors.sql.convert.UnformattedSQLConverter"/>
-        <target id="java" label="Java" description="Converts SQL text into Java source code" class="org.jkiss.dbeaver.ui.editors.sql.convert.JavaSQLConverter">
+                class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.UnformattedSQLConverter"/>
+        <target id="java" label="Java" description="Converts SQL text into Java source code" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.JavaSQLConverter">
             <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
             <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually \n or space" required="false" defaultValue=" "/>
         </target>
-        <target id="cpp" label="C/C++" description="Converts SQL text into C/C++ source code" class="org.jkiss.dbeaver.ui.editors.sql.convert.CPPSQLConverter">
+        <target id="cpp" label="C/C++" description="Converts SQL text into C/C++ source code" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.CPPSQLConverter">
             <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
             <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually \n or space" required="false" defaultValue=" "/>
         </target>
         <target id="html"
                 label="HTML"
                 description="Converts SQL text into colored HTML snippet"
-                class="org.jkiss.dbeaver.ui.editors.sql.convert.HTMLSQLConverter"/>
+                class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.HTMLSQLConverter"/>
     </extension>
 
     <extension
