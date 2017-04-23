@@ -51,15 +51,16 @@ public class XMLFormattingStrategy extends ContextBasedFormattingStrategy
             return content;
         }
         try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            transformerFactory.setAttribute("indent-number", 2);
+            Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             if (!content.contains("<?xml")) {
                 transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             }
-            transformer.setOutputProperty(OutputKeys.INDENT, "2");
 
-            StreamResult result = new StreamResult(new StringWriter());
             StreamSource source = new StreamSource(new StringReader(content));
+            StreamResult result = new StreamResult(new StringWriter());
             transformer.transform(source, result);
             return result.getWriter().toString();
         } catch (Throwable e) {
