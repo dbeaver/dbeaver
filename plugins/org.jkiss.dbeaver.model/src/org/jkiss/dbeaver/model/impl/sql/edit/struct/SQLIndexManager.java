@@ -56,12 +56,11 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
         index.setName(indexName);
 
         StringBuilder decl = new StringBuilder(40);
-        decl.append("CREATE ");
-        if (index.isUnique()) {
-            decl.append("UNIQUE ");
-        }
-        decl.append("INDEX ").append(indexName) //$NON-NLS-1$
-            .append(" ON ").append(table.getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-1$
+        decl.append("CREATE");
+        appendIndexModifiers(index, decl);
+        decl.append(" INDEX ").append(indexName); //$NON-NLS-1$
+        appendIndexType(index, decl);
+        decl.append(" ON ").append(table.getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-1$
             .append(" ("); //$NON-NLS-1$
         try {
             // Get columns using void monitor
@@ -80,6 +79,16 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
         actions.add(
             new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_index, decl.toString())
         );
+    }
+
+    protected void appendIndexType(OBJECT_TYPE index, StringBuilder decl) {
+
+    }
+
+    protected void appendIndexModifiers(OBJECT_TYPE index, StringBuilder decl) {
+        if (index.isUnique()) {
+            decl.append(" UNIQUE");
+        }
     }
 
     protected void appendIndexColumnModifiers(StringBuilder decl, DBSTableIndexColumn indexColumn) {

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -100,6 +102,21 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP INDEX " + PATTERN_ITEM_INDEX_SHORT; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    protected void appendIndexType(MySQLTableIndex index, StringBuilder decl) {
+        DBSIndexType indexType = index.getIndexType();
+        if (indexType != MySQLConstants.INDEX_TYPE_FULLTEXT) {
+            decl.append(" USING ").append(indexType.getId());
+        }
+    }
+
+    protected void appendIndexModifiers(MySQLTableIndex index, StringBuilder decl) {
+        if (index.getIndexType() == MySQLConstants.INDEX_TYPE_FULLTEXT) {
+            decl.append(" FULLTEXT");
+        } else {
+            super.appendIndexModifiers(index, decl);
+        }
+    }
+
     protected void appendIndexColumnModifiers(StringBuilder decl, DBSTableIndexColumn indexColumn) {
         final String subPart = ((MySQLTableIndexColumn) indexColumn).getSubPart();
         if (!CommonUtils.isEmpty(subPart)) {
@@ -117,7 +134,12 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
         private int lengthColumnIndex;
 
         public MyEditIndexPage(MySQLTable parent) {
-            super(MySQLMessages.edit_index_manager_title, parent, Collections.singletonList(DBSIndexType.OTHER));
+            super(MySQLMessages.edit_index_manager_title, parent,
+                    Arrays.asList(MySQLConstants.INDEX_TYPE_BTREE,
+                    MySQLConstants.INDEX_TYPE_FULLTEXT,
+                    MySQLConstants.INDEX_TYPE_HASH,
+                    MySQLConstants.INDEX_TYPE_RTREE));
+
         }
 
         @Override
