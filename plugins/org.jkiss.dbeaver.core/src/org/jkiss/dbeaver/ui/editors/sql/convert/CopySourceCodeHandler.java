@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.sql.SQLConverterRegistry;
 import org.jkiss.dbeaver.registry.sql.SQLTargetConverterDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
@@ -121,9 +122,13 @@ public class CopySourceCodeHandler extends AbstractHandler {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         if (((Button)e.widget).getSelection()) {
+                            if (curFormat == e.widget.getData()) {
+                                return;
+                            }
+                            saveOptions();
                             curFormat = (SQLTargetConverterDescriptor) e.widget.getData();
-                            options.clear();
-                            updateResult();
+                            loadOptions();
+                            onFormatChange();
                         }
                     }
                 };
@@ -147,6 +152,14 @@ public class CopySourceCodeHandler extends AbstractHandler {
                 Group settingsGroup = UIUtils.createControlGroup(formatPanel, "Settings", 1, GridData.FILL_HORIZONTAL, 0);
                 settingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
                 propsViewer = new PropertyTreeViewer(settingsGroup, SWT.BORDER);
+                propsViewer.getTree().addListener(SWT.Modify, new Listener() {
+                    @Override
+                    public void handleEvent(Event event) {
+                        saveOptions();
+                        refreshResult();
+                        targetText.setText(result);
+                    }
+                });
             }
 
             {
@@ -164,32 +177,65 @@ public class CopySourceCodeHandler extends AbstractHandler {
                 targetText.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
             }
 
-            updateResult();
+            loadOptions();
+            onFormatChange();
 
             return composite;
         }
 
-        private void updateResult() {
-            try {
-                if (curFormat != null) {
-                    propertySource = new PropertySourceCustom(curFormat.getProperties(), options);
-                    propsViewer.loadProperties(propertySource);
-
-                    ISQLTextConverter converter = curFormat.createInstance();
-                    result = converter.convertText(
-                            editor.getSQLDialect(),
-                            editor.getSyntaxManager(),
-                            editor.getRuleManager(),
-                            editor.getDocument(),
-                            selection.getOffset(),
-                            selection.getLength(), options);
-                } else {
-                    result = "Choose format";
+        private void loadOptions() {
+            options.clear();
+            if (curFormat != null) {
+                IDialogSettings formatSettings = UIUtils.getSettingsSection(getDialogBoundsSettings(), curFormat.getId());
+                
+                for (DBPPropertyDescriptor prop : curFormat.getProperties()) {
+                    Object propValue = formatSettings.get(CommonUtils.toString(prop.getId()));
+                    if (propValue == null) {
+                        propValue = prop.getDefaultValue();
+                    }
+                    if (propValue != null) {
+                        options.put(CommonUtils.toString(prop.getId()), propValue);
+                    }
                 }
-                targetText.setText(result);
+            }
+        }
+
+        private void saveOptions() {
+            if (propertySource != null && curFormat != null) {
+                IDialogSettings formatSettings = UIUtils.getSettingsSection(getDialogBoundsSettings(), curFormat.getId());
+                for (Map.Entry<Object, Object> entry : propertySource.getPropertiesWithDefaults().entrySet()) {
+                    options.put(CommonUtils.toString(entry.getKey()), entry.getValue());
+                    formatSettings.put(CommonUtils.toString(entry.getKey()), CommonUtils.toString(entry.getValue()));
+                }
+            }
+        }
+
+        private void onFormatChange() {
+            if (curFormat != null) {
+                propertySource = new PropertySourceCustom(curFormat.getProperties(), options);
+                propsViewer.loadProperties(propertySource);
+
+                refreshResult();
+            } else {
+                result = "Choose format";
+            }
+            targetText.setText(result);
+        }
+
+        private void refreshResult() {
+            try {
+                ISQLTextConverter converter = curFormat.createInstance(ISQLTextConverter.class);
+                result = converter.convertText(
+                        editor.getSQLDialect(),
+                        editor.getSyntaxManager(),
+                        editor.getRuleManager(),
+                        editor.getDocument(),
+                        selection.getOffset(),
+                        selection.getLength(),
+                        options);
             } catch (DBException e) {
                 log.error(e);
-                targetText.setText(CommonUtils.notEmpty(e.getMessage()));
+                result = CommonUtils.notEmpty(e.getMessage());
             }
         }
 
@@ -219,7 +265,11 @@ public class CopySourceCodeHandler extends AbstractHandler {
 
         @Override
         protected void okPressed() {
-            getDialogBoundsSettings().put("format", curFormat.getId());
+            if (curFormat != null) {
+                saveOptions();
+                IDialogSettings dialogSettings = getDialogBoundsSettings();
+                dialogSettings.put("format", curFormat.getId());
+            }
             super.okPressed();
         }
     }

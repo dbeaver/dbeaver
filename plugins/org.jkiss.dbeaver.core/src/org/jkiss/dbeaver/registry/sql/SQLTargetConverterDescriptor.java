@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.ui.editors.sql.convert.ISQLTextConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,8 +72,8 @@ public class SQLTargetConverterDescriptor extends AbstractContextDescriptor {
         return properties;
     }
 
-    public ISQLTextConverter createInstance() throws DBException {
-        return implClass.createInstance(ISQLTextConverter.class);
+    public <T> T createInstance(Class<T> type) throws DBException {
+        return implClass.createInstance(type);
     }
 
     @Override
