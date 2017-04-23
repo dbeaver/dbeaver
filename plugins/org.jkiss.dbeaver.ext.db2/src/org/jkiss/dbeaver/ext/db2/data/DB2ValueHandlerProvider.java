@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.db2.data;
 
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -37,6 +38,8 @@ public class DB2ValueHandlerProvider implements DBDValueHandlerProvider {
         final String typeName = typedObject.getTypeName();
         if (DB2Constants.TYPE_NAME_DECFLOAT.equals(typeName)) {
             return new DB2DecFloatValueHandler(preferences.getDataFormatterProfile());
+        } else if (typeName.contains("TIMESTAMP") || typedObject.getDataKind() == DBPDataKind.DATETIME) {
+            return new DB2TimestampValueHandler(preferences.getDataFormatterProfile());
         }
         return null;
     }
