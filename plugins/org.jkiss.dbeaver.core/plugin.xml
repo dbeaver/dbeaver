@@ -3147,14 +3147,14 @@
                 label="Unformatted text"
                 description="Converts SQL text into unformatted single line plain text"
                 class="org.jkiss.dbeaver.ui.editors.sql.convert.UnformattedSQLConverter"/>
-        <target id="java"
-                label="Java"
-                description="Converts SQL text into Java source code"
-                class="org.jkiss.dbeaver.ui.editors.sql.convert.JavaSQLConverter"/>
-        <target id="cpp"
-                label="C/C++"
-                description="Converts SQL text into C/C++ source code"
-                class="org.jkiss.dbeaver.ui.editors.sql.convert.CPPSQLConverter"/>
+        <target id="java" label="Java" description="Converts SQL text into Java source code" class="org.jkiss.dbeaver.ui.editors.sql.convert.JavaSQLConverter">
+            <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
+            <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually \n or space" required="false" defaultValue=" "/>
+        </target>
+        <target id="cpp" label="C/C++" description="Converts SQL text into C/C++ source code" class="org.jkiss.dbeaver.ui.editors.sql.convert.CPPSQLConverter">
+            <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
+            <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually \n or space" required="false" defaultValue=" "/>
+        </target>
         <target id="html"
                 label="HTML"
                 description="Converts SQL text into colored HTML snippet"

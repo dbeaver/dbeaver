@@ -28,7 +28,7 @@ public class JavaSQLConverter extends SourceCodeSQLConverter {
     protected void convertSourceLines(StringBuilder result, String[] sourceLines, String lineDelimiter) {
         for (int i = 0; i < sourceLines.length; i++) {
             String line = sourceLines[i];
-            result.append('"').append(CommonUtils.escapeJavaString(line)).append('"');
+            result.append('"').append(CommonUtils.escapeJavaString(line)).append(lineDelimiter).append('"');
             if (i < sourceLines.length - 1) {
                 result.append(" + \n");
             } else {
