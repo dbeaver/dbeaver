@@ -3155,6 +3155,10 @@
             <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
             <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually \n or space" required="false" defaultValue=" "/>
         </target>
+        <target id="delphi" label="Delphi" description="Converts SQL text into Delphi source code" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.DelphiSQLConverter">
+            <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
+            <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually #13#10 or space" required="false" defaultValue="#13#10"/>
+        </target>
         <target id="html"
                 label="HTML"
                 description="Converts SQL text into colored HTML snippet"
