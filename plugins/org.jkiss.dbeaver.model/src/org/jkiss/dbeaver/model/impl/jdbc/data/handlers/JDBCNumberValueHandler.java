@@ -190,20 +190,32 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     statement.setLong(paramIndex, number.longValue());
                     break;
                 case Types.FLOAT:
-                    statement.setFloat(paramIndex, number.floatValue());
+                    if (number instanceof Double) {
+                        statement.setDouble(paramIndex, number.doubleValue());
+                    } else {
+                        statement.setFloat(paramIndex, number.floatValue());
+                    }
                     break;
                 case Types.DOUBLE:
                 case Types.REAL:
                     statement.setDouble(paramIndex, number.doubleValue());
                     break;
                 case Types.INTEGER:
-                    statement.setInt(paramIndex, number.intValue());
+                    if (number instanceof Long) {
+                        statement.setLong(paramIndex, number.longValue());
+                    } else {
+                        statement.setInt(paramIndex, number.intValue());
+                    }
                     break;
                 case Types.SMALLINT:
-                    statement.setShort(paramIndex, number.shortValue());
-                    break;
                 case Types.TINYINT:
-                    statement.setShort(paramIndex, number.shortValue());
+                    if (number instanceof Integer) {
+                        statement.setInt(paramIndex, number.intValue());
+                    } else if (number instanceof Long) {
+                        statement.setLong(paramIndex, number.longValue());
+                    } else {
+                        statement.setShort(paramIndex, number.shortValue());
+                    }
                     break;
                 case Types.BIT:
                     if (paramType.getPrecision() <= 1) {
