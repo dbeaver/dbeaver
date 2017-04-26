@@ -122,8 +122,19 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 break;
             case Types.BIT:
                 if (type.getPrecision() <= 1) {
-                    // single bit
-                    value = resultSet.getByte(index);
+                    try {
+                        // single bit
+                        value = resultSet.getByte(index);
+                    } catch (NumberFormatException e) {
+                        // Maybe it is boolean? (#1604)
+                        try {
+                            boolean bValue = resultSet.getBoolean(index);
+                            value = bValue ? (byte)1 : (byte)0;
+                        } catch (Throwable e1) {
+                            // No, it is not - rethrow original error
+                            throw e;
+                        }
+                    }
                 } else {
                     // bit string
                     return CommonUtils.toBinaryString(resultSet.getLong(index), type.getPrecision());
