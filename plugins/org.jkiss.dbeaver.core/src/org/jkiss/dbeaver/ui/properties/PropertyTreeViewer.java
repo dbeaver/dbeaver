@@ -343,7 +343,7 @@ public class PropertyTreeViewer extends TreeViewer {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                showEditor((TreeItem) e.item, selectedColumn == 1 && (e.stateMask & SWT.BUTTON_MASK) != 0);
+                //showEditor((TreeItem) e.item, selectedColumn == 1 && (e.stateMask & SWT.BUTTON_MASK) != 0);
             }
         });
         treeControl.addMouseListener(new MouseAdapter() {
