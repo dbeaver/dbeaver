@@ -22,10 +22,7 @@ import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseMoveListener;
-import org.eclipse.swt.events.MouseTrackListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
@@ -67,11 +64,12 @@ public abstract class ObjectViewerRenderer {
         this.arrowCursor = display.getSystemCursor(SWT.CURSOR_ARROW);
 
         itemsViewer.getControl().setCursor(arrowCursor);
-        CellTrackListener mouseListener = new CellTrackListener();
-        itemsViewer.getControl().addMouseListener(new MouseListener());
 
-        itemsViewer.getControl().addMouseTrackListener(mouseListener);
-        itemsViewer.getControl().addMouseMoveListener(mouseListener);
+        final CellTrackListener actionsListener = new CellTrackListener();
+        itemsViewer.getControl().addMouseListener(new MouseListener());
+        itemsViewer.getControl().addMouseTrackListener(actionsListener);
+        itemsViewer.getControl().addMouseMoveListener(actionsListener);
+        itemsViewer.getControl().addKeyListener(actionsListener);
     }
 
     public boolean isTree()
@@ -190,7 +188,7 @@ public abstract class ObjectViewerRenderer {
         }
     }
 
-    class CellTrackListener implements MouseTrackListener, MouseMoveListener {
+    class CellTrackListener implements MouseTrackListener, MouseMoveListener, KeyListener {
 
         @Override
         public void mouseEnter(MouseEvent e)
@@ -216,13 +214,17 @@ public abstract class ObjectViewerRenderer {
         @Override
         public void mouseMove(MouseEvent e)
         {
+            updateCursor(e.x, e.y, e.stateMask);
+        }
+
+        private void updateCursor(int x, int y, int stateMask) {
             Item hoverItem;
             if (isTree) {
-                hoverItem = detectTreeItem(e.x, e.y);
+                hoverItem = detectTreeItem(x, y);
             } else {
-                hoverItem = detectTableItem(e.x, e.y);
+                hoverItem = detectTableItem(x, y);
             }
-            //String tip = null;
+
             if (hoverItem == null || selectedColumn < 0) {
                 resetCursor();
             } else {
@@ -234,14 +236,31 @@ public abstract class ObjectViewerRenderer {
                     resetCursor();
                 } else {
                     //tip = getCellString(cellValue);
-                    if (isHyperlink(cellValue) && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(e.x, e.y)) {
+                    if ((stateMask & SWT.CTRL) != 0 && isHyperlink(cellValue) && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(x, y)) {
                         getItemsViewer().getControl().setCursor(linkCursor);
                     } else {
                         resetCursor();
                     }
                 }
             }
-            //setToolTipText(tip);
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.keyCode == SWT.CTRL) {
+                Point mousePoint = itemsViewer.getControl().getDisplay().getCursorLocation();
+                mousePoint = itemsViewer.getControl().getDisplay().map(null, itemsViewer.getControl(), mousePoint);
+                updateCursor(mousePoint.x, mousePoint.y, SWT.CTRL);
+            }
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if (e.keyCode == SWT.CTRL) {
+                Point mousePoint = itemsViewer.getControl().getDisplay().getCursorLocation();
+                mousePoint = itemsViewer.getControl().getDisplay().map(null, itemsViewer.getControl(), mousePoint);
+                updateCursor(mousePoint.x, mousePoint.y, SWT.NONE);
+            }
         }
     }
 
@@ -295,6 +314,10 @@ public abstract class ObjectViewerRenderer {
                 hoverItem = detectTreeItem(e.x, e.y);
             } else {
                 hoverItem = detectTableItem(e.x, e.y);
+            }
+            if ((e.stateMask & SWT.CTRL) == 0) {
+                // Navigate only if CTRL pressed
+                return;
             }
             if (hoverItem != null && selectedColumn >= 0 && e.button == 1) {
                 Object element = hoverItem.getData();

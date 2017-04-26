@@ -263,7 +263,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
      */
     protected void deepCopyCachedObject(@NotNull Object srcObject, @NotNull Object dstObject) {
         if (srcObject.getClass() != dstObject.getClass()) {
-            log.error("Can't make object opy: src class " + srcObject.getClass().getName() + "' != dest class '" + dstObject.getClass().getName() + "'");
+            log.error("Can't make object copy: src class " + srcObject.getClass().getName() + "' != dest class '" + dstObject.getClass().getName() + "'");
             return;
         }
         try {
