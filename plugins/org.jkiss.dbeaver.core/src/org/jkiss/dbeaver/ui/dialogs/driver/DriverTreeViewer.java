@@ -308,7 +308,10 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
                     cell.setText("");
                     break;
             }
-            cell.setImage(DBeaverIcons.getImage(getImage(cell.getElement(), cell.getColumnIndex())));
+            DBPImage image = getImage(cell.getElement(), cell.getColumnIndex());
+            if (image != null) {
+                cell.setImage(DBeaverIcons.getImage(image));
+            }
             if (cell.getElement() instanceof DriverDescriptor && !((DriverDescriptor)cell.getElement()).getUsedBy().isEmpty()) {
                 //cell.setFont(boldFont);
             } else {
