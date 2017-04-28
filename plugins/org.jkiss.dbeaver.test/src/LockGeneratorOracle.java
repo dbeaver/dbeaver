@@ -202,7 +202,7 @@ public class LockGeneratorOracle {
 		service.shutdown();
 		service.awaitTermination(1, TimeUnit.HOURS);
 		   
-		} catch (SQLException | InterruptedException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		  
