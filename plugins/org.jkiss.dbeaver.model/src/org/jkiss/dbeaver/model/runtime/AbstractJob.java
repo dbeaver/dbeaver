@@ -93,6 +93,9 @@ public abstract class AbstractJob extends Job
             RuntimeUtils.setThreadName(getName());
 
             return this.run(progressMonitor);
+        } catch (Throwable e) {
+            log.error(e);
+            return GeneralUtils.makeExceptionStatus(e);
         } finally {
             CURRENT_JOB.remove();
             finished = true;
