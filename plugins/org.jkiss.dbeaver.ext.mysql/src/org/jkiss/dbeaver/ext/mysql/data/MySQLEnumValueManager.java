@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.EnumValueManager;
 import org.jkiss.utils.CommonUtils;
@@ -40,7 +41,12 @@ public class MySQLEnumValueManager extends EnumValueManager {
 
     @Override
     protected List<String> getEnumValues(IValueController valueController) {
-        return ((MySQLTableColumn) valueController.getValueType()).getEnumValues();
+        DBSTypedObject valueType = valueController.getValueType();
+        if (valueType instanceof MySQLTableColumn) {
+            return ((MySQLTableColumn) valueType).getEnumValues();
+        } else {
+            return null;
+        }
     }
 
     @Override
