@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -142,10 +143,16 @@ public abstract class EnumValueManager extends BaseValueManager {
                     control.setSelection(-1);
                 }
                 int itemCount = control.getItemCount();
-                for (int i = 0; i < itemCount; i++) {
-                    if (control.getItem(i).equals(value)) {
-                        control.setSelection(i);
-                        break;
+                if (itemCount == 0) {
+                    if (!DBUtils.isNullValue(value)) {
+                        control.add(CommonUtils.toString(value));
+                    }
+                } else {
+                    for (int i = 0; i < itemCount; i++) {
+                        if (control.getItem(i).equals(value)) {
+                            control.setSelection(i);
+                            break;
+                        }
                     }
                 }
             }
@@ -213,6 +220,10 @@ public abstract class EnumValueManager extends BaseValueManager {
                 }
             }
             editor.select(selIndices);
+        } else {
+            if (editor.getItemCount() == 0) {
+                editor.add(CommonUtils.toString(value));
+            }
         }
     }
 
