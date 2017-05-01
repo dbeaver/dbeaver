@@ -12,8 +12,7 @@ Require-Bundle: org.jkiss.dbeaver.core,
  org.eclipse.core.runtime,
  org.apache.poi,
  org.apache.poi.ooxml,
- org.apache.poi.ooxml-schemas,
- org.apache.xmlbeans,
- org.apache.commons.collections4
+ org.apache.poi.ooxml.schemas,
+ org.apache.xmlbeans
 Bundle-Localization: plugin
 Bundle-ClassPath: .
