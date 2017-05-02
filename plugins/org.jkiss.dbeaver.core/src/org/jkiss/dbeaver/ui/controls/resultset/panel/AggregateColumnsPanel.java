@@ -277,7 +277,10 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 new TreeItem(parentItem, SWT.NONE);
             funcItem.setData(funcDesc);
             funcItem.setText(0, funcDesc.getLabel());
-            funcItem.setImage(0, DBeaverIcons.getImage(funcDesc.getIcon()));
+            DBPImage icon = funcDesc.getIcon();
+            if (icon != null) {
+                funcItem.setImage(0, DBeaverIcons.getImage(icon));
+            }
             try {
                 IAggregateFunction func = funcDesc.createFunction();
                 funcMap.put(func, funcItem);
