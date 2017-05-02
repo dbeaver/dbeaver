@@ -165,6 +165,13 @@
                             description="Server Session manager"
                             editor="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
                             />
+                    <object
+                          description="Server locks manager"
+                          editor="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor"
+                          icon="#locks"
+                          label="%tree.locks.node.name"
+                          type="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor">
+                    </object>
                 </folder>
                 <folder
                       description="Connections"
@@ -437,6 +444,12 @@
                 class="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
                 id="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor">
         </editor>
+        <editor
+            name="Lock Manager"
+            class="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor"
+            id="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor">
+        </editor>
+        
     </extension>
     <extension point="org.jkiss.dbeaver.tools">
       <tools>
