@@ -43,9 +43,7 @@ import org.jkiss.utils.time.ExtendedDateFormat;
 
 import java.sql.*;
 import java.text.Format;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 
 /**
@@ -215,9 +213,20 @@ public class GenericDataSource extends JDBCDataSource
         if (!CommonUtils.isEmpty(paramShutdown)) {
             monitor.subTask("Shutdown embedded database");
             try {
+                Properties shutdownProps = new Properties();
+                DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
+                if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
+                    shutdownProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, getConnectionUserName(connectionInfo));
+                }
+                if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
+                    shutdownProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, getConnectionUserPassword(connectionInfo));
+                }
+
                 final Driver driver = getDriverInstance(new VoidProgressMonitor()); // Use void monitor - driver already loaded
                 if (driver != null) {
-                    driver.connect(getContainer().getActualConnectionConfiguration().getUrl() + paramShutdown, null);
+                    driver.connect(
+                            getContainer().getActualConnectionConfiguration().getUrl() + paramShutdown,
+                            shutdownProps.isEmpty() ? null : shutdownProps);
                 }
             } catch (Exception e) {
                 log.debug("Shutdown finished: :" + e.getMessage());
