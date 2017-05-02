@@ -64,8 +64,10 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     {
         if (value == null) {
             return DBValueFormatting.getDefaultValueDisplayString(null, format);
-        }
-        if (value instanceof Double) {
+        } else if (value instanceof String) {
+            // Binary string
+            return "b'" + value + "'";
+        } else if (value instanceof Double) {
             double dbl = ((Double) value).doubleValue();
             if (dbl != dbl) {
                 return "NaN";
@@ -75,7 +77,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 return "-Infinity";
             }
         }
-        if (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT) {
+        if (value instanceof Number && (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT)) {
             return DBValueFormatting.convertNumberToNativeString((Number) value);
         }
         return formatter.formatValue(value);
@@ -189,7 +191,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
-        } else {
+        } else if (value instanceof Number) {
             Number number = (Number) value;
             switch (paramType.getTypeID()) {
                 case Types.BIGINT:
@@ -262,6 +264,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     }
                     break;
             }
+        } else {
+            throw new SQLException("Numeric value type '" + value.getClass().getName() + "' is not supported");
         }
     }
 
