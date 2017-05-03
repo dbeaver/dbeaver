@@ -105,10 +105,10 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
                 tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.FLOAT, precision, minimumScale, maximumScale, typeName);
                 break;
             case "INTERVAL DAY TO SECOND":
-                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, precision, minimumScale, maximumScale, typeName);
+                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, precision, minimumScale, maximumScale, typeName);
                 break;
             case "INTERVAL YEAR TO MONTH":
-                tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, precision, minimumScale, maximumScale, typeName);
+                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, precision, minimumScale, maximumScale, typeName);
                 break;
             case "SMALLINT":
                 tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.SMALLINT, precision, minimumScale, maximumScale, typeName);
