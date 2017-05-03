@@ -1074,6 +1074,7 @@ public class CoreMessages extends NLS {
     public static String pref_page_content_editor_group_keys;
     public static String pref_page_content_editor_checkbox_keys_always_use_all_columns;
 	public static String pref_page_content_editor_checkbox_new_rows_after;
+	public static String pref_page_content_editor_checkbox_refresh_after_update;
 	public static String pref_page_content_editor_group_content;
 	public static String pref_page_content_editor_label_max_text_length;
     public static String pref_page_content_editor_group_hex;

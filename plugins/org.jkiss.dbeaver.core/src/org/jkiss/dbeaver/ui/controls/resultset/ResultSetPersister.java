@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPMessageType;
@@ -843,6 +844,20 @@ class ResultSetPersister {
                 });
             } catch (Throwable ex) {
                 log.warn("Error refreshing rows", ex);
+                // Error happened during data refresh
+                // Let's rollback if we are in transaction
+                if (viewer.getPreferenceStore().getBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR)) {
+                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(getExecutionContext());
+                    try {
+                        if (txnManager != null && !txnManager.isAutoCommit()) {
+                            try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback after data refresh failure")) {
+                                txnManager.rollback(session, null);
+                            }
+                        }
+                    } catch (DBCException e) {
+                        log.warn("Error rolling back after data refresh failure", ex);
+                    }
+                }
             }
             return Status.OK_STATUS;
         }

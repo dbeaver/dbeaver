@@ -51,6 +51,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button rollbackOnErrorCheck;
     private Button alwaysUseAllColumns;
     private Button newRowsAfter;
+    private Button refreshAfterUpdate;
 
 
     public PrefPageResultSetMain()
@@ -72,6 +73,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ModelPreferences.QUERY_ROLLBACK_ON_ERROR) ||
             store.contains(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
             store.contains(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER) ||
+            store.contains(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE) ||
             store.contains(DBeaverPreferences.KEEP_STATEMENT_OPEN) ||
             store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE)
             ;
@@ -124,6 +126,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             rollbackOnErrorCheck = UIUtils.createCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_rollback_on_error, false);
             alwaysUseAllColumns = UIUtils.createCheckbox(txnGroup, CoreMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
             newRowsAfter = UIUtils.createCheckbox(txnGroup, CoreMessages.pref_page_content_editor_checkbox_new_rows_after, false);
+            refreshAfterUpdate = UIUtils.createCheckbox(txnGroup, CoreMessages.pref_page_content_editor_checkbox_refresh_after_update, false);
         }
 
         return composite;
@@ -150,6 +153,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             rollbackOnErrorCheck.setSelection(store.getBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR));
             alwaysUseAllColumns.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS));
             newRowsAfter.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER));
+            refreshAfterUpdate.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE));
 
             updateOptionsEnablement();
         } catch (Exception e) {
@@ -174,6 +178,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ModelPreferences.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
             store.setValue(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
             store.setValue(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER, newRowsAfter.getSelection());
+            store.setValue(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE, refreshAfterUpdate.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -196,6 +201,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ModelPreferences.QUERY_ROLLBACK_ON_ERROR);
         store.setToDefault(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS);
         store.setToDefault(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER);
+        store.setToDefault(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE);
 
         updateOptionsEnablement();
     }

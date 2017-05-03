@@ -16,10 +16,14 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDObject;
+import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -115,6 +119,14 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
         if (value instanceof DBDValue) {
             return value.toString();
         }
+
+        if (format == DBDDisplayFormat.NATIVE) {
+            String typeName = column.getTypeName();
+            if (value instanceof String && !((String) value).startsWith("'") && (typeName.equals(DBConstants.TYPE_NAME_UUID) || typeName.equals(DBConstants.TYPE_NAME_UUID2))) {
+                return "'" + value + "'";
+            }
+        }
+
         return DBValueFormatting.getDefaultValueDisplayString(value, format);
     }
 
