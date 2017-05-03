@@ -284,9 +284,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     public void loadData(boolean lazy) {
         if (this.loadingJob != null) {
+            int dataLoadUpdatePeriod = 200;
+            int dataLoadTimes = getDataLoadTimeout() / dataLoadUpdatePeriod;
             try {
-                for (int i = 0; i < 60; i++) {
-                    Thread.sleep(200);
+                for (int i = 0; i < dataLoadTimes; i++) {
+                    Thread.sleep(dataLoadUpdatePeriod);
                     if (this.loadingJob == null) {
                         break;
                     }
@@ -326,6 +328,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 loadService.syncRun();
             }
         }
+    }
+
+    protected int getDataLoadTimeout() {
+        return 4000;
     }
 
     protected void setListData(Collection<OBJECT_TYPE> items, boolean append) {
