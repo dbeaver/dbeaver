@@ -226,7 +226,7 @@ public class SearchDataQuery implements ISearchQuery {
                             try {
                                 UUID uuid = UUID.fromString(params.searchString);
                                 operator = DBCLogicalOperator.EQUALS;
-                                value = "'" + uuid.toString() + "'";
+                                value = uuid.toString();
                             } catch (Exception e) {
                                 // No a UUID
                                 continue;

@@ -2440,7 +2440,7 @@ public class ResultSetViewer extends Viewer
                     if (listener != null) {
                         listener.onUpdate(success);
                     }
-                    if (success) {
+                    if (success && getPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE)) {
                         // Refresh updated rows
                         try {
                             persister.refreshInsertedRows();
