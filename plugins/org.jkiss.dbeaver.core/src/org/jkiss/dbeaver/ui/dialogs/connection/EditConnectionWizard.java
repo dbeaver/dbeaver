@@ -275,6 +275,11 @@ public class EditConnectionWizard extends ConnectionWizard
         for (WizardPrefPage prefPage : prefPages) {
             savePageSettings(prefPage);
         }
+
+        // Reset password if "Save password" was disabled
+        if (!dataSource.isSavePassword()) {
+            dataSource.getConnectionConfiguration().setUserPassword(null);
+        }
     }
 
     private void savePageSettings(WizardPrefPage prefPage) {
