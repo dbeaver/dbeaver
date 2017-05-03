@@ -63,6 +63,11 @@ public class LockTable extends DatabaseObjectListControl<DBAServerLock<?>> {
     }
 
     @Override
+    protected int getDataLoadTimeout() {
+        return 20000;
+    }
+
+    @Override
     protected LoadingJob<Collection<DBAServerLock<?>>> createLoadService()
     {
         return LoadingJob.createService(
