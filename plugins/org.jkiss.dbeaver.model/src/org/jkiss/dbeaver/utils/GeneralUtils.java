@@ -457,7 +457,6 @@ public class GeneralUtils {
         return null;
     }
 
-    @NotNull
     public static String getExceptionMessage(@NotNull Throwable ex)
     {
 /*
