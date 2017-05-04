@@ -69,6 +69,9 @@ public class EditConnectionWizard extends ConnectionWizard
     {
         this.originalDataSource = dataSource;
         this.dataSource = new DataSourceDescriptor(dataSource);
+        if (!this.dataSource.isSavePassword()) {
+            this.dataSource.getConnectionConfiguration().setUserPassword(null);
+        }
 
         setWindowTitle(CoreMessages.dialog_connection_wizard_title);
     }
