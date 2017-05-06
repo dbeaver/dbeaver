@@ -113,7 +113,7 @@ class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implements IFon
         } else {
             if (element instanceof DBNDataSource) {
                 final DBPDataSourceContainer ds = ((DBNDataSource) element).getDataSourceContainer();
-                if (ds != null && ds.isProvided()) {
+                if (ds != null && (ds.isProvided() || ds.isTemporary())) {
                     return italicFont;
                 }
             }

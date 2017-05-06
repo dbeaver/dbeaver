@@ -292,7 +292,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
 
     private boolean handleCommandLine(String instanceLoc) {
         CommandLine commandLine = getCommandLine();
-        if (commandLine == null) {
+        if (commandLine == null || (ArrayUtils.isEmpty(commandLine.getArgs()) && ArrayUtils.isEmpty(commandLine.getOptions()))) {
             return false;
         }
         if (commandLine.hasOption(DBeaverCommandLine.PARAM_HELP)) {

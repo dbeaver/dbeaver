@@ -170,6 +170,7 @@ public class DBeaverInstanceServer implements IInstanceController {
                 @Override
                 public void run() {
                     OpenHandler.openSQLConsole(workbenchWindow, ds, ds.getName(), "");
+                    workbenchWindow.getShell().forceActive();
                 }
             });
         } else if (makeConnect) {
