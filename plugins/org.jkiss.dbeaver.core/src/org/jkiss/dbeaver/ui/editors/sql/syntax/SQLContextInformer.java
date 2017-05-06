@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
@@ -167,6 +168,14 @@ public class SQLContextInformer
         final SQLDialect dialect = syntaxManager.getDialect();
 
         keywordType = dialect.getKeywordType(fullName);
+        if (keywordType == DBPKeywordType.KEYWORD && region.getLength() > 1) {
+            // It is a keyword = let's use whole selection
+            try {
+                fullName = document.get(region.getOffset(), region.getLength());
+            } catch (BadLocationException e) {
+                log.warn(e);
+            }
+        }
         keywords = new String[] { fullName };
         if (keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.FUNCTION) {
             // Skip keywords
