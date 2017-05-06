@@ -224,6 +224,12 @@
 
     </extension>
 
+    <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet uri="css/e4-dark_erd_prefstyle.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark">
+            </themeid>
+        </stylesheet>
+    </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.ext.erd.ERDPreferencesInitializer"/>
