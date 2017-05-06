@@ -32,6 +32,8 @@ public interface IInstanceController extends Remote {
 
     void openExternalFiles(String[] fileNames) throws RemoteException;
 
+    void openDatabaseConnection(String connectionSpec) throws RemoteException;
+
     String getThreadDump() throws RemoteException;
 
     void quit() throws RemoteException;

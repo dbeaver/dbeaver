@@ -283,6 +283,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return null;
     }
 
+    public DBPDataSourceFolder getFolder(String path) {
+        return findFolderByPath(path, true);
+    }
+
     private DataSourceFolder findFolderByPath(String path, boolean create) {
         DataSourceFolder parent = null;
         for (String name : path.split("/")) {
@@ -306,7 +310,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         synchronized (dataSources) {
             this.dataSources.add(descriptor);
         }
-        this.saveDataSources();
+        if (!dataSource.isTemporary()) {
+            this.saveDataSources();
+        }
         notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_ADD, descriptor, true));
     }
 
@@ -316,7 +322,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         synchronized (dataSources) {
             this.dataSources.remove(descriptor);
         }
-        this.saveDataSources();
+        if (!dataSource.isTemporary()) {
+            this.saveDataSources();
+        }
         try {
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
         } finally {
@@ -326,7 +334,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public void updateDataSource(DBPDataSourceContainer dataSource)
     {
-        this.saveDataSources();
+        if (!dataSource.isTemporary()) {
+            this.saveDataSources();
+        }
         this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
     }
 
@@ -541,7 +551,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             }
                             // Datasources
                             for (DataSourceDescriptor dataSource : localDataSources) {
-                                saveDataSource(xml, dataSource);
+                                // Skip temporary
+                                if (!dataSource.isTemporary()) {
+                                    saveDataSource(xml, dataSource);
+                                }
                             }
                             xml.endElement();
                             xml.flush();
@@ -772,10 +785,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
         {
             // Filters
-            Collection<DataSourceDescriptor.FilterMapping> filterMappings = dataSource.getObjectFilters();
+            Collection<FilterMapping> filterMappings = dataSource.getObjectFilters();
             if (!CommonUtils.isEmpty(filterMappings)) {
                 xml.startElement(RegistryConstants.TAG_FILTERS);
-                for (DataSourceDescriptor.FilterMapping filter : filterMappings) {
+                for (FilterMapping filter : filterMappings) {
                     if (filter.defaultFilter != null && !filter.defaultFilter.isEmpty()) {
                         saveObjectFiler(xml, filter.typeName, null, filter.defaultFilter);
                     }

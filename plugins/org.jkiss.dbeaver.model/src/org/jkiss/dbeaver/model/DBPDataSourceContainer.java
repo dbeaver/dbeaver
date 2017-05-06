@@ -76,6 +76,8 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     boolean isProvided();
 
+    boolean isTemporary();
+
     boolean isShowSystemObjects();
 
     boolean isShowUtilityObjects();
