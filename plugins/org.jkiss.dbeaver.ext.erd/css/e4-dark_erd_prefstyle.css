@@ -1,0 +1,13 @@
+
+/* ############################# DBeaver preferences ############################# */
+
+ IEclipsePreferences#org-eclipse-ui-workbench {
+        preferences:
+            'org.jkiss.dbeaver.erd.diagram.background=16,16,16'
+            'org.jkiss.dbeaver.erd.diagram.entity.regular.background=0,0,0'
+            'org.jkiss.dbeaver.erd.diagram.entity.primary.background=128,64,32'
+            'org.jkiss.dbeaver.erd.diagram.entity.association.background=64,64,64'
+            'org.jkiss.dbeaver.erd.diagram.entity.name.foreground=255,255,255'
+            'org.jkiss.dbeaver.erd.diagram.attributes.background=64,64,64'
+            'org.jkiss.dbeaver.erd.diagram.attributes.foreground=255,255,255'
+}
