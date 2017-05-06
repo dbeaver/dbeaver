@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
@@ -31,6 +32,7 @@ import java.io.OutputStream;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -59,6 +61,8 @@ public class DBeaverInstanceServer implements IInstanceController {
                     File file = new File(filePath);
                     if (file.exists()) {
                         EditorUtils.openExternalFileEditor(file, window);
+                    } else {
+                        UIUtils.showErrorDialog(shell, "Open file", "Can't open '" + file.getAbsolutePath() + "': file doesn't exist");
                     }
                 }
                 shell.setMinimized(false);
@@ -69,7 +73,14 @@ public class DBeaverInstanceServer implements IInstanceController {
 
     @Override
     public String getThreadDump() {
-        return null;
+        StringBuilder td = new StringBuilder();
+        for (Map.Entry<Thread, StackTraceElement[]> tde : Thread.getAllStackTraces().entrySet()) {
+            td.append(tde.getKey().getId()).append(" ").append(tde.getKey().getName()).append(":\n");
+            for (StackTraceElement ste : tde.getValue()) {
+                td.append("\t").append(ste.toString()).append("\n");
+            }
+        }
+        return td.toString();
     }
 
     @Override
