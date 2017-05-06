@@ -319,8 +319,8 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             log.error("Error calling remote server", e);
             return true;
         } catch (Throwable e) {
-            log.error("Internal error while calling remote server", e);
-            return false;
+            log.error("Error while calling remote server", e);
+            return true;
         }
     }
 
@@ -385,18 +385,31 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         if (commandLine == null) {
             return false;
         }
-        String[] files = commandLine.getOptionValues(DBeaverCommandLine.PARAM_FILE);
-        String[] fileArgs = commandLine.getArgs();
-        if (!ArrayUtils.isEmpty(files) || !ArrayUtils.isEmpty(fileArgs)) {
-            List<String> fileNames = new ArrayList<>();
-            if (!ArrayUtils.isEmpty(files)) {
-                Collections.addAll(fileNames, files);
+        {
+            // Open files
+            String[] files = commandLine.getOptionValues(DBeaverCommandLine.PARAM_FILE);
+            String[] fileArgs = commandLine.getArgs();
+            if (!ArrayUtils.isEmpty(files) || !ArrayUtils.isEmpty(fileArgs)) {
+                List<String> fileNames = new ArrayList<>();
+                if (!ArrayUtils.isEmpty(files)) {
+                    Collections.addAll(fileNames, files);
+                }
+                if (!ArrayUtils.isEmpty(fileArgs)) {
+                    Collections.addAll(fileNames, fileArgs);
+                }
+                controller.openExternalFiles(fileNames.toArray(new String[fileNames.size()]));
+                return true;
             }
-            if (!ArrayUtils.isEmpty(fileArgs)) {
-                Collections.addAll(fileNames, fileArgs);
+        }
+        {
+            // Connect
+            String[] connectParams = commandLine.getOptionValues(DBeaverCommandLine.PARAM_CONNECT);
+            if (!ArrayUtils.isEmpty(connectParams)) {
+                for (String cp : connectParams) {
+                    controller.openDatabaseConnection(cp);
+                }
+                return true;
             }
-            controller.openExternalFiles(fileNames.toArray(new String[fileNames.size()]));
-            return true;
         }
         if (commandLine.hasOption(DBeaverCommandLine.PARAM_STOP)) {
             controller.quit();

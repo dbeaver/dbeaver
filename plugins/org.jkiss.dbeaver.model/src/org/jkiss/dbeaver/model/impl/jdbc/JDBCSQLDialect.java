@@ -139,7 +139,9 @@ public class JDBCSQLDialect extends BasicSQLDialect {
             this.searchStringEscape = metaData.getSearchStringEscape();
         } catch (Throwable e) {
             log.debug("Error getting searchStringEscape:" + e.getMessage());
-            this.searchStringEscape = "\\"; //$NON-NLS-1$
+        }
+        if (this.searchStringEscape == null) {
+            this.searchStringEscape = ""; //$NON-NLS-1$
         }
         try {
             this.catalogSeparator = metaData.getCatalogSeparator();

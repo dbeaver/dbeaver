@@ -71,56 +71,6 @@ public class DataSourceDescriptor
 {
     private static final Log log = Log.getLog(DataSourceDescriptor.class);
 
-    public static class FilterMapping {
-        public final String typeName;
-        public DBSObjectFilter defaultFilter;
-        public Map<String, DBSObjectFilter> customFilters = new HashMap<>();
-
-        FilterMapping(String typeName)
-        {
-            this.typeName = typeName;
-        }
-
-        // Copy constructor
-        FilterMapping(FilterMapping mapping)
-        {
-            this.typeName = mapping.typeName;
-            this.defaultFilter = mapping.defaultFilter == null ? null : new DBSObjectFilter(mapping.defaultFilter);
-            for (Map.Entry<String, DBSObjectFilter> entry : mapping.customFilters.entrySet()) {
-                this.customFilters.put(entry.getKey(), new DBSObjectFilter(entry.getValue()));
-            }
-        }
-
-        @Nullable
-        public DBSObjectFilter getFilter(@Nullable DBSObject parentObject, boolean firstMatch)
-        {
-            if (parentObject == null) {
-                return defaultFilter;
-            }
-            if (!customFilters.isEmpty()) {
-                String objectID = DBUtils.getObjectUniqueName(parentObject);
-                DBSObjectFilter filter = customFilters.get(objectID);
-                if ((filter != null && !filter.isNotApplicable()) || firstMatch) {
-                    return filter;
-                }
-            }
-
-            return firstMatch ? null : defaultFilter;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof FilterMapping)) {
-                return false;
-            }
-            FilterMapping source = (FilterMapping)obj;
-            return
-                CommonUtils.equalObjects(typeName, source.typeName) &&
-                CommonUtils.equalObjects(defaultFilter, source.defaultFilter) &&
-                CommonUtils.equalObjects(customFilters, source.customFilters);
-        }
-    }
-
     @NotNull
     private final DBPDataSourceRegistry registry;
     @NotNull
@@ -158,6 +108,7 @@ public class DataSourceDescriptor
     private volatile Date connectTime = null;
     private volatile boolean disposed = false;
     private volatile boolean connecting = false;
+    private boolean temporary;
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWTunnel tunnel;
     @NotNull
@@ -550,6 +501,15 @@ public class DataSourceDescriptor
     @Override
     public boolean isProvided() {
         return !origin.isDefault();
+    }
+
+    @Override
+    public boolean isTemporary() {
+        return temporary;
+    }
+
+    public void setTemporary(boolean temporary) {
+        this.temporary = temporary;
     }
 
     @Override

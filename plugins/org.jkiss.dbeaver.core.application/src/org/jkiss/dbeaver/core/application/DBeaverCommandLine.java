@@ -27,6 +27,7 @@ public class DBeaverCommandLine
     public static final String PARAM_FILE = "f";
     public static final String PARAM_STOP = "stop";
     public static final String PARAM_THREAD_DUMP = "dump";
+    public static final String PARAM_CONNECT = "con";
 
     public final static Options ALL_OPTIONS = new Options()
         .addOption(PARAM_HELP, false, "Help")
@@ -34,6 +35,8 @@ public class DBeaverCommandLine
         .addOption(PARAM_FILE, "file", true, "File top open")
         .addOption(PARAM_STOP, "quit", false, "Stop DBeaver running instance")
         .addOption(PARAM_THREAD_DUMP, "thread-dump", false, "Print instance thread dump")
+        .addOption(PARAM_CONNECT, "connect", true, "Connects to a specified database")
+
         // Eclipse options
         .addOption("product", true, "Product id")
         .addOption("nl", true, "National locale")

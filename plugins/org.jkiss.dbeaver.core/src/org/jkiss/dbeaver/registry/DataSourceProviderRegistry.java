@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -157,6 +159,26 @@ public class DataSourceProviderRegistry
     public List<DataSourceProviderDescriptor> getDataSourceProviders()
     {
         return dataSourceProviders;
+    }
+
+    @Nullable
+    public DriverDescriptor findDriver(@NotNull String driverName) {
+        // Try to find by ID
+        for (DataSourceProviderDescriptor pd : dataSourceProviders) {
+            DriverDescriptor driver = pd.getDriver(driverName);
+            if (driver != null) {
+                return driver;
+            }
+        }
+        // Try to find by name
+        for (DataSourceProviderDescriptor pd : dataSourceProviders) {
+            for (DriverDescriptor driver : pd.getDrivers()) {
+                if (driver.getName().equalsIgnoreCase(driverName)) {
+                    return driver;
+                }
+            }
+        }
+        return null;
     }
 
     private void loadDrivers(File driversConfig)

@@ -542,7 +542,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
         OpenHandler.openSQLConsole(
             DBeaverUI.getActiveWorkbenchWindow(),
-            dataContainer == null ? null : dataContainer.getDataSource().getContainer(),
+            dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer(),
             editorName,
             getActiveQueryText()
         );

@@ -20,18 +20,32 @@ package org.jkiss.dbeaver.core.application.rpc;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -69,6 +83,98 @@ public class DBeaverInstanceServer implements IInstanceController {
                 shell.forceActive();
             }
         });
+    }
+
+    @Override
+    public void openDatabaseConnection(String connectionSpec) throws RemoteException {
+        final IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
+        DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
+
+        String driverName = null, url = null, host = null, port = null, server = null, database = null, user = null, password = null;
+        boolean makeConnect = true, openConsole = false, savePassword = true;
+        Map<String, String> conProperties = new HashMap<>();
+        DBPDataSourceFolder folder = null;
+        String dsName = null;
+
+        String[] conParams = connectionSpec.split("\\|");
+        for (String cp : conParams) {
+            int divPos = cp.indexOf('=');
+            if (divPos == -1) {
+                continue;
+            }
+            String paramName = cp.substring(0, divPos);
+            String paramValue = cp.substring(divPos + 1);
+            switch (paramName) {
+                case "driver": driverName = paramValue; break;
+                case "name": dsName = paramValue; break;
+                case "url": url = paramValue; break;
+                case "host": host = paramValue; break;
+                case "port": port = paramValue; break;
+                case "server": server = paramValue; break;
+                case "database": database = paramValue; break;
+                case "user": user = paramValue; break;
+                case "password": password = paramValue; break;
+                case "savePassword": savePassword = CommonUtils.toBoolean(paramValue); break;
+                case "connect": makeConnect = CommonUtils.toBoolean(paramValue); break;
+                case "openConsole": openConsole = CommonUtils.toBoolean(paramValue); break;
+                case "folder": folder = dsRegistry.getFolder(paramValue); break;
+                default:
+                    if (paramName.length() > 5 && paramName.startsWith("prop.")) {
+                        paramName = paramName.substring(6);
+                        conProperties.put(paramName, paramValue);
+                    }
+            }
+        }
+        if (driverName == null) {
+            log.error("Driver name not specified");
+            return;
+        }
+        DriverDescriptor driver = DataSourceProviderRegistry.getInstance().findDriver(driverName);
+        if (driver == null) {
+            log.error("Driver '" + driverName + "' not found");
+            return;
+        }
+        if (dsName == null) {
+            dsName = "Ext: " + driver.getName();
+            if (database != null) {
+                dsName += " - " + database;
+            } else if (server != null) {
+                dsName += " - " + server;
+            }
+        }
+
+        DBPConnectionConfiguration connConfig = new DBPConnectionConfiguration();
+        connConfig.setUrl(url);
+        connConfig.setHostName(host);
+        connConfig.setHostPort(port);
+        connConfig.setServerName(server);
+        connConfig.setDatabaseName(database);
+        connConfig.setUserName(user);
+        connConfig.setUserPassword(password);
+        connConfig.setProperties(conProperties);
+
+        final DataSourceDescriptor ds = new DataSourceDescriptor(dsRegistry, DataSourceDescriptor.generateNewId(driver), driver, connConfig);
+        ds.setName(dsName);
+        ds.setTemporary(true);
+        if (savePassword) {
+            ds.setSavePassword(true);
+        }
+        if (folder != null) {
+            ds.setFolder(folder);
+        }
+        //ds.set
+        dsRegistry.addDataSource(ds);
+
+        if (openConsole) {
+            DBeaverUI.syncExec(new Runnable() {
+                @Override
+                public void run() {
+                    OpenHandler.openSQLConsole(workbenchWindow, ds, ds.getName(), "");
+                }
+            });
+        } else if (makeConnect) {
+            DataSourceHandler.connectToDataSource(null, ds, null);
+        }
     }
 
     @Override
