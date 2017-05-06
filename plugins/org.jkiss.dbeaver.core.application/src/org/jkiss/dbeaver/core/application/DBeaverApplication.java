@@ -209,6 +209,9 @@ public class DBeaverApplication implements IApplication, DBPApplication {
                 }
             }
         }
+        if (handleCommandLine(defaultHomePath)) {
+            return false;
+        }
         try {
             // Make URL manually because file.toURI().toURL() produces bad path (with %20).
             final URL defaultHomeURL = new URL(
@@ -218,9 +221,6 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             boolean keepTrying = true;
             while (keepTrying) {
                 if (!instanceLoc.set(defaultHomeURL, true)) {
-                    if (handleCommandLine(defaultHomePath)) {
-                        return false;
-                    }
                     // Can't lock specified path
                     int msgResult = showMessageBox(
                         "DBeaver - Can't lock workspace",
@@ -304,7 +304,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
                     return 0;
                 }
             });
-            helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), DBeaverCommandLine.ALL_OPTIONS, "(C) 2016 JKISS", true);
+            helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), DBeaverCommandLine.ALL_OPTIONS, "(C) 2017 JKISS", true);
             return true;
         }
 
