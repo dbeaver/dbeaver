@@ -61,6 +61,7 @@ import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.preferences.*;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -826,10 +827,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     }
 
     protected List<SQLQueryParameter> parseParameters(IDocument document, SQLQuery query) {
-        boolean execQuery = SQLUtils.isExecQuery(getSQLDialect(), query.getText());
+        final SQLDialect sqlDialect = getSQLDialect();
+        boolean execQuery = false;
         List<SQLQueryParameter> parameters = null;
         ruleManager.setRange(document, query.getOffset(), query.getLength());
-        int blockDepth = 0;
+
+        boolean firstKeyword = true;
         for (;;) {
             IToken token = ruleManager.nextToken();
             int tokenOffset = ruleManager.getTokenOffset();
@@ -842,12 +845,24 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             if (token instanceof SQLToken) {
                 tokenType = ((SQLToken) token).getType();
             }
-            if (tokenType == SQLToken.T_BLOCK_BEGIN) {
-                blockDepth++;
-            }else if (tokenType == SQLToken.T_BLOCK_END) {
-                blockDepth--;
+            if (token.isWhitespace() || tokenType == SQLToken.T_COMMENT) {
+                continue;
             }
-            if (tokenType == SQLToken.T_PARAMETER && tokenLength > 0 && blockDepth <= 0) {
+            if (firstKeyword) {
+                // Detect query type
+                try {
+                    String tokenText = document.get(tokenOffset, tokenLength);
+                    if (ArrayUtils.containsIgnoreCase(sqlDialect.getDDLKeywords(), tokenText)) {
+                        // DDL doesn't support parameters
+                        return null;
+                    }
+                    execQuery = ArrayUtils.containsIgnoreCase(sqlDialect.getExecuteKeywords(), tokenText);
+                } catch (BadLocationException e) {
+                    log.warn(e);
+                }
+                firstKeyword = false;
+            }
+            if (tokenType == SQLToken.T_PARAMETER && tokenLength > 0) {
                 try {
                     String paramName = document.get(tokenOffset, tokenLength);
                     if (execQuery && paramName.equals("?")) {

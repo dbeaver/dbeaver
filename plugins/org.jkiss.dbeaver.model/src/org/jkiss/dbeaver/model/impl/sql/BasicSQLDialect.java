@@ -42,6 +42,9 @@ public class BasicSQLDialect implements SQLDialect {
 
     private static final String[] DEFAULT_LINE_COMMENTS = {SQLConstants.SL_COMMENT};
     private static final String[] EXEC_KEYWORDS = new String[0];
+    private static final String[] DDL_KEYWORDS = new String[] {
+        "CREATE", "ALTER", "DROP"
+    };
 
     private static final String[][] DEFAULT_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END}
@@ -88,6 +91,12 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;
+    }
+
+    @NotNull
+    @Override
+    public String[] getDDLKeywords() {
+        return DDL_KEYWORDS;
     }
 
     protected void addSQLKeyword(String keyword)

@@ -104,6 +104,17 @@ public class ArrayUtils {
         return false;
     }
 
+    public static boolean containsIgnoreCase(String[] array, String value)
+    {
+        if (isEmpty(array) || value == null)
+            return false;
+        for (int i = 0; i < array.length; i++) {
+            if (value.equalsIgnoreCase(array[i]))
+                return true;
+        }
+        return false;
+    }
+
     public static <OBJECT_TYPE> boolean containsRef(@NotNull OBJECT_TYPE[] array, @Nullable OBJECT_TYPE value)
     {
         final int length = array.length;
