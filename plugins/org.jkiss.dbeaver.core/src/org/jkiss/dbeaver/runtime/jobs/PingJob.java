@@ -47,7 +47,7 @@ public class PingJob extends AbstractJob
     @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
-        log.debug("Ping connection " + dataSource.getContainer().getId());
+        //log.debug("Ping connection " + dataSource.getContainer().getId());
         for (final DBCExecutionContext context : dataSource.getAllContexts()) {
             try {
                 context.checkContextAlive(monitor);

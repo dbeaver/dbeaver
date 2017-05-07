@@ -27,7 +27,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.*;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -314,8 +316,8 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     }
 
     public static class TableCache extends JDBCStructLookupCache<MySQLCatalog, MySQLTableBase, MySQLTableColumn> {
-        
-        protected TableCache()
+
+        TableCache()
         {
             super(JDBCConstants.TABLE_NAME);
         }
@@ -323,11 +325,31 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTableBase object, @Nullable String objectName) throws SQLException {
-            return session.prepareStatement(
-                "SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(owner) +
-                    (object == null && objectName == null ?
-                        "" :
-                        " LIKE " + SQLUtils.quoteString(object != null ? object.getName() : objectName)));
+            StringBuilder sql = new StringBuilder();
+            sql.append("SHOW FULL TABLES FROM ").append(DBUtils.getQuotedIdentifier(owner));
+            if (object != null || objectName != null) {
+                sql.append(" LIKE ").append(SQLUtils.quoteString(object != null ? object.getName() : objectName));
+            }
+            return session.prepareStatement(sql.toString());
+/*
+            StringBuilder sql = new StringBuilder();
+            sql.append("SHOW FULL TABLES FROM ").append(DBUtils.getQuotedIdentifier(owner));
+            String tableNameCol = "Tables_in_" + owner.getName();
+            if (object != null || objectName != null) {
+                sql.append(" WHERE ").append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(object != null ? object.getName() : objectName));
+            } else {
+                DBSObjectFilter tableFilters = owner.getDataSource().getContainer().getObjectFilter(MySQLTable.class, owner, false);
+                if (tableFilters != null && !tableFilters.isEmpty()) {
+                    sql.append(" WHERE 1=1");
+                    for (String incName : CommonUtils.safeCollection(tableFilters.getInclude())) {
+                        sql.append(" AND ").append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(incName));
+                    }
+                    for (String incName : CommonUtils.safeCollection(tableFilters.getExclude())) {
+                        sql.append(" AND ").append(tableNameCol).append(" NOT LIKE ").append(SQLUtils.quoteString(incName));
+                    }
+                }
+            }
+*/
         }
 
         @Override
@@ -376,7 +398,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
      * Index cache implementation
      */
     static class IndexCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableIndex, MySQLTableIndexColumn> {
-        protected IndexCache(TableCache tableCache)
+        IndexCache(TableCache tableCache)
         {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_INDEX_NAME);
         }
@@ -468,7 +490,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
      * Constraint cache implementation
      */
     static class ConstraintCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableConstraint, MySQLTableConstraintColumn> {
-        protected ConstraintCache(TableCache tableCache)
+        ConstraintCache(TableCache tableCache)
         {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_CONSTRAINT_NAME);
         }
