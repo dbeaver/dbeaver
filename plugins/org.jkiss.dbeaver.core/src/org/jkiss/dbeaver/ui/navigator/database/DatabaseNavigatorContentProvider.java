@@ -106,9 +106,6 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
             return EMPTY_CHILDREN;
         }
         if (parentNode instanceof DBNDatabaseNode && ((DBNDatabaseNode)parentNode).needsInitialization()) {
-            if (navigatorTree.isFiltering()) {
-                return EMPTY_CHILDREN;
-            }
             return TreeLoadVisualizer.expandChildren(
                 navigatorTree.getViewer(),
                 new TreeLoadService("Loading", ((DBNDatabaseNode) parentNode)));
