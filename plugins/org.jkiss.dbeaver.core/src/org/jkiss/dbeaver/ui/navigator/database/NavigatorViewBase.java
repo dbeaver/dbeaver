@@ -73,6 +73,15 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         return tree;
     }
 
+    /**
+     * Navigator nodes filter.
+     * Implementation returns true if element shouldn't be filtered (i.e. always visible).
+     * @return filter or null if no filtering is supported.
+     */
+    protected IFilter getNavigatorFilter() {
+        return null;
+    }
+
     @NotNull
     @Override
     public TreeViewer getNavigatorViewer()
@@ -92,10 +101,10 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         getViewSite().setSelectionProvider(tree.getViewer());
     }
 
-    protected DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode)
+    private DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode)
     {
         // Create tree
-        final DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(parent, rootNode, getTreeStyle());
+        final DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(parent, rootNode, getTreeStyle(), false, getNavigatorFilter());
 
         navigatorTree.getViewer().addSelectionChangedListener(
             new ISelectionChangedListener()

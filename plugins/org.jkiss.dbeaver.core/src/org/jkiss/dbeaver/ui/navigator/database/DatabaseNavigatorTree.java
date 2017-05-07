@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
@@ -49,6 +48,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 
 public class DatabaseNavigatorTree extends Composite implements INavigatorListener
 {
@@ -59,17 +59,22 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private TreeEditor treeEditor;
     private boolean checkEnabled;
     private ISelection defaultSelection;
-    private volatile boolean isFiltering = false;
+    private IFilter navigatorFilter;
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style)
     {
         this(parent, rootNode, style, false);
     }
 
-    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot)
+    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot) {
+        this(parent, rootNode, style, showRoot, null);
+    }
+
+    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot, IFilter navigatorFilter)
     {
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
+        this.navigatorFilter = navigatorFilter;
         this.defaultSelection = new StructuredSelection(rootNode);
         this.model = DBeaverCore.getInstance().getNavigatorModel();
         this.model.addListener(this);
@@ -101,12 +106,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         initEditor();
     }
 
-    public boolean isFiltering() {
-        return isFiltering;
-    }
-
-
-    protected TreeViewer doCreateTreeViewer(Composite parent, int style) {
+    private TreeViewer doCreateTreeViewer(Composite parent, int style) {
         checkEnabled = (style & SWT.CHECK) != 0;
 
         // Create tree
@@ -114,32 +114,40 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         if (checkEnabled) {
             return new CheckboxTreeViewer(parent, treeStyle);
         } else {
-            //return new CustomFilteredTree(treeStyle).getViewer();
-            return new TreeViewer(parent, treeStyle) {
-                @Override
-                public ISelection getSelection() {
-                    ISelection selection = super.getSelection();
-                    return selection.isEmpty() && defaultSelection != null ? defaultSelection : selection;
-                }
-                protected void handleTreeExpand(TreeEvent event) {
-                    // Disable redraw during expand (its blinking)
-                    getTree().setRedraw(false);
-                    try {
-                        super.handleTreeExpand(event);
-                    } finally {
-                        getTree().setRedraw(true);
-                    }
-                }
-                protected void handleTreeCollapse(TreeEvent event) {
-                    getTree().setRedraw(false);
-                    try {
-                        super.handleTreeCollapse(event);
-                    } finally {
-                        getTree().setRedraw(true);
-                    }
-                }
-            };
+            if (navigatorFilter != null) {
+                CustomFilteredTree filteredTree = new CustomFilteredTree(this, treeStyle);
+                return filteredTree.getViewer();
+            } else {
+                return doCreateNavigatorTreeViewer(parent, style);
+            }
         }
+    }
+
+    private TreeViewer doCreateNavigatorTreeViewer(Composite parent, int style) {
+        return new TreeViewer(parent, style) {
+            @Override
+            public ISelection getSelection() {
+                ISelection selection = super.getSelection();
+                return selection.isEmpty() && defaultSelection != null ? defaultSelection : selection;
+            }
+            protected void handleTreeExpand(TreeEvent event) {
+                // Disable redraw during expand (its blinking)
+                getTree().setRedraw(false);
+                try {
+                    super.handleTreeExpand(event);
+                } finally {
+                    getTree().setRedraw(true);
+                }
+            }
+            protected void handleTreeCollapse(TreeEvent event) {
+                getTree().setRedraw(false);
+                try {
+                    super.handleTreeCollapse(event);
+                } finally {
+                    getTree().setRedraw(true);
+                }
+            }
+        };
     }
 
     public DBNNode getModel()
@@ -430,43 +438,95 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         if (oldEditor != null) oldEditor.dispose();
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Filtered tree
+
     private static class TreeFilter extends PatternFilter {
-        @Override
-        public boolean isElementVisible(Viewer treeViewer, Object element) {
-            if (element instanceof DBNDatabaseItem || element instanceof DBNResource) {
-                Object parent = ((ITreeContentProvider) ((AbstractTreeViewer) treeViewer)
-                    .getContentProvider()).getParent(element);
-                if (parent != null && isLeafMatch(treeViewer, parent)) {
-                    return true;
+        private final IFilter filter;
+        TreeFilter(IFilter filter) {
+            setIncludeLeadingWildcard(true);
+            this.filter = filter;
+        }
+
+        public Object[] filter(Viewer viewer, Object parent, Object[] elements) {
+            int size = elements.length;
+            ArrayList<Object> out = new ArrayList<>(size);
+            for (int i = 0; i < size; ++i) {
+                Object element = elements[i];
+                if (select(viewer, parent, element)) {
+                    out.add(element);
                 }
-                return isParentMatch(treeViewer, element) || isLeafMatch(treeViewer, element);
-            } else {
+            }
+            return out.toArray();
+        }
+
+        public boolean isElementVisible(Viewer viewer, Object element){
+            if (filter.select(element)) {
                 return true;
             }
+            return super.isLeafMatch(viewer, element);
         }
+
     }
 
-    private class TreeRefreshJobListener extends JobChangeAdapter {
-        @Override
-        public void aboutToRun(IJobChangeEvent event) {
-            isFiltering = true;
+    private static class CustomFilteredTree extends FilteredTree {
+        CustomFilteredTree(DatabaseNavigatorTree navigatorTree, int treeStyle) {
+            super(navigatorTree, treeStyle, new TreeFilter(navigatorTree.navigatorFilter), true);
+            setInitialText("Type table name");
         }
 
         @Override
-        public void done(IJobChangeEvent event) {
-            isFiltering = false;
-        }
-    }
-
-    private class CustomFilteredTree extends FilteredTree {
-        public CustomFilteredTree(int treeStyle) {
-            super(DatabaseNavigatorTree.this, treeStyle, new TreeFilter(), true);
+        protected TreeViewer doCreateTreeViewer(Composite parent, int style) {
+            return ((DatabaseNavigatorTree)getParent()).doCreateNavigatorTreeViewer(parent, style);
         }
 
         protected WorkbenchJob doCreateRefreshJob() {
-            WorkbenchJob job = super.doCreateRefreshJob();
-            job.addJobChangeListener(new TreeRefreshJobListener());
-            return job;
+            return new WorkbenchJob("Refresh Filter") {//$NON-NLS-1$
+                @Override
+                public IStatus runInUIThread(IProgressMonitor monitor) {
+                    if (treeViewer.getControl().isDisposed()) {
+                        return Status.CANCEL_STATUS;
+                    }
+
+                    String text = getFilterString();
+                    if (text == null) {
+                        return Status.OK_STATUS;
+                    }
+                    boolean initial = initialText != null && initialText.equals(text);
+                    if (initial) {
+                        getPatternFilter().setPattern(null);
+                    } else {
+                        getPatternFilter().setPattern(text);
+                    }
+
+                    final Control redrawFalseControl = treeComposite != null ? treeComposite
+                            : treeViewer.getControl();
+                    try {
+                        // don't want the user to see updates that will be made to
+                        // the tree
+                        // we are setting redraw(false) on the composite to avoid
+                        // dancing scrollbar
+                        redrawFalseControl.setRedraw(false);
+                        treeViewer.refresh(true);
+
+                        if (text.length() > 0 && !initial) {
+                            // enabled toolbar - there is text to clear
+                            // and the list is currently being filtered
+                            updateToolbar(true);
+                        } else {
+                            // disabled toolbar - there is no text to clear
+                            // and the list is currently not filtered
+                            updateToolbar(false);
+                        }
+                    } finally {
+                        // done updating the tree - set redraw back to true
+                        redrawFalseControl.setRedraw(true);
+                    }
+
+                    return Status.OK_STATUS;
+                }
+            };
         }
     }
+
 }
