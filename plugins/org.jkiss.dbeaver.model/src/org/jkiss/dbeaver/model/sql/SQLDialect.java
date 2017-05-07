@@ -72,6 +72,13 @@ public interface SQLDialect {
     String[] getExecuteKeywords();
 
     /**
+     * Retrieves a list of execute keywords. If database doesn't support implicit execute returns empty list or null.
+     * @return the list of execute keywords.
+     */
+    @NotNull
+    String[] getDDLKeywords();
+
+    /**
      * Retrieves a list of all of this database's SQL keywords
      * that are NOT also SQL92 keywords.
      *
