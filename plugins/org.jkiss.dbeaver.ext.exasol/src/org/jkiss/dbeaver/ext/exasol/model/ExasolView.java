@@ -110,7 +110,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
                     
                     if (read) {
                         this.owner = JDBCUtils.safeGetString(dbResult, "VIEW_OWNER");
-                        this.text = JDBCUtils.safeGetString(dbResult, "VIEW_NAME");
+                        this.text = JDBCUtils.safeGetString(dbResult, "VIEW_TEXT");
                         this.hasRead = true;
                     } else {
                         this.owner = "SYS OBJECT";
