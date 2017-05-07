@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ext.exasol.model.cache;
 
 
+import java.sql.SQLException;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -25,13 +27,12 @@ import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolView;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
-
-import java.sql.SQLException;
 
 /**
  * Cache for Exasol Views
@@ -40,28 +41,6 @@ import java.sql.SQLException;
  */
 public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, ExasolTableColumn> {
 
-    /* rename columns for compatibility to TableBase Object */
-    private static final String SQL_VIEWS =
-        "select * from ("
-            + " SELECT "
-            + " VIEW_OWNER AS TABLE_OWNER,"
-            + " VIEW_NAME AS TABLE_NAME, "
-            + " VIEW_COMMENT AS REMARKS,"
-            + " 'VIEW' as TABLE_TYPE,"
-            + " VIEW_TEXT FROM EXA_ALL_VIEWS "
-            + " WHERE VIEW_SCHEMA = '%s' "
-            + " union all "
-            + " select "
-            + " 'SYS' as TABLE_OWNER, "
-            + " object_name as TABLE_NAME, "
-            + " object_comment as REMARKS, "
-            + " object_type, "
-            + " 'N/A for sysobjects' as view_text "
-            + " from sys.exa_syscat "
-            + " where  "
-            + "   SCHEMA_NAME = '%s' "
-            + " ) "
-            + "order by table_name";
     private static final String SQL_COLS_VIEW = "SELECT c.*,CAST(NULL AS INTEGER) as key_seq FROM  \"$ODBCJDBC\".\"ALL_COLUMNS\"  c WHERE c.table_SCHEM = '%s' AND c.TABLE_name = '%s' order by ORDINAL_POSITION";
     private static final String SQL_COLS_ALL =  "SELECT c.*,CAST(NULL AS INTEGER) as key_seq FROM  \"$ODBCJDBC\".\"ALL_COLUMNS\"  c WHERE c.table_SCHEM = '%s' order by c.TABLE_name,ORDINAL_POSITION";
 
@@ -71,15 +50,12 @@ public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, E
 
     }
 
-    @SuppressWarnings("rawtypes")
 	@Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema) throws SQLException {
-        JDBCStatement dbStat = session.createStatement();
-        
-        String sql = String.format(SQL_VIEWS, ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(exasolSchema.getName()));
-        
-        ((JDBCStatementImpl) dbStat).setQueryString(sql);
-        return dbStat;
+        JDBCDatabaseMetaData meta = session.getMetaData();
+
+        return meta.getTables("EXA_DB", exasolSchema.getName(), null,
+                new String[] { "VIEW", "SYSTEM TABLE" }).getSourceStatement();
     }
 
     @Override

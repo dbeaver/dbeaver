@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.ext.exasol.model.ExasolView;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class ExasolViewManager
@@ -75,7 +75,7 @@ public class ExasolViewManager
 
     @Override
     protected void addObjectCreateActions(List<DBEPersistAction> actions,
-            SQLObjectEditor<ExasolView, ExasolSchema>.ObjectCreateCommand command)
+            SQLObjectEditor<ExasolView, ExasolSchema>.ObjectCreateCommand command) 
     {
         createOrReplaceViewQuery(actions, command.getObject(), false);
     }
@@ -93,20 +93,23 @@ public class ExasolViewManager
     
     @Override
     protected void addObjectModifyActions(List<DBEPersistAction> actionList,
-            SQLObjectEditor<ExasolView, ExasolSchema>.ObjectChangeCommand command)
+            SQLObjectEditor<ExasolView, ExasolSchema>.ObjectChangeCommand command)  
     {
         createOrReplaceViewQuery(actionList, command.getObject(), true);
     }
     
-    protected void createOrReplaceViewQuery(List<DBEPersistAction> actions, ExasolView view, Boolean replace)
+    protected void createOrReplaceViewQuery(List<DBEPersistAction> actions, ExasolView view, Boolean replace) 
     {
         if (replace) {
             actions.add(
                     new SQLDatabasePersistAction("Drop view", "DROP VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL))
                     );
         }
-        actions.add(
-            new SQLDatabasePersistAction("Create view", view.getSource()));
+        try {
+            actions.add(
+                new SQLDatabasePersistAction("Create view", view.getSource()));
+        } catch (DBCException e) {
+        }
     }
     
 }

@@ -17,29 +17,37 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.editors.ExasolSourceObject;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.utils.CommonUtils;
-
-import java.sql.ResultSet;
-import java.util.Collection;
-import java.util.Collections;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 
 public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
 
 
     private String owner;
-    private String description;
+    private Boolean hasRead = false;
+    
 
     private String text;
 
@@ -49,8 +57,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
 
     public ExasolView(DBRProgressMonitor monitor, ExasolSchema schema, ResultSet dbResult) {
         super(monitor, schema, dbResult);
-        this.text = JDBCUtils.safeGetString(dbResult, "VIEW_TEXT");
-        this.description = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        hasRead=false;
 
     }
     
@@ -58,6 +65,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
     {
         super(schema,null,false);
         text = "";
+        hasRead = true;
     }
 
 
@@ -70,7 +78,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
     @Override
     @Property(viewable = true, editable = false, updatable = false, order = 40)
     public String getDescription() {
-        return this.description;
+        return super.getDescription();
     }
 
     // -----------------
@@ -79,8 +87,44 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
 
     @NotNull
     @Property(viewable = true, order = 100)
-    public String getOwner() {
+    public String getOwner() throws DBCException {
+        read();
         return owner;
+    }
+
+    private void read() throws DBCException
+    {
+        if (!hasRead)
+        {
+            JDBCSession session = DBUtils.openMetaSession(new VoidProgressMonitor(), getDataSource(), "Read Table Details");
+            try (JDBCStatement stmt = session.createStatement())
+            {
+                String sql = String.format("SELECT VIEW_OWNER,VIEW_TEXT FROM SYS.EXA_ALL_VIEWS WHERE VIEW_SCHEMA = '%s' and VIEW_NAME = '%s'",
+                        ExasolUtils.quoteString(this.getSchema().getName()),
+                        ExasolUtils.quoteString(this.getName())
+                        );
+                
+                try (JDBCResultSet dbResult = stmt.executeQuery(sql)) 
+                {
+                    Boolean read = dbResult.next();
+                    
+                    if (read) {
+                        this.owner = JDBCUtils.safeGetString(dbResult, "VIEW_OWNER");
+                        this.text = JDBCUtils.safeGetString(dbResult, "VIEW_TEXT");
+                        this.hasRead = true;
+                    } else {
+                        this.owner = "SYS OBJECT";
+                        this.text = "No View Text for system objects available";
+                    }
+                    this.hasRead = true;
+                }
+                
+            } catch (SQLException e) {
+                throw new DBCException(e,getDataSource());
+            }
+            
+        }
+        
     }
 
     @Override
@@ -106,6 +150,9 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.refreshObject(monitor);
+        
+        //force reading of attributes
+        hasRead = false;
         return this;
     }
 
@@ -126,14 +173,9 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
     }
 
     @Override
-    public JDBCStructCache<ExasolSchema, ? extends DBSEntity, ? extends DBSEntityAttribute> getCache() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
+        read();
         return SQLUtils.formatSQL(getDataSource(), this.text);
 
     }
@@ -144,8 +186,16 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
         this.text = sourceText;
     }
     
-    public String getSource()
+    public String getSource() throws DBCException
     {
+        read();
         return this.text;
     }
+
+    
+    @Override
+    public JDBCStructCache<ExasolSchema, ExasolView, ExasolTableColumn> getCache() {
+        return getContainer().getViewCache();
+    }
+    
 }

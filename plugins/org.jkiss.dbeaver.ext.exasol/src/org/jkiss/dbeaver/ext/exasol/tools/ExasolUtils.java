@@ -17,23 +17,26 @@
  */
 package org.jkiss.dbeaver.ext.exasol.tools;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.exasol.model.*;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
 import org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSession;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.utils.CommonUtils;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * DB2 Utils
@@ -65,7 +68,6 @@ public class ExasolUtils {
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
-    @SuppressWarnings("rawtypes")
 	public static String generateDDLforTable(DBRProgressMonitor monitor, ExasolDataSource dataSource,
                                              ExasolTable exasolTable) throws DBException {
 
