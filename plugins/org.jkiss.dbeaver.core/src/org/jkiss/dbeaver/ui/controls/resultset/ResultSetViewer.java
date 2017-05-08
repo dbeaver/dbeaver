@@ -1332,7 +1332,13 @@ public class ResultSetViewer extends Viewer
         if (statistics == null || statistics.isEmpty()) {
             return "";
         }
-        return " - " + RuntimeUtils.formatExecutionTime(statistics.getTotalTime());
+        long fetchTime = statistics.getFetchTime();
+        long totalTime = statistics.getTotalTime();
+        if (fetchTime <= 0) {
+            return " - " + RuntimeUtils.formatExecutionTime(totalTime);
+        } else {
+            return " - " + RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()) + " (+" + RuntimeUtils.formatExecutionTime(fetchTime) + ")";
+        }
     }
 
     ///////////////////////////////////////

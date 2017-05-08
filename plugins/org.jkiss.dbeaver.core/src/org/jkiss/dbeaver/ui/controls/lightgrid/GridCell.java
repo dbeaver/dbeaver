@@ -25,12 +25,10 @@ import org.jkiss.utils.CommonUtils;
  */
 public class GridCell
 {
-    @NotNull
     public Object col;
-    @NotNull
     public Object row;
 
-    public GridCell(@NotNull Object col, @NotNull Object row)
+    public GridCell(Object col, Object row)
     {
         this.col = col;
         this.row = row;
