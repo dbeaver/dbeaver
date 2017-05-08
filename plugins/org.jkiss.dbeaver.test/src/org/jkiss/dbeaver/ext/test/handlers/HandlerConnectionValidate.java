@@ -21,7 +21,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -37,21 +36,24 @@ public class HandlerConnectionValidate extends AbstractHandler {
         if (selection instanceof IStructuredSelection) {
             final Object element = ((IStructuredSelection) selection).getFirstElement();
             if (element instanceof DBNDatabaseNode) {
-                validateNode(HandlerUtil.getActiveShell(event), ((DBNDatabaseNode)element).getDataSource());
+                validateNode(((DBNDatabaseNode)element).getDataSource());
             }
         }
         return null;
     }
 
-    private void validateNode(Shell activeShell, DBPDataSource dataSource) {
+    private void validateNode(DBPDataSource dataSource) {
         try {
-            final DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataSource, "test");
-            final DBCStatement dbStat = session.prepareStatement(DBCStatementType.EXEC, "SELECT x.attributes FROM \"public\".entry x LIMIT 200", true, false, false);
-            if (dbStat.executeStatement()) {
-                final DBCResultSet dbResult = dbStat.openResultSet();
-                while (dbResult.nextRow()) {
-                    final Object cellValue = dbResult.getAttributeValue(0);
-                    System.out.println(cellValue);
+            try (final DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataSource, "test")) {
+                try (final DBCStatement dbStat = session.prepareStatement(DBCStatementType.EXEC, "SELECT x.attributes FROM \"public\".entry x LIMIT 200", true, false, false)) {
+                    if (dbStat.executeStatement()) {
+                        try (final DBCResultSet dbResult = dbStat.openResultSet()) {
+                            while (dbResult.nextRow()) {
+                                final Object cellValue = dbResult.getAttributeValue(0);
+                                System.out.println(cellValue);
+                            }
+                        }
+                    }
                 }
             }
 

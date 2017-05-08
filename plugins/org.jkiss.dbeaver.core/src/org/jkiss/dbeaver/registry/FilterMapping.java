@@ -73,4 +73,12 @@ public class FilterMapping {
                         CommonUtils.equalObjects(defaultFilter, source.defaultFilter) &&
                         CommonUtils.equalObjects(customFilters, source.customFilters);
     }
+
+    @Override
+    public int hashCode() {
+        return
+            CommonUtils.hashCode(typeName) +
+            CommonUtils.hashCode(defaultFilter) +
+            CommonUtils.hashCode(customFilters);
+    }
 }

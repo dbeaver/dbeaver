@@ -491,4 +491,7 @@ public class CommonUtils {
         return delim.replace("\\t", "\t").replace("\\n", "\n").replace("\\r", "\r");
     }
 
+    public static int hashCode(@Nullable  Object obj) {
+        return obj == null ? 0 : obj.hashCode();
+    }
 }

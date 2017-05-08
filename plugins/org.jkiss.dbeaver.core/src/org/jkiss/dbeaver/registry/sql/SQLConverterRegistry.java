@@ -65,7 +65,6 @@ public class SQLConverterRegistry {
 
     @Nullable
     public SQLTargetConverterDescriptor getTargetConverter(String converterId) {
-        List<SQLTargetConverterDescriptor> result = new ArrayList<>();
         for (SQLTargetConverterDescriptor converter : targetConverters) {
             if (converter.getId().equals(converterId)) {
                 return converter;

@@ -13,21 +13,23 @@ public class HugeSchemaGenerator {
         props.setProperty("user", "postgres");
         props.setProperty("password", "1978");
 
-        Connection conn = DriverManager.getConnection(url, props);
-        conn.setAutoCommit(true);
+        try (Connection conn = DriverManager.getConnection(url, props)) {
+            conn.setAutoCommit(true);
 
-        {
-            PreparedStatement stmt = conn.prepareStatement(
-                    "CREATE SCHEMA HUGE_SCHEMA");
-            stmt.execute();
-        }
+            try (PreparedStatement stmt = conn.prepareStatement(
+                        "CREATE SCHEMA HUGE_SCHEMA"))
+            {
+                stmt.execute();
+            }
 
-        for (int i = 0; i < 10000; i++) {
-            PreparedStatement stmt = conn.prepareStatement(
-                "CREATE TABLE HUGE_SCHEMA.TEST_TABLE" + i + "(ID INTEGER NOT NULL, VAL VARCHAR(64))");
-            stmt.execute();
-            if (i % 100 == 0) {
-                System.out.println(i + " tables");
+            for (int i = 0; i < 10000; i++) {
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "CREATE TABLE HUGE_SCHEMA.TEST_TABLE" + i + "(ID INTEGER NOT NULL, VAL VARCHAR(64))")) {
+                    stmt.execute();
+                    if (i % 100 == 0) {
+                        System.out.println(i + " tables");
+                    }
+                }
             }
         }
     }

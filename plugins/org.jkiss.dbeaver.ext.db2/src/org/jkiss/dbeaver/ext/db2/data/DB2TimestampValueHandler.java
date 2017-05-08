@@ -31,7 +31,7 @@ import java.text.SimpleDateFormat;
  */
 public class DB2TimestampValueHandler extends JDBCDateTimeValueHandler {
 
-    private static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new ExtendedDateFormat("''yyyy-MM-dd HH:mm:ss.ffffff''");
+    private final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new ExtendedDateFormat("''yyyy-MM-dd HH:mm:ss.ffffff''");
 
     public DB2TimestampValueHandler(DBDDataFormatterProfile formatterProfile)
     {
