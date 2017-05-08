@@ -230,4 +230,13 @@ public class DBSObjectFilter
             CommonUtils.equalObjects(include, source.include) &&
             CommonUtils.equalObjects(exclude, source.exclude);
     }
+
+    @Override
+    public int hashCode() {
+        return CommonUtils.hashCode(name) +
+                CommonUtils.hashCode(description) +
+                (enabled ? 1 : 0) +
+                CommonUtils.hashCode(include) +
+                CommonUtils.hashCode(exclude);
+    }
 }
