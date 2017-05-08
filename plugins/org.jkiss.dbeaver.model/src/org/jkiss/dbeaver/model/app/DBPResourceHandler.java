@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 
 import java.util.Collection;
 
@@ -41,6 +42,8 @@ public interface DBPResourceHandler {
 
     @NotNull
     DBNNode makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException;
+
+    void updateNavigatorNode(@NotNull DBNResource node, @NotNull IResource resource);
 
     void openResource(@NotNull IResource resource) throws CoreException, DBException;
 

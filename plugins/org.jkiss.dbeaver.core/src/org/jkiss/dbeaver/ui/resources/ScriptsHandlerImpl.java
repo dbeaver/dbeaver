@@ -75,6 +75,13 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException
     {
         DBNResource node = super.makeNavigatorNode(parentNode, resource);
+        updateNavigatorNode(node, resource);
+        return node;
+    }
+
+    @Override
+    public void updateNavigatorNode(@NotNull DBNResource node, @NotNull IResource resource) {
+        super.updateNavigatorNode(node, resource);
         if (resource instanceof IFolder) {
             if (resource.getParent() instanceof IProject) {
                 node.setResourceImage(UIIcon.SCRIPTS);
@@ -82,7 +89,6 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         } else {
             node.setResourceImage(UIIcon.SQL_SCRIPT);
         }
-        return node;
     }
 
     @Override
