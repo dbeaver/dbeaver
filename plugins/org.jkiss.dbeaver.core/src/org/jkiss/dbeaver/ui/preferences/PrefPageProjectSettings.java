@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
@@ -37,14 +38,17 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 import org.eclipse.ui.dialogs.ISelectionValidator;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.ResourceHandlerDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.service.prefs.BackingStoreException;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -55,6 +59,8 @@ import java.util.ArrayList;
 public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.projectSettings"; //$NON-NLS-1$
+
+    private static final Log log = Log.getLog(PrefPageProjectSettings.class);
 
     private IProject project;
     private Table resourceTable;
@@ -177,8 +183,9 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
             }
             item.setText(0, descriptor.getName());
 
-            if (descriptor.getDefaultRoot() != null) {
-                item.setText(1, descriptor.getDefaultRoot());
+            String defaultRoot = descriptor.getDefaultRoot(project);
+            if (defaultRoot != null) {
+                item.setText(1, defaultRoot);
             }
         }
         UIUtils.packColumns(resourceTable, true);
@@ -189,33 +196,39 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
     @Override
     public boolean performOk()
     {
+        IEclipsePreferences resourceHandlers = ProjectRegistry.getResourceHandlerPreferences(project, ProjectRegistry.RESOURCE_ROOT_FOLDER_NODE);
         java.util.List<IResource> refreshedResources = new ArrayList<>();
 
         // Save roots
-        boolean changed = false;
         for (TableItem item : resourceTable.getItems()) {
             ResourceHandlerDescriptor descriptor = (ResourceHandlerDescriptor) item.getData();
             String rootPath = item.getText(1);
-            if (!CommonUtils.equalObjects(descriptor.getDefaultRoot(), rootPath)) {
+            if (!CommonUtils.equalObjects(descriptor.getDefaultRoot(project), rootPath)) {
+                IResource oldResource = project.findMember(descriptor.getDefaultRoot(project));
+                if (oldResource != null) {
+                    refreshedResources.add(oldResource);
+                }
+
                 IResource newResource = project.findMember(rootPath);
                 if (newResource != null) {
                     refreshedResources.add(newResource);
                 }
-                IResource oldResource = project.findMember(descriptor.getDefaultRoot());
-                if (oldResource != null) {
-                    refreshedResources.add(oldResource);
-                }
-                descriptor.setDefaultRoot(rootPath);
-                changed = true;
+
+                resourceHandlers.put(descriptor.getId(), rootPath);
             }
         }
-        if (changed) {
-            DBeaverCore.getInstance().getProjectRegistry().updateResourceRoots();
-
+        if (!refreshedResources.isEmpty()) {
             for (IResource resource : refreshedResources) {
                 NavigatorUtils.refreshNavigatorResource(resource, this);
             }
         }
+
+        try {
+            resourceHandlers.flush();
+        } catch (BackingStoreException e) {
+            log.error(e);
+        }
+
         return super.performOk();
     }
 

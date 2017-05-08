@@ -67,9 +67,6 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     @Override
     public String getResourceDescription(@NotNull IResource resource)
     {
-        if (resource.getParent() instanceof IProject && resource.equals(getDefaultRoot(resource.getProject()))) {
-            return "SQL Scripts";
-        }
         return ResourceUtils.getResourceDescription(resource);
     }
 
