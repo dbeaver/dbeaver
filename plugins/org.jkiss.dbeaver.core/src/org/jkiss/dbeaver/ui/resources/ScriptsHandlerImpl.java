@@ -67,6 +67,9 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     @Override
     public String getResourceDescription(@NotNull IResource resource)
     {
+        if (resource.getParent() instanceof IProject && resource.equals(getDefaultRoot(resource.getProject()))) {
+            return "SQL Scripts";
+        }
         return ResourceUtils.getResourceDescription(resource);
     }
 
@@ -112,11 +115,11 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     @NotNull
     @Override
     public String getResourceNodeName(@NotNull IResource resource) {
-        if (resource.getParent() instanceof IProject && resource.equals(getDefaultRoot(resource.getProject()))) {
-            return "SQL Scripts";
-        } else {
+//        if (resource.getParent() instanceof IProject && resource.equals(getDefaultRoot(resource.getProject()))) {
+//            return "SQL Scripts";
+//        } else {
             return super.getResourceNodeName(resource);
-        }
+//        }
     }
 
 

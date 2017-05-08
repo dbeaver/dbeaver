@@ -20,12 +20,13 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverNature;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
-import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
+import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
@@ -33,6 +34,10 @@ import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.SAXListener;
+import org.jkiss.utils.xml.SAXReader;
+import org.jkiss.utils.xml.XMLException;
+import org.xml.sax.Attributes;
 
 import java.io.*;
 import java.util.*;
@@ -42,9 +47,9 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
 
     private static final String PROP_PROJECT_ACTIVE = "project.active";
     private static final String EXT_FILES_PROPS_STORE = "dbeaver-external-files.data";
+    private static final String RESOURCE_HANDLERS_CONFIG = "resource-bindings.xml";
 
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<>();
-    private final Map<String, ResourceHandlerDescriptor> rootMapping = new HashMap<>();
 
     private final Map<IProject, DataSourceRegistry> projectDatabases = new HashMap<>();
     private IProject activeProject;
@@ -69,11 +74,26 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
                 ResourceHandlerDescriptor handlerDescriptor = new ResourceHandlerDescriptor(ext);
                 handlerDescriptors.add(handlerDescriptor);
             }
-            for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
-                for (String root : rhd.getRoots()) {
-                    rootMapping.put(root, rhd);
-                }
+            loadResourceBindings();
+        }
+    }
+
+    private void loadResourceBindings() {
+        File rbFile = DBeaverActivator.getConfigurationFile(RESOURCE_HANDLERS_CONFIG);
+        if (!rbFile.exists()) {
+            return;
+        }
+        try (InputStream is = new FileInputStream(rbFile)) {
+            SAXReader parser = new SAXReader(is);
+            try {
+                parser.parse(new ResourceBindingsParser());
+            } catch (XMLException ex) {
+                throw new DBException("Resource bindings parse error", ex);
             }
+        } catch (DBException ex) {
+            log.warn("Can't load resource bindings from " + rbFile.getPath(), ex);
+        } catch (IOException ex) {
+            log.warn("IO error", ex);
         }
     }
 
@@ -145,7 +165,6 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
             handlerDescriptor.dispose();
         }
         this.handlerDescriptors.clear();
-        this.rootMapping.clear();
 
         // Remove listeners
         this.workspace = null;
@@ -170,6 +189,24 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         synchronized (projectListeners) {
             projectListeners.remove(listener);
         }
+    }
+
+    private ResourceHandlerDescriptor getHandlerDescriptor(String id) {
+        for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
+            if (rhd.getId().equals(id)) {
+                return rhd;
+            }
+        }
+        return null;
+    }
+
+    private ResourceHandlerDescriptor getHandlerDescriptorByRootPath(String path) {
+        for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
+            if (rhd.getDefaultRoot() != null && rhd.getDefaultRoot().equals(path)) {
+                return rhd;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -200,7 +237,8 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         if (handler == null && resource instanceof IFolder) {
             IPath relativePath = resource.getFullPath().makeRelativeTo(resource.getProject().getFullPath());
             while (relativePath.segmentCount() > 0) {
-                ResourceHandlerDescriptor handlerDescriptor = rootMapping.get(relativePath.toString());
+                String folderPath = relativePath.toString();
+                ResourceHandlerDescriptor handlerDescriptor = getHandlerDescriptorByRootPath(folderPath);
                 if (handlerDescriptor != null) {
                     handler = handlerDescriptor.getHandler();
                 }
@@ -236,19 +274,6 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
                         return realFolder;
                     }
                 }
-
-                final IFolder linkFolder = project.getFolder(rhd.getFolderLinkName());
-                if (!linkFolder.exists()) {
-/*
-                    try {
-                        linkFolder.createLink(realFolder.getRawLocation(), IResource.HIDDEN, null);
-                    } catch (CoreException e) {
-                        log.error("Can't create '" + rhd.getName() + "' root folder link", e);
-                        return realFolder;
-                    }
-*/
-                }
-
                 return realFolder;
             }
         }
@@ -429,6 +454,27 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
             }
         } catch (Exception e) {
             log.error("Error saving external files properties", e);
+        }
+    }
+
+    private class ResourceBindingsParser extends SAXListener.BaseListener
+    {
+        @Override
+        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
+                throws XMLException
+        {
+            if (localName.equals("handler")) {
+                String handlerId = atts.getValue(RegistryConstants.ATTR_ID);
+                String rootFolder = atts.getValue("root");
+                ResourceHandlerDescriptor handlerDescriptor = getHandlerDescriptor(handlerId);
+                if (handlerDescriptor == null) {
+                    log.warn("Resource handler '" + handlerId + "' not found");
+                    return;
+                }
+                if (!CommonUtils.isEmpty(rootFolder)) {
+                    handlerDescriptor.setDefaultRoot(rootFolder);
+                }
+            }
         }
     }
 }
