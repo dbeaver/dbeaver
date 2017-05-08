@@ -44,8 +44,6 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resourceHandler"; //$NON-NLS-1$
 
-    private static final String FOLDER_LINK_PREFIX = ".dbeaver-resource-link-";
-
     private String id;
     private String name;
     private boolean managable;
@@ -182,14 +180,13 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
         return resourceTypes;
     }
 
-    public String getFolderLinkName()
-    {
-        return FOLDER_LINK_PREFIX + id;
-    }
-
     public String getDefaultRoot()
     {
         return defaultRoot;
+    }
+
+    public void setDefaultRoot(String defaultRoot) {
+        this.defaultRoot = defaultRoot;
     }
 
     public List<String> getRoots()
@@ -197,4 +194,8 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
         return roots;
     }
 
+    @Override
+    public String toString() {
+        return id;
+    }
 }
