@@ -68,7 +68,10 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         if (!sqlDevHome.exists()) {
             sqlDevHome = new File(homeFolder, "Application Data/" + SQLD_HOME_FOLDER);
             if (!sqlDevHome.exists()) {
-                throw new DBException("SQL Developer installation not found");
+                sqlDevHome = new File(homeFolder, ".sqldeveloper"); // On Linux
+                if (!sqlDevHome.exists()) {
+                    throw new DBException("SQL Developer installation not found");
+                }
             }
         }
         final File[] sysConfFolders = sqlDevHome.listFiles(new FilenameFilter() {
