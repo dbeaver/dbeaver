@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -42,8 +43,11 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.registry.ResourceHandlerDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  * PrefPageConnectionTypes
@@ -142,6 +146,8 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
                     }
                 }
             });
+
+            UIUtils.createInfoLabel(composite, "Restart is required to refresh global settings");
         }
 
         performDefaults();
@@ -183,6 +189,33 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
     @Override
     public boolean performOk()
     {
+        java.util.List<IResource> refreshedResources = new ArrayList<>();
+
+        // Save roots
+        boolean changed = false;
+        for (TableItem item : resourceTable.getItems()) {
+            ResourceHandlerDescriptor descriptor = (ResourceHandlerDescriptor) item.getData();
+            String rootPath = item.getText(1);
+            if (!CommonUtils.equalObjects(descriptor.getDefaultRoot(), rootPath)) {
+                IResource newResource = project.findMember(rootPath);
+                if (newResource != null) {
+                    refreshedResources.add(newResource);
+                }
+                IResource oldResource = project.findMember(descriptor.getDefaultRoot());
+                if (oldResource != null) {
+                    refreshedResources.add(oldResource);
+                }
+                descriptor.setDefaultRoot(rootPath);
+                changed = true;
+            }
+        }
+        if (changed) {
+            DBeaverCore.getInstance().getProjectRegistry().updateResourceRoots();
+
+            for (IResource resource : refreshedResources) {
+                NavigatorUtils.refreshNavigatorResource(resource, this);
+            }
+        }
         return super.performOk();
     }
 

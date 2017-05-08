@@ -207,35 +207,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 break;
             }
             case UPDATE:
-                DBeaverUI.syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!treeViewer.getControl().isDisposed() && !treeViewer.isBusy()) {
-                            if (event.getNode() != null) {
-                                switch (event.getNodeChange()) {
-                                    case LOAD:
-                                        treeViewer.refresh(getViewerObject(event.getNode()));
-                                        expandNodeOnLoad(event.getNode());
-                                        break;
-                                    case UNLOAD:
-                                        treeViewer.collapseToLevel(event.getNode(), -1);
-                                        treeViewer.refresh(getViewerObject(event.getNode()));
-                                        break;
-                                    case REFRESH:
-                                        treeViewer.refresh(getViewerObject(event.getNode()), true);
-                                        break;
-                                    case LOCK:
-                                    case UNLOCK:
-                                    case STRUCT_REFRESH:
-                                        treeViewer.refresh(getViewerObject(event.getNode()));
-                                        break;
-                                }
-                            } else {
-                                log.warn("Null node object");
-                            }
-                        }
-                    }
-                });
+                DBeaverUI.syncExec(new NodeUpdater(event));
                 break;
             default:
                 break;
@@ -531,4 +503,37 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
     }
 
+    private class NodeUpdater implements Runnable {
+        private final DBNEvent event;
+        NodeUpdater(DBNEvent event) {
+            this.event = event;
+        }
+        @Override
+        public void run() {
+            if (!treeViewer.getControl().isDisposed() && !treeViewer.isBusy()) {
+                if (event.getNode() != null) {
+                    switch (event.getNodeChange()) {
+                        case LOAD:
+                            treeViewer.refresh(getViewerObject(event.getNode()));
+                            expandNodeOnLoad(event.getNode());
+                            break;
+                        case UNLOAD:
+                            treeViewer.collapseToLevel(event.getNode(), -1);
+                            treeViewer.refresh(getViewerObject(event.getNode()));
+                            break;
+                        case REFRESH:
+                            treeViewer.refresh(getViewerObject(event.getNode()), true);
+                            break;
+                        case LOCK:
+                        case UNLOCK:
+                        case STRUCT_REFRESH:
+                            treeViewer.refresh(getViewerObject(event.getNode()));
+                            break;
+                    }
+                } else {
+                    log.warn("Null node object");
+                }
+            }
+        }
+    }
 }

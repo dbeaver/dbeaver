@@ -34,10 +34,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -230,13 +229,7 @@ public class EditorUtils {
             file.setPersistentProperty(QN_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());
             file.setPersistentProperty(QN_PROJECT_ID, dataSourceContainer == null ? null : dataSourceContainer.getRegistry().getProject().getName());
             if (notify) {
-                final DBNProject projectNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(file.getProject());
-                if (projectNode != null) {
-                    final DBNResource fileNode = projectNode.findResource(file);
-                    if (fileNode != null) {
-                        fileNode.refreshResourceState(dataSourceContainer);
-                    }
-                }
+                NavigatorUtils.refreshNavigatorResource(file, dataSourceContainer);
             }
         } catch (CoreException e) {
             log.error("Internal error while writing file property", e);
