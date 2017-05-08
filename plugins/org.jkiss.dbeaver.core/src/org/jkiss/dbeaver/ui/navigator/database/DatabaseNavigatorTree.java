@@ -26,6 +26,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.dialogs.FilteredTree;
@@ -472,7 +473,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private static class CustomFilteredTree extends FilteredTree {
         CustomFilteredTree(DatabaseNavigatorTree navigatorTree, int treeStyle) {
             super(navigatorTree, treeStyle, new TreeFilter(navigatorTree.navigatorFilter), true);
-            setInitialText("Type table name");
+            setInitialText("Type table/view name to filter");
+            ((GridLayout)getLayout()).verticalSpacing = 0;
         }
 
         @Override

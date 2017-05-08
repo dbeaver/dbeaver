@@ -43,6 +43,7 @@ public class DriverTreeControl extends FilteredTree {
             SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER,
             new DriverFilter(),
             true);
+        setInitialText("Type part of database/driver name to filter");
     }
 
     private static Composite saveInitParameters(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
