@@ -299,16 +299,6 @@ public abstract class ObjectViewerRenderer {
         @Override
         public void mouseDown(MouseEvent e)
         {
-            if (isTree) {
-                detectTreeItem(e.x, e.y);
-            } else {
-                detectTableItem(e.x, e.y);
-            }
-        }
-
-        @Override
-        public void mouseUp(MouseEvent e)
-        {
             Item hoverItem;
             if (isTree) {
                 hoverItem = detectTreeItem(e.x, e.y);
@@ -328,6 +318,7 @@ public abstract class ObjectViewerRenderer {
                 }
             }
         }
+
     }
 
     public boolean isHyperlink(@Nullable Object cellValue)
