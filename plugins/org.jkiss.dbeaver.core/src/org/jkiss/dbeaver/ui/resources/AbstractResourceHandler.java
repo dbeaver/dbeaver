@@ -16,25 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.resources;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.entity.NodeEditorInput;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 import java.util.Collection;
 
@@ -60,6 +56,12 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
     public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException
     {
         return new DBNResource(parentNode, resource, this);
+    }
+
+    @Override
+    public void updateNavigatorNode(@NotNull DBNResource node, @NotNull IResource resource) {
+        // Reset icon
+        node.setResourceImage(null);
     }
 
     @Override

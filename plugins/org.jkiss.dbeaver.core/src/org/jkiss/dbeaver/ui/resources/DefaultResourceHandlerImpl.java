@@ -69,11 +69,17 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException
     {
         DBNResource node = super.makeNavigatorNode(parentNode, resource);
+        updateNavigatorNode(node, resource);
+        return node;
+    }
+
+    @Override
+    public void updateNavigatorNode(@NotNull DBNResource node, @NotNull IResource resource) {
+        super.updateNavigatorNode(node, resource);
         ProgramInfo program = ProgramInfo.getProgram(resource);
         if (program != null && program.getImage() != null) {
             node.setResourceImage(program.getImage());
         }
-        return node;
     }
 
     @Override

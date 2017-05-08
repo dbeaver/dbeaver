@@ -374,6 +374,11 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     }
 
     public void refreshResourceState(Object source) {
+        DBPResourceHandler newHandler = getModel().getPlatform().getProjectManager().getResourceHandler(resource);
+        if (newHandler != handler) {
+            handler = newHandler;
+        }
+        handler.updateNavigatorNode(this, resource);
         getModel().fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, this));
     }
 
