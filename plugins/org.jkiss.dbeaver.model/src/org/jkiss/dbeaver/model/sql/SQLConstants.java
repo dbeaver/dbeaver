@@ -33,6 +33,7 @@ public class SQLConstants {
 
     public static final String KEYWORD_UPDATE = "UPDATE";
     public static final String KEYWORD_INTO = "INTO";
+    public static final String KEYWORD_JOIN = "JOIN";
 
     public static final String[] TABLE_KEYWORDS = {
         "FROM",
@@ -40,7 +41,7 @@ public class SQLConstants {
         KEYWORD_INTO,
         "TABLE",
         "VIEW",
-        "JOIN"
+        KEYWORD_JOIN
     };
 
     public static final String KEYWORD_SELECT = "SELECT";
