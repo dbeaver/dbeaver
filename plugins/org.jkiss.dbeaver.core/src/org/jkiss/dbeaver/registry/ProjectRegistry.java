@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
+import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
@@ -336,6 +337,47 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
                 }
             }
         });
+    }
+
+    /**
+     * Saves resource bindings configuration and refreshes navigator trees.
+     */
+    public void updateResourceRoots() {
+        // Save config
+        File rbFile = DBeaverActivator.getConfigurationFile(RESOURCE_HANDLERS_CONFIG);
+        try (OutputStream os = new FileOutputStream(rbFile)) {
+            XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
+            xml.setButify(true);
+            xml.startElement("bindings");
+            for (ResourceHandlerDescriptor handlerDescriptor : handlerDescriptors) {
+                xml.startElement("handler");
+                xml.addAttribute(RegistryConstants.ATTR_ID, handlerDescriptor.getId());
+                String defaultRoot = handlerDescriptor.getDefaultRoot();
+                if (defaultRoot != null) {
+                    xml.addAttribute("root", defaultRoot);
+                }
+                xml.endElement();
+            }
+            xml.endElement();
+            xml.flush();
+        }
+        catch (IOException ex) {
+            log.warn("IO error", ex);
+        }
+/*
+        new AbstractJob("Refresh active project") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                // Refresh active project
+                try {
+                    activeProject.refreshLocal(IFile.DEPTH_INFINITE, monitor.getNestedMonitor());
+                } catch (CoreException e) {
+                    return GeneralUtils.makeExceptionStatus(e);
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
+*/
     }
 
     private IProject createGeneralProject(IProgressMonitor monitor) throws CoreException

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.dnd.*;
@@ -34,6 +35,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
@@ -617,6 +619,16 @@ public class NavigatorUtils {
                 (DBNNode) node,
                 null,
                 window);
+        }
+    }
+
+    public static void refreshNavigatorResource(@NotNull IResource resource, Object source) {
+        final DBNProject projectNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(resource.getProject());
+        if (projectNode != null) {
+            final DBNResource fileNode = projectNode.findResource(resource);
+            if (fileNode != null) {
+                fileNode.refreshResourceState(source);
+            }
         }
     }
 

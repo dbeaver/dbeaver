@@ -184,7 +184,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         synchronized (folderNodes) {
             DBNLocalFolder folderNode = folderNodes.get(folder);
             if (folderNode == null) {
-                log.warn("Folder node '" + folder.getFolderPath() + "' not found");
+                //log.warn("Folder node '" + folder.getFolderPath() + "' not found");
                 folderNode = new DBNLocalFolder(this, folder);
                 folderNodes.put(folder, folderNode);
             }
