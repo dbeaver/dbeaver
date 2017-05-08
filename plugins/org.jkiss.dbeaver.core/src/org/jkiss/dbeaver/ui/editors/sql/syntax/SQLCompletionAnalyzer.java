@@ -27,10 +27,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
@@ -399,10 +396,21 @@ class SQLCompletionAnalyzer
                 children = ((DBSEntity)parent).getAttributes(monitor);
             }
             if (children != null && !children.isEmpty()) {
+                boolean isJoin = SQLConstants.KEYWORD_JOIN.equals(request.wordDetector.getPrevKeyWord());
+
                 List<DBSObject> matchedObjects = new ArrayList<>();
                 final Map<String, Integer> scoredMatches = new HashMap<>();
                 boolean simpleMode = request.simpleMode;
                 boolean allObjects = !simpleMode && SQLCompletionProcessor.ALL_COLUMNS_PATTERN.equals(startPart);
+                String objPrefix = null;
+                if (allObjects) {
+                    if (!CommonUtils.isEmpty(request.wordDetector.getPrevWords())) {
+                        String prevWord = request.wordDetector.getPrevWords().get(0);
+                        if (prevWord.length() > 0 && prevWord.charAt(prevWord.length() - 1) == request.editor.getSyntaxManager().getStructSeparator()) {
+                            objPrefix = prevWord;
+                        }
+                    }
+                }
                 StringBuilder combinedMatch = new StringBuilder();
                 for (DBSObject child : children) {
                     if (DBUtils.isHiddenObject(child)) {
@@ -410,7 +418,10 @@ class SQLCompletionAnalyzer
                         continue;
                     }
                     if (allObjects) {
-                        if (combinedMatch.length() > 0) combinedMatch.append(", ");
+                        if (combinedMatch.length() > 0) {
+                            combinedMatch.append(", ");
+                            if (objPrefix != null) combinedMatch.append(objPrefix);
+                        }
                         combinedMatch.append(DBUtils.getQuotedIdentifier(child));
                     } else if (simpleMode) {
                         if (startPart == null || child.getName().toUpperCase(Locale.ENGLISH).startsWith(startPart)) {
