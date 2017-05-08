@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverNature;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -34,11 +34,6 @@ import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.xml.SAXListener;
-import org.jkiss.utils.xml.SAXReader;
-import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
-import org.xml.sax.Attributes;
 
 import java.io.*;
 import java.util.*;
@@ -46,9 +41,11 @@ import java.util.*;
 public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManager {
     private static final Log log = Log.getLog(ProjectRegistry.class);
 
+    public static final String RESOURCE_ROOT_FOLDER_NODE = "resourceRootFolder";
+
     private static final String PROP_PROJECT_ACTIVE = "project.active";
     private static final String EXT_FILES_PROPS_STORE = "dbeaver-external-files.data";
-    private static final String RESOURCE_HANDLERS_CONFIG = "resource-bindings.xml";
+    private static final Map<IProject, IEclipsePreferences> projectPreferences = new HashMap<>();
 
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<>();
 
@@ -75,26 +72,6 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
                 ResourceHandlerDescriptor handlerDescriptor = new ResourceHandlerDescriptor(ext);
                 handlerDescriptors.add(handlerDescriptor);
             }
-            loadResourceBindings();
-        }
-    }
-
-    private void loadResourceBindings() {
-        File rbFile = DBeaverActivator.getConfigurationFile(RESOURCE_HANDLERS_CONFIG);
-        if (!rbFile.exists()) {
-            return;
-        }
-        try (InputStream is = new FileInputStream(rbFile)) {
-            SAXReader parser = new SAXReader(is);
-            try {
-                parser.parse(new ResourceBindingsParser());
-            } catch (XMLException ex) {
-                throw new DBException("Resource bindings parse error", ex);
-            }
-        } catch (DBException ex) {
-            log.warn("Can't load resource bindings from " + rbFile.getPath(), ex);
-        } catch (IOException ex) {
-            log.warn("IO error", ex);
         }
     }
 
@@ -201,9 +178,10 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         return null;
     }
 
-    private ResourceHandlerDescriptor getHandlerDescriptorByRootPath(String path) {
+    private ResourceHandlerDescriptor getHandlerDescriptorByRootPath(IProject project, String path) {
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
-            if (rhd.getDefaultRoot() != null && rhd.getDefaultRoot().equals(path)) {
+            String defaultRoot = rhd.getDefaultRoot(project);
+            if (defaultRoot != null && defaultRoot.equals(path)) {
                 return rhd;
             }
         }
@@ -236,10 +214,11 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
             }
         }
         if (handler == null && resource instanceof IFolder) {
-            IPath relativePath = resource.getFullPath().makeRelativeTo(resource.getProject().getFullPath());
+            final IProject project = resource.getProject();
+            IPath relativePath = resource.getFullPath().makeRelativeTo(project.getFullPath());
             while (relativePath.segmentCount() > 0) {
                 String folderPath = relativePath.toString();
-                ResourceHandlerDescriptor handlerDescriptor = getHandlerDescriptorByRootPath(folderPath);
+                ResourceHandlerDescriptor handlerDescriptor = getHandlerDescriptorByRootPath(project, folderPath);
                 if (handlerDescriptor != null) {
                     handler = handlerDescriptor.getHandler();
                 }
@@ -265,7 +244,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
             DBPResourceHandler handler = rhd.getHandler();
             if (handler != null && handler.getClass() == handlerType) {
-                final IFolder realFolder = project.getFolder(rhd.getDefaultRoot());
+                final IFolder realFolder = project.getFolder(rhd.getDefaultRoot(project));
 
                 if (!realFolder.exists() && forceCreate) {
                     try {
@@ -337,47 +316,6 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
                 }
             }
         });
-    }
-
-    /**
-     * Saves resource bindings configuration and refreshes navigator trees.
-     */
-    public void updateResourceRoots() {
-        // Save config
-        File rbFile = DBeaverActivator.getConfigurationFile(RESOURCE_HANDLERS_CONFIG);
-        try (OutputStream os = new FileOutputStream(rbFile)) {
-            XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
-            xml.setButify(true);
-            xml.startElement("bindings");
-            for (ResourceHandlerDescriptor handlerDescriptor : handlerDescriptors) {
-                xml.startElement("handler");
-                xml.addAttribute(RegistryConstants.ATTR_ID, handlerDescriptor.getId());
-                String defaultRoot = handlerDescriptor.getDefaultRoot();
-                if (defaultRoot != null) {
-                    xml.addAttribute("root", defaultRoot);
-                }
-                xml.endElement();
-            }
-            xml.endElement();
-            xml.flush();
-        }
-        catch (IOException ex) {
-            log.warn("IO error", ex);
-        }
-/*
-        new AbstractJob("Refresh active project") {
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                // Refresh active project
-                try {
-                    activeProject.refreshLocal(IFile.DEPTH_INFINITE, monitor.getNestedMonitor());
-                } catch (CoreException e) {
-                    return GeneralUtils.makeExceptionStatus(e);
-                }
-                return Status.OK_STATUS;
-            }
-        }.schedule();
-*/
     }
 
     private IProject createGeneralProject(IProgressMonitor monitor) throws CoreException
@@ -499,24 +437,18 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         }
     }
 
-    private class ResourceBindingsParser extends SAXListener.BaseListener
-    {
-        @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
-                throws XMLException
-        {
-            if (localName.equals("handler")) {
-                String handlerId = atts.getValue(RegistryConstants.ATTR_ID);
-                String rootFolder = atts.getValue("root");
-                ResourceHandlerDescriptor handlerDescriptor = getHandlerDescriptor(handlerId);
-                if (handlerDescriptor == null) {
-                    log.warn("Resource handler '" + handlerId + "' not found");
-                    return;
-                }
-                if (!CommonUtils.isEmpty(rootFolder)) {
-                    handlerDescriptor.setDefaultRoot(rootFolder);
-                }
-            }
-        }
+    public static IEclipsePreferences getResourceHandlerPreferences(IProject project, String node) {
+        IEclipsePreferences projectSettings = getProjectPreferences(project);
+        return (IEclipsePreferences) projectSettings.node(node);
     }
+
+    public static synchronized IEclipsePreferences getProjectPreferences(IProject project) {
+        IEclipsePreferences preferences = projectPreferences.get(project);
+        if (preferences == null) {
+            preferences = new ProjectScope(project).getNode("org.jkiss.dbeaver.project.resources");
+            projectPreferences.put(project, preferences);
+        }
+        return preferences;
+    }
+
 }

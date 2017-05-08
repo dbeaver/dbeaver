@@ -18,12 +18,14 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -180,13 +182,10 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
         return resourceTypes;
     }
 
-    public String getDefaultRoot()
+    public String getDefaultRoot(IProject project)
     {
-        return defaultRoot;
-    }
-
-    public void setDefaultRoot(String defaultRoot) {
-        this.defaultRoot = defaultRoot;
+        IEclipsePreferences resourceHandlers = ProjectRegistry.getResourceHandlerPreferences(project, ProjectRegistry.RESOURCE_ROOT_FOLDER_NODE);
+        return resourceHandlers.get(id, defaultRoot);
     }
 
     public List<String> getRoots()
