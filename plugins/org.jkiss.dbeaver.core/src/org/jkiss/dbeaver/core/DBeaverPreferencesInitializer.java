@@ -181,14 +181,6 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
         // Data formats
         DataFormatterProfile.initDefaultPreferences(store, Locale.getDefault());
-
-        // SQL editor preferences
-        {
-            IPreferenceStore editorStore = EditorsPlugin.getDefault().getPreferenceStore();
-            editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS, true);
-            editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS_COLOR, "128,128,128");
-        }
-
     }
 
 }
