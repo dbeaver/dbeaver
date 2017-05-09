@@ -79,7 +79,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     public static final String SQL_EDITOR_CONTEXT = "org.jkiss.dbeaver.ui.editors.sql";
 
     static {
-        // SQL editor preferences
+        // SQL editor preferences. Do this here because it initializes display
+        // (that's why we can't run it in prefs initializer classes which run before workbench creation)
         {
             IPreferenceStore editorStore = EditorsPlugin.getDefault().getPreferenceStore();
             editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS, true);
