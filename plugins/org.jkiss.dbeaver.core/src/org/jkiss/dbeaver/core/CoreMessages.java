@@ -1173,6 +1173,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_editor_title_pattern;
 	public static String pref_page_sql_editor_checkbox_delete_empty_scripts;
 	public static String pref_page_sql_editor_checkbox_put_new_scripts;
+	public static String pref_page_sql_editor_checkbox_create_script_folders;
 	public static String pref_page_sql_editor_checkbox_reset_cursor;
 	public static String pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters;
 	public static String pref_page_sql_editor_text_anonymous_parameter_mark;
