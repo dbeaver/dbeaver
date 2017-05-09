@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -43,7 +44,10 @@ import org.jkiss.utils.time.ExtendedDateFormat;
 
 import java.sql.*;
 import java.text.Format;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 
 /**
@@ -107,7 +111,7 @@ public class GenericDataSource extends JDBCDataSource
         // Recreate URL from parameters
         // Driver settings and URL template may have change since connection creation
         String connectionURL = getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), connectionInfo);
-        if (!CommonUtils.equalObjects(connectionURL, connectionInfo.getUrl())) {
+        if (connectionInfo.getUrl() != null && !CommonUtils.equalObjects(connectionURL, connectionInfo.getUrl())) {
             log.warn("Actual connection URL (" + connectionURL + ") differs from previously saved (" + connectionInfo.getUrl() + "). " +
                 "Probably driver properties were changed. Please go to the connection '" + getContainer().getName() + "' editor.");
             connectionInfo.setUrl(connectionURL);
@@ -235,10 +239,11 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    public boolean supportsStructCache() {
+    boolean supportsStructCache() {
         return supportsStructCache;
     }
 
+    @Association
     public Collection<GenericTableType> getTableTypes(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -255,6 +260,7 @@ public class GenericDataSource extends JDBCDataSource
         return DBUtils.findObject(getCatalogs(), name);
     }
 
+    @Association
     public Collection<GenericSchema> getSchemas()
     {
         return schemas;
@@ -549,11 +555,7 @@ public class GenericDataSource extends JDBCDataSource
                 tmpSchemas.clear();
             }
             return tmpSchemas;
-        } catch (UnsupportedOperationException e) {
-            // Schemas are not supported
-            log.debug(e);
-            return null;
-        } catch (SQLFeatureNotSupportedException e) {
+        } catch (UnsupportedOperationException | SQLFeatureNotSupportedException e) {
             // Schemas are not supported
             log.debug(e);
             return null;
@@ -605,7 +607,7 @@ public class GenericDataSource extends JDBCDataSource
             }
         }
         if (!CommonUtils.isEmpty(schemaName)) {
-            if (container instanceof GenericCatalog) {
+            if (container != null) {
                 container = ((GenericCatalog)container).getSchema(monitor, schemaName);
             } else if (!CommonUtils.isEmpty(schemas)) {
                 container = this.getSchema(schemaName);
@@ -677,7 +679,7 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    public boolean isChild(DBSObject object)
+    private boolean isChild(DBSObject object)
         throws DBException
     {
         if (object instanceof GenericCatalog) {
@@ -766,12 +768,12 @@ public class GenericDataSource extends JDBCDataSource
         return selectedEntityType;
     }
 
-    public String getSelectedEntityName()
+    String getSelectedEntityName()
     {
         return selectedEntityName;
     }
 
-    void determineSelectedEntity(JDBCSession session)
+    private void determineSelectedEntity(JDBCSession session)
     {
         // Get selected entity (catalog or schema)
         selectedEntityName = null;
@@ -840,12 +842,15 @@ public class GenericDataSource extends JDBCDataSource
         try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
             if (selectedEntityFromAPI) {
                 // Use JDBC API to change entity
-                if (selectedEntityType.equals(GenericConstants.ENTITY_TYPE_CATALOG)) {
-                    session.setCatalog(entity.getName());
-                } else if (selectedEntityType.equals(GenericConstants.ENTITY_TYPE_SCHEMA)) {
-                    session.setSchema(entity.getName());
-                } else {
-                    throw new DBCException("No API to change active entity if type '" + selectedEntityType + "'");
+                switch (selectedEntityType) {
+                    case GenericConstants.ENTITY_TYPE_CATALOG:
+                        session.setCatalog(entity.getName());
+                        break;
+                    case GenericConstants.ENTITY_TYPE_SCHEMA:
+                        session.setSchema(entity.getName());
+                        break;
+                    default:
+                        throw new DBCException("No API to change active entity if type '" + selectedEntityType + "'");
                 }
             } else {
                 if (CommonUtils.isEmpty(querySetActiveDB) || !(entity instanceof GenericObjectContainer)) {
