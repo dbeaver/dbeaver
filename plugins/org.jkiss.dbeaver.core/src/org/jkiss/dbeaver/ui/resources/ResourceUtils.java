@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -252,13 +253,35 @@ public class ResourceUtils {
         }
         if (CommonUtils.equalObjects(scriptsRootFolder, scriptsFolder)) {
             // We are in the root folder
-            if (dataSourceContainer != null && dataSourceContainer.getPreferenceStore().getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS)) {
-                IFolder dbFolder = scriptsFolder.getFolder(CommonUtils.escapeFileName(dataSourceContainer.getName()));
-                if (dbFolder != null) {
-                    if (!dbFolder.exists()) {
-                        dbFolder.create(true, true, progressMonitor);
+            if (dataSourceContainer != null) {
+                if (dataSourceContainer.getPreferenceStore().getBoolean(DBeaverPreferences.SCRIPT_CREATE_CONNECTION_FOLDERS)) {
+                    // Create script folders according to connection folders
+                    DBPDataSourceFolder conFolder = dataSourceContainer.getFolder();
+                    if (conFolder != null) {
+                        List<DBPDataSourceFolder> conFolders = new ArrayList<>();
+                        for (DBPDataSourceFolder f = conFolder; f != null; f = f.getParent()) {
+                            conFolders.add(0, f);
+                        }
+                        for (DBPDataSourceFolder f : conFolders) {
+                            IFolder dbFolder = scriptsFolder.getFolder(CommonUtils.escapeFileName(f.getName()));
+                            if (dbFolder != null) {
+                                if (!dbFolder.exists()) {
+                                    dbFolder.create(true, true, progressMonitor);
+                                }
+                                scriptsFolder = dbFolder;
+                            }
+                        }
                     }
-                    scriptsFolder = dbFolder;
+                }
+                if (dataSourceContainer.getPreferenceStore().getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS)) {
+                    // Create special folder for connection
+                    IFolder dbFolder = scriptsFolder.getFolder(CommonUtils.escapeFileName(dataSourceContainer.getName()));
+                    if (dbFolder != null) {
+                        if (!dbFolder.exists()) {
+                            dbFolder.create(true, true, progressMonitor);
+                        }
+                        scriptsFolder = dbFolder;
+                    }
                 }
             }
         }

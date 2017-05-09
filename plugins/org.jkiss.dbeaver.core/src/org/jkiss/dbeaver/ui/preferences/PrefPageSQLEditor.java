@@ -47,6 +47,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
     private Button deleteEmptyCheck;
     private Button autoFoldersCheck;
+    private Button connectionFoldersCheck;
     private Text scriptTitlePattern;
 
     public PrefPageSQLEditor()
@@ -103,6 +104,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
             deleteEmptyCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_delete_empty_scripts, null, false, 2);
             autoFoldersCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, null, false, 2);
+            connectionFoldersCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_create_script_folders, null, false, 2);
             scriptTitlePattern = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_title_pattern, "");
             UIUtils.installContentProposal(
                     scriptTitlePattern,
@@ -133,6 +135,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
             deleteEmptyCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_DELETE_EMPTY));
             autoFoldersCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS));
+            connectionFoldersCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_CREATE_CONNECTION_FOLDERS));
             scriptTitlePattern.setText(store.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN));
 
         } catch (Exception e) {
@@ -153,6 +156,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
             store.setValue(DBeaverPreferences.SCRIPT_DELETE_EMPTY, deleteEmptyCheck.getSelection());
             store.setValue(DBeaverPreferences.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
+            store.setValue(DBeaverPreferences.SCRIPT_CREATE_CONNECTION_FOLDERS, connectionFoldersCheck.getSelection());
             store.setValue(DBeaverPreferences.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
         } catch (Exception e) {
             log.warn(e);
@@ -172,6 +176,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         store.setToDefault(DBeaverPreferences.SCRIPT_DELETE_EMPTY);
         store.setToDefault(DBeaverPreferences.SCRIPT_AUTO_FOLDERS);
+        store.setToDefault(DBeaverPreferences.SCRIPT_CREATE_CONNECTION_FOLDERS);
         store.setToDefault(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
     }
 
