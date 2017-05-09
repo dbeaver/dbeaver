@@ -62,12 +62,11 @@ public final class Base64 {
             obuf[wp] = (byte)(b1 << 4 & 0xf0 | b2 >> 2 & 0xf);
             return 2;
           case 3:
+          default:
             obuf[wp++] = (byte)(b0 << 2 & 0xfc | b1 >> 4 & 0x3);
             obuf[wp++] = (byte)(b1 << 4 & 0xf0 | b2 >> 2 & 0xf);
             obuf[wp] = (byte)(b2 << 6 & 0xc0 | b3 & 0x3f);
             return 3;
-          default:
-            throw new RuntimeException("Internal Errror");
         }
     }
 

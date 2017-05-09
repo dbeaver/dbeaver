@@ -80,13 +80,13 @@ public class ComparableVersion
 
         private final BigInteger value;
 
-        public static final IntegerItem ZERO = new IntegerItem();
+        static final IntegerItem ZERO = new IntegerItem();
 
         private IntegerItem() {
             this.value = BIG_INTEGER_ZERO;
         }
 
-        public IntegerItem(String str) {
+        IntegerItem(String str) {
             this.value = new BigInteger(str);
         }
 
@@ -114,7 +114,7 @@ public class ComparableVersion
                     return 1; // 1.1 > 1-1
 
                 default:
-                    throw new RuntimeException("invalid item: " + item.getClass());
+                    throw new IllegalStateException("Invalid item: " + item.getClass());
             }
         }
 
@@ -149,7 +149,7 @@ public class ComparableVersion
 
         private String value;
 
-        public StringItem(String value, boolean followedByDigit) {
+        StringItem(String value, boolean followedByDigit) {
             if (followedByDigit && value.length() == 1) {
                 // a1 = alpha-1, b1 = beta-1, m1 = milestone-1
                 switch (value.charAt(0)) {
@@ -186,10 +186,9 @@ public class ComparableVersion
          * or QUALIFIERS.size and then resort to lexical ordering. Most comparisons are decided by the first character,
          * so this is still fast. If more characters are needed then it requires a lexical sort anyway.
          *
-         * @param qualifier
          * @return an equivalent value that can be used with lexical comparison
          */
-        public static String comparableQualifier(String qualifier) {
+        static String comparableQualifier(String qualifier) {
             int i = _QUALIFIERS.indexOf(qualifier);
 
             return i == -1 ? (_QUALIFIERS.size() + "-" + qualifier) : String.valueOf(i);
@@ -211,7 +210,7 @@ public class ComparableVersion
                     return -1; // 1.any < 1-1
 
                 default:
-                    throw new RuntimeException("invalid item: " + item.getClass());
+                    throw new IllegalStateException("Invalid item: " + item.getClass());
             }
         }
 
@@ -272,7 +271,7 @@ public class ComparableVersion
                         Item r = right.hasNext() ? right.next() : null;
 
                         // if this is shorter, then invert the compare and mul with -1
-                        int result = l == null ? (r == null ? 0 : -1 * r.compareTo(l)) : l.compareTo(r);
+                        int result = l == null ? (r == null ? 0 : -1 * r.compareTo(null)) : l.compareTo(r);
 
                         if (result != 0) {
                             return result;
@@ -282,7 +281,7 @@ public class ComparableVersion
                     return 0;
 
                 default:
-                    throw new RuntimeException("invalid item: " + item.getClass());
+                    throw new IllegalStateException("Invalid item: " + item.getClass());
             }
         }
 
@@ -298,11 +297,11 @@ public class ComparableVersion
         }
     }
 
-    public ComparableVersion(String version) {
+    ComparableVersion(String version) {
         parseVersion(version);
     }
 
-    public final void parseVersion(String version) {
+    private void parseVersion(String version) {
         this.value = version;
 
         items = new ListItem();

@@ -348,7 +348,7 @@ public class FindReplaceDialog extends Dialog {
                 editControl.getContent().get(ByteBuffer.wrap(selection), editControl.getSelection()[0]);
             }
             catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
             for (int i = 0; i < selectionLength; ++i) {
                 selectedText.append(GeneralUtils.byteToHex[selection[i] & 0x0ff]);
