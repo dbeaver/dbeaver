@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.rules.IToken;
@@ -33,6 +34,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
@@ -75,6 +77,15 @@ import java.util.ResourceBundle;
 public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisualizer {
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     public static final String SQL_EDITOR_CONTEXT = "org.jkiss.dbeaver.ui.editors.sql";
+
+    static {
+        // SQL editor preferences
+        {
+            IPreferenceStore editorStore = EditorsPlugin.getDefault().getPreferenceStore();
+            editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS, true);
+            editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS_COLOR, "128,128,128");
+        }
+    }
 
     @NotNull
     private final SQLSyntaxManager syntaxManager;

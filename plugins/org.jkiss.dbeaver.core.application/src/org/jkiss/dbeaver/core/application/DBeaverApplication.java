@@ -107,6 +107,10 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     public Object start(IApplicationContext context) {
         instance = this;
 
+        // Set display name at the very beginning (#609)
+        // This doesn't initialize display - just sets default title
+        Display.setAppName(GeneralUtils.getProductName());
+
         Location instanceLoc = Platform.getInstanceLocation();
         if (!instanceLoc.isSet()) {
             if (!setDefaultWorkspacePath(instanceLoc)) {
