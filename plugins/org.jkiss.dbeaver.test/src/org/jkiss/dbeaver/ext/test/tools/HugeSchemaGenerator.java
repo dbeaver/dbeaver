@@ -12,8 +12,8 @@ public class HugeSchemaGenerator {
 
         final String url = "jdbc:postgresql://localhost/postgres";
         final Properties props = new Properties();
-        props.setProperty("user", "postgres");
-        props.setProperty("password", "1978");
+        props.setProperty("user", "");
+        props.setProperty("password", "");
 
         try (Connection conn = DriverManager.getConnection(url, props)) {
             conn.setAutoCommit(true);

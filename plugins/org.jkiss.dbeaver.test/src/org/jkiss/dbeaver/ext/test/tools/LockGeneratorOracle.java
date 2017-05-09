@@ -21,31 +21,16 @@ public class LockGeneratorOracle {
 	public static final int MAX_LEVEL_ITEMS = 3;
 	
 	private static int getPid(Connection conn) throws SQLException {
-		
-		
-		PreparedStatement stmt = null;
-		ResultSet res = null;
-		
-		try {
-			
-			stmt =  conn.prepareStatement("select sid from v$session where audsid = userenv('sessionid')");
-			res = stmt.executeQuery();
-			res.next();
-			return res.getInt(1);
-			
-		} finally {
-			
-			if (res != null) res.close();
-			if (stmt != null) stmt.close();
-			
-		}
 
-		
+		try (PreparedStatement stmt = conn.prepareStatement("select sid from v$session where audsid = userenv('sessionid')")) {
+			try (ResultSet res = stmt.executeQuery()) {
+				res.next();
+				return res.getInt(1);
+			}
+		}
 	}
 
 	public static void main(String[] args) {
-		
-
 		  final String url = "jdbc:oracle:thin:@[SERVER]:1521/[SID]";
 		  final Properties props = new Properties();
 		  props.setProperty("user","user");
@@ -53,7 +38,7 @@ public class LockGeneratorOracle {
 		  Connection conn = null;
 		  PreparedStatement stmt = null;
 		  ResultSet res = null;
-		
+
 		  
 		  try {
 		       conn = DriverManager.getConnection(url, props);
