@@ -1,10 +1,6 @@
 package org.jkiss.dbeaver.ext.test.tools;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,8 +43,8 @@ public class LockGenerator {
 		
 		  final String url = "jdbc:postgresql://localhost/postgres";
 		  final Properties props = new Properties();
-		  props.setProperty("user","postgres");
-		  props.setProperty("password","1978");
+		  props.setProperty("user","");
+		  props.setProperty("password","");
 		  Connection conn = null;
 		  PreparedStatement stmt = null;
 		  ResultSet res = null;
