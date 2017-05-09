@@ -17,16 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
@@ -36,17 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider;
 import org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolBaseObjectGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolConnectionGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRoleGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolSchemaGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolScriptGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolSystemGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolTableGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolTableObjectType;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolViewGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.*;
 import org.jkiss.dbeaver.ext.exasol.model.plan.ExasolPlanAnalyser;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -76,6 +56,11 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.SQLException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class ExasolDataSource extends JDBCDataSource
 		implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
 
@@ -84,8 +69,8 @@ public class ExasolDataSource extends JDBCDataSource
 	private static final String GET_CURRENT_SCHEMA = "SELECT CURRENT_SCHEMA";
 	private static final String SET_CURRENT_SCHEMA = "OPEN SCHEMA \"%s\"";
 
-	public DBSObjectCache<ExasolDataSource, ExasolSchema> schemaCache;
-	public DBSObjectCache<ExasolDataSource, ExasolVirtualSchema> virtualSchemaCache;
+	private DBSObjectCache<ExasolDataSource, ExasolSchema> schemaCache;
+	private DBSObjectCache<ExasolDataSource, ExasolVirtualSchema> virtualSchemaCache;
 
 	private ExasolCurrentUserPrivileges exasolCurrentUserPrivileges;
 	private DBSObjectCache<ExasolDataSource, ExasolUser> userCache = null;
@@ -252,7 +237,7 @@ public class ExasolDataSource extends JDBCDataSource
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile("(.+)\\[line ([0-9]+), column ([0-9]+)\\]");
 
     
-    public int getDriverMajorVersion()
+    int getDriverMajorVersion()
     {
     	return this.driverMajorVersion;
     }
@@ -386,7 +371,7 @@ public class ExasolDataSource extends JDBCDataSource
 		if (this.systemGrantCache != null)
 			this.systemGrantCache.clearCache();
 		
-		if (this.roleGrantCache != null)
+		if (this.roleCache != null)
 			this.roleCache.clearCache();
 
 		this.initialize(monitor);
@@ -519,17 +504,20 @@ public class ExasolDataSource extends JDBCDataSource
 		return schemaCache.getObject(monitor, this, name);
 	}
 
+	@Association
 	public Collection<ExasolVirtualSchema> getVirtualSchemas(DBRProgressMonitor monitor) 
 			throws DBException
 	{
 		return virtualSchemaCache.getAllObjects(monitor, this);
 	}
-	
+
 	public ExasolVirtualSchema getVirtualSchema(DBRProgressMonitor monitor, String name)
 			throws DBException
 	{
 		return virtualSchemaCache.getObject(monitor, this, name);
 	}
+
+    @Association
 	public Collection<ExasolUser> getUsers(DBRProgressMonitor monitor)
 			throws DBException
 	{
@@ -541,7 +529,8 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		return userCache.getObject(monitor, this, name);
 	}
-	
+
+    @Association
 	public Collection<ExasolRole> getRoles(DBRProgressMonitor monitor)
 			throws DBException
 	{
@@ -555,6 +544,7 @@ public class ExasolDataSource extends JDBCDataSource
 		return roleCache.getObject(monitor, this, name);
 	}
 
+    @Association
 	public Collection<ExasolConnection> getConnections(
 			DBRProgressMonitor monitor) throws DBException
 	{
@@ -566,7 +556,8 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		return connectionCache.getObject(monitor, this, name);
 	}
-	
+
+    @Association
 	public Collection<ExasolBaseObjectGrant> getBaseTableGrants(DBRProgressMonitor monitor) throws DBException
 	{
 		return baseTableGrantCache.getAllObjects(monitor, this);
@@ -657,6 +648,7 @@ public class ExasolDataSource extends JDBCDataSource
 	// -----------------------
 	// Authorities
 	// -----------------------
+
 	public boolean isAuthorizedForUsers()
 	{
 		return this.exasolCurrentUserPrivileges.getUserIsAuthorizedForUsers();
@@ -739,7 +731,7 @@ public class ExasolDataSource extends JDBCDataSource
         //check if we got an backup host list
         String backupHostList = connectionInfo.getProviderProperty(ExasolConstants.DRV_BACKUP_HOST_LIST);
 
-        if (backupHostList != null && backupHostList != "")
+        if (!CommonUtils.isEmpty(backupHostList))
             url.append(",").append(backupHostList).append(port);
 
         if (!url.toString().toUpperCase().contains("CLIENTNAME")) {
@@ -800,7 +792,7 @@ public class ExasolDataSource extends JDBCDataSource
         return DBCPlanStyle.PLAN;
     }
 
-    public DBSObjectCache<ExasolDataSource, ExasolDataType> getDataTypeCache()
+    DBSObjectCache<ExasolDataSource, ExasolDataType> getDataTypeCache()
 	{
 		return dataTypeCache;
 	}

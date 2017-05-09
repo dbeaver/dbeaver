@@ -49,7 +49,7 @@ public class ExasolScript extends AbstractProcedure<ExasolDataSource, ExasolSche
     private ExasolScriptLanguage scriptLanguage;
     private String scriptSQL;
     private ExasolScriptResultType scriptReturnType;
-    private String script_type;
+    private String scriptType;
     private ExasolSchema exasolSchema;
 
     public ExasolScript(ExasolSchema schema, ResultSet dbResult) {
@@ -61,7 +61,7 @@ public class ExasolScript extends AbstractProcedure<ExasolDataSource, ExasolSche
         this.scriptReturnType = CommonUtils.valueOf(ExasolScriptResultType.class, JDBCUtils.safeGetString(dbResult, "SCRIPT_RESULT_TYPE"));
         this.scriptSQL = JDBCUtils.safeGetString(dbResult, "SCRIPT_TEXT");
         this.name = JDBCUtils.safeGetString(dbResult, "SCRIPT_NAME");
-        this.script_type = JDBCUtils.safeGetString(dbResult, "SCRIPT_TYPE");
+        this.scriptType = JDBCUtils.safeGetString(dbResult, "SCRIPT_TYPE");
         exasolSchema = schema;
 
     }
@@ -104,7 +104,7 @@ public class ExasolScript extends AbstractProcedure<ExasolDataSource, ExasolSche
         return scriptLanguage;
     }
 
-    @Property(viewable = false, order = 10)
+    @Property(order = 10)
     public ExasolScriptResultType getResultType() {
         return scriptReturnType;
     }
@@ -118,9 +118,9 @@ public class ExasolScript extends AbstractProcedure<ExasolDataSource, ExasolSche
 
 
     @Nullable
-    @Property(viewable = false, order = 12)
+    @Property(order = 12)
     public String getType() {
-        return this.script_type;
+        return this.scriptType;
     }
 
     @NotNull
@@ -135,7 +135,7 @@ public class ExasolScript extends AbstractProcedure<ExasolDataSource, ExasolSche
         return this.createTime;
     }
 
-    @Property(viewable = false, category = ExasolConstants.CAT_OWNER)
+    @Property(category = ExasolConstants.CAT_OWNER)
     public String getOwner() {
         return owner;
     }
@@ -149,7 +149,7 @@ public class ExasolScript extends AbstractProcedure<ExasolDataSource, ExasolSche
     @Override
     public DBSProcedureType getProcedureType() {
 
-        if (script_type == "SCRIPTING" || script_type == "ADAPTER")
+        if (CommonUtils.equalObjects(scriptType, "SCRIPTING") || CommonUtils.equalObjects(scriptType, "ADAPTER"))
             return DBSProcedureType.PROCEDURE;
         else
             return DBSProcedureType.FUNCTION;
@@ -160,9 +160,10 @@ public class ExasolScript extends AbstractProcedure<ExasolDataSource, ExasolSche
         return null;
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
-        return DBUtils.getFullQualifiedName(getDataSource(), getContainer(),this);
+        return DBUtils.getFullQualifiedName(getDataSource(), getContainer(), this);
     }
 
     @Override
