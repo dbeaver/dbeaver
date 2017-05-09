@@ -69,7 +69,7 @@ class SQLCompletionAnalyzer
     private final DBRProgressMonitor monitor;
     private final CompletionRequest request;
 
-    public SQLCompletionAnalyzer(DBRProgressMonitor monitor, CompletionRequest request) {
+    SQLCompletionAnalyzer(DBRProgressMonitor monitor, CompletionRequest request) {
         this.monitor = monitor;
         this.request = request;
     }
@@ -167,8 +167,8 @@ class SQLCompletionAnalyzer
                 final String objectName =
                     request.wordDetector.isQuoted(token) ? request.wordDetector.removeQuotes(token) :
                     DBObjectNameCaseTransformer.transformName(dataSource, token);
-                childObject = sc.getChild(monitor, objectName);
-                if (childObject == null && i == 0) {
+                childObject = objectName == null ? null : sc.getChild(monitor, objectName);
+                if (childObject == null && i == 0 && objectName != null) {
                     for (int k = 0; k < selectedContainers.length; k++) {
                         if (selectedContainers[k] != null) {
                             // Probably it is from selected object, let's try it
@@ -396,7 +396,7 @@ class SQLCompletionAnalyzer
                 children = ((DBSEntity)parent).getAttributes(monitor);
             }
             if (children != null && !children.isEmpty()) {
-                boolean isJoin = SQLConstants.KEYWORD_JOIN.equals(request.wordDetector.getPrevKeyWord());
+                //boolean isJoin = SQLConstants.KEYWORD_JOIN.equals(request.wordDetector.getPrevKeyWord());
 
                 List<DBSObject> matchedObjects = new ArrayList<>();
                 final Map<String, Integer> scoredMatches = new HashMap<>();
@@ -555,7 +555,7 @@ class SQLCompletionAnalyzer
     /*
         * Turns the vector into an Array of ICompletionProposal objects
         */
-    protected static SQLCompletionProposal createCompletionProposal(
+    static SQLCompletionProposal createCompletionProposal(
         CompletionRequest request,
         String replaceString,
         String displayString,

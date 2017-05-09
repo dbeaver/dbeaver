@@ -54,7 +54,7 @@ import java.util.*;
 public class SQLCompletionProcessor implements IContentAssistProcessor
 {
     private static final Log log = Log.getLog(SQLCompletionProcessor.class);
-    public static final String ALL_COLUMNS_PATTERN = "*";
+    static final String ALL_COLUMNS_PATTERN = "*";
 
     enum QueryType {
         TABLE,
@@ -73,7 +73,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         SQLCompletionProcessor.lookupTemplates = lookupTemplates;
     }
 
-    public static void setSimpleMode(boolean simpleMode) {
+    static void setSimpleMode(boolean simpleMode) {
         SQLCompletionProcessor.simpleMode = simpleMode;
     }
 
@@ -313,7 +313,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     protected static class Validator implements IContextInformationValidator, IContextInformationPresenter
     {
 
-        protected int fInstallOffset;
+        int fInstallOffset;
 
         @Override
         public boolean isContextInformationValid(int offset)
@@ -338,9 +338,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
     private class ProposalSearchJob extends AbstractJob {
         private final SQLCompletionAnalyzer.CompletionRequest request;
-        private transient boolean finished = false;
 
-        public ProposalSearchJob(SQLCompletionAnalyzer.CompletionRequest request) {
+        ProposalSearchJob(SQLCompletionAnalyzer.CompletionRequest request) {
             super("Search proposals...");
             setSystem(true);
             this.request = request;
@@ -362,8 +361,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             } catch (Throwable e) {
                 log.error(e);
                 return Status.CANCEL_STATUS;
-            } finally {
-                finished = true;
             }
         }
 
