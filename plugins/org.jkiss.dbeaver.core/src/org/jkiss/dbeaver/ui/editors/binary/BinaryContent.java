@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.binary;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.Closeable;
@@ -43,11 +44,11 @@ public class BinaryContent {
     /**
      * Used to notify changes in content
      */
-    public static interface ModifyListener extends EventListener {
+    public interface ModifyListener extends EventListener {
         /**
          * Notifies the listener that the content has just been changed
          */
-        public void modified();
+        void modified();
     }
 
 
@@ -92,12 +93,12 @@ public class BinaryContent {
                 return super.clone();
             }
             catch (CloneNotSupportedException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         }
 
         @Override
-        public int compareTo(Range other)
+        public int compareTo(@NotNull Range other)
         {
             if (position < other.position && exclusiveEnd() <= other.position) return -1;
             if (other.position < position && other.exclusiveEnd() <= position) return 1;
@@ -118,13 +119,12 @@ public class BinaryContent {
 
         public String toString()
         {
-            return new StringBuilder("Range {position:").append(position).append(", length:").append
-                (length).append('}').toString();
+            return "Range {position:" + position + ", length:" + length + '}';
         }
     }
 
 
-    static final long mappedFileBufferLength = 2048 * 1024;  // for mapped file I/O
+    private static final long mappedFileBufferLength = 2048 * 1024;  // for mapped file I/O
 
     private ActionHistory actions = null;  // undo/redo actions history
     private ActionHistory actionsTemp = null;
@@ -141,7 +141,7 @@ public class BinaryContent {
     /**
      * Create new empty content.
      */
-    public BinaryContent()
+    BinaryContent()
     {
     }
 
@@ -151,7 +151,7 @@ public class BinaryContent {
      * @param aFile the backing content provider
      * @throws IOException when i/o problems occur. The content will be empty but valid
      */
-    public BinaryContent(File aFile)
+    BinaryContent(File aFile)
         throws IOException
     {
         this();
@@ -268,7 +268,7 @@ public class BinaryContent {
     }
 
 
-    void deleteAndShift(long start, long length)
+    private void deleteAndShift(long start, long length)
     {
         deleteInternal(start, length);
         initSubtreeTraversing(start, 0L);
@@ -276,7 +276,7 @@ public class BinaryContent {
     }
 
 
-    void deleteInternal(long startPosition, long length)
+    private void deleteInternal(long startPosition, long length)
     {
         if (length < 1L) return;
         initSubtreeTraversing(startPosition, length);
@@ -370,7 +370,7 @@ public class BinaryContent {
     }
 
 
-    int fillWithChanges(ByteBuffer dst, long position)
+    private int fillWithChanges(ByteBuffer dst, long position)
     {
         long relativePosition = position - changesPosition;
         int changesSize = changeList.size();
@@ -387,7 +387,7 @@ public class BinaryContent {
     }
 
 
-    int fillWithPartOfRange(ByteBuffer dst, Range sourceRange, long overlapBytes, int maxCopyLength)
+    private int fillWithPartOfRange(ByteBuffer dst, Range sourceRange, long overlapBytes, int maxCopyLength)
         throws IOException
     {
         int dstInitialPosition = dst.position();
@@ -417,8 +417,8 @@ public class BinaryContent {
     }
 
 
-    void fillWithRange(ByteBuffer dst, Range sourceRange, long overlapBytes, long position,
-                       List<Long> rangesModified)
+    private void fillWithRange(ByteBuffer dst, Range sourceRange, long overlapBytes, long position,
+                               List<Long> rangesModified)
         throws IOException
     {
         long positionSoFar = position;
@@ -476,7 +476,6 @@ public class BinaryContent {
      * @param dst      where to write the read result to
      * @param position starting read point
      * @return number of bytes read
-     * @throws IOException
      */
     public int get(ByteBuffer dst, long position)
         throws IOException
@@ -491,7 +490,6 @@ public class BinaryContent {
      * @param dst      where to write the read result to
      * @param position starting read point
      * @return number of bytes read
-     * @throws IOException
      */
     public int get(ByteBuffer dst, List<Long> rangesModified, long position)
         throws IOException
@@ -531,7 +529,6 @@ public class BinaryContent {
      * Reads the sequence of all bytes from this content into the given file
      *
      * @return number of bytes read
-     * @throws IOException
      */
     public long get(File destinationFile)
         throws IOException
@@ -546,7 +543,6 @@ public class BinaryContent {
      * @param start  first byte in sequence
      * @param length number of bytes to read
      * @return number of bytes read
-     * @throws IOException
      */
     public long get(File destinationFile, long start, long length)
         throws IOException
@@ -637,7 +633,7 @@ public class BinaryContent {
     }
 
 
-    Set<Range> initSubtreeTraversing(long position, long length)
+    private Set<Range> initSubtreeTraversing(long position, long length)
     {
         Set<Range> result = ranges.tailSet(new Range(position, 1L));
         tailTree = result.iterator();
@@ -773,7 +769,7 @@ public class BinaryContent {
     }
 
 
-    void notifyListeners()
+    private void notifyListeners()
     {
         if (listeners == null) return;
 
@@ -881,7 +877,7 @@ public class BinaryContent {
     }
 
 
-    void overwriteInternal(Range newRange)
+    private void overwriteInternal(Range newRange)
     {
         dirty = true;
         lastUpperNibblePosition = -1L;
@@ -959,7 +955,7 @@ public class BinaryContent {
     /**
      * Sets action history on. After this call the content will remember past actions to undo and redo
      */
-    public void setActionsHistory()
+    void setActionsHistory()
     {
         if (actions == null) {
             commitChanges();
@@ -968,7 +964,7 @@ public class BinaryContent {
     }
 
 
-    void shiftRemainingRanges(long increment)
+    private void shiftRemainingRanges(long increment)
     {
         if (increment == 0L) return;
 
@@ -980,7 +976,7 @@ public class BinaryContent {
     }
 
 
-    void splitAndShift(long position, long increment)
+    private void splitAndShift(long position, long increment)
     {
         initSubtreeTraversing(position, 0);
         if (!tailTree.hasNext()) return;
@@ -1059,7 +1055,7 @@ public class BinaryContent {
             long lowerLimit = changesPosition;
             long upperLimit = changesPosition + changeList.size();
             if (!insert && position >= lowerLimit && position < upperLimit)
-                return result;  // reuse without expanding
+                return null;  // reuse without expanding
 
             if (!insert) --lowerLimit;
             if (insert == changesInserted && position >= lowerLimit && position <= upperLimit) { // reuse

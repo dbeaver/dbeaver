@@ -47,7 +47,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     private final DBPImage icon;
     private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
 
-    public DataTransferProcessorDescriptor(DataTransferNodeDescriptor node, IConfigurationElement config)
+    DataTransferProcessorDescriptor(DataTransferNodeDescriptor node, IConfigurationElement config)
     {
         super(config);
         this.node = node;
@@ -91,7 +91,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return properties;
     }
 
-    public boolean appliesToType(Class objectType)
+    boolean appliesToType(Class objectType)
     {
         if (sourceTypes.isEmpty()) {
             return true;
@@ -111,7 +111,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
             Class<? extends IDataTransferProcessor> clazz = processorType.getObjectClass(IDataTransferProcessor.class);
             return clazz.newInstance();
         } catch (Exception e) {
-            throw new RuntimeException("Can't instantiate data exporter", e);
+            throw new IllegalStateException("Can't instantiate data exporter", e);
         }
     }
 
