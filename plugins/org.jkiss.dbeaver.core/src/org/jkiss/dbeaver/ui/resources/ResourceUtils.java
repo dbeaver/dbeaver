@@ -245,9 +245,13 @@ public class ResourceUtils {
         final IProgressMonitor progressMonitor = new NullProgressMonitor();
 
         // Get folder
+        final IFolder scriptsRootFolder = ResourceUtils.getScriptsFolder(project, true);
         IFolder scriptsFolder = folder;
         if (scriptsFolder == null) {
-            scriptsFolder = getScriptsFolder(project, true);
+            scriptsFolder = scriptsRootFolder;
+        }
+        if (CommonUtils.equalObjects(scriptsRootFolder, scriptsFolder)) {
+            // We are in the root folder
             if (dataSourceContainer != null && dataSourceContainer.getPreferenceStore().getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS)) {
                 IFolder dbFolder = scriptsFolder.getFolder(CommonUtils.escapeFileName(dataSourceContainer.getName()));
                 if (dbFolder != null) {
