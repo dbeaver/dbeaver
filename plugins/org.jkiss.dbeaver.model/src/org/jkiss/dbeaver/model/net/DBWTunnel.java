@@ -28,7 +28,13 @@ import java.io.IOException;
  */
 public interface DBWTunnel extends DBWNetworkHandler {
 
-    boolean needsPassword(DBWHandlerConfiguration configuration);
+    enum AuthCredentials {
+        NONE,
+        CREDENTIALS,
+        PASSWORD
+    }
+
+    AuthCredentials getRequiredCredentials(DBWHandlerConfiguration configuration);
 
     DBPConnectionConfiguration initializeTunnel(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException;

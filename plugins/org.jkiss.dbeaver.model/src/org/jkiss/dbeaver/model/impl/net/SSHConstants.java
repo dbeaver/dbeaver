@@ -32,7 +32,7 @@ public class SSHConstants {
     public static final String PROP_ALIVE_COUNT = "aliveCount";
     public static final String PROP_CONNECT_TIMEOUT = "sshConnectTimeout";
 
-    public static enum AuthType {
+    public enum AuthType {
         PASSWORD,
         PUBLIC_KEY
     }
