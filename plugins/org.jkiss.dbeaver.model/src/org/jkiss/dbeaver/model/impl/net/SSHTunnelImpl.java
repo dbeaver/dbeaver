@@ -203,17 +203,20 @@ public class SSHTunnelImpl implements DBWTunnel {
     }
 
     @Override
-    public boolean needsPassword(DBWHandlerConfiguration configuration) {
+    public AuthCredentials getRequiredCredentials(DBWHandlerConfiguration configuration) {
         if (!configuration.isEnabled() || !configuration.isSecured()) {
-            return false;
+            return AuthCredentials.NONE;
         }
+        if (configuration.isSavePassword()) {
+            return AuthCredentials.NONE;
+        }
+
         String sshAuthType = configuration.getProperties().get(SSHConstants.PROP_AUTH_TYPE);
         SSHConstants.AuthType authType = SSHConstants.AuthType.PASSWORD;
         if (sshAuthType != null) {
             authType = SSHConstants.AuthType.valueOf(sshAuthType);
         }
-        // Always ask for password
-        return !configuration.isSavePassword();//authType == SSHConstants.AuthType.PASSWORD;
+        return authType == SSHConstants.AuthType.PUBLIC_KEY ? AuthCredentials.PASSWORD : AuthCredentials.CREDENTIALS;
     }
 
     @Override

@@ -622,7 +622,7 @@ public class DataSourceDescriptor
         //final String oldPassword = getConnectionConfiguration().getUserPassword();
         if (!isSavePassword()) {
             // Ask for password
-            if (!DataSourceHandler.askForPassword(this, null)) {
+            if (!DataSourceHandler.askForPassword(this, null, false)) {
                 DataSourceHandler.updateDataSourceObject(this);
                 return false;
             }
@@ -649,8 +649,9 @@ public class DataSourceDescriptor
                 monitor.subTask("Initialize tunnel");
                 tunnel = tunnelConfiguration.createHandler(DBWTunnel.class);
                 try {
-                    if (!tunnelConfiguration.isSavePassword() && tunnel.needsPassword(tunnelConfiguration)) {
-                        if (!DataSourceHandler.askForPassword(this, tunnelConfiguration)) {
+                    if (!tunnelConfiguration.isSavePassword()) {
+                        DBWTunnel.AuthCredentials rc = tunnel.getRequiredCredentials(tunnelConfiguration);
+                        if (!DataSourceHandler.askForPassword(this, tunnelConfiguration, rc == DBWTunnel.AuthCredentials.PASSWORD)) {
                             DataSourceHandler.updateDataSourceObject(this);
                             tunnel = null;
                             return false;

@@ -147,7 +147,7 @@ public class DataSourceHandler
             false));
     }
 
-    public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler)
+    public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler, final boolean passwordOnly)
     {
         final String prompt = networkHandler != null ?
             NLS.bind(CoreMessages.dialog_connection_auth_title_for_handler, networkHandler.getTitle()) :
@@ -158,7 +158,7 @@ public class DataSourceHandler
         DBAAuthInfo authInfo = new UITask<DBAAuthInfo>() {
             @Override
             protected DBAAuthInfo runTask() {
-                return DBUserInterface.getInstance().promptUserCredentials(prompt, user, password, false);
+                return DBUserInterface.getInstance().promptUserCredentials(prompt, user, password, passwordOnly);
             }
         }.execute();
         if (authInfo == null) {
