@@ -88,7 +88,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
     {
         if (printTableName) {
             out.write("{\n");
-            out.write("\"" + tableName + "\": ");
+            out.write("\"" + escapeJsonString(tableName) + "\": ");
         }
         out.write("[\n");
     }
