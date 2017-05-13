@@ -110,6 +110,8 @@
                     <property id="supports-select-count" label="Driver supports SELECT count(*) clause" description="Driver supports SELECT count(*) clause" type="boolean" required="false" defaultValue="true"/>
                     <property id="script-delimiter" label="Script delimiter" description="Literal for SQL queries separation in scripts" type="string" required="false" defaultValue=";"/>
                     <property id="script-delimiter-redefiner" label="Script delimiter redefiner" description="SQL clause which redefines script delimiter value" type="string" required="false" defaultValue=";"/>
+                    <property id="script-delimiter-after-query" label="Use script delimiter after query" description="Keep SQL script delimiter after each SQL query" type="boolean" required="false" defaultValue="false"/>
+                    <property id="script-delimiter-after-block" label="Use script delimiter after SQL block" description="Keep SQL script delimiter after SQL script blocks (BEGIN/END)" type="boolean" required="false" defaultValue="false"/>
                     <property id="meta-model" label="Meta model type" description="Type of metadata reading model - standard or indexed" type="string" required="false" defaultValue="" validValues="standard,indexed"/>
                     <property id="all-objects-pattern" label="All Objects Pattern" description="SQL pattern for all metadata objects" type="string" required="false" defaultValue="null" validValues="null,%"/>
                     <property id="omit-catalog" label="Omit catalog(s)" description="Do not read and use catalog (aka database) information" type="boolean" required="false" defaultValue="false"/>
@@ -319,6 +321,8 @@
                     <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
                     <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
 
+                    <parameter name="script-delimiter-after-query" value="true"/>
+
                     <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE"/>
                     <file type="lib" os="win32" arch="x86" path="repo:/drivers/jtds/SSO/x86/ntlmauth.dll"/>
                     <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/jtds/SSO/x64/ntlmauth.dll"/>
@@ -341,6 +345,7 @@
 
                     <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
                     <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
+                    <parameter name="script-delimiter-after-query" value="true"/>
 
 <!--
                     <fileSource url="http://www.microsoft.com/en-us/download/details.aspx?displaylang=en&amp;id=11774"

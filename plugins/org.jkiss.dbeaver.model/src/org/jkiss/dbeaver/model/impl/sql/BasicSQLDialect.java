@@ -373,6 +373,11 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean isDelimiterAfterQuery() {
+        return false;
+    }
+
+    @Override
     public boolean isDelimiterAfterBlock() {
         return false;
     }
