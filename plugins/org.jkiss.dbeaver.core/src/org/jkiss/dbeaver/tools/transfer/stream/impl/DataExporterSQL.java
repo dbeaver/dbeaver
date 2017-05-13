@@ -21,7 +21,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.DBDContentValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -37,7 +40,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -178,19 +180,8 @@ public class DataExporterSQL extends StreamExporterAbstract {
             } else if (value instanceof File) {
                 out.write("@");
                 out.write(((File)value).getAbsolutePath());
-            } else if (value instanceof String) {
-                writeStringValue((String) value);
-            } else if (value instanceof Number) {
-                out.write(value.toString());
-            } else if (value instanceof Date) {
-                String stringValue = super.getValueDisplayString(column, row[i]);
-                if (getSite().getExportFormat() != DBDDisplayFormat.NATIVE) {
-                    writeStringValue(stringValue);
-                } else {
-                    out.write(stringValue);
-                }
             } else {
-                out.write(super.getValueDisplayString(column, row[i]));
+                out.write(SQLUtils.convertValueToSQL(session.getDataSource(), column, row[i]));
             }
         }
         if (insertMode != SQLDialect.MultiValueInsertMode.PLAIN) {
