@@ -1560,6 +1560,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 if (export) {
                     // Assign current job from active query and open wizard
+                    resultsContainer.lastGoodQuery = null;
                     curJob = job;
                     ActiveWizardDialog dialog = new ActiveWizardDialog(
                         getSite().getWorkbenchWindow(),
@@ -1907,7 +1908,9 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public String getName()
         {
-            String name = lastGoodQuery == null ? null : lastGoodQuery.getOriginalText();
+            String name = lastGoodQuery != null ?
+                    lastGoodQuery.getOriginalText() :
+                    (query == null ? null : query.getOriginalText());
             if (name == null) {
                 name = "SQL";
             }
