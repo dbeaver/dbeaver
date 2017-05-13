@@ -258,6 +258,11 @@ public interface SQLDialect {
     /**
      * True if anonymous SQL blocks must be finished with delimiter
      */
+    boolean isDelimiterAfterQuery();
+
+    /**
+     * True if anonymous SQL blocks must be finished with delimiter
+     */
     boolean isDelimiterAfterBlock();
 
     /**

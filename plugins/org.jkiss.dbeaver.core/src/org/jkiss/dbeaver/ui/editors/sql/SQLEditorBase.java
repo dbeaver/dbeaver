@@ -788,7 +788,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     String queryText = document.get(statementStart, tokenOffset - statementStart);
                     queryText = SQLUtils.fixLineFeeds(queryText);
 
-                    if (isDelimiter && hasBlocks && dialect.isDelimiterAfterBlock()) {
+                    if (isDelimiter && (hasBlocks ? dialect.isDelimiterAfterBlock() : dialect.isDelimiterAfterQuery())) {
                         if (delimiterText != null) {
                             queryText += delimiterText;
                         }

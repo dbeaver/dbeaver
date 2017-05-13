@@ -40,6 +40,8 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private boolean quoteReservedWords;
     private String dualTable;
     private String testSQL;
+    private boolean hasDelimiterAfterQuery;
+    private boolean hasDelimiterAfterBlock;
 
     public GenericSQLDialect() {
         super("Generic");
@@ -54,6 +56,8 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         DBPDriver driver = dataSource.getContainer().getDriver();
         this.scriptDelimiter = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
         this.scriptDelimiterRedefiner = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER_REDEFINER));
+        this.hasDelimiterAfterQuery = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SQL_DELIMITER_AFTER_QUERY));
+        this.hasDelimiterAfterBlock = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SQL_DELIMITER_AFTER_BLOCK));
         this.legacySQLDialect = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_LEGACY_DIALECT));
         this.suportsUpsert = ((GenericDataSource)dataSource).getMetaModel().supportsUpsertStatement();
         if (this.suportsUpsert) {
@@ -80,6 +84,16 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     @Override
     public String getScriptDelimiterRedefiner() {
         return scriptDelimiterRedefiner;
+    }
+
+    @Override
+    public boolean isDelimiterAfterQuery() {
+        return hasDelimiterAfterQuery;
+    }
+
+    @Override
+    public boolean isDelimiterAfterBlock() {
+        return hasDelimiterAfterBlock;
     }
 
     @NotNull

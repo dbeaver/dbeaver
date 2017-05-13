@@ -302,6 +302,10 @@ public final class SQLUtils {
     public static String trimQueryStatement(SQLSyntaxManager syntaxManager, String sql)
     {
         sql = sql.trim();
+        if (syntaxManager.getDialect().isDelimiterAfterQuery()) {
+            // Do not trim delimiter
+            return sql;
+        }
         for (String statementDelimiter : syntaxManager.getStatementDelimiters()) {
             if (sql.endsWith(statementDelimiter) && sql.length() > statementDelimiter.length()) {
                 if (Character.isAlphabetic(statementDelimiter.charAt(0))) {
