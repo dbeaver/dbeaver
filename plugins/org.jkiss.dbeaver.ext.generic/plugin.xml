@@ -728,9 +728,23 @@
                     sampleURL="jdbc:gemfirexd://{host}[:{port}]/"
                     defaultPort="1527"
                     description="Pivotal GemfireXD"
-                    webURL="http://blog.pivotal.io/tag/gemfire-xd">
+                    webURL="http://blog.pivotal.io/tag/gemfire-xd"
+                    category="Hadoop">
                     <file type="jar" path="maven:/io.snappydata:gemfirexd-client:RELEASE"/>
                 </driver>
+                <driver
+                    id="snappydata_store_client"
+                    label="SnappyData"
+                    class="io.snappydata.jdbc.ClientDriver"
+                    sampleURL="jdbc:snappydata://{host}[:{port}]/"
+                    defaultPort="1528"
+                    description="Pivotal GemfireXD"
+                    webURL="https://snappydatainc.github.io/snappydata/"
+                    category="Hadoop">
+                    <file type="jar" path="maven:/io.snappydata:snappydata-store-client:RELEASE"/>
+                    <!--<file type="jar" path="https://github.com/SnappyDataInc/snappydata/releases/download/v0.8/snappydata-client-1.5.4.jar"/>-->
+                </driver>
+
                 <driver
                     id="apache_hive2"
                     label="Apache Hive"
