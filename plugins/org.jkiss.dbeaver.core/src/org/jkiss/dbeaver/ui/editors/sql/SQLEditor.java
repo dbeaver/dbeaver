@@ -1555,6 +1555,9 @@ public class SQLEditor extends SQLEditorBase implements
                     this,
                     listener);
 
+                if (export || isSingleQuery) {
+                    resultsContainer.query = queries.get(0);
+                }
                 if (export) {
                     // Assign current job from active query and open wizard
                     curJob = job;
@@ -1569,7 +1572,6 @@ public class SQLEditor extends SQLEditorBase implements
                 } else if (isSingleQuery) {
                     closeJob();
                     curJob = job;
-                    resultsContainer.query = queries.get(0);
                     ResultSetViewer rsv = resultsContainer.getResultSetController();
                     if (rsv != null) {
                         rsv.resetDataFilter(false);
