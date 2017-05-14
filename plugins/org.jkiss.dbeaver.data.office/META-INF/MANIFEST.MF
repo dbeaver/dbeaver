@@ -10,9 +10,8 @@ Require-Bundle: org.jkiss.dbeaver.core,
  org.eclipse.jface,
  org.eclipse.ui.workbench,
  org.eclipse.core.runtime,
- org.apache.poi,
- org.apache.poi.ooxml,
- org.apache.poi.ooxml.schemas,
- org.apache.xmlbeans
-Bundle-Localization: plugin
+ org.apache.xmlbeans,
+ org.dom4j;bundle-version="1.6.1",
+ org.apache.commons.codec;bundle-version="1.10.0",
+ poi_bundle;bundle-version="1.0.0"Bundle-Localization: plugin
 Bundle-ClassPath: .
