@@ -356,7 +356,8 @@
                     id="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolScript"
                     label="Execute script"
                     singleton="true">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+                <!--<objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>-->
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolAnalyze"

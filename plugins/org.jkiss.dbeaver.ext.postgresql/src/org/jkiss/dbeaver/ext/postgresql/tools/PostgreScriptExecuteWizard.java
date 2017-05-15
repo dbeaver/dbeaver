@@ -21,21 +21,23 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreSchema, PostgreSchema> {
+class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreDatabase, PostgreDatabase> {
 
     private boolean isImport;
     private PostgreScriptExecuteWizardPageSettings mainPage;
 
-    PostgreScriptExecuteWizard(PostgreSchema catalog, boolean isImport)
+    PostgreScriptExecuteWizard(PostgreDatabase catalog, boolean isImport)
     {
         super(Collections.singleton(catalog), isImport ? "Import database" : "Execute script");
         this.isImport = isImport;
@@ -61,11 +63,19 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreSche
     }
 
     @Override
-    public void fillProcessParameters(List<String> cmd, PostgreSchema arg) throws IOException
+    public void fillProcessParameters(List<String> cmd, PostgreDatabase arg) throws IOException
     {
         String dumpPath = RuntimeUtils.getHomeBinary(getClientHome(), PostgreConstants.BIN_FOLDER, "psql").getAbsolutePath(); //$NON-NLS-1$
         cmd.add(dumpPath);
         cmd.add("--echo-errors"); //$NON-NLS-1$
+    }
+
+    @Override
+    protected void setupProcessParameters(ProcessBuilder process) {
+        super.setupProcessParameters(process);
+        if (!CommonUtils.isEmpty(getToolUserPassword())) {
+            process.environment().put("PGPASSWORD", getToolUserPassword());
+        }
     }
 
     @Override
@@ -75,12 +85,12 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreSche
     }
 
     @Override
-    public Collection<PostgreSchema> getRunInfo() {
+    public Collection<PostgreDatabase> getRunInfo() {
         return getDatabaseObjects();
     }
 
     @Override
-    protected List<String> getCommandLine(PostgreSchema arg) throws IOException
+    protected List<String> getCommandLine(PostgreDatabase arg) throws IOException
     {
         List<String> cmd = PostgreToolScript.getPostgreToolCommandLine(this, arg);
         cmd.add(arg.getName());

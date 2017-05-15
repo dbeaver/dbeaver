@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -42,10 +43,10 @@ public class PostgreToolScript implements IExternalTool
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
         for (DBSObject object : objects) {
-            if (object instanceof PostgreSchema) {
+            if (object instanceof PostgreDatabase) {
                 ToolWizardDialog dialog = new ToolWizardDialog(
                     window,
-                    new PostgreScriptExecuteWizard((PostgreSchema) object, false));
+                    new PostgreScriptExecuteWizard((PostgreDatabase) object, false));
                 dialog.open();
             }
         }
