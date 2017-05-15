@@ -236,7 +236,8 @@ public abstract class ObjectViewerRenderer {
                     resetCursor();
                 } else {
                     //tip = getCellString(cellValue);
-                    if ((stateMask & SWT.CTRL) != 0 && isHyperlink(cellValue) && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(x, y)) {
+                    boolean ctrlPRessed = (stateMask & SWT.CTRL) != 0 || (stateMask & SWT.ALT) != 0;
+                    if (ctrlPRessed && isHyperlink(cellValue) && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(x, y)) {
                         getItemsViewer().getControl().setCursor(linkCursor);
                     } else {
                         resetCursor();
@@ -247,16 +248,16 @@ public abstract class ObjectViewerRenderer {
 
         @Override
         public void keyPressed(KeyEvent e) {
-            if (e.keyCode == SWT.CTRL) {
+            if (e.keyCode == SWT.CTRL || e.keyCode == SWT.ALT) {
                 Point mousePoint = itemsViewer.getControl().getDisplay().getCursorLocation();
                 mousePoint = itemsViewer.getControl().getDisplay().map(null, itemsViewer.getControl(), mousePoint);
-                updateCursor(mousePoint.x, mousePoint.y, SWT.CTRL);
+                updateCursor(mousePoint.x, mousePoint.y, e.keyCode);
             }
         }
 
         @Override
         public void keyReleased(KeyEvent e) {
-            if (e.keyCode == SWT.CTRL) {
+            if (e.keyCode == SWT.CTRL || e.keyCode == SWT.ALT) {
                 Point mousePoint = itemsViewer.getControl().getDisplay().getCursorLocation();
                 mousePoint = itemsViewer.getControl().getDisplay().map(null, itemsViewer.getControl(), mousePoint);
                 updateCursor(mousePoint.x, mousePoint.y, SWT.NONE);
@@ -305,7 +306,7 @@ public abstract class ObjectViewerRenderer {
             } else {
                 hoverItem = detectTableItem(e.x, e.y);
             }
-            if ((e.stateMask & SWT.CTRL) == 0) {
+            if ((e.stateMask & SWT.CTRL) == 0 && (e.stateMask & SWT.ALT) == 0) {
                 // Navigate only if CTRL pressed
                 return;
             }
