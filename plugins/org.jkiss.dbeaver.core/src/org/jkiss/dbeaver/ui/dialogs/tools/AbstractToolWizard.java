@@ -215,6 +215,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     public boolean executeProcess(DBRProgressMonitor monitor, PROCESS_ARG arg)
         throws IOException, CoreException, InterruptedException
     {
+        monitor.beginTask(getWindowTitle(), 1);
         try {
             final List<String> commandLine = getCommandLine(arg);
             final File execPath = new File(commandLine.get(0));
@@ -250,6 +251,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             }
             //process.waitFor();
         } catch (IOException e) {
+            monitor.done();
             log.error(e);
             logPage.appendLog(NLS.bind(CoreMessages.tools_wizard_log_io_error, e.getMessage()) + "\n", true);
             return false;
