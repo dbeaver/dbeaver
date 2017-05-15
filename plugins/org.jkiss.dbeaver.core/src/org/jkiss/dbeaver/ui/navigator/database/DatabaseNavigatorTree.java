@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectRename;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -447,6 +448,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             super(navigatorTree, treeStyle, new TreeFilter(navigatorTree.navigatorFilter), true);
             setInitialText("Type table/view name to filter");
             ((GridLayout)getLayout()).verticalSpacing = 0;
+
+            UIUtils.addDefaultEditActionsSupport(DBeaverUI.getActiveWorkbenchWindow(), getFilterControl());
         }
 
         @Override

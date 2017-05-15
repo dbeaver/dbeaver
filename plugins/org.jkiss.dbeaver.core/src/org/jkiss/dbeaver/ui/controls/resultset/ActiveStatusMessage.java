@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -91,15 +89,10 @@ abstract class ActiveStatusMessage extends Composite {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         messageText.setLayoutData(gd);
 
-        UIUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.messageText);
-        UIUtils.addFocusTracker(viewer.getSite(), UIUtils.INLINE_WIDGET_EDITOR_ID, this.messageText);
-        this.messageText.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                // Unregister from focus service
-                UIUtils.removeFocusTracker(viewer.getSite(), messageText);
-            }
-        });
+        if (viewer != null) {
+            UIUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.messageText);
+            UIUtils.addDefaultEditActionsSupport(viewer.getSite(), this.messageText);
+        }
     }
 
     public void setMessage(String message)

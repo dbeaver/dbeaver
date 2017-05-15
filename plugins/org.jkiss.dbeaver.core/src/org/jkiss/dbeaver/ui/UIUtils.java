@@ -1022,6 +1022,18 @@ public class UIUtils {
         }
     }
 
+    public static void addDefaultEditActionsSupport(final IServiceLocator site, final Control control) {
+        UIUtils.addFocusTracker(site, UIUtils.INLINE_WIDGET_EDITOR_ID, control);
+        control.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                // Unregister from focus service
+                UIUtils.removeFocusTracker(site, control);
+            }
+        });
+    }
+
+
     @NotNull
     public static IDialogSettings getDialogSettings(@NotNull String dialogId)
     {
@@ -1279,13 +1291,7 @@ public class UIUtils {
         CellEditor cellEditor = UIUtils.createCellEditor(parent, object, property);
         if (cellEditor != null) {
             final Control editorControl = cellEditor.getControl();
-            UIUtils.addFocusTracker(serviceLocator, UIUtils.INLINE_WIDGET_EDITOR_ID, editorControl);
-            editorControl.addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e) {
-                    UIUtils.removeFocusTracker(serviceLocator, editorControl);
-                }
-            });
+            addDefaultEditActionsSupport(serviceLocator, editorControl);
         }
         return cellEditor;
     }

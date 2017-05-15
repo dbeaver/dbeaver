@@ -149,15 +149,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.refreshPanel = new RefreshPanel(filterComposite);
 
             // Register filters text in focus service
-            UIUtils.addFocusTracker(viewer.getSite(), UIUtils.INLINE_WIDGET_EDITOR_ID, this.filtersText);
-            this.filtersText.addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e)
-                {
-                    // Unregister from focus service
-                    UIUtils.removeFocusTracker(viewer.getSite(), filtersText);
-                }
-            });
+            UIUtils.addDefaultEditActionsSupport(viewer.getSite(), this.filtersText);
 
             this.filtersText.addPaintListener(new PaintListener() {
                 @Override
