@@ -157,7 +157,7 @@ public abstract class ObjectViewerRenderer {
     //////////////////////////////////////////////////////
     // List sorter
 
-    public void paintCell(Event event, Object element, Widget item, int columnIndex, boolean editable) {
+    public void paintCell(Event event, Object element, Widget item, int columnIndex, boolean editable, boolean selected) {
         Object cellValue = getCellValue(element, columnIndex);
         if (cellValue != null ) {
             GC gc = event.gc;
@@ -175,8 +175,7 @@ public abstract class ObjectViewerRenderer {
 
             } else if (isHyperlink(cellValue)) {
                 // Print link
-                boolean isSelected = gc.getBackground().equals(selectionBackgroundColor);
-                prepareLinkStyle(cellValue, isSelected ? gc.getForeground() : JFaceColors.getHyperlinkText(event.item.getDisplay()));
+                prepareLinkStyle(cellValue, selected ? gc.getForeground() : JFaceColors.getHyperlinkText(event.item.getDisplay()));
                 Rectangle textBounds;
                 if (event.item instanceof TreeItem) {
                     textBounds = ((TreeItem) event.item).getTextBounds(event.index);
