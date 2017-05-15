@@ -79,15 +79,10 @@ class StatusLabel extends Composite {
         gd.minimumHeight = statusImage.getBounds().height;
         statusText.setLayoutData(gd);
 
-        UIUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.statusText);
-        UIUtils.addFocusTracker(viewer.getSite(), UIUtils.INLINE_WIDGET_EDITOR_ID, this.statusText);
-        this.statusText.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                // Unregister from focus service
-                UIUtils.removeFocusTracker(viewer.getSite(), statusText);
-            }
-        });
+        if (viewer != null) {
+            UIUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.statusText);
+            UIUtils.addDefaultEditActionsSupport(viewer.getSite(), this.statusText);
+        }
 
         final ToolBar tb = new ToolBar(this, SWT.HORIZONTAL);
         final ToolItem detailsIcon = new ToolItem(tb, SWT.NONE);
