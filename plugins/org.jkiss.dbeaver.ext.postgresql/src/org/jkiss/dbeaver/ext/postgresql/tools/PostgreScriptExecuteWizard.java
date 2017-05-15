@@ -32,35 +32,14 @@ import java.util.List;
 
 class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreSchema, PostgreSchema> {
 
-    enum LogLevel {
-        Normal,
-        Verbose,
-        Debug
-    }
-
-    private LogLevel logLevel;
-    private boolean noBeep;
-
     private boolean isImport;
     private PostgreScriptExecuteWizardPageSettings mainPage;
 
-    public PostgreScriptExecuteWizard(PostgreSchema catalog, boolean isImport)
+    PostgreScriptExecuteWizard(PostgreSchema catalog, boolean isImport)
     {
         super(Collections.singleton(catalog), isImport ? "Import database" : "Execute script");
         this.isImport = isImport;
-        this.logLevel = LogLevel.Normal;
-        this.noBeep = true;
         this.mainPage = new PostgreScriptExecuteWizardPageSettings(this);
-    }
-
-    public LogLevel getLogLevel()
-    {
-        return logLevel;
-    }
-
-    public void setLogLevel(LogLevel logLevel)
-    {
-        this.logLevel = logLevel;
     }
 
     public boolean isImport()
@@ -71,7 +50,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreSche
     @Override
     public boolean isVerbose()
     {
-        return logLevel == LogLevel.Verbose || logLevel == LogLevel.Debug;
+        return false;
     }
 
     @Override
@@ -86,12 +65,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreSche
     {
         String dumpPath = RuntimeUtils.getHomeBinary(getClientHome(), PostgreConstants.BIN_FOLDER, "psql").getAbsolutePath(); //$NON-NLS-1$
         cmd.add(dumpPath);
-        if (logLevel == LogLevel.Debug) {
-            cmd.add("--debug-info"); //$NON-NLS-1$
-        }
-        if (noBeep) {
-            cmd.add("--no-beep"); //$NON-NLS-1$
-        }
+        cmd.add("--echo-errors"); //$NON-NLS-1$
     }
 
     @Override
