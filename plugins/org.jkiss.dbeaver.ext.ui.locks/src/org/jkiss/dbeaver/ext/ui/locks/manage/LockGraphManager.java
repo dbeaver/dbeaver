@@ -173,9 +173,9 @@ public abstract class LockGraphManager<LOCK_TYPE extends DBAServerLock<?>, ID_TY
 		}
 		
 		for(LOCK_TYPE root : roots) {
-			
-			if (root.waitThis().size() > 0)
+		
 			createGraph(root);
+			
 		}
 		
 	}
