@@ -1,91 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.jkiss.dbeaver.ext.office.feature"
-      label="%featureName"
-      version="1.0.0"
-      plugin="org.jkiss.dbeaver.data.office">
+        id="org.jkiss.dbeaver.ext.office.feature"
+        label="%featureName"
+        version="1.0.0"
+        plugin="org.jkiss.dbeaver.data.office">
 
-   <description>
-      %description
-   </description>
+    <description>
+        %description
+    </description>
 
-   <copyright>
-      %copyright
-   </copyright>
+    <copyright>
+        %copyright
+    </copyright>
 
-   <license url="%licenseURL">
-      %license
-   </license>
+    <license url="%licenseURL">
+        %license
+    </license>
 
-   <requires>
-      <import plugin="org.jkiss.dbeaver.core"/>
-      <import plugin="org.jkiss.dbeaver.model"/>
-      <import plugin="org.eclipse.swt"/>
-      <import plugin="org.eclipse.jface"/>
-      <import plugin="org.eclipse.ui.workbench"/>
-      <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="org.apache.poi.ooxml-schemas"/>
-      <import plugin="org.apache.xmlbeans"/>
-      <import plugin="org.apache.poi"/>
-      <import plugin="org.apache.poi.ooxml"/>
-      <import plugin="org.apache.commons.collections4"/>
-      <import plugin="org.eclipse.osgi"/>
-   </requires>
+    <requires>
+        <import plugin="org.jkiss.dbeaver.core"/>
+    </requires>
 
-   <plugin
-         id="org.apache.commons.collections4"
-         download-size="0"
-         install-size="0"
-         version="4.1.0"
-         unpack="false"/>
+    <plugin
+            id="org.jkiss.dbeaver.data.office"
+            download-size="0"
+            install-size="0"
+            version="1.0.0"
+            unpack="false"/>
 
-   <plugin
-         id="org.apache.poi"
-         download-size="0"
-         install-size="0"
-         version="3.15.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.apache.poi.ooxml"
-         download-size="0"
-         install-size="0"
-         version="3.15.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.apache.poi.ooxml-schemas"
-         download-size="0"
-         install-size="0"
-         version="3.15.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.apache.xmlbeans"
-         download-size="0"
-         install-size="0"
-         version="2.6.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.data.office"
-         download-size="0"
-         install-size="0"
-         version="1.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="javax.xml"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="javax.xml.stream"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+    <plugin id="org.apache.commons.collections4" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.apache.commons.codec" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.apache.xmlbeans" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.apache.servicemix.bundles.poi" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.dom4j" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 </feature>
