@@ -162,14 +162,18 @@ public class RuntimeUtils {
 
     public static String formatExecutionTime(long ms)
     {
-        if (ms < 60000) {
-            // Less than a minute, show just ms
+        if (ms < 1000) {
+            // Less than a second, show just ms
             return String.valueOf(ms) + "ms";
+        }
+        if (ms < 60000) {
+            // Less than a minute, show sec and ms
+            return String.valueOf(ms / 1000) + "." + String.valueOf(ms % 1000) + "s";
         }
         long sec = ms / 1000;
         long min = sec / 60;
         sec -= min * 60;
-        return String.valueOf(min) + " min " + String.valueOf(sec) + " sec";
+        return String.valueOf(min) + "m " + String.valueOf(sec) + "s";
     }
 
     public static File getPlatformFile(String platformURL) throws IOException
