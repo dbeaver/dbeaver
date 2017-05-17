@@ -40,7 +40,6 @@
 								<artifact><id>org.apache.servicemix.bundles:org.apache.servicemix.bundles.poi:3.16_1</id></artifact>
 								<artifact><id>org.apache.commons:commons-collections4:4.1</id></artifact>
 								<artifact><id>org.apache.xmlbeans:xmlbeans:2.6.0</id></artifact>
-								<artifact><id>org.dom4j:com.springsource.org.dom4j:1.6.1</id></artifact>
 
 							</artifacts>
 						</configuration>
