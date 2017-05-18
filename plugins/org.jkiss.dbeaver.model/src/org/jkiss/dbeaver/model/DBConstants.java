@@ -21,6 +21,8 @@ import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterBase64;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterString;
 
+import java.util.Locale;
+
 /**
  * General model constants
  */
@@ -64,10 +66,15 @@ public class DBConstants {
         new BinaryFormatterHex(),
         new BinaryFormatterBase64(),
     };
+
+    public static final String TYPE_NAME_CHAR = "CHAR";
+    public static final String TYPE_NAME_CHAR2 = TYPE_NAME_CHAR.toLowerCase(Locale.ENGLISH);
     public static final String TYPE_NAME_UUID = "UUID";
-    public static final String TYPE_NAME_UUID2 = "uuid";
+    public static final String TYPE_NAME_UUID2 = TYPE_NAME_UUID.toLowerCase(Locale.ENGLISH);
+    public static final String TYPE_NAME_XML = "XML";
+    public static final String TYPE_NAME_XML2 = TYPE_NAME_XML.toLowerCase(Locale.ENGLISH);
     public static final String TYPE_NAME_JSON = "JSON";
-    public static final String TYPE_NAME_JSON2 = "json";
+    public static final String TYPE_NAME_JSON2 = TYPE_NAME_JSON.toLowerCase(Locale.ENGLISH);
 
     public static final String DEFAULT_TIME_FORMAT = "HH:mm:ss";
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
