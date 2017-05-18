@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -50,6 +51,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -71,14 +73,22 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+        final IWorkbenchPart activePart = HandlerUtil.getActiveEditor(event);
         final List<OracleSourceObject> objects = getSelectedObjects(event);
         if (!objects.isEmpty()) {
+            if (activePart instanceof EntityEditor) {
+                // Save editor before compile
+                // USe null monitor as entity editr has its own detached job for save
+                EntityEditor entityEditor = (EntityEditor) activePart;
+                if (entityEditor.isDirty()) {
+                    entityEditor.doSave(new NullProgressMonitor());
+                }
+            }
             final Shell activeShell = HandlerUtil.getActiveShell(event);
             if (objects.size() == 1) {
                 final OracleSourceObject unit = objects.get(0);
 
                 DBCSourceHost sourceHost = null;
-                final IWorkbenchPart activePart = HandlerUtil.getActiveEditor(event);
                 if (activePart != null) {
                     sourceHost = RuntimeUtils.getObjectAdapter(activePart, DBCSourceHost.class);
                     if (sourceHost == null) {
