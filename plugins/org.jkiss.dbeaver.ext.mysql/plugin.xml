@@ -260,6 +260,7 @@
             <type standard="DATE"/>
             <type standard="TIME"/>
             <type standard="TIMESTAMP"/>
+            <type name="JSON"/>
 
         </provider>
     </extension>

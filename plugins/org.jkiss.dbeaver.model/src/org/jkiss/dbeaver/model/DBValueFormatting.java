@@ -100,6 +100,8 @@ public final class DBValueFormatting {
             case OBJECT:
                 if (typeName != null && (typeName.contains(DBConstants.TYPE_NAME_UUID) || typeName.contains(DBConstants.TYPE_NAME_UUID2))) {
                     return DBIcon.TYPE_UUID;
+                } else if (typeName != null && (typeName.contains(DBConstants.TYPE_NAME_JSON) || typeName.contains(DBConstants.TYPE_NAME_JSON2))) {
+                    return DBIcon.TYPE_JSON;
                 }
                 return DBIcon.TYPE_OBJECT;
             case ANY:
