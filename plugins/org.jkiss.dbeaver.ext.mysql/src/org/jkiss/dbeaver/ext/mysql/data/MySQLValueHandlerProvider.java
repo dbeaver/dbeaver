@@ -17,11 +17,14 @@
 package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
@@ -35,6 +38,8 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
     {
         if (typedObject.getDataKind() == DBPDataKind.DATETIME) {
             return new MySQLDateTimeValueHandler(preferences.getDataFormatterProfile());
+        } else if (typedObject.getTypeName().equals(MySQLConstants.TYPE_JSON)) {
+            return JDBCContentValueHandler.INSTANCE;
         } else {
             return null;
         }
