@@ -17,12 +17,12 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model.lock;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockItem;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+
+import java.sql.ResultSet;
+import java.sql.Timestamp;
 
 public class ExasolLockItem implements DBAServerLockItem {
 

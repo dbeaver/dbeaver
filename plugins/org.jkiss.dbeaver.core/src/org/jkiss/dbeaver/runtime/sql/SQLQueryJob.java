@@ -146,7 +146,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         return lastGoodQuery;
     }
 
-    public boolean hasLimits()
+    private boolean hasLimits()
     {
         return rsOffset >= 0 && rsMaxRows > 0;
     }

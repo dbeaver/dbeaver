@@ -17,15 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model.lock;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
@@ -37,6 +28,11 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.SQLException;
+import java.util.*;
 
 public class ExasolLockManager extends LockGraphManager<ExasolLock, BigInteger>
 		implements DBAServerLockManager<ExasolLock, ExasolLockItem> {

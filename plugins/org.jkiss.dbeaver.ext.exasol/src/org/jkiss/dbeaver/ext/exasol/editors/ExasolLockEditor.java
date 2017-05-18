@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol.editors;
 
-import java.math.BigInteger;
-import java.util.HashMap;
-
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Composite;
@@ -27,10 +24,13 @@ import org.jkiss.dbeaver.ext.exasol.model.lock.ExasolLock;
 import org.jkiss.dbeaver.ext.exasol.model.lock.ExasolLockManager;
 import org.jkiss.dbeaver.ext.ui.locks.edit.AbstractLockEditor;
 import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockItem;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+
+import java.math.BigInteger;
+import java.util.HashMap;
 
 
 public class ExasolLockEditor extends AbstractLockEditor {
