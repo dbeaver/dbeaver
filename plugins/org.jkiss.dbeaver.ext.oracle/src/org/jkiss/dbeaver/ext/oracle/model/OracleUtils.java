@@ -79,27 +79,26 @@ public class OracleUtils {
                     session,
                     "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");  end;");
             }
-/*
-            String curSchema = null;
-            if (schema != null) {
-                curSchema = getCurrentSchema(session);
-                if (curSchema != null && !curSchema.equals(schema.getName())) {
-                    setCurrentSchema(session, schema.getName());
-                } else {
-                    curSchema = null;
-                }
-            }
-*/
 
+            String ddlQuery = "SELECT " +
+                    "DBMS_METADATA.GET_DDL(?,?" + (schema == null ? "" : ",?") + ")";
+            if (ddlFormat != OracleDDLFormat.COMPACT) {
+                ddlQuery += " || ' ' || DBMS_METADATA.GET_DEPENDENT_DDL('COMMENT',?" + (schema == null ? "" : ",?") + ")";
+            }
+            ddlQuery += " TXT FROM DUAL";
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT DBMS_METADATA.GET_DDL(?,?" +
-                    (schema == null ? "" : ",?") +
-                    ") TXT " +
-                    "FROM DUAL")) {
-                dbStat.setString(1, objectType);
-                dbStat.setString(2, object.getName());
+                    ddlQuery)) {
+                int paramIndex = 1;
+                dbStat.setString(paramIndex++, objectType);
+                dbStat.setString(paramIndex++, object.getName());
                 if (schema != null) {
-                    dbStat.setString(3, schema.getName());
+                    dbStat.setString(paramIndex++, schema.getName());
+                }
+                if (ddlFormat != OracleDDLFormat.COMPACT) {
+                    dbStat.setString(paramIndex++, object.getName());
+                    if (schema != null) {
+                        dbStat.setString(paramIndex++, schema.getName());
+                    }
                 }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
@@ -109,12 +108,6 @@ public class OracleUtils {
                         return "-- EMPTY DDL";
                     }
                 }
-            } finally {
-/*
-                if (curSchema != null) {
-                    setCurrentSchema(session, curSchema);
-                }
-*/
             }
         } catch (SQLException e) {
             if (object instanceof OracleTableBase) {
