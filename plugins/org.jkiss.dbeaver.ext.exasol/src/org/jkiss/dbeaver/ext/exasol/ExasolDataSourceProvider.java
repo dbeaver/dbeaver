@@ -17,9 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -31,6 +28,9 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Exasol DataSource provider ddd

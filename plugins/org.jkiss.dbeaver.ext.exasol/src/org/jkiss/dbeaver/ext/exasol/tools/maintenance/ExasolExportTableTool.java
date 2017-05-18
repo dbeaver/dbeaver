@@ -17,10 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol.tools.maintenance;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
@@ -32,6 +28,10 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 
 public class ExasolExportTableTool implements IExternalTool {
 

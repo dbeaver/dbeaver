@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.utils.CommonUtils;
 
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;

@@ -18,8 +18,6 @@
 package org.jkiss.dbeaver.ext.exasol.model.cache;
 
 
-import java.sql.SQLException;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -33,6 +31,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
+
+import java.sql.SQLException;
 
 /**
  * Cache for Exasol Views

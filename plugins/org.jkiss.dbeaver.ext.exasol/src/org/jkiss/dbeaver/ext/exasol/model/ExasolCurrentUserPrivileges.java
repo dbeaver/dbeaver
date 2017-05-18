@@ -17,14 +17,14 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class ExasolCurrentUserPrivileges {
 

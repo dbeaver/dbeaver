@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager.security;
 
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -27,6 +25,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.sql.ResultSet;
 
 public class ExasolRoleGrant implements DBAPrivilege  {
 

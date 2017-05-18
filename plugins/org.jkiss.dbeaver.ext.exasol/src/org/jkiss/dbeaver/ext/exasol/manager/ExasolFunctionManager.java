@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import java.util.List;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolFunction;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
@@ -31,6 +29,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
 
 public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, ExasolSchema> {
 

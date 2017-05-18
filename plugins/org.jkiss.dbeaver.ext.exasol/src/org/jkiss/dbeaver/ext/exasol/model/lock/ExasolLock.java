@@ -16,15 +16,16 @@
  * limitations under the License.
  */
 package org.jkiss.dbeaver.ext.exasol.model.lock;
+
+import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
+
 import java.math.BigInteger;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Property;
 
 
 public class ExasolLock implements DBAServerLock<BigInteger> {

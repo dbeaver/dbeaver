@@ -1,10 +1,10 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.sql.ResultSet;
 
 public class ExasolVirtualSchemaParameter implements DBSObject {
 	
