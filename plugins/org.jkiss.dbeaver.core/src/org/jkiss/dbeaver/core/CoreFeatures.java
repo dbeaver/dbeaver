@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.core;
 
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
-import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
 
 /**

@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.part.FileEditorInput;
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -26,7 +23,10 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.ui.IElementFactory;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IMemento;
+import org.eclipse.ui.part.FileEditorInput;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.io.ByteArrayInputStream;

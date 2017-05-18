@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.actions.navigator;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.swt.SWT;
@@ -24,6 +23,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 
 public class NavigatorActiveProjectContributor extends ContributionItem

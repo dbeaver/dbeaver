@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextViewer;
+import org.jkiss.dbeaver.Log;
 
 /**
  * Process double clicks in the SQL content.

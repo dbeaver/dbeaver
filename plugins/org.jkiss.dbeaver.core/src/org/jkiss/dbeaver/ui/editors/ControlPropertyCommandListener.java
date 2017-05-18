@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;

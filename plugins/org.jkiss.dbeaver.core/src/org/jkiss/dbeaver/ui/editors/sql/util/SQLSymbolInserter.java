@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.util;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.link.*;
 import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
@@ -31,6 +30,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;

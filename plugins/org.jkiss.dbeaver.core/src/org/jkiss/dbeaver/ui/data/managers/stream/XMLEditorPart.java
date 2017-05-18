@@ -20,8 +20,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
-import org.jkiss.dbeaver.ui.editors.text.FileRefDocumentProvider;
 import org.jkiss.dbeaver.ui.editors.xml.XMLEditor;
 
 /**

@@ -51,7 +51,6 @@ import org.jkiss.dbeaver.ui.editors.sql.indent.SQLCommentAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLStringAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLAnnotationHover;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLInformationProvider;
 import org.jkiss.utils.ArrayUtils;
 
 

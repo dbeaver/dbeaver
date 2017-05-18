@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 
 import java.net.URL;

@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingElement;

@@ -19,19 +19,10 @@ package org.jkiss.dbeaver.ui.editors.entity.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-
-import java.util.Map;
 
 
 public class FolderNavigateHandler extends AbstractHandler //implements IElementUpdater

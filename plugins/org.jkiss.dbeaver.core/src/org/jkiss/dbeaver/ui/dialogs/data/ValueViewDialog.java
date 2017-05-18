@@ -38,11 +38,12 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
+import org.jkiss.dbeaver.ui.dialogs.ColumnInfoPanel;
 import org.jkiss.utils.CommonUtils;
 
 /**

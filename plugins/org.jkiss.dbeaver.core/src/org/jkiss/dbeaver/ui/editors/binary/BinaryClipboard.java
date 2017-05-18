@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.binary;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.StandardConstants;
 

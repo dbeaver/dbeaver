@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.StringTokenizer;
 
 /**

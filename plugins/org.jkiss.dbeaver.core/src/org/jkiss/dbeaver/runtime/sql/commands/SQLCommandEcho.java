@@ -17,10 +17,8 @@
 package org.jkiss.dbeaver.runtime.sql.commands;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
-import org.jkiss.dbeaver.model.sql.eval.ScriptEvaluateEngine;
 import org.jkiss.dbeaver.runtime.sql.SQLControlCommandHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 

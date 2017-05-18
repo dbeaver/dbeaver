@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.text.templates.ContextTypeRegistry;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
+import org.jkiss.dbeaver.Log;
 
 import java.io.IOException;
 

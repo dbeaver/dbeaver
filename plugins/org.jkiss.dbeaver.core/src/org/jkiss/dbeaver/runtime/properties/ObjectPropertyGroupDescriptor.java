@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.runtime.properties;
 
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.lang.reflect.InvocationTargetException;

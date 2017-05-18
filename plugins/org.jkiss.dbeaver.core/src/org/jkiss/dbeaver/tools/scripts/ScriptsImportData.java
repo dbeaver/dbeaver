@@ -17,8 +17,8 @@
 
 package org.jkiss.dbeaver.tools.scripts;
 
-import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 
 import java.io.File;
 
