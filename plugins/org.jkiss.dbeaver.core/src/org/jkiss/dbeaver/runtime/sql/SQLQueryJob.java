@@ -567,7 +567,11 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         String query = sqlStatement.getText();
         for (int i = parameters.size(); i > 0; i--) {
             SQLQueryParameter parameter = parameters.get(i - 1);
-            query = query.substring(0, parameter.getTokenOffset()) + parameter.getValue() + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
+            String paramValue = parameter.getValue();
+            if (paramValue.isEmpty()) {
+                paramValue = SQLConstants.NULL_VALUE;
+            }
+            query = query.substring(0, parameter.getTokenOffset()) + paramValue + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
         }
         sqlStatement.setText(query);
         return true;
