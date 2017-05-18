@@ -81,9 +81,9 @@ public final class DBValueFormatting {
             case BINARY:
                 return DBIcon.TYPE_BINARY;
             case CONTENT:
-                if (typeName.contains("XML") || typeName.contains("xml")) {
+                if (typeNameContains(typeName, DBConstants.TYPE_NAME_XML, DBConstants.TYPE_NAME_XML2)) {
                     return DBIcon.TYPE_XML;
-                } else if (typeName.contains("CHAR") || typeName.contains("char")) {
+                } else if (typeNameContains(typeName, DBConstants.TYPE_NAME_CHAR, DBConstants.TYPE_NAME_CHAR2)) {
                     return DBIcon.TYPE_TEXT;
                 }
                 return DBIcon.TYPE_LOB;
@@ -98,9 +98,9 @@ public final class DBValueFormatting {
             case ROWID:
                 return DBIcon.TYPE_ROWID;
             case OBJECT:
-                if (typeName != null && (typeName.contains(DBConstants.TYPE_NAME_UUID) || typeName.contains(DBConstants.TYPE_NAME_UUID2))) {
+                if (typeNameContains(typeName, DBConstants.TYPE_NAME_UUID, DBConstants.TYPE_NAME_UUID2)) {
                     return DBIcon.TYPE_UUID;
-                } else if (typeName != null && (typeName.contains(DBConstants.TYPE_NAME_JSON) || typeName.contains(DBConstants.TYPE_NAME_JSON2))) {
+                } else if (typeNameContains(typeName, DBConstants.TYPE_NAME_JSON, DBConstants.TYPE_NAME_JSON2)) {
                     return DBIcon.TYPE_JSON;
                 }
                 return DBIcon.TYPE_OBJECT;
@@ -109,6 +109,11 @@ public final class DBValueFormatting {
             default:
                 return DBIcon.TYPE_UNKNOWN;
         }
+    }
+
+    private static boolean typeNameContains(String typeName, String patternLC, String patternUC) {
+        return typeName != null &&
+                (typeName.contains(patternLC) || typeName.contains(patternUC));
     }
 
     @NotNull
