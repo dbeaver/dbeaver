@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.search.data;
 
 import org.eclipse.search.ui.ISearchQuery;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResult;
 
 public class SearchDataResult extends AbstractSearchResult<SearchDataObject> {

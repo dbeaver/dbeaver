@@ -24,8 +24,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -37,7 +36,6 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceCommitHandler;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceRollbackHandler;
 import org.jkiss.utils.ArrayUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 

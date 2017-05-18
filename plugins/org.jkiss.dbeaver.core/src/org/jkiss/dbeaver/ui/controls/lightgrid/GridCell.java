@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.utils.CommonUtils;
 
 /**

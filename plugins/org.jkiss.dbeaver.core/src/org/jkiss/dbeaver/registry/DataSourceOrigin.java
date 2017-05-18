@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.IFile;
 
-import java.io.File;
-
 /**
  * DataSourceOrigin
  */

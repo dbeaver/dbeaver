@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.util;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.source.Annotation;
@@ -26,6 +25,7 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
 import java.util.ArrayList;

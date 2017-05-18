@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.utils.ArrayUtils;
 
 /**

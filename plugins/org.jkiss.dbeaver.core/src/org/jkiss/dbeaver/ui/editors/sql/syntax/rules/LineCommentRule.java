@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax.rules;
 
-import org.eclipse.jface.text.rules.*;
+import org.eclipse.jface.text.rules.EndOfLineRule;
+import org.eclipse.jface.text.rules.ICharacterScanner;
+import org.eclipse.jface.text.rules.IToken;
+import org.eclipse.jface.text.rules.Token;
 
 /**
  * The same as end-of-line rule but matches word in case-insensitive fashion +

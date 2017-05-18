@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.FileDialog;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 
 /**
  * TextWithOpenFolder
