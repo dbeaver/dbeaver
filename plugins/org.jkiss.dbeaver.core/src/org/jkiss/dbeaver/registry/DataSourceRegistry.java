@@ -727,6 +727,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     xml.addAttribute(RegistryConstants.ATTR_WAIT_PROCESS_TIMEOUT, command.getWaitProcessTimeoutMs());
                 }
                 xml.addAttribute(RegistryConstants.ATTR_TERMINATE_AT_DISCONNECT, command.isTerminateAtDisconnect());
+                xml.addAttribute(RegistryConstants.ATTR_PAUSE_AFTER_EXECUTE, command.getPauseAfterExecute());
+                if (!CommonUtils.isEmpty(command.getWorkingDirectory())) {
+                    xml.addAttribute(RegistryConstants.ATTR_WORKING_DIRECTORY, command.getWorkingDirectory());
+                }
                 xml.addText(command.getCommand());
                 xml.endElement();
             }
@@ -1149,6 +1153,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             curCommand.setWaitProcessTimeoutMs(timeoutMs);
                         }
                         curCommand.setTerminateAtDisconnect(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_TERMINATE_AT_DISCONNECT)));
+                        curCommand.setPauseAfterExecute(CommonUtils.toInt(atts.getValue(RegistryConstants.ATTR_PAUSE_AFTER_EXECUTE)));
+                        curCommand.setWorkingDirectory(atts.getValue(RegistryConstants.ATTR_WORKING_DIRECTORY));
                         curDataSource.getConnectionConfiguration().setEvent(eventType, curCommand);
                     }
                     break;

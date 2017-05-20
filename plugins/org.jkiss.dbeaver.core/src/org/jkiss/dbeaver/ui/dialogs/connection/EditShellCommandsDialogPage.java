@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -47,9 +48,12 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
 
     private Text commandText;
     private Button showProcessCheck;
-    private Button terminateCheck;
     private Button waitFinishCheck;
     private Spinner waitFinishTimeoutMs;
+    private Button terminateCheck;
+    private Spinner pauseAfterExecute;
+    private TextWithOpenFolder workingDirectory;
+
     private Table eventTypeTable;
 
     private final Map<DBPConnectionEventType, DBRShellCommand> eventsCache = new HashMap<>();
@@ -147,6 +151,17 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
             waitFinishTimeoutMs.addSelectionListener(eventEditAdapter);
             terminateCheck = UIUtils.createCheckbox(detailsGroup, CoreMessages.dialog_connection_events_checkbox_terminate_at_disconnect, false);
             terminateCheck.addSelectionListener(eventEditAdapter);
+            {
+                Composite pauseComposite = UIUtils.createPlaceholder(detailsGroup, 2, 5);
+                pauseComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+                pauseAfterExecute = UIUtils.createLabelSpinner(pauseComposite, "Pause after execute (ms)", "Wait for specified amount of milliseconds after process spawn", 0, 0, Integer.MAX_VALUE);
+                pauseAfterExecute.addSelectionListener(eventEditAdapter);
+
+                UIUtils.createControlLabel(pauseComposite, "Working directory");
+                workingDirectory = new TextWithOpenFolder(pauseComposite, "Working directory");
+                workingDirectory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            }
 
             Group helpGroup = new Group(detailsGroup, SWT.NONE);
             helpGroup.setText("Command parameters");
@@ -237,6 +252,8 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
                 waitFinishTimeoutMs.setEnabled(waitFinishCheck.getSelection());
                 command.setWaitProcessTimeoutMs(waitFinishTimeoutMs.getSelection());
                 command.setTerminateAtDisconnect(terminateCheck.getSelection());
+                command.setPauseAfterExecute(pauseAfterExecute.getSelection());
+                command.setWorkingDirectory(workingDirectory.getText());
                 if (prevEnabled != command.isEnabled()) {
                     selectEventType(eventType);
                 }
@@ -254,6 +271,9 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
         waitFinishCheck.setEnabled(command != null && command.isEnabled());
         waitFinishTimeoutMs.setEnabled(waitFinishCheck.isEnabled());
         terminateCheck.setEnabled(command != null && command.isEnabled());
+        pauseAfterExecute.setEnabled(command != null && command.isEnabled());
+        workingDirectory.setEnabled(command != null && command.isEnabled());
+        workingDirectory.getTextControl().setEnabled(command != null && command.isEnabled());
 
         if (command != null) {
             commandText.setText(CommonUtils.toString(command.getCommand()));
@@ -261,12 +281,16 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
             waitFinishCheck.setSelection(command.isWaitProcessFinish());
             waitFinishTimeoutMs.setSelection(command.getWaitProcessTimeoutMs());
             terminateCheck.setSelection(command.isTerminateAtDisconnect());
+            pauseAfterExecute.setSelection(command.getPauseAfterExecute());
+            workingDirectory.setText(CommonUtils.notEmpty(command.getWorkingDirectory()));
         } else {
             commandText.setText(""); //$NON-NLS-1$
             showProcessCheck.setSelection(false);
             waitFinishCheck.setSelection(false);
             waitFinishTimeoutMs.setSelection(DBRShellCommand.WAIT_PROCESS_TIMEOUT_FOREVER);
             terminateCheck.setSelection(false);
+            pauseAfterExecute.setSelection(0);
+            workingDirectory.setText("");
         }
     }
 

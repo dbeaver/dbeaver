@@ -34,6 +34,7 @@ public class DBRShellCommand
     private boolean waitProcessFinish;
     private int waitProcessTimeoutMs = WAIT_PROCESS_TIMEOUT_FOREVER;
     private boolean terminateAtDisconnect = true;
+    private int pauseAfterExecute = 0;
     private String workingDirectory;
 
     public DBRShellCommand(String command)
@@ -49,6 +50,7 @@ public class DBRShellCommand
         this.waitProcessFinish = command.waitProcessFinish;
         this.waitProcessTimeoutMs = command.waitProcessTimeoutMs;
         this.terminateAtDisconnect = command.terminateAtDisconnect;
+        this.pauseAfterExecute = command.pauseAfterExecute;
         this.workingDirectory = command.workingDirectory;
     }
 
@@ -108,6 +110,14 @@ public class DBRShellCommand
     public void setTerminateAtDisconnect(boolean terminateAtDisconnect)
     {
         this.terminateAtDisconnect = terminateAtDisconnect;
+    }
+
+    public int getPauseAfterExecute() {
+        return pauseAfterExecute;
+    }
+
+    public void setPauseAfterExecute(int pauseAfterExecute) {
+        this.pauseAfterExecute = pauseAfterExecute;
     }
 
     public String getWorkingDirectory()
