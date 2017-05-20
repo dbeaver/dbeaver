@@ -185,4 +185,6 @@ public class RegistryConstants {
     public static final String TAG_PAGE = "page";
     public static final String ATTR_SETTINGS = "settings";
     public static final String ATTR_LOCK_PASSWORD = "lockPassword";
+    public static final String ATTR_PAUSE_AFTER_EXECUTE = "pauseAfterExecute";
+    public static final String ATTR_WORKING_DIRECTORY = "workingDirectory";
 }
