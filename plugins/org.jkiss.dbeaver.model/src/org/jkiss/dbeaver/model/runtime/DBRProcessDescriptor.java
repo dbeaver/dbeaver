@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.runtime;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,10 @@ public class DBRProcessDescriptor
             GeneralUtils.replaceVariables(command.getCommand(), new GeneralUtils.MapResolver(variables));
 
         processBuilder = new ProcessBuilder(GeneralUtils.parseCommandLine(commandLine));
+        // Set working directory
+        if (!CommonUtils.isEmpty(command.getWorkingDirectory())) {
+            processBuilder.directory(new File(command.getWorkingDirectory()));
+        }
         //processBuilder.redirectErrorStream(true);
     }
 
@@ -108,6 +113,13 @@ public class DBRProcessDescriptor
         }
         if (processListener != null) {
             processListener.onProcessStarted();
+        }
+        if (this.command.getPauseAfterExecute() > 0) {
+            try {
+                Thread.sleep(this.command.getPauseAfterExecute());
+            } catch (InterruptedException e) {
+                // it's ok
+            }
         }
     }
 
