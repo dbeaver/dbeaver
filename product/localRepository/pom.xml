@@ -41,6 +41,11 @@
 								<artifact><id>org.apache.commons:commons-collections4:4.1</id></artifact>
 								<artifact><id>org.apache.xmlbeans:xmlbeans:2.6.0</id></artifact>
 
+								<!-- Old POI and dependencies: to remove -->
+								<artifact><id>org.apache.poi:poi:3.15</id></artifact>
+								<artifact><id>org.apache.poi:poi-ooxml:3.15</id></artifact>
+								<artifact><id>org.apache.poi:poi-ooxml-schemas:3.15</id></artifact>
+
 							</artifacts>
 						</configuration>
 					</execution>
