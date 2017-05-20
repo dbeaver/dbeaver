@@ -92,7 +92,10 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         this.resultSetViewer = resultSetViewer;
         this.dataFilter = new DBDDataFilter(resultSetViewer.getModel().getDataFilter());
         this.constraints = new ArrayList<>(dataFilter.getConstraints());
-        this.attributes = Arrays.asList(resultSetViewer.getModel().getAttributes());
+
+        DBDAttributeBinding[] modelAttrs = resultSetViewer.getModel().getAttributes();
+        this.attributes = new ArrayList<>(modelAttrs.length);
+        Collections.addAll(this.attributes, modelAttrs);
     }
 
     @Override
