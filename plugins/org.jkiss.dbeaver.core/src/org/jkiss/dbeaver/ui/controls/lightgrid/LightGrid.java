@@ -48,10 +48,10 @@ public abstract class LightGrid extends Canvas {
 
     private static final Log log = Log.getLog(LightGrid.class);
 
-    public static final int MAX_TOOLTIP_LENGTH = 1000;
+    private static final int MAX_TOOLTIP_LENGTH = 1000;
 
-    public static final int Event_ChangeSort = 1000;
-    public static final int Event_NavigateLink = 1001;
+    protected static final int Event_ChangeSort = 1000;
+    protected static final int Event_NavigateLink = 1001;
 
     /**
      * Horizontal scrolling increment, in pixels.
@@ -97,7 +97,7 @@ public abstract class LightGrid extends Canvas {
             this.level = level;
         }
 
-        public boolean isParentOf(GridNode node) {
+        boolean isParentOf(GridNode node) {
             for (GridNode p = node; p != null; p = p.parent) {
                 if (p == this) {
                     return true;
@@ -111,7 +111,7 @@ public abstract class LightGrid extends Canvas {
 
     private class ToolTipHandler extends UIJob {
         private String toolTip;
-        public ToolTipHandler() {
+        ToolTipHandler() {
             super("ToolTip handler");
             setSystem(true);
         }
@@ -212,12 +212,12 @@ public abstract class LightGrid extends Canvas {
      */
     private int headerHeight = 0;
 
-    boolean hoveringOnHeader = false;
-    boolean hoveringOnColumnSorter = false;
-    boolean hoveringOnLink = false;
+    private boolean hoveringOnHeader = false;
+    private boolean hoveringOnColumnSorter = false;
+    private boolean hoveringOnLink = false;
 
     private GridColumn columnBeingSorted;
-    boolean hoveringOnColumnResizer = false;
+    private boolean hoveringOnColumnResizer = false;
     private GridColumn columnBeingResized;
     private boolean resizingColumn = false;
     private int resizingStartX = 0;
@@ -442,7 +442,7 @@ public abstract class LightGrid extends Canvas {
         this.maxColumnDefWidth = maxColumnDefWidth;
     }
 
-    void collectRows(List<Object> result, List<GridNode> parents, @Nullable GridNode parent, Object[] rows, int level)
+    private void collectRows(List<Object> result, List<GridNode> parents, @Nullable GridNode parent, Object[] rows, int level)
     {
         for (int i = 0; i < rows.length; i++) {
             Object row = rows[i];
@@ -787,7 +787,7 @@ public abstract class LightGrid extends Canvas {
     }
 
     @NotNull
-    GridColumn getColumn(int index)
+    private GridColumn getColumn(int index)
     {
         return columns.get(index);
     }
@@ -800,7 +800,7 @@ public abstract class LightGrid extends Canvas {
      * @return the column at the given point
      */
     @Nullable
-    GridColumn getColumn(Point point)
+    private GridColumn getColumn(Point point)
     {
         checkWidget();
         if (point == null) {
@@ -885,7 +885,7 @@ public abstract class LightGrid extends Canvas {
         return headerHeight;
     }
 
-    public int getRowHeaderWidth()
+    private int getRowHeaderWidth()
     {
         return rowHeaderWidth;
     }
@@ -963,7 +963,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @param height default height in pixels
      */
-    public void setItemHeight(int height)
+    private void setItemHeight(int height)
     {
         checkWidget();
         if (height < 1)
@@ -1010,7 +1010,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @return next visible item or null
      */
-    public int getNextVisibleItem(int index)
+    private int getNextVisibleItem(int index)
     {
         if (index >= getItemCount()) {
             return -1;
@@ -1028,7 +1028,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @return previous visible item or if item==null last visible item
      */
-    public int getPreviousVisibleItem(int index)
+    private int getPreviousVisibleItem(int index)
     {
         if (index == 0) {
             return -1;
@@ -1043,7 +1043,7 @@ public abstract class LightGrid extends Canvas {
      * @return previous visible column or null
      */
     @Nullable
-    public GridColumn getPreviousVisibleColumn(GridColumn column)
+    private GridColumn getPreviousVisibleColumn(GridColumn column)
     {
         int index = indexOf(column);
         if (index <= 0)
@@ -1059,7 +1059,7 @@ public abstract class LightGrid extends Canvas {
      * @return next visible column or null
      */
     @Nullable
-    public GridColumn getNextVisibleColumn(GridColumn column)
+    private GridColumn getNextVisibleColumn(GridColumn column)
     {
         int index = indexOf(column);
 
@@ -1074,7 +1074,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @return the number of selected cells
      */
-    public int getCellSelectionCount()
+    private int getCellSelectionCount()
     {
         return selectedCells.size();
     }
@@ -1159,7 +1159,6 @@ public abstract class LightGrid extends Canvas {
      *
      * @param startIndex index of the first item in the range or -1 to the first visible item in this grid
      * @param endIndex   index of the last item in the range or -1 to use the last visible item in this grid
-     * @return
      */
     @Nullable
     private RowRange getRowRange(int startIndex, int endIndex)
@@ -1275,7 +1274,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @return height of plain grid
      */
-    int getGridHeight()
+    private int getGridHeight()
     {
         RowRange range = getRowRange(-1, -1);
         return range != null ? range.height : 0;
@@ -1288,7 +1287,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @return height of visible grid in pixels
      */
-    int getVisibleGridHeight()
+    private int getVisibleGridHeight()
     {
         return getClientArea().height - (columnHeadersVisible ? headerHeight : 0);
     }
@@ -1318,7 +1317,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @return the receiver's row header's visibility state
      */
-    public boolean isRowHeaderVisible()
+    private boolean isRowHeaderVisible()
     {
         return rowHeaderVisible;
     }
@@ -1329,7 +1328,7 @@ public abstract class LightGrid extends Canvas {
      * @param cell cell
      * @return true if the cell is selected.
      */
-    public boolean isCellSelected(GridPos cell)
+    private boolean isCellSelected(GridPos cell)
     {
         if (cell == null)
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
@@ -1606,7 +1605,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @param index the index of the top item
      */
-    public void setTopIndex(int index)
+    private void setTopIndex(int index)
     {
         checkWidget();
         if (index < 0 || index >= getItemCount()) {
@@ -1713,10 +1712,10 @@ public abstract class LightGrid extends Canvas {
      * width. This means this method returns true also if some cells
      * are horizontally scrolled away.
      *
-     * @param row
+     * @param row row number
      * @return true if 'item' is shown
      */
-    boolean isShown(int row)
+    private boolean isShown(int row)
     {
         checkWidget();
 
@@ -2363,12 +2362,12 @@ public abstract class LightGrid extends Canvas {
      * @return selection event that will need to be fired or null.
      */
     @Nullable
-    public Event updateCellSelection(
-        @NotNull GridPos newCell,
-        int stateMask,
-        boolean dragging,
-        boolean reverseDuplicateSelections,
-        EventSource eventSource)
+    private Event updateCellSelection(
+            @NotNull GridPos newCell,
+            int stateMask,
+            boolean dragging,
+            boolean reverseDuplicateSelections,
+            EventSource eventSource)
     {
         return updateCellSelection(Collections.singletonList(newCell), stateMask, dragging, reverseDuplicateSelections, eventSource);
     }
@@ -2542,7 +2541,7 @@ public abstract class LightGrid extends Canvas {
         return selectedCells.add(newCell);
     }
 
-    void updateSelectionCache()
+    private void updateSelectionCache()
     {
         //Update the list of which columns have all their cells selected
         selectedColumns.clear();
@@ -3238,7 +3237,7 @@ public abstract class LightGrid extends Canvas {
      * the state of the table to change and therefore the hover effects may have
      * become out of date.
      */
-    protected void refreshHoverState()
+    private void refreshHoverState()
     {
         Point p = getDisplay().map(null, this, getDisplay().getCursorLocation());
         handleHovering(p.x, p.y);
@@ -3262,7 +3261,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @param e event
      */
-    public void onKeyDown(Event e)
+    private void onKeyDown(Event e)
     {
         if (focusColumn == null) {
             if (columns.size() == 0)
@@ -3637,9 +3636,9 @@ public abstract class LightGrid extends Canvas {
      * text in their own tooltip or just override this method to prevent the SWT/OS tooltip from
      * displaying.
      *
-     * @param text
+     * @param text  tooltip text
      */
-    protected void updateToolTipText(@Nullable String text)
+    private void updateToolTipText(@Nullable String text)
     {
         ToolTipHandler curHandler = this.toolTipHandler;
         if (!CommonUtils.equalObjects(prevToolTip, text)) {
@@ -3669,7 +3668,6 @@ public abstract class LightGrid extends Canvas {
      *
      * @param column new column
      * @param index  index to insert new column
-     * @return current number of columns
      */
     void newColumn(GridColumn column, int index)
     {
@@ -3761,7 +3759,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @return true if the table is scrolled horizontally by column
      */
-    public boolean getColumnScrolling()
+    private boolean getColumnScrolling()
     {
         checkWidget();
         return columnScrolling;
@@ -3774,7 +3772,7 @@ public abstract class LightGrid extends Canvas {
      * @param columnScrolling true to horizontally scroll by column, false to
      *                        scroll by pixel
      */
-    public void setColumnScrolling(boolean columnScrolling)
+    private void setColumnScrolling(boolean columnScrolling)
     {
         checkWidget();
         if (rowHeaderVisible && !columnScrolling) {
@@ -4045,10 +4043,6 @@ public abstract class LightGrid extends Canvas {
     /**
      * Returns a point whose x and y value are the to and from column indexes of the new selection
      * range inclusive of all spanned columns.
-     *
-     * @param fromColumn
-     * @param toColumn
-     * @return
      */
     private Point getRowSelectionRange(GridColumn fromColumn, GridColumn toColumn)
     {
@@ -4061,8 +4055,7 @@ public abstract class LightGrid extends Canvas {
      * Returns true if the given cell's x and y values are valid column and
      * item indexes respectively.
      *
-     * @param cell
-     * @return
+     * @param cell cell
      */
     private boolean isValidCell(GridPos cell)
     {
@@ -4095,10 +4088,6 @@ public abstract class LightGrid extends Canvas {
      * on which a drag event can be initiated.  This is either the border
      * of the selection (i.e. a cell border between a selected and a non-selected
      * cell) or the complete selection (i.e. anywhere on a selected cell).
-     *
-     * @param x
-     * @param y
-     * @return
      */
     private boolean handleHoverOnSelectionDragArea(int x, int y)
     {
@@ -4136,7 +4125,7 @@ public abstract class LightGrid extends Canvas {
     }
 
     @Nullable
-    public String getCellToolTip(GridColumn col, int row)
+    private String getCellToolTip(GridColumn col, int row)
     {
         String toolTip = getCellText(columnElements[col.getIndex()], rowElements[row]);
         if (toolTip == null) {
@@ -4236,7 +4225,7 @@ public abstract class LightGrid extends Canvas {
             y + height - 1);
     }
 
-    public void drawEmptyCell(GC gc, int x, int y, int width, int height) {
+    private void drawEmptyCell(GC gc, int x, int y, int width, int height) {
         IGridLabelProvider labelProvider = getLabelProvider();
         Color foreground = labelProvider.getForeground(null);
         setDefaultBackground(gc);
