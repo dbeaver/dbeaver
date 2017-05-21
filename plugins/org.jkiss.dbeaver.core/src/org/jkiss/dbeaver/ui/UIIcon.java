@@ -49,6 +49,9 @@ public class UIIcon {
     public static final DBIcon RS_DETAILS = new DBIcon("rs_details", "sql/details.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RS_FORWARD = new DBIcon("rs_forward", "sql/forward.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RS_BACK = new DBIcon("rs_back", "sql/back.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon RS_SCHED_START = new DBIcon("rs_sched_start", "misc/clock_play.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon RS_SCHED_STOP = new DBIcon("rs_sched_stop", "misc/clock_stop.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
     public static final DBIcon TXN_COMMIT = new DBIcon("txn_commit_auto", "sql/commit.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TXN_ROLLBACK = new DBIcon("txn_commit_auto", "sql/rollback.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TXN_COMMIT_AUTO = new DBIcon("txn_commit_auto", "sql/txn_auto.png"); //$NON-NLS-1$ //$NON-NLS-2$
