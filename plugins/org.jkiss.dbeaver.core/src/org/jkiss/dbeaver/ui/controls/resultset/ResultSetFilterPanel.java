@@ -97,6 +97,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private final ToolBar filterToolbar;
     private final ToolItem filtersApplyButton;
     private final ToolItem filtersClearButton;
+    private final ToolItem autoRefreshButton;
     private final ToolItem historyBackButton;
     private final ToolItem historyForwardButton;
 
@@ -232,9 +233,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             UIUtils.createToolBarSeparator(filterToolbar, SWT.VERTICAL);
 
-            ToolItem scheduleStartButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
-            scheduleStartButton.setImage(DBeaverIcons.getImage(UIIcon.RS_SCHED_START));
-            scheduleStartButton.addSelectionListener(new AutoRefreshMenuListener(scheduleStartButton));
+            autoRefreshButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
+            autoRefreshButton.addSelectionListener(new AutoRefreshMenuListener(autoRefreshButton));
+            updateAutoRefreshToolbar();
 
             UIUtils.createToolBarSeparator(filterToolbar, SWT.VERTICAL);
 
@@ -291,6 +292,71 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
         });
 
+    }
+
+    void enableFilters(boolean enableFilters) {
+        enablePanelControls(enableFilters);
+        if (enableFilters) {
+            final boolean supportsDataFilter = viewer.supportsDataFilter();
+            int historyPosition = viewer.getHistoryPosition();
+            List<ResultSetViewer.HistoryStateItem> stateHistory = viewer.getStateHistory();
+
+            String filterText = filtersText.getText();
+            filtersText.setEnabled(supportsDataFilter);
+            filtersApplyButton.setEnabled(supportsDataFilter);
+            filtersClearButton.setEnabled(supportsDataFilter && !CommonUtils.isEmpty(filterText));
+            // Update history buttons
+            if (historyPosition > 0) {
+                historyBackButton.setEnabled(true);
+                historyBackButton.setToolTipText(
+                        stateHistory.get(historyPosition - 1).describeState() +
+                                " (" + ActionUtils.findCommandDescription(IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, viewer.getSite(), true) + ")");
+            } else {
+                historyBackButton.setEnabled(false);
+            }
+            if (historyPosition < stateHistory.size() - 1) {
+                historyForwardButton.setEnabled(true);
+                historyForwardButton.setToolTipText(
+                        stateHistory.get(historyPosition + 1).describeState() +
+                                " (" + ActionUtils.findCommandDescription(IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, viewer.getSite(), true) + ")");
+            } else {
+                historyForwardButton.setEnabled(false);
+            }
+        }
+        filterComposite.setBackground(filtersText.getBackground());
+
+        {
+            String displayName = getActiveSourceQuery();
+            if (prevQuery == null || !prevQuery.equals(displayName)) {
+                loadFiltersHistory(displayName);
+                prevQuery = displayName;
+            }
+            Pattern mlCommentsPattern = Pattern.compile("/\\*.*\\*/", Pattern.DOTALL);
+            Matcher m = mlCommentsPattern.matcher(displayName);
+            if (m.find()) {
+                displayName = m.replaceAll("");
+            }
+
+            displayName = displayName.replaceAll("--.+", "");
+            displayName = TextUtils.compactWhiteSpaces(displayName);
+            activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
+            if (CommonUtils.isEmpty(activeDisplayName)) {
+                activeDisplayName = DEFAULT_QUERY_TEXT;
+            }
+        }
+
+        filterComposite.layout();
+        redrawPanels();
+    }
+
+    void updateAutoRefreshToolbar() {
+        if (viewer.isAutoRefreshEnabled()) {
+            autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.RS_SCHED_STOP));
+            autoRefreshButton.setToolTipText("Stop auto-refresh");
+        } else {
+            autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.RS_SCHED_START));
+            autoRefreshButton.setToolTipText("Configure auto-refresh");
+        }
     }
 
     private void enablePanelControls(boolean enable) {
@@ -355,61 +421,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         } else {
             return UIIcon.SQL_TEXT;
         }
-    }
-
-    void enableFilters(boolean enableFilters) {
-        enablePanelControls(enableFilters);
-        if (enableFilters) {
-            final boolean supportsDataFilter = viewer.supportsDataFilter();
-            int historyPosition = viewer.getHistoryPosition();
-            List<ResultSetViewer.HistoryStateItem> stateHistory = viewer.getStateHistory();
-
-            String filterText = filtersText.getText();
-            filtersText.setEnabled(supportsDataFilter);
-            filtersApplyButton.setEnabled(supportsDataFilter);
-            filtersClearButton.setEnabled(supportsDataFilter && !CommonUtils.isEmpty(filterText));
-            // Update history buttons
-            if (historyPosition > 0) {
-                historyBackButton.setEnabled(true);
-                historyBackButton.setToolTipText(
-                    stateHistory.get(historyPosition - 1).describeState() +
-                    " (" + ActionUtils.findCommandDescription(IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, viewer.getSite(), true) + ")");
-            } else {
-                historyBackButton.setEnabled(false);
-            }
-            if (historyPosition < stateHistory.size() - 1) {
-                historyForwardButton.setEnabled(true);
-                historyForwardButton.setToolTipText(
-                    stateHistory.get(historyPosition + 1).describeState() +
-                    " (" + ActionUtils.findCommandDescription(IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, viewer.getSite(), true) + ")");
-            } else {
-                historyForwardButton.setEnabled(false);
-            }
-        }
-        filterComposite.setBackground(filtersText.getBackground());
-
-        {
-            String displayName = getActiveSourceQuery();
-            if (prevQuery == null || !prevQuery.equals(displayName)) {
-                loadFiltersHistory(displayName);
-                prevQuery = displayName;
-            }
-            Pattern mlCommentsPattern = Pattern.compile("/\\*.*\\*/", Pattern.DOTALL);
-            Matcher m = mlCommentsPattern.matcher(displayName);
-            if (m.find()) {
-                displayName = m.replaceAll("");
-            }
-
-            displayName = displayName.replaceAll("--.+", "");
-            displayName = TextUtils.compactWhiteSpaces(displayName);
-            activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
-            if (CommonUtils.isEmpty(activeDisplayName)) {
-                activeDisplayName = DEFAULT_QUERY_TEXT;
-            }
-        }
-
-        filterComposite.layout();
-        redrawPanels();
     }
 
     @NotNull
@@ -1057,7 +1068,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 schedulerMenu.setLocation(pt.x, pt.y + rect.height);
                 schedulerMenu.setVisible(true);
             } else {
-                runCustomized();
+                if (viewer.isAutoRefreshEnabled()) {
+                    viewer.enableAutoRefresh(false);
+                } else {
+                    runCustomized();
+                }
             }
         }
 

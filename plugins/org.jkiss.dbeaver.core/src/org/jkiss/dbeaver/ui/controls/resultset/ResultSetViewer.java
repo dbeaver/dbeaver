@@ -169,8 +169,9 @@ public class ResultSetViewer extends Viewer
     private final List<HistoryStateItem> stateHistory = new ArrayList<>();
     private int historyPosition = -1;
 
-    private RefreshSettings refreshSettings = new RefreshSettings();
-    private boolean autoRefreshEnabled = false;
+    private AutoRefreshJob autoRefreshJob;
+    private RefreshSettings refreshSettings;
+    private volatile boolean autoRefreshEnabled = false;
 
     private boolean actionsDisabled;
 
@@ -184,7 +185,6 @@ public class ResultSetViewer extends Viewer
         this.dataReceiver = new ResultSetDataReceiver(this);
 
         loadPresentationSettings();
-        refreshSettings.loadSettings();
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
@@ -2143,29 +2143,57 @@ public class ResultSetViewer extends Viewer
         return true;
     }
 
-    public RefreshSettings getRefreshSettings() {
+    public synchronized RefreshSettings getRefreshSettings() {
+        if (refreshSettings == null) {
+            refreshSettings = new RefreshSettings();
+            refreshSettings.loadSettings();
+        }
         return refreshSettings;
     }
 
-    public void setRefreshSettings(RefreshSettings refreshSettings) {
+    public synchronized void setRefreshSettings(RefreshSettings refreshSettings) {
         this.refreshSettings = refreshSettings;
         this.refreshSettings.saveSettings();
     }
 
-    public boolean isAutoRefreshEnabled() {
+    public synchronized boolean isAutoRefreshEnabled() {
         return autoRefreshEnabled;
     }
 
-    public void enableAutoRefresh(boolean enable) {
+    public synchronized void enableAutoRefresh(boolean enable) {
         this.autoRefreshEnabled = enable;
+        scheduleAutoRefresh(false);
+        filtersPanel.updateAutoRefreshToolbar();
     }
 
+    private synchronized void scheduleAutoRefresh(boolean afterError) {
+        if (autoRefreshJob != null) {
+            autoRefreshJob.cancel();
+            autoRefreshJob = null;
+        }
+        if (!this.autoRefreshEnabled) {
+            return;
+        }
+        RefreshSettings settings = getRefreshSettings();
+        if (afterError && settings.stopOnError) {
+            return;
+        }
+        autoRefreshJob = new AutoRefreshJob(this);
+        autoRefreshJob.schedule((long)settings.refreshInterval * 1000);
+    }
+
+    /**
+     * Refresh is called to execute new query/browse new data. It is public API function.
+     */
     @Override
     public void refresh()
     {
         if (!checkForChanges()) {
             return;
         }
+        // Disable auto-refresh
+        enableAutoRefresh(false);
+
         // Pump data
         DBSDataContainer dataContainer = getDataContainer();
         if (container.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
@@ -2330,6 +2358,12 @@ public class ResultSetViewer extends Viewer
             UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Data read is in progress - can't run another", SWT.ICON_WARNING);
             return false;
         }
+        // Cancel any auto-refresh activities
+        final AutoRefreshJob refreshJob = this.autoRefreshJob;
+        if (refreshJob != null) {
+            refreshJob.cancel();
+            this.autoRefreshJob = null;
+        }
         // Read data
         final DBDDataFilter useDataFilter = dataFilter != null ? dataFilter :
             (dataContainer == getDataContainer() ? model.getDataFilter() : null);
@@ -2418,6 +2452,8 @@ public class ResultSetViewer extends Viewer
                                 updateToolbar();
                                 fireResultSetLoad();
                             }
+                            // auto-refresh
+                            scheduleAutoRefresh(error != null);
                         } finally {
                             if (finalizer != null) {
                                 try {
@@ -3377,13 +3413,13 @@ public class ResultSetViewer extends Viewer
             this.stopOnError = src.stopOnError;
         }
 
-        void loadSettings() {
+        private void loadSettings() {
             IDialogSettings viewerSettings = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_REFRESH);
             if (viewerSettings.get("interval") != null) refreshInterval = viewerSettings.getInt("interval");
             if (viewerSettings.get("stopOnError") != null) stopOnError = viewerSettings.getBoolean("stopOnError");
         }
 
-        void saveSettings() {
+        private void saveSettings() {
             IDialogSettings viewerSettings = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_REFRESH);
             viewerSettings.put("interval", refreshInterval);
             viewerSettings.put("stopOnError", stopOnError);
