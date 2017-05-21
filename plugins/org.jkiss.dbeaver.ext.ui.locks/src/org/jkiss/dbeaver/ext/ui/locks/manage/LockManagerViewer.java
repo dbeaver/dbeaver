@@ -213,6 +213,10 @@ public class LockManagerViewer {
         }
     }
 
+    public Composite getControl() {
+        return lockTable.getControl();
+    }
+
     private class LockListControl extends LockTable {
 
         private Class<DBAServerLock<?>> locksType;

@@ -59,4 +59,10 @@ public abstract class AbstractLockEditor extends SinglePageDatabaseEditor<IDatab
         lockViewer.refreshLocks(null);
     }
 
+    @Override
+    public void setFocus() {
+        if (lockViewer != null) {
+            lockViewer.getControl().setFocus();
+        }
+    }
 }

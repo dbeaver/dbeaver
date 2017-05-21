@@ -59,4 +59,10 @@ public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDa
         sessionsViewer.refreshSessions();
     }
 
+    @Override
+    public void setFocus() {
+        if (sessionsViewer != null) {
+            sessionsViewer.getControl().setFocus();
+        }
+    }
 }

@@ -182,6 +182,10 @@ public class SessionManagerViewer
         }
     }
 
+    public Composite getControl() {
+        return sessionTable.getControl();
+    }
+
     private class SessionListControl extends SessionTable {
 
         public SessionListControl(SashForm sash, IWorkbenchSite site, DBAServerSessionManager<DBAServerSession> sessionManager)
