@@ -113,6 +113,7 @@ public class ResultSetViewer extends Viewer
     implements DBPContextProvider, IResultSetController, ISaveablePart2, IAdaptable
 {
     private static final Log log = Log.getLog(ResultSetViewer.class);
+    private static final String SETTINGS_SECTION_REFRESH = "autoRefresh";
     private static final String SETTINGS_SECTION_PRESENTATIONS = "presentations";
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
@@ -168,6 +169,9 @@ public class ResultSetViewer extends Viewer
     private final List<HistoryStateItem> stateHistory = new ArrayList<>();
     private int historyPosition = -1;
 
+    private RefreshSettings refreshSettings = new RefreshSettings();
+    private boolean autoRefreshEnabled = false;
+
     private boolean actionsDisabled;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
@@ -180,6 +184,7 @@ public class ResultSetViewer extends Viewer
         this.dataReceiver = new ResultSetDataReceiver(this);
 
         loadPresentationSettings();
+        refreshSettings.loadSettings();
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
@@ -2138,6 +2143,23 @@ public class ResultSetViewer extends Viewer
         return true;
     }
 
+    public RefreshSettings getRefreshSettings() {
+        return refreshSettings;
+    }
+
+    public void setRefreshSettings(RefreshSettings refreshSettings) {
+        this.refreshSettings = refreshSettings;
+        this.refreshSettings.saveSettings();
+    }
+
+    public boolean isAutoRefreshEnabled() {
+        return autoRefreshEnabled;
+    }
+
+    public void enableAutoRefresh(boolean enable) {
+        this.autoRefreshEnabled = enable;
+    }
+
     @Override
     public void refresh()
     {
@@ -3341,6 +3363,31 @@ public class ResultSetViewer extends Viewer
         String activePanelId;
         int panelRatio;
         boolean panelsVisible;
+    }
+
+    static class RefreshSettings {
+        int refreshInterval = 0;
+        boolean stopOnError = true;
+
+        RefreshSettings() {
+        }
+
+        RefreshSettings(RefreshSettings src) {
+            this.refreshInterval = src.refreshInterval;
+            this.stopOnError = src.stopOnError;
+        }
+
+        void loadSettings() {
+            IDialogSettings viewerSettings = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_REFRESH);
+            if (viewerSettings.get("interval") != null) refreshInterval = viewerSettings.getInt("interval");
+            if (viewerSettings.get("stopOnError") != null) stopOnError = viewerSettings.getBoolean("stopOnError");
+        }
+
+        void saveSettings() {
+            IDialogSettings viewerSettings = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_REFRESH);
+            viewerSettings.put("interval", refreshInterval);
+            viewerSettings.put("stopOnError", stopOnError);
+        }
     }
 
     public static void openNewDataEditor(DBNDatabaseNode targetNode, DBDDataFilter newFilter) {
