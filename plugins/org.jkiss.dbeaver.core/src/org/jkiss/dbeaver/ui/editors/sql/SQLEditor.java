@@ -693,6 +693,10 @@ public class SQLEditor extends SQLEditorBase implements
         showExtraView(toolLogItem, CoreMessages.editors_sql_execution_log, "SQL query execution log", IMG_LOG, logViewer);
     }
 
+    public boolean hasMaximizedControl() {
+        return sashForm.getMaximizedControl() != null;
+    }
+
     public void toggleResultPanel() {
         if (sashForm.getMaximizedControl() == null) {
             sashForm.setMaximizedControl(editorControl);

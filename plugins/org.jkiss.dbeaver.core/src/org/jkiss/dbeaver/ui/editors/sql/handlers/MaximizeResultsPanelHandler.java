@@ -19,11 +19,16 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-public class MaximizeResultsPanelHandler extends AbstractHandler {
+import java.util.Map;
+
+public class MaximizeResultsPanelHandler extends AbstractHandler implements IElementUpdater {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -32,6 +37,24 @@ public class MaximizeResultsPanelHandler extends AbstractHandler {
             editor.toggleEditorMaximize();
         }
         return null;
+    }
+
+    @Override
+    public void updateElement(UIElement element, Map parameters)
+    {
+        IWorkbenchWindow workbenchWindow = element.getServiceLocator().getService(IWorkbenchWindow.class);
+        if (workbenchWindow == null || workbenchWindow.getActivePage() == null) {
+            return;
+        }
+        SQLEditor editor = RuntimeUtils.getObjectAdapter(workbenchWindow.getActivePage().getActiveEditor(), SQLEditor.class);
+        if (editor != null) {
+            if (editor.hasMaximizedControl()) {
+                element.setText("Restore results panel");
+            } else {
+                element.setText("Maximize results panel");
+            }
+
+        }
     }
 
 }
