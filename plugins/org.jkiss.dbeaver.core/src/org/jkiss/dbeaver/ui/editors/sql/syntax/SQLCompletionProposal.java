@@ -92,7 +92,9 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         this.syntaxManager = request.editor.getSyntaxManager();
         this.displayString = displayString;
         this.replacementString = replacementString;
-        this.replacementFull = DBUtils.getUnQuotedIdentifier(this.dataSource, replacementString.toLowerCase(Locale.ENGLISH));
+        this.replacementFull = this.dataSource == null ?
+                replacementString :
+                DBUtils.getUnQuotedIdentifier(this.dataSource, replacementString.toLowerCase(Locale.ENGLISH));
         int divPos = this.replacementFull.lastIndexOf(syntaxManager.getStructSeparator());
         if (divPos == -1) {
             this.replacementLast = null;
