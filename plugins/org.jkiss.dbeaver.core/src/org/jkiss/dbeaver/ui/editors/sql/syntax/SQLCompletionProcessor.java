@@ -134,8 +134,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         }
         request.wordPart = searchPrefix;
+        DBPDataSource dataSource = editor.getDataSource();
         if (request.wordPart != null) {
-            if (editor.getDataSource() != null) {
+            if (dataSource != null) {
                 ProposalSearchJob searchJob = new ProposalSearchJob(request);
                 searchJob.schedule();
                 // Wait until job finished
@@ -184,7 +185,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 }
             }
         }
-        DBSObject selectedObject = DBUtils.getActiveInstanceObject(editor.getDataSource());
+        DBSObject selectedObject = dataSource == null ? null: DBUtils.getActiveInstanceObject(dataSource);
         boolean hideDups = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) && selectedObject != null;
         if (hideDups) {
             for (int i = 0; i < request.proposals.size(); i++) {
