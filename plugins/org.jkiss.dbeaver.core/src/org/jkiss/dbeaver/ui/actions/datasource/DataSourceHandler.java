@@ -166,11 +166,15 @@ public class DataSourceHandler
         }
 
         if (networkHandler != null) {
-            networkHandler.setUserName(authInfo.getUserName());
+            if (!passwordOnly) {
+                networkHandler.setUserName(authInfo.getUserName());
+            }
             networkHandler.setPassword(authInfo.getUserPassword());
             networkHandler.setSavePassword(authInfo.isSavePassword());
         } else {
-            dataSourceContainer.getConnectionConfiguration().setUserName(authInfo.getUserName());
+            if (!passwordOnly) {
+                dataSourceContainer.getConnectionConfiguration().setUserName(authInfo.getUserName());
+            }
             dataSourceContainer.getConnectionConfiguration().setUserPassword(authInfo.getUserPassword());
             dataSourceContainer.setSavePassword(authInfo.isSavePassword());
         }
