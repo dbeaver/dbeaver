@@ -92,6 +92,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         pwdControlGroup.setLayoutData(gd);
 
         passwordText = new Text(pwdControlGroup, SWT.BORDER | SWT.PASSWORD);
+        passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         new Label(pwdControlGroup, SWT.NONE).setText("   ");
         savePasswordCheckbox = UIUtils.createCheckbox(pwdControlGroup, CoreMessages.model_ssh_configurator_checkbox_save_pass, false);
