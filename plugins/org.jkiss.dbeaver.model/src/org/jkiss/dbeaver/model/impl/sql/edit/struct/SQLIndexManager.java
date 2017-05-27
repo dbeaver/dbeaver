@@ -68,7 +68,7 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
             for (DBSTableIndexColumn indexColumn : CommonUtils.safeCollection(command.getObject().getAttributeReferences(new VoidProgressMonitor()))) {
                 if (!firstColumn) decl.append(","); //$NON-NLS-1$
                 firstColumn = false;
-                decl.append(indexColumn.getName());
+                decl.append(DBUtils.getQuotedIdentifier(indexColumn));
                 appendIndexColumnModifiers(decl, indexColumn);
             }
         } catch (DBException e) {
