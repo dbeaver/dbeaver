@@ -22,8 +22,6 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -64,20 +62,20 @@ public class SQLContextInformer
 {
     private static final Log log = Log.getLog(SQLContextInformer.class);
 
+    private static final Map<DBPDataSourceContainer, Map<String, ObjectLookupCache>> LINKS_CACHE = new HashMap<>();
+
     private final SQLEditorBase editor;
     private SQLSyntaxManager syntaxManager;
     private SQLIdentifierDetector.WordRegion wordRegion;
+
+    private String[] keywords;
+    private DBPKeywordType keywordType;
+    private List<DBSObjectReference> objectReferences;
 
     private static class ObjectLookupCache {
         List<DBSObjectReference> references;
         boolean loading = true;
     }
-
-    private static final Map<SQLEditorBase, Map<String, ObjectLookupCache>> linksCache = new HashMap<>();
-
-    private String[] keywords;
-    private DBPKeywordType keywordType;
-    private List<DBSObjectReference> objectReferences;
 
     public SQLContextInformer(SQLEditorBase editor, SQLSyntaxManager syntaxManager)
     {
@@ -111,8 +109,6 @@ public class SQLContextInformer
 
     public void searchInformation(IRegion region)
     {
-        initEditorCache();
-
         ITextViewer textViewer = editor.getTextViewer();
         final DBCExecutionContext executionContext = editor.getExecutionContext();
         if (region == null || textViewer == null || executionContext == null) {
@@ -220,30 +216,32 @@ public class SQLContextInformer
         }
     }
 
-    private void initEditorCache() {
-        // Register cache for specified editor
-        boolean dupEditor;
-        synchronized (linksCache) {
-            dupEditor = linksCache.containsKey(this.editor);
-            if (!dupEditor) {
-                linksCache.put(this.editor, new HashMap<String, ObjectLookupCache>());
-            }
-        }
-        if (!dupEditor) {
-            editor.getTextViewer().getControl().addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e) {
-                    synchronized (linksCache) {
-                        linksCache.remove(SQLContextInformer.this.editor);
-                    }
-                }
-            });
-        }
-    }
-
     private Map<String, ObjectLookupCache> getLinksCache() {
-        synchronized (linksCache) {
-            return linksCache.get(this.editor);
+        DBPDataSource dataSource = this.editor.getDataSource();
+        if (dataSource == null) {
+            return null;
+        }
+        final DBPDataSourceContainer container = dataSource.getContainer();
+        synchronized (LINKS_CACHE) {
+            Map<String, ObjectLookupCache> cacheMap = LINKS_CACHE.get(container);
+            if (cacheMap == null) {
+                cacheMap = new HashMap<>();
+                LINKS_CACHE.put(container, cacheMap);
+
+                // Register disconnect listener
+                container.getRegistry().addDataSourceListener(new DBPEventListener() {
+                    @Override
+                    public void handleDataSourceEvent(DBPEvent event) {
+                        if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && Boolean.FALSE.equals(event.getEnabled())) {
+                            synchronized (LINKS_CACHE) {
+                                LINKS_CACHE.remove(container);
+                                container.getRegistry().removeDataSourceListener(this);
+                            }
+                        }
+                    }
+                });
+            }
+            return cacheMap;
         }
     }
 
