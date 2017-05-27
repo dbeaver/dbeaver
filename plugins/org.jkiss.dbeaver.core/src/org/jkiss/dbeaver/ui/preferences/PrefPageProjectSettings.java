@@ -183,7 +183,7 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
             }
             item.setText(0, descriptor.getName());
 
-            String defaultRoot = descriptor.getDefaultRoot(project);
+            String defaultRoot = project == null ? null : descriptor.getDefaultRoot(project);
             if (defaultRoot != null) {
                 item.setText(1, defaultRoot);
             }
