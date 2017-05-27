@@ -539,7 +539,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             // Cache schema constraints if not table specified
             if (forParent == null) {
-                constraintCache.getObject(monitor, schema, null);
+                constraintCache.getAllObjects(monitor, schema);
             }
             super.loadObjects(monitor, schema, forParent);
         }
