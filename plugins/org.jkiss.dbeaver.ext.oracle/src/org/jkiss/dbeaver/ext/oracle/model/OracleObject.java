@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Abstract oracle object
@@ -43,7 +44,7 @@ public abstract class OracleObject<PARENT extends DBSObject> implements DBSObjec
         boolean persisted)
     {
         this.parent = parent;
-        this.name = name;
+        this.name = CommonUtils.notEmpty(name);
         this.objectId = objectId;
         this.persisted = persisted;
     }
