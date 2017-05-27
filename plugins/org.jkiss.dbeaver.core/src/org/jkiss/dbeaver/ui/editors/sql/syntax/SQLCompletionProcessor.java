@@ -172,19 +172,26 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 }
             }
         }
+        filterProposals(request, dataSource);
+
+
+        return ArrayUtils.toArray(ICompletionProposal.class, request.proposals);
+    }
+
+    private void filterProposals(SQLCompletionAnalyzer.CompletionRequest request, DBPDataSource dataSource) {
 
         // Remove duplications
-        for (int i = 0; i < request.proposals.size(); i++) {
+        final Set<String> proposalMap = new HashSet<>(request.proposals.size());
+        for (int i = 0; i < request.proposals.size(); ) {
             SQLCompletionProposal proposal = request.proposals.get(i);
-            for (int j = i + 1; j < request.proposals.size(); ) {
-                SQLCompletionProposal proposal2 = request.proposals.get(j);
-                if (proposal.getDisplayString().equals(proposal2.getDisplayString())) {
-                    request.proposals.remove(j);
-                } else {
-                    j++;
-                }
+            if (proposalMap.contains(proposal.getDisplayString())) {
+                request.proposals.remove(i);
+                continue;
             }
+            proposalMap.add(proposal.getDisplayString());
+            i++;
         }
+
         DBSObject selectedObject = dataSource == null ? null: DBUtils.getActiveInstanceObject(dataSource);
         boolean hideDups = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) && selectedObject != null;
         if (hideDups) {
@@ -193,8 +200,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 for (int j = 0; j < request.proposals.size(); ) {
                     SQLCompletionProposal proposal2 = request.proposals.get(j);
                     if (i != j && proposal.hasStructObject() && proposal2.hasStructObject() &&
-                        CommonUtils.equalObjects(proposal.getObject().getName(), proposal2.getObject().getName()) &&
-                        proposal.getObjectContainer() == selectedObject) {
+                            CommonUtils.equalObjects(proposal.getObject().getName(), proposal2.getObject().getName()) &&
+                            proposal.getObjectContainer() == selectedObject) {
                         request.proposals.remove(j);
                     } else {
                         j++;
@@ -207,11 +214,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             // Remove duplicates from non-active schema
 
             if (selectedObject instanceof DBSObjectContainer) {
-                //List<ICompletionProposal>
+
             }
 
         }
-        return ArrayUtils.toArray(ICompletionProposal.class, request.proposals);
+
     }
 
     private ICompletionProposal[] makeCommandProposals(SQLCompletionAnalyzer.CompletionRequest request, String prefix) {
