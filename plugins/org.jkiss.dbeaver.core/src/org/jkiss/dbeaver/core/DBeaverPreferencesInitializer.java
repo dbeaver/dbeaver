@@ -101,7 +101,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY, false);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE, true);
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.TEXT_EDIT_UNDO_LEVEL, 200);
