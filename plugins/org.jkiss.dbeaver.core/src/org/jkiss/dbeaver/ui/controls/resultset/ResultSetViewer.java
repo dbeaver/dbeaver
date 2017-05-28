@@ -2116,7 +2116,13 @@ public class ResultSetViewer extends Viewer
     private boolean checkForChanges() {
         // Check if we are dirty
         if (isDirty()) {
-            switch (promptToSaveOnClose()) {
+            int checkResult = new UITask<Integer>() {
+                @Override
+                protected Integer runTask() {
+                    return promptToSaveOnClose();
+                }
+            }.execute();
+            switch (checkResult) {
                 case ISaveablePart2.CANCEL:
                     return false;
                 case ISaveablePart2.YES:
