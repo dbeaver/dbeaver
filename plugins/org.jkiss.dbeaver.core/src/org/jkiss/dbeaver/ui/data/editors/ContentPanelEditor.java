@@ -69,7 +69,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
     private static Map<String, String> valueToManagerMap = new HashMap<>();
 
     private Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers;
-    private StreamValueManagerDescriptor curStreamManager;
+    private volatile StreamValueManagerDescriptor curStreamManager;
     private IStreamValueEditor<Control> streamEditor;
     private Control editorControl;
 
