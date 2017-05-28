@@ -484,13 +484,21 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (rowNum < 0) {
                     return;
                 }
+                boolean overNewRow = controller.getModel().getRow(rowNum).getState() == ResultSetRow.STATE_ADDED;
                 try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataSource, "Advanced paste")) {
 
                     String[][] newLines = parseGridLines(strValue);
                     // Create new rows on demand
-                    while (rowNum + newLines.length > spreadsheet.getItemCount()) {
-                        controller.addNewRow(false, true, false);
+                    if (overNewRow) {
+                        for (int i = 0 ; i < newLines.length - 1; i++) {
+                            controller.addNewRow(false, true, false);
+                        }
                         spreadsheet.refreshRowsData();
+                    } else {
+                        while (rowNum + newLines.length > spreadsheet.getItemCount()) {
+                            controller.addNewRow(false, true, false);
+                            spreadsheet.refreshRowsData();
+                        }
                     }
                     if (rowNum < 0 || rowNum >= spreadsheet.getItemCount()) {
                         return;
