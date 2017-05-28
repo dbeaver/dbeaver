@@ -105,4 +105,8 @@ public class OracleTriggerColumn extends AbstractTriggerColumn
         return trigger.getDataSource();
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

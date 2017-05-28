@@ -23,14 +23,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * OracleTableTrigger
  */
 public class OracleTableTrigger extends OracleTrigger<OracleTableBase>
 {
-    private List<OracleTriggerColumn> columns;
 
     public OracleTableTrigger(OracleTableBase table, String name)
     {
@@ -59,21 +57,7 @@ public class OracleTableTrigger extends OracleTrigger<OracleTableBase>
     @Association
     public Collection<OracleTriggerColumn> getColumns(DBRProgressMonitor monitor) throws DBException
     {
-        if (columns == null) {
-            parent.triggerCache.loadChildren(monitor, parent, this);
-        }
-        return columns;
+        return parent.triggerCache.getChildren(monitor, parent, this);
     }
-
-    boolean isColumnsCached()
-    {
-        return columns != null;
-    }
-
-    void setColumns(List<OracleTriggerColumn> columns)
-    {
-        this.columns = columns;
-    }
-
 
 }
