@@ -163,13 +163,17 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 }
                 break;
             case CMD_ROW_ADD:
-            case CMD_ROW_COPY:
+            case CMD_ROW_COPY: {
                 boolean copy = actionId.equals(CMD_ROW_COPY);
-                boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event)event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);
+                boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event) event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);
                 boolean insertAfter = rsv.getPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER);
                 if (shiftPressed) insertAfter = !insertAfter;
                 rsv.addNewRow(copy, insertAfter, true);
+                if (insertAfter) {
+                    presentation.scrollToRow(IResultSetPresentation.RowPosition.NEXT);
+                }
                 break;
+            }
             case CMD_ROW_DELETE:
             case IWorkbenchCommandConstants.EDIT_DELETE:
                 rsv.deleteSelectedRows();
