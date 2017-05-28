@@ -9,6 +9,6 @@
     <relativePath>../../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.rcp.feature</artifactId>
-  <version>2.1.32</version>
+  <version>2.1.33</version>
   <packaging>eclipse-feature</packaging>
 </project>
