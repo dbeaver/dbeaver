@@ -21,10 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.*;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
@@ -80,6 +77,53 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         if (!executionContext.isConnected()) {
             throw new DBException("Context [" + executionContext.getContextName() + "] isn't connected to the database");
         }
+
+        // Execute commands in transaction
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
+        boolean oldAutoCommit = false;
+        if (txnManager != null) {
+            oldAutoCommit = txnManager.isAutoCommit();
+            if (oldAutoCommit) {
+                try {
+                    txnManager.setAutoCommit(monitor, false);
+                } catch (DBCException e) {
+                    log.warn("Can't switch to transaction mode", e);
+                }
+            }
+        }
+        try {
+            executeCommands(monitor);
+
+            // Commit changes
+            if (txnManager != null) {
+                try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit script transaction")) {
+                    txnManager.commit(session);
+                } catch (DBCException e1) {
+                    log.warn("Can't commit script transaction", e1);
+                }
+            }
+        } catch (Throwable e) {
+            // Rollback changes
+            if (txnManager != null) {
+                try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback script transaction")) {
+                    txnManager.rollback(session, null);
+                } catch (DBCException e1) {
+                    log.warn("Can't rollback transaction after error", e);
+                }
+            }
+            throw e;
+        } finally {
+            if (txnManager != null && oldAutoCommit) {
+                try {
+                    txnManager.setAutoCommit(monitor, true);
+                } catch (DBCException e) {
+                    log.warn("Can't switch back to auto-commit mode", e);
+                }
+            }
+        }
+    }
+
+    private void executeCommands(DBRProgressMonitor monitor) throws DBException {
         List<CommandQueue> commandQueues = getCommandQueues();
 
         // Validate commands
@@ -140,12 +184,6 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                                 }
                                 if (error != null) {
                                     throw error;
-                                }
-
-                                // Commit metadata changes
-                                DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
-                                if (txnManager != null && !txnManager.isAutoCommit()) {
-                                    txnManager.commit(session);
                                 }
                             }
                             cmd.executed = true;
