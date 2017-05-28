@@ -121,7 +121,7 @@ public interface IResultSetController extends DBPContextProvider {
     void setCurrentRow(@Nullable ResultSetRow row);
 
     @NotNull
-    ResultSetRow addNewRow(final boolean copyCurrent, boolean afterCurrent);
+    ResultSetRow addNewRow(final boolean copyCurrent, boolean afterCurrent, boolean updatePresentation);
 
     ////////////////////////////////////////
     // Navigation & history

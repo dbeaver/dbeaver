@@ -2573,7 +2573,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @NotNull
-    public ResultSetRow addNewRow(final boolean copyCurrent, boolean afterCurrent)
+    public ResultSetRow addNewRow(final boolean copyCurrent, boolean afterCurrent, boolean updatePresentation)
     {
         List<ResultSetRow> selectedRows = new ArrayList<>(getSelection().getSelectedRows());
         int rowNum = curRow == null ? 0 : curRow.getVisualNumber();
@@ -2669,9 +2669,11 @@ public class ResultSetViewer extends Viewer
                 curRow = model.addNewRow(newRowIndex, cells);
             }
         }
-        redrawData(false, true);
-        updateEditControls();
-        fireResultSetChange();
+        if (updatePresentation) {
+            redrawData(false, true);
+            updateEditControls();
+            fireResultSetChange();
+        }
 
         return curRow;
     }

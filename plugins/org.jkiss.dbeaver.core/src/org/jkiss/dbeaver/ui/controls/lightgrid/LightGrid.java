@@ -486,16 +486,7 @@ public abstract class LightGrid extends Canvas {
             bottomIndex = -1;
         }
         IGridContentProvider contentProvider = getContentProvider();
-        {
-            // Prepare rows
-            Object[] initialElements = contentProvider.getElements(false);
-            this.rowNodes.clear();
-            List<Object> realRows = new ArrayList<>(initialElements.length);
-            List<GridNode> parents = new ArrayList<>(initialElements.length);
-            collectRows(realRows, parents, null, initialElements, 0);
-            this.rowElements = realRows.toArray();
-            this.parentNodes = parents.toArray(new GridNode[parents.size()]);
-        }
+        refreshRowsData();
         this.displayedToolTipText = null;
 
         if (refreshColumns) {
@@ -596,6 +587,17 @@ public abstract class LightGrid extends Canvas {
 //        if (focusPos.isValid()) {
 //            selectCell(focusPos);
 //        }
+    }
+
+    public void refreshRowsData() {
+        // Prepare rows
+        Object[] initialElements = getContentProvider().getElements(false);
+        this.rowNodes.clear();
+        List<Object> realRows = new ArrayList<>(initialElements.length);
+        List<GridNode> parents = new ArrayList<>(initialElements.length);
+        collectRows(realRows, parents, null, initialElements, 0);
+        this.rowElements = realRows.toArray();
+        this.parentNodes = parents.toArray(new GridNode[parents.size()]);
     }
 
     /**

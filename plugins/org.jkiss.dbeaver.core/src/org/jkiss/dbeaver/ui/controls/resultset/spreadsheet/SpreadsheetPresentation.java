@@ -489,7 +489,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     String[][] newLines = parseGridLines(strValue);
                     // Create new rows on demand
                     while (rowNum + newLines.length > spreadsheet.getItemCount()) {
-                        controller.addNewRow(false, true);
+                        controller.addNewRow(false, true, false);
+                        spreadsheet.refreshRowsData();
                     }
                     if (rowNum < 0 || rowNum >= spreadsheet.getItemCount()) {
                         return;
@@ -515,7 +516,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                                 attr,
                                 row,
                                 IValueController.EditType.NONE,
-                                null).updateValue(newValue, true);
+                                null).updateValue(newValue, false);
 
                             colNum++;
                         }
@@ -547,8 +548,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     attr,
                     row,
                     IValueController.EditType.NONE,
-                    null).updateValue(newValue, true);
+                    null).updateValue(newValue, false);
             }
+            controller.redrawData(false, true);
+            controller.updateEditControls();
         }
         catch (Exception e) {
             UIUtils.showErrorDialog(spreadsheet.getShell(), "Cannot replace cell value", null, e);
