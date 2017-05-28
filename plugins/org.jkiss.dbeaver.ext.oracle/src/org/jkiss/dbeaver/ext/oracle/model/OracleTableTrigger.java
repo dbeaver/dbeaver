@@ -17,9 +17,12 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.Collection;
@@ -29,6 +32,9 @@ import java.util.Collection;
  */
 public class OracleTableTrigger extends OracleTrigger<OracleTableBase>
 {
+    private static final Log log = Log.getLog(OracleTableTrigger.class);
+
+    private OracleSchema ownerSchema;
 
     public OracleTableTrigger(OracleTableBase table, String name)
     {
@@ -40,6 +46,16 @@ public class OracleTableTrigger extends OracleTrigger<OracleTableBase>
         ResultSet dbResult)
     {
         super(table, dbResult);
+        String ownerName = JDBCUtils.safeGetStringTrimmed(dbResult, "OWNER");
+        if (ownerName != null) {
+            this.ownerSchema = table.getDataSource().schemaCache.getCachedObject(ownerName);
+            if (this.ownerSchema == null) {
+                log.warn("Trigger owner schema '" + ownerName + "' not found");
+            }
+        }
+        if (this.ownerSchema == null) {
+            this.ownerSchema = table.getSchema();
+        }
     }
 
     @Override
@@ -51,7 +67,7 @@ public class OracleTableTrigger extends OracleTrigger<OracleTableBase>
 
     @Override
     public OracleSchema getSchema() {
-        return parent.getSchema();
+        return this.ownerSchema;
     }
 
     @Association
