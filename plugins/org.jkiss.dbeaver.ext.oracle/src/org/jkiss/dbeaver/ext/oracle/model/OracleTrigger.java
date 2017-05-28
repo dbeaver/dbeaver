@@ -216,4 +216,8 @@ public abstract class OracleTrigger<PARENT extends DBSObject> extends OracleObje
             this);
     }
 
+    @Override
+    public String toString() {
+        return getFullyQualifiedName(DBPEvaluationContext.DDL);
+    }
 }
