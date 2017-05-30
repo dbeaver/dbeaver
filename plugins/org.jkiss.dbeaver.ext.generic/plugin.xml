@@ -818,6 +818,18 @@
                     <file type="jar" path="http://www.infiniflux.com/dist/iflux.jar"/>
                 </driver>
 
+                <!-- Yandex ClickHouse -->
+                <driver
+                    id="yandex_clickhouse"
+                    label="ClickHouse"
+                    class="ru.yandex.clickhouse.ClickHouseDriver"
+                    sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
+                    defaultPort="8123"
+                    description="Yandex ClickHouse"
+                    webURL="https://github.com/yandex/clickhouse-jdbc">
+                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE"/>
+                </driver>
+
             </drivers>
 
             <views>
