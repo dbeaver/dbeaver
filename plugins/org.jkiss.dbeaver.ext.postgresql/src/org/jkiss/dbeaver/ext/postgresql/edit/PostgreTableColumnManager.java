@@ -168,7 +168,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         if (command.getProperty("description") != null) {
             actionList.add(new SQLDatabasePersistAction("Set column comment", "COMMENT ON COLUMN " +
                 DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                " IS " + SQLUtils.quoteString(CommonUtils.notEmpty(column.getDescription()))));
+                " IS " + SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription()))));
         }
     }
 

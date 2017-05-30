@@ -114,7 +114,7 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
             actions.add(new SQLDatabasePersistAction(
                 "Comment procedure",
                 "COMMENT ON " + command.getObject().getProcedureTypeName() + " " + command.getObject().getFullQualifiedSignature() +
-                    " IS " + SQLUtils.quoteString(command.getObject().getDescription())));
+                    " IS " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
         }
     }
 

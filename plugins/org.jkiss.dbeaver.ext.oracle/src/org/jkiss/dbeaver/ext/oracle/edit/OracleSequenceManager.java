@@ -140,7 +140,7 @@ public class OracleSequenceManager extends SQLObjectEditor<OracleSequence, Oracl
     private String buildComment(OracleSequence sequence)
     {
         if (!CommonUtils.isEmpty(sequence.getDescription())) {
-            return "COMMENT ON SEQUENCE " + sequence.getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " + SQLUtils.quoteString(sequence.getDescription());
+            return "COMMENT ON SEQUENCE " + sequence.getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " + SQLUtils.quoteString(sequence, sequence.getDescription());
         }
         return null;
     }

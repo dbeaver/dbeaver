@@ -590,7 +590,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
                 Object varValue = scriptVariables.get(paramName);
                 String strValue;
                 if (varValue instanceof String) {
-                    strValue = SQLUtils.quoteString((String) varValue);
+                    strValue = SQLUtils.quoteString(getExecutionContext().getDataSource(), (String) varValue);
                 } else {
                     strValue = varValue == null ? null : varValue.toString();
                 }
@@ -614,7 +614,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             for (SQLQueryParameter param : parameters) {
                 if (param.isNamed() && scriptVariables.containsKey(param.getTitle())) {
                     String strValue = param.getValue();
-                    scriptVariables.put(param.getTitle(), SQLUtils.unQuoteString(strValue));
+                    scriptVariables.put(param.getTitle(), SQLUtils.unQuoteString(getExecutionContext().getDataSource(), strValue));
                 }
             }
         }

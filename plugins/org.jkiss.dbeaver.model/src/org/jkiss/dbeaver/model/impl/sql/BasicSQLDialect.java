@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
@@ -317,6 +318,12 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public String escapeString(String string) {
         return string.replace("'", "''");
+    }
+
+    @NotNull
+    @Override
+    public String unEscapeString(String string) {
+        return CommonUtils.notEmpty(string).replace("''", "'");
     }
 
     @NotNull

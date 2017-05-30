@@ -57,7 +57,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         String displayString;
         ContentParameter(JDBCSession session, Object value) {
             if (value instanceof RowId) {
-                displayString = SQLUtils.quoteString(new String(((RowId) value).getBytes()));
+                displayString = SQLUtils.quoteString(session.getDataSource(), new String(((RowId) value).getBytes()));
             } else if (value instanceof byte[]) {
                 byte[] bytes = (byte[])value;
                 displayString = DBValueFormatting.formatBinaryString(session.getDataSource(), bytes, DBDDisplayFormat.NATIVE, true);
@@ -150,18 +150,18 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
     @NotNull
     private String formatParameterValue(Object value) {
         if (value instanceof CharSequence) {
-            return SQLUtils.quoteString(value.toString());
+            return SQLUtils.quoteString(connection.getDataSource(), value.toString());
         } else if (value instanceof Number) {
             return DBValueFormatting.convertNumberToNativeString((Number) value);
         } else if (value instanceof java.util.Date) {
             try {
                 DBDDataFormatterProfile formatterProfile = getSession().getDataSource().getDataFormatterProfile();
                 if (value instanceof Date) {
-                    return SQLUtils.quoteString(formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_DATE).formatValue(value));
+                    return SQLUtils.quoteString(connection.getDataSource(), formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_DATE).formatValue(value));
                 } else if (value instanceof Time) {
-                    return SQLUtils.quoteString(formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIME).formatValue(value));
+                    return SQLUtils.quoteString(connection.getDataSource(), formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIME).formatValue(value));
                 } else {
-                    return SQLUtils.quoteString(formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIMESTAMP).formatValue(value));
+                    return SQLUtils.quoteString(connection.getDataSource(), formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIMESTAMP).formatValue(value));
                 }
             } catch (Exception e) {
                 log.debug("Error formatting date [" + value + "]", e);

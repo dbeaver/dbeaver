@@ -228,6 +228,9 @@ public interface SQLDialect {
     @NotNull
     String escapeString(String string);
 
+    @NotNull
+    String unEscapeString(String string);
+
     /**
      * Encode value to string format (to use it in scripts, e.g. in INSERT/UPDATE statements)
      * @param attribute

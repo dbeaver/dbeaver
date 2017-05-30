@@ -194,27 +194,28 @@ public final class SQLUtils {
         }
     }
 
-    public static String quoteString(String string)
+    public static String quoteString(DBSObject object, String string)
     {
-        return "'" + escapeString(string) + "'";
+        return quoteString(object.getDataSource(), string);
     }
 
-    public static String escapeString(String string)
+    public static String quoteString(DBPDataSource dataSource, String string)
     {
-        return CommonUtils.notEmpty(string).replace("'", "''");
+        @NotNull
+        SQLDialect dialect = dataSource instanceof SQLDataSource ?
+                ((SQLDataSource) dataSource).getSQLDialect() : BasicSQLDialect.INSTANCE;
+        return "'" + dialect.escapeString(string) + "'";
     }
 
-    public static String unQuoteString(String string)
+    public static String unQuoteString(DBPDataSource dataSource, String string)
     {
         if (string.length() > 1 && string.charAt(0) == '\'' && string.charAt(string.length() - 1) == '\'') {
-            return unEscapeString(string.substring(1, string.length() - 1));
+            @NotNull
+            SQLDialect dialect = dataSource instanceof SQLDataSource ?
+                    ((SQLDataSource) dataSource).getSQLDialect() : BasicSQLDialect.INSTANCE;
+            return dialect.unEscapeString(string.substring(1, string.length() - 1));
         }
         return string;
-    }
-
-    public static String unEscapeString(String string)
-    {
-        return CommonUtils.notEmpty(string).replace("''", "'");
     }
 
     public static String getFirstKeyword(String query)
