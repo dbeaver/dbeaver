@@ -101,12 +101,12 @@ public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, Exaso
     
     @Override
     protected void addObjectExtraActions(List<DBEPersistAction> actions,
-            org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor.NestedObjectCommand<ExasolFunction, SQLObjectEditor<ExasolFunction, ExasolSchema>.PropertyHandler> command)
+            SQLObjectEditor.NestedObjectCommand<ExasolFunction, SQLObjectEditor<ExasolFunction, ExasolSchema>.PropertyHandler> command)
     {
         if (command.getProperty("description") != null) {
             actions.add(new SQLDatabasePersistAction("Comment on Script","COMMENT ON FUNCTION " + 
                             command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " +
-                            SQLUtils.quoteString(command.getObject().getDescription())));
+                            SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
         }
     }
 

@@ -105,7 +105,7 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
         if (command.getProperty("description") != null) {
             actions.add(new SQLDatabasePersistAction("Comment on Script","COMMENT ON SCRIPT " + 
                             command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " +
-                            SQLUtils.quoteString(command.getObject().getDescription())));
+                            SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
         }
     }
 

@@ -107,7 +107,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
             }
             String delim = hasSet ? "," : ""; //$NON-NLS-1$ //$NON-NLS-2$
             switch (UserPropertyHandler.valueOf((String) entry.getKey())) {
-                case PASSWORD: script.append(delim).append("Password=PASSWORD(").append(SQLUtils.quoteString(CommonUtils.toString(entry.getValue()))).append(")"); hasSet = true; break; //$NON-NLS-1$ //$NON-NLS-2$
+                case PASSWORD: script.append(delim).append("Password=PASSWORD(").append(SQLUtils.quoteString(getObject(), CommonUtils.toString(entry.getValue()))).append(")"); hasSet = true; break; //$NON-NLS-1$ //$NON-NLS-2$
                 case MAX_QUERIES: script.append(delim).append("Max_Questions=").append(CommonUtils.toInt(entry.getValue())); hasSet = true; break; //$NON-NLS-1$
                 case MAX_UPDATES: script.append(delim).append("Max_Updates=").append(CommonUtils.toInt(entry.getValue())); hasSet = true; break; //$NON-NLS-1$
                 case MAX_CONNECTIONS: script.append(delim).append("Max_Connections=").append(CommonUtils.toInt(entry.getValue())); hasSet = true; break; //$NON-NLS-1$
@@ -124,7 +124,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
 
         script.append("ALTER USER ").append(getObject().getFullName()); //$NON-NLS-1$
         if (getProperties().containsKey(UserPropertyHandler.PASSWORD.name())) {
-            script.append("\nIDENTIFIED BY ").append(SQLUtils.quoteString(CommonUtils.toString(getProperties().get(UserPropertyHandler.PASSWORD.name())))).append(" ");
+            script.append("\nIDENTIFIED BY ").append(SQLUtils.quoteString(getObject(), CommonUtils.toString(getProperties().get(UserPropertyHandler.PASSWORD.name())))).append(" ");
             hasSet = true;
         }
         StringBuilder resOptions = new StringBuilder();

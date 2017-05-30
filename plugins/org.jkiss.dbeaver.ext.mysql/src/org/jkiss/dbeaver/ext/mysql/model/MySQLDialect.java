@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,6 +56,18 @@ class MySQLDialect extends JDBCSQLDialect {
     @Override
     public String getScriptDelimiterRedefiner() {
         return "DELIMITER";
+    }
+
+    @NotNull
+    @Override
+    public String escapeString(String string) {
+        return string.replace("'", "''").replace("\\", "\\\\");
+    }
+
+    @NotNull
+    @Override
+    public String unEscapeString(String string) {
+        return string.replace("''", "'").replace("\\\\", "\\");
     }
 
     @NotNull
