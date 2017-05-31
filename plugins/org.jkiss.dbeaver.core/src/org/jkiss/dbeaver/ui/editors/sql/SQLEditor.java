@@ -1806,6 +1806,13 @@ public class SQLEditor extends SQLEditorBase implements
             if (job == null) {
                 throw new DBCException("No active query - can't read data");
             }
+            if (this.query instanceof SQLQuery) {
+                SQLQuery query = (SQLQuery) this.query;
+                if (query.getResultsMaxRows() >= 0) {
+                    firstRow = query.getResultsOffset();
+                    maxRows = query.getResultsMaxRows();
+                }
+            }
             try {
                 if (dataReceiver != viewer.getDataReceiver()) {
                     // Some custom receiver. Probably data export
@@ -1824,7 +1831,7 @@ public class SQLEditor extends SQLEditorBase implements
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setDataFilter(dataFilter);
 
-                job.extractData(session, query, resultCounts > 1 ? 0 : resultSetNumber);
+                job.extractData(session, this.query, resultCounts > 1 ? 0 : resultSetNumber);
 
                 lastGoodQuery = job.getLastGoodQuery();
 
