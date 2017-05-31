@@ -2583,8 +2583,9 @@ public class ResultSetViewer extends Viewer
     {
         List<ResultSetRow> selectedRows = new ArrayList<>(getSelection().getSelectedRows());
         int rowNum = curRow == null ? 0 : curRow.getVisualNumber();
-        if (rowNum >= model.getRowCount()) {
-            rowNum = model.getRowCount() - 1;
+        int initRowCount = model.getRowCount();
+        if (rowNum >= initRowCount) {
+            rowNum = initRowCount - 1;
         }
         if (rowNum < 0) {
             rowNum = 0;
@@ -2613,6 +2614,9 @@ public class ResultSetViewer extends Viewer
                 rowsToCopy = new int[]{rowNum};
             }
             int newRowIndex = afterCurrent ? rowNum + rowsToCopy.length : rowNum;
+            if (newRowIndex > initRowCount) {
+                newRowIndex = initRowCount; // May happen if we insert "after" current row and there are no rows at all
+            }
             for (int rowIndex = rowsToCopy.length - 1, rowCount = 0; rowIndex >= 0; rowIndex--, rowCount++) {
                 int currentRowNumber = rowsToCopy[rowIndex];
                 if (!afterCurrent) {
