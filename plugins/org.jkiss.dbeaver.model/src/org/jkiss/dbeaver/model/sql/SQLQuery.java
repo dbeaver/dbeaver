@@ -61,6 +61,8 @@ public class SQLQuery implements SQLScriptElement {
     private int offset;
     private int length;
     private Object data;
+    private int resultsOffset = -1;
+    private int resultsMaxRows = -1;
     @NotNull
     private SQLQueryType type;
     @Nullable
@@ -274,6 +276,22 @@ public class SQLQuery implements SQLScriptElement {
     public String toString()
     {
         return text;
+    }
+
+    /**
+     * Overrides results offset/limit for this particular query
+     */
+    public void setResultSetLimit(int rowOffset, int maxRows) {
+        this.resultsOffset = rowOffset;
+        this.resultsMaxRows = maxRows;
+    }
+
+    public int getResultsOffset() {
+        return resultsOffset;
+    }
+
+    public int getResultsMaxRows() {
+        return resultsMaxRows;
     }
 
     private static class SingleTableMeta implements DBCEntityMetaData {

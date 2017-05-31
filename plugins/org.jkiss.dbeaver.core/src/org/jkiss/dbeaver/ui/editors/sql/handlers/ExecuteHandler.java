@@ -22,6 +22,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerAllRows;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerExpression;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -59,6 +60,9 @@ public class ExecuteHandler extends AbstractHandler
                 break;
             case CoreCommands.CMD_EXECUTE_EXPRESSION:
                 editor.processSQL(false, false, new SQLQueryTransformerExpression());
+                break;
+            case CoreCommands.CMD_EXECUTE_ALL_ROWS:
+                editor.processSQL(false, false, new SQLQueryTransformerAllRows());
                 break;
             case CoreCommands.CMD_EXPLAIN_PLAN:
                 editor.explainQueryPlan();
