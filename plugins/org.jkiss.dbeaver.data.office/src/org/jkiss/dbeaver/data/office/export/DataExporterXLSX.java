@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
+ * Copyright (C) 2017 Adolfo Suarez  (agustavo@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +58,8 @@ public class DataExporterXLSX extends StreamExporterAbstract{
     private static final String PROP_TRUESTRING = "trueString";
     private static final String PROP_FALSESTRING = "falseString";
     
+    private static final String PROP_EXPORT_SQL = "exportSql";
+    
     enum FontStyleProp  {NONE, BOLD, ITALIC, STRIKEOUT, UNDERLINE}
     
     private static final int ROW_WINDOW = 100;
@@ -72,6 +75,7 @@ public class DataExporterXLSX extends StreamExporterAbstract{
     private boolean rowNumber = false;
     private String boolTrue="YES";
 	private String boolFalse="NO";
+	private boolean exportSql = false;
 	
 	private int rowIndex;
 	private XSSFCellStyle style;
@@ -121,6 +125,16 @@ public class DataExporterXLSX extends StreamExporterAbstract{
         } catch (Exception e) {
         	
         	boolTrue = "NO";
+            
+        }
+        
+        try {
+            
+        	exportSql = (Boolean) site.getProperties().get(PROP_EXPORT_SQL);
+            
+        } catch (Exception e) {
+        	
+            exportSql = false;
             
         }
 
@@ -204,7 +218,17 @@ public class DataExporterXLSX extends StreamExporterAbstract{
     public void dispose()
     {
     	
-      	try {
+      	try {			
+			if (exportSql) {
+				try {
+					sh = wb.createSheet();
+					Row row = sh.createRow(0);
+					Cell newcell = row.createCell(0);
+					newcell.setCellValue(getSite().getSource().getName()); 
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 			wb.write(getSite().getOutputStream());
 	      	wb.dispose();
 		} catch (IOException e) {			
