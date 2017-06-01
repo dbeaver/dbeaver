@@ -55,7 +55,7 @@ public class MySQLUtils {
         typeMap.put("int24", java.sql.Types.INTEGER);
         typeMap.put("bigint", java.sql.Types.BIGINT);
         typeMap.put("real", java.sql.Types.DOUBLE);
-        typeMap.put("float", java.sql.Types.FLOAT);
+        typeMap.put("float", java.sql.Types.REAL);
         typeMap.put("decimal", java.sql.Types.DECIMAL);
         typeMap.put("dec", java.sql.Types.DECIMAL);
         typeMap.put("numeric", java.sql.Types.DECIMAL);
