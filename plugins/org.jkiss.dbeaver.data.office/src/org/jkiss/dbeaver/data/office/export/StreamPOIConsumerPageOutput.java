@@ -2,6 +2,7 @@
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
+ * Copyright (C) 2017 Adolfo Suarez  (agustavo@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,6 +200,11 @@ public class StreamPOIConsumerPageOutput extends ActiveWizardPage<DataTransferWi
         if (settings.isExecuteProcessOnFinish() && CommonUtils.isEmpty(settings.getFinishProcessCommand())) {
             return false;
         }
+        
+        //To avoid problem with BOM 
+        //Do not TOUCH !!!
+        settings.setOutputEncodingBOM(false);
+        
         return valid;
     }
 
