@@ -161,6 +161,16 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
                 UIUtils.createControlLabel(pauseComposite, "Working directory");
                 workingDirectory = new TextWithOpenFolder(pauseComposite, "Working directory");
                 workingDirectory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                workingDirectory.getTextControl().addModifyListener(new ModifyListener() {
+                    @Override
+                    public void modifyText(ModifyEvent e)
+                    {
+                        DBRShellCommand command = getActiveCommand();
+                        if (command != null) {
+                            command.setWorkingDirectory(workingDirectory.getText());
+                        }
+                    }
+                });
             }
 
             Group helpGroup = new Group(detailsGroup, SWT.NONE);
@@ -230,8 +240,7 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
         return null;
     }
 
-    private void updateEvent(boolean commandChange)
-    {
+    private DBRShellCommand getActiveCommand() {
         DBPConnectionEventType eventType = getSelectedEventType();
         if (eventType != null) {
             DBRShellCommand command = eventsCache.get(eventType);
@@ -239,6 +248,16 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
                 command = new DBRShellCommand(""); //$NON-NLS-1$
                 eventsCache.put(eventType, command);
             }
+            return command;
+        }
+        return null;
+    }
+
+    private void updateEvent(boolean commandChange)
+    {
+        DBPConnectionEventType eventType = getSelectedEventType();
+        DBRShellCommand command = getActiveCommand();
+        if (command != null) {
             boolean prevEnabled = command.isEnabled();
             if (commandChange) {
                 command.setCommand(commandText.getText());
