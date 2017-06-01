@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.scripts;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -109,8 +110,8 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
         }
         monitor.beginTask("Export scripts", totalFiles);
         for (IResource res : scripts) {
-            if (res instanceof IFolder) {
-                exportFolder(monitor, (IFolder)res, exportData);
+            if (res instanceof IContainer) {
+                exportFolder(monitor, (IContainer)res, exportData);
             } else {
                 exportScript(monitor, (IFile) res, exportData);
             }
@@ -135,7 +136,7 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
         }
     }
 
-    private void exportFolder(DBRProgressMonitor monitor, IFolder folder, final ScriptsExportData exportData) throws CoreException, IOException
+    private void exportFolder(DBRProgressMonitor monitor, IContainer folder, final ScriptsExportData exportData) throws CoreException, IOException
     {
         if (monitor.isCanceled()) {
             return;
@@ -150,10 +151,13 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
             if (monitor.isCanceled()) {
                 return;
             }
+            if (res.isLinked() || res.isHidden() || res.isPhantom()) {
+                continue;
+            }
             if (res instanceof IFile) {
                 exportScript(monitor, (IFile)res, exportData);
-            } else if (res instanceof IFolder) {
-                exportFolder(monitor, (IFolder)res, exportData);
+            } else if (res instanceof IContainer) {
+                exportFolder(monitor, (IContainer)res, exportData);
             }
         }
     }
@@ -161,7 +165,7 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
     private File makeExternalFile(IResource folder, File outputFolder)
     {
         List<IResource> path = new ArrayList<>();
-        for (IResource f = folder; f.getParent() instanceof IFolder; f = f.getParent()) {
+        for (IResource f = folder; f.getParent() instanceof IContainer; f = f.getParent()) {
             path.add(0, f);
         }
         File fsDir = outputFolder;
