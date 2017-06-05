@@ -28,7 +28,7 @@
       <import plugin="org.dom4j" version="1.6.1" match="greaterOrEqual"/>
       <import plugin="org.apache.commons.codec" version="1.10.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.osgi"/>
-      <import plugin="poi_bundle" version="1.0.0" match="greaterOrEqual"/>
+      <import plugin="org.apache.servicemix.bundles.poi" version="3.16.0" match="greaterOrEqual"/>
       <import plugin="org.apache.commons.collections4" version="4.1.0" match="greaterOrEqual"/>
       <import plugin="org.apache.xmlbeans" version="2.6.0" match="greaterOrEqual"/>
    </requires>
