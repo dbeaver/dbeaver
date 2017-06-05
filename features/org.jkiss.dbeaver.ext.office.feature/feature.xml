@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-        id="org.jkiss.dbeaver.ext.office.feature"
-        label="%featureName"
-        version="1.0.0"
-        plugin="org.jkiss.dbeaver.data.office">
+      id="org.jkiss.dbeaver.ext.office.feature"
+      label="%featureName"
+      version="1.0.0"
+      provider-name="%providerName"
+      plugin="org.jkiss.dbeaver.data.office">
 
-    <description>
-        %description
-    </description>
+   <description>
+      %description
+   </description>
 
-    <copyright>
-        %copyright
-    </copyright>
+   <copyright>
+      %copyright
+   </copyright>
 
-    <license url="%licenseURL">
-        %license
-    </license>
+   <license url="%licenseURL">
+      %license
+   </license>
 
    <requires>
       <import plugin="org.jkiss.dbeaver.core"/>
@@ -82,9 +83,10 @@
          unpack="false"/>
 
    <plugin
-         id="poi_bundle"
+         id="org.apache.servicemix.bundles.poi"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
+
 </feature>
