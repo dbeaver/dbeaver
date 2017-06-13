@@ -1646,7 +1646,7 @@ public class ResultSetViewer extends Viewer
                     public void run() {
                         UIUtils.showPreferencesFor(
                             getControl().getShell(),
-                            null,
+                            ResultSetViewer.this,
                             PrefPageDataFormat.PAGE_ID);
                     }
                 });
