@@ -71,6 +71,9 @@ public class OracleUtils {
             if (dataSource.isAtLeastV9()) {
                 JDBCUtils.executeProcedure(
                     session,
+                    "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true); end;");
+                JDBCUtils.executeProcedure(
+                    session,
                     "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'STORAGE'," + ddlFormat.isShowStorage() + "); end;");
                 JDBCUtils.executeProcedure(
                     session,
