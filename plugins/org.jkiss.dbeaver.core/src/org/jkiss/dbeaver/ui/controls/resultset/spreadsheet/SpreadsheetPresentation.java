@@ -135,6 +135,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color backgroundReadOnly;
     private Color foregroundDefault;
     private Color foregroundNull;
+    private Color foregroundSelected, backgroundSelected;
     private Font boldFont, italicFont, bolItalicFont;
 
     private boolean showOddRows = true;
@@ -972,6 +973,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.backgroundModified = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
         this.backgroundOdd = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
         this.backgroundReadOnly = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY);
+        this.foregroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE);
+        this.backgroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
 
         this.spreadsheet.setLineColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_NORMAL));
         this.spreadsheet.setLineSelectedColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED));
@@ -1455,8 +1458,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Nullable
         @Override
-        public Color getCellForeground(Object colElement, Object rowElement)
+        public Color getCellForeground(Object colElement, Object rowElement, boolean selected)
         {
+            if (selected) {
+                return foregroundSelected;
+            }
             ResultSetRow row = (ResultSetRow) (!controller.isRecordMode() ?  rowElement : colElement);
             if (row.foreground != null) {
                 return row.foreground;
@@ -1475,8 +1481,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Nullable
         @Override
-        public Color getCellBackground(Object colElement, Object rowElement)
+        public Color getCellBackground(Object colElement, Object rowElement, boolean selected)
         {
+            if (selected) {
+                return backgroundSelected;
+            }
             boolean recordMode = controller.isRecordMode();
             ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
             DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);

@@ -42,56 +42,34 @@ class GridCellRenderer extends AbstractRenderer
     static final Image LINK2_IMAGE = DBeaverIcons.getImage(UIIcon.LINK2);
     static final Rectangle LINK_IMAGE_BOUNDS = new Rectangle(0, 0, 13, 13);
 
-    protected Color colorSelected;
-    protected Color colorSelectedText;
     protected Color colorLineFocused;
-
-    private final RGB colorSelectedRGB;
 
     public GridCellRenderer(LightGrid grid)
     {
         super(grid);
         colorLineFocused = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
-        colorSelectedText = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
-        colorSelected = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
-        colorSelectedRGB = colorSelected.getRGB();
     }
 
     public void paint(GC gc, Rectangle bounds, boolean selected, boolean focus, Object col, Object row)
     {
         boolean drawBackground = true;
 
-        if (selected) {
-            Color cellBackground = grid.getCellBackground(col, row);
-            if (cellBackground.equals(grid.getBackground())) {
-                gc.setBackground(colorSelected);
-            } else {
-                RGB cellSel = UIUtils.blend(
-                    cellBackground.getRGB(),
-                    colorSelectedRGB,
-                    50);
+        if (grid.isEnabled()) {
+            Color back = grid.getCellBackground(col, row, selected);
 
-                gc.setBackground(DBeaverUI.getSharedTextColors().getColor(cellSel));
+            if (back != null) {
+                gc.setBackground(back);
+            } else {
+                drawBackground = false;
             }
-            gc.setForeground(colorSelectedText);
         } else {
-            if (grid.isEnabled()) {
-                Color back = grid.getCellBackground(col, row);
-
-                if (back != null) {
-                    gc.setBackground(back);
-                } else {
-                    drawBackground = false;
-                }
-            } else {
-                grid.setDefaultBackground(gc);
-            }
-            gc.setForeground(grid.getCellForeground(col, row));
+            grid.setDefaultBackground(gc);
         }
+        gc.setForeground(grid.getCellForeground(col, row, selected));
 
-        if (drawBackground)
-            gc.fillRectangle(bounds.x, bounds.y, bounds.width,
-                bounds.height);
+        if (drawBackground) {
+            gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
+        }
 
         String text = grid.getCellText(col, row);
         final int state = grid.getContentProvider().getCellState(col, row, text);

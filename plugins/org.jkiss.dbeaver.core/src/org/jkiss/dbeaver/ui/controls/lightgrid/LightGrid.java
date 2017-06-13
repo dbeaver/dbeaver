@@ -4164,15 +4164,15 @@ public abstract class LightGrid extends Canvas {
         return getContentProvider().getCellImage(colElement, rowElement);
     }
 
-    public Color getCellBackground(Object colElement, Object rowElement)
+    public Color getCellBackground(Object colElement, Object rowElement, boolean selected)
     {
-        Color color = getContentProvider().getCellBackground(colElement, rowElement);
+        Color color = getContentProvider().getCellBackground(colElement, rowElement, selected);
         return color != null ? color : getBackground();
     }
 
-    public Color getCellForeground(Object colElement, Object rowElement)
+    public Color getCellForeground(Object colElement, Object rowElement, boolean selected)
     {
-        Color color = getContentProvider().getCellForeground(colElement, rowElement);
+        Color color = getContentProvider().getCellForeground(colElement, rowElement, selected);
         return color != null ? color : getForeground();
     }
 

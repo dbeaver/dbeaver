@@ -61,10 +61,10 @@ public interface IGridContentProvider extends IContentProvider {
     DBPImage getCellImage(Object colElement, Object rowElement);
 
     @Nullable
-    Color getCellForeground(Object colElement, Object rowElement);
+    Color getCellForeground(Object colElement, Object rowElement, boolean selected);
 
     @Nullable
-    Color getCellBackground(Object colElement, Object rowElement);
+    Color getCellBackground(Object colElement, Object rowElement, boolean selected);
 
     // Resets all cached colors
     void resetColors();
