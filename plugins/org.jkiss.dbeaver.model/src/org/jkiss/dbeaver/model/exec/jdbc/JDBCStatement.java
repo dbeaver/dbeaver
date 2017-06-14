@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.exec.jdbc;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCScriptStatement;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 
@@ -27,7 +28,7 @@ import java.sql.Statement;
 /**
  * JDBC statement
  */
-public interface JDBCStatement extends Statement, DBCStatement, DBRBlockingObject {
+public interface JDBCStatement extends Statement, DBCStatement, DBCScriptStatement, DBRBlockingObject {
 
     @Override
     JDBCSession getConnection();

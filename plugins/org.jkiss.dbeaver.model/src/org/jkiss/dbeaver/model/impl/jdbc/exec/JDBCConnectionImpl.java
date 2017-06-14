@@ -121,9 +121,13 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 // (e.g. in Oracle it parses IN/OUT parameters)
                 JDBCStatement statement;
                 try {
-                    statement = createStatement(
-                        scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
-                        updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+                    if (!scrollable && !updatable) {
+                        statement = createStatement();
+                    } else {
+                        statement = createStatement(
+                                scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
+                                updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+                    }
                 }
                 catch (Throwable e) {
                     try {
