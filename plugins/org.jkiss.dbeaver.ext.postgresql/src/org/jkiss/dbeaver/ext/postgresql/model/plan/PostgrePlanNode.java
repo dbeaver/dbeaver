@@ -101,6 +101,36 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
         return cost;
     }
 
+/*
+    @Property(order = 20, viewable = true)
+    public String getPlanRows() {
+        return attributes.get("Plan-Rows");
+    }
+*/
+
+    @Property(order = 21, viewable = true)
+    public String getActualRows() {
+        String rows = attributes.get("Actual-Rows");
+        if (rows == null) {
+            rows = attributes.get("Plan-Rows");
+        }
+        return rows;
+    }
+
+    @Property(order = 22, viewable = true)
+    public String getTotalTime() {
+        return attributes.get("Actual-Total-Time");
+    }
+
+    @Property(order = 23, viewable = true)
+    public String getCondition() {
+        String cond = attributes.get("Index-Cond");
+        if (cond == null) {
+            cond = attributes.get("Filter");
+        }
+        return cond;
+    }
+
     @Override
     public DBCPlanNode getParent()
     {
@@ -123,7 +153,16 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
         DBPPropertyDescriptor[] props = new DBPPropertyDescriptor[attributes.size()];
         int index = 0;
         for (Map.Entry<String, String> attr : attributes.entrySet()) {
-            props[index++] = new PropertyDescriptor("Source", attr.getKey(), attr.getKey(), null, String.class, false, null, null, false);
+            props[index++] = new PropertyDescriptor(
+                    "Source",
+                    attr.getKey(),
+                    attr.getKey(),
+                    null,
+                    String.class,
+                    false,
+                    null,
+                    null,
+                    false);
         }
         return props;
     }
