@@ -125,6 +125,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         return query;
     }
 
+    @Override
     public void setQueryString(@Nullable String query)
     {
         this.query = query;
