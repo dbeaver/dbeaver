@@ -68,6 +68,8 @@ public class ExplainPlanViewer implements IPropertyChangeListener
     private ToggleViewAction toggleViewAction;
     private final SashForm leftPanel;
 
+    private transient Object selectedElement;
+
     public ExplainPlanViewer(final IWorkbenchPart workbenchPart, Composite parent)
     {
         super();
@@ -166,9 +168,12 @@ public class ExplainPlanViewer implements IPropertyChangeListener
             planProperties.clearProperties();
         } else if (selection instanceof IStructuredSelection) {
             Object element = ((IStructuredSelection) selection).getFirstElement();
-            PropertyCollector propertySource = new PropertyCollector(element, true);
-            propertySource.collectProperties();
-            planProperties.loadProperties(propertySource);
+            if (element != selectedElement) {
+                PropertyCollector propertySource = new PropertyCollector(element, true);
+                propertySource.collectProperties();
+                planProperties.loadProperties(propertySource);
+                selectedElement = element;
+            }
         }
     }
 
