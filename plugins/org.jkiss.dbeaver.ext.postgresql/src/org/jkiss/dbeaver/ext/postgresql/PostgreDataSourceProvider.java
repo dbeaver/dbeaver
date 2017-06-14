@@ -41,13 +41,6 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
 
     static {
         connectionsProps = new HashMap<>();
-
-        // Prevent stupid errors "Cannot convert value '0000-00-00 00:00:00' from column X to TIMESTAMP"
-        // Widely appears in MyISAM tables (joomla, etc)
-        connectionsProps.put("zeroDateTimeBehavior", "convertToNull");
-        // Set utf-8 as default charset
-        connectionsProps.put("characterEncoding", GeneralUtils.UTF8_ENCODING);
-        connectionsProps.put("tinyInt1isBit", "false");
     }
 
     public static Map<String,String> getConnectionsProps() {
