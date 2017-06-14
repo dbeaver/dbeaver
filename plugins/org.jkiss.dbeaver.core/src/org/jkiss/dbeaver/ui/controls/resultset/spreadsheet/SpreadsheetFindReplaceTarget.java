@@ -226,6 +226,8 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                 if (curPosition.col == minColumnNum) {
                     curPosition.col = 0;
                 }
+                spreadsheet.setFocusColumn(curPosition.col);
+                spreadsheet.setFocusItem(curPosition.row);
                 spreadsheet.setCellSelection(curPosition);
                 spreadsheet.showSelection();
                 searchPattern = findPattern;
