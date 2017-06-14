@@ -49,6 +49,8 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
                     return PostgreHStoreValueHandler.INSTANCE;
                 case PostgreConstants.TYPE_BIT:
                     return PostgreBitStringValueHandler.INSTANCE;
+                case PostgreConstants.TYPE_REFCURSOR:
+                    return PostgreRefCursorValueHandler.INSTANCE;
                 default:
                     return null;
             }

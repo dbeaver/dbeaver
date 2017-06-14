@@ -227,6 +227,7 @@
             <type name="JSON"/>
             <type name="JSONB"/>
             <type name="BIT"/>
+            <type name="REFCURSOR"/>
         </provider>
     </extension>
 
