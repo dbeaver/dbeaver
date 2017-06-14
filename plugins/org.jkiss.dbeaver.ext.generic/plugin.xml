@@ -773,10 +773,9 @@
                     id="apache_drill"
                     label="Apache Drill"
                     class="org.apache.drill.jdbc.Driver"
-                    sampleURL="jdbc:drill:zk={host}[:{port}][;schema={database}]"
-                    defaultPort="2181"
+                    sampleURL="jdbc:drill:zk={host}/{server}[;schema={database}]"
                     description="Apache Drill JDBC"
-                    webURL="https://drill.apache.org/"
+                    webURL="http://drill.apache.org/docs/using-the-jdbc-driver/"
                     category="Hadoop">
                     <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc-all:RELEASE"/>
                 </driver>
