@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
@@ -67,7 +67,7 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
                     (GenericPrimaryKey) editPage.getUniqueConstraint(),
                     editPage.getOnDeleteRule(),
                     editPage.getOnUpdateRule(),
-                    DBSForeignKeyDefferability.NOT_DEFERRABLE,
+                    DBSForeignKeyDeferability.NOT_DEFERRABLE,
                     false);
                 foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
                     CommonUtils.escapeIdentifier(table.getName()) + "_" +

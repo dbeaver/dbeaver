@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
 
@@ -302,7 +302,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         int deleteRuleNum;
         String fkName;
         String pkName;
-        int defferabilityNum;
+        int deferabilityNum;
     }
 
     private synchronized List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
@@ -335,7 +335,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                     fkInfo.deleteRuleNum = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.DELETE_RULE);
                     fkInfo.fkName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FK_NAME);
                     fkInfo.pkName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.PK_NAME);
-                    fkInfo.defferabilityNum = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.DEFERRABILITY);
+                    fkInfo.deferabilityNum = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.DEFERRABILITY);
                     fkInfos.add(fkInfo);
                 }
             }
@@ -345,12 +345,12 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             for (ForeignKeyInfo info : fkInfos) {
                 DBSForeignKeyModifyRule deleteRule = JDBCUtils.getCascadeFromNum(info.deleteRuleNum);
                 DBSForeignKeyModifyRule updateRule = JDBCUtils.getCascadeFromNum(info.updateRuleNum);
-                DBSForeignKeyDefferability defferability;
-                switch (info.defferabilityNum) {
-                    case DatabaseMetaData.importedKeyInitiallyDeferred: defferability = DBSForeignKeyDefferability.INITIALLY_DEFERRED; break;
-                    case DatabaseMetaData.importedKeyInitiallyImmediate: defferability = DBSForeignKeyDefferability.INITIALLY_IMMEDIATE; break;
-                    case DatabaseMetaData.importedKeyNotDeferrable: defferability = DBSForeignKeyDefferability.NOT_DEFERRABLE; break;
-                    default: defferability = DBSForeignKeyDefferability.UNKNOWN; break;
+                DBSForeignKeyDeferability deferability;
+                switch (info.deferabilityNum) {
+                    case DatabaseMetaData.importedKeyInitiallyDeferred: deferability = DBSForeignKeyDeferability.INITIALLY_DEFERRED; break;
+                    case DatabaseMetaData.importedKeyInitiallyImmediate: deferability = DBSForeignKeyDeferability.INITIALLY_IMMEDIATE; break;
+                    case DatabaseMetaData.importedKeyNotDeferrable: deferability = DBSForeignKeyDeferability.NOT_DEFERRABLE; break;
+                    default: deferability = DBSForeignKeyDeferability.UNKNOWN; break;
                 }
 
                 if (info.fkTableName == null) {
@@ -423,7 +423,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                 if (fk == null) {
                     fk = fkMap.get(info.fkName);
                     if (fk == null) {
-                        fk = new GenericTableForeignKey(fkTable, info.fkName, null, pk, deleteRule, updateRule, defferability, true);
+                        fk = new GenericTableForeignKey(fkTable, info.fkName, null, pk, deleteRule, updateRule, deferability, true);
                         fkMap.put(info.fkName, fk);
                         fkList.add(fk);
                     }
