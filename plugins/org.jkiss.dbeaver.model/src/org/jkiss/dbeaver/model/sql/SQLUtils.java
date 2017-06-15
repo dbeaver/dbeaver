@@ -592,6 +592,12 @@ public final class SQLUtils {
                 int precision = column.getPrecision();
                 if (precision == 0) {
                     precision = (int) column.getMaxLength();
+                    if (precision > 0) {
+                        // FIXME: max length is actually length in character.
+                        // FIXME: On Oracle it returns bigger values than maximum (#1767)
+                        // FIXME: in other DBs it equals to precision in most cases
+                        //precision--; // One character for sign?
+                    }
                 }
                 if (scale >= 0 && precision >= 0 && !(scale == 0 && precision == 0)) {
                     return "(" + precision + ',' + scale + ')';

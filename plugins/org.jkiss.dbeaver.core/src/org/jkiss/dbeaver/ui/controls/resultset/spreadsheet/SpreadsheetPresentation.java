@@ -386,6 +386,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         if (rowDelimiter == null) {
             rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         }
+        String quoteString = settings.getQuoteString();
+        if ((CommonUtils.isEmpty(quoteString))) {
+            quoteString = "\"";
+        }
         List<Object> selectedColumns = spreadsheet.getColumnSelection();
         IGridLabelProvider labelProvider = spreadsheet.getLabelProvider();
         StringBuilder tdt = new StringBuilder();
@@ -439,9 +443,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 column.getAttribute(),
                 value,
                 settings.getFormat());
-            if (quoteCells && cellText != null) {
+            if (quoteCells && !CommonUtils.isEmpty(cellText)) {
                 if (cellText.contains(columnDelimiter) || cellText.contains(rowDelimiter)) {
-                    cellText = '"' + cellText + '"';
+                    cellText = quoteString + cellText + quoteString;
                 }
             }
             tdt.append(cellText);
