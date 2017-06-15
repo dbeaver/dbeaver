@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, GenericPrimaryKey>
 {
-    private DBSForeignKeyDefferability defferability;
+    private DBSForeignKeyDeferability deferability;
     private List<GenericTableForeignKeyColumnTable> columns;
 
     public GenericTableForeignKey(
@@ -45,11 +45,11 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
         GenericPrimaryKey referencedKey,
         DBSForeignKeyModifyRule deleteRule,
         DBSForeignKeyModifyRule updateRule,
-        DBSForeignKeyDefferability defferability,
+        DBSForeignKeyDeferability deferability,
         boolean persisted)
     {
         super(table, name, remarks, referencedKey, deleteRule, updateRule, persisted);
-        this.defferability = defferability;
+        this.deferability = deferability;
     }
 
     @NotNull
@@ -60,9 +60,9 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
     }
 
     @Property(viewable = true, order = 7)
-    public DBSForeignKeyDefferability getDefferability()
+    public DBSForeignKeyDeferability getDeferability()
     {
-        return defferability;
+        return deferability;
     }
 
     @Override
