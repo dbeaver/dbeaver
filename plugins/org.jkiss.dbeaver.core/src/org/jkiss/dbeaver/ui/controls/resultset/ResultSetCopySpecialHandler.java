@@ -77,6 +77,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
         static final String PARAM_FORMAT = "format";
         static final String PARAM_COL_DELIMITER = "delimiter";
         static final String PARAM_ROW_DELIMITER = "rowDelimiter";
+        static final String PARAM_QUOTE_STRING = "quoteString";
 
         private final IDialogSettings settings;
 
@@ -86,6 +87,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
         private ValueFormatSelector formatSelector;
         private Combo colDelimCombo;
         private Combo rowDelimCombo;
+        private Combo quoteStringCombo;
 
         private ResultSetCopySettings copySettings;
 
@@ -100,6 +102,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             copySettings.setFormat(DBDDisplayFormat.UI);
             copySettings.setColumnDelimiter("\t");
             copySettings.setRowDelimiter("\n");
+            copySettings.setQuoteString("\"");
             if (settings.get(PARAM_COPY_HEADER) != null) {
                 copySettings.setCopyHeader(settings.getBoolean(PARAM_COPY_HEADER));
             }
@@ -117,6 +120,9 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             }
             if (settings.get(PARAM_ROW_DELIMITER) != null) {
                 copySettings.setRowDelimiter(settings.get(PARAM_ROW_DELIMITER));
+            }
+            if (settings.get(PARAM_QUOTE_STRING) != null) {
+                copySettings.setQuoteString(settings.get(PARAM_QUOTE_STRING));
             }
         }
 
@@ -141,6 +147,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
 
             colDelimCombo = createDelimiterCombo(group, "Column Delimiter", new String[] {"\t", ";", ","}, copySettings.getColumnDelimiter());
             rowDelimCombo = createDelimiterCombo(group, "Row Delimiter", new String[] {"\n", "|", "^"}, copySettings.getRowDelimiter());
+            quoteStringCombo = createDelimiterCombo(group, "Quote Character", new String[] {"\"", "'"}, copySettings.getQuoteString());
             return group;
         }
 
@@ -175,6 +182,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             copySettings.setFormat(formatSelector.getSelection());
             copySettings.setColumnDelimiter(CommonUtils.unescapeDisplayString(colDelimCombo.getText()));
             copySettings.setRowDelimiter(CommonUtils.unescapeDisplayString(rowDelimCombo.getText()));
+            copySettings.setQuoteString(CommonUtils.unescapeDisplayString(quoteStringCombo.getText()));
 
             settings.put(PARAM_COPY_HEADER, copySettings.isCopyHeader());
             settings.put(PARAM_COPY_ROWS, copySettings.isCopyRowNumbers());
@@ -182,6 +190,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             settings.put(PARAM_FORMAT, copySettings.getFormat().name());
             settings.put(PARAM_COL_DELIMITER, copySettings.getColumnDelimiter());
             settings.put(PARAM_ROW_DELIMITER, copySettings.getRowDelimiter());
+            settings.put(PARAM_QUOTE_STRING, copySettings.getQuoteString());
             super.okPressed();
         }
     }
