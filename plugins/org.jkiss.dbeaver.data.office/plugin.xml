@@ -25,7 +25,8 @@
                     <property id="header" label="%dataTransfer.processor.xlsx.property.header.name" type="boolean" description="%dataTransfer.processor.xlsx.property.header.description" defaultValue="yes" required="true"/>                                        
                     <property id="headerfont" label="%dataTransfer.processor.xlsx.property.headerFont.name" type="string" description="%dataTransfer.processor.xlsx.property.headerFont.description" defaultValue="BOLD" required="false" validValues="NONE,BOLD,ITALIC,STRIKEOUT,UNDERLINE"/>
                     <property id="trueString" label="%dataTransfer.processor.xlsx.property.boolStringTrue.name" type="string" description="%dataTransfer.processor.xlsx.property.boolStringTrue.description" defaultValue="+" required="false"/>
-                    <property id="falseString" label="%dataTransfer.processor.xlsx.property.boolStringFalse.name" type="string" description="%dataTransfer.processor.xlsx.property.boolStringFalse.description" defaultValue="-" required="false"/>                                                            
+                    <property id="falseString" label="%dataTransfer.processor.xlsx.property.boolStringFalse.name" type="string" description="%dataTransfer.processor.xlsx.property.boolStringFalse.description" defaultValue="-" required="false"/>
+                    <property id="exportSql" label="%dataTransfer.processor.xlsx.property.exportSql.name" type="boolean" description="%dataTransfer.processor.xlsx.property.exportSql.description" defaultValue="false" required="false"/>                                                            
                 </propertyGroup>
           </processor>
         </node>
