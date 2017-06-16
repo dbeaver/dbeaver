@@ -101,7 +101,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
         Composite pageContainer = getContainer();
         if (pageContainer instanceof CTabFolder) {
             CTabFolder tabFolder = (CTabFolder)pageContainer;
-            tabFolder.setSimple(false);
+            tabFolder.setSimple(true);
             tabFolder.setMRUVisible(true);
             tabFolder.setTabPosition(SWT.TOP);
             Control topRight = createTopRightControl(tabFolder);
