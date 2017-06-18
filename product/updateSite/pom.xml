@@ -14,7 +14,7 @@
     <packaging>eclipse-repository</packaging>
     <name>DBeaver CE Repository</name>
 
-    <build>
+    <!--build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -49,6 +49,6 @@
                 </executions>
             </plugin>
         </plugins>
-    </build>
+    </build-->
 
 </project>
