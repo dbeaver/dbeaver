@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Office data formats support
 Bundle-SymbolicName: org.jkiss.dbeaver.data.office;singleton:=true
-Bundle-Version: 1.0.0
+Bundle-Version: 1.1.0
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.model,
@@ -10,9 +10,6 @@ Require-Bundle: org.jkiss.dbeaver.core,
  org.eclipse.jface,
  org.eclipse.ui.workbench,
  org.eclipse.core.runtime,
- org.apache.xmlbeans,
- org.dom4j;bundle-version="1.6.1",
- org.apache.commons.codec;bundle-version="1.10.0",
- org.apache.servicemix.bundles.poi;bundle-version="3.16.0"
+ org.jkiss.bundle.apache.poi
 Bundle-Localization: plugin
 Bundle-ClassPath: .

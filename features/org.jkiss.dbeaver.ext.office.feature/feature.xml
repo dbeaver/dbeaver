@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ext.office.feature"
       label="%featureName"
-      version="1.0.0"
+      version="1.1.0"
       provider-name="%providerName"
       plugin="org.jkiss.dbeaver.data.office">
 
@@ -25,27 +25,8 @@
       <import plugin="org.eclipse.jface"/>
       <import plugin="org.eclipse.ui.workbench"/>
       <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="org.dom4j" version="1.6.1" match="greaterOrEqual"/>
-      <import plugin="org.apache.commons.codec" version="1.10.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.osgi"/>
-      <import plugin="org.apache.servicemix.bundles.poi" version="3.16.0" match="greaterOrEqual"/>
-      <import plugin="org.apache.commons.collections4" version="4.1.0" match="greaterOrEqual"/>
-      <import plugin="org.apache.xmlbeans" version="2.6.0" match="greaterOrEqual"/>
    </requires>
-
-   <plugin
-         id="org.apache.commons.collections4"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.apache.xmlbeans"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
 
    <plugin
          id="org.jkiss.dbeaver.data.office"
@@ -55,38 +36,9 @@
          unpack="false"/>
 
    <plugin
-         id="javax.xml"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="javax.xml.stream"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.apache.commons.codec"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.dom4j"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.apache.servicemix.bundles.poi"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+        id="org.jkiss.bundle.apache.poi"
+        download-size="0"
+        install-size="0"
+        version="0.0.0"/>
 
 </feature>

@@ -10,9 +10,10 @@
         <relativePath>../../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.data.office</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>eclipse-plugin</packaging>
 
+<!--
     <repositories>
         <repository>
             <id>eclipse-orbit-repo</id>
@@ -20,5 +21,6 @@
             <layout>p2</layout>
         </repository>
     </repositories>
+-->
 
 </project>
