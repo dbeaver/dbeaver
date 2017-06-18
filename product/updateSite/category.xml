@@ -7,6 +7,9 @@
     <category-def name="org.jkiss.dbeaver.drivers" label="External database drivers">
         <description>3rd party JDBC drivers for DBeaver</description>
     </category-def>
+    <category-def name="org.jkiss.dbeaver.external" label="DBeaver Extensions">
+        <description>DBeaver extensions</description>
+    </category-def>
 
     <feature id="org.jkiss.dbeaver.core.feature">
         <category name="org.jkiss.dbeaver"/>
@@ -32,4 +35,9 @@
     <feature id="org.jkiss.dbeaver.ext.wmi.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
+
+    <feature id="org.jkiss.dbeaver.ext.office.feature">
+        <category name="org.jkiss.dbeaver.external"/>
+    </feature>
+
 </site>
