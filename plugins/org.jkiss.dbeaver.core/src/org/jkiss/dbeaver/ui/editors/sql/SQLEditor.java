@@ -603,17 +603,18 @@ public class SQLEditor extends SQLEditorBase implements
                         });
                     }
                     final CTabItem activeTab = resultTabs.getSelection();
-                    if (activeTab != null && resultTabs.indexOf(activeTab) > 0 && activeTab.getData() instanceof QueryResultsContainer) {
-                        final QueryResultsContainer resultsContainer = (QueryResultsContainer)activeTab.getData();
-                        manager.add(new Separator());
-                        final boolean isPinned = resultsContainer.isPinned();
-                        manager.add(new Action(isPinned ? "Unpin tab" : "Pin tab") {
-                            @Override
-                            public void run()
-                            {
-                                resultsContainer.setPinned(!isPinned);
-                            }
-                        });
+                    if (activeTab != null && activeTab.getData() instanceof QueryResultsContainer) {
+                        if (resultTabs.indexOf(activeTab) > 0) {
+                            final QueryResultsContainer resultsContainer = (QueryResultsContainer) activeTab.getData();
+                            manager.add(new Separator());
+                            final boolean isPinned = resultsContainer.isPinned();
+                            manager.add(new Action(isPinned ? "Unpin tab" : "Pin tab") {
+                                @Override
+                                public void run() {
+                                    resultsContainer.setPinned(!isPinned);
+                                }
+                            });
+                        }
                         manager.add(new Action("Set tab title") {
                             @Override
                             public void run()
