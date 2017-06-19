@@ -21,19 +21,14 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -47,12 +42,32 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
             Statement statement = CCJSqlParserUtil.parse(query.getText());
             if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
                 PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
-                List<SelectItem> selectItems = new ArrayList<>();
+
+                Distinct selectDistinct = select.getDistinct();
+                if (selectDistinct != null) {
+                    // Remove distinct
+                    select.setDistinct(null);
+                }
+
                 Function countFunc = new Function();
                 countFunc.setName("count");
-                countFunc.setParameters(new ExpressionList(Collections.<Expression>singletonList(new Column("*"))));
-                SelectItem countItem = new SelectExpressionItem(countFunc);
-                selectItems.add(countItem);
+                if (selectDistinct != null) {
+                    countFunc.setDistinct(true);
+                    List<Expression> exprs = new ArrayList<>();
+                    for (SelectItem item : select.getSelectItems()) {
+                        if (item instanceof SelectExpressionItem) {
+                            exprs.add(((SelectExpressionItem)item).getExpression());
+                            break;
+                        }
+                    }
+                    if (!exprs.isEmpty()) {
+                        countFunc.setParameters(new ExpressionList(exprs));
+                    }
+                }
+                countFunc.setAllColumns(true);
+
+                List<SelectItem> selectItems = new ArrayList<>();
+                selectItems.add(new SelectExpressionItem(countFunc));
                 select.setSelectItems(selectItems);
                 return new SQLQuery(dataSource, select.toString(), query, false);
             } else {
