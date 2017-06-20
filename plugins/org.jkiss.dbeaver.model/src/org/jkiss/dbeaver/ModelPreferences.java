@@ -66,6 +66,7 @@ public final class ModelPreferences
     public static final String RESULT_SET_BINARY_STRING_MAX_LEN = "resultset.binary.stringMaxLength"; //$NON-NLS-1$
 
     public static final String SQL_PARAMETERS_ENABLED = "sql.parameter.enabled"; //$NON-NLS-1$
+    public static final String SQL_PARAMETERS_IN_DDL_ENABLED = "sql.parameter.ddl.enabled"; //$NON-NLS-1$
     public static final String SQL_ANONYMOUS_PARAMETERS_ENABLED = "sql.parameter.anonymous.enabled"; //$NON-NLS-1$
     public static final String SQL_ANONYMOUS_PARAMETERS_MARK = "sql.parameter.mark"; //$NON-NLS-1$
     public static final String SQL_NAMED_PARAMETERS_PREFIX = "sql.parameter.prefix"; //$NON-NLS-1$
@@ -138,6 +139,7 @@ public final class ModelPreferences
 
         // SQL
         PrefUtils.setDefaultPreferenceValue(store, SQL_PARAMETERS_ENABLED, true);
+        PrefUtils.setDefaultPreferenceValue(store, SQL_PARAMETERS_IN_DDL_ENABLED, false);
         PrefUtils.setDefaultPreferenceValue(store, SQL_ANONYMOUS_PARAMETERS_ENABLED, false);
         PrefUtils.setDefaultPreferenceValue(store, SQL_ANONYMOUS_PARAMETERS_MARK, String.valueOf(SQLConstants.DEFAULT_PARAMETER_MARK));
         PrefUtils.setDefaultPreferenceValue(store, SQL_NAMED_PARAMETERS_PREFIX, String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX));

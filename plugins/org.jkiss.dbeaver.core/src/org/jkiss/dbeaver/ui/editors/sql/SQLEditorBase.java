@@ -840,6 +840,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
     protected List<SQLQueryParameter> parseParameters(IDocument document, SQLQuery query) {
         final SQLDialect sqlDialect = getSQLDialect();
+        boolean supportParamsInDDL = getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED);
         boolean execQuery = false;
         List<SQLQueryParameter> parameters = null;
         ruleManager.setRange(document, query.getOffset(), query.getLength());
@@ -860,19 +861,21 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             if (token.isWhitespace() || tokenType == SQLToken.T_COMMENT) {
                 continue;
             }
-            if (firstKeyword) {
-                // Detect query type
-                try {
-                    String tokenText = document.get(tokenOffset, tokenLength);
-                    if (ArrayUtils.containsIgnoreCase(sqlDialect.getDDLKeywords(), tokenText)) {
-                        // DDL doesn't support parameters
-                        return null;
+            if (!supportParamsInDDL) {
+                if (firstKeyword) {
+                    // Detect query type
+                    try {
+                        String tokenText = document.get(tokenOffset, tokenLength);
+                        if (ArrayUtils.containsIgnoreCase(sqlDialect.getDDLKeywords(), tokenText)) {
+                            // DDL doesn't support parameters
+                            return null;
+                        }
+                        execQuery = ArrayUtils.containsIgnoreCase(sqlDialect.getExecuteKeywords(), tokenText);
+                    } catch (BadLocationException e) {
+                        log.warn(e);
                     }
-                    execQuery = ArrayUtils.containsIgnoreCase(sqlDialect.getExecuteKeywords(), tokenText);
-                } catch (BadLocationException e) {
-                    log.warn(e);
+                    firstKeyword = false;
                 }
-                firstKeyword = false;
             }
             if (tokenType == SQLToken.T_PARAMETER && tokenLength > 0) {
                 try {
