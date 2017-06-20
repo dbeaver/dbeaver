@@ -148,10 +148,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
             // Export row
             processor.exportRow(session, row);
-        } catch (DBException e) {
-            throw new DBCException("Error while exporting table row", e);
         } catch (IOException e) {
             throw new DBCException("IO error", e);
+        } catch (Throwable e) {
+            throw new DBCException("Error while exporting table row", e);
         }
     }
 
