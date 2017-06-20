@@ -129,7 +129,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     @Override
     public void exportRow(DBCSession session, Object[] row) throws DBException, IOException
     {
-        for (int i = 0; i < row.length; i++) {
+        for (int i = 0; i < row.length && i < columns.size(); i++) {
             DBDAttributeBinding column = columns.get(i);
             if (DBUtils.isNullValue(row[i])) {
                 if (!CommonUtils.isEmpty(nullString)) {
