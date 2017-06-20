@@ -138,6 +138,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color foregroundSelected, backgroundSelected;
     private Font boldFont, italicFont, bolItalicFont;
 
+    private int rowBatchSize = 1;
+
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
 
@@ -983,6 +985,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.spreadsheet.setLineColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_NORMAL));
         this.spreadsheet.setLineSelectedColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED));
 
+        this.rowBatchSize = getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE);
+
         this.spreadsheet.recalculateSizes();
     }
 
@@ -1493,7 +1497,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             boolean recordMode = controller.isRecordMode();
             ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
             DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
-            boolean odd = row.getVisualNumber() % 2 == 0;
+            int rowNumber = row.getVisualNumber();
+            int rowRelativeNumber = rowNumber % (rowBatchSize * 2);
+
+            boolean odd = rowRelativeNumber < rowBatchSize;
             if (row.getState() == ResultSetRow.STATE_ADDED) {
                 return backgroundAdded;
             }

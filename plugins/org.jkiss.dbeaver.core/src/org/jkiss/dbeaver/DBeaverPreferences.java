@@ -123,6 +123,7 @@ public final class DBeaverPreferences
     public static final String RESULT_SET_SHOW_DESCRIPTION = "resultset.show.columnDescription"; //$NON-NLS-1$
     public static final String RESULT_SET_AUTO_SWITCH_MODE = "resultset.behavior.autoSwitchMode"; //$NON-NLS-1$
     public static final String RESULT_SET_DOUBLE_CLICK = "resultset.behavior.doubleClick"; //$NON-NLS-1$
+    public static final String RESULT_SET_ROW_BATCH_SIZE = "resultset.show.row.batch.size"; //$NON-NLS-1$
     public static final String RESULT_SET_PRESENTATION = "resultset.presentation.active"; //$NON-NLS-1$
 
     public static final String RESULT_TEXT_MAX_COLUMN_SIZE = "resultset.text.max.column.size"; //$NON-NLS-1$
