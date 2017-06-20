@@ -67,6 +67,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     private MySQLCharset defaultCharset;
     private MySQLCollation defaultCollation;
     private String sqlPath;
+    private Long databaseSize;
     private boolean persisted;
 
     public MySQLCatalog(MySQLDataSource dataSource, ResultSet dbResult)
@@ -163,6 +164,31 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     void setSqlPath(String sqlPath)
     {
         this.sqlPath = sqlPath;
+    }
+
+    @Property(viewable = true, expensive = true, order = 20)
+    public Long getDatabaseSize(DBRProgressMonitor monitor) throws DBException {
+        if (databaseSize == null) {
+            try (JDBCSession session = DBUtils.openUtilSession(monitor, getDataSource(), "Read database size")) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT SUM((DATA_LENGTH+INDEX_LENGTH))\n" +
+                    "FROM INFORMATION_SCHEMA.TABLES \n" +
+                    "WHERE TABLE_SCHEMA=?"))
+                {
+                    dbStat.setString(1, getName());
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        if (dbResult.next()) {
+                            databaseSize = dbResult.getLong(1);
+                        } else {
+                            databaseSize = 0l;
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, getDataSource());
+            }
+        }
+        return databaseSize;
     }
 
     public TableCache getTableCache()
