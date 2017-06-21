@@ -751,12 +751,17 @@ public class GenericDataSource extends JDBCDataSource
 
     @Override
     public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
-        String oldDefaultObject = selectedEntityName;
+        String oldEntityName = selectedEntityName;
+        DBSObject oldDefaultObject = getDefaultObject();
         determineSelectedEntity((JDBCSession) session);
-        if (!CommonUtils.equalObjects(oldDefaultObject, selectedEntityName)) {
+        if (!CommonUtils.equalObjects(oldEntityName, selectedEntityName)) {
             final DBSObject newDefaultObject = getDefaultObject();
             if (newDefaultObject != null) {
-                setDefaultObject(session.getProgressMonitor(), newDefaultObject);
+                if (oldDefaultObject != null) {
+                    DBUtils.fireObjectSelect(oldDefaultObject, false);
+                }
+                DBUtils.fireObjectSelect(newDefaultObject, true);
+
                 return true;
             }
         }
