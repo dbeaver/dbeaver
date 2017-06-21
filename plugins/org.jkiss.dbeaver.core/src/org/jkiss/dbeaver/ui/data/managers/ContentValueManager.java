@@ -69,10 +69,12 @@ public class ContentValueManager extends BaseValueManager {
             @Override
             public void run() {
                 if (DialogUtils.loadFromFile(controller)) {
-                    try {
-                        activeEditor.primeEditorValue(controller.getValue());
-                    } catch (DBException e) {
-                        UIUtils.showErrorDialog(null, "Load from file", "Error loading contents from file", e);
+                    if (activeEditor != null) {
+                        try {
+                            activeEditor.primeEditorValue(controller.getValue());
+                        } catch (DBException e) {
+                            UIUtils.showErrorDialog(null, "Load from file", "Error loading contents from file", e);
+                        }
                     }
                 }
             }
