@@ -16,17 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.editors.content;
 
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -37,6 +36,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -44,10 +44,11 @@ import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.ui.dialogs.ColumnInfoPanel;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +57,7 @@ import java.util.Map;
 /**
  * LOBEditor
  */
-public class ContentEditor extends MultiPageAbstractEditor implements IValueEditorStandalone, IResourceChangeListener
+public class ContentEditor extends MultiPageAbstractEditor implements IValueEditorStandalone, IRefreshablePart
 {
     @Override
     public ContentEditorInput getEditorInput()
@@ -263,7 +264,36 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     @Override
     public void doSaveAs()
     {
-
+        Shell shell = getSite().getShell();
+        final File saveFile = DialogUtils.selectFileForSave(shell, getPartName());
+        if (saveFile == null) {
+            return;
+        }
+        try {
+            getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
+                @Override
+                public void run(IProgressMonitor monitor)
+                        throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        getEditorInput().saveToExternalFile(saveFile, monitor);
+                    }
+                    catch (CoreException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
+        }
+        catch (InvocationTargetException e) {
+            UIUtils.showErrorDialog(
+                    shell,
+                    "Can't save content",
+                    "Can't save content to file '" + saveFile.getAbsolutePath() + "'",
+                    e.getTargetException());
+        }
+        catch (InterruptedException e) {
+            // do nothing
+        }
     }
 
     @Override
@@ -285,14 +315,14 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             //editorPart.init(site, input);
         }
 
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+        //ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
 
     @Override
     public void dispose()
     {
         this.partsLoaded = true;
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        //ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 
         if (getEditorInput() != null) {
             // Release CONTENT input resources
@@ -321,13 +351,13 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
 
     @Override
     public void setDirty(boolean dirty) {
-        this.dirty = false;
+        this.dirty = dirty;
     }
 
     @Override
     public boolean isSaveAsAllowed()
     {
-        return false;
+        return true;
     }
 
     @Override
@@ -511,6 +541,17 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     }
 
     @Override
+    public void refreshPart(Object source, boolean force) {
+        getEditorInput().refreshContentParts(source);
+        fireContentChanged();
+    }
+
+    public void fireContentChanged() {
+        firePropertyChange(ContentEditor.PROP_DIRTY);
+    }
+
+/*
+    @Override
     public void resourceChanged(IResourceChangeEvent event)
     {
         if (!partsLoaded || saveInProgress) {
@@ -538,5 +579,6 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             });
         }
     }
+*/
 
 }

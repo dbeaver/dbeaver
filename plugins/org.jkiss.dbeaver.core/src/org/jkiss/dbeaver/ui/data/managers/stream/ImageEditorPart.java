@@ -16,10 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.data.managers.stream;
 
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
@@ -34,8 +30,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageEditor;
-import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,12 +40,11 @@ import java.io.InputStream;
 /**
  * CONTENT text editor
  */
-public class ImageEditorPart extends EditorPart implements IResourceChangeListener {
+public class ImageEditorPart extends EditorPart implements IRefreshablePart {
 
     private static final Log log = Log.getLog(ImageEditorPart.class);
 
     private ImageEditor imageViewer;
-    private boolean contentValid;
 
     @Override
     public void doSave(IProgressMonitor monitor) {
@@ -64,13 +59,13 @@ public class ImageEditorPart extends EditorPart implements IResourceChangeListen
         setSite(site);
         setInput(input);
 
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+        //ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
 
     @Override
     public void dispose()
     {
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        //ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         super.dispose();
     }
 
@@ -101,7 +96,7 @@ public class ImageEditorPart extends EditorPart implements IResourceChangeListen
                 File localFile = absolutePath.toFile();
                 if (localFile.exists()) {
                     try (InputStream inputStream = new FileInputStream(localFile)) {
-                        contentValid = imageViewer.loadImage(inputStream);
+                        imageViewer.loadImage(inputStream);
                         imageViewer.update();
                     }
                 }
@@ -130,33 +125,18 @@ public class ImageEditorPart extends EditorPart implements IResourceChangeListen
     }
 
     @Override
-    public void resourceChanged(IResourceChangeEvent event) {
-        IResourceDelta delta = event.getDelta();
-        if (delta == null) {
-            return;
-        }
-        IEditorInput input = getEditorInput();
-        IPath localPath = null;
-        if (input instanceof IPathEditorInput) {
-            localPath = ((IPathEditorInput) input).getPath();
-        }
-        if (localPath == null) {
-            return;
-        }
-        localPath = ContentUtils.convertPathToWorkspacePath(localPath);
-        delta = delta.findMember(localPath);
-        if (delta == null) {
-            return;
-        }
-        if (delta.getKind() == IResourceDelta.CHANGED) {
-            // Refresh editor
-            DBeaverUI.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    loadImage();
-                }
-            });
-        }
+    public void refreshPart(Object source, boolean force) {
+        refreshImage();
+    }
+
+    private void refreshImage() {
+        // Refresh editor
+        DBeaverUI.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                loadImage();
+            }
+        });
     }
 
 }

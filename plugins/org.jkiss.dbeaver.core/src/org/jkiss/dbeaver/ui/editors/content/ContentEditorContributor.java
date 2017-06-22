@@ -29,11 +29,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 
 import java.io.File;
@@ -45,8 +45,6 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ContentEditorContributor extends MultiPageEditorActionBarContributor
 {
-    private static final Log log = Log.getLog(ContentEditorContributor.class);
-
     private final BasicTextEditorActionContributor textContributor;
     private ContentEditor activeEditor;
     //private IEditorPart activePage;
@@ -54,21 +52,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     private final IAction saveAction = new FileExportAction();
     private final IAction loadAction = new FileImportAction();
     private final IAction infoAction = new InfoAction();
-    private final IAction applyAction = new ApplyAction();
-    private final IAction closeAction = new CloseAction();
     private Combo encodingCombo;
-
-    private IPropertyListener dirtyListener = new IPropertyListener() {
-        @Override
-        public void propertyChanged(Object source, int propId)
-        {
-            if (propId == ContentEditor.PROP_DIRTY) {
-                if (activeEditor != null) {
-                    applyAction.setEnabled(activeEditor.isDirty());
-                }
-            }
-        }
-    };
 
     public ContentEditorContributor()
     {
@@ -98,9 +82,6 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     public void dispose()
     {
         textContributor.dispose();
-        if (activeEditor != null) {
-            activeEditor.removePropertyListener(dirtyListener);
-        }
         super.dispose();
     }
 
@@ -108,12 +89,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     public void setActiveEditor(IEditorPart part)
     {
         super.setActiveEditor(part);
-        //textContributor.setActiveEditor(part);
-        if (activeEditor != null) {
-            activeEditor.removePropertyListener(dirtyListener);
-        }
         this.activeEditor = (ContentEditor) part;
-        this.activeEditor.addPropertyListener(dirtyListener);
 
         if (this.activeEditor != null) {
             if (encodingCombo != null && !encodingCombo.isDisposed()) {
@@ -126,9 +102,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                     }
                 }
             }
-            applyAction.setEnabled(activeEditor.isDirty());
             loadAction.setEnabled(!activeEditor.getEditorInput().isReadOnly());
-
         }
     }
 
@@ -152,8 +126,6 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         menu.add(new Separator());
         menu.add(infoAction);
         menu.add(new Separator());
-        menu.add(applyAction);
-        menu.add(closeAction);
     }
 
     @Override
@@ -173,9 +145,6 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         manager.add(loadAction);
         manager.add(new Separator());
         manager.add(infoAction);
-        manager.add(new Separator());
-        manager.add(applyAction);
-        manager.add(closeAction);
         manager.add(new Separator());
         manager.add(new ControlContribution("Encoding")
         {
@@ -218,7 +187,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
 
     public abstract class SimpleAction extends Action {
 
-        public SimpleAction(String id, String text, String toolTip, DBIcon icon)
+        SimpleAction(String id, String text, String toolTip, DBIcon icon)
         {
             super(text, DBeaverIcons.getImageDescriptor(icon));
             setId(id);
@@ -233,7 +202,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
 
     private class FileExportAction extends SimpleAction
     {
-        public FileExportAction()
+        FileExportAction()
         {
             super(IWorkbenchCommandConstants.FILE_EXPORT, "Export", "Save to File", UIIcon.SAVE_AS);
         }
@@ -241,42 +210,13 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         @Override
         public void run()
         {
-            Shell shell = getEditor().getSite().getShell();
-            final File saveFile = DialogUtils.selectFileForSave(shell, getEditor().getPartName());
-            if (saveFile == null) {
-                return;
-            }
-            try {
-                getEditor().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
-                    @Override
-                    public void run(IProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        try {
-                            getEditor().getEditorInput().saveToExternalFile(saveFile, monitor);
-                        }
-                        catch (CoreException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    }
-                });
-            }
-            catch (InvocationTargetException e) {
-                UIUtils.showErrorDialog(
-                    shell,
-                    "Can't save content",
-                    "Can't save content to file '" + saveFile.getAbsolutePath() + "'",
-                    e.getTargetException());
-            }
-            catch (InterruptedException e) {
-                // do nothing
-            }
+            getEditor().doSaveAs();
         }
     }
 
     private class FileImportAction extends SimpleAction
     {
-        public FileImportAction()
+        FileImportAction()
         {
             super(IWorkbenchCommandConstants.FILE_IMPORT, "Import", "Load from File", UIIcon.LOAD);
         }
@@ -284,25 +224,35 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         @Override
         public void run()
         {
-            Shell shell = getEditor().getSite().getShell();
+            final ContentEditor editor = getEditor();
+            if (editor == null) {
+                return;
+            }
+            Shell shell = editor.getSite().getShell();
             final File loadFile = DialogUtils.openFile(shell);
             if (loadFile == null) {
                 return;
             }
             try {
-                getEditor().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
+                editor.getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
                     @Override
                     public void run(IProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
                         try {
-                            getEditor().getEditorInput().loadFromExternalFile(loadFile, monitor);
+                            editor.getEditorInput().loadFromExternalFile(loadFile, monitor);
                         }
                         catch (CoreException e) {
                             throw new InvocationTargetException(e);
                         }
                     }
                 });
+                IValueController valueController = editor.getValueController();
+                if (valueController != null) {
+                    valueController.updateValue(editor.getContent(), true);
+                }
+                editor.setDirty(true);
+                editor.fireContentChanged();
             }
             catch (InvocationTargetException e) {
                 UIUtils.showErrorDialog(
@@ -319,7 +269,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
 
     private class InfoAction extends SimpleAction
     {
-        public InfoAction()
+        InfoAction()
         {
             super("org.jkiss.dbeaver.lob.actions.info", "Info", "Show column information", DBIcon.TREE_INFO);
         }
@@ -328,57 +278,6 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         public void run()
         {
             getEditor().toggleInfoBar();
-        }
-    }
-
-    private class ApplyAction extends SimpleAction
-    {
-        public ApplyAction()
-        {
-            super("org.jkiss.dbeaver.lob.actions.apply", "Apply Changes", "Apply Changes", UIIcon.ACCEPT);
-        }
-
-        @Override
-        public void run()
-        {
-            try {
-                getEditor().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
-                    @Override
-                    public void run(IProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        getEditor().doSave(monitor);
-                    }
-                });
-            }
-            catch (InvocationTargetException e) {
-                UIUtils.showErrorDialog(
-                    getEditor().getSite().getShell(),
-                    "Can't apply content changes",
-                    "Can't apply content changes",
-                    e.getTargetException());
-            }
-            catch (InterruptedException e) {
-                // do nothing
-            }
-
-        }
-    }
-
-    private class CloseAction extends SimpleAction
-    {
-        public CloseAction()
-        {
-            super("org.jkiss.dbeaver.lob.actions.close", "Close", "Reject changes", UIIcon.REJECT);
-        }
-
-        @Override
-        public void run()
-        {
-            ContentEditor contentEditor = getEditor();
-            if (contentEditor != null) {
-                contentEditor.closeValueEditor();
-            }
         }
     }
 

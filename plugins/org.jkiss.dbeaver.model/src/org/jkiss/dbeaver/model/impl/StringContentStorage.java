@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 
@@ -50,13 +51,13 @@ public class StringContentStorage implements DBDContentStorage, DBDContentCached
     public Reader getContentReader()
         throws IOException
     {
-        return new StringReader(data);
+        return new StringReader(CommonUtils.notEmpty(data));
     }
 
     @Override
     public long getContentLength()
     {
-        return data.length();
+        return data == null ? 0 : data.length();
     }
 
     @Override

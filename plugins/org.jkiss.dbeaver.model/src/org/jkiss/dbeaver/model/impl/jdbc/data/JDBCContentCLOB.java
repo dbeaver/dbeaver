@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -223,8 +224,14 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         if (clob == null && storage == null) {
             return null;
         }
-        if (storage != null && storage instanceof DBDContentCached) {
-            return CommonUtils.toString(((DBDContentCached) storage).getCachedValue());
+        if (storage != null) {
+            if (storage instanceof DBDContentCached) {
+                return CommonUtils.toString(((DBDContentCached) storage).getCachedValue());
+            } else {
+                if (storage instanceof ExternalContentStorage) {
+                    return "[" + ((ExternalContentStorage) storage).getFile().getName() + "]";
+                }
+            }
         }
         return "[CLOB]";
     }

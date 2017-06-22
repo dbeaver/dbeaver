@@ -114,7 +114,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, META_CLIENT_NAME_VALUE, "");
 
         PrefUtils.setDefaultPreferenceValue(store, CONTENT_HEX_ENCODING, GeneralUtils.getDefaultFileEncoding());
-        PrefUtils.setDefaultPreferenceValue(store, CONTENT_CACHE_CLOB, false);
+        PrefUtils.setDefaultPreferenceValue(store, CONTENT_CACHE_CLOB, true);
         PrefUtils.setDefaultPreferenceValue(store, CONTENT_CACHE_BLOB, false);
         PrefUtils.setDefaultPreferenceValue(store, CONTENT_CACHE_MAX_SIZE, 1000000);
 
