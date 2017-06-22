@@ -41,11 +41,14 @@ import org.jkiss.dbeaver.model.data.DBDContentStorageLocal;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.BytesContentStorage;
+import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.LocalFileStorage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -262,14 +265,25 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
         throws CoreException
     {
         try {
-            try (InputStream inputStream = new FileInputStream(extFile)) {
-                try (OutputStream outputStream = new FileOutputStream(contentFile)) {
-                    ContentUtils.copyStreams(inputStream, extFile.length(), outputStream, RuntimeUtils.makeMonitor(monitor));
-                }
-            }
+            release();
+            contentFile = extFile;
+            contentDetached = true;
+            getContent().updateContents(
+                new DefaultProgressMonitor(monitor),
+                new ExternalContentStorage(DBeaverCore.getInstance(), extFile));
+            refreshContentParts(extFile);
         }
         catch (Throwable e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
+    }
+
+    void refreshContentParts(Object source) {
+        // Refresh editor parts
+        for (IEditorPart cePart : editorParts) {
+            if (cePart instanceof IRefreshablePart) {
+                ((IRefreshablePart) cePart).refreshPart(source, false);
+            }
         }
     }
 

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -28,22 +29,30 @@ import java.io.*;
  */
 public class ExternalContentStorage implements DBDContentStorage {
 
+    @NotNull
     private final DBPPlatform platform;
+    @NotNull
     private File file;
     private String charset;
 
-    public ExternalContentStorage(DBPPlatform platform, File file)
+    public ExternalContentStorage(@NotNull DBPPlatform platform, @NotNull File file)
     {
         this(platform, file, null);
     }
 
-    public ExternalContentStorage(DBPPlatform platform, File file, String charset)
+    public ExternalContentStorage(@NotNull DBPPlatform platform, @NotNull File file, String charset)
     {
         this.platform = platform;
         this.file = file;
         this.charset = charset;
     }
 
+    @NotNull
+    public File getFile() {
+        return file;
+    }
+
+    @NotNull
     @Override
     public InputStream getContentStream()
         throws IOException
@@ -51,6 +60,7 @@ public class ExternalContentStorage implements DBDContentStorage {
         return new FileInputStream(file);
     }
 
+    @NotNull
     @Override
     public Reader getContentReader()
         throws IOException

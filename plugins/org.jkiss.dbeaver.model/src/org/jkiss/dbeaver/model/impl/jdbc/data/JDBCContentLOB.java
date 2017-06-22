@@ -56,7 +56,7 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
         DBDContentStorage storage)
     {
         if (this.storage != null) {
-            if (this.originalStorage != null) {
+            if (this.originalStorage != null && this.originalStorage != this.storage) {
                 this.originalStorage.release();
             }
             this.originalStorage = this.storage;
