@@ -46,7 +46,6 @@ class ImageViewCanvas extends Canvas {
 	final float ZOOMIN_RATE = 1.1f; /* zoomin rate */
 	final float ZOOMOUT_RATE = 0.9f; /* zoomout rate */
 	private Image sourceImage; /* original image */
-	private Image screenImage; /* screen image */
     private ImageData imageData;
 	private AffineTransform transform = new AffineTransform();
     private SWTException error;
@@ -61,7 +60,7 @@ class ImageViewCanvas extends Canvas {
 	 * @param style the style of this control.
 	 */
 	public ImageViewCanvas(final Composite parent, int style) {
-		super( parent, style|SWT.V_SCROLL|SWT.H_SCROLL | SWT.NO_BACKGROUND);
+		super( parent, style|SWT.V_SCROLL|SWT.H_SCROLL);
 		addControlListener(new ControlAdapter() { /* resize listener. */
 			@Override
             public void controlResized(ControlEvent event) {
@@ -80,9 +79,6 @@ class ImageViewCanvas extends Canvas {
             {
                 if (sourceImage != null && !sourceImage.isDisposed()) {
                     sourceImage.dispose();
-                }
-                if (screenImage != null && !screenImage.isDisposed()) {
-                    screenImage.dispose();
                 }
             }
         });
@@ -103,24 +99,18 @@ class ImageViewCanvas extends Canvas {
 			imageRect = imageRect.intersection(imageBound);
 			Rectangle destRect = ImageViewUtil.transformRect(transform, imageRect);
 
-			if (screenImage != null)
-				screenImage.dispose();
-			screenImage = new Image(getDisplay(), clientRect.width, clientRect.height);
-			GC newGC = new GC(screenImage);
-			newGC.setClipping(clientRect);
-			newGC.drawImage(
+			gc.setBackground(getParent().getBackground());
+			gc.fillRectangle(clientRect);
+			gc.drawImage(
 				sourceImage,
 				imageRect.x,
 				imageRect.y,
-				imageRect.width,
+				imageRect.width	,
 				imageRect.height,
 				destRect.x,
 				destRect.y,
 				destRect.width,
 				destRect.height);
-			newGC.dispose();
-
-			gc.drawImage(screenImage, 0, 0);
 		} else {
 			gc.setClipping(clientRect);
 			gc.fillRectangle(clientRect);
