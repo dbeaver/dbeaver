@@ -17,14 +17,12 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -46,14 +44,12 @@ class StatusLabel extends Composite {
     private final ResultSetViewer viewer;
     private final Label statusIcon;
     private final Text statusText;
-    private final Color colorDefault, colorError, colorWarning;
+    //private final Color colorDefault, colorError, colorWarning;
     private DBPMessageType messageType;
 
     public StatusLabel(@NotNull Composite parent, int style, @Nullable final ResultSetViewer viewer) {
         super(parent, SWT.BORDER);
         this.viewer = viewer;
-
-        setBackgroundMode(SWT.INHERIT_FORCE);
 
         final GridLayout layout = new GridLayout(3, false);
         layout.marginHeight = 0;
@@ -61,9 +57,11 @@ class StatusLabel extends Composite {
         layout.horizontalSpacing = 3;
         setLayout(layout);
 
+/*
         colorDefault = getForeground();
         colorError = JFaceColors.getErrorText(Display.getDefault());
         colorWarning = colorDefault;
+*/
 
         final Image statusImage = JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_INFO);
         statusIcon = new Label(this, SWT.NONE);
@@ -127,23 +125,24 @@ class StatusLabel extends Composite {
         }
         this.messageType = messageType;
 
-        Color fg;
+        //Color fg;
         String statusIconId;
         switch (messageType) {
             case ERROR:
-                fg = colorError;
+                //fg = colorError;
                 statusIconId = Dialog.DLG_IMG_MESSAGE_ERROR;
                 break;
             case WARNING:
-                fg = colorWarning;
+                //fg = colorWarning;
                 statusIconId = Dialog.DLG_IMG_MESSAGE_WARNING;
                 break;
             default:
-                fg = colorDefault;
+                //fg = null;
                 statusIconId = Dialog.DLG_IMG_MESSAGE_INFO;
                 break;
         }
-        statusText.setForeground(fg);
+        //statusText.setForeground(fg);
+
         if (message == null) {
             message = "???"; //$NON-NLS-1$
         }
