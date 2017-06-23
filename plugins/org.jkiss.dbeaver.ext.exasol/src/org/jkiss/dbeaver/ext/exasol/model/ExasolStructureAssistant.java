@@ -224,7 +224,9 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
         if (schema != null) {
             sql = String.format(SQL_COLS_SCHEMA, ExasolUtils.quoteString(schema.getName()), ExasolUtils.quoteString(searchObjectNameMask));
         } else {
-            sql = String.format(SQL_COLS_ALL, ExasolUtils.quoteString(searchObjectNameMask));
+            // sql = String.format(SQL_COLS_ALL, ExasolUtils.quoteString(searchObjectNameMask));
+        	// search for columns is to slow in exasol
+        	return;
         }
 
 
