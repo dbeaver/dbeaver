@@ -21,8 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
@@ -38,7 +40,7 @@ import java.util.List;
 /**
  * @author Karl Griesser
  */
-public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> implements DBSEntityReferrer {
+public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> implements DBSEntityReferrer,DBPScriptObject {
 
     private String owner;
     private Boolean enabled;
@@ -132,6 +134,13 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> imple
             }
         }
         return false;
+	}
+
+	@Override
+	public String getObjectDefinitionText(DBRProgressMonitor monitor)
+			throws DBException
+	{
+		return ExasolUtils.getPKDdl(this, monitor);
 	}
 
 
