@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,7 +32,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 
 public class ExasolConnection
-		implements DBPRefreshableObject, DBPSaveableObject {
+		implements DBPRefreshableObject, DBPSaveableObject, DBPScriptObject{
 
 	private ExasolDataSource dataSource;
 	private String connectionName;
@@ -119,6 +121,17 @@ public class ExasolConnection
 			throws DBException
 	{
 		return this;
+	}
+
+	@Override
+	public String getObjectDefinitionText(DBRProgressMonitor monitor)
+			throws DBException
+	{
+		if (getDataSource().isAuthorizedForConnections()) {
+			return ExasolUtils.getConnectionDdl(this, monitor);
+		} else {
+			return "User needs full access to dictionary or dba privilege to generate ddl for connections";
+		}
 	}
 
 }
