@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
@@ -40,7 +41,7 @@ import java.util.List;
 /**
  * @author Karl
  */
-public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> implements DBSTableForeignKey {
+public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> implements DBSTableForeignKey,DBPScriptObject {
 
     private ExasolTable refTable;
 
@@ -152,6 +153,13 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
     }
+
+	@Override
+	public String getObjectDefinitionText(DBRProgressMonitor monitor)
+			throws DBException
+	{
+		return ExasolUtils.getFKDdl(this, monitor);
+	}
 
 
 }

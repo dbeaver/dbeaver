@@ -181,7 +181,10 @@ public class ExasolDataSource extends JDBCDataSource
 		
 		if (exasolCurrentUserPrivileges.getUserIsAuthorizedForConnections()) {
 			this.connectionCache = new JDBCObjectSimpleCache<>(
-					ExasolConnection.class, "SELECT * FROM EXA_DBA_CONNECTIONS ORDER BY CONNECTION_NAME");
+					ExasolConnection.class, "SELECT * FROM SYS.EXA_DBA_CONNECTIONS ORDER BY CONNECTION_NAME");
+		} else {
+			this.connectionCache = new JDBCObjectSimpleCache<>(
+					ExasolConnection.class, "SELECT * FROM SYS.EXA_SESSION_CONNECTIONS ORDER BY CONNECTION_NAME");
 		}
 		
 		if (exasolCurrentUserPrivileges.getUserIsAuthorizedForConnectionPrivs())
@@ -671,6 +674,11 @@ public class ExasolDataSource extends JDBCDataSource
 		return this.exasolCurrentUserPrivileges.getUserIsAuthorizedForRolePrivs();
 	}
 	
+	public boolean isUserAuthorizedForSessions()
+	{
+		return this.exasolCurrentUserPrivileges.isUserAuthorizedForSessions();
+	}
+	
 	public boolean isatLeastV6()
 	{
 		return this.exasolCurrentUserPrivileges.getatLeastV6();
@@ -796,5 +804,10 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		return dataTypeCache;
 	}
+    
+    public ExasolCurrentUserPrivileges getUserPriviliges()
+    {
+    	return exasolCurrentUserPrivileges;
+    }
 
 }
