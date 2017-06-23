@@ -157,8 +157,12 @@
                       </items>
                    </items>
                 </folder>
-                <folder type="" label="%tree.administer.node.name" icon="#folder_admin"
-                        description="Maintenance/Settings">
+                <folder
+                      description="Maintenance/Settings"
+                      icon="#folder_admin"
+                      label="%tree.administer.node.name"
+                      type="org.jkiss.dbeaver.model.struct.DBSObject"
+                      visibleIf="object.dataSource.UserAuthorizedForSessions">
                     <object type="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSession"
                             label="%tree.sessions.node.name"
                             icon="#admin"
@@ -177,8 +181,7 @@
                       description="Connections"
                       icon="#folder_connections"
                       label="%tree.connections.node.name"
-                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolConnection"
-                      visibleIf="object.dataSource.authorizedForConnections">
+                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolConnection">
                    <items
                          icon="icons/remoteServer.gif"
                          label="%tree.connection.node.name"

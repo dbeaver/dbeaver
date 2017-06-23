@@ -43,6 +43,7 @@ public class ExasolCurrentUserPrivileges {
 	private final Boolean userIsAuthorizedForObjectPrivs;
 	private final Boolean userIsAuthorizedForConnectionPrivs;
 	private final Boolean userIsAuthorizedForSystemPrivs;
+	private final Boolean userIsAuthorizedForSessions;
 	
 	private final int ExasolVersion;
 	
@@ -59,6 +60,7 @@ public class ExasolCurrentUserPrivileges {
 		userIsAuthorizedForObjectPrivs = ExasolCurrentUserPrivileges.verifyPriv(C_OBJECT_PRIV, session);
 		userIsAuthorizedForConnectionPrivs = ExasolCurrentUserPrivileges.verifyPriv(C_CONNECTION_PRIV, session);
 		userIsAuthorizedForSystemPrivs = ExasolCurrentUserPrivileges.verifyPriv("SELECT GRANTEE,PRIVILEGE,ADMIN_OPTION FROM SYS.EXA_DBA_SYS_PRIVS WHERE FALSE", session);
+		userIsAuthorizedForSessions = ExasolCurrentUserPrivileges.verifyPriv("SELECT * FROM SYS.EXA_DBA_SESSIONS", session);
 		
 		JDBCPreparedStatement dbStat;
 		try {
@@ -139,6 +141,11 @@ public class ExasolCurrentUserPrivileges {
 	public Boolean getUserIsAuthorizedForConnectionPrivs()
 	{
 		return userIsAuthorizedForConnectionPrivs;
+	}
+	
+	public Boolean isUserAuthorizedForSessions()
+	{
+		return userIsAuthorizedForSessions;
 	}
 	
 
