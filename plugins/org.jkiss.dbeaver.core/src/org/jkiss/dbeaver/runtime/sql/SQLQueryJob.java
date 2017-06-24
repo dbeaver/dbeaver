@@ -114,7 +114,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         @NotNull SQLResultsConsumer resultsConsumer,
         @Nullable SQLQueryListener listener)
     {
-        super(name, DBeaverIcons.getImageDescriptor(UIIcon.SQL_SCRIPT_EXECUTE), executionContext);
+        super(name, executionContext);
         this.dataContainer = dataContainer;
         this.partSite = partSite;
         this.queries = queries;

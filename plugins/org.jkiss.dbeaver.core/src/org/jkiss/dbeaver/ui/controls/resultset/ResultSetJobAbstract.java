@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 
 abstract class ResultSetJobAbstract extends DataSourceJob implements DBCExecutionSource {
 
@@ -32,7 +30,7 @@ abstract class ResultSetJobAbstract extends DataSourceJob implements DBCExecutio
     protected final ResultSetViewer controller;
 
     protected ResultSetJobAbstract(String name, DBSDataContainer dataContainer, ResultSetViewer controller, DBCExecutionContext executionContext) {
-        super(name, DBeaverIcons.getImageDescriptor(UIIcon.SQL_EXECUTE), executionContext);
+        super(name, executionContext);
         this.dataContainer = dataContainer;
         this.controller = controller;
         setUser(false);

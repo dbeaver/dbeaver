@@ -156,7 +156,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             generateObjectCommand(lines, object);
             objectsSQL.put(object, lines);
         }
-        final DataSourceJob job = new DataSourceJob(jobName, null, getExecutionContext()) {
+        final DataSourceJob job = new DataSourceJob(jobName, getExecutionContext()) {
             public Exception objectProcessingError;
 
             @Override

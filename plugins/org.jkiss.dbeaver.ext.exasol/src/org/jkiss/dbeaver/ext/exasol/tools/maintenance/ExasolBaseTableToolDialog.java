@@ -183,7 +183,7 @@ public abstract class ExasolBaseTableToolDialog
             generateObjectCommand(lines, object);
             objectsSQL.put(object, lines);
         }
-        final DataSourceJob job = new DataSourceJob(jobName, null, getExecutionContext()) {
+        final DataSourceJob job = new DataSourceJob(jobName, getExecutionContext()) {
             public Exception objectProcessingError;
 
             @SuppressWarnings("rawtypes")

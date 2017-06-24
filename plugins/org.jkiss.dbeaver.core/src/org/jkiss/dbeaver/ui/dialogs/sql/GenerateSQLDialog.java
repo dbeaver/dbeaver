@@ -112,7 +112,7 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
     {
         final String jobName = getShell().getText();
         final String[] scriptLines = generateSQLScript();
-        DataSourceJob job = new DataSourceJob(jobName, null, executionContext) {
+        DataSourceJob job = new DataSourceJob(jobName, executionContext) {
             @Override
             protected IStatus run(DBRProgressMonitor monitor)
             {

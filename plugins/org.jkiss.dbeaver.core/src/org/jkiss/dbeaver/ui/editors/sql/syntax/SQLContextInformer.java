@@ -43,8 +43,6 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.ArrayUtils;
@@ -398,7 +396,7 @@ public class SQLContextInformer
 
         protected TablesFinderJob(@NotNull DBCExecutionContext executionContext, @NotNull DBSStructureAssistant structureAssistant, @Nullable String[] containerNames, @NotNull String objectName, boolean caseSensitive, @NotNull ObjectLookupCache cache)
         {
-            super("Find object '" + objectName + "'", DBeaverIcons.getImageDescriptor(UIIcon.SQL_EXECUTE), executionContext);
+            super("Find object '" + objectName + "'", executionContext);
             this.structureAssistant = structureAssistant;
             // Transform container name case
             this.containerNames = containerNames;

@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.KeepAliveJob;
-import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;

@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
@@ -35,7 +33,7 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
 {
     private final DBCExecutionContext executionContext;
 
-    protected DataSourceJob(String name, @Nullable ImageDescriptor image, @NotNull DBCExecutionContext executionContext)
+    protected DataSourceJob(String name, @NotNull DBCExecutionContext executionContext)
     {
         super(CommonUtils.truncateString(name, 1000)); // Trunkate just in case
         this.executionContext = executionContext;

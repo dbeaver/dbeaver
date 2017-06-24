@@ -59,7 +59,7 @@ public class InvalidateJob extends DataSourceJob
         DBCExecutionContext context/*,
         boolean reconnect*/)
     {
-        super("Invalidate " + context.getDataSource().getContainer().getName(), null, context);
+        super("Invalidate " + context.getDataSource().getContainer().getName(), context);
 //        this.reconnect = reconnect;
     }
 
