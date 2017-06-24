@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -431,7 +432,7 @@ public class NavigatorUtils {
                         try {
                             ((DBNNode)curObject).dropNodes(nodesToDrop);
                         } catch (DBException e) {
-                            UIUtils.showErrorDialog(viewer.getControl().getShell(), "Drop error", "Can't drop node", e);
+                            DBUserInterface.getInstance().showError("Drop error", "Can't drop node", e);
                         }
                     }
                 }

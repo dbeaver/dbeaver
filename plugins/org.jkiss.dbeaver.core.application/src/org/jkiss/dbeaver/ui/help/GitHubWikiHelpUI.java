@@ -23,7 +23,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.help.AbstractHelpUI;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -82,7 +82,7 @@ public class GitHubWikiHelpUI extends AbstractHelpUI {
         try {
             support.getExternalBrowser().openURL(fileURL);
         } catch (PartInitException e) {
-            UIUtils.showErrorDialog(null, "Help system", "Can't open help in external browser", e);
+            DBUserInterface.getInstance().showError("Help system", "Can't open help in external browser", e);
         }
 //        }
     }

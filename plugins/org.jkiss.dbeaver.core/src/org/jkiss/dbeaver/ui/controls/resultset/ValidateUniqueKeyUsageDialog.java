@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -99,7 +99,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
                 super.buttonPressed(IDialogConstants.OK_ID);
             }
         } catch (DBException e) {
-            UIUtils.showErrorDialog(getShell(), "Virtual key edit", "Error editing virtual key", e);
+            DBUserInterface.getInstance().showError("Virtual key edit", "Error editing virtual key", e);
         }
     }
 
@@ -115,7 +115,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
             }
         }
         if (uniqueColumns.isEmpty()) {
-            UIUtils.showErrorDialog(shell, "Use All Columns", "No valid columns found for unique key");
+            DBUserInterface.getInstance().showError("Use All Columns", "No valid columns found for unique key");
             return false;
         }
         constraint.setAttributes(uniqueColumns);
@@ -125,7 +125,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
                 new VoidProgressMonitor(),
                 viewer.getModel().getAttributes());
         } catch (DBException e) {
-            UIUtils.showErrorDialog(shell, "Use All Columns", "Can't reload unique columns", e);
+            DBUserInterface.getInstance().showError("Use All Columns", "Can't reload unique columns", e);
             return false;
         }
 

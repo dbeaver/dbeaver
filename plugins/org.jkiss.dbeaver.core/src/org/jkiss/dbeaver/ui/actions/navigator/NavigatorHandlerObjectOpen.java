@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
@@ -105,7 +106,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 handler.openResource(resource);
             }
         } catch (Exception e) {
-            UIUtils.showErrorDialog(window.getShell(), CoreMessages.actions_navigator_error_dialog_open_resource_title, "Can't open resource '" + resource.getName() + "'", e); //$NON-NLS-3$
+            DBUserInterface.getInstance().showError(CoreMessages.actions_navigator_error_dialog_open_resource_title, "Can't open resource '" + resource.getName() + "'", e); //$NON-NLS-3$
         }
     }
 
@@ -204,7 +205,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                         editorInput,
                         EntityEditor.class.getName());
                 } else {
-                    UIUtils.showErrorDialog(workbenchWindow.getShell(), "No object", "Node do not has associated database object");
+                    DBUserInterface.getInstance().showError("No object", "Node do not has associated database object");
                     return null;
                 }
             } else {
@@ -214,7 +215,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     FolderEditor.class.getName());
             }
         } catch (Exception ex) {
-            UIUtils.showErrorDialog(workbenchWindow.getShell(), CoreMessages.actions_navigator_error_dialog_open_entity_title, "Can't open entity '" + selectedNode.getNodeName() + "'", ex);
+            DBUserInterface.getInstance().showError(CoreMessages.actions_navigator_error_dialog_open_entity_title, "Can't open entity '" + selectedNode.getNodeName() + "'", ex);
             return null;
         }
     }

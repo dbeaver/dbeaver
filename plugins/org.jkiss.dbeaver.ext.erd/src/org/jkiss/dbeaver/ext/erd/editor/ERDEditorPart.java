@@ -78,6 +78,7 @@ import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.itemlist.ObjectSearcher;
@@ -713,7 +714,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             UIUtils.launchProgram(filePath);
             //UIUtils.showMessageBox(shell, "Save ERD", "Diagram has been exported to " + filePath, SWT.ICON_INFORMATION);
         } catch (Exception e) {
-            UIUtils.showErrorDialog(getSite().getShell(), "Save ERD as image", null, e);
+            DBUserInterface.getInstance().showError("Save ERD as image", null, e);
         }
 
     }
@@ -1002,9 +1003,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                         }
                         MultiStatus status = new MultiStatus(DBeaverCore.getCorePluginID(), 0, messageStatuses.toArray(new IStatus[messageStatuses.size()]), null, null);
 
-                        UIUtils.showErrorDialog(
-                            control.getShell(),
-                            "Diagram loading errors",
+                        DBUserInterface.getInstance().showError(
+                                "Diagram loading errors",
                             "Error(s) occurred during diagram loading. If these errors are recoverable then fix errors and then refresh/reopen diagram",
                             status);
                     }

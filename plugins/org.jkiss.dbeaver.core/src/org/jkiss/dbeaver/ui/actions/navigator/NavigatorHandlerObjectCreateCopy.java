@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -79,10 +79,10 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                             }
                         }
                     } else {
-                        UIUtils.showErrorDialog(HandlerUtil.getActiveShell(event), "Paste error", "Unsupported clipboard format. File or folder were expected.");
+                        DBUserInterface.getInstance().showError("Paste error", "Unsupported clipboard format. File or folder were expected.");
                     }
                 } else {
-                    UIUtils.showErrorDialog(HandlerUtil.getActiveShell(event), "Paste error", "Clipboard contains data in unsupported format");
+                    DBUserInterface.getInstance().showError("Paste error", "Clipboard contains data in unsupported format");
                 }
             } finally {
                 clipboard.dispose();
@@ -110,7 +110,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                 }
             });
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(null, "Copy error", "Error copying resource", e.getTargetException());
+            DBUserInterface.getInstance().showError("Copy error", "Error copying resource", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }
@@ -179,7 +179,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                 }
             });
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(null, "Copy error", "Error copying resource", e.getTargetException());
+            DBUserInterface.getInstance().showError("Copy error", "Error copying resource", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }

@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 class EditObjectDialog extends TrayDialog {
@@ -78,7 +79,7 @@ class EditObjectDialog extends TrayDialog {
             try {
                 ((BaseObjectEditPage) dialogPage).performFinish();
             } catch (Exception e) {
-                UIUtils.showErrorDialog(getShell(), "Error saving data", null, e);
+                DBUserInterface.getInstance().showError("Error saving data", null, e);
                 return;
             }
         }

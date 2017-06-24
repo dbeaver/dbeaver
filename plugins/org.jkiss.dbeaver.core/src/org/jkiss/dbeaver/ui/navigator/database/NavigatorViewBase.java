@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
@@ -152,7 +152,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                                 try {
                                     OpenHandler.openRecentScript(getSite().getWorkbenchWindow(), dataSource, null);
                                 } catch (CoreException e) {
-                                    UIUtils.showErrorDialog(getSite().getShell(), "Open SQL editor", "Can't open SQL editor", e);
+                                    DBUserInterface.getInstance().showError("Open SQL editor", "Can't open SQL editor", e);
                                 }
                                 break;
                         }

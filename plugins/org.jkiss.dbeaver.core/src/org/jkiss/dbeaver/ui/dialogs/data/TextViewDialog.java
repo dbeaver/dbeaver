@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -267,7 +268,7 @@ public class TextViewDialog extends ValueViewDialog {
                 rawValue,
                 false);
         } catch (Exception e) {
-            UIUtils.showErrorDialog(getShell(), "Extract editor value", "Can't extract editor value", e);
+            DBUserInterface.getInstance().showError("Extract editor value", "Can't extract editor value", e);
             return null;
         }
     }

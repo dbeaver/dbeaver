@@ -26,7 +26,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -49,7 +49,7 @@ public class NavigatorHandlerProjectRefresh extends NavigatorHandlerObjectBase {
                 }
             });
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Refresh workspace", "Can't refresh workspace", e.getTargetException());
+            DBUserInterface.getInstance().showError("Refresh workspace", "Can't refresh workspace", e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }

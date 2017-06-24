@@ -845,51 +845,6 @@ public class UIUtils {
         return sash;
     }
 
-    public static void showErrorDialog(@Nullable Shell shell, @NotNull String title, @Nullable String message, @Nullable Throwable error)
-    {
-        if (error != null) {
-            log.error(error);
-        }
-
-        showErrorDialog(shell, title, error == null ? null : message, error == null ? new Status(IStatus.ERROR,
-            DBeaverCore.PLUGIN_ID, message) : GeneralUtils.makeExceptionStatus(error));
-    }
-
-    public static void showErrorDialog(@Nullable Shell shell, @NotNull String title, @Nullable String message)
-    {
-        showErrorDialog(shell, title, message, (Throwable) null);
-    }
-
-    public static void showErrorDialog(@Nullable final Shell shell, @NotNull final String title, @Nullable final String message, @NotNull final IStatus status)
-    {
-        for (IStatus s = status; s != null; ) {
-            if (s.getException() instanceof DBException) {
-                if (showDatabaseError(shell, message, (DBException) s.getException())) {
-                    // If this DB error was handled by some DB-specific way then just don't care about it
-                    return;
-                }
-                break;
-            }
-            if (s.getChildren() != null && s.getChildren().length > 0) {
-                s = s.getChildren()[0];
-            } else {
-                break;
-            }
-        }
-        // log.debug(message);
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run()
-            {
-                // Display the dialog
-                StandardErrorDialog dialog = new StandardErrorDialog(shell == null ? DBeaverUI.getActiveWorkbenchShell() : shell,
-                    title, message, RuntimeUtils.stripStack(status), IStatus.ERROR);
-                dialog.open();
-            }
-        };
-        DBeaverUI.syncExec(runnable);
-    }
-
     @NotNull
     public static String formatMessage(@Nullable String message, @Nullable Object... args)
     {
@@ -1336,22 +1291,6 @@ public class UIUtils {
             log.warn("Unsupported property type: " + propertyType.getName());
             return null;
         }
-    }
-
-    public static boolean showDatabaseError(Shell shell, String message, DBException error)
-    {
-        DBPDataSource dataSource = error.getDataSource();
-        DBPErrorAssistant.ErrorType errorType = dataSource == null ? DBPErrorAssistant.ErrorType.NORMAL : DBUtils.discoverErrorType(dataSource, error);
-        switch (errorType) {
-            case CONNECTION_LOST:
-                DataSourceInvalidateHandler.showConnectionLostDialog(shell, message, error);
-                return true;
-            case DRIVER_CLASS_MISSING:
-                DriverEditDialog.showBadConfigDialog(shell, message, error);
-                return true;
-        }
-
-        return false;
     }
 
     public static void postEvent(Control ownerControl, final Event event) {

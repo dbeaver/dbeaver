@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.tools.transfer.wizard;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * DataTransferErrorJob
@@ -38,9 +38,8 @@ public class DataTransferErrorJob extends AbstractUIJob {
     @Override
     public IStatus runInUIThread(DBRProgressMonitor monitor)
     {
-        UIUtils.showErrorDialog(
-            getDisplay().getActiveShell(),
-            "Data export error",
+        DBUserInterface.getInstance().showError(
+                "Data export error",
             error.getMessage(), error);
         return Status.OK_STATUS;
     }

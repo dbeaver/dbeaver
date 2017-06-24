@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -91,9 +92,8 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             return false;
         }
         catch (InvocationTargetException ex) {
-            UIUtils.showErrorDialog(
-                getShell(),
-                "Import error",
+            DBUserInterface.getInstance().showError(
+                    "Import error",
                 "Cannot import projects",
                 ex.getTargetException());
             return false;

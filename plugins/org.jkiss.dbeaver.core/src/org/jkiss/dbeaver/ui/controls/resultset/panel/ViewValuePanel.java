@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -235,7 +236,7 @@ public class ViewValuePanel implements IResultSetPanel, IAdaptable {
             try {
                 valueEditor = valueManager.createEditor(previewController);
             } catch (Throwable e) {
-                UIUtils.showErrorDialog(viewPlaceholder.getShell(), "Value preview", "Can't create value viewer", e);
+                DBUserInterface.getInstance().showError("Value preview", "Can't create value viewer", e);
                 return;
             }
             if (valueEditor != null) {
@@ -322,7 +323,7 @@ public class ViewValuePanel implements IResultSetPanel, IAdaptable {
             previewController.updateValue(newValue, true);
             presentation.updateValueView();
         } catch (Exception e) {
-            UIUtils.showErrorDialog(null, "Value save", "Can't save edited value", e);
+            DBUserInterface.getInstance().showError("Value save", "Can't save edited value", e);
         } finally {
             valueSaving = false;
         }

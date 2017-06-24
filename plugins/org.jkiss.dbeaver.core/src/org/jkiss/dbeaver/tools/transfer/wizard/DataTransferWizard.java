@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
@@ -175,7 +176,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
                 }
             });
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(getShell(), "Transfer init failed", "Can't start data transfer", e.getTargetException());
+            DBUserInterface.getInstance().showError("Transfer init failed", "Can't start data transfer", e.getTargetException());
             return false;
         } catch (InterruptedException e) {
             return false;

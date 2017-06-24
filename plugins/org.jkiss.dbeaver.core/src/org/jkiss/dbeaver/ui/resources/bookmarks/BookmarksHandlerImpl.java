@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -196,7 +195,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                 }
             });
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(null, CoreMessages.model_project_open_bookmark, CoreMessages.model_project_cant_open_bookmark, e.getTargetException());
+            DBUserInterface.getInstance().showError(CoreMessages.model_project_open_bookmark, CoreMessages.model_project_cant_open_bookmark, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }

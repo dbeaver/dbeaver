@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -280,7 +281,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             }
                         }
                     } catch (DBException e1) {
-                        UIUtils.showErrorDialog(getShell(), "Error mapping table", "Error mapping target table", e1);
+                        DBUserInterface.getInstance().showError("Error mapping table", "Error mapping target table", e1);
                     }
                 }
             });
@@ -419,7 +420,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     mappingViewer.update(element, null);
                     updatePageCompletion();
                 } catch (DBException e) {
-                    UIUtils.showErrorDialog(getShell(), "Mapping error", "Error setting target table", e);
+                    DBUserInterface.getInstance().showError("Mapping error", "Error setting target table", e);
                 }
             }
         });
@@ -621,7 +622,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         mapping.refreshMappingType(getWizard().getContainer(), DatabaseMappingType.unspecified);
                     }
                 } catch (DBException e) {
-                    UIUtils.showErrorDialog(getShell(), "Error mapping table", "Error mapping existing table", e);
+                    DBUserInterface.getInstance().showError("Error mapping table", "Error mapping existing table", e);
                 }
                 mappingViewer.refresh();
                 updatePageCompletion();
@@ -642,7 +643,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 mappingViewer.refresh();
                 updatePageCompletion();
             } catch (DBException e) {
-                UIUtils.showErrorDialog(getShell(), "Mapping error", "Error mapping new table", e);
+                DBUserInterface.getInstance().showError("Mapping error", "Error mapping new table", e);
             }
         }
     }
@@ -687,7 +688,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             );
             dialog.open();
         } catch (DBException e) {
-            UIUtils.showErrorDialog(getShell(), "Target DDL", "Error generatiung target DDL", e);
+            DBUserInterface.getInstance().showError("Target DDL", "Error generatiung target DDL", e);
         }
 
     }

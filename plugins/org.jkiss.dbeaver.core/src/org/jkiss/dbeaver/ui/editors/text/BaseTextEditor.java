@@ -40,9 +40,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.ISingleControlEditor;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
@@ -257,9 +257,8 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
             }
         }
         catch (IOException e) {
-            UIUtils.showErrorDialog(
-                getSite().getShell(),
-                "Can't load file",
+            DBUserInterface.getInstance().showError(
+                    "Can't load file",
                 "Can't load file '" + loadFile.getAbsolutePath() + "' - " + e.getMessage());
         }
         if (newContent != null) {
@@ -298,7 +297,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         } catch (InterruptedException e) {
             // do nothing
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(getSite().getShell(), "Save failed", null, e.getTargetException());
+            DBUserInterface.getInstance().showError("Save failed", null, e.getTargetException());
         }
 
         afterSaveToFile(saveFile);

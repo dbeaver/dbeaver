@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -268,7 +269,7 @@ public class ERDExportGraphML
             }
             UIUtils.launchProgram(filePath);
         } catch (Exception e) {
-            UIUtils.showErrorDialog(null, "Save ERD as GraphML", null, e);
+            DBUserInterface.getInstance().showError("Save ERD as GraphML", null, e);
         }
     }
 

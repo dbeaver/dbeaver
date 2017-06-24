@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -70,7 +70,7 @@ public class CompareObjectsHandler extends AbstractHandler {
                 firstType = itemType;
             } else {
                 if (firstType != itemType || firstMeta != meta) {
-                    UIUtils.showErrorDialog(null, "Different object types", "Objects of different types were selected. You may compare only objects of the same type");
+                    DBUserInterface.getInstance().showError("Different object types", "Objects of different types were selected. You may compare only objects of the same type");
                     return null;
                 }
             }

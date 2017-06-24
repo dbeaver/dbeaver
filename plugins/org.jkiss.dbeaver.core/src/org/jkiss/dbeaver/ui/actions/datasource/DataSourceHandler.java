@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -215,9 +214,8 @@ public class DataSourceHandler
                     if (onFinish != null) {
                         onFinish.run();
                     } else if (!result.isOK()) {
-                        UIUtils.showErrorDialog(
-                            null,
-                            disconnectJob.getName(),
+                        DBUserInterface.getInstance().showError(
+                                disconnectJob.getName(),
                             null,
                             result);
                     }

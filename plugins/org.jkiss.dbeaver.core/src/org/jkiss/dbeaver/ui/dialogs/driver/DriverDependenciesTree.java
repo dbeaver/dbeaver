@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.driver.DriverDependencies;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -135,7 +136,7 @@ class DriverDependenciesTree {
         } catch (InterruptedException e) {
             // User just canceled download
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(null, "Resolve libraries", "Error resolving driver libraries", e.getTargetException());
+            DBUserInterface.getInstance().showError("Resolve libraries", "Error resolving driver libraries", e.getTargetException());
         }
 
         filesTree.removeAll();
@@ -235,7 +236,7 @@ class DriverDependenciesTree {
                 }
             });
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(filesTree.getShell(), "Versions", "Error reading versions", e.getTargetException());
+            DBUserInterface.getInstance().showError("Versions", "Error reading versions", e.getTargetException());
             return;
         } catch (InterruptedException e) {
             return;

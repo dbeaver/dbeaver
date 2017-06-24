@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -53,7 +53,7 @@ public class HandlerObjectValidate extends AbstractHandler {
         } catch (InterruptedException e) {
             // skip
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(shell, "Validation failed", null, e.getTargetException());
+            DBUserInterface.getInstance().showError("Validation failed", null, e.getTargetException());
         }
     }
 

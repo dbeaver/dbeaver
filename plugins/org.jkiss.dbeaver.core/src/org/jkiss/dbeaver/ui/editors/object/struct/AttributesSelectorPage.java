@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
@@ -254,9 +255,8 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
                 }
             });
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(
-                getShell(),
-                CoreMessages.dialog_struct_columns_select_error_load_columns_title,
+            DBUserInterface.getInstance().showError(
+                    CoreMessages.dialog_struct_columns_select_error_load_columns_title,
                 CoreMessages.dialog_struct_columns_select_error_load_columns_message,
                 e.getTargetException());
         } catch (InterruptedException e) {

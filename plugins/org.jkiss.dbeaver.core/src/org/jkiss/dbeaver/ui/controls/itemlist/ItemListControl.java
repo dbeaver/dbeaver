@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterConfig;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
@@ -307,7 +308,7 @@ public class ItemListControl extends NodeListControl
                     }
                 }
             } catch (Exception e) {
-                UIUtils.showErrorDialog(null, "Error setting property value", "Error setting property '" + property.getId() + "' value", e);
+                DBUserInterface.getInstance().showError("Error setting property value", "Error setting property '" + property.getId() + "' value", e);
             }
         }
 

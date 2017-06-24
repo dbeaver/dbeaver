@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
@@ -161,7 +162,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
             sqlViewer.init(subSite, sqlInput);
             sqlViewer.reloadSyntaxRules();
         } catch (PartInitException e) {
-            UIUtils.showErrorDialog(getShell(), getShell().getText(), null, e);
+            DBUserInterface.getInstance().showError(getShell().getText(), null, e);
         }
     }
 }

@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 
@@ -202,7 +202,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             try {
                 objectContainer.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ASSOCIATIONS | DBSObjectContainer.STRUCT_ATTRIBUTES);
             } catch (DBException e) {
-                UIUtils.showErrorDialog(null, "Cache database model", "Error caching database model", e);
+                DBUserInterface.getInstance().showError("Cache database model", "Error caching database model", e);
             }
             boolean showViews = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS);
             Collection<? extends DBSObject> entities = objectContainer.getChildren(monitor);

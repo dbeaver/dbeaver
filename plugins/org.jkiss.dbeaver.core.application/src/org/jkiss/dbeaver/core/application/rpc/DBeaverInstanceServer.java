@@ -24,13 +24,11 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
@@ -76,7 +74,7 @@ public class DBeaverInstanceServer implements IInstanceController {
                     if (file.exists()) {
                         EditorUtils.openExternalFileEditor(file, window);
                     } else {
-                        UIUtils.showErrorDialog(shell, "Open file", "Can't open '" + file.getAbsolutePath() + "': file doesn't exist");
+                        DBUserInterface.getInstance().showError("Open file", "Can't open '" + file.getAbsolutePath() + "': file doesn't exist");
                     }
                 }
                 shell.setMinimized(false);

@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -76,7 +76,7 @@ public abstract class AbstractSearchPage extends DialogPage implements ISearchPa
             saveState(DBeaverCore.getGlobalPreferenceStore());
             NewSearchUI.runQueryInBackground(createQuery());
         } catch (DBException e) {
-            UIUtils.showErrorDialog(getShell(), "Search error", "Can't perform search", e);
+            DBUserInterface.getInstance().showError("Search error", "Can't perform search", e);
             return false;
         }
         return true;

@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -178,7 +179,7 @@ public class SessionManagerViewer
                 sqlViewer.reloadSyntaxRules();
             }
         } catch (PartInitException e) {
-            UIUtils.showErrorDialog(sessionTable.getShell(), sessionTable.getShell().getText(), null, e);
+            DBUserInterface.getInstance().showError(sessionTable.getShell().getText(), null, e);
         }
     }
 
