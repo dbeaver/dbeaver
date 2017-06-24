@@ -108,7 +108,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         private boolean enabled;
 
         public DatabaseListReader(@NotNull DBCExecutionContext context) {
-            super(CoreMessages.toolbar_datasource_selector_action_read_databases, null, context);
+            super(CoreMessages.toolbar_datasource_selector_action_read_databases, context);
             setSystem(true);
             this.enabled = false;
         }

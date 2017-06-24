@@ -45,8 +45,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
@@ -314,8 +312,7 @@ public class ReferenceValueEditor {
         {
             super(
                 CoreMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values",
-                DBeaverIcons.getImageDescriptor(UIIcon.SQL_EXECUTE),
-                valueController.getExecutionContext());
+                    valueController.getExecutionContext());
             setUser(false);
         }
 
