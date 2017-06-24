@@ -63,6 +63,9 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.struct,
  org.jkiss.dbeaver.model.struct.rdb,
  org.jkiss.dbeaver.model.virtual,
+ org.jkiss.dbeaver.runtime.jobs,
+ org.jkiss.dbeaver.runtime.net,
+ org.jkiss.dbeaver.runtime.ui,
  org.jkiss.dbeaver.utils
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,

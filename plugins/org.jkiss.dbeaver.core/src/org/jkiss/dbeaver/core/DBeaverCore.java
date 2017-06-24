@@ -218,7 +218,7 @@ public class DBeaverCore implements DBPPlatform {
         }
 
         // Keep-alive job
-        new KeepAliveJob().scheduleMonitor();
+        new KeepAliveJob(this).scheduleMonitor();
 
         log.debug("Core initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
     }

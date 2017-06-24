@@ -16,18 +16,19 @@
  */
 package org.jkiss.dbeaver.runtime.jobs;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.ProjectRegistry;
 
 import java.util.*;
 
@@ -40,37 +41,45 @@ public class KeepAliveJob extends AbstractJob
 
     private static final Log log = Log.getLog(KeepAliveJob.class);
 
+    private final DBPPlatform platform;
     private Map<String, Long> checkCache = new HashMap<>();
     private final Set<String> pingCache = new HashSet<>();
 
-    public KeepAliveJob()
+    public KeepAliveJob(DBPPlatform platform)
     {
         super("Keep-Alive monitor");
         setUser(false);
         setSystem(true);
+        this.platform = platform;
     }
 
     @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
-        if (DBeaverCore.isClosing()) {
+        if (platform.isShuttingDown()) {
             return Status.OK_STATUS;
         }
-        final DBeaverCore core = DBeaverCore.getInstance();
-        final ProjectRegistry projectRegistry = core.getProjectRegistry();
+        final DBPProjectManager projectRegistry = platform.getProjectManager();
         if (projectRegistry == null) {
             return Status.OK_STATUS;
         }
-        for (DataSourceDescriptor ds : DataSourceRegistry.getAllDataSources()) {
-            checkDataSourceAlive(monitor, ds);
+        for (IProject project : platform.getLiveProjects()) {
+            if (project.isOpen()) {
+                DBPDataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
+                if (dataSourceRegistry != null) {
+                    for (DBPDataSourceContainer ds : dataSourceRegistry.getDataSources()) {
+                        checkDataSourceAlive(ds);
+                    }
+                }
+            }
         }
-        if (!DBeaverCore.isClosing()) {
+        if (!platform.isShuttingDown()) {
             scheduleMonitor();
         }
         return Status.OK_STATUS;
     }
 
-    private void checkDataSourceAlive(DBRProgressMonitor monitor, final DataSourceDescriptor dataSourceDescriptor) {
+    private void checkDataSourceAlive(final DBPDataSourceContainer dataSourceDescriptor) {
         if (!dataSourceDescriptor.isConnected()) {
             return;
         }
