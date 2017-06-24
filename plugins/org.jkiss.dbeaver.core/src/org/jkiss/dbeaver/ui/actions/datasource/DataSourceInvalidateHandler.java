@@ -164,7 +164,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
         @Override
         protected void createButtonsForButtonBar(Composite parent)
         {
-            createButton(parent, IDialogConstants.RETRY_ID, "Reconnect", true);
+            createButton(parent, IDialogConstants.RETRY_ID, "&Reconnect", true);
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
             createDetailsButton(parent);
         }
