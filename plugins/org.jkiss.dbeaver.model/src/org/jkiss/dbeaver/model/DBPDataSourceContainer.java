@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 
 import java.util.Collection;
+import java.util.Date;
 
 /**
  * DBPDataSourceContainer
@@ -186,4 +187,6 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     @NotNull
     ISecurePreferences getSecurePreferences();
+
+    Date getConnectTime();
 }
