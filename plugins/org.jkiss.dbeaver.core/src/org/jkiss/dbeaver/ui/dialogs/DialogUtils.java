@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -87,7 +88,7 @@ public class DialogUtils {
         final File saveFile = new File(fileName);
         File saveDir = saveFile.getParentFile();
         if (!saveDir.exists()) {
-            UIUtils.showErrorDialog(parentShell, "Bad file name", "Directory '" + saveDir.getAbsolutePath() + "' does not exists");
+            DBUserInterface.getInstance().showError("Bad file name", "Directory '" + saveDir.getAbsolutePath() + "' does not exists");
             return null;
         }
         return saveFile;
@@ -207,9 +208,8 @@ public class DialogUtils {
             });
         }
         catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(
-                shell,
-                CoreMessages.model_jdbc_could_not_save_content,
+            DBUserInterface.getInstance().showError(
+                    CoreMessages.model_jdbc_could_not_save_content,
                 CoreMessages.model_jdbc_could_not_save_content_to_file_ + saveFile.getAbsolutePath() + "'", //$NON-NLS-2$
                 e.getTargetException());
         }

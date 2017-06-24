@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyManager;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
@@ -73,7 +73,7 @@ public class ContentValueManager extends BaseValueManager {
                         try {
                             activeEditor.primeEditorValue(controller.getValue());
                         } catch (DBException e) {
-                            UIUtils.showErrorDialog(null, "Load from file", "Error loading contents from file", e);
+                            DBUserInterface.getInstance().showError("Load from file", "Error loading contents from file", e);
                         }
                     }
                 }

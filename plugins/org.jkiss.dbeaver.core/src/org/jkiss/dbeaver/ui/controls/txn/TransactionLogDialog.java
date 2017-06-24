@@ -24,6 +24,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class TransactionLogDialog extends TransactionInfoDialog {
@@ -68,14 +69,12 @@ public class TransactionLogDialog extends TransactionInfoDialog {
     public static void showDialog(Shell shell, DBCExecutionContext executionContext) {
         IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (activeEditor == null) {
-            UIUtils.showErrorDialog(
-                shell,
-                "No editor",
+            DBUserInterface.getInstance().showError(
+                    "No editor",
                 "Transaction log is not available.\nOpen database editor.");
         } else if (executionContext == null) {
-            UIUtils.showErrorDialog(
-                shell,
-                "Not connected",
+            DBUserInterface.getInstance().showError(
+                    "Not connected",
                 "Transaction log is not available.\nConnect to a database.");
         } else {
             final TransactionLogDialog dialog = new TransactionLogDialog(shell, executionContext, activeEditor);

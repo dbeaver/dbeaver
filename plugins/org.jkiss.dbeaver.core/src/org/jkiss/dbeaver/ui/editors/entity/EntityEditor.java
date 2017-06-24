@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -323,7 +324,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    UIUtils.showErrorDialog(getSite().getShell(), "Can't save '" + getDatabaseObject().getName() + "'", null, vError);
+                    DBUserInterface.getInstance().showError("Can't save '" + getDatabaseObject().getName() + "'", null, vError);
                 }
             });
             return false;
@@ -397,7 +398,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 DBeaverUI.syncExec(new Runnable() {
                     @Override
                     public void run() {
-                        UIUtils.showErrorDialog(getSite().getShell(), "Validation", e.getMessage());
+                        DBUserInterface.getInstance().showError("Validation", e.getMessage());
                     }
                 });
                 return IDialogConstants.CANCEL_ID;

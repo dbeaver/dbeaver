@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -162,11 +162,10 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 MessageDialog.openInformation(getShell(), CoreMessages.dialog_connection_wizard_start_connection_monitor_success,
                     message);
             } catch (InterruptedException ex) {
-                UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,
+                DBUserInterface.getInstance().showError(CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,
                     CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
             } catch (InvocationTargetException ex) {
-                UIUtils.showErrorDialog(
-                        getShell(),
+                DBUserInterface.getInstance().showError(
                         CoreMessages.dialog_connection_wizard_start_dialog_error_title,
                         null,
                         GeneralUtils.makeExceptionStatus(ex.getTargetException()));

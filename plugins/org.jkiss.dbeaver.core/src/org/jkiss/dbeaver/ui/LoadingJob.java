@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -124,9 +125,8 @@ public class LoadingJob<RESULT>  extends AbstractJob {
 
             if (innerError != null) {
                 log.debug(innerError);
-                UIUtils.showErrorDialog(
-                    null,
-                    getName(),
+                DBUserInterface.getInstance().showError(
+                        getName(),
                     null,
                     innerError);
             }

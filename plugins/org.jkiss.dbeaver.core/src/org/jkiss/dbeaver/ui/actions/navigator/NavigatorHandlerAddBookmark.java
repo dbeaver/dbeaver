@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -56,8 +57,7 @@ public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
                         BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node, title, dialog.getTargetFolder());
                     }
                 } catch (DBException e) {
-                    UIUtils.showErrorDialog(
-                            activeShell,
+                    DBUserInterface.getInstance().showError(
                             CoreMessages.actions_navigator_bookmark_error_title,
                             CoreMessages.actions_navigator_bookmark_error_message, e);
                 }

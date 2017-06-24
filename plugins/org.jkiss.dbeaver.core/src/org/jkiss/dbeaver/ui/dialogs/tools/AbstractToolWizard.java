@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -159,9 +160,8 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             return false;
         }
         catch (InvocationTargetException ex) {
-            UIUtils.showErrorDialog(
-                getShell(),
-                NLS.bind(CoreMessages.tools_wizard_error_task_error_title, task),
+            DBUserInterface.getInstance().showError(
+                    NLS.bind(CoreMessages.tools_wizard_error_task_error_title, task),
                 CoreMessages.tools_wizard_error_task_error_message + task,
                 ex.getTargetException());
             return false;

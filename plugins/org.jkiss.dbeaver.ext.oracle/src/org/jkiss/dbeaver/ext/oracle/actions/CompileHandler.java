@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.TextUtils;
@@ -123,7 +124,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                     return null;
                 }
                 if (error != null) {
-                    UIUtils.showErrorDialog(activeShell, "Unexpected compilation error", null, error);
+                    DBUserInterface.getInstance().showError("Unexpected compilation error", null, error);
                 } else if (!CommonUtils.isEmpty(compileLog.getErrorStack())) {
                     // Show compile errors
                     int line = -1, position = -1;
@@ -147,7 +148,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                         sourceHost.setCompileInfo(errorTitle, true);
                         sourceHost.showCompileLog();
                     }
-                    UIUtils.showErrorDialog(activeShell, errorTitle, fullMessage.toString());
+                    DBUserInterface.getInstance().showError(errorTitle, fullMessage.toString());
                 } else {
                     String message = unit.getName() + " compiled successfully";
                     if (sourceHost != null) {

@@ -24,7 +24,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -44,7 +44,7 @@ public class RenameHandler extends AbstractDataSourceHandler {
 
         IFile file = EditorUtils.getFileFromInput(editor.getEditorInput());
         if (file == null) {
-            UIUtils.showErrorDialog(shell, "Rename", "Can't rename - no source file");
+            DBUserInterface.getInstance().showError("Rename", "Can't rename - no source file");
             return null;
         }
         String newName = EnterNameDialog.chooseName(shell, "Rename SQL script [" + file.getName() + "]", file.getName());
@@ -64,7 +64,7 @@ public class RenameHandler extends AbstractDataSourceHandler {
             try {
                 file.move(file.getParent().getFullPath().append(newName), true, monitor);
             } catch (CoreException e) {
-                UIUtils.showErrorDialog(shell, "Rename", "Error renaming file '" + file.getName() + "'", e);
+                DBUserInterface.getInstance().showError("Rename", "Error renaming file '" + file.getName() + "'", e);
             }
         }
         //file.set

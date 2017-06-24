@@ -73,6 +73,7 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
@@ -611,9 +612,8 @@ public class ResultSetViewer extends Viewer
             DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
             savePresentationSettings();
         } catch (Throwable e1) {
-            UIUtils.showErrorDialog(
-                viewerPanel.getShell(),
-                "Presentation switch",
+            DBUserInterface.getInstance().showError(
+                    "Presentation switch",
                 "Can't switch presentation",
                 e1);
         }
@@ -705,7 +705,7 @@ public class ResultSetViewer extends Viewer
         try {
             panel = panelDescriptor.createInstance();
         } catch (DBException e) {
-            UIUtils.showErrorDialog(getSite().getShell(), "Can't show panel", "Can't create panel '" + id + "'", e);
+            DBUserInterface.getInstance().showError("Can't show panel", "Can't create panel '" + id + "'", e);
             return;
         }
         activePanels.put(id, panel);
@@ -2214,9 +2214,8 @@ public class ResultSetViewer extends Viewer
                 }
             });
         } else {
-            UIUtils.showErrorDialog(
-                null,
-                "Error executing query",
+            DBUserInterface.getInstance().showError(
+                    "Error executing query",
                 dataContainer == null ?
                     "Viewer detached from data source" :
                     dataPumpJob == null ?
@@ -2420,9 +2419,8 @@ public class ResultSetViewer extends Viewer
                             final boolean metadataChanged = model.isMetadataChanged();
                             if (error != null) {
                                 setStatus(error.getMessage(), DBPMessageType.ERROR);
-                                UIUtils.showErrorDialog(
-                                    shell,
-                                    "Error executing query",
+                                DBUserInterface.getInstance().showError(
+                                        "Error executing query",
                                     "Query execution failed",
                                     error);
                             } else {
@@ -2522,7 +2520,7 @@ public class ResultSetViewer extends Viewer
             };
             return persister.applyChanges(monitor, false, applyListener);
         } catch (DBException e) {
-            UIUtils.showErrorDialog(null, "Apply changes error", "Error saving changes in database", e);
+            DBUserInterface.getInstance().showError("Apply changes error", "Error saving changes in database", e);
             return false;
         }
     }
@@ -2548,7 +2546,7 @@ public class ResultSetViewer extends Viewer
             persister.applyChanges(monitor, true, null);
             return persister.getScript();
         } catch (DBException e) {
-            UIUtils.showErrorDialog(null, "SQL script generate error", "Error saving changes in database", e);
+            DBUserInterface.getInstance().showError("SQL script generate error", "Error saving changes in database", e);
             return Collections.emptyList();
         }
     }
@@ -2745,9 +2743,8 @@ public class ResultSetViewer extends Viewer
     {
         DBSEntity entity = model.getSingleSource();
         if (entity == null) {
-            UIUtils.showErrorDialog(
-                null,
-                "Unrecognized entity",
+            DBUserInterface.getInstance().showError(
+                    "Unrecognized entity",
                 "Can't detect source entity");
             return false;
         }
@@ -2775,15 +2772,13 @@ public class ResultSetViewer extends Viewer
             if (rowIdentifier == null) {
                 // We shouldn't be here ever!
                 // Virtual id should be created if we missing natural one
-                UIUtils.showErrorDialog(
-                    null,
-                    "No entity identifier",
+                DBUserInterface.getInstance().showError(
+                        "No entity identifier",
                     "Entity " + entity.getName() + " has no unique key");
                 return false;
             } else if (CommonUtils.isEmpty(rowIdentifier.getAttributes())) {
-                UIUtils.showErrorDialog(
-                    null,
-                    "No entity identifier",
+                DBUserInterface.getInstance().showError(
+                        "No entity identifier",
                     "Attributes of '" + DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set");
                 return false;
             }
@@ -3248,9 +3243,8 @@ public class ResultSetViewer extends Viewer
                 vEntity.setColorOverride(attribute, value, null, StringConverter.asString(color));
                 updateColors(vEntity);
             } catch (IllegalStateException e) {
-                UIUtils.showErrorDialog(
-                    viewerPanel.getShell(),
-                    "Row color",
+                DBUserInterface.getInstance().showError(
+                        "Row color",
                     "Can't set row color",
                     e);
             }

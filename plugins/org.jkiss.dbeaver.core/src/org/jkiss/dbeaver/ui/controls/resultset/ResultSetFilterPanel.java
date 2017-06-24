@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.StyledTextContentAdapter;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
@@ -65,7 +66,6 @@ import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLContextInformer;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordPartDetector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -677,7 +677,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             try {
                 editControl = createObjectPanel(popup);
             } catch (PartInitException e1) {
-                UIUtils.showErrorDialog(getShell(), "Object info", "Error opening object info", e1);
+                DBUserInterface.getInstance().showError("Object info", "Error opening object info", e1);
                 popup.dispose();
                 return;
             }

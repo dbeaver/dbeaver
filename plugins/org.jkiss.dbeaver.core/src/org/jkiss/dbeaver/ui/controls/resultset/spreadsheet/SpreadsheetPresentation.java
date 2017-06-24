@@ -80,6 +80,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -567,7 +568,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             controller.updateEditControls();
         }
         catch (Exception e) {
-            UIUtils.showErrorDialog(spreadsheet.getShell(), "Cannot replace cell value", null, e);
+            DBUserInterface.getInstance().showError("Cannot replace cell value", null, e);
         }
     }
 
@@ -861,7 +862,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             editor = valueController.getValueManager().createEditor(valueController);
         }
         catch (Exception e) {
-            UIUtils.showErrorDialog(spreadsheet.getShell(), "Cannot edit value", null, e);
+            DBUserInterface.getInstance().showError("Cannot edit value", null, e);
             return null;
         }
         if (editor != null) {

@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.core.DBeaverNature;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.preferences.PrefPageProjectSettings;
 import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -88,9 +88,8 @@ public class ProjectCreateWizard extends BasicNewProjectResourceWizard implement
             } catch (InterruptedException ex) {
                 return false;
             } catch (InvocationTargetException ex) {
-                UIUtils.showErrorDialog(
-                    getShell(),
-                    CoreMessages.dialog_project_create_wizard_error_cannot_create,
+                DBUserInterface.getInstance().showError(
+                        CoreMessages.dialog_project_create_wizard_error_cannot_create,
                     CoreMessages.dialog_project_create_wizard_error_cannot_create_message,
                     ex.getTargetException());
                 return false;

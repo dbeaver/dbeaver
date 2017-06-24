@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -245,7 +246,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     }
 
                 } catch (InvocationTargetException e) {
-                    UIUtils.showErrorDialog(HandlerUtil.getActiveShell(event), "Script generation", "Can't generate changes script", e.getTargetException());
+                    DBUserInterface.getInstance().showError("Script generation", "Can't generate changes script", e.getTargetException());
                 }
                 break;
             }

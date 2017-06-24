@@ -32,6 +32,7 @@ import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderEditorSite;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
@@ -89,7 +90,7 @@ public class TabbedFolderPageEditor extends TabbedFolderPage implements IDatabas
         try {
             editor.init(nestedEditorSite, editorDescriptor.getNestedEditorInput(mainEditor.getEditorInput()));
         } catch (PartInitException e) {
-            UIUtils.showErrorDialog(parent.getShell(), "Create SQL viewer", null, e);
+            DBUserInterface.getInstance().showError("Create SQL viewer", null, e);
         }
         editor.createPartControl(parent);
 

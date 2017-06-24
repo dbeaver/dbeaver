@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
@@ -88,7 +89,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             createDatabaseObject(commandTarget, objectMaker, parentObject, sourceObject);
         }
         catch (Throwable e) {
-            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Create object", null, e);
+            DBUserInterface.getInstance().showError("Create object", null, e);
             return false;
         }
 
@@ -182,7 +183,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                     throw new DBException("Can't find node corresponding to new object");
                 }
             } catch (Throwable e) {
-                UIUtils.showErrorDialog(workbenchWindow.getShell(), "Create object", null, e);
+                DBUserInterface.getInstance().showError("Create object", null, e);
             }
         }
 

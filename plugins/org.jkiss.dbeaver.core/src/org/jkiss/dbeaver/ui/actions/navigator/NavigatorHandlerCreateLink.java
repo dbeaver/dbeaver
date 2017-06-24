@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -77,7 +77,7 @@ public class NavigatorHandlerCreateLink extends NavigatorHandlerObjectBase {
                 }
             });
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Create link", "Can't create link", e);
+            DBUserInterface.getInstance().showError("Create link", "Can't create link", e);
         } catch (InterruptedException e) {
             // skip
         }

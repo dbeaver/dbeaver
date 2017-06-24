@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 
 import java.util.Map;
@@ -61,7 +61,7 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
                         }
                     });
                 } catch (DBException e) {
-                    UIUtils.showErrorDialog(null, "Auto-Commit", "Error while toggle auto-commit", e);
+                    DBUserInterface.getInstance().showError("Auto-Commit", "Error while toggle auto-commit", e);
                 }
             }
         }

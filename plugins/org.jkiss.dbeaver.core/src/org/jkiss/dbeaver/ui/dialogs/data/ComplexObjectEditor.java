@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -309,7 +310,7 @@ public class ComplexObjectEditor extends TreeViewer {
                 }
             }
         } catch (DBException e) {
-            UIUtils.showErrorDialog(getControl().getShell(), "Cell editor", "Can't open cell editor", e);
+            DBUserInterface.getInstance().showError("Cell editor", "Can't open cell editor", e);
         }
     }
 

@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -238,7 +239,7 @@ public class EditConnectionWizard extends ConnectionWizard
                     }
                     UIUtils.showMessageBox(getShell(), "Bad password", "Password doesn't match", SWT.ICON_ERROR);
                 } catch (Throwable e) {
-                    UIUtils.showErrorDialog(getShell(), "Error making MD5", "Can't generate password hash", e);
+                    DBUserInterface.getInstance().showError("Error making MD5", "Can't generate password hash", e);
                 }
             }
         }

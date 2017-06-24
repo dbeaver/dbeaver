@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
@@ -371,7 +372,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
 
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_struct_edit_fk_error_load_constraints_title, CoreMessages.dialog_struct_edit_fk_error_load_constraints_message, e.getTargetException());
+            DBUserInterface.getInstance().showError(CoreMessages.dialog_struct_edit_fk_error_load_constraints_title, CoreMessages.dialog_struct_edit_fk_error_load_constraints_message, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }
@@ -420,7 +421,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 item.setData(fkColumnInfo);
             }
         } catch (DBException e) {
-            UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_struct_edit_fk_error_load_constraint_columns_title, CoreMessages.dialog_struct_edit_fk_error_load_constraint_columns_message, e);
+            DBUserInterface.getInstance().showError(CoreMessages.dialog_struct_edit_fk_error_load_constraint_columns_title, CoreMessages.dialog_struct_edit_fk_error_load_constraint_columns_message, e);
         }
         UIUtils.packColumns(columnsTable, true);
     }

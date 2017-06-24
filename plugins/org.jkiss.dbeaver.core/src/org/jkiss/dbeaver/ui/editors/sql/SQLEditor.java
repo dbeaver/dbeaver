@@ -75,6 +75,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
@@ -267,7 +268,7 @@ public class SQLEditor extends SQLEditorBase implements
                         public void done(IJobChangeEvent event) {
                             if (job.error != null) {
                                 releaseExecutionContext();
-                                UIUtils.showErrorDialog(getSite().getShell(), "Open context", "Can't open editor connection", job.error);
+                                DBUserInterface.getInstance().showError("Open context", "Can't open editor connection", job.error);
                             } else {
                                 DBeaverUI.syncExec(new Runnable() {
                                     @Override
@@ -861,7 +862,7 @@ public class SQLEditor extends SQLEditorBase implements
         // 1. Determine whether planner supports plan extraction
         DBCQueryPlanner planner = DBUtils.getAdapter(DBCQueryPlanner.class, getDataSource());
         if (planner == null) {
-            UIUtils.showErrorDialog(getSite().getShell(), "Execution plan", "Execution plan explain isn't supported by current datasource");
+            DBUserInterface.getInstance().showError("Execution plan", "Execution plan explain isn't supported by current datasource");
             return;
         }
         DBCPlanStyle planStyle = planner.getPlanStyle();
@@ -898,9 +899,8 @@ public class SQLEditor extends SQLEditorBase implements
         try {
             planView.explainQueryPlan(getExecutionContext(), sqlQuery);
         } catch (DBCException e) {
-            UIUtils.showErrorDialog(
-                sashForm.getShell(),
-                CoreMessages.editors_sql_error_execution_plan_title,
+            DBUserInterface.getInstance().showError(
+                    CoreMessages.editors_sql_error_execution_plan_title,
                 CoreMessages.editors_sql_error_execution_plan_message,
                 e);
         }
@@ -976,7 +976,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
         catch (DBException e) {
-            UIUtils.showErrorDialog(getSite().getShell(), "Bad query", "Can't execute query", e);
+            DBUserInterface.getInstance().showError("Bad query", "Can't execute query", e);
             return;
         }
         processQueries(elements, newTab, false, true);
@@ -988,8 +988,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (sqlQuery instanceof SQLQuery) {
             processQueries(Collections.singletonList(sqlQuery), false, true, true);
         } else {
-            UIUtils.showErrorDialog(
-                    getSite().getShell(),
+            DBUserInterface.getInstance().showError(
                     "Extract data",
                     "Can't extract data from control command");
         }
@@ -1008,9 +1007,8 @@ public class SQLEditor extends SQLEditorBase implements
                     @Override
                     public void onTaskFinished(IStatus status) {
                         if (!status.isOK() || container == null || !container.isConnected()) {
-                            UIUtils.showErrorDialog(
-                                getSite().getShell(),
-                                CoreMessages.editors_sql_error_cant_obtain_session,
+                            DBUserInterface.getInstance().showError(
+                                    CoreMessages.editors_sql_error_cant_obtain_session,
                                 null,
                                 status);
                             return;
@@ -1037,9 +1035,8 @@ public class SQLEditor extends SQLEditorBase implements
                 if (viewer != null) {
                     viewer.setStatus(ex.getMessage(), DBPMessageType.ERROR);
                 }
-                UIUtils.showErrorDialog(
-                    getSite().getShell(),
-                    CoreMessages.editors_sql_error_cant_obtain_session,
+                DBUserInterface.getInstance().showError(
+                        CoreMessages.editors_sql_error_cant_obtain_session,
                     ex.getMessage());
                 return;
             }
@@ -1400,7 +1397,7 @@ public class SQLEditor extends SQLEditorBase implements
 
             init(getEditorSite(), input);
         } catch (CoreException e) {
-            UIUtils.showErrorDialog(getSite().getShell(), "File save", "Can't open SQL editor from external file", e);
+            DBUserInterface.getInstance().showError("File save", "Can't open SQL editor from external file", e);
         }
     }
 
@@ -1528,17 +1525,15 @@ public class SQLEditor extends SQLEditorBase implements
                 return;
             }
             if (curJobRunning.get() > 0) {
-                UIUtils.showErrorDialog(
-                    getSite().getShell(),
-                    CoreMessages.editors_sql_error_cant_execute_query_title,
+                DBUserInterface.getInstance().showError(
+                        CoreMessages.editors_sql_error_cant_execute_query_title,
                     CoreMessages.editors_sql_error_cant_execute_query_message);
                 return;
             }
             final DBCExecutionContext executionContext = getExecutionContext();
             if (executionContext == null) {
-                UIUtils.showErrorDialog(
-                    getSite().getShell(),
-                    CoreMessages.editors_sql_error_cant_execute_query_title,
+                DBUserInterface.getInstance().showError(
+                        CoreMessages.editors_sql_error_cant_execute_query_title,
                     CoreMessages.editors_sql_status_not_connected_to_database);
                 return;
             }
@@ -1698,7 +1693,7 @@ public class SQLEditor extends SQLEditorBase implements
                 try {
                     sqlView = (SQLResultsView) getSite().getPage().showView(SQLResultsView.VIEW_ID, null, IWorkbenchPage.VIEW_CREATE);
                 } catch (Throwable e) {
-                    UIUtils.showErrorDialog(getSite().getShell(), "Detached results", "Can't open results view", e);
+                    DBUserInterface.getInstance().showError("Detached results", "Can't open results view", e);
                 }
             }
 

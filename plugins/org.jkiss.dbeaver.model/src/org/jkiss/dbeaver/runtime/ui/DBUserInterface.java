@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.runtime.ui;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -29,22 +30,25 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
  */
 public class DBUserInterface {
 
-    private static DBUICallback instance = new DBUICallback() {
+    private static DBPPlatformUI instance = new DBPPlatformUI() {
         @Override
-        public void showError(@NotNull String title, @Nullable String message, @NotNull IStatus status) {
+        public UserResponse showError(@NotNull String title, @Nullable String message, @NotNull IStatus status) {
             System.out.println(title + (message == null ? "" : ": " + message));
             printStatus(status, 0);
+            return UserResponse.OK;
         }
 
         @Override
-        public void showError(@NotNull String title, @Nullable String message, @NotNull Throwable e) {
+        public UserResponse showError(@NotNull String title, @Nullable String message, @NotNull Throwable e) {
             System.out.println(title + (message == null ? "" : ": " + message));
             e.printStackTrace(System.out);
+            return UserResponse.OK;
         }
 
         @Override
-        public void showError(@NotNull String title, @Nullable String message) {
+        public UserResponse showError(@NotNull String title, @Nullable String message) {
             System.out.println(title + (message == null ? "" : ": " + message));
+            return UserResponse.OK;
         }
 
         private void printStatus(@NotNull IStatus status, int level) {
@@ -73,11 +77,12 @@ public class DBUserInterface {
         }
     };
 
-    public static DBUICallback getInstance() {
+    public static DBPPlatformUI getInstance() {
         return instance;
     }
 
-    public static void setInstance(DBUICallback instance) {
+    public static void setInstance(DBPPlatformUI instance) {
         DBUserInterface.instance = instance;
     }
+
 }

@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.File;
@@ -86,9 +86,8 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
             return false;
         }
         catch (InvocationTargetException ex) {
-            UIUtils.showErrorDialog(
-                getShell(),
-                "Export error",
+            DBUserInterface.getInstance().showError(
+                    "Export error",
                 "Cannot export scripts",
                 ex.getTargetException());
             return false;

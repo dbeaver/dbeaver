@@ -32,14 +32,20 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DummyRunnableContext;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
-import org.jkiss.dbeaver.runtime.ui.DBUICallback;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
+import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -53,7 +59,7 @@ import java.util.List;
 /**
  * DBeaver UI core
  */
-public class DBeaverUI implements DBUICallback {
+public class DBeaverUI implements DBPPlatformUI {
 
     private static final Log log = Log.getLog(DBeaverUI.class);
 
@@ -282,7 +288,7 @@ public class DBeaverUI implements DBUICallback {
                 }
             }, DBeaverActivator.getWorkspace().getRoot());
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(null, null, null, e.getTargetException());
+            DBUserInterface.getInstance().showError(null, null, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }
@@ -330,18 +336,63 @@ public class DBeaverUI implements DBUICallback {
     }
 
     @Override
-    public void showError(@NotNull String title, @Nullable String message, @NotNull IStatus status) {
-        UIUtils.showErrorDialog(null, title, message, status);
+    public UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status) {
+        for (IStatus s = status; s != null; ) {
+            if (s.getException() instanceof DBException) {
+                UserResponse dbErrorResp = showDatabaseError(message, (DBException) s.getException());
+                if (dbErrorResp != null) {
+                    // If this DB error was handled by some DB-specific way then just don't care about it
+                    return dbErrorResp;
+                }
+                break;
+            }
+            if (s.getChildren() != null && s.getChildren().length > 0) {
+                s = s.getChildren()[0];
+            } else {
+                break;
+            }
+        }
+        // log.debug(message);
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run()
+            {
+                // Display the dialog
+                StandardErrorDialog dialog = new StandardErrorDialog(DBeaverUI.getActiveWorkbenchShell(),
+                        title, message, RuntimeUtils.stripStack(status), IStatus.ERROR);
+                dialog.open();
+            }
+        };
+        DBeaverUI.syncExec(runnable);
+        return UserResponse.OK;
     }
 
     @Override
-    public void showError(@NotNull String title, @Nullable String message, @NotNull Throwable e) {
-        UIUtils.showErrorDialog(null, title, message, e);
+    public UserResponse showError(@NotNull String title, @Nullable String message, @NotNull Throwable error) {
+        log.error(error);
+
+        return showError(title, message, GeneralUtils.makeExceptionStatus(error));
     }
 
     @Override
-    public void showError(@NotNull String title, @Nullable String message) {
-        UIUtils.showErrorDialog(null, title, message);
+    public UserResponse showError(@NotNull String title, @Nullable String message) {
+        return showError(title, null, new Status(IStatus.ERROR, DBeaverCore.PLUGIN_ID, message));
+    }
+
+    private static UserResponse showDatabaseError(String message, DBException error)
+    {
+        DBPDataSource dataSource = error.getDataSource();
+        DBPErrorAssistant.ErrorType errorType = dataSource == null ? DBPErrorAssistant.ErrorType.NORMAL : DBUtils.discoverErrorType(dataSource, error);
+        switch (errorType) {
+            case CONNECTION_LOST:
+                DataSourceInvalidateHandler.showConnectionLostDialog(null, message, error);
+                return UserResponse.OK;
+            case DRIVER_CLASS_MISSING:
+                DriverEditDialog.showBadConfigDialog(null, message, error);
+                return UserResponse.OK;
+        }
+
+        return null;
     }
 
     @Override

@@ -20,7 +20,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.IViewDescriptor;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
 
 public class ToggleViewAction extends Action implements IPartListener
@@ -101,7 +101,7 @@ public class ToggleViewAction extends Action implements IPartListener
                 activePage.hideView(view);
             }
         } catch (PartInitException ex) {
-            UIUtils.showErrorDialog(null, viewId, "Can't open view " + viewId, ex);
+            DBUserInterface.getInstance().showError(viewId, "Can't open view " + viewId, ex);
         }
     }
 

@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -156,7 +156,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
                 // Do not use runnable context! It changes active focus and locks UI which breakes whole jface editing framework
                 readAttributes(new VoidProgressMonitor());
             } catch (DBException e) {
-                UIUtils.showErrorDialog(null, "Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source, DBPEvaluationContext.UI), e);
+                DBUserInterface.getInstance().showError("Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source, DBPEvaluationContext.UI), e);
             }
         }
         return attributeMappings;
@@ -168,7 +168,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
             try {
                 readAttributes(monitor);
             } catch (DBException e) {
-                UIUtils.showErrorDialog(null, "Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source, DBPEvaluationContext.UI), e);
+                DBUserInterface.getInstance().showError("Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source, DBPEvaluationContext.UI), e);
             }
         }
         return attributeMappings;

@@ -35,11 +35,11 @@ import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferSettings;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -211,7 +211,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                     }
                 });
             } catch (InvocationTargetException e) {
-                UIUtils.showErrorDialog(null, "Init connection", "Error connecting to datasource", e.getTargetException());
+                DBUserInterface.getInstance().showError("Init connection", "Error connecting to datasource", e.getTargetException());
             } catch (InterruptedException e) {
                 // ignore
             }

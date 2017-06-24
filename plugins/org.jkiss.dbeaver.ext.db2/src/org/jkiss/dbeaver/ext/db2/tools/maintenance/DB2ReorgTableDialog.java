@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablespaceDataType;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -107,7 +108,7 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
                 }
             });
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(partSite.getShell(), "Error", "Can't read system info", e.getTargetException());
+            DBUserInterface.getInstance().showError("Error", "Can't read system info", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }
