@@ -52,12 +52,12 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
     private int precision;
     private int scale;
     private final String tableName;
-    private final int typeID;
+    private int typeID;
     private String typeName;
     private boolean readOnly;
     private boolean writable;
     private boolean sequence;
-    private final DBPDataKind dataKind;
+    private DBPDataKind dataKind;
     private JDBCTableMetaData tableMetaData;
     private DBCExecutionSource source;
     private String catalogName;
@@ -94,24 +94,24 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
 
         try {
             this.writable = resultSetMeta.isWritable(ordinalPosition + 1);
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             log.debug("Can't get column writable flag: " + e.getMessage());
         }
 
         String fetchedTableName = null;
         try {
             fetchedTableName = resultSetMeta.getTableName(ordinalPosition + 1);
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             log.debug("Can't get column table name: " + e.getMessage());
         }
         try {
             catalogName = resultSetMeta.getCatalogName(ordinalPosition + 1);
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             log.debug("Can't get column catalog name: " + e.getMessage());
         }
         try {
             schemaName = resultSetMeta.getSchemaName(ordinalPosition + 1);
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             log.debug("Can't get column schema name: " + e.getMessage());
         }
 
@@ -141,22 +141,22 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
 
         try {
             this.notNull = resultSetMeta.isNullable(ordinalPosition + 1) == ResultSetMetaData.columnNoNulls;
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             this.notNull = false;
             log.debug("Can't get column nullability: " + e.getMessage());
         }
         try {
             this.displaySize = resultSetMeta.getColumnDisplaySize(ordinalPosition + 1);
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             this.displaySize = 0;
         }
         try {
             this.typeName = resultSetMeta.getColumnTypeName(ordinalPosition + 1);
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             log.debug("Can't get column type name: " + e.getMessage());
             this.typeName = "unknown";
         }
-        {
+        try {
             int typeID = resultSetMeta.getColumnType(ordinalPosition + 1);
             DBPDataKind dataKind = null;
             if (dataSource instanceof DBPDataTypeProvider) {
@@ -171,23 +171,27 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
             }
             this.typeID = typeID;
             this.dataKind = dataKind;
+        } catch (Throwable e) {
+            log.debug("Can't get column type ID: " + e.getMessage());
+            this.typeID = -1;
+            this.dataKind = DBPDataKind.UNKNOWN;
         }
 
         try {
             this.sequence = resultSetMeta.isAutoIncrement(ordinalPosition + 1);
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             this.sequence = false;
             log.debug("Can't get column auto increment: " + e.getMessage());
         }
         try {
             this.precision = resultSetMeta.getPrecision(ordinalPosition + 1);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // NumberFormatException occurred in Oracle on BLOB columns
             this.precision = 0;
         }
         try {
             this.scale = resultSetMeta.getScale(ordinalPosition + 1);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             this.scale = 0;
         }
 
