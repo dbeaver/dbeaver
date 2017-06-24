@@ -231,11 +231,17 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         return handler;
     }
 
-    public Collection<ResourceHandlerDescriptor> getResourceHandlers()
+    @Override
+    public DBPResourceHandler[] getAllResourceHandlers()
     {
-        return handlerDescriptors;
+        DBPResourceHandler[] handlers = new DBPResourceHandler[handlerDescriptors.size()];
+        for (int i = 0; i < handlerDescriptors.size(); i++) {
+            handlers[i] = handlerDescriptors.get(i).getHandler();
+        }
+        return handlers;
     }
 
+    @Override
     public IFolder getResourceDefaultRoot(IProject project, Class<? extends DBPResourceHandler> handlerType, boolean forceCreate)
     {
     	if (project == null) {
@@ -244,9 +250,14 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
             DBPResourceHandler handler = rhd.getHandler();
             if (handler != null && handler.getClass() == handlerType) {
-                final IFolder realFolder = project.getFolder(rhd.getDefaultRoot(project));
+                String defaultRoot = rhd.getDefaultRoot(project);
+                if (defaultRoot == null) {
+                    // No root
+                    return null;
+                }
+                final IFolder realFolder = project.getFolder(defaultRoot);
 
-                if (!realFolder.exists() && forceCreate) {
+                if (forceCreate && !realFolder.exists()) {
                     try {
                         realFolder.create(true, true, new NullProgressMonitor());
                     } catch (CoreException e) {
@@ -275,6 +286,11 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
             log.warn("Project '" + project.getName() + "' not found in registry");
         }
         return dataSourceRegistry;
+    }
+
+    public ResourceHandlerDescriptor[] getResourceHandlerDescriptors()
+    {
+        return handlerDescriptors.toArray(new ResourceHandlerDescriptor[handlerDescriptors.size()]);
     }
 
     public DataSourceRegistry getActiveDataSourceRegistry()

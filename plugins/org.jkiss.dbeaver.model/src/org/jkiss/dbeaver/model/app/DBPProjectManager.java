@@ -17,15 +17,21 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.jkiss.code.Nullable;
 
 /**
  * ProjectManager
  */
 public interface DBPProjectManager
 {
+    DBPResourceHandler[] getAllResourceHandlers();
+    @Nullable
     DBPResourceHandler getResourceHandler(IResource resource);
+    @Nullable
+    IFolder getResourceDefaultRoot(IProject project, Class<? extends DBPResourceHandler> handlerType, boolean forceCreate);
 
     IProject getActiveProject();
     void setActiveProject(IProject project);
@@ -35,4 +41,5 @@ public interface DBPProjectManager
     void removeProjectListener(DBPProjectListener listener);
 
     DBPDataSourceRegistry getDataSourceRegistry(IProject project);
+
 }
