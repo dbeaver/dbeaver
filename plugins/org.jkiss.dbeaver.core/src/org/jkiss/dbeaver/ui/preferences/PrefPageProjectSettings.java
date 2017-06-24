@@ -171,7 +171,7 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
     protected void performDefaults()
     {
         resourceTable.removeAll();
-        for (ResourceHandlerDescriptor descriptor : DBeaverCore.getInstance().getProjectRegistry().getResourceHandlers()) {
+        for (ResourceHandlerDescriptor descriptor : DBeaverCore.getInstance().getProjectRegistry().getResourceHandlerDescriptors()) {
             if (!descriptor.isManagable()) {
                 continue;
             }

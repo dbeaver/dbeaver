@@ -22,11 +22,14 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -250,6 +253,10 @@ public class ResourceUtils {
         if (scriptsFolder == null) {
             scriptsFolder = scriptsRootFolder;
         }
+        if (!scriptsFolder.exists()) {
+            scriptsFolder.create(true, true, new NullProgressMonitor());
+        }
+
         if (CommonUtils.equalObjects(scriptsRootFolder, scriptsFolder)) {
             // We are in the root folder
             if (dataSourceContainer != null) {
@@ -296,6 +303,24 @@ public class ResourceUtils {
         }
 
         return tempFile;
+    }
+
+    public static void checkFolderExists(IFolder folder)
+            throws DBException
+    {
+        checkFolderExists(folder, new VoidProgressMonitor());
+    }
+
+    public static void checkFolderExists(IFolder folder, DBRProgressMonitor monitor)
+            throws DBException
+    {
+        if (!folder.exists()) {
+            try {
+                folder.create(true, true, monitor.getNestedMonitor());
+            } catch (CoreException e) {
+                throw new DBException("Can't create folder '" + folder.getFullPath() + "'", e);
+            }
+        }
     }
 
 }

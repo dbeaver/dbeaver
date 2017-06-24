@@ -150,11 +150,14 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     {
         List<DBNNode> result = new ArrayList<>();
         try {
-            IResource[] members = ((IContainer) resource).members(false);
-            for (IResource member : members) {
-                DBNNode newChild = makeNode(member);
-                if (newChild != null) {
-                    result.add(newChild);
+            if (resource.exists()) {
+                IResource[] members = ((IContainer) resource).members(false);
+                members = addImplicitMembers(members);
+                for (IResource member : members) {
+                    DBNNode newChild = makeNode(member);
+                    if (newChild != null) {
+                        result.add(newChild);
+                    }
                 }
             }
         } catch (CoreException e) {
@@ -168,6 +171,10 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
             sortChildren(childNodes);
             return childNodes;
         }
+    }
+
+    protected IResource[] addImplicitMembers(IResource[] members) {
+        return members;
     }
 
     DBNResource getChild(IResource resource)

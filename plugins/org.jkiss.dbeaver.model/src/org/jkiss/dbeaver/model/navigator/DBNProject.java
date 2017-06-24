@@ -142,6 +142,18 @@ public class DBNProject extends DBNResource
         return children;
     }
 
+    @Override
+    protected IResource[] addImplicitMembers(IResource[] members) {
+        for (DBPResourceHandler rh : getModel().getPlatform().getProjectManager().getAllResourceHandlers()) {
+            IFolder rhDefaultRoot = getModel().getPlatform().getProjectManager().getResourceDefaultRoot(getProject(), rh.getClass(), false);
+            if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
+                // Add as explicit member
+                members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);
+            }
+        }
+        return super.addImplicitMembers(members);
+    }
+
     public DBNResource findResource(IResource resource)
     {
         List<IResource> path = new ArrayList<>();
