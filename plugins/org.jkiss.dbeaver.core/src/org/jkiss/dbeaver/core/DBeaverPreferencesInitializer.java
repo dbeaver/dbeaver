@@ -85,7 +85,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_DELETE_EMPTY, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_AUTO_FOLDERS, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_CREATE_CONNECTION_FOLDERS, false);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_TITLE_PATTERN, SQLEditor.DEFAULT_PATTERN);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_TITLE_PATTERN, SQLEditor.DEFAULT_TITLE_PATTERN);
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_TIMEOUT, 0);
@@ -133,6 +133,8 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, false);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.BEEP_ON_QUERY_END, false);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, false);
+
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESULT_SET_ORIENTATION, SQLEditor.ResultSetOrientation.HORIZONTAL.name());
 
         // Text editor default preferences
         PrefUtils.setDefaultPreferenceValue(store, AbstractTextEditor.PREFERENCE_TEXT_DRAG_AND_DROP_ENABLED, true);
