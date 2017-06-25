@@ -84,7 +84,6 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -1087,7 +1086,11 @@ public class SQLEditor extends SQLEditorBase implements
             for (int i = 0; i < queries.size(); i++) {
                 SQLScriptElement query = queries.get(i);
                 QueryProcessor queryProcessor = (i == 0 && !isSingleQuery ? curQueryProcessor : createQueryProcessor(queries.size() == 1));
-                queryProcessor.processQueries(Collections.singletonList(query), true, export);
+                queryProcessor.processQueries(
+                        Collections.singletonList(query),
+                        true,
+                        export,
+                        getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR));
             }
         } else {
             // Use current tab.
@@ -1104,7 +1107,7 @@ public class SQLEditor extends SQLEditorBase implements
                     resultTabs.setSelection(firstResults.tabItem);
                 }
             }
-            curQueryProcessor.processQueries(queries, false, export);
+            curQueryProcessor.processQueries(queries, false, export, false);
         }
     }
 
@@ -1610,7 +1613,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        void processQueries(final List<SQLScriptElement> queries, final boolean fetchResults, boolean export)
+        void processQueries(final List<SQLScriptElement> queries, final boolean fetchResults, boolean export, boolean closeTabOnError)
         {
             if (queries.isEmpty()) {
                 // Nothing to process
@@ -1636,7 +1639,7 @@ public class SQLEditor extends SQLEditorBase implements
                 showScriptPositionRuler(true);
                 QueryResultsContainer resultsContainer = getFirstResults();
 
-                SQLQueryListener listener = new SQLEditorQueryListener(this);
+                SQLQueryListener listener = new SQLEditorQueryListener(this, closeTabOnError);
                 final SQLQueryJob job = new SQLQueryJob(
                     getSite(),
                     isSingleQuery ? CoreMessages.editors_sql_job_execute_query : CoreMessages.editors_sql_job_execute_script,
@@ -2059,9 +2062,11 @@ public class SQLEditor extends SQLEditorBase implements
         private long lastUIUpdateTime;
         private final ITextSelection originalSelection = (ITextSelection) getSelectionProvider().getSelection();
         private int topOffset, visibleLength;
+        private boolean closeTabOnError;
 
-        private SQLEditorQueryListener(QueryProcessor queryProcessor) {
+        private SQLEditorQueryListener(QueryProcessor queryProcessor, boolean closeTabOnError) {
             this.queryProcessor = queryProcessor;
+            this.closeTabOnError = closeTabOnError;
         }
 
         @Override
@@ -2166,10 +2171,23 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
             }
-
+            // Close tab on error
+            if (closeTabOnError && error != null) {
+                DBeaverUI.asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        CTabItem tabItem = queryProcessor.getFirstResults().tabItem;
+                        if (tabItem != null && tabItem.getShowClose()) {
+                            tabItem.dispose();
+                        }
+                    }
+                });
+            }
+            // Beep
             if (dataSourceContainer != null && !scriptMode && dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END)) {
                 Display.getCurrent().beep();
             }
+            // Notify agent
             if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
                 DBeaverUI.notifyAgent(
                         "Query completed [" + getEditorInput().getName() + "]" + GeneralUtils.getDefaultLineSeparator() +

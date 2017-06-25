@@ -51,6 +51,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button connectionFoldersCheck;
     private Text scriptTitlePattern;
 
+    private Button closeTabOnErrorCheck;
     private Combo resultsOrientationCombo;
 
     public PrefPageSQLEditor()
@@ -73,6 +74,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.contains(DBeaverPreferences.SCRIPT_DELETE_EMPTY) ||
             store.contains(DBeaverPreferences.SCRIPT_AUTO_FOLDERS) ||
 
+            store.contains(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR) ||
             store.contains(SQLPreferenceConstants.RESULT_SET_ORIENTATION)
         ;
     }
@@ -125,8 +127,11 @@ public class PrefPageSQLEditor extends TargetPrefPage
         }
 
         {
-            Composite layoutGroup = UIUtils.createControlGroup(composite, "Layout", 2, GridData.FILL_HORIZONTAL, 0);
+            Composite layoutGroup = UIUtils.createControlGroup(composite, "Results view", 2, GridData.FILL_HORIZONTAL, 0);
             ((GridData)layoutGroup.getLayoutData()).horizontalSpan = 2;
+
+            closeTabOnErrorCheck = UIUtils.createCheckbox(layoutGroup, "Close results tab on error", null, false, 2);
+
             resultsOrientationCombo = UIUtils.createLabelCombo(layoutGroup, "Results orientation", "Results orientation in SQL editor", SWT.READ_ONLY | SWT.DROP_DOWN);
             ((GridData)resultsOrientationCombo.getLayoutData()).grabExcessHorizontalSpace = false;
             for (SQLEditor.ResultSetOrientation orientation : SQLEditor.ResultSetOrientation.values()) {
@@ -155,6 +160,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             connectionFoldersCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_CREATE_CONNECTION_FOLDERS));
             scriptTitlePattern.setText(store.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN));
 
+            closeTabOnErrorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR));
             SQLEditor.ResultSetOrientation orientation = SQLEditor.ResultSetOrientation.valueOf(store.getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
             resultsOrientationCombo.setText(orientation.getLabel());
         } catch (Exception e) {
@@ -178,6 +184,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(DBeaverPreferences.SCRIPT_CREATE_CONNECTION_FOLDERS, connectionFoldersCheck.getSelection());
             store.setValue(DBeaverPreferences.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
 
+            store.setValue(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR, closeTabOnErrorCheck.getSelection());
             String orientationLabel = resultsOrientationCombo.getText();
             for (SQLEditor.ResultSetOrientation orientation : SQLEditor.ResultSetOrientation.values()) {
                 if (orientationLabel.equals(orientation.getLabel())) {
@@ -206,6 +213,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.SCRIPT_CREATE_CONNECTION_FOLDERS);
         store.setToDefault(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
 
+        store.setToDefault(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR);
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
     }
 
