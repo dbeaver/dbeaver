@@ -40,6 +40,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
+import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
@@ -83,6 +84,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -748,10 +750,10 @@ public class SQLEditor extends SQLEditorBase implements
     {
         super.init(site, editorInput);
 
-        updateResultSetPresentation();
+        updateResultSetOrientation();
     }
 
-    private void updateResultSetPresentation() {
+    private void updateResultSetOrientation() {
         try {
             resultSetOrientation = ResultSetOrientation.valueOf(getActivePreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
         } catch (IllegalArgumentException e) {
@@ -1485,24 +1487,74 @@ public class SQLEditor extends SQLEditorBase implements
                 reloadSyntaxRules();
                 break;
             case SQLPreferenceConstants.RESULT_SET_ORIENTATION:
-                updateResultSetPresentation();
+                updateResultSetOrientation();
                 break;
         }
     }
 
     public enum ResultSetOrientation {
-        HORIZONTAL(SWT.VERTICAL),
-        VERTICAL(SWT.HORIZONTAL),
-        DETACHED(SWT.VERTICAL);
+        HORIZONTAL(SWT.VERTICAL, "Horizontal", "Results are below the editor", true),
+        VERTICAL(SWT.HORIZONTAL, "Vertical", "Results are to the right from editor", true),
+        DETACHED(SWT.VERTICAL, "Detached", "Results are in separate view", false);
 
         private final int sashOrientation;
+        private final String label;
+        private final String description;
+        private final boolean supported;
 
-        ResultSetOrientation(int sashOrientation) {
+        ResultSetOrientation(int sashOrientation, String label, String description, boolean supported) {
             this.sashOrientation = sashOrientation;
+            this.label = label;
+            this.description = description;
+            this.supported = supported;
         }
 
         public int getSashOrientation() {
             return sashOrientation;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public boolean isSupported() {
+            return supported;
+        }
+    }
+
+    public static class ResultSetOrientationMenuContributor extends CompoundContributionItem
+    {
+        @Override
+        protected IContributionItem[] getContributionItems() {
+            IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+            if (!(activeEditor instanceof SQLEditorBase)) {
+                return new IContributionItem[0];
+            }
+            final DBPPreferenceStore preferenceStore = ((SQLEditorBase) activeEditor).getActivePreferenceStore();
+            String curPresentation = preferenceStore.getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
+            ResultSetOrientation[] orientations = ResultSetOrientation.values();
+            List<IContributionItem> items = new ArrayList<>(orientations.length);
+            for (final ResultSetOrientation orientation : orientations) {
+                Action action = new Action(orientation.getLabel(), Action.AS_RADIO_BUTTON) {
+                    @Override
+                    public void run() {
+                        preferenceStore.setValue(SQLPreferenceConstants.RESULT_SET_ORIENTATION, orientation.name());
+                    }
+                };
+                action.setDescription(orientation.getDescription());
+                if (!orientation.isSupported()) {
+                    action.setEnabled(false);
+                }
+                if (orientation.name().equals(curPresentation)) {
+                    action.setChecked(true);
+                }
+                items.add(new ActionContributionItem(action));
+            }
+            return items.toArray(new IContributionItem[items.size()]);
         }
     }
 
