@@ -18,16 +18,6 @@
       %license
    </license>
 
-   <requires>
-      <import plugin="org.jkiss.dbeaver.core"/>
-      <import plugin="org.jkiss.dbeaver.model"/>
-      <import plugin="org.eclipse.swt"/>
-      <import plugin="org.eclipse.jface"/>
-      <import plugin="org.eclipse.ui.workbench"/>
-      <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="org.eclipse.osgi"/>
-   </requires>
-
    <plugin
          id="org.jkiss.dbeaver.data.office"
          download-size="0"
