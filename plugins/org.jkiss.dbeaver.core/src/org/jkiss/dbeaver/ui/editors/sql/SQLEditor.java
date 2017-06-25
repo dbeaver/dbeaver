@@ -130,10 +130,12 @@ public class SQLEditor extends SQLEditorBase implements
 
     public static final String VAR_CONNECTION_NAME = "connectionName";
     public static final String VAR_FILE_NAME = "fileName";
-    public static final String DEFAULT_PATTERN = "<${" + VAR_CONNECTION_NAME + "}> ${" + VAR_FILE_NAME + "}";
     public static final String VAR_FILE_EXT = "fileExt";
     public static final String VAR_DRIVER_NAME = "driverName";
 
+    public static final String DEFAULT_TITLE_PATTERN = "<${" + VAR_CONNECTION_NAME + "}> ${" + VAR_FILE_NAME + "}";
+
+    private ResultSetOrientation resultSetOrientation = ResultSetOrientation.HORIZONTAL;
     private SashForm sashForm;
     private Control editorControl;
     private CTabFolder resultTabs;
@@ -469,7 +471,10 @@ public class SQLEditor extends SQLEditorBase implements
     {
         setRangeIndicator(new DefaultRangeIndicator());
 
-        sashForm = UIUtils.createPartDivider(this, parent, SWT.VERTICAL | SWT.SMOOTH);
+        sashForm = UIUtils.createPartDivider(
+                this,
+                parent,
+                resultSetOrientation.getSashOrientation() | SWT.SMOOTH);
         sashForm.setSashWidth(5);
         UIUtils.setHelp(sashForm, IHelpContextIds.CTX_SQL_EDITOR);
 
@@ -742,6 +747,19 @@ public class SQLEditor extends SQLEditorBase implements
         throws PartInitException
     {
         super.init(site, editorInput);
+
+        updateResultSetPresentation();
+    }
+
+    private void updateResultSetPresentation() {
+        try {
+            resultSetOrientation = ResultSetOrientation.valueOf(getActivePreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
+        } catch (IllegalArgumentException e) {
+            resultSetOrientation = ResultSetOrientation.HORIZONTAL;
+        }
+        if (sashForm != null) {
+            sashForm.setOrientation(resultSetOrientation.getSashOrientation());
+        }
     }
 
     @Override
@@ -1456,15 +1474,35 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public void preferenceChange(PreferenceChangeEvent event) {
-        if (event.getProperty().equals(ModelPreferences.SCRIPT_STATEMENT_DELIMITER) ||
-            event.getProperty().equals(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
-            event.getProperty().equals(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK) ||
-            event.getProperty().equals(ModelPreferences.SQL_PARAMETERS_ENABLED) ||
-            event.getProperty().equals(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK) ||
-            event.getProperty().equals(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED) ||
-            event.getProperty().equals(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX))
-        {
-            reloadSyntaxRules();
+        switch (event.getProperty()) {
+            case ModelPreferences.SCRIPT_STATEMENT_DELIMITER:
+            case ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER:
+            case ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK:
+            case ModelPreferences.SQL_PARAMETERS_ENABLED:
+            case ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK:
+            case ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED:
+            case ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX:
+                reloadSyntaxRules();
+                break;
+            case SQLPreferenceConstants.RESULT_SET_ORIENTATION:
+                updateResultSetPresentation();
+                break;
+        }
+    }
+
+    public enum ResultSetOrientation {
+        HORIZONTAL(SWT.VERTICAL),
+        VERTICAL(SWT.HORIZONTAL),
+        DETACHED(SWT.VERTICAL);
+
+        private final int sashOrientation;
+
+        ResultSetOrientation(int sashOrientation) {
+            this.sashOrientation = sashOrientation;
+        }
+
+        public int getSashOrientation() {
+            return sashOrientation;
         }
     }
 
