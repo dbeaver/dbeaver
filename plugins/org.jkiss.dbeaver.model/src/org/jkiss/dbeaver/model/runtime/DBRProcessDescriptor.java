@@ -17,8 +17,7 @@
 
 package org.jkiss.dbeaver.model.runtime;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 /**
  * DBRProcessDescriptor
@@ -35,8 +35,8 @@ public class DBRProcessDescriptor
 
     private final DBRShellCommand command;
     private ProcessBuilder processBuilder;
-    private Process process;
-    private int exitValue = -1;
+    private volatile Process process;
+    private volatile int exitValue = -1;
     private DBRProcessListener processListener;
 
     public DBRProcessDescriptor(DBRShellCommand command)
@@ -170,5 +170,23 @@ public class DBRProcessDescriptor
             processListener.onProcessTerminated(exitValue);
         }
         return exitValue;
+    }
+
+    public String dumpErrors() {
+        if (process == null) {
+            return null;
+        }
+        StringWriter buf = new StringWriter();
+        try {
+            InputStream inputStream = process.getErrorStream();
+            if (inputStream != null) {
+                // Note: do not close reader because it will close process error stream
+                Reader input = new InputStreamReader(inputStream, GeneralUtils.getDefaultConsoleEncoding());
+                IOUtils.copyText(input, buf);
+            }
+        } catch (IOException e) {
+            e.printStackTrace(new PrintWriter(buf, true));
+        }
+        return buf.toString();
     }
 }

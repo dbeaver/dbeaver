@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
@@ -782,14 +784,35 @@ public class DataSourceDescriptor
             variables.put(RegistryConstants.VARIABLE_URL, info.getUrl());
 
             final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, variables);
+            //processDescriptor.getProcessBuilder().redirectErrorStream(true);
+
             monitor.subTask("Execute process " + processDescriptor.getName());
             DBUserInterface.getInstance().executeProcess(processDescriptor);
+
+            {
+                // Run output grab job
+                new AbstractJob(processDescriptor.getName() + ": output reader") {
+                    @Override
+                    protected IStatus run(DBRProgressMonitor monitor) {
+                        try {
+                            String output = processDescriptor.dumpErrors();
+                            log.debug("Process error output:\n" + output);
+                        } catch (Exception e) {
+                            log.debug(e);
+                        }
+                        return Status.OK_STATUS;
+                    }
+                }.schedule();
+            }
+
             if (command.isWaitProcessFinish()) {
+                int resultCode;
                 if (command.getWaitProcessTimeoutMs() >= 0) {
-                    processDescriptor.waitFor(command.getWaitProcessTimeoutMs());
+                    resultCode = processDescriptor.waitFor(command.getWaitProcessTimeoutMs());
                 } else {
-                    processDescriptor.waitFor();
+                    resultCode = processDescriptor.waitFor();
                 }
+                log.debug(processDescriptor.getName() + " result code: " + resultCode);
             }
             addChildProcess(processDescriptor);
         }
