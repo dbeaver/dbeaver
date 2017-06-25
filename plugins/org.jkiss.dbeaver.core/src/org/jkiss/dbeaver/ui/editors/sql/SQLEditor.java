@@ -97,6 +97,7 @@ import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.views.SQLResultsView;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -1543,6 +1544,7 @@ public class SQLEditor extends SQLEditorBase implements
                     @Override
                     public void run() {
                         preferenceStore.setValue(SQLPreferenceConstants.RESULT_SET_ORIENTATION, orientation.name());
+                        PrefUtils.savePreferenceStore(preferenceStore);
                     }
                 };
                 action.setDescription(orientation.getDescription());
