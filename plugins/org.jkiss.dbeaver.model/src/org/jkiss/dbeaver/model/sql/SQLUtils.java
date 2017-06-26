@@ -561,8 +561,11 @@ public final class SQLUtils {
         }
     }
 
-    public static String getColumnTypeModifiers(@NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
-        typeName = typeName.toUpperCase(Locale.ENGLISH);
+    public static String getColumnTypeModifiers(DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+        if (column == null) {
+            return null;
+        }
+        typeName = CommonUtils.notEmpty(typeName).toUpperCase(Locale.ENGLISH);
         if (column instanceof DBSObject) {
             // If type is UDT (i.e. we can find it in type list) and type precision == column precision
             // then do not use explicit precision in column definition
