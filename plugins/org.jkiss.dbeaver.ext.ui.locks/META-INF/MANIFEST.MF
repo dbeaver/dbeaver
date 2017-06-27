@@ -10,7 +10,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui,
  org.eclipse.ui.ide,
  org.eclipse.gef,
- org.jkiss.dbeaver.core;bundle-version="4.0.4"
+ org.jkiss.dbeaver.core
 Export-Package: org.jkiss.dbeaver.ext.ui.locks.edit,
  org.jkiss.dbeaver.ext.ui.locks.manage
 Bundle-ActivationPolicy: lazy
