@@ -69,10 +69,12 @@ public class LockManagerViewer {
     private Action killAction = new Action("Kill waiting session", UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP)) {
         @Override
         public void run() {
-            DBAServerLock<?> root = graphManager.getGraph(curLock).getLockRoot();
-            alterSession();
-            refreshLocks(root);
-            setTableLockSelect(root);
+        	if (curLock != null) {
+                DBAServerLock<?> root = graphManager.getGraph(curLock).getLockRoot();
+                alterSession();
+                refreshLocks(root);
+                setTableLockSelect(root);        		
+        	}
         }
     };
 
