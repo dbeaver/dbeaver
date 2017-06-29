@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -44,6 +45,11 @@ public class EnterNameDialog extends Dialog {
     @Override
     protected boolean isResizable() {
         return true;
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings() {
+        return UIUtils.getDialogSettings("DBeaver.EnterNameDialog"); //$NON-NLS-1$
     }
 
     public String getResult()
