@@ -23,33 +23,40 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public class RenameHandler extends AbstractDataSourceHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActivePart(event), SQLEditor.class);
+        IEditorPart editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActivePart(event), IEditorPart.class);
         if (editor == null) {
             log.error("No active SQL editor");
             return null;
         }
-        Shell shell = HandlerUtil.getActiveShell(event);
 
         IFile file = EditorUtils.getFileFromInput(editor.getEditorInput());
         if (file == null) {
             DBUserInterface.getInstance().showError("Rename", "Can't rename - no source file");
             return null;
         }
-        String newName = EnterNameDialog.chooseName(shell, "Rename SQL script [" + file.getName() + "]", file.getName());
+        renameFile(editor, file, "SQL script");
+        //file.set
+        return null;
+    }
+
+    public static void renameFile(IWorkbenchPart editor, IFile file, String fileTitle) {
+        Shell shell = editor.getSite().getShell();
+        String newName = EnterNameDialog.chooseName(shell, "Rename " + fileTitle + " [" + file.getName() + "]", file.getName());
         if (newName == null) {
-            return null;
+            return;
         }
         if (newName.indexOf('.') == -1) {
             int divPos = file.getName().lastIndexOf('.');
@@ -60,15 +67,15 @@ public class RenameHandler extends AbstractDataSourceHandler {
         if (!newName.equals(file.getName())) {
 
             NullProgressMonitor monitor = new NullProgressMonitor();
-            editor.doSave(monitor);
+            if (editor instanceof IEditorPart) {
+                ((IEditorPart)editor).doSave(monitor);
+            }
             try {
                 file.move(file.getParent().getFullPath().append(newName), true, monitor);
             } catch (CoreException e) {
                 DBUserInterface.getInstance().showError("Rename", "Error renaming file '" + file.getName() + "'", e);
             }
         }
-        //file.set
-        return null;
     }
 
 
