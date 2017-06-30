@@ -45,7 +45,7 @@ public class DBeaverStackRenderer extends StackRenderer {
 
         {
             MenuItem menuItemOpenFolder = new MenuItem(menu, SWT.NONE);
-            menuItemOpenFolder.setText("Open file folder in explorer");
+            menuItemOpenFolder.setText("Open Folder in Explorer");
             menuItemOpenFolder.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -57,7 +57,7 @@ public class DBeaverStackRenderer extends StackRenderer {
         }
         {
             MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
-            menuItemOthers.setText("Copy file path to clipboard");
+            menuItemOthers.setText("Copy File Path");
             menuItemOthers.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -69,7 +69,7 @@ public class DBeaverStackRenderer extends StackRenderer {
 
         {
             MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
-            String renameText = "Rename file";
+            String renameText = "Rename File";
             if (workbenchPart instanceof SQLEditor) {
                 renameText += "\t" + ActionUtils.findCommandDescription(CoreCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true);
             }
