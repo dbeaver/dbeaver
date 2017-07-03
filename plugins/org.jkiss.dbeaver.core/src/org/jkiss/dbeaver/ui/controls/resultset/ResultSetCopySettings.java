@@ -26,6 +26,7 @@ public class ResultSetCopySettings {
     private boolean copyRowNumbers;
     private boolean cut;
     private boolean quoteCells;
+    private boolean forceQuotes;
     private String columnDelimiter;
     private String rowDelimiter;
     private String quoteString;
@@ -34,11 +35,21 @@ public class ResultSetCopySettings {
     public ResultSetCopySettings() {
     }
 
-    public ResultSetCopySettings(boolean copyHeader, boolean copyRowNumbers, boolean cut, boolean quoteCells, String columnDelimiter, String rowDelimiter, String quoteString, DBDDisplayFormat format) {
+    public ResultSetCopySettings(
+            boolean copyHeader,
+            boolean copyRowNumbers,
+            boolean cut,
+            boolean quoteCells,
+            boolean forceQuotes,
+            String columnDelimiter,
+            String rowDelimiter,
+            String quoteString,
+            DBDDisplayFormat format) {
         this.copyHeader = copyHeader;
         this.copyRowNumbers = copyRowNumbers;
         this.cut = cut;
         this.quoteCells = quoteCells;
+        this.forceQuotes = forceQuotes;
         this.columnDelimiter = columnDelimiter;
         this.rowDelimiter = rowDelimiter;
         this.quoteString = quoteString == null ? "\"" : quoteString;
@@ -75,6 +86,14 @@ public class ResultSetCopySettings {
 
     public void setQuoteCells(boolean quoteCells) {
         this.quoteCells = quoteCells;
+    }
+
+    public boolean isForceQuotes() {
+        return forceQuotes;
+    }
+
+    public void setForceQuotes(boolean forceQuotes) {
+        this.forceQuotes = forceQuotes;
     }
 
     public String getColumnDelimiter() {

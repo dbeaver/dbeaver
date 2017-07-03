@@ -409,6 +409,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         List<GridCell> selectedCells = spreadsheet.getCellSelection();
         boolean quoteCells = settings.isQuoteCells() && selectedCells.size() > 1;
+        boolean forceQuotes = settings.isForceQuotes();
 
         GridCell prevCell = null;
         for (GridCell cell : selectedCells) {
@@ -444,8 +445,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 column.getAttribute(),
                 value,
                 settings.getFormat());
-            if (quoteCells && !CommonUtils.isEmpty(cellText)) {
-                if (cellText.contains(columnDelimiter) || cellText.contains(rowDelimiter)) {
+            if (forceQuotes || (quoteCells && !CommonUtils.isEmpty(cellText))) {
+                if (forceQuotes || cellText.contains(columnDelimiter) || cellText.contains(rowDelimiter)) {
                     cellText = quoteString + cellText + quoteString;
                 }
             }
