@@ -74,6 +74,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
         static final String PARAM_COPY_HEADER = "copyHeader";
         static final String PARAM_COPY_ROWS = "copyRows";
         static final String PARAM_QUOTE_CELLS = "quoteCells";
+        static final String PARAM_FORCE_QUOTES = "forceQuotes";
         static final String PARAM_FORMAT = "format";
         static final String PARAM_COL_DELIMITER = "delimiter";
         static final String PARAM_ROW_DELIMITER = "rowDelimiter";
@@ -84,6 +85,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
         private Button copyHeaderCheck;
         private Button copyRowsCheck;
         private Button quoteCellsCheck;
+        private Button forceQuoteCheck;
         private ValueFormatSelector formatSelector;
         private Combo colDelimCombo;
         private Combo rowDelimCombo;
@@ -111,6 +113,9 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             }
             if (settings.get(PARAM_QUOTE_CELLS) != null) {
                 copySettings.setQuoteCells(settings.getBoolean(PARAM_QUOTE_CELLS));
+            }
+            if (settings.get(PARAM_FORCE_QUOTES) != null) {
+                copySettings.setForceQuotes(settings.getBoolean(PARAM_FORCE_QUOTES));
             }
             if (settings.get(PARAM_FORMAT) != null) {
                 copySettings.setFormat(DBDDisplayFormat.valueOf(settings.get(PARAM_FORMAT)));
@@ -141,6 +146,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             copyHeaderCheck = UIUtils.createCheckbox(group, "Copy header", null, copySettings.isCopyHeader(), 2);
             copyRowsCheck = UIUtils.createCheckbox(group, "Copy row numbers", null, copySettings.isCopyRowNumbers(), 2);
             quoteCellsCheck = UIUtils.createCheckbox(group, "Quote cell values", "Place cell value in quotes if it contains column or row delimiter", copySettings.isQuoteCells(), 2);
+            forceQuoteCheck = UIUtils.createCheckbox(group, "Always quote values", "Place all cell values in quotes", copySettings.isForceQuotes(), 2);
 
             formatSelector = new ValueFormatSelector(group);
             formatSelector.select(copySettings.getFormat());
@@ -179,6 +185,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             copySettings.setCopyHeader(copyHeaderCheck.getSelection());
             copySettings.setCopyRowNumbers(copyRowsCheck.getSelection());
             copySettings.setQuoteCells(quoteCellsCheck.getSelection());
+            copySettings.setForceQuotes(forceQuoteCheck.getSelection());
             copySettings.setFormat(formatSelector.getSelection());
             copySettings.setColumnDelimiter(CommonUtils.unescapeDisplayString(colDelimCombo.getText()));
             copySettings.setRowDelimiter(CommonUtils.unescapeDisplayString(rowDelimCombo.getText()));
@@ -187,6 +194,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             settings.put(PARAM_COPY_HEADER, copySettings.isCopyHeader());
             settings.put(PARAM_COPY_ROWS, copySettings.isCopyRowNumbers());
             settings.put(PARAM_QUOTE_CELLS, copySettings.isQuoteCells());
+            settings.put(PARAM_FORCE_QUOTES, copySettings.isForceQuotes());
             settings.put(PARAM_FORMAT, copySettings.getFormat().name());
             settings.put(PARAM_COL_DELIMITER, copySettings.getColumnDelimiter());
             settings.put(PARAM_ROW_DELIMITER, copySettings.getRowDelimiter());
