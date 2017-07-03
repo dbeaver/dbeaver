@@ -206,7 +206,7 @@ public final class DBUtils {
             if (namePart == null) {
                 continue;
             }
-            if (name.length() > 0) {
+            if (name.length() > 0 && name.charAt(name.length() - 1) != '.') {
                 name.append('.');
             }
             name.append(namePart);
