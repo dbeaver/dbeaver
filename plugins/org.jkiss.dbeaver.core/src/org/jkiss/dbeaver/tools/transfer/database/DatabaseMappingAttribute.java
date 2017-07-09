@@ -198,18 +198,31 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
                         possibleTypes.add(type);
                     }
                 }
-                typeName = DBUtils.getDefaultDataTypeName(targetDataSource, dataKind);
+                DBSDataType targetType = null;
                 if (!possibleTypes.isEmpty()) {
-                    DBSDataType targetType = null;
+                    // Try to get any partial match
                     for (DBSDataType type : possibleTypes) {
-                        if (type.getName().equalsIgnoreCase(typeName)) {
+                        if (type.getName().contains(typeName) || typeName.contains(type.getName())) {
                             targetType = type;
                             break;
                         }
                     }
-                    if (targetType == null) {
-                        targetType = possibleTypes.get(0);
+                }
+                if (targetType == null) {
+                    typeName = DBUtils.getDefaultDataTypeName(targetDataSource, dataKind);
+                    if (!possibleTypes.isEmpty()) {
+                        for (DBSDataType type : possibleTypes) {
+                            if (type.getName().equalsIgnoreCase(typeName)) {
+                                targetType = type;
+                                break;
+                            }
+                        }
                     }
+                }
+                if (targetType == null && !possibleTypes.isEmpty()) {
+                    targetType = possibleTypes.get(0);
+                }
+                if (targetType != null) {
                     typeName = targetType.getTypeName();
                 }
             }
