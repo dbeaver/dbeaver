@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -371,7 +372,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     for (DBSEntityAttribute idAttr : identifier) {
                         DatabaseMappingAttribute mappedAttr = mappedAttrs.get(idAttr);
                         if (hasAttr) sql.append(",");
-                        sql.append(mappedAttr.getTargetName());
+                        sql.append(DBUtils.getQuotedIdentifier(dataSource, mappedAttr.getTargetName()));
                         hasAttr = true;
                     }
                     sql.append(")\n");
@@ -385,7 +386,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private static void appendAttributeClause(DBPDataSource dataSource, StringBuilder sql, DatabaseMappingAttribute attr)
     {
         sql.append(DBUtils.getQuotedIdentifier(dataSource, attr.getTargetName())).append(" ").append(attr.getTargetType(dataSource));
-        if (attr.source.isRequired()) sql.append(" NOT NULL");
+        if (SQLUtils.getDialectFromDataSource(dataSource).supportsNullability()) {
+            if (attr.source.isRequired()) sql.append(" NOT NULL");
+        }
     }
 
     private void createTargetAttribute(DBCSession session, DatabaseMappingAttribute attribute) throws DBCException

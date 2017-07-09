@@ -332,9 +332,15 @@ public final class SQLUtils {
     {
         if (object instanceof DBSObject) {
             DBPDataSource dataSource = ((DBSObject)object).getDataSource();
-            if (dataSource instanceof SQLDataSource) {
-                return ((SQLDataSource) dataSource).getSQLDialect();
-            }
+            return getDialectFromDataSource(dataSource);
+        }
+        return BasicSQLDialect.INSTANCE;
+    }
+
+    @NotNull
+    public static SQLDialect getDialectFromDataSource(DBPDataSource dataSource) {
+        if (dataSource instanceof SQLDataSource) {
+            return ((SQLDataSource) dataSource).getSQLDialect();
         }
         return BasicSQLDialect.INSTANCE;
     }

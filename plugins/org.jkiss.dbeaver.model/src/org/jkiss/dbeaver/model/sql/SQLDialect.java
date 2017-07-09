@@ -215,6 +215,8 @@ public interface SQLDialect {
      */
     boolean supportsCommentQuery();
 
+    boolean supportsNullability();
+
     @NotNull
     DBPIdentifierCase storesUnquotedCase();
 
