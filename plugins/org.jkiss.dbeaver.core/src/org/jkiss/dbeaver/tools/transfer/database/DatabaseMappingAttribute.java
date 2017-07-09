@@ -218,7 +218,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
             }
         }
 
-        String modifiers = SQLUtils.getColumnTypeModifiers(source, typeName, dataKind);
+        String modifiers = SQLUtils.getColumnTypeModifiers(parent.getSettings().getTargetDataSource(this), source, typeName, dataKind);
         if (modifiers != null) {
             typeName += modifiers;
         }

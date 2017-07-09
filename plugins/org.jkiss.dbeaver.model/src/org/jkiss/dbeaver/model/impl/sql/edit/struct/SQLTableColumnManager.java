@@ -60,7 +60,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
             } else {
                 dataKind = dataType.getDataKind();
             }
-            String modifiers = SQLUtils.getColumnTypeModifiers(column, typeName, dataKind);
+            String modifiers = SQLUtils.getColumnTypeModifiers(column.getDataSource(), column, typeName, dataKind);
             if (modifiers != null) {
                 sql.append(modifiers);
             }
