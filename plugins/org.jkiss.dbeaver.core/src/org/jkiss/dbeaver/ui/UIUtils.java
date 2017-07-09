@@ -123,7 +123,7 @@ public class UIUtils {
     {
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
         final char[] allowedChars = new char[] { symbols.getDecimalSeparator(), symbols.getGroupingSeparator(),
-            symbols.getMinusSign(), symbols.getZeroDigit(), symbols.getMonetaryDecimalSeparator(), '+' };
+            symbols.getMinusSign(), symbols.getZeroDigit(), symbols.getMonetaryDecimalSeparator(), '+', '.', ',' };
         final String exponentSeparator = symbols.getExponentSeparator();
         return new VerifyListener() {
             @Override
