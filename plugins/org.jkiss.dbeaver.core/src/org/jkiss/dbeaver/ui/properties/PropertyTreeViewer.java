@@ -441,12 +441,12 @@ public class PropertyTreeViewer extends TreeViewer {
                     @Override
                     public void keyTraversed(TraverseEvent e)
                     {
-                        if (e.detail == SWT.TRAVERSE_RETURN) {
+                        /*if (e.detail == SWT.TRAVERSE_RETURN) {
                             e.doit = false;
                             e.detail = SWT.TRAVERSE_NONE;
                             cellEditorListener.applyEditorValue();
                             disposeOldEditor();
-                        } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                        } else */if (e.detail == SWT.TRAVERSE_ESCAPE) {
                             e.doit = false;
                             e.detail = SWT.TRAVERSE_NONE;
                             disposeOldEditor();
