@@ -396,23 +396,25 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly) {
+    public DBAAuthInfo promptUserCredentials(final String prompt, final String userName, final String userPassword, final boolean passwordOnly) {
+
         // Ask user
-        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
-        final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, passwordOnly);
-        if (!passwordOnly) {
-            authDialog.setUserName(userName);
-        }
-        authDialog.setUserPassword(userPassword);
-        if (new UIConfirmation() {
+        return new UITask<DBAAuthInfo>() {
             @Override
-            public Boolean runTask() {
-                return (authDialog.open() == IDialogConstants.OK_ID);
+            public DBAAuthInfo runTask() {
+                final Shell shell = DBeaverUI.getActiveWorkbenchShell();
+                final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, passwordOnly);
+                if (!passwordOnly) {
+                    authDialog.setUserName(userName);
+                }
+                authDialog.setUserPassword(userPassword);
+                if (authDialog.open() == IDialogConstants.OK_ID) {
+                    return authDialog.getAuthInfo();
+                } else {
+                    return null;
+                }
             }
-        }.execute()) {
-            return authDialog.getAuthInfo();
-        }
-        return null;
+        }.execute();
     }
 
     @Override
