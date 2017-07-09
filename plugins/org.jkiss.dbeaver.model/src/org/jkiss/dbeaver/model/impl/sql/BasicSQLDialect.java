@@ -366,6 +366,11 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean supportsNullability() {
+        return true;
+    }
+
+    @Override
     public Pair<String, String> getMultiLineComments()
     {
         return multiLineComments;
