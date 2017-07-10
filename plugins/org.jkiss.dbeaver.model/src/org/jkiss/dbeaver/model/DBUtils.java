@@ -206,7 +206,7 @@ public final class DBUtils {
             if (namePart == null) {
                 continue;
             }
-            if (name.length() > 0) {
+            if (name.length() > 0 && name.charAt(name.length() - 1) != '.') {
                 name.append('.');
             }
             name.append(namePart);
@@ -1149,8 +1149,10 @@ public final class DBUtils {
     @NotNull
     public static String getFullTypeName(@NotNull DBSTypedObject typedObject)
     {
+        DBSObject structObject = getFromObject(typedObject);
+        DBPDataSource dataSource = structObject == null ? null : structObject.getDataSource();
         String typeName = typedObject.getTypeName();
-        String typeModifiers = SQLUtils.getColumnTypeModifiers(typedObject, typeName, typedObject.getDataKind());
+        String typeModifiers = SQLUtils.getColumnTypeModifiers(dataSource, typedObject, typeName, typedObject.getDataKind());
         return typeModifiers == null ? typeName : (typeName + CommonUtils.notEmpty(typeModifiers));
     }
 

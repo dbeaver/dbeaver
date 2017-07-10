@@ -71,7 +71,7 @@ class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implements IFon
     @Override
     public String getText(Object obj)
     {
-        String text;
+        String text = null;
         if (obj instanceof ILabelProvider) {
             text = ((ILabelProvider)obj).getText(obj);
 /*
@@ -80,7 +80,7 @@ class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implements IFon
 */
         } else if (obj instanceof DBNNode) {
             text = ((DBNNode) obj).getNodeName();
-        } else {
+        } else if (obj != null) {
             text = obj.toString();
         }
         if (text == null) {

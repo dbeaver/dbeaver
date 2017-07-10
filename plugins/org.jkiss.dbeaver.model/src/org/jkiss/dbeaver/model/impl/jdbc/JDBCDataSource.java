@@ -525,6 +525,22 @@ public abstract class JDBCDataSource
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind)
     {
+        String typeName = getStandardSQLDataTypeName(dataKind);
+        DBSDataType dataType = getLocalDataType(typeName);
+        if (dataType == null) {
+            // No such data type
+            // Try to find first data type of this kind
+            for (DBSDataType type : getLocalDataTypes()) {
+                if (type.getDataKind() == dataKind) {
+                    return type.getName();
+                }
+            }
+        }
+        return typeName;
+    }
+
+    @NotNull
+    private String getStandardSQLDataTypeName(@NotNull DBPDataKind dataKind) {
         switch (dataKind) {
             case BOOLEAN: return "BOOLEAN";
             case NUMERIC: return "NUMERIC";

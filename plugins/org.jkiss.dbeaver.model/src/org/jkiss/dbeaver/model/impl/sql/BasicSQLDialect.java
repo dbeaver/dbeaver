@@ -18,18 +18,16 @@ package org.jkiss.dbeaver.model.impl.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPIdentifierCase;
-import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLStateType;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -368,6 +366,11 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean supportsNullability() {
+        return true;
+    }
+
+    @Override
     public Pair<String, String> getMultiLineComments()
     {
         return multiLineComments;
@@ -462,6 +465,59 @@ public class BasicSQLDialect implements SQLDialect {
             addKeywords(types, DBPKeywordType.TYPE);
             addKeywords(functions, DBPKeywordType.FUNCTION);
         }
+    }
+
+    @Override
+    public String getColumnTypeModifiers(@NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+        typeName = CommonUtils.notEmpty(typeName).toUpperCase(Locale.ENGLISH);
+        if (column instanceof DBSObject) {
+            // If type is UDT (i.e. we can find it in type list) and type precision == column precision
+            // then do not use explicit precision in column definition
+            final DBSDataType dataType = DBUtils.getLocalDataType(((DBSObject) column).getDataSource(), column.getTypeName());
+            if (dataType != null && dataType.getScale() == column.getScale() &&
+                    ((dataType.getPrecision() > 0 && dataType.getPrecision() == column.getPrecision()) ||
+                            (dataType.getMaxLength() > 0 && dataType.getMaxLength() == column.getMaxLength())))
+            {
+                return null;
+            }
+        }
+        if (dataKind == DBPDataKind.STRING) {
+            if (typeName.indexOf('(') == -1) {
+                final long maxLength = column.getMaxLength();
+                if (maxLength > 0) {
+                    return "(" + maxLength + ")";
+                }
+            }
+        } else if (dataKind == DBPDataKind.CONTENT && !typeName.contains("LOB")) {
+            final long maxLength = column.getMaxLength();
+            if (maxLength > 0) {
+                return "(" + maxLength + ')';
+            }
+        } else if (dataKind == DBPDataKind.NUMERIC) {
+            if (typeName.equals("DECIMAL") || typeName.equals("NUMERIC") || typeName.equals("NUMBER")) {
+                int scale = column.getScale();
+                int precision = column.getPrecision();
+                if (precision == 0) {
+                    precision = (int) column.getMaxLength();
+                    if (precision > 0) {
+                        // FIXME: max length is actually length in character.
+                        // FIXME: On Oracle it returns bigger values than maximum (#1767)
+                        // FIXME: in other DBs it equals to precision in most cases
+                        //precision--; // One character for sign?
+                    }
+                }
+                if (scale >= 0 && precision >= 0 && !(scale == 0 && precision == 0)) {
+                    return "(" + precision + ',' + scale + ')';
+                }
+            } else if (typeName.equals("BIT")) {
+                // Bit string?
+                int precision = column.getPrecision();
+                if (precision > 1) {
+                    return "(" + precision + ')';
+                }
+            }
+        }
+        return null;
     }
 
 }

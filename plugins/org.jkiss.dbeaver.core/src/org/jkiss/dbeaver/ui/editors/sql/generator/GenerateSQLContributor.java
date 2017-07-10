@@ -317,6 +317,15 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     }
                 }));
             }
+        } else {
+            //if (dataContainer != null && !visibleAttributes.isEmpty() && entity != null)
+            String message = dataContainer == null ? "no data container" :
+                    (visibleAttributes.isEmpty() ? "empty attribute list" :
+                            (entity == null ? "can't resolve table" : ""));
+            Action disabledAction = new Action("Not available - " + message) {
+            };
+            disabledAction.setEnabled(false);
+            menu.add(new ActionContributionItem(disabledAction));
         }
     }
 

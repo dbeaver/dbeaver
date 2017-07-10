@@ -46,7 +46,9 @@
             <property name="applicationXMI" value="org.eclipse.platform/LegacyIDE.e4xmi"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_classic"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.platform/images/"/>
+            <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
             <property name="preferenceCustomization" value="plugin_customization.ini"/>
+
         </product>
     </extension>
 
