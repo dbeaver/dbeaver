@@ -332,9 +332,15 @@ public final class SQLUtils {
     {
         if (object instanceof DBSObject) {
             DBPDataSource dataSource = ((DBSObject)object).getDataSource();
-            if (dataSource instanceof SQLDataSource) {
-                return ((SQLDataSource) dataSource).getSQLDialect();
-            }
+            return getDialectFromDataSource(dataSource);
+        }
+        return BasicSQLDialect.INSTANCE;
+    }
+
+    @NotNull
+    public static SQLDialect getDialectFromDataSource(DBPDataSource dataSource) {
+        if (dataSource instanceof SQLDataSource) {
+            return ((SQLDataSource) dataSource).getSQLDialect();
         }
         return BasicSQLDialect.INSTANCE;
     }
@@ -561,56 +567,15 @@ public final class SQLUtils {
         }
     }
 
-    public static String getColumnTypeModifiers(@NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
-        typeName = typeName.toUpperCase(Locale.ENGLISH);
-        if (column instanceof DBSObject) {
-            // If type is UDT (i.e. we can find it in type list) and type precision == column precision
-            // then do not use explicit precision in column definition
-            final DBSDataType dataType = DBUtils.getLocalDataType(((DBSObject) column).getDataSource(), column.getTypeName());
-            if (dataType != null && dataType.getScale() == column.getScale() &&
-                ((dataType.getPrecision() > 0 && dataType.getPrecision() == column.getPrecision()) ||
-                (dataType.getMaxLength() > 0 && dataType.getMaxLength() == column.getMaxLength())))
-            {
-                return null;
-            }
+    public static String getColumnTypeModifiers(@Nullable DBPDataSource dataSource, DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+        if (column == null) {
+            return null;
         }
-        if (dataKind == DBPDataKind.STRING) {
-            if (typeName.indexOf('(') == -1) {
-                final long maxLength = column.getMaxLength();
-                if (maxLength > 0) {
-                    return "(" + maxLength + ")";
-                }
-            }
-        } else if (dataKind == DBPDataKind.CONTENT && !typeName.contains("LOB")) {
-            final long maxLength = column.getMaxLength();
-            if (maxLength > 0) {
-                return "(" + maxLength + ')';
-            }
-        } else if (dataKind == DBPDataKind.NUMERIC) {
-            if (typeName.equals("DECIMAL") || typeName.equals("NUMERIC") || typeName.equals("NUMBER")) {
-                int scale = column.getScale();
-                int precision = column.getPrecision();
-                if (precision == 0) {
-                    precision = (int) column.getMaxLength();
-                    if (precision > 0) {
-                        // FIXME: max length is actually length in character.
-                        // FIXME: On Oracle it returns bigger values than maximum (#1767)
-                        // FIXME: in other DBs it equals to precision in most cases
-                        //precision--; // One character for sign?
-                    }
-                }
-                if (scale >= 0 && precision >= 0 && !(scale == 0 && precision == 0)) {
-                    return "(" + precision + ',' + scale + ')';
-                }
-            } else if (typeName.equals("BIT")) {
-                // Bit string?
-                int precision = column.getPrecision();
-                if (precision > 1) {
-                    return "(" + precision + ')';
-                }
-            }
+        if (!(dataSource instanceof SQLDataSource)) {
+            return null;
         }
-        return null;
+        SQLDialect dialect = ((SQLDataSource) dataSource).getSQLDialect();
+        return dialect.getColumnTypeModifiers(column, typeName, dataKind);
     }
 
     public static boolean isExecQuery(@NotNull SQLDialect dialect, String query) {
