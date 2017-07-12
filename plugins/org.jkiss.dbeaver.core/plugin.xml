@@ -2058,7 +2058,7 @@
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.extras">
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout" label="Layout">
                 <dynamic id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.resultSet.orientation" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor$ResultSetOrientationMenuContributor"/>
-                <separator visible="true"/>
+                <separator name="layout_toggles" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
