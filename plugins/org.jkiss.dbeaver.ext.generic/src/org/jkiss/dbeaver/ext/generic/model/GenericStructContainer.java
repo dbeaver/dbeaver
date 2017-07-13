@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
@@ -69,5 +71,8 @@ public interface GenericStructContainer extends DBSObjectContainer, DBSProcedure
     Collection<? extends GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException;
 
     Collection<? extends GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException;
+
+    Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException;
+
 
 }

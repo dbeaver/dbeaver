@@ -914,6 +914,10 @@ public class GenericDataSource extends JDBCDataSource
         return position == null ? null : new ErrorPosition[] { position };
     }
 
+    public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
+        return dataTypeCache.getAllObjects(monitor, this);
+    }
+
     @Override
     public Collection<? extends DBSDataType> getLocalDataTypes()
     {
