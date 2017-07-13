@@ -68,7 +68,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public JDBCBasicDataTypeCache createDataTypeCache(@NotNull DBPDataSourceContainer container) {
+    public JDBCBasicDataTypeCache createDataTypeCache(@NotNull GenericStructContainer container) {
         return new PostgreGenericTypeCache(container);
     }
 

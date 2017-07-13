@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -37,7 +38,7 @@ import java.sql.Types;
  * PostgreGenericTypeCache
  */
 @Deprecated
-public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache
+public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache<GenericStructContainer, JDBCDataType>
 {
     private static final Log log = Log.getLog(PostgreGenericTypeCache.class);
 
@@ -52,12 +53,12 @@ public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache
         "regdictionary",
     };
 
-    public PostgreGenericTypeCache(DBPDataSourceContainer owner) {
+    public PostgreGenericTypeCache(GenericStructContainer owner) {
         super(owner);
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull JDBCDataSource owner) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner) throws SQLException
     {
         return session.prepareStatement(
             "SELECT t.oid as typid,tn.nspname typnsname,t.* \n" +
@@ -68,7 +69,7 @@ public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache
     }
 
     @Override
-    protected JDBCDataType fetchObject(@NotNull JDBCSession session, @NotNull JDBCDataSource owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
+    protected JDBCDataType fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         String name = JDBCUtils.safeGetString(dbResult, "typname");
         if (CommonUtils.isEmpty(name)) {
@@ -155,7 +156,7 @@ public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache
             }
         }
 
-        return new JDBCDataType(owner, valueType, name,null,false,true,typeLength,-1,-1);
+        return new JDBCDataType<>(owner, valueType, name,null,false,true,typeLength,-1,-1);
     }
 
 
