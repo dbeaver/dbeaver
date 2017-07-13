@@ -224,7 +224,7 @@ public class SQLEditor extends SQLEditorBase implements
     public boolean setDataSourceContainer(@Nullable DBPDataSourceContainer container)
     {
         if (container == dataSourceContainer) {
-            onDataSourceChange();
+            fireDataSourceChange();
             return true;
         }
 
@@ -245,7 +245,7 @@ public class SQLEditor extends SQLEditorBase implements
         checkConnected(false, null);
         setPartName(getEditorName());
 
-        onDataSourceChange();
+        fireDataSourceChange();
 
         if (dataSourceContainer != null) {
             dataSourceContainer.acquire(this);
@@ -274,12 +274,7 @@ public class SQLEditor extends SQLEditorBase implements
                                 releaseExecutionContext();
                                 DBUserInterface.getInstance().showError("Open context", "Can't open editor connection", job.error);
                             } else {
-                                DBeaverUI.syncExec(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        onDataSourceChange();
-                                    }
-                                });
+                                fireDataSourceChange();
                             }
                         }
                     });
@@ -1191,6 +1186,19 @@ public class SQLEditor extends SQLEditorBase implements
         return true;
     }
 
+    /**
+     * Handles datasource change action in UI
+     */
+    private void fireDataSourceChange()
+    {
+        DBeaverUI.syncExec(new Runnable() {
+            @Override
+            public void run() {
+                onDataSourceChange();
+            }
+        });
+    }
+
     private void onDataSourceChange()
     {
         updateExecutionContext();
@@ -1608,7 +1616,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (job.getState() == Job.RUNNING) {
                     job.cancel();
                 }
-                curJob.close();
+                curJob.closeJob();
                 curJob = null;
             }
         }
