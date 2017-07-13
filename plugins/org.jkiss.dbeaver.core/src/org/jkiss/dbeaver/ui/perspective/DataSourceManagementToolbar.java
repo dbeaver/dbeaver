@@ -596,12 +596,13 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (connectionCombo == null || connectionCombo.isDisposed()) {
             return;
         }
-        IDataSourceContainerProviderEx dataSourceUpdater = getActiveDataSourceUpdater();
+        final IDataSourceContainerProviderEx dataSourceUpdater = getActiveDataSourceUpdater();
         if (dataSourceUpdater == null) {
             return;
         }
 
         DBPDataSourceContainer curDataSource = dataSourceUpdater.getDataSourceContainer();
+        final DBPDataSourceContainer selectedDataSource;
         List<? extends DBPDataSourceContainer> dataSources = getAvailableDataSources();
         if (!CommonUtils.isEmpty(dataSources)) {
             int curIndex = connectionCombo.getSelectionIndex();
@@ -610,21 +611,35 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                     // Nothing changed
                     return;
                 }
-                dataSourceUpdater.setDataSourceContainer(null);
+                selectedDataSource = null;
             } else if (curIndex > dataSources.size()) {
                 log.warn("Connection combo index out of bounds (" + curIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$
                 return;
             } else {
                 // Change data source
-                DBPDataSourceContainer selectedDataSource = dataSources.get(curIndex - 1);
+                selectedDataSource = dataSources.get(curIndex - 1);
                 if (selectedDataSource == curDataSource) {
                     return;
-                } else {
-                    dataSourceUpdater.setDataSourceContainer(selectedDataSource);
                 }
             }
+        } else {
+            return;
         }
-        updateControls(false);
+
+        final AbstractJob updateJob = new AbstractJob("Change active database") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                dataSourceUpdater.setDataSourceContainer(selectedDataSource);
+                return Status.OK_STATUS;
+            }
+        };
+        updateJob.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                updateControls(false);
+            }
+        });
+        updateJob.schedule();
     }
 
     private void changeDataBaseSelection() {
