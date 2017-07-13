@@ -41,6 +41,11 @@ class MySQLDialect extends JDBCSQLDialect {
             "EXPLAIN", "DESCRIBE", "DESC" }
     );
 
+    public static final String[] ADVANCED_KEYWORDS = {
+            "DATABASES",
+            "COLUMNS",
+    };
+
     public MySQLDialect() {
         super("MySQL");
     }
@@ -50,6 +55,10 @@ class MySQLDialect extends JDBCSQLDialect {
         //addSQLKeyword("STATISTICS");
         Collections.addAll(tableQueryWords, "EXPLAIN", "DESCRIBE", "DESC");
         addFunctions(Arrays.asList("SLEEP"));
+
+        for (String kw : ADVANCED_KEYWORDS) {
+            addSQLKeyword(kw);
+        }
     }
 
     @Nullable
