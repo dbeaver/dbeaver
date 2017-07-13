@@ -16,16 +16,21 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 
 /**
  * GenericDataTypeCache
  */
-public class GenericDataTypeCache extends JDBCBasicDataTypeCache
+public class GenericDataTypeCache extends JDBCBasicDataTypeCache<GenericStructContainer, GenericDataType>
 {
 
-    public GenericDataTypeCache(DBPDataSourceContainer owner) {
+    public GenericDataTypeCache(GenericStructContainer owner) {
         super(owner);
 
         // Ignore abstract types. There can be multiple numeric types with the same name
@@ -34,4 +39,18 @@ public class GenericDataTypeCache extends JDBCBasicDataTypeCache
         ignoredTypes.add("NUMERIC");
     }
 
+    @NotNull
+    @Override
+    protected GenericDataType makeDataType(@NotNull JDBCResultSet dbResult, String name, int valueType) {
+        return new GenericDataType(
+                owner,
+                valueType,
+                name,
+                JDBCUtils.safeGetString(dbResult, JDBCConstants.LOCAL_TYPE_NAME),
+                JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.UNSIGNED_ATTRIBUTE),
+                JDBCUtils.safeGetInt(dbResult, JDBCConstants.SEARCHABLE) != 0,
+                JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION),
+                JDBCUtils.safeGetInt(dbResult, JDBCConstants.MINIMUM_SCALE),
+                JDBCUtils.safeGetInt(dbResult, JDBCConstants.MAXIMUM_SCALE));
+    }
 }
