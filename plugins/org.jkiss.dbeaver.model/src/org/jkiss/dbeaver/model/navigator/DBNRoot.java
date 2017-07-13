@@ -17,13 +17,16 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IProject;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * DBNRoot
@@ -77,6 +80,13 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
     public Class<IProject> getChildrenClass()
     {
         return IProject.class;
+    }
+
+    @NotNull
+    @Override
+    @Property(viewable = true, order = 1)
+    public String getName() {
+        return super.getName();
     }
 
     @Override
