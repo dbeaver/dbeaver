@@ -191,7 +191,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
                 // Add parent node reference (we actually add DBNRoot to avoid unneeded parent properties columns loading)
                 final DBNNode rootNode = getRootNode();
                 final DBNNode parentNode = rootNode.getParentNode();
-                if (parentNode instanceof DBNProjectDatabases || parentNode instanceof DBNLocalFolder || parentNode instanceof DBNResource) {
+                if (parentNode instanceof DBNProjectDatabases || parentNode instanceof DBNLocalFolder) {
                     List<DBNNode> nodesWithParent = new ArrayList<>(items);
                     nodesWithParent.add(0, DBeaverCore.getInstance().getNavigatorModel().getRoot());
                     items = nodesWithParent;
