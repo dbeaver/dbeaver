@@ -98,6 +98,9 @@
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Global triggers" visibleIf="object.dataSource.metaModel.supportsDatabaseTriggers(object.dataSource)">
                             <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
+                            <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
+                        </folder>
                     </items>
                 </items>
             </tree>
