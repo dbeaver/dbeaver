@@ -175,6 +175,7 @@ public class CopySourceCodeHandler extends AbstractHandler {
                 targetText = new StyledText(targetGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL | SWT.WRAP);
                 targetText.setLayoutData(new GridData(GridData.FILL_BOTH));
                 targetText.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+                UIUtils.fillDefaultStyledTextContextMenu(targetText);
             }
 
             loadOptions();
