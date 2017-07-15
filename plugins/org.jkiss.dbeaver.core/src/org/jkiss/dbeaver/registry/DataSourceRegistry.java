@@ -645,8 +645,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private void saveDataSource(XMLBuilder xml, DataSourceDescriptor dataSource)
         throws IOException
     {
-        clearSecuredPasswords(dataSource);
-
         xml.startElement(RegistryConstants.TAG_DATA_SOURCE);
         xml.addAttribute(RegistryConstants.ATTR_ID, dataSource.getId());
         xml.addAttribute(RegistryConstants.ATTR_PROVIDER, dataSource.getDriver().getProviderDescriptor().getId());
