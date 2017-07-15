@@ -574,7 +574,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     }
                     try {
                         getSecurePreferences().flush();
-                    } catch (IOException e) {
+                    } catch (Throwable e) {
                         log.error("Error saving secured preferences", e);
                     }
                 } catch (CoreException ex) {
@@ -870,7 +870,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         prefNode.remove(RegistryConstants.ATTR_PASSWORD);
                     }
                 }
-            } catch (StorageException e) {
+            } catch (Throwable e) {
                 log.error("Can't save password in secure storage", e);
             }
         }
@@ -889,7 +889,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     }
 
     private void clearSecuredPasswords(DataSourceDescriptor dataSource) {
-        dataSource.getSecurePreferences().removeNode();
+        try {
+            dataSource.getSecurePreferences().removeNode();
+        } catch (Throwable e) {
+            log.debug("Error clearing '" + dataSource.getId() + "' secure storage");
+        }
     }
 
     @Nullable
@@ -1287,7 +1291,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         creds[0] = prefNode.get(RegistryConstants.ATTR_USER, null);
                         creds[1] = prefNode.get(RegistryConstants.ATTR_PASSWORD, null);
                     }
-                } catch (StorageException e) {
+                } catch (Throwable e) {
                     // Most likely user canceled master password enter of failed by some other reason.
                     // Anyhow we won't try it again
                     log.error("Can't read password from secure storage", e);
