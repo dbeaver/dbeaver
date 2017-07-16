@@ -90,6 +90,7 @@ public class DBeaverInstanceServer implements IInstanceController {
 
         String driverName = null, url = null, host = null, port = null, server = null, database = null, user = null, password = null;
         boolean makeConnect = true, openConsole = false, savePassword = true;
+        Boolean autoCommit = null;
         Map<String, String> conProperties = new HashMap<>();
         DBPDataSourceFolder folder = null;
         String dsName = null;
@@ -116,6 +117,7 @@ public class DBeaverInstanceServer implements IInstanceController {
                 case "connect": makeConnect = CommonUtils.toBoolean(paramValue); break;
                 case "openConsole": openConsole = CommonUtils.toBoolean(paramValue); break;
                 case "folder": folder = dsRegistry.getFolder(paramValue); break;
+                case "autoCommit": autoCommit = CommonUtils.toBoolean(paramValue); break;
                 default:
                     if (paramName.length() > 5 && paramName.startsWith("prop.")) {
                         paramName = paramName.substring(6);
@@ -150,6 +152,10 @@ public class DBeaverInstanceServer implements IInstanceController {
         connConfig.setUserName(user);
         connConfig.setUserPassword(password);
         connConfig.setProperties(conProperties);
+
+        if (autoCommit != null) {
+            connConfig.getBootstrap().setDefaultAutoCommit(autoCommit);
+        }
 
         final DataSourceDescriptor ds = new DataSourceDescriptor(dsRegistry, DataSourceDescriptor.generateNewId(driver), driver, connConfig);
         ds.setName(dsName);
