@@ -105,6 +105,7 @@ import org.jkiss.utils.CommonUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.regex.*;
 
 /**
  * Spreadsheet presentation.
@@ -137,6 +138,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color foregroundDefault;
     private Color foregroundNull;
     private Color foregroundSelected, backgroundSelected;
+    private Color backgroundMatched;
     private Font boldFont, italicFont, bolItalicFont;
 
     private boolean showOddRows = true;
@@ -981,6 +983,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.backgroundReadOnly = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY);
         this.foregroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE);
         this.backgroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
+        this.backgroundMatched = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MATCHED);
 
         this.spreadsheet.setLineColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_NORMAL));
         this.spreadsheet.setLineSelectedColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED));
@@ -1495,6 +1498,16 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             boolean recordMode = controller.isRecordMode();
             ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
             DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
+
+            if (findReplaceTarget.isSessionActive()) {
+                java.util.regex.Pattern searchPattern = findReplaceTarget.getSearchPattern();
+                if (searchPattern != null) {
+                    String cellText = getCellText(colElement, rowElement);
+                    if (searchPattern.matcher(cellText).find()) {
+                        return backgroundMatched;
+                    }
+                }
+            }
 
             if (row.getState() == ResultSetRow.STATE_ADDED) {
                 return backgroundAdded;

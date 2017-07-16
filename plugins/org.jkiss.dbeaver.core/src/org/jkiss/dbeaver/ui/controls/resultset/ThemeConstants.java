@@ -35,6 +35,7 @@ public class ThemeConstants
     public static final String COLOR_SQL_RESULT_CELL_NEW_BACK = RESULTS_PROP_PREFIX + "color.cell.new.background"; //$NON-NLS-1$
     public static final String COLOR_SQL_RESULT_CELL_DELETED_BACK = RESULTS_PROP_PREFIX + "color.cell.deleted.background"; //$NON-NLS-1$
     public static final String COLOR_SQL_RESULT_CELL_READ_ONLY = RESULTS_PROP_PREFIX + "color.cell.readonly.background"; //$NON-NLS-1$
+    public static final String COLOR_SQL_RESULT_CELL_MATCHED = RESULTS_PROP_PREFIX + "color.cell.matched.background"; //$NON-NLS-1$
 
     public static final String COLOR_SQL_RESULT_LINES_NORMAL = RESULTS_PROP_PREFIX + "color.lines.normal"; //$NON-NLS-1$
     public static final String COLOR_SQL_RESULT_LINES_SELECTED = RESULTS_PROP_PREFIX + "color.lines.selected"; //$NON-NLS-1$

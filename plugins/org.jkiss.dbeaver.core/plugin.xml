@@ -2474,13 +2474,6 @@
                 value="255,255,225">
             <description>Value editor background</description>
         </colorDefinition>
-        <!--colorDefinition
-            label="??ell foreground"
-            categoryId="org.jkiss.dbeaver.ui.presentation.results"
-            id="org.jkiss.dbeaver.sql.resultset.color.cell.foreground"
-            value="COLOR_WIDGET_FOREGROUND">
-            <description>Modified cell foreground</description>
-        </colorDefinition-->
         <colorDefinition
                 label="Modified cell background"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
@@ -2508,6 +2501,13 @@
                 id="org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background"
                 value="245, 245, 245">
             <description>Read-only cell background</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Matched (find/replace) row background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.cell.matched.background"
+                value="255, 215, 00">
+            <description>New row background</description>
         </colorDefinition>
         <colorDefinition
                 label="Grid lines color"
