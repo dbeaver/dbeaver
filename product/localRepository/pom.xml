@@ -10,7 +10,8 @@
 
 	<properties>
 		<tycho-version>1.0.0</tycho-version>
-		<p2-maven-version>1.2.0-SNAPSHOT</p2-maven-version>
+		<reficio-p2-version>1.2.0-SNAPSHOT</reficio-p2-version>
+		<repo-name>DBeaver CE dependencies</repo-name>
 	</properties>
 
 	<pluginRepositories>
@@ -27,7 +28,7 @@
 			<plugin>
 				<groupId>org.reficio</groupId>
 				<artifactId>p2-maven-plugin</artifactId>
-				<version>${p2-maven-version}</version>
+				<version>${reficio-p2-version}</version>
 				<executions>
 					<execution>
 						<id>default-cli</id>
@@ -39,27 +40,12 @@
 								<artifact><id>commons-cli:commons-cli:1.3.1</id></artifact>
 
 								<!-- POI and dependencies -->
-								<!--<artifact><id>org.apache.servicemix.bundles:org.apache.servicemix.bundles.poi:3.16_1</id></artifact>-->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:3.16.0</id></artifact>
 								<artifact><id>org.apache.commons:commons-collections4:4.1</id></artifact>
 								<artifact><id>org.apache.xmlbeans:xmlbeans:2.6.0</id></artifact>
-
-<!--
-								&lt;!&ndash; Old POI and dependencies: to remove &ndash;&gt;
-								<artifact><id>org.apache.poi:poi:3.15</id></artifact>
-								<artifact><id>org.apache.poi:poi-ooxml:3.15</id></artifact>
-								<artifact><id>org.apache.poi:poi-ooxml-schemas:3.15</id></artifact>
--->
-
 							</artifacts>
+							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
 
-<!--
-							<p2>
-								<artifact>
-									<id>org.jkiss.bundle.apache.poi:3.16.0</id>
-								</artifact>
-							</p2>
--->
 						</configuration>
 					</execution>
 				</executions>
@@ -71,7 +57,7 @@
                 <artifactId>tycho-p2-repository-plugin</artifactId>
                 <version>${tycho-version}</version>
                 <configuration>
-                    <repositoryName>DBeaver - 3rd party dependencies</repositoryName>
+                    <repositoryName>${repo-name}</repositoryName>
                     <includeAllDependencies>false</includeAllDependencies>
                     <compress>true</compress>
                     <xzCompress>false</xzCompress>
