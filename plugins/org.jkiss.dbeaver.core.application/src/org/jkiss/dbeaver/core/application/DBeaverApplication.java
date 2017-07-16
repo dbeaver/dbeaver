@@ -151,13 +151,6 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         // Run instance server
         instanceServer = DBeaverInstanceServer.startInstanceServer();
 
-        // Set default resource encoding to UTF-8
-        String defEncoding = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING);
-        if (CommonUtils.isEmpty(defEncoding)) {
-            defEncoding = GeneralUtils.UTF8_ENCODING;
-        }
-        ResourcesPlugin.getPlugin().getPluginPreferences().setValue(ResourcesPlugin.PREF_ENCODING, defEncoding);
-
         // Create display
         getDisplay();
 

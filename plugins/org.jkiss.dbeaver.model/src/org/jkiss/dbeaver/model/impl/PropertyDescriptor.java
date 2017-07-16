@@ -43,8 +43,9 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         t_long(Long.class),
         t_float(Float.class),
         t_double(Double.class),
-        t_numeric(Double.class),
-        t_resource(IResource.class);
+        t_numeric(Double.class);
+        // Removed because it is initialized before workbench start and breaks init queue
+        //t_resource(IResource.class);
 
         private final Class<?> valueType;
 
