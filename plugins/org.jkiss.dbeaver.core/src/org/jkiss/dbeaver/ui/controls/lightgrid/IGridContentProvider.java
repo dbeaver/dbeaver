@@ -36,6 +36,10 @@ public interface IGridContentProvider extends IContentProvider {
     int STATE_HYPER_LINK    = 2;
     int STATE_TRANSFORMED   = 4;
 
+    int ALIGN_LEFT          = 0;
+    int ALIGN_CENTER        = 1;
+    int ALIGN_RIGHT         = 2;
+
     @NotNull
     Object[] getElements(boolean horizontal);
 
@@ -45,6 +49,8 @@ public interface IGridContentProvider extends IContentProvider {
     int getSortOrder(@Nullable Object element);
 
     ElementState getDefaultState(@NotNull Object element);
+
+    int getColumnAlign(@Nullable Object element);
 
     /**
      *
