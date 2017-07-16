@@ -306,7 +306,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void setDefaultAutoCommit(final boolean autoCommit, DBCExecutionContext updateContext, boolean updateConnection, final Runnable onFinish) throws DBException {
+    public void setDefaultAutoCommit(final boolean autoCommit, @Nullable DBCExecutionContext updateContext, boolean updateConnection, @Nullable final Runnable onFinish) throws DBException {
         if (updateContext != null) {
             final DBCTransactionManager txnManager = DBUtils.getTransactionManager(updateContext);
             if (updateConnection && txnManager != null) {
