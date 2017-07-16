@@ -6,6 +6,7 @@
 	<artifactId>contrib</artifactId>
 	<version>1.0.0</version>
 	<packaging>pom</packaging>
+	<name>DBeaver - 3rd party dependencies</name>
 
 	<properties>
 		<tycho-version>0.26.0</tycho-version>
