@@ -126,11 +126,30 @@ class GridCellRenderer extends AbstractRenderer
             text = TextUtils.getSingleLineString(text);
 
             gc.setFont(grid.normalFont);
-            gc.drawString(
-                text,
-                bounds.x + x,
-                bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
-                true);
+
+            int columnAlign = grid.getContentProvider().getColumnAlign(col);
+
+            switch (columnAlign) {
+                // Center
+                case IGridContentProvider.ALIGN_CENTER:
+                    break;
+                case IGridContentProvider.ALIGN_RIGHT:
+                    // Right (numbers, datetimes)
+                    Point textSize = gc.textExtent(text);
+                    gc.drawString(
+                            text,
+                            bounds.x + bounds.width - (textSize.x + RIGHT_MARGIN),
+                            bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
+                            true);
+                    break;
+                default:
+                    gc.drawString(
+                            text,
+                            bounds.x + x,
+                            bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
+                            true);
+                    break;
+            }
         }
 
         if (grid.isLinesVisible()) {

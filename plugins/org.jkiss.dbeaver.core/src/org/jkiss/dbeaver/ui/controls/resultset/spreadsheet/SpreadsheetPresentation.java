@@ -143,6 +143,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
+    private boolean rightJustifyNumbers = true;
 
     public SpreadsheetPresentation() {
         findReplaceTarget = new SpreadsheetFindReplaceTarget(this);
@@ -660,6 +661,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         DBPPreferenceStore preferenceStore = getPreferenceStore();
         showOddRows = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
         showCelIcons = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
+        rightJustifyNumbers = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
 
         spreadsheet.setRedraw(false);
         try {
@@ -1366,6 +1368,20 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
             return ElementState.NONE;
+        }
+
+        @Override
+        public int getColumnAlign(@Nullable Object element) {
+            if (rightJustifyNumbers && !controller.isRecordMode()) {
+                DBDAttributeBinding attr = (DBDAttributeBinding)element;
+                if (attr != null) {
+                    DBPDataKind dataKind = attr.getDataKind();
+                    if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME) {
+                        return ALIGN_RIGHT;
+                    }
+                }
+            }
+            return ALIGN_LEFT;
         }
 
         @Override
