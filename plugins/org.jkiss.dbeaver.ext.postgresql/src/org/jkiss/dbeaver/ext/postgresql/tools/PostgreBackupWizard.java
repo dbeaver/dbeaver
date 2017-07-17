@@ -92,7 +92,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
     }
 
     @Override
-	public void onSuccess() {
+	public void onSuccess(long workTime) {
         UIUtils.showMessageBox(
             getShell(),
             "Database export",
