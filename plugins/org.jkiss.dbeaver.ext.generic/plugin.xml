@@ -819,6 +819,18 @@
                     webURL="http://infiniflux.com">
                     <file type="jar" path="http://www.infiniflux.com/dist/iflux.jar"/>
                 </driver>
+              
+                   <!-- Machbase -->
+                <driver
+                    id="machbase"
+                    label="Machbase"
+                    class="machbase.jdbc.driver.MachDriver"
+                    sampleURL="jdbc:machbase://{host}{port}/mhdb"
+                    defaultPort="5656"
+                    description="MACHBASE standard driver"
+                    webURL="http://www.machbase.com">
+                    <file type="jar" path="http://www.machbase.com/dist/machbase.jar"/>
+                </driver>
 
                 <!-- Yandex ClickHouse -->
                 <driver
