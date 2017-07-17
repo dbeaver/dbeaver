@@ -64,7 +64,7 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject,
     }
 
 	@Override
-	public void onSuccess() {
+	public void onSuccess(long workTime) {
         UIUtils.showMessageBox(getShell(),
                 task,
                 NLS.bind(CoreMessages.tools_script_execute_wizard_task_completed, task, getObjectsName()) , //$NON-NLS-1$
