@@ -808,19 +808,7 @@
                     <file type="jar" path="https://github.com/openlink/virtuoso-opensource/raw/develop/7/libsrc/JDBCDriverType4/virtjdbc4.jar"/>
                 </driver>
 
-                <!-- Infiniflux -->
-                <driver
-                    id="infiniflux"
-                    label="Infiniflux"
-                    class="iflux.jdbc.driver.IfluxDriver"
-                    sampleURL="jdbc:Iflux://{host}[:{port}]/ifluxdb"
-                    defaultPort="5656"
-                    description="INFINIFLUX standard driver"
-                    webURL="http://infiniflux.com">
-                    <file type="jar" path="http://www.infiniflux.com/dist/iflux.jar"/>
-                </driver>
-              
-                   <!-- Machbase -->
+                <!-- Machbase -->
                 <driver
                     id="machbase"
                     label="Machbase"
