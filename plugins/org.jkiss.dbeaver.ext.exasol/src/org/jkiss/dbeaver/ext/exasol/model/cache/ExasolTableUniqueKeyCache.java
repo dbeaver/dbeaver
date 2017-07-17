@@ -39,38 +39,69 @@ public final class ExasolTableUniqueKeyCache
     extends JDBCCompositeCache<ExasolSchema, ExasolTable, ExasolTableUniqueKey, ExasolTableKeyColumn> {
 
     private static final String SQL_UK_TAB =
-        "	select\r\n" +
-            "		*\r\n" +
-            "	from\r\n" +
-            "			EXA_ALL_CONSTRAINTS c\r\n" +
-            "		inner join\r\n" +
-            "			EXA_ALL_CONSTRAINT_COLUMNS\r\n" +
-            "	using\r\n" +
-            "			(\r\n" +
-            "				CONSTRAINT_SCHEMA, CONSTRAINT_TABLE, CONSTRAINT_NAME, CONSTRAINT_OWNER, CONSTRAINT_TYPE\r\n" +
-            "			)\r\n" +
-            "	where\r\n" +
-            "		CONSTRAINT_SCHEMA = '%s' and\r\n" +
-            "		CONSTRAINT_TYPE = 'PRIMARY KEY' and\r\n" +
-            "		CONSTRAINT_TABLE = '%s'\r\n" +
-            "	order by\r\n" +
-            "		ORDINAL_POSITION";
+        "SELECT\r\n" + 
+        "	C.CONSTRAINT_SCHEMA,\r\n" + 
+        "	c.CONSTRAINT_TABLE,\r\n" + 
+        "	c.CONSTRAINT_NAME,\r\n" + 
+        "	c.CONSTRAINT_OWNER,\r\n" + 
+        "	c.CONSTRAINT_TYPE,\r\n" + 
+        "	c.CONSTRAINT_ENABLED,\r\n" + 
+        "	cc.ORDINAL_POSITION,\r\n" + 
+        "	cc.COLUMN_NAME,\r\n" + 
+        "	cc.REFERENCED_COLUMN,\r\n" + 
+        "	cc.REFERENCED_SCHEMA,\r\n" + 
+        "	cc.REFERENCED_TABLE\r\n" + 
+        "FROM\r\n" + 
+        "	SYS.EXA_ALL_CONSTRAINTS c\r\n" + 
+        "INNER JOIN SYS.EXA_ALL_CONSTRAINT_COLUMNS cc ON\r\n" + 
+        "	(\r\n" + 
+        "		c.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA\r\n" + 
+        "		AND c.CONSTRAINT_TABLE = cc.CONSTRAINT_TABLE\r\n" + 
+        "		AND c.CONSTRAINT_NAME = cc.CONSTRAINT_NAME\r\n" + 
+        "		AND c.CONSTRAINT_OWNER = cc.CONSTRAINT_OWNER\r\n" + 
+        "		AND c.CONSTRAINT_TYPE = cc.CONSTRAINT_TYPE\r\n" + 
+        "	)\r\n" + 
+        "WHERE\r\n" + 
+        "	c.CONSTRAINT_SCHEMA = '%s'\r\n" + 
+        "	AND c.CONSTRAINT_TYPE = 'PRIMARY KEY'\r\n" + 
+        "	AND c.CONSTRAINT_TABLE = '%s'\r\n" + 
+        "	AND cc.CONSTRAINT_SCHEMA = '%s'\r\n" + 
+        "	AND cc.CONSTRAINT_TYPE = 'PRIMARY KEY'\r\n" + 
+        "	AND cc.CONSTRAINT_TABLE = '%s'\r\n" + 
+        "ORDER BY\r\n" + 
+        "	ORDINAL_POSITION";
+    
     private static final String SQL_UK_ALL =
-        "	select\r\n" +
-            "		*\r\n" +
-            "	from\r\n" +
-            "			EXA_ALL_CONSTRAINTS c\r\n" +
-            "		inner join\r\n" +
-            "			EXA_ALL_CONSTRAINT_COLUMNS\r\n" +
-            "	using\r\n" +
-            "			(\r\n" +
-            "				CONSTRAINT_SCHEMA, CONSTRAINT_TABLE, CONSTRAINT_NAME, CONSTRAINT_OWNER, CONSTRAINT_TYPE\r\n" +
-            "			)\r\n" +
-            "	where\r\n" +
-            "		CONSTRAINT_SCHEMA = '%s' and\r\n" +
-            "		CONSTRAINT_TYPE = 'PRIMARY KEY' \r\n" +
-            "	order by\r\n" +
-            "		ORDINAL_POSITION";
+    		"SELECT\r\n" + 
+    		"	C.CONSTRAINT_SCHEMA,\r\n" + 
+    		"	c.CONSTRAINT_TABLE,\r\n" + 
+    		"	c.CONSTRAINT_NAME,\r\n" + 
+    		"	c.CONSTRAINT_OWNER,\r\n" + 
+    		"	c.CONSTRAINT_TYPE,\r\n" + 
+    		"	c.CONSTRAINT_ENABLED,\r\n" + 
+    		"	cc.ORDINAL_POSITION,\r\n" + 
+    		"	cc.COLUMN_NAME,\r\n" + 
+    		"	cc.REFERENCED_COLUMN,\r\n" + 
+    		"	cc.REFERENCED_SCHEMA,\r\n" + 
+    		"	cc.REFERENCED_TABLE\r\n" + 
+    		"FROM\r\n" + 
+    		"	SYS.EXA_ALL_CONSTRAINTS c\r\n" + 
+    		"INNER JOIN SYS.EXA_ALL_CONSTRAINT_COLUMNS cc ON\r\n" + 
+    		"	(\r\n" + 
+    		"		c.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA\r\n" + 
+    		"		AND c.CONSTRAINT_TABLE = cc.CONSTRAINT_TABLE\r\n" + 
+    		"		AND c.CONSTRAINT_NAME = cc.CONSTRAINT_NAME\r\n" + 
+    		"		AND c.CONSTRAINT_OWNER = cc.CONSTRAINT_OWNER\r\n" + 
+    		"		AND c.CONSTRAINT_TYPE = cc.CONSTRAINT_TYPE\r\n" + 
+    		"	)\r\n" + 
+    		"WHERE\r\n" + 
+    		"	c.CONSTRAINT_SCHEMA = '%s'\r\n" + 
+    		"	AND c.CONSTRAINT_TYPE = 'PRIMARY KEY'\r\n" + 
+    		"	AND cc.CONSTRAINT_SCHEMA = '%s'\r\n" + 
+    		"	AND cc.CONSTRAINT_TYPE = 'PRIMARY KEY'\r\n" + 
+    		"ORDER BY\r\n" + 
+    		"	ORDINAL_POSITION"
+    		;		
 
     public ExasolTableUniqueKeyCache(ExasolTableCache tableCache) {
         super(tableCache, ExasolTable.class, "CONSTRAINT_TABLE", "CONSTRAINT_NAME");
@@ -85,9 +116,9 @@ public final class ExasolTableUniqueKeyCache
 
         String sql;
         if (forTable != null) {
-            sql = String.format(SQL_UK_TAB,ExasolUtils.quoteString(exasolSchema.getName()), ExasolUtils.quoteString(forTable.getName()));
+            sql = String.format(SQL_UK_TAB,ExasolUtils.quoteString(exasolSchema.getName()), ExasolUtils.quoteString(forTable.getName()),ExasolUtils.quoteString(exasolSchema.getName()), ExasolUtils.quoteString(forTable.getName()));
         } else {
-            sql = String.format(SQL_UK_ALL,ExasolUtils.quoteString(exasolSchema.getName()));
+            sql = String.format(SQL_UK_ALL,ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(exasolSchema.getName()));
         }
 
         JDBCStatement dbStat = session.createStatement();
