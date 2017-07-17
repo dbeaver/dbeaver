@@ -77,9 +77,9 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     public ExasolDataType(DBSObject owner, ResultSet dbResult) throws DBException {
         super(owner, JDBCUtils.safeGetString(dbResult, "TYPE_NAME"), true);
 
-        this.exasolTypeId = JDBCUtils.safeGetInteger(dbResult, "TYPE_ID");
-        this.length = JDBCUtils.safeGetInteger(dbResult, "PRECISION");
-        this.scale = JDBCUtils.safeGetInteger(dbResult, "MINIMUM_SCALE");
+        this.exasolTypeId = JDBCUtils.safeGetInt(dbResult, "TYPE_ID");
+        this.length = JDBCUtils.safeGetInt(dbResult, "PRECISION");
+        this.scale = JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE");
 
         TypeDesc tempTypeDesc = null;
         String typeName = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
