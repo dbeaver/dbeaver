@@ -250,7 +250,6 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                 if (slComments != null) {
                     for (String slc : slComments) {
                         if (token.getString().startsWith(slc)) {
-                            index += insertReturnAndIndent(argList, index + 1, indent);
                             isComment = true;
                             break;
                         }
