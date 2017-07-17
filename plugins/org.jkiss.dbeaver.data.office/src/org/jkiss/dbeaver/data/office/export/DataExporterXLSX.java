@@ -59,6 +59,7 @@ public class DataExporterXLSX extends StreamExporterAbstract{
     private static final String PROP_FALSESTRING = "falseString";
     
     private static final String PROP_EXPORT_SQL = "exportSql";
+    private static final String PROP_SPLIT_SQLTEXT = "splitSqlText";
     
     enum FontStyleProp  {NONE, BOLD, ITALIC, STRIKEOUT, UNDERLINE}
     
@@ -76,6 +77,7 @@ public class DataExporterXLSX extends StreamExporterAbstract{
     private String boolTrue="YES";
 	private String boolFalse="NO";
 	private boolean exportSql = false;
+	private boolean splitSqlText = false; 
 	
 	private int rowIndex;
 	private XSSFCellStyle style;
@@ -135,6 +137,16 @@ public class DataExporterXLSX extends StreamExporterAbstract{
         } catch (Exception e) {
         	
             exportSql = false;
+            
+        }
+        
+        try {
+            
+        	splitSqlText = (Boolean) site.getProperties().get(PROP_SPLIT_SQLTEXT);
+            
+        } catch (Exception e) {
+        	
+        	splitSqlText = false;
             
         }
 
@@ -221,10 +233,26 @@ public class DataExporterXLSX extends StreamExporterAbstract{
       	try {			
 			if (exportSql) {
 				try {
+					
 					sh = wb.createSheet();
-					Row row = sh.createRow(0);
-					Cell newcell = row.createCell(0);
-					newcell.setCellValue(getSite().getSource().getName()); 
+					if (splitSqlText) {
+						String[] sqlText = getSite().getSource().getName().split("\n",wb.getSpreadsheetVersion().getMaxRows());
+						
+						int sqlRownum = 0;
+						
+						for(String s: sqlText) {
+							 Row row = sh.createRow(sqlRownum);
+							 Cell newcell = row.createCell(0);
+							 newcell.setCellValue(sqlText[sqlRownum]);
+							 sqlRownum++;
+						}
+						
+					} else {
+						 Row row = sh.createRow(0);
+						 Cell newcell = row.createCell(0);
+						 newcell.setCellValue(getSite().getSource().getName());
+					}
+					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
