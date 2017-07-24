@@ -78,22 +78,25 @@ public class DBeaverVersionChecker extends AbstractJob {
         if (!showAlways && !showUpdateDialog) {
             return Status.OK_STATUS;
         }
-        try {
-            DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.UI_UPDATE_CHECK_TIME, System.currentTimeMillis());
-            final String updateURL = Platform.getProduct().getProperty("versionUpdateURL");
-            if (updateURL == null) {
-                return Status.OK_STATUS;
-            }
-            VersionDescriptor versionDescriptor = new VersionDescriptor(updateURL);
 
-            if (versionDescriptor.getProgramVersion().compareTo(GeneralUtils.getProductVersion()) > 0) {
-                showUpdaterDialog(versionDescriptor);
-            } else if (showAlways) {
-                showUpdaterDialog(null);
-            }
+        DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.UI_UPDATE_CHECK_TIME, System.currentTimeMillis());
+        final String updateURL = Platform.getProduct().getProperty("versionUpdateURL");
+        if (updateURL == null) {
+            return Status.OK_STATUS;
+        }
+        VersionDescriptor versionDescriptor = null;
+        try {
+            versionDescriptor = new VersionDescriptor(updateURL);
         } catch (IOException e) {
             log.debug(e);
         }
+
+        if (versionDescriptor != null && versionDescriptor.getProgramVersion().compareTo(GeneralUtils.getProductVersion()) > 0) {
+            showUpdaterDialog(versionDescriptor);
+        } else if (showAlways) {
+            showUpdaterDialog(null);
+        }
+
         return Status.OK_STATUS;
     }
 
