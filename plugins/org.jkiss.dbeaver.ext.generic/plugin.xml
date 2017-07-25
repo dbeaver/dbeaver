@@ -812,8 +812,8 @@
                 <driver
                     id="machbase"
                     label="Machbase"
-                    class="machbase.jdbc.driver.MachDriver"
-                    sampleURL="jdbc:machbase://{host}{port}/mhdb"
+                    class="com.machbase.jdbc.driver"
+                    sampleURL="jdbc:machbase://{host}/mhdb"
                     defaultPort="5656"
                     description="MACHBASE standard driver"
                     webURL="http://www.machbase.com">
