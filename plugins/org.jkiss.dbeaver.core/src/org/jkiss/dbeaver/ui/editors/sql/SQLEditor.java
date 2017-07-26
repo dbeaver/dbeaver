@@ -1332,14 +1332,24 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void handleDataSourceEvent(final DBPEvent event)
     {
-        if (event.getObject() == getDataSourceContainer()) {
+        final boolean dsEvent = event.getObject() == getDataSourceContainer();
+        final boolean objectEvent = event.getObject().getDataSource() == getDataSource();
+        if (dsEvent || objectEvent) {
             DBeaverUI.asyncExec(
                 new Runnable() {
                     @Override
                     public void run() {
                         switch (event.getAction()) {
                             case OBJECT_REMOVE:
-                                getSite().getWorkbenchWindow().getActivePage().closeEditor(SQLEditor.this, false);
+                                if (dsEvent) {
+                                    getSite().getWorkbenchWindow().getActivePage().closeEditor(SQLEditor.this, false);
+                                }
+                                break;
+                            case OBJECT_SELECT:
+                                if (objectEvent) {
+                                    // Active schema was changed? Update title and tooltip
+                                    firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
+                                }
                                 break;
                             default:
                                 break;
