@@ -27,21 +27,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * PostgreOperatorClass
+ * PostgreOperatorFamily
  */
-public class PostgreOperatorClass extends PostgreInformation {
+public class PostgreOperatorFamily extends PostgreInformation {
 
     private long oid;
     private PostgreAccessMethod accessMethod;
     private String name;
     private long namespaceId;
     private long ownerId;
-    private long familyId;
-    private long typeId;
-    private boolean isDefault;
-    private long keyTypeId;
 
-    public PostgreOperatorClass(PostgreAccessMethod accessMethod, ResultSet dbResult)
+    public PostgreOperatorFamily(PostgreAccessMethod accessMethod, ResultSet dbResult)
         throws SQLException
     {
         super(accessMethod.getDatabase());
@@ -53,13 +49,9 @@ public class PostgreOperatorClass extends PostgreInformation {
         throws SQLException
     {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
-        this.name = JDBCUtils.safeGetString(dbResult, "opcname");
-        this.namespaceId = JDBCUtils.safeGetLong(dbResult, "opcnamespace");
-        this.ownerId = JDBCUtils.safeGetLong(dbResult, "opcowner");
-        this.familyId = JDBCUtils.safeGetLong(dbResult, "opcfamily");
-        this.typeId = JDBCUtils.safeGetLong(dbResult, "opcintype");
-        this.isDefault = JDBCUtils.safeGetBoolean(dbResult, "opcdefault");
-        this.keyTypeId = JDBCUtils.safeGetLong(dbResult, "opckeytype");
+        this.name = JDBCUtils.safeGetString(dbResult, "opfname");
+        this.namespaceId = JDBCUtils.safeGetLong(dbResult, "opfnamespace");
+        this.ownerId = JDBCUtils.safeGetLong(dbResult, "opfowner");
     }
 
     @NotNull
@@ -86,27 +78,5 @@ public class PostgreOperatorClass extends PostgreInformation {
         return PostgreUtils.getObjectById(monitor, accessMethod.getDatabase().roleCache, accessMethod.getDatabase(), ownerId);
     }
 
-    @Property(viewable = true, order = 5)
-    public PostgreOperatorFamily getFamily(DBRProgressMonitor monitor) throws DBException {
-        return accessMethod.getOperatorFamily(monitor, familyId);
-    }
-
-    @Property(viewable = true, order = 6)
-    public PostgreDataType getType(DBRProgressMonitor monitor) {
-        return accessMethod.getDatabase().getDataType(typeId);
-    }
-
-    @Property(viewable = true, order = 7)
-    public boolean isDefault() {
-        return isDefault;
-    }
-
-    @Property(viewable = true, order = 8)
-    public PostgreDataType getKeyType(DBRProgressMonitor monitor) {
-        if (keyTypeId == 0) {
-            return getType(monitor);
-        }
-        return accessMethod.getDatabase().getDataType(keyTypeId);
-    }
 }
 
