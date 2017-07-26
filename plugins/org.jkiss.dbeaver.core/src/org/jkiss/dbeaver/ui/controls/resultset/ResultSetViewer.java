@@ -1111,7 +1111,7 @@ public class ResultSetViewer extends Viewer
             rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.RS_REFRESH), "Calculate total row count", this) {
                 @Override
                 protected boolean isActionEnabled() {
-                    return hasData() && isHasMoreData();
+                    return hasData();
                 }
 
                 @Override

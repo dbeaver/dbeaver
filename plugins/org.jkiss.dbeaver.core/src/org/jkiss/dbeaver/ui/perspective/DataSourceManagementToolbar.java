@@ -636,7 +636,12 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         updateJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void done(IJobChangeEvent event) {
-                updateControls(false);
+                DBeaverUI.asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateControls(false);
+                    }
+                });
             }
         });
         updateJob.schedule();
