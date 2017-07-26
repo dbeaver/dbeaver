@@ -1342,7 +1342,7 @@ public class SQLEditor extends SQLEditorBase implements
                         switch (event.getAction()) {
                             case OBJECT_REMOVE:
                                 if (dsEvent) {
-                                    getSite().getWorkbenchWindow().getActivePage().closeEditor(SQLEditor.this, false);
+                                    setDataSourceContainer(null);
                                 }
                                 break;
                             case OBJECT_SELECT:
