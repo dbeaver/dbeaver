@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * GenericIndexColumn
@@ -31,21 +33,24 @@ public class PostgreIndexColumn extends AbstractTableIndexColumn
     private String expression;
     private int ordinalPosition;
     private boolean ascending;
+    private long opClass;
     private boolean nullable;
 
     public PostgreIndexColumn(
-        PostgreIndex index,
-        PostgreAttribute tableColumn,
-        String expression,
-        int ordinalPosition,
-        boolean ascending,
-        boolean nullable)
+            PostgreIndex index,
+            PostgreAttribute tableColumn,
+            String expression,
+            int ordinalPosition,
+            boolean ascending,
+            long opClass,
+            boolean nullable)
     {
         this.index = index;
         this.tableColumn = tableColumn;
         this.expression = expression;
         this.ordinalPosition = ordinalPosition;
         this.ascending = ascending;
+        this.opClass = opClass;
         this.nullable = nullable;
     }
 
@@ -91,6 +96,20 @@ public class PostgreIndexColumn extends AbstractTableIndexColumn
     {
         return nullable;
     }
+
+    @Property(viewable = true, order = 6)
+    public PostgreOperatorClass getOperatorClass(DBRProgressMonitor monitor) throws DBException {
+        if (opClass <= 0) {
+            return null;
+        }
+        PostgreAccessMethod accessMethod = index.getAccessMethod(monitor);
+        if (accessMethod == null) {
+            return null;
+        }
+        return accessMethod.getOperatorClass(monitor, opClass);
+    }
+
+
 
     @Nullable
     @Override
