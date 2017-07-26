@@ -55,8 +55,9 @@ public class PostgreAccessMethod extends PostgreInformation {
     private boolean storage;
     private boolean clusterable;
     private boolean predLocks;
+    private OperatorFamilyCache operatorFamilyCache = new OperatorFamilyCache();
     private OperatorClassCache operatorClassCache = new OperatorClassCache();
-
+    
     public PostgreAccessMethod(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
     {
@@ -172,6 +173,15 @@ public class PostgreAccessMethod extends PostgreInformation {
         return PostgreUtils.getObjectById(monitor, operatorClassCache, this, oid);
     }
 
+    @Association
+    public Collection<PostgreOperatorFamily> getOperatorFamilies(DBRProgressMonitor monitor) throws DBException {
+        return operatorFamilyCache.getAllObjects(monitor, this);
+    }
+
+    public PostgreOperatorFamily getOperatorFamily(DBRProgressMonitor monitor, long oid) throws DBException {
+        return PostgreUtils.getObjectById(monitor, operatorFamilyCache, this, oid);
+    }
+
     static class OperatorClassCache extends JDBCObjectCache<PostgreAccessMethod, PostgreOperatorClass> {
 
         @Override
@@ -189,6 +199,26 @@ public class PostgreAccessMethod extends PostgreInformation {
                 throws SQLException, DBException
         {
             return new PostgreOperatorClass(owner, dbResult);
+        }
+    }
+
+    static class OperatorFamilyCache extends JDBCObjectCache<PostgreAccessMethod, PostgreOperatorFamily> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreAccessMethod owner)
+                throws SQLException
+        {
+            return session.prepareStatement(
+                    "SELECT of.oid,of.* FROM pg_catalog.pg_opfamily of " +
+                            "\nORDER BY of.oid"
+            );
+        }
+
+        @Override
+        protected PostgreOperatorFamily fetchObject(@NotNull JDBCSession session, @NotNull PostgreAccessMethod owner, @NotNull JDBCResultSet dbResult)
+                throws SQLException, DBException
+        {
+            return new PostgreOperatorFamily(owner, dbResult);
         }
     }
 
