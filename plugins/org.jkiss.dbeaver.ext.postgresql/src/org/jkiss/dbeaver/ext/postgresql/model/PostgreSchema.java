@@ -709,7 +709,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                     attr,
                     attrExpression,
                     i,
-                    (options & 0x01) != 0, // This is a kind of lazy hack. Actually this flag depends on access method.
+                        colOpClass != 0 || (options & 0x01) != 0, // This is a kind of lazy hack. Actually this flag depends on access method.
                     colOpClass,
                     false);
                 result[i] = col;
