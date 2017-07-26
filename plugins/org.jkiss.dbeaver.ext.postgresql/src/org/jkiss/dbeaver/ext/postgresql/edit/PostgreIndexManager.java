@@ -17,14 +17,17 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
@@ -86,6 +89,20 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
                 return index;
             }
         }.execute();
+    }
+
+    protected void appendIndexColumnModifiers(StringBuilder decl, DBSTableIndexColumn indexColumn) {
+        try {
+            final PostgreOperatorClass operatorClass = ((PostgreIndexColumn) indexColumn).getOperatorClass(new VoidProgressMonitor());
+            if (operatorClass != null) {
+                decl.append(" ").append(operatorClass.getName());
+            }
+        } catch (DBException e) {
+            log.warn(e);
+        }
+        if (!indexColumn.isAscending()) {
+            decl.append(" DESC"); //$NON-NLS-1$
+        }
     }
 
     @Override
