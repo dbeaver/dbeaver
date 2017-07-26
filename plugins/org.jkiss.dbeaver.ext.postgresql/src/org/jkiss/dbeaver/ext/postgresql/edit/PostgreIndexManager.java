@@ -78,7 +78,8 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
                             null,
                             colIndex++,
                             !Boolean.TRUE.equals(editPage.getAttributeProperty(tableColumn, EditIndexPage.PROP_DESC)),
-                            false));
+                                -1,
+                                false));
                 }
                 idxName.append("_IDX"); //$NON-NLS-1$
                 index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
