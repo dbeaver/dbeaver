@@ -56,9 +56,10 @@ Binaries are in `product/standalone/target/products`
 
 ## Donation
 
+Well, looks like I have to write this because too many people asking for it.  
 Initially DBeaver was just a fun project which didn't suppose any donation model. And I was totally happy with that for years.  
-But once DBeaver became a popular tool and we receive hundreds of feature requests - I cannot provide quality support anymore  because it consumes too much time. I have my daytime job, family and lots of other things to do.  
+But once DBeaver became a popular tool and we receive hundreds of feature requests - I cannot provide quality support anymore  because it consumes too much time.  
 Anyhow - instead of donation button we created so-called <a href="https://github.com/serge-rider/dbeaver/wiki/Enterprise-Edition">Enterprise Edition</a> version. It is a commercial version of DBeaver which includes some additional enterprise features and official customer support.  
-So, if you want to support this project - just <a href="https://dbeaver.com/purchase">buy a license</a> (there are discounts for community - check our WIKI). And you will get official support as a sign of our gratitude. Thank you!  
-If you have any questions - please write me on serge@jkiss.org.  
+So, if you want to support DBeaver development - just <a href="https://dbeaver.com/purchase">buy a license</a> (there are discounts for community - check our WIKI). And you will get official support as a sign of our gratitude. Thank you!  
+If you have any questions about that - please write me on serge@jkiss.org.  
 Thank you!  
