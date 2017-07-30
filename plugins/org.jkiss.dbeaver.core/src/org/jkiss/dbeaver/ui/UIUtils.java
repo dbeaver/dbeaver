@@ -1434,10 +1434,10 @@ public class UIUtils {
     }
 
     public static void installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider) {
-        installContentProposal(control, contentAdapter, provider, false);
+        installContentProposal(control, contentAdapter, provider, false, true);
     }
 
-    public static void installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider, boolean autoActivation) {
+    public static void installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider, boolean autoActivation, boolean insertAfter) {
         try {
             KeyStroke keyStroke = autoActivation ? null : KeyStroke.getInstance("Ctrl+Space");
             final ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(
@@ -1446,6 +1446,7 @@ public class UIUtils {
                 provider,
                 keyStroke,
                 autoActivation ? ".abcdefghijklmnopqrstuvwxyz_$(".toCharArray() : ".(".toCharArray());
+            proposalAdapter.setProposalAcceptanceStyle(insertAfter ? ContentProposalAdapter.PROPOSAL_INSERT : ContentProposalAdapter.PROPOSAL_REPLACE);
             proposalAdapter.setPopupSize(new Point(300, 200));
         } catch (ParseException e) {
             log.error("Error installing filters content assistant");

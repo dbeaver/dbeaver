@@ -39,10 +39,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPImageProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -188,7 +185,25 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 }
             });
 
-            UIUtils.installContentProposal(filtersText, new StyledTextContentAdapter(filtersText), this);
+            StyledTextContentAdapter contentAdapter = new StyledTextContentAdapter(filtersText) {
+                @Override
+                public void setControlContents(Control control, String text, int cursorPosition) {
+                    // We need to set selection in the beginning of current word
+                    Point selection = filtersText.getSelection();
+                    String curText = filtersText.getText();
+                    int insertPosition = selection.x;
+                    for (int i = selection.x - 1; i >= 0; i--) {
+                        if (Character.isUnicodeIdentifierPart(curText.charAt(i))) {
+                            insertPosition = i;
+                        } else {
+                            break;
+                        }
+                    }
+                    filtersText.setSelection(insertPosition, selection.y);
+                    insertControlContents(control, text, cursorPosition);
+                }
+            };
+            UIUtils.installContentProposal(filtersText, contentAdapter, this, false, false);
         }
 
         // Handle all shortcuts by filters editor, not by host editor
@@ -580,9 +595,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             @Override
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 for (DBDAttributeBinding attribute : viewer.getModel().getAttributes()) {
-                    final String name = attribute.getName();
+                    final String name = DBUtils.getUnQuotedIdentifier(attribute.getDataSource(), attribute.getName());
                     if (CommonUtils.isEmpty(word) || name.toLowerCase(Locale.ENGLISH).startsWith(word)) {
-                        final String content = name.substring(word.length()) + " ";
+                        final String content = DBUtils.getQuotedIdentifier(attribute) + " ";
                         proposals.add(
                                 new ContentProposal(
                                         content,
