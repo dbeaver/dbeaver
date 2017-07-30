@@ -22,9 +22,11 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLHyperlinkDetector;
 import org.jkiss.utils.ArrayUtils;
@@ -39,13 +41,18 @@ public class NavigateObjectHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
-        if (activeEditor instanceof SQLEditorBase) {
-            SQLEditorBase editor = (SQLEditorBase)activeEditor;
-            IHyperlink hyperlink = getCurrentHyperlink(editor);
-            if (hyperlink != null) {
-                IRegion selRegion2 = hyperlink.getHyperlinkRegion();
-                editor.getTextViewer().setSelectedRange(selRegion2.getOffset(), selRegion2.getLength());
-                hyperlink.open();
+        if (activeEditor != null) {
+            SQLEditorBase sqlEditor = DBUtils.getAdapter(SQLEditorBase.class, activeEditor);
+            if (sqlEditor != null) {
+                IHyperlink hyperlink = getCurrentHyperlink(sqlEditor);
+                if (hyperlink != null) {
+                    IRegion selRegion2 = hyperlink.getHyperlinkRegion();
+                    TextViewer textViewer = sqlEditor.getTextViewer();
+                    if (textViewer != null) {
+                        textViewer.setSelectedRange(selRegion2.getOffset(), selRegion2.getLength());
+                    }
+                    hyperlink.open();
+                }
             }
         }
         return null;
