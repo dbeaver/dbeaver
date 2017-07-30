@@ -270,7 +270,7 @@ public class ItemListControl extends NodeListControl
             final ObjectPropertyDescriptor property = objectColumn.getProperty(getObjectValue(object));
             if (property != null && property.isEditable(getObjectValue(object))) {
                 setFocusCell(object, objectColumn);
-                return UIUtils.createPropertyEditor(getWorkbenchSite(), getControl(), property.getSource(), property);
+                return UIUtils.createPropertyEditor(getWorkbenchSite(), getControl(), property.getSource(), property, SWT.NONE);
             }
             return null;
         }

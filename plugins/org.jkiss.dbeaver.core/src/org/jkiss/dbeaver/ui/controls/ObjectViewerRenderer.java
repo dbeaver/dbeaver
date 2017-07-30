@@ -36,7 +36,9 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
  * ObjectListControl
  */
 public abstract class ObjectViewerRenderer {
-    //static final Log log = Log.getLog(ObjectViewerRenderer.class);
+
+    public static final int ES_CENTERED = 1;
+    public static final int ES_LEFT = 2;
 
     private boolean isTree;
     // Current selection coordinates
@@ -167,10 +169,14 @@ public abstract class ObjectViewerRenderer {
                     ((Boolean)cellValue ? ImageUtils.getImageCheckboxDisabledOn() : ImageUtils.getImageCheckboxDisabledOff());
                 final Rectangle imageBounds = image.getBounds();
 
-                int columnWidth = isTree ? ((TreeItem)item).getBounds(columnIndex).width : ((TableItem)item).getBounds(columnIndex).width;
+                Rectangle columnBounds = isTree ? ((TreeItem)item).getBounds(columnIndex) : ((TableItem)item).getBounds(columnIndex);
 
-                gc.drawImage(image, event.x + (columnWidth - imageBounds.width) / 2, event.y + 2);
-                //gc.drawImage(image, event.x + 2, event.y + 2);
+                if (getBooleanEditStyle() == ES_CENTERED) {
+                    gc.drawImage(image, event.x + (columnBounds.width - imageBounds.width) / 2, event.y + 2);
+                } else {
+                    gc.drawImage(image, event.x/* + 4*/, event.y + (columnBounds.height - imageBounds.height) / 2);
+                }
+
                 event.doit = false;
 
             } else if (isHyperlink(cellValue)) {
@@ -185,6 +191,10 @@ public abstract class ObjectViewerRenderer {
                 linkLayout.draw(gc, textBounds.x, textBounds.y + 1);
             }
         }
+    }
+
+    protected int getBooleanEditStyle() {
+        return ES_CENTERED;
     }
 
     class CellTrackListener implements MouseTrackListener, MouseMoveListener, KeyListener {
