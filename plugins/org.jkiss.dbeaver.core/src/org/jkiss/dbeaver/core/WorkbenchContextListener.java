@@ -170,6 +170,10 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
                 contextService.deactivateContext(activationSQL);
                 activationSQL = null;
             }
+            if (activationResults != null) {
+                contextService.deactivateContext(activationResults);
+                activationResults = null;
+            }
         }
         finally {
             contextService.deferUpdates(false);
