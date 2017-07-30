@@ -20,7 +20,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -40,9 +39,11 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
 import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
@@ -350,11 +351,20 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     }
 
     private void initDebugWriter() {
-        File logPath = GeneralUtils.getMetadataFolder();
-        File debugLogFile = new File(logPath, "dbeaver-debug.log"); //$NON-NLS-1$
+        DBPPreferenceStore preferenceStore = DBeaverCore.getGlobalPreferenceStore();
+        if (!preferenceStore.getBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED)) {
+            return;
+        }
+        String logLocation = preferenceStore.getString(DBeaverPreferences.LOGS_DEBUG_LOCATION);
+        if (CommonUtils.isEmpty(logLocation)) {
+            logLocation = new File(GeneralUtils.getMetadataFolder(), "dbeaver-debug.log").getAbsolutePath(); //$NON-NLS-1$
+        }
+        logLocation = GeneralUtils.replaceVariables(logLocation, new SystemVariablesResolver());
+        File debugLogFile = new File(logLocation);
         if (debugLogFile.exists()) {
             if (!debugLogFile.delete()) {
                 System.err.println("Can't delete debug log file"); //$NON-NLS-1$
+                return;
             }
         }
         try {
