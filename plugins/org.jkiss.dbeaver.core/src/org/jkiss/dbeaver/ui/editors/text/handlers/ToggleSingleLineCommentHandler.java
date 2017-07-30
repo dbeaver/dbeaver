@@ -24,8 +24,7 @@ import org.jkiss.utils.ArrayUtils;
 public final class ToggleSingleLineCommentHandler extends AbstractCommentHandler {
 
     @Override
-    protected void processAction(ISelectionProvider selectionProvider, ICommentsSupport commentsSupport, IDocument document, ITextSelection textSelection) throws BadLocationException
-   {
+    protected void processAction(ISelectionProvider selectionProvider, ICommentsSupport commentsSupport, IDocument document, ITextSelection textSelection) throws BadLocationException {
         String[] singleLineComments = commentsSupport.getSingleLineComments();
         if (ArrayUtils.isEmpty(singleLineComments)) {
             // Single line comments are not supported
@@ -40,24 +39,36 @@ public final class ToggleSingleLineCommentHandler extends AbstractCommentHandler
         }
         int endLine = textSelection.getEndLine();
         int startLine = textSelection.getStartLine();
+
+        boolean forceComment = true;
+        String firstLineText = document.get(document.getLineOffset(startLine), document.getLineLength(startLine));
+        for (String commentString : singleLineComments) {
+            if (firstLineText.startsWith(commentString)) {
+                forceComment = false;
+                break;
+            }
+        }
         for (int lineNum = endLine; lineNum >= startLine; lineNum--) {
             int lineOffset = document.getLineOffset(lineNum);
             int lineLength = document.getLineLength(lineNum);
-            String lineComment = null;
-            for (String commentString : singleLineComments) {
-                if (document.get(lineOffset, lineLength).startsWith(commentString)) {
-                    lineComment = commentString;
-                    break;
-                }
-            }
-            if (lineComment != null) {
-                // Remove comment
-                document.replace(lineOffset, lineComment.length(), "");
-                selLength -= lineComment.length();
-            } else {
+            if (forceComment) {
                 // Add comment
                 document.replace(lineOffset, 0, singleLineComments[0]);
                 selLength += singleLineComments[0].length();
+            } else {
+                String lineComment = null;
+                String lineText = document.get(lineOffset, lineLength);
+                for (String commentString : singleLineComments) {
+                    if (lineText.startsWith(commentString)) {
+                        lineComment = commentString;
+                        break;
+                    }
+                }
+                if (lineComment != null) {
+                    // Remove comment
+                    document.replace(lineOffset, lineComment.length(), "");
+                    selLength -= lineComment.length();
+                }
             }
         }
         if (rewriteSession != null) {
