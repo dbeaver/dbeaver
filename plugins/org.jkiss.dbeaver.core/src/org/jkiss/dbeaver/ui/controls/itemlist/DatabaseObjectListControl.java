@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * DatabaseObjectListControl
@@ -64,7 +65,7 @@ public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> e
                     public void run()
                     {
                         String text = getRenderer().getSelectedText();
-                        if (text != null) {
+                        if (!CommonUtils.isEmpty(text)) {
                             UIUtils.setClipboardContents(getDisplay(), TextTransfer.getInstance(), text);
                         }
                     }
