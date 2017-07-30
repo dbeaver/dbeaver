@@ -131,4 +131,8 @@ public final class DBeaverPreferences
     public static final String RESULT_TEXT_VALUE_FORMAT = "resultset.text.value.format"; //$NON-NLS-1$
 
     public static final String DEFAULT_RESOURCE_ENCODING = "resource.encoding.default";
+
+    public static final String LOGS_DEBUG_ENABLED = "logs.debug.enabled";
+    public static final String LOGS_DEBUG_LOCATION = "logs.debug.location";
+
 }
