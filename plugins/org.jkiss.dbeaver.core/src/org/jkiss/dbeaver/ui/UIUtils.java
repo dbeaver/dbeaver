@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProduct;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
@@ -57,7 +55,6 @@ import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
@@ -70,13 +67,9 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.controls.*;
-import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -1234,7 +1227,7 @@ public class UIUtils {
         return link;
     }
 
-    public static CellEditor createPropertyEditor(final IServiceLocator serviceLocator, Composite parent, DBPPropertySource source, DBPPropertyDescriptor property)
+    public static CellEditor createPropertyEditor(final IServiceLocator serviceLocator, Composite parent, DBPPropertySource source, DBPPropertyDescriptor property, int style)
     {
         if (source == null) {
             return null;
@@ -1243,7 +1236,7 @@ public class UIUtils {
         if (!property.isEditable(object)) {
             return null;
         }
-        CellEditor cellEditor = UIUtils.createCellEditor(parent, object, property);
+        CellEditor cellEditor = UIUtils.createCellEditor(parent, object, property, style);
         if (cellEditor != null) {
             final Control editorControl = cellEditor.getControl();
             addDefaultEditActionsSupport(serviceLocator, editorControl);
@@ -1251,7 +1244,7 @@ public class UIUtils {
         return cellEditor;
     }
 
-    public static CellEditor createCellEditor(Composite parent, Object object, DBPPropertyDescriptor property)
+    public static CellEditor createCellEditor(Composite parent, Object object, DBPPropertyDescriptor property, int style)
     {
         // List
         if (property instanceof IPropertyValueListProvider) {
@@ -1275,7 +1268,7 @@ public class UIUtils {
         } else if (BeanUtils.isNumericType(propertyType)) {
             return new CustomNumberCellEditor(parent, propertyType);
         } else if (BeanUtils.isBooleanType(propertyType)) {
-            return new CustomCheckboxCellEditor(parent);
+            return new CustomCheckboxCellEditor(parent, style);
             //return new CheckboxCellEditor(parent);
         } else if (propertyType.isEnum()) {
             final Object[] enumConstants = propertyType.getEnumConstants();

@@ -155,6 +155,11 @@ public class PropertyTreeViewer extends TreeViewer {
             }
 
             @Override
+            protected int getBooleanEditStyle() {
+                return ES_LEFT;
+            }
+
+            @Override
             public boolean isHyperlink(Object cellValue)
             {
                 return cellValue instanceof DBSObject;
@@ -395,7 +400,7 @@ public class PropertyTreeViewer extends TreeViewer {
             if (prop.property == null || !prop.isEditable()) {
                 return;
             }
-            final CellEditor cellEditor = UIUtils.createPropertyEditor(DBeaverUI.getActiveWorkbenchWindow(), treeControl, prop.propertySource, prop.property);
+            final CellEditor cellEditor = UIUtils.createPropertyEditor(DBeaverUI.getActiveWorkbenchWindow(), treeControl, prop.propertySource, prop.property, SWT.LEFT);
             if (cellEditor == null) {
                 return;
             }
