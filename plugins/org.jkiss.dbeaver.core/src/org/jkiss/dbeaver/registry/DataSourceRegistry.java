@@ -17,12 +17,10 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
-import org.eclipse.equinox.security.storage.StorageException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -381,16 +379,25 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public void notifyDataSourceListeners(final DBPEvent event)
     {
-        if (dataSourceListeners.isEmpty()) {
-            return;
-        }
         final List<DBPEventListener> listeners;
         synchronized (dataSourceListeners) {
+            if (dataSourceListeners.isEmpty()) {
+                return;
+            }
             listeners = new ArrayList<>(dataSourceListeners);
         }
-        for (DBPEventListener listener : listeners) {
-            listener.handleDataSourceEvent(event);
-        }
+        new Job("Notify datasource events") {
+            {
+                setSystem(true);
+            }
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                for (DBPEventListener listener : listeners) {
+                    listener.handleDataSourceEvent(event);
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     @Override
