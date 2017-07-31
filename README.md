@@ -62,7 +62,7 @@ In order to be able to continue develop this project and do everything faster an
 
 EE version includes all features of CE + NoSQL databases support + EE extensions + official online support. Also licensed users have priorities in bug fixes and new features development.
 
-If you need extra features or you want to support DBeaver - purchase EE version.
-Those who read up to can use community discounts (check our <a href="https://github.com/serge-rider/dbeaver/wiki/Enterprise-Edition">WIKI</a>).
+If you need extra features or you want to support DBeaver - purchase EE version.  
+Those who read up to this point - you can use community discounts (check our <a href="https://github.com/serge-rider/dbeaver/wiki/Enterprise-Edition">WIKI</a>).
 
 Save wild animals :) Thank you!  
