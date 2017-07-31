@@ -163,7 +163,7 @@
                     <property name="connectTimeout" value="20"/>
 
                     <parameter name="query-get-active-db" value="SHOW search_path"/>
-                    <parameter name="query-set-active-db" value="SET search_path = ?"/>
+                    <parameter name="query-set-active-db" value="SET search_path = &quot;?&quot;"/>
                     <parameter name="active-entity-type" value="schema"/>
                     <parameter name="supports-scroll" value="true"/>
                 </driver>
@@ -182,7 +182,7 @@
                     <property name="connectTimeout" value="20"/>
 
                     <parameter name="query-get-active-db" value="SHOW search_path"/>
-                    <parameter name="query-set-active-db" value="SET search_path = ?"/>
+                    <parameter name="query-set-active-db" value="SET search_path = &quot;?&quot;"/>
                     <parameter name="active-entity-type" value="schema"/>
                     <parameter name="supports-scroll" value="true"/>
                 </driver>
