@@ -7,7 +7,7 @@
 
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts. 
 Supports any database which has JDBC driver (which basically means - ANY database). EE version also supports non-JDBC datasources (WMI, MongoDB, Cassandra, Redis).
-* Has a lot of <a href="http://dbeaver.jkiss.org/docs/features/">features</a> including metadata editor, SQL editor, rich data editor, ERD, data export/import/migration, SQL execution plans, etc. 
+* Has a lot of <a href="https://github.com/serge-rider/dbeaver/wiki">features</a> including metadata editor, SQL editor, rich data editor, ERD, data export/import/migration, SQL execution plans, etc. 
 * Based on <a href="http://www.eclipse.org/">Eclipse</a> platform.
 * Uses plugins architecture and provides additional functionality for the following databases: MySQL/MariaDB, PostgreSQL, Oracle, DB2 LUW, Exasol, SQL Server, SQLite, Firebird, H2, HSQLDB, Derby, Teradata, Vertica, Netezza, Informix.
 
@@ -16,8 +16,7 @@ Supports any database which has JDBC driver (which basically means - ANY databas
 
 ## Download
 
-You can download prebuilt binaries from http://dbeaver.jkiss.org/download/  
-History and release notes: https://github.com/serge-rider/dbeaver/releases
+You can download prebuilt binaries from <a href="http://dbeaver.jkiss.org/download">official web site</a> or directly from <a href="https://github.com/serge-rider/dbeaver/releases">GitHub releases</a>.
 
 ## Running
 
@@ -28,8 +27,8 @@ DBeaver requires Java (JRE) 1.8+ to run.
 
 ## Documentation
 
-WIKI: https://github.com/serge-rider/dbeaver/wiki  
-Issue tracker: https://github.com/serge-rider/dbeaver/issues
+<a href="https://github.com/serge-rider/dbeaver/wiki">WIKI</a>  
+<a href="https://github.com/serge-rider/dbeaver/issues">Issue tracker</a>
 
 ## Building
 
@@ -50,7 +49,7 @@ Binaries are in `product/standalone/target/products`
 
 - If you have any questions, suggestions, ideas, etc - <a href="mailto:serge@jkiss.org">write me</a>.
 - Pull requests are welcome.
-- Visit http://dbeaver.jkiss.org for more information.
+- Visit http://dbeaver.jkiss.org or https://dbeaver.com for more information.
 - Thanks for using DBeaver! Star if you like it.
 
 ## Help the Beaver!
