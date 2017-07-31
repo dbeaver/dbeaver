@@ -48,19 +48,21 @@ Binaries are in `product/standalone/target/products`
 
 ## Notes
 
-- DBeaver is a free non-profitable hobby project. Please don't expect immediate reaction on issues.
 - If you have any questions, suggestions, ideas, etc - <a href="mailto:serge@jkiss.org">write me</a>.
 - Pull requests are welcome.
 - Visit http://dbeaver.jkiss.org for more information.
 - Thanks for using DBeaver! Star if you like it.
 
-## Donation
+## Help the Beaver!
 
-Well, looks like I have to write this because too many people asking for it.  
+Hooray, we have reached 3k of stars on GitGub and more than 500k of users!
+That's really cool, we are glad that you like DBeaver.
+We receiving lots of tickets with bug reports and feature requests every day - and we going to resolve most of them.
+In order to be able to continue develop this project and do everything faster and better we decided to create <a href="https://dbeaver.com/download">DBeaver Enterprise Edition</a>.
 
-Initially DBeaver was just a fun project which didn't suppose any donation model. And I was totally happy with that for years.  
-But once DBeaver became a popular tool and we receive hundreds of feature requests - I cannot provide quality support anymore  because it consumes too much time.  
-Anyhow - instead of donation button we created so-called <a href="https://github.com/serge-rider/dbeaver/wiki/Enterprise-Edition">Enterprise Edition</a> version. It is a commercial version of DBeaver which includes some additional enterprise features and official customer support.  
-So, if you want to support DBeaver development - just <a href="https://dbeaver.com/purchase">buy a license</a> (there are discounts for community - check our WIKI). And you will get official support as a sign of our gratitude. Thank you!  
-If you have any questions about that - please write me on serge@jkiss.org.  
-Thank you!  
+EE version includes all features of CE + NoSQL databases support + EE extensions + official online support. Also licensed users have priorities in bug fixes and new features development.
+
+If you need extra features or you want to support DBeaver - purchase EE version.
+Those who read up to can use community discounts (check our <a href="https://github.com/serge-rider/dbeaver/wiki/Enterprise-Edition">WIKI</a>).
+
+Save wild animals :) Thank you!  
