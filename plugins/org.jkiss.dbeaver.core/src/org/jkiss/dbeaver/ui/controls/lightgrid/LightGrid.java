@@ -387,7 +387,7 @@ public abstract class LightGrid extends Canvas {
         //setForeground(JFaceColors.getBannerForeground(display));
         //setBackground(JFaceColors.getBannerBackground(display));
 /*
-        ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+        ColorRegistry colorRegistry = UIUtils.getColorRegistry();
         setLineColor(colorRegistry.get(JFacePreferences.QUALIFIER_COLOR));
         setForeground(colorRegistry.get(JFacePreferences.CONTENT_ASSIST_FOREGROUND_COLOR));
         setBackground(colorRegistry.get(JFacePreferences.CONTENT_ASSIST_BACKGROUND_COLOR));

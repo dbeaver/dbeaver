@@ -24,6 +24,7 @@ import org.eclipse.draw2d.FreeformLayer;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Figure which represents the whole diagram - the view which corresponds to the
@@ -37,9 +38,7 @@ public class EntityDiagramFigure extends FreeformLayer
 	{
 		//setOpaque(true);
         //setChildrenOrientation(Orientable.HORIZONTAL);
-		ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
-
-		setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+		setBackgroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
 	}
 
 }

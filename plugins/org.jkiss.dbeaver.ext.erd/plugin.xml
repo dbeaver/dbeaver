@@ -221,6 +221,21 @@
                 value="COLOR_LIST_FOREGROUND">
             <description>Attribute name foreground</description>
         </colorDefinition>
+        <colorDefinition
+                label="Notes foreground"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.notes.foreground"
+                value="COLOR_INFO_FOREGROUND">
+            <description>Diagram notes foreground</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Notes background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.notes.background"
+                value="COLOR_INFO_BACKGROUND">
+            <description>Diagram notes background</description>
+        </colorDefinition>
+
 
     </extension>
 

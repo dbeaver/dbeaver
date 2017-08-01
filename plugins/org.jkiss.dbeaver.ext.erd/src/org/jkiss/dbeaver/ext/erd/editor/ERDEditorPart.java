@@ -370,7 +370,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         viewer.createControl(parent);
 
         // configure the viewer
-        viewer.getControl().setBackground(ColorConstants.white);
+        viewer.getControl().setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
         rootPart = new ScalableFreeformRootEditPart();
         viewer.setRootEditPart(rootPart);
         viewer.setKeyHandler(new GraphicalViewerKeyHandler(viewer));
@@ -873,7 +873,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         public ProgressVisualizer<EntityDiagram> createLoadVisualizer()
         {
-            getGraphicalControl().setBackground(ColorConstants.lightGray);
+            getGraphicalControl().setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
             return new LoadVisualizer();
         }
 
@@ -986,7 +986,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 if (graphicalControl == null) {
                     return;
                 }
-                graphicalControl.setBackground(ColorConstants.white);
+                graphicalControl.setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
                 isLoaded = true;
                 Control control = getGraphicalViewer().getControl();
                 if (control == null || control.isDisposed()) {

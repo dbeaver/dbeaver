@@ -22,13 +22,13 @@ package org.jkiss.dbeaver.ext.erd.figures;
 import org.eclipse.draw2d.*;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Figure used to represent a table in the schema
@@ -59,7 +59,7 @@ public class EntityFigure extends Figure {
         layout.setHorizontal(false);
         layout.setStretchMinorAxis(true);
         setLayoutManager(layout);
-        setBorder(new LineBorder(ColorConstants.black, 1));
+        setBorder(new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND), 1));
         setOpaque(true);
 
         add(nameLabel);
@@ -73,7 +73,7 @@ public class EntityFigure extends Figure {
     }
 
     private void setColors() {
-        ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+        ColorRegistry colorRegistry = UIUtils.getColorRegistry();
 
         if (entity.isPrimary()) {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_PRIMARY_BACKGROUND));
@@ -120,7 +120,7 @@ public class EntityFigure extends Figure {
     @Override
     public void add(IFigure figure, Object constraint, int index) {
         if (figure instanceof AttributeItemFigure) {
-            ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+            ColorRegistry colorRegistry = UIUtils.getColorRegistry();
             figure.setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
             figure.setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_BACKGROUND));
 
