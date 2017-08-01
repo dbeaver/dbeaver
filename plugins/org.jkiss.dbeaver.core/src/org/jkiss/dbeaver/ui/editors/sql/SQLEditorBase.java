@@ -917,8 +917,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     public boolean isDisposed()
     {
         return
-            getSourceViewer() != null &&
-                getSourceViewer().getTextWidget() != null &&
+            getSourceViewer() == null ||
+                getSourceViewer().getTextWidget() == null ||
                 getSourceViewer().getTextWidget().isDisposed();
     }
 
