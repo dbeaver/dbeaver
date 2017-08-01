@@ -1463,6 +1463,9 @@ public class SQLEditor extends SQLEditorBase implements
         DBeaverUI.runUIJob("Select SQL query in editor", new DBRRunnableWithProgress() {
             @Override
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                if (isDisposed()) {
+                    return;
+                }
                 if (select) {
                     selectAndReveal(query.getOffset(), query.getLength());
                     setStatus(query.getText(), DBPMessageType.INFORMATION);
@@ -2091,6 +2094,9 @@ public class SQLEditor extends SQLEditorBase implements
             DBeaverUI.syncExec(new Runnable() {
                 @Override
                 public void run() {
+                    if (isDisposed()) {
+                        return;
+                    }
                     sashForm.setMaximizedControl(editorControl);
                 }
             });
@@ -2219,6 +2225,10 @@ public class SQLEditor extends SQLEditorBase implements
             DBeaverUI.syncExec(new Runnable() {
                 @Override
                 public void run() {
+                    if (isDisposed()) {
+                        // Editor closed
+                        return;
+                    }
                     sashForm.setMaximizedControl(null);
                     if (!hasErrors) {
                         getSelectionProvider().setSelection(originalSelection);
