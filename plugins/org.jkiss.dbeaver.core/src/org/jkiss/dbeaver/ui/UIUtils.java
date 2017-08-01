@@ -28,6 +28,7 @@ import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.IControlContentAdapter;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.StringConverter;
@@ -1494,6 +1495,14 @@ public class UIUtils {
         } else {
             textField.setBackground(null);
         }
+    }
+
+    public static ColorRegistry getColorRegistry() {
+        return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+    }
+
+    public static Color getGlobalColor(String colorName) {
+        return getColorRegistry().get(colorName);
     }
 
 }
