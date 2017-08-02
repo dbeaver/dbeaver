@@ -78,7 +78,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
                         fileContents);
                 sqlEditor.processSQL(false, true);
 
-                workbenchWindow.getActivePage().closeEditor(sqlEditor, false);
+                //workbenchWindow.getActivePage().closeEditor(sqlEditor, false);
             }
         });
 
