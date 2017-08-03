@@ -73,6 +73,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
             throw new DBException("IO error reading file '" + fileName + "'", e);
         }
         final File finalIncFile = incFile;
+        final boolean statusFlag[] = new boolean[1];
         DBeaverUI.syncExec(new Runnable() {
             @Override
             public void run() {
@@ -82,10 +83,19 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
                         workbenchWindow,
                         scriptContext.getExecutionContext().getDataSource().getContainer(),
                         input);
-                final SQLQueryListener scriptListener = new IncludeScriptListener(workbenchWindow, sqlEditor);
+                final IncludeScriptListener scriptListener = new IncludeScriptListener(workbenchWindow, sqlEditor, statusFlag);
                 sqlEditor.processSQL(false, true, null, scriptListener);
             }
         });
+
+        // Wait until script finished
+        while (!statusFlag[0]) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
 
         return true;
     }
@@ -93,9 +103,11 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
     private static class IncludeScriptListener implements SQLQueryListener {
         private final IWorkbenchWindow workbenchWindow;
         private final SQLEditor editor;
-        public IncludeScriptListener(IWorkbenchWindow workbenchWindow, SQLEditor editor) {
+        private final boolean[] statusFlag;
+        IncludeScriptListener(IWorkbenchWindow workbenchWindow, SQLEditor editor, boolean[] statusFlag) {
             this.workbenchWindow = workbenchWindow;
             this.editor = editor;
+            this.statusFlag = statusFlag;
         }
 
         @Override
@@ -121,6 +133,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
                     workbenchWindow.getActivePage().closeEditor(editor, false);
                 }
             });
+            statusFlag[0] = true;
         }
     }
 
