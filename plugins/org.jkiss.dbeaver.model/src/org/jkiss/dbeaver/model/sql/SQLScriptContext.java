@@ -17,11 +17,11 @@
 
 package org.jkiss.dbeaver.model.sql;
 
-import org.eclipse.ui.IEditorInput;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.HashMap;
@@ -39,17 +39,17 @@ public class SQLScriptContext {
 
     @NotNull
     private final DBCExecutionContext executionContext;
-    @NotNull
-    private final IEditorInput editorInput;
+    @Nullable
+    private final File sourceFile;
     @NotNull
     private final PrintWriter outputWriter;
 
     public SQLScriptContext(
             @NotNull DBCExecutionContext executionContext,
-            @NotNull IEditorInput editorInput,
+            @Nullable File sourceFile,
             @NotNull Writer outputWriter) {
         this.executionContext = executionContext;
-        this.editorInput = editorInput;
+        this.sourceFile = sourceFile;
         this.outputWriter = new PrintWriter(outputWriter);
     }
 
@@ -58,9 +58,9 @@ public class SQLScriptContext {
         return executionContext;
     }
 
-    @NotNull
-    public IEditorInput getEditorInput() {
-        return editorInput;
+    @Nullable
+    public File getSourceFile() {
+        return sourceFile;
     }
 
     @NotNull
