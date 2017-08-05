@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.ui.IErrorVisualizer;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLToken;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
@@ -744,10 +745,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                 // Control query
                 try {
                     String controlText = document.get(tokenOffset, tokenLength);
+                    String commandId = null;
+                    if (token instanceof SQLControlToken) {
+                        commandId = ((SQLControlToken) token).getCommandId();
+                    }
                     return new SQLControlCommand(
                             getDataSource(),
                             syntaxManager,
                             controlText.trim(),
+                            commandId,
                             tokenOffset,
                             tokenLength,
                             tokenType == SQLToken.T_SET_DELIMITER);
