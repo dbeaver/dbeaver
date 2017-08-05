@@ -16,11 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.eclipse.jface.text.rules.IRule;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.SQLRuleProvider;
 
-public class SQLServerDialect extends GenericSQLDialect {
+import java.util.List;
+
+public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvider {
 
     public static final String[][] SQLSERVER_QUOTE_STRINGS = {
             {"\"", "\""},
@@ -37,5 +42,9 @@ public class SQLServerDialect extends GenericSQLDialect {
 
     public String[][] getIdentifierQuoteStrings() {
         return SQLSERVER_QUOTE_STRINGS;
+    }
+
+    @Override
+    public void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position) {
     }
 }

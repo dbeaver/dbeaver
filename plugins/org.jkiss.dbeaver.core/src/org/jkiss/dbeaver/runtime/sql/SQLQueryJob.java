@@ -489,7 +489,7 @@ public class SQLQueryJob extends DataSourceJob
         if (command.isEmptyCommand()) {
             return true;
         }
-        SQLCommandHandlerDescriptor commandHandler = SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommand());
+        SQLCommandHandlerDescriptor commandHandler = SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommandId());
         if (commandHandler == null) {
             throw new DBException("Command '" + command.getCommand() + "' not supported");
         }
