@@ -32,7 +32,7 @@ class SQLTokensParser {
     private static final String[] twoCharacterSymbol = { "<>", "<=", ">=", "||", "()", "!=", ":=", ".*" };
 
     private final SQLFormatterConfiguration configuration;
-    private final String quoteSymbol;
+    private final String[][] quoteStrings;
     private String fBefore;
     private int fPos;
     private char structSeparator;
@@ -45,7 +45,7 @@ class SQLTokensParser {
         this.configuration = configuration;
         this.structSeparator = configuration.getSyntaxManager().getStructSeparator();
         this.catalogSeparator = configuration.getSyntaxManager().getCatalogSeparator();
-        this.quoteSymbol = configuration.getSyntaxManager().getQuoteSymbol();
+        this.quoteStrings = configuration.getSyntaxManager().getQuoteStrings();
         this.singleLineComments = configuration.getSyntaxManager().getDialect().getSingleLineComments();
         this.singleLineCommentStart = new char[this.singleLineComments.length];
         for (int i = 0; i < singleLineComments.length; i++) {
@@ -212,7 +212,7 @@ class SQLTokensParser {
                 }
             }
         } else {
-            if (fChar == '\'' || fChar == '\"' || (quoteSymbol != null && !quoteSymbol.isEmpty() && fChar == quoteSymbol.charAt(0))) {
+            if (fChar == '\'' || isQuoteChar(fChar)) {
                 fPos++;
                 char quoteChar = fChar;
                 StringBuilder s = new StringBuilder();
@@ -254,6 +254,17 @@ class SQLTokensParser {
                 return new FormatterToken(TokenType.UNKNOWN, String.valueOf(fChar), start_pos);
             }
         }
+    }
+
+    private boolean isQuoteChar(char fChar) {
+        if (quoteStrings != null) {
+            for (int i = 0; i < quoteStrings.length; i++) {
+                if (quoteStrings[i][0].charAt(0) == fChar) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public List<FormatterToken> parse(final String argSql) {

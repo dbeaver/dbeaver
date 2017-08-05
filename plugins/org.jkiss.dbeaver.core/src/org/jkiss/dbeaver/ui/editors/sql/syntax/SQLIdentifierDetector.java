@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,16 +34,22 @@ import java.util.StringTokenizer;
 public class SQLIdentifierDetector extends SQLWordDetector
 {
     private char structSeparator;
-    private final String quoteSymbol;
+    @NotNull
+    private final String[][] quoteStrings;
 
-    public SQLIdentifierDetector(char structSeparator, String quoteSymbol)
+    public SQLIdentifierDetector(char structSeparator, @Nullable String[][] quoteStrings)
     {
         this.structSeparator = structSeparator;
-        this.quoteSymbol = quoteSymbol;
+        this.quoteStrings = quoteStrings != null ? quoteStrings : new String[0][];
     }
 
     protected boolean isQuote(char c) {
-        return quoteSymbol != null && quoteSymbol.indexOf(c) != -1;
+        for (int i = 0; i < quoteStrings.length; i++) {
+            if (quoteStrings[i][0].indexOf(c) != -1) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean containsSeparator(String identifier)
@@ -72,19 +81,18 @@ public class SQLIdentifierDetector extends SQLWordDetector
 
     public boolean isQuoted(String token)
     {
-        return quoteSymbol != null && !quoteSymbol.isEmpty() && token.startsWith(quoteSymbol);
+        for (int i = 0; i < quoteStrings.length; i++) {
+            if (token.startsWith(quoteStrings[i][0])) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String removeQuotes(String name)
     {
-        if (quoteSymbol == null || quoteSymbol.isEmpty()) {
-            return name;
-        }
-        if (name.startsWith(quoteSymbol)) {
-            name = name.substring(quoteSymbol.length());
-        }
-        if (name.endsWith(quoteSymbol)) {
-            name = name.substring(0, name.length() - quoteSymbol.length());
+        for (int i = 0; i < quoteStrings.length; i++) {
+            name = DBUtils.getUnQuotedIdentifier(name, quoteStrings[i][0], quoteStrings[i][1]);
         }
         return name;
     }

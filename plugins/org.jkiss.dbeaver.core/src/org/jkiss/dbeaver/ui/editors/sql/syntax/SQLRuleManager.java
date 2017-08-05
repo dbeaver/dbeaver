@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLDelimiterSetRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLParameterRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -182,17 +183,28 @@ public class SQLRuleManager extends RuleBasedScanner {
             }
         }
 
-        // Add rules for delimited identifiers and string literals.
-        //char escapeChar = syntaxManager.getEscapeChar();
-        String quoteSymbol = syntaxManager.getQuoteSymbol();
-        if (quoteSymbol != null) {
-            rules.add(new SingleLineRule(quoteSymbol, quoteSymbol, quotedToken, (char)0));
-        }
-        if (quoteSymbol == null || !quoteSymbol.equals(SQLConstants.STR_QUOTE_SINGLE)) {
-            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, (char)0));
-        }
-        if (quoteSymbol == null || !quoteSymbol.equals(SQLConstants.STR_QUOTE_DOUBLE)) {
-            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, (char)0));
+        {
+            // Add rules for delimited identifiers and string literals.
+            //char escapeChar = syntaxManager.getEscapeChar();
+            String[][] quoteStrings = syntaxManager.getQuoteStrings();
+            boolean hasSingleQuoteRule = false, hasDoubleQuoteRule = false;
+            if (!ArrayUtils.isEmpty(quoteStrings)) {
+                for (int i = 0; i < quoteStrings.length; i++) {
+                    rules.add(new SingleLineRule(quoteStrings[i][0], quoteStrings[i][1], quotedToken, (char) 0));
+                    if (quoteStrings[i][0].equals(SQLConstants.STR_QUOTE_SINGLE) && quoteStrings[i][0].equals(quoteStrings[i][1])) {
+                        hasSingleQuoteRule = true;
+                    } else if (quoteStrings[i][1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quoteStrings[i][0].equals(quoteStrings[i][1])) {
+                        hasDoubleQuoteRule = true;
+                    }
+
+                }
+            }
+            if (!hasSingleQuoteRule) {
+                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, (char) 0));
+            }
+            if (!hasDoubleQuoteRule) {
+                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, (char) 0));
+            }
         }
 
         // Add rules for multi-line comments
