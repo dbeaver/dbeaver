@@ -10,7 +10,7 @@
         <relativePath>../../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.ext.exasol.feature</artifactId>
-    <version>1.0.19</version>
+    <version>1.0.20</version>
     <packaging>eclipse-feature</packaging>
 
 </project>
