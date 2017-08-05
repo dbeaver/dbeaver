@@ -280,7 +280,6 @@ class SQLCompletionAnalyzer
 
         final List<String> nameList = new ArrayList<>();
         SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
-        String quoteString = sqlDialect.getIdentifierQuoteString();
         {
             // Regex matching MUST be very fast.
             // Otherwise UI will freeze during SQL typing.
@@ -333,8 +332,9 @@ class SQLCompletionAnalyzer
         // Fix names (convert case or remove quotes)
         for (int i = 0; i < nameList.size(); i++) {
             String name = nameList.get(i);
-            if (quoteString != null && name.startsWith(quoteString) && name.endsWith(quoteString)) {
-                name = name.substring(1, name.length() - 1);
+            String unquotedName = DBUtils.getUnQuotedIdentifier(dataSource, name);
+            if (!unquotedName.equals(name)) {
+                name = unquotedName;
             } else {
                 name = DBObjectNameCaseTransformer.transformName(sc.getDataSource(), name);
             }

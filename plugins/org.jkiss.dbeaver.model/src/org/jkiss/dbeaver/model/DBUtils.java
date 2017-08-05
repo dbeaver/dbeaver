@@ -67,9 +67,7 @@ public final class DBUtils {
             if (quote == null) {
                 quote = SQLConstants.DEFAULT_IDENTIFIER_QUOTE;
             }
-            if (str.startsWith(quote) && str.endsWith(quote)) {
-                return str.substring(quote.length(), str.length() - quote.length());
-            }
+            str = getUnQuotedIdentifier(str, quote, quote);
         }
         return str;
     }
@@ -77,8 +75,14 @@ public final class DBUtils {
     @NotNull
     public static String getUnQuotedIdentifier(@NotNull String str, String quote)
     {
-        if (quote != null && str.startsWith(quote) && str.endsWith(quote)) {
-            return str.substring(quote.length(), str.length() - quote.length());
+        return getUnQuotedIdentifier(str, quote, quote);
+    }
+
+    @NotNull
+    public static String getUnQuotedIdentifier(@NotNull String str, String quote1, String quote2)
+    {
+        if (quote1 != null && quote2 != null && str.startsWith(quote1) && str.endsWith(quote2)) {
+            return str.substring(quote1.length(), str.length() - quote2.length());
         }
         return str;
     }
