@@ -45,7 +45,7 @@ public class SQLIdentifierDetector extends SQLWordDetector
 
     protected boolean isQuote(char c) {
         for (int i = 0; i < quoteStrings.length; i++) {
-            if (quoteStrings[i][0].indexOf(c) != -1) {
+            if (quoteStrings[i][0].indexOf(c) != -1 || quoteStrings[i][1].indexOf(c) != -1) {
                 return true;
             }
         }

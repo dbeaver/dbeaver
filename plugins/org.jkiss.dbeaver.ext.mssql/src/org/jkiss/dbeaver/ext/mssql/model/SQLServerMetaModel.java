@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
@@ -49,6 +50,11 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     public SQLServerMetaModel() {
         super();
+    }
+
+    @Override
+    public GenericDataSource createDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+        return new SQLServerDataSource(monitor, container, this);
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {

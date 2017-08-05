@@ -53,8 +53,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
             throw new DBException("Empty input file");
         }
         fileName = GeneralUtils.replaceVariables(fileName, new GeneralUtils.MapResolver(scriptContext.getVariables())).trim();
-        fileName = DBUtils.getUnQuotedIdentifier(fileName, "\"");
-        fileName = DBUtils.getUnQuotedIdentifier(fileName, "'");
+        fileName = DBUtils.getUnQuotedIdentifier(scriptContext.getExecutionContext().getDataSource(), fileName);
 
         File curFile = scriptContext.getSourceFile();
         File incFile = curFile == null ? new File(fileName) : new File(curFile.getParent(), fileName);
