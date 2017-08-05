@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql;
+package org.jkiss.dbeaver.runtime.sql;
 
 import org.eclipse.jface.text.rules.IRule;
 import org.jkiss.code.NotNull;
