@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLRuleProvider;
+import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 import org.jkiss.utils.ArrayUtils;
