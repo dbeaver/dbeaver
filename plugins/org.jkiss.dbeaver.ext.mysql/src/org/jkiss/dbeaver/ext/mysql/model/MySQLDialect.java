@@ -55,8 +55,8 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
     };
 
     public static final String[][] MYSQL_QUOTE_STRINGS = {
-            {"\"", "\""},
             {"`", "`"},
+            {"\"", "\""},
     };
 
     public MySQLDialect() {
