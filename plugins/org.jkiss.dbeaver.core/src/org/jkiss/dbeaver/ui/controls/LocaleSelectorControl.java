@@ -148,6 +148,7 @@ public class LocaleSelectorControl extends Composite
             if (!found) {
                 languageCombo.setText(currentLocale.getLanguage());
             }
+            onLanguageChange(currentLocale.getLanguage());
 
             count = countryCombo.getItemCount();
             found = false;
@@ -161,6 +162,7 @@ public class LocaleSelectorControl extends Composite
             if (!found) {
                 countryCombo.setText(currentLocale.getCountry());
             }
+            onCountryChange(currentLocale.getCountry());
             variantCombo.setText(currentLocale.getVariant());
         }
         finally {
