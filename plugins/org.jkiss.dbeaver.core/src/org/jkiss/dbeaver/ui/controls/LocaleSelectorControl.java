@@ -182,6 +182,9 @@ public class LocaleSelectorControl extends Composite
                 countries.add(locale.getCountry() + " - " + locale.getDisplayCountry()); //$NON-NLS-1$
             }
         }
+        if (defCountry == null) {
+            defCountry = currentLocale.getCountry();
+        }
         for (String country : countries) {
             countryCombo.add(country);
             if (defCountry != null && defCountry.equals(getIsoCode(country))) {
@@ -210,6 +213,9 @@ public class LocaleSelectorControl extends Composite
                     }
                 }
             }
+        }
+        if (defVariant == null) {
+            defVariant = currentLocale.getVariant();
         }
         for (String variant : variants) {
             variantCombo.add(variant);
