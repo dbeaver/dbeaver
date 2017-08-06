@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -109,8 +110,13 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
             namesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             namesCombo.add(NULL_FILTER_NAME);
+            List<String> sfNames = new ArrayList<>();
             for (DBSObjectFilter sf : dsRegistry.getSavedFilters()) {
-                namesCombo.add(sf.getName());
+                sfNames.add(sf.getName());
+            }
+            Collections.sort(sfNames);
+            for (String sfName : sfNames) {
+                namesCombo.add(sfName);
             }
             namesCombo.setText(CommonUtils.notEmpty(filter.getName()));
             namesCombo.addSelectionListener(new SelectionAdapter() {
