@@ -48,6 +48,8 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     private ControlEnableState blockEnableState;
     private Table includeTable;
     private Table excludeTable;
+    private Combo namesCombo;
+    private Button enableButton;
 
     public EditObjectFilterDialog(Shell shell, String objectTitle, DBSObjectFilter filter, boolean globalFilter) {
         super(shell, IHelpContextIds.CTX_EDIT_OBJECT_FILTERS);
@@ -69,7 +71,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
         Composite topPanel = UIUtils.createPlaceholder(composite, globalFilter ? 1 : 2);
         topPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        final Button enableButton = UIUtils.createCheckbox(topPanel, CoreMessages.dialog_filter_button_enable, false);
+        enableButton = UIUtils.createCheckbox(topPanel, CoreMessages.dialog_filter_button_enable, false);
         enableButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -96,6 +98,15 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         excludeTable = createEditableList(CoreMessages.dialog_filter_list_exclude, filter.getExclude());
 
         UIUtils.createInfoLabel(blockControl, "You can use masks (%, _ and *) in filters");
+
+        {
+            Group sfGroup = UIUtils.createControlGroup(composite, "Saved filter", 4, GridData.FILL_HORIZONTAL, 0);
+            namesCombo = UIUtils.createLabelCombo(sfGroup, "Name", SWT.DROP_DOWN);
+            namesCombo.setText(CommonUtils.notEmpty(filter.getName()));
+            namesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            UIUtils.createPushButton(sfGroup, "Save", null);
+            UIUtils.createPushButton(sfGroup, "Remove", null);
+        }
 
         enableFiltersContent();
 
@@ -200,8 +211,10 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     }
 
     private void saveConfigurations() {
+        filter.setEnabled(enableButton.getSelection());
         filter.setInclude(collectValues(includeTable));
         filter.setExclude(collectValues(excludeTable));
+        filter.setName(namesCombo.getText());
     }
 
     private List<String> collectValues(Table table) {
