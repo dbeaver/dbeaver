@@ -22,6 +22,7 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
 import java.util.List;
 
@@ -70,6 +71,16 @@ public interface DBPDataSourceRegistry extends DBPObject {
     DBPDataSourceFolder addFolder(DBPDataSourceFolder parent, String name);
 
     void removeFolder(DBPDataSourceFolder folder, boolean dropContents);
+
+    @Nullable
+    DBSObjectFilter getSavedFilter(String name);
+
+    @NotNull
+    List<DBSObjectFilter> getSavedFilters();
+
+    void addSavedFilter(DBSObjectFilter filter);
+
+    void removeSavedFilter(DBSObjectFilter filter);
 
     void flushConfig();
 
