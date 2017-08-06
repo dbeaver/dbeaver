@@ -38,6 +38,7 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
     private Combo formatCombo;
     private Combo compressCombo;
     private Combo encodingCombo;
+    private Button useInsertsCheck;
 
     protected PostgreBackupWizardPageSettings(PostgreBackupWizard wizard)
     {
@@ -86,6 +87,12 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
         encodingCombo = UIUtils.createEncodingCombo(formatGroup, null);
         encodingCombo.addSelectionListener(changeListener);
 
+        useInsertsCheck = UIUtils.createCheckbox(formatGroup,
+            "Use SQL INSERT instead of COPY for rows",
+            false
+        );
+        useInsertsCheck.addSelectionListener(changeListener);
+
         Group outputGroup = UIUtils.createControlGroup(composite, "Output", 2, GridData.FILL_HORIZONTAL, 0);
         outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, "Output folder", new ModifyListener() {
             @Override
@@ -123,6 +130,7 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
         wizard.format = PostgreBackupWizard.ExportFormat.values()[formatCombo.getSelectionIndex()];
         wizard.compression = compressCombo.getText();
         wizard.encoding = encodingCombo.getText();
+        wizard.useInserts = useInsertsCheck.getSelection();
 
         getContainer().updateButtons();
     }
