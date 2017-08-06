@@ -114,7 +114,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
         if (!CommonUtils.isEmpty(encoding)) {
             cmd.add("--encoding=" + encoding);
         }
-        if (!CommonUtils.isEmpty(useInserts)) {
+        if (useInserts) {
             cmd.add("--inserts");
         }
 
