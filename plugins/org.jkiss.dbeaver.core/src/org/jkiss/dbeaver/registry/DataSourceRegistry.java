@@ -327,13 +327,26 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     }
 
     @Override
-    public void addSavedFilter(DBSObjectFilter filter) {
-        savedFilters.add(filter);
+    public void updateSavedFilter(DBSObjectFilter filter) {
+        DBSObjectFilter filterCopy = new DBSObjectFilter(filter);
+        for (int i = 0; i < savedFilters.size(); i++) {
+            if (CommonUtils.equalObjects(savedFilters.get(i).getName(), filter.getName())) {
+                savedFilters.set(i, filterCopy);
+                return;
+            }
+        }
+        savedFilters.add(filterCopy);
     }
 
     @Override
-    public void removeSavedFilter(DBSObjectFilter filter) {
-        savedFilters.remove(filter);
+    public void removeSavedFilter(String filterName) {
+        for (int i = 0; i < savedFilters.size(); ) {
+            if (CommonUtils.equalObjects(savedFilters.get(i).getName(), filterName)) {
+                savedFilters.remove(i);
+            } else {
+                i++;
+            }
+        }
     }
 
     ////////////////////////////////////////////////////
@@ -606,10 +619,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                                 }
 
                                 // Filters
-                                try (XMLBuilder.Element el2 = xml.startElement(RegistryConstants.TAG_FILTERS)) {
-                                    for (DBSObjectFilter cf : savedFilters) {
-                                        if (!cf.isEmpty()) {
-                                            saveObjectFiler(xml, null, null, cf);
+                                if (origin.isDefault()) {
+                                    try (XMLBuilder.Element el2 = xml.startElement(RegistryConstants.TAG_FILTERS)) {
+                                        for (DBSObjectFilter cf : savedFilters) {
+                                            if (!cf.isEmpty()) {
+                                                saveObjectFiler(xml, null, null, cf);
+                                            }
                                         }
                                     }
                                 }
