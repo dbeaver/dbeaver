@@ -78,9 +78,9 @@ public interface DBPDataSourceRegistry extends DBPObject {
     @NotNull
     List<DBSObjectFilter> getSavedFilters();
 
-    void addSavedFilter(DBSObjectFilter filter);
+    void updateSavedFilter(DBSObjectFilter filter);
 
-    void removeSavedFilter(DBSObjectFilter filter);
+    void removeSavedFilter(String filterName);
 
     void flushConfig();
 
