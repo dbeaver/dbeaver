@@ -31,6 +31,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.registry.sql.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.registry.sql.SQLCommandsRegistry;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLDelimiterSetRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLParameterRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -123,11 +125,18 @@ public class SQLRuleManager extends RuleBasedScanner {
 
     public void refreshRules(@Nullable DBPDataSource dataSource, IEditorInput editorInput)
     {
+        SQLDialect dialect = syntaxManager.getDialect();
+        SQLRuleProvider ruleProvider = null;
+        if (dialect instanceof SQLRuleProvider) {
+            ruleProvider = (SQLRuleProvider) dialect;
+        }
+
         boolean minimalRules = false;
         File file = EditorUtils.getLocalFileFromInput(editorInput);
         if (file != null && file.length() > MAX_FILE_LENGTH_FOR_RULES) {
             minimalRules = true;
         }
+
         /*final Color backgroundColor = null;unassigned || dataSource != null ?
             getColor(SQLConstants.CONFIG_COLOR_BACKGROUND, SWT.COLOR_WHITE) :
             getColor(SQLConstants.CONFIG_COLOR_DISABLED, SWT.COLOR_WIDGET_LIGHT_SHADOW);*/
@@ -161,7 +170,10 @@ public class SQLRuleManager extends RuleBasedScanner {
         setDefaultReturnToken(otherToken);
         List<IRule> rules = new ArrayList<>();
 
-        SQLDialect dialect = syntaxManager.getDialect();
+        if (ruleProvider != null) {
+            ruleProvider.extendRules(rules, SQLRuleProvider.RulePosition.INITIAL);
+        }
+
         // Add rule for single-line comments.
         for (String lineComment : dialect.getSingleLineComments()) {
             if (lineComment.startsWith("^")) {
@@ -174,6 +186,11 @@ public class SQLRuleManager extends RuleBasedScanner {
         {
             final SQLControlToken controlToken = new SQLControlToken(
                     new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMAND), null, SWT.BOLD));
+
+            if (ruleProvider != null) {
+                ruleProvider.extendRules(rules, SQLRuleProvider.RulePosition.CONTROL);
+            }
+
             String commandPrefix = syntaxManager.getControlCommandPrefix();
 
             // Control rules
@@ -182,17 +199,28 @@ public class SQLRuleManager extends RuleBasedScanner {
             }
         }
 
-        // Add rules for delimited identifiers and string literals.
-        //char escapeChar = syntaxManager.getEscapeChar();
-        String quoteSymbol = syntaxManager.getQuoteSymbol();
-        if (quoteSymbol != null) {
-            rules.add(new SingleLineRule(quoteSymbol, quoteSymbol, quotedToken, (char)0));
-        }
-        if (quoteSymbol == null || !quoteSymbol.equals(SQLConstants.STR_QUOTE_SINGLE)) {
-            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, (char)0));
-        }
-        if (quoteSymbol == null || !quoteSymbol.equals(SQLConstants.STR_QUOTE_DOUBLE)) {
-            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, (char)0));
+        {
+            // Add rules for delimited identifiers and string literals.
+            //char escapeChar = syntaxManager.getEscapeChar();
+            String[][] quoteStrings = syntaxManager.getQuoteStrings();
+            boolean hasSingleQuoteRule = false, hasDoubleQuoteRule = false;
+            if (!ArrayUtils.isEmpty(quoteStrings)) {
+                for (int i = 0; i < quoteStrings.length; i++) {
+                    rules.add(new SingleLineRule(quoteStrings[i][0], quoteStrings[i][1], quotedToken, (char) 0));
+                    if (quoteStrings[i][0].equals(SQLConstants.STR_QUOTE_SINGLE) && quoteStrings[i][0].equals(quoteStrings[i][1])) {
+                        hasSingleQuoteRule = true;
+                    } else if (quoteStrings[i][1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quoteStrings[i][0].equals(quoteStrings[i][1])) {
+                        hasDoubleQuoteRule = true;
+                    }
+
+                }
+            }
+            if (!hasSingleQuoteRule) {
+                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, (char) 0));
+            }
+            if (!hasDoubleQuoteRule) {
+                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, (char) 0));
+            }
         }
 
         // Add rules for multi-line comments
@@ -224,6 +252,10 @@ public class SQLRuleManager extends RuleBasedScanner {
         }
 
         if (!minimalRules) {
+            if (ruleProvider != null) {
+                ruleProvider.extendRules(rules, SQLRuleProvider.RulePosition.KEYWORDS);
+            }
+
             // Add word rule for keywords, types, and constants.
             WordRule wordRule = new WordRule(new SQLWordDetector(), otherToken, true);
             for (String reservedWord : dialect.getReservedWords()) {

@@ -41,7 +41,7 @@ public class SQLSyntaxManager {
     @NotNull
     private DBPPreferenceStore preferenceStore = ModelPreferences.getPreferences();
     @Nullable
-    private String quoteSymbol;
+    private String[][] quoteStrings;
     private char structSeparator;
     private boolean parametersEnabled;
     private boolean anonymousParametersEnabled;
@@ -92,9 +92,9 @@ public class SQLSyntaxManager {
     }
 
     @Nullable
-    public String getQuoteSymbol()
+    public String[][] getQuoteStrings()
     {
-        return quoteSymbol;
+        return quoteStrings;
     }
 
     public char getEscapeChar() {
@@ -130,7 +130,7 @@ public class SQLSyntaxManager {
         this.statementDelimiters = new String[0];
         this.sqlDialect = dialect;
         this.preferenceStore = preferenceStore;
-        this.quoteSymbol = sqlDialect.getIdentifierQuoteString();
+        this.quoteStrings = sqlDialect.getIdentifierQuoteStrings();
         this.structSeparator = sqlDialect.getStructSeparator();
         this.catalogSeparator = sqlDialect.getCatalogSeparator();
         this.escapeChar = '\\';

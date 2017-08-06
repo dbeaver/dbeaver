@@ -14,18 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.sqlite.model;
+package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.eclipse.jface.text.rules.IRule;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 
-public class SQLiteSQLDialect extends GenericSQLDialect {
+import java.util.List;
 
-    public SQLiteSQLDialect() {
-        super("SQLite");
+public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvider {
+
+    public static final String[][] SQLSERVER_QUOTE_STRINGS = {
+            {"\"", "\""},
+            {"[", "]"}
+    };
+
+    public SQLServerDialect() {
+        super("SQLServer");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
@@ -33,6 +41,10 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
     }
 
     public String[][] getIdentifierQuoteStrings() {
-        return BasicSQLDialect.DEFAULT_QUOTE_STRINGS;
+        return SQLSERVER_QUOTE_STRINGS;
+    }
+
+    @Override
+    public void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position) {
     }
 }

@@ -42,7 +42,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
     private static final Log log = Log.getLog(JDBCSQLDialect.class);
 
     private String name;
-    private String identifierQuoteString;
+    private String[][] identifierQuoteString;
     private SQLStateType sqlStateType;
     private String searchStringEscape;
     private String catalogSeparator;
@@ -63,17 +63,23 @@ public class JDBCSQLDialect extends BasicSQLDialect {
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+        String singleQuoteStr;
         try {
-            this.identifierQuoteString = metaData.getIdentifierQuoteString();
+            singleQuoteStr = metaData.getIdentifierQuoteString();
         } catch (Throwable e) {
             log.debug("Error getting identifierQuoteString: " + e.getMessage());
-            this.identifierQuoteString = SQLConstants.DEFAULT_IDENTIFIER_QUOTE;
+            singleQuoteStr = SQLConstants.DEFAULT_IDENTIFIER_QUOTE;
         }
-        if (identifierQuoteString != null) {
-            identifierQuoteString = identifierQuoteString.trim();
-            if (identifierQuoteString.isEmpty()) {
-                identifierQuoteString = null;
+        if (singleQuoteStr != null) {
+            singleQuoteStr = singleQuoteStr.trim();
+            if (singleQuoteStr.isEmpty()) {
+                singleQuoteStr = null;
             }
+        }
+        if (singleQuoteStr == null) {
+            identifierQuoteString = new String[0][];
+        } else {
+            identifierQuoteString = new String[][] { { singleQuoteStr, singleQuoteStr } };
         }
 
         try {
@@ -199,7 +205,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
 
     @Nullable
     @Override
-    public String getIdentifierQuoteString()
+    public String[][] getIdentifierQuoteStrings()
     {
         return identifierQuoteString;
     }
