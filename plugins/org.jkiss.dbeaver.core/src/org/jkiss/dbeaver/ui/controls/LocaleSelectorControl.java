@@ -68,6 +68,7 @@ public class LocaleSelectorControl extends Composite
             public void modifyText(ModifyEvent e)
             {
                 onLanguageChange(null);
+                calculateLocale();
             }
         });
 
@@ -79,6 +80,7 @@ public class LocaleSelectorControl extends Composite
             public void modifyText(ModifyEvent e)
             {
                 onCountryChange(null);
+                calculateLocale();
             }
         });
 
