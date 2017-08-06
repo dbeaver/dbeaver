@@ -91,6 +91,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private final List<DataSourceDescriptor> dataSources = new ArrayList<>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
+    private final List<DBSObjectFilter> savedFilters = new ArrayList<>();
     private volatile boolean saveInProgress = false;
 
     public DataSourceRegistry(DBPPlatform platform, IProject project)
@@ -305,6 +306,39 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return parent;
     }
 
+    ////////////////////////////////////////////////////
+    // Saved filters
+
+    @Nullable
+    @Override
+    public DBSObjectFilter getSavedFilter(String name) {
+        for (DBSObjectFilter filter : savedFilters) {
+            if (CommonUtils.equalObjects(filter.getName(), name)) {
+                return filter;
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public List<DBSObjectFilter> getSavedFilters() {
+        return savedFilters;
+    }
+
+    @Override
+    public void addSavedFilter(DBSObjectFilter filter) {
+        savedFilters.add(filter);
+    }
+
+    @Override
+    public void removeSavedFilter(DBSObjectFilter filter) {
+        savedFilters.remove(filter);
+    }
+
+    ////////////////////////////////////////////////////
+    // Data sources
+
     public void addDataSource(DBPDataSourceContainer dataSource)
     {
         final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
@@ -454,6 +488,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         if (!project.isOpen()) {
             return;
         }
+        // Clear filters before reload
+        savedFilters.clear();
+        // Parse with SAX
         ParseResults parseResults = new ParseResults();
         try {
             for (IResource res : project.members(IContainer.INCLUDE_HIDDEN)) {
@@ -552,21 +589,32 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         try {
                             XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
                             xml.setButify(true);
-                            xml.startElement("data-sources");
-                            if (origin.isDefault()) {
-                                // Folders (only for default origin)
-                                for (DataSourceFolder folder : dataSourceFolders) {
-                                    saveFolder(xml, folder);
+                            try (XMLBuilder.Element el1 = xml.startElement("data-sources")) {
+                                if (origin.isDefault()) {
+                                    // Folders (only for default origin)
+                                    for (DataSourceFolder folder : dataSourceFolders) {
+                                        saveFolder(xml, folder);
+                                    }
                                 }
-                            }
-                            // Datasources
-                            for (DataSourceDescriptor dataSource : localDataSources) {
-                                // Skip temporary
-                                if (!dataSource.isTemporary()) {
-                                    saveDataSource(xml, dataSource);
+
+                                // Datasources
+                                for (DataSourceDescriptor dataSource : localDataSources) {
+                                    // Skip temporary
+                                    if (!dataSource.isTemporary()) {
+                                        saveDataSource(xml, dataSource);
+                                    }
                                 }
+
+                                // Filters
+                                try (XMLBuilder.Element el2 = xml.startElement(RegistryConstants.TAG_FILTERS)) {
+                                    for (DBSObjectFilter cf : savedFilters) {
+                                        if (!cf.isEmpty()) {
+                                            saveObjectFiler(xml, null, null, cf);
+                                        }
+                                    }
+                                }
+
                             }
-                            xml.endElement();
                             xml.flush();
                         } catch (IOException ex) {
                             log.warn("IO error while saving datasources", ex);
@@ -919,7 +967,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private void saveObjectFiler(XMLBuilder xml, String typeName, String objectID, DBSObjectFilter filter) throws IOException
     {
         xml.startElement(RegistryConstants.TAG_FILTER);
-        xml.addAttribute(RegistryConstants.ATTR_TYPE, typeName);
+        if (typeName != null) {
+            xml.addAttribute(RegistryConstants.ATTR_TYPE, typeName);
+        }
         if (objectID != null) {
             xml.addAttribute(RegistryConstants.ATTR_ID, objectID);
         }
@@ -1220,6 +1270,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             curDataSource.updateObjectFilter(typeName, objectID, curFilter);
 
                         }
+                    } else {
+                        curFilter = new DBSObjectFilter();
+                        curFilter.setName(atts.getValue(RegistryConstants.ATTR_NAME));
+                        curFilter.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
+                        curFilter.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED), true));
+                        savedFilters.add(curFilter);
                     }
                     break;
                 case RegistryConstants.TAG_INCLUDE:
