@@ -56,13 +56,13 @@ public class ExecuteHandler extends AbstractHandler
                 editor.processSQL(true, true);
                 break;
             case CoreCommands.CMD_EXECUTE_ROW_COUNT:
-                editor.processSQL(false, false, new SQLQueryTransformerCount());
+                editor.processSQL(false, false, new SQLQueryTransformerCount(), null);
                 break;
             case CoreCommands.CMD_EXECUTE_EXPRESSION:
-                editor.processSQL(false, false, new SQLQueryTransformerExpression());
+                editor.processSQL(false, false, new SQLQueryTransformerExpression(), null);
                 break;
             case CoreCommands.CMD_EXECUTE_ALL_ROWS:
-                editor.processSQL(false, false, new SQLQueryTransformerAllRows());
+                editor.processSQL(false, false, new SQLQueryTransformerAllRows(), null);
                 break;
             case CoreCommands.CMD_EXPLAIN_PLAN:
                 editor.explainQueryPlan();

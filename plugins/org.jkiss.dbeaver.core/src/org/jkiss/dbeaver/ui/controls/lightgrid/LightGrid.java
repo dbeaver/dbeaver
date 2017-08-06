@@ -3171,33 +3171,46 @@ public abstract class LightGrid extends Canvas {
                     showItem(intentItem);
                     selectionEvent = updateCellSelection(cells, ctrlFlag, true, false, EventSource.MOUSE);
                 }
+                final GridColumn prevHoveringColumn = hoveringColumn;
                 if (cellColumnDragSelectionOccurring && handleCellHover(e.x, e.y)) {
-                    GridColumn intentCol = hoveringColumn;
-
-                    if (intentCol == null) return;  //temporary
-
-                    GridColumn iterCol = intentCol;
-
+                    boolean dragging;
                     List<GridPos> newSelected = new ArrayList<>();
 
-                    boolean decreasing = (indexOf(iterCol) > indexOf(focusColumn));
+                    GridColumn iterCol = hoveringColumn;
+                    if (iterCol != null) {
+                        boolean decreasing = (indexOf(iterCol) > indexOf(focusColumn));
+                        dragging = true;
 
-                    while (iterCol != null) {
-                        getCells(iterCol, newSelected);
+                        while (iterCol != null) {
+                            getCells(iterCol, newSelected);
 
-                        if (iterCol == focusColumn) {
-                            break;
+                            if (iterCol == focusColumn) {
+                                break;
+                            }
+
+                            if (decreasing) {
+                                iterCol = getPreviousVisibleColumn(iterCol);
+                            } else {
+                                iterCol = getNextVisibleColumn(iterCol);
+                            }
+
                         }
-
-                        if (decreasing) {
-                            iterCol = getPreviousVisibleColumn(iterCol);
+                    } else {
+                        dragging = false;
+                        if (e.x <= rowHeaderWidth) {
+                            GridColumn prev = prevHoveringColumn == null ? null : getPreviousVisibleColumn(prevHoveringColumn);
+                            if (prev != null) {
+                                showColumn(prev);
+                                getCells(prev, newSelected);
+                                ctrlFlag = SWT.MOD1;
+                            }
                         } else {
-                            iterCol = getNextVisibleColumn(iterCol);
+
                         }
 
                     }
 
-                    selectionEvent = updateCellSelection(newSelected, ctrlFlag, true, false, EventSource.MOUSE);
+                    selectionEvent = updateCellSelection(newSelected, ctrlFlag, dragging, false, EventSource.MOUSE);
                 }
 
             }

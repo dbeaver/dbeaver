@@ -371,4 +371,8 @@
         </handler>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlCommand">
+        <command id="mysql.source" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandInclude" label="Include" description="Include another MySQL script file"/>
+    </extension>
+
 </plugin>

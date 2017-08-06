@@ -570,13 +570,13 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             return;
         }
         if (!drop) {
+            if (!text.isDisposed()) {
+                text.setFocus();
+            }
             if (this.popup != null) {
                 this.popup.dispose();
                 this.popup = null;
                 this.dropDownControl = null;
-            }
-            if (!isDisposed() && this.arrow.isFocusControl()) {
-                this.setFocus();
             }
             return;
         }

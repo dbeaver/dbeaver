@@ -14,33 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.runtime.sql;
 
-package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
+import org.eclipse.jface.text.rules.IRule;
+import org.jkiss.code.NotNull;
+
+import java.util.List;
 
 /**
- * SQLControlToken
- *
- * Control tokens are used for local SQL script evaluation.
+ * SQL parser rules provider.
+ * It is an extension for SQL dialect implementors.
  */
-public class SQLControlToken extends SQLToken {
+public interface SQLRuleProvider {
 
-    private final String commandId;
-
-    public SQLControlToken(Object data)
-    {
-        this(data, null);
+    enum RulePosition {
+        INITIAL,
+        CONTROL,
+        KEYWORDS
     }
 
-    public SQLControlToken(Object data, String commandId)
-    {
-        super(T_CONTROL, data);
-        this.commandId = commandId;
-    }
+    void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position);
 
-    /**
-     * Command ID or null if command id is in the token itself
-     */
-    public String getCommandId() {
-        return commandId;
-    }
 }

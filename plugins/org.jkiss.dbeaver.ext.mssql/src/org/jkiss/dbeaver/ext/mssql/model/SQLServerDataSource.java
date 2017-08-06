@@ -14,33 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ext.mssql.model;
 
-package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 
-/**
- * SQLControlToken
- *
- * Control tokens are used for local SQL script evaluation.
- */
-public class SQLControlToken extends SQLToken {
+import java.util.Locale;
 
-    private final String commandId;
+public class SQLServerDataSource extends GenericDataSource {
 
-    public SQLControlToken(Object data)
+    public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
+        throws DBException
     {
-        this(data, null);
+        super(monitor, container, metaModel, new SQLServerDialect());
     }
 
-    public SQLControlToken(Object data, String commandId)
-    {
-        super(T_CONTROL, data);
-        this.commandId = commandId;
-    }
-
-    /**
-     * Command ID or null if command id is in the token itself
-     */
-    public String getCommandId() {
-        return commandId;
-    }
 }

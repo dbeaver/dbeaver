@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.sql.SQLStateType;
  */
 public class WMIDialect extends BasicSQLDialect {
 
+    private static final String[][] DEFAULT_QUOTE_STRINGS = {{"'", "'"}};
+
     public WMIDialect()
     {
     }
@@ -37,11 +39,10 @@ public class WMIDialect extends BasicSQLDialect {
     }
 
     @Nullable
-    @NotNull
     @Override
-    public String getIdentifierQuoteString()
+    public String[][] getIdentifierQuoteStrings()
     {
-        return "'";
+        return DEFAULT_QUOTE_STRINGS;
     }
 
     @NotNull
