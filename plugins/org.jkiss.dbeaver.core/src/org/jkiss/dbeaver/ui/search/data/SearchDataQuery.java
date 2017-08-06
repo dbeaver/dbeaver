@@ -121,7 +121,13 @@ public class SearchDataQuery implements ISearchQuery {
                     SearchTableMonitor searchMonitor = new SearchTableMonitor();
                     try (DBCSession session = DBUtils.openUtilSession(searchMonitor, dataSource, "Search rows in " + objectName)) {
                         TestDataReceiver dataReceiver = new TestDataReceiver(searchMonitor);
-                        findRows(session, dataContainer, dataReceiver);
+                        try {
+                            findRows(session, dataContainer, dataReceiver);
+                        } catch (DBCException e) {
+                            // Search failed in some container - just write an error in log.
+                            // We don't want to break whole search because of one single table.
+                            log.error("Fulltext search failed in '" + dataContainer.getName() + "'", e);
+                        }
 
                         if (dataReceiver.rowCount > 0) {
                             SearchDataObject object = new SearchDataObject(node, dataReceiver.rowCount, dataReceiver.filter);
@@ -134,7 +140,7 @@ public class SearchDataQuery implements ISearchQuery {
                 monitor.done();
             }
             return Status.OK_STATUS;
-        } catch (DBException e) {
+        } catch (Exception e) {
             return GeneralUtils.makeExceptionStatus(e);
         }
     }
