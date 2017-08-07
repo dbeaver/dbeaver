@@ -27,11 +27,13 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -52,33 +54,50 @@ public final class DBUtils {
     public static boolean isQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
     {
         if (dataSource instanceof SQLDataSource) {
-            final String quote = ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteString();
-            return quote != null && str.startsWith(quote) && str.endsWith(quote);
-        } else {
-            return false;
+            final String[][] quoteStrings = ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteStrings();
+            if (ArrayUtils.isEmpty(quoteStrings)) {
+                return false;
+            }
+            for (int i = 0; i < quoteStrings.length; i++) {
+                if (str.startsWith(quoteStrings[i][0]) && str.endsWith(quoteStrings[i][1])) {
+                    return true;
+                }
+            }
         }
+        return false;
     }
 
     @NotNull
     public static String getUnQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
     {
         if (dataSource instanceof SQLDataSource) {
-            String quote = ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteString();
-            if (quote == null) {
-                quote = SQLConstants.DEFAULT_IDENTIFIER_QUOTE;
-            }
-            if (str.startsWith(quote) && str.endsWith(quote)) {
-                return str.substring(quote.length(), str.length() - quote.length());
-            }
+            str = getUnQuotedIdentifier(str, ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteStrings());
         }
         return str;
     }
 
     @NotNull
-    public static String getUnQuotedIdentifier(@NotNull String str, String quote)
+    public static String getUnQuotedIdentifier(@NotNull String str, String[][] quoteStrings) {
+        if (ArrayUtils.isEmpty(quoteStrings)) {
+            quoteStrings = BasicSQLDialect.DEFAULT_QUOTE_STRINGS;
+        }
+        for (int i = 0; i < quoteStrings.length; i++) {
+            str = getUnQuotedIdentifier(str, quoteStrings[i][0], quoteStrings[i][1]);
+        }
+        return str;
+    }
+
+    @NotNull
+    public static String getUnQuotedIdentifier(@NotNull String str, @NotNull String quote)
     {
-        if (quote != null && str.startsWith(quote) && str.endsWith(quote)) {
-            return str.substring(quote.length(), str.length() - quote.length());
+        return getUnQuotedIdentifier(str, quote, quote);
+    }
+
+    @NotNull
+    public static String getUnQuotedIdentifier(@NotNull String str, @NotNull String quote1, @NotNull String quote2)
+    {
+        if (quote1 != null && quote2 != null && str.startsWith(quote1) && str.endsWith(quote2)) {
+            return str.substring(quote1.length(), str.length() - quote2.length());
         }
         return str;
     }
@@ -96,13 +115,13 @@ public final class DBUtils {
     @NotNull
     public static String getQuotedIdentifier(@NotNull SQLDataSource dataSource, @NotNull String str, boolean caseSensitiveNames)
     {
-        final SQLDialect sqlDialect = dataSource.getSQLDialect();
-        String quoteString = sqlDialect.getIdentifierQuoteString();
-        if (quoteString == null) {
+        if (isQuotedIdentifier(dataSource, str)) {
+            // Already quoted
             return str;
         }
-        if (str.startsWith(quoteString) && str.endsWith(quoteString)) {
-            // Already quoted
+        final SQLDialect sqlDialect = dataSource.getSQLDialect();
+        String[][] quoteStrings = sqlDialect.getIdentifierQuoteStrings();
+        if (ArrayUtils.isEmpty(quoteStrings)) {
             return str;
         }
 
@@ -144,11 +163,18 @@ public final class DBUtils {
         if (!hasBadChars) {
             return str;
         }
+
         // Escape quote chars
-        if (str.contains(quoteString)) {
-            str = str.replace(quoteString, quoteString + quoteString);
+        for (int i = 0; i < quoteStrings.length; i++) {
+            String q1 = quoteStrings[i][0], q2 = quoteStrings[i][1];
+            if (q1.equals(q2) && (q1.equals("\"") || q1.equals("'"))) {
+                if (str.contains(q1)) {
+                    str = str.replace(q1, q1 + q1);
+                }
+            }
         }
-        return quoteString + str + quoteString;
+        // Escape with first (default) quote string
+        return quoteStrings[0][0] + str + quoteStrings[0][1];
     }
 
     @NotNull

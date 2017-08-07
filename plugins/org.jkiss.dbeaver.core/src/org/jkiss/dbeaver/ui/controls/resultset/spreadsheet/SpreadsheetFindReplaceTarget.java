@@ -48,10 +48,23 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     private Pattern searchPattern;
     private Color scopeHighlightColor;
     private boolean replaceAll;
+    private boolean sessionActive = false;
 
     SpreadsheetFindReplaceTarget(SpreadsheetPresentation owner)
     {
         this.owner = owner;
+    }
+
+    public boolean isSessionActive() {
+        return sessionActive;
+    }
+
+    public Pattern getSearchPattern() {
+        return searchPattern;
+    }
+
+    public Color getScopeHighlightColor() {
+        return scopeHighlightColor;
     }
 
     @Override
@@ -106,11 +119,16 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     @Override
     public void beginSession()
     {
+        this.sessionActive = true;
+        this.owner.getControl().redraw();
     }
 
     @Override
     public void endSession()
     {
+        this.sessionActive = false;
+        this.searchPattern = null;
+        this.owner.getControl().redraw();
     }
 
     @Override

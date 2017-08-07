@@ -28,13 +28,14 @@ public class SQLControlCommand implements SQLScriptElement {
     private final DBPDataSource dataSource;
     private final String text;
     private final String command;
+    private final String commandId;
     private final String parameter;
     private final int offset;
     private final int length;
     private Object data;
     private boolean emptyCommand;
 
-    public SQLControlCommand(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, String text, int offset, int length, boolean emptyCommand) {
+    public SQLControlCommand(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, String text, String commandId, int offset, int length, boolean emptyCommand) {
         this.dataSource = dataSource;
 
         this.text = text;
@@ -54,6 +55,8 @@ public class SQLControlCommand implements SQLScriptElement {
         this.offset = offset;
         this.length = length;
         this.emptyCommand = emptyCommand;
+
+        this.commandId = commandId == null ? command : commandId;
     }
 
     public DBPDataSource getDataSource() {
@@ -74,6 +77,10 @@ public class SQLControlCommand implements SQLScriptElement {
 
     public String getCommand() {
         return command;
+    }
+
+    public String getCommandId() {
+        return commandId;
     }
 
     public String getParameter() {

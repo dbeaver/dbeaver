@@ -25,12 +25,10 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -101,24 +99,6 @@ public class DBeaverActivator extends AbstractUIPlugin {
         return new File(getInstance().getStateLocation().toFile(), fileName);
     }
 
-    public synchronized PrintStream getDebugWriter() {
-        if (debugWriter == null) {
-            File logPath = GeneralUtils.getMetadataFolder();
-            File debugLogFile = new File(logPath, "dbeaver-debug.log"); //$NON-NLS-1$
-            if (debugLogFile.exists()) {
-                if (!debugLogFile.delete()) {
-                    System.err.println("Can't delete debug log file"); //$NON-NLS-1$
-                }
-            }
-            try {
-                debugWriter = new PrintStream(debugLogFile);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace(System.err);
-            }
-        }
-        return debugWriter;
-    }
-
     /**
      * Returns an image descriptor for the image file at the given
      * plug-in relative path
@@ -162,12 +142,9 @@ public class DBeaverActivator extends AbstractUIPlugin {
             }
         } catch (Throwable e) {
             e.printStackTrace();
-            logMessage("Internal error after shutdown process:" + e.getMessage()); //$NON-NLS-1$
+            System.err.println("Internal error after shutdown process:" + e.getMessage()); //$NON-NLS-1$
         }
     }
 
-    private void logMessage(String message) {
-        getDebugWriter().print(message);
-    }
 
 }

@@ -105,6 +105,7 @@ import org.jkiss.utils.CommonUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.regex.*;
 
 /**
  * Spreadsheet presentation.
@@ -137,10 +138,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color foregroundDefault;
     private Color foregroundNull;
     private Color foregroundSelected, backgroundSelected;
+    private Color backgroundMatched;
     private Font boldFont, italicFont, bolItalicFont;
 
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
+    private boolean rightJustifyNumbers = true;
 
     public SpreadsheetPresentation() {
         findReplaceTarget = new SpreadsheetFindReplaceTarget(this);
@@ -658,6 +661,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         DBPPreferenceStore preferenceStore = getPreferenceStore();
         showOddRows = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
         showCelIcons = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
+        rightJustifyNumbers = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
 
         spreadsheet.setRedraw(false);
         try {
@@ -981,6 +985,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.backgroundReadOnly = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY);
         this.foregroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE);
         this.backgroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
+        this.backgroundMatched = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MATCHED);
 
         this.spreadsheet.setLineColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_NORMAL));
         this.spreadsheet.setLineSelectedColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED));
@@ -1366,6 +1371,20 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
+        public int getColumnAlign(@Nullable Object element) {
+            if (rightJustifyNumbers && !controller.isRecordMode()) {
+                DBDAttributeBinding attr = (DBDAttributeBinding)element;
+                if (attr != null) {
+                    DBPDataKind dataKind = attr.getDataKind();
+                    if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME) {
+                        return ALIGN_RIGHT;
+                    }
+                }
+            }
+            return ALIGN_LEFT;
+        }
+
+        @Override
         public int getCellState(Object colElement, Object rowElement, String cellText) {
             int state = STATE_NONE;
             boolean recordMode = controller.isRecordMode();
@@ -1495,6 +1514,16 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             boolean recordMode = controller.isRecordMode();
             ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
             DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
+
+            if (findReplaceTarget.isSessionActive()) {
+                java.util.regex.Pattern searchPattern = findReplaceTarget.getSearchPattern();
+                if (searchPattern != null) {
+                    String cellText = getCellText(colElement, rowElement);
+                    if (searchPattern.matcher(cellText).find()) {
+                        return backgroundMatched;
+                    }
+                }
+            }
 
             if (row.getState() == ResultSetRow.STATE_ADDED) {
                 return backgroundAdded;

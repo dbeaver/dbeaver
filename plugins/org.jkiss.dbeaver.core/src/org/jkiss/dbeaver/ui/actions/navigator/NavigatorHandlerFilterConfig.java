@@ -24,7 +24,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -61,13 +63,15 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             if (objectFilter == null) {
                 objectFilter = new DBSObjectFilter();
             }
-            boolean globalFilter = folder.getValueObject() instanceof DBPDataSource;
+            final DBPDataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectManager().getDataSourceRegistry(folder.getOwnerProject());
+            final boolean globalFilter = folder.getValueObject() instanceof DBPDataSource;
             String parentName = "?";
             if (folder.getValueObject() instanceof DBSObject) {
                 parentName = ((DBSObject) folder.getValueObject()).getName();
             }
             EditObjectFilterDialog dialog = new EditObjectFilterDialog(
                 shell,
+                dsRegistry,
                 globalFilter ? "All " + node.getNodeType() : node.getNodeType() + " of " + parentName,
                 objectFilter,
                 globalFilter);
@@ -80,7 +84,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                     objectFilter = folder.getDataSource().getContainer().getObjectFilter(folder.getChildrenClass(), null, false);
                     dialog = new EditObjectFilterDialog(
                         shell,
-                        "All " + node.getNodeType(),
+                            dsRegistry, "All " + node.getNodeType(),
                         objectFilter != null  ?objectFilter : new DBSObjectFilter(),
                         true);
                     if (dialog.open() == IDialogConstants.OK_ID) {

@@ -18,7 +18,10 @@
 package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.HashMap;
@@ -34,10 +37,30 @@ public class SQLScriptContext {
 
     private final Map<String, Object> data = new HashMap<>();
 
+    @NotNull
+    private final DBCExecutionContext executionContext;
+    @Nullable
+    private final File sourceFile;
+    @NotNull
     private final PrintWriter outputWriter;
 
-    public SQLScriptContext(Writer outputWriter) {
+    public SQLScriptContext(
+            @NotNull DBCExecutionContext executionContext,
+            @Nullable File sourceFile,
+            @NotNull Writer outputWriter) {
+        this.executionContext = executionContext;
+        this.sourceFile = sourceFile;
         this.outputWriter = new PrintWriter(outputWriter);
+    }
+
+    @NotNull
+    public DBCExecutionContext getExecutionContext() {
+        return executionContext;
+    }
+
+    @Nullable
+    public File getSourceFile() {
+        return sourceFile;
     }
 
     @NotNull

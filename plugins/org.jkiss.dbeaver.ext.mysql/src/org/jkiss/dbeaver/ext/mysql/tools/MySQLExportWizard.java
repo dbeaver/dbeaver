@@ -127,7 +127,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
     }
 
     @Override
-	public void onSuccess() {
+	public void onSuccess(long workTime) {
         UIUtils.showMessageBox(
             getShell(),
             MySQLMessages.tools_db_export_wizard_title,

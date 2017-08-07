@@ -6,10 +6,12 @@
 	<artifactId>contrib</artifactId>
 	<version>1.0.0</version>
 	<packaging>pom</packaging>
+	<name>DBeaver - 3rd party dependencies</name>
 
 	<properties>
-		<tycho-version>0.26.0</tycho-version>
-		<p2-maven-version>1.2.0-SNAPSHOT</p2-maven-version>
+		<tycho-version>1.0.0</tycho-version>
+		<reficio-p2-version>1.2.0-SNAPSHOT</reficio-p2-version>
+		<repo-name>DBeaver CE dependencies</repo-name>
 	</properties>
 
 	<pluginRepositories>
@@ -26,58 +28,56 @@
 			<plugin>
 				<groupId>org.reficio</groupId>
 				<artifactId>p2-maven-plugin</artifactId>
-				<version>${p2-maven-version}</version>
+				<version>${reficio-p2-version}</version>
 				<executions>
 					<execution>
 						<id>default-cli</id>
 						<configuration>
 							<artifacts>
-								<artifact><id>com.github.jsqlparser:jsqlparser:0.9.7</id></artifact>
+								<artifact><id>com.github.jsqlparser:jsqlparser:1.1</id></artifact>
 								<artifact><id>org.apache.commons:commons-jexl:2.1.1</id></artifact>
 								<artifact><id>net.sf.opencsv:opencsv:2.3</id></artifact>
 								<artifact><id>commons-cli:commons-cli:1.3.1</id></artifact>
 
 								<!-- POI and dependencies -->
-								<!--<artifact><id>org.apache.servicemix.bundles:org.apache.servicemix.bundles.poi:3.16_1</id></artifact>-->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:3.16.0</id></artifact>
 								<artifact><id>org.apache.commons:commons-collections4:4.1</id></artifact>
 								<artifact><id>org.apache.xmlbeans:xmlbeans:2.6.0</id></artifact>
-
-<!--
-								&lt;!&ndash; Old POI and dependencies: to remove &ndash;&gt;
-								<artifact><id>org.apache.poi:poi:3.15</id></artifact>
-								<artifact><id>org.apache.poi:poi-ooxml:3.15</id></artifact>
-								<artifact><id>org.apache.poi:poi-ooxml-schemas:3.15</id></artifact>
--->
-
 							</artifacts>
+							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
 
-<!--
-							<p2>
-								<artifact>
-									<id>org.jkiss.bundle.apache.poi:3.16.0</id>
-								</artifact>
-							</p2>
--->
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 
-                <plugin>
-                    <groupId>org.mortbay.jetty</groupId>
-                    <artifactId>jetty-maven-plugin</artifactId>
-                    <version>8.1.5.v20120716</version>
-                    <configuration>
-                        <scanIntervalSeconds>10</scanIntervalSeconds>
-                        <webAppSourceDirectory>${basedir}/target/repository/</webAppSourceDirectory>
-                        <webApp>
-                            <contextPath>/site</contextPath>
-                        </webApp>
-						<stopKey/>
-						<stopPort/>
-					</configuration>
-                </plugin>
+
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-p2-repository-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <repositoryName>${repo-name}</repositoryName>
+                    <includeAllDependencies>false</includeAllDependencies>
+                    <compress>true</compress>
+                    <xzCompress>false</xzCompress>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>8.1.5.v20120716</version>
+                <configuration>
+                    <scanIntervalSeconds>10</scanIntervalSeconds>
+                    <webAppSourceDirectory>${basedir}/target/repository/</webAppSourceDirectory>
+                    <webApp>
+                        <contextPath>/site</contextPath>
+                    </webApp>
+                    <stopKey/>
+                    <stopPort/>
+                </configuration>
+            </plugin>
 
 
 		</plugins>

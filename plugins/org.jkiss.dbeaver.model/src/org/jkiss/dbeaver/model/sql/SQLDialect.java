@@ -58,13 +58,13 @@ public interface SQLDialect {
     String getDialectName();
 
     /**
-     * Retrieves the string used to quote SQL identifiers.
-     * This method returns a space " " if identifier quoting is not supported.
+     * Retrieves strings used to quote SQL identifiers.
+     * This method returns null or empty array if identifier quoting is not supported.
      *
-     * @return the quoting string or a space if quoting is not supported
+     * @return the array of string pairs
      */
     @Nullable
-    String getIdentifierQuoteString();
+    String[][] getIdentifierQuoteStrings();
 
     /**
      * Retrieves a list of execute keywords. If database doesn't support implicit execute returns empty list or null.

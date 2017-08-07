@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.properties;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -78,7 +79,7 @@ public class PropertyDescriptorDelegate implements IPropertyDescriptor
         if (!delegate.isEditable(propSource.getEditableValue())) {
             return null;
         }
-        return UIUtils.createCellEditor(parent, propSource.getEditableValue(), delegate);
+        return UIUtils.createCellEditor(parent, propSource.getEditableValue(), delegate, SWT.NONE);
     }
 
     @Override

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.sqlite.model;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 
 public class SQLiteSQLDialect extends GenericSQLDialect {
@@ -31,7 +32,7 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
         super.initDriverSettings(dataSource, metaData);
     }
 
-    public String getIdentifierQuoteString() {
-        return SQLConstants.DEFAULT_IDENTIFIER_QUOTE;
+    public String[][] getIdentifierQuoteStrings() {
+        return BasicSQLDialect.DEFAULT_QUOTE_STRINGS;
     }
 }

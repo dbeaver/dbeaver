@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Core Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.core;singleton:=true
-Bundle-Version: 4.1.0
-Bundle-Release-Date: 20170626
+Bundle-Version: 4.1.2
+Bundle-Release-Date: 20170807
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
@@ -23,6 +23,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.runtime.properties,
  org.jkiss.dbeaver.runtime.qm,
  org.jkiss.dbeaver.runtime.sql,
+ org.jkiss.dbeaver.runtime.sql.commands,
  org.jkiss.dbeaver.tools,
  org.jkiss.dbeaver.tools.compare,
  org.jkiss.dbeaver.tools.project,
@@ -125,7 +126,10 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.utils;visibility:=reexport,
  com.jcraft.jsch,
  org.objectweb.asm,
+ org.eclipse.e4.core.contexts,
+ org.eclipse.e4.core.services,
  org.eclipse.e4.ui.model.workbench,
+ org.eclipse.e4.ui.services,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.eclipse.e4.ui.css.core,

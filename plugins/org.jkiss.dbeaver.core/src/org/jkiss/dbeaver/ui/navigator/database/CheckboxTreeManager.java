@@ -101,7 +101,11 @@ public class CheckboxTreeManager implements ICheckStateListener {
     private void updateElementHierarchy(final DBRProgressMonitor monitor, final Object element, final boolean checked, final boolean change) throws DBException {
         final List<DBNDatabaseNode> targetChildren = new ArrayList<>();
         final List<DBNDatabaseNode> targetContainers = new ArrayList<>();
-        collectChildren(monitor, element, targetChildren, targetContainers, !change);
+        try {
+            collectChildren(monitor, element, targetChildren, targetContainers, !change);
+        } catch (DBException e) {
+            log.warn("Error collecting child elements", e);
+        }
 
         // Run ui
         DBeaverUI.syncExec(new Runnable() {

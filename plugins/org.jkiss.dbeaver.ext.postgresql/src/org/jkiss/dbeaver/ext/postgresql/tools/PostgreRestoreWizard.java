@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -80,7 +79,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     }
 
     @Override
-	public void onSuccess() {
+	public void onSuccess(long workTime) {
         UIUtils.showMessageBox(
             getShell(),
             "Database restore",

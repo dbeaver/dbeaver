@@ -31,6 +31,7 @@ import org.eclipse.gef.editparts.ZoomManager;
 import org.eclipse.gef.palette.*;
 import org.eclipse.gef.requests.CreationFactory;
 import org.eclipse.gef.ui.actions.*;
+import org.eclipse.gef.ui.palette.FlyoutPaletteComposite;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.eclipse.gef.ui.palette.PaletteViewerProvider;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
@@ -370,7 +371,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         viewer.createControl(parent);
 
         // configure the viewer
-        viewer.getControl().setBackground(ColorConstants.white);
+        viewer.getControl().setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
         rootPart = new ScalableFreeformRootEditPart();
         viewer.setRootEditPart(rootPart);
         viewer.setKeyHandler(new GraphicalViewerKeyHandler(viewer));
@@ -388,6 +389,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected void configureGraphicalViewer()
     {
         super.configureGraphicalViewer();
+        this.getGraphicalViewer().getControl().setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
 
         GraphicalViewer graphicalViewer = getGraphicalViewer();
 
@@ -624,6 +626,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         return paletteRoot;
 
+    }
+
+    protected FlyoutPaletteComposite createPaletteComposite(Composite parent) {
+        FlyoutPaletteComposite paletteComposite = new FlyoutPaletteComposite(parent, 0, this.getSite().getPage(), this.getPaletteViewerProvider(), this.getPalettePreferences());
+        paletteComposite.setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+        return paletteComposite;
     }
 
     public boolean isLoaded()
@@ -873,7 +881,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         public ProgressVisualizer<EntityDiagram> createLoadVisualizer()
         {
-            getGraphicalControl().setBackground(ColorConstants.lightGray);
+            getGraphicalControl().setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
             return new LoadVisualizer();
         }
 
@@ -986,7 +994,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 if (graphicalControl == null) {
                     return;
                 }
-                graphicalControl.setBackground(ColorConstants.white);
+                graphicalControl.setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
                 isLoaded = true;
                 Control control = getGraphicalViewer().getControl();
                 if (control == null || control.isDisposed()) {

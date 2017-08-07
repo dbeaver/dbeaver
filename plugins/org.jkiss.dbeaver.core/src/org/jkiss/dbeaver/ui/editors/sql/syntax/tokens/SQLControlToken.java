@@ -24,9 +24,23 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
  */
 public class SQLControlToken extends SQLToken {
 
+    private final String commandId;
+
     public SQLControlToken(Object data)
     {
-        super(T_CONTROL, data);
+        this(data, null);
     }
 
+    public SQLControlToken(Object data, String commandId)
+    {
+        super(T_CONTROL, data);
+        this.commandId = commandId;
+    }
+
+    /**
+     * Command ID or null if command id is in the token itself
+     */
+    public String getCommandId() {
+        return commandId;
+    }
 }

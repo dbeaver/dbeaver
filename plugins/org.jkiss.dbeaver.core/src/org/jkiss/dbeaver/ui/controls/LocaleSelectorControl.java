@@ -68,6 +68,7 @@ public class LocaleSelectorControl extends Composite
             public void modifyText(ModifyEvent e)
             {
                 onLanguageChange(null);
+                calculateLocale();
             }
         });
 
@@ -79,6 +80,7 @@ public class LocaleSelectorControl extends Composite
             public void modifyText(ModifyEvent e)
             {
                 onCountryChange(null);
+                calculateLocale();
             }
         });
 
@@ -146,6 +148,7 @@ public class LocaleSelectorControl extends Composite
             if (!found) {
                 languageCombo.setText(currentLocale.getLanguage());
             }
+            onLanguageChange(currentLocale.getLanguage());
 
             count = countryCombo.getItemCount();
             found = false;
@@ -159,6 +162,7 @@ public class LocaleSelectorControl extends Composite
             if (!found) {
                 countryCombo.setText(currentLocale.getCountry());
             }
+            onCountryChange(currentLocale.getCountry());
             variantCombo.setText(currentLocale.getVariant());
         }
         finally {
@@ -177,6 +181,9 @@ public class LocaleSelectorControl extends Composite
             if (language.equals(locale.getLanguage()) && !CommonUtils.isEmpty(locale.getCountry())) {
                 countries.add(locale.getCountry() + " - " + locale.getDisplayCountry()); //$NON-NLS-1$
             }
+        }
+        if (defCountry == null) {
+            defCountry = currentLocale.getCountry();
         }
         for (String country : countries) {
             countryCombo.add(country);
@@ -206,6 +213,9 @@ public class LocaleSelectorControl extends Composite
                     }
                 }
             }
+        }
+        if (defVariant == null) {
+            defVariant = currentLocale.getVariant();
         }
         for (String variant : variants) {
             variantCombo.add(variant);

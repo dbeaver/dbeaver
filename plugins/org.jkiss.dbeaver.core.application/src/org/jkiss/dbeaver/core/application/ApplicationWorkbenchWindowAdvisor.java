@@ -149,7 +149,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         log.debug("Finish initialization");
         super.postWindowOpen();
 
-        if (DataSourceRegistry.getAllDataSources().isEmpty()) {
+        if (isShowNewConnection()) {
             // Open New Connection wizard
             DBeaverUI.asyncExec(new Runnable() {
                 @Override
@@ -160,6 +160,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
                 }
             });
         }
+    }
+
+    protected boolean isShowNewConnection() {
+        return DataSourceRegistry.getAllDataSources().isEmpty();
     }
 
     @Override

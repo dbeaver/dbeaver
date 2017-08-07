@@ -98,6 +98,9 @@
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Global triggers" visibleIf="object.dataSource.metaModel.supportsDatabaseTriggers(object.dataSource)">
                             <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
+                            <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
+                        </folder>
                     </items>
                 </items>
             </tree>
@@ -160,7 +163,7 @@
                     <property name="connectTimeout" value="20"/>
 
                     <parameter name="query-get-active-db" value="SHOW search_path"/>
-                    <parameter name="query-set-active-db" value="SET search_path = ?"/>
+                    <parameter name="query-set-active-db" value="SET search_path = &quot;?&quot;"/>
                     <parameter name="active-entity-type" value="schema"/>
                     <parameter name="supports-scroll" value="true"/>
                 </driver>
@@ -179,7 +182,7 @@
                     <property name="connectTimeout" value="20"/>
 
                     <parameter name="query-get-active-db" value="SHOW search_path"/>
-                    <parameter name="query-set-active-db" value="SET search_path = ?"/>
+                    <parameter name="query-set-active-db" value="SET search_path = &quot;?&quot;"/>
                     <parameter name="active-entity-type" value="schema"/>
                     <parameter name="supports-scroll" value="true"/>
                 </driver>
@@ -805,16 +808,16 @@
                     <file type="jar" path="https://github.com/openlink/virtuoso-opensource/raw/develop/7/libsrc/JDBCDriverType4/virtjdbc4.jar"/>
                 </driver>
 
-                <!-- Infiniflux -->
+                <!-- Machbase -->
                 <driver
-                    id="infiniflux"
-                    label="Infiniflux"
-                    class="iflux.jdbc.driver.IfluxDriver"
-                    sampleURL="jdbc:Iflux://{host}[:{port}]/ifluxdb"
+                    id="machbase"
+                    label="Machbase"
+                    class="com.machbase.jdbc.driver"
+                    sampleURL="jdbc:machbase://{host}/mhdb"
                     defaultPort="5656"
-                    description="INFINIFLUX standard driver"
-                    webURL="http://infiniflux.com">
-                    <file type="jar" path="http://www.infiniflux.com/dist/iflux.jar"/>
+                    description="MACHBASE standard driver"
+                    webURL="http://www.machbase.com">
+                    <file type="jar" path="http://www.machbase.com/dist/machbase.jar"/>
                 </driver>
 
                 <!-- Yandex ClickHouse -->

@@ -16,22 +16,30 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.rules.EndOfLineRule;
+import org.eclipse.jface.text.rules.IRule;
+import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
 * MySQL dialect
 */
-class MySQLDialect extends JDBCSQLDialect {
+class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
 
     public static final String[] MYSQL_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
@@ -40,6 +48,16 @@ class MySQLDialect extends JDBCSQLDialect {
             "CREATE", "ALTER", "DROP",
             "EXPLAIN", "DESCRIBE", "DESC" }
     );
+
+    public static final String[] ADVANCED_KEYWORDS = {
+            "DATABASES",
+            "COLUMNS",
+    };
+
+    public static final String[][] MYSQL_QUOTE_STRINGS = {
+            {"`", "`"},
+            {"\"", "\""},
+    };
 
     public MySQLDialect() {
         super("MySQL");
@@ -50,6 +68,17 @@ class MySQLDialect extends JDBCSQLDialect {
         //addSQLKeyword("STATISTICS");
         Collections.addAll(tableQueryWords, "EXPLAIN", "DESCRIBE", "DESC");
         addFunctions(Arrays.asList("SLEEP"));
+
+        for (String kw : ADVANCED_KEYWORDS) {
+            addSQLKeyword(kw);
+        }
+        removeSQLKeyword("SOURCE");
+    }
+
+    @Nullable
+    @Override
+    public String[][] getIdentifierQuoteStrings() {
+        return MYSQL_QUOTE_STRINGS;
     }
 
     @Nullable
@@ -101,4 +130,18 @@ class MySQLDialect extends JDBCSQLDialect {
         return MYSQL_NON_TRANSACTIONAL_KEYWORDS;
     }
 
+    @Override
+    public void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position) {
+        if (position == RulePosition.CONTROL) {
+            final SQLControlToken sourceToken = new SQLControlToken(
+                    new TextAttribute(UIUtils.getGlobalColor(SQLConstants.CONFIG_COLOR_COMMAND), null, SWT.BOLD),
+                    "mysql.source");
+
+            EndOfLineRule sourceRule = new EndOfLineRule("source", sourceToken); //$NON-NLS-1$
+            rules.add(sourceRule);
+
+            EndOfLineRule sourceRule2 = new EndOfLineRule("SOURCE", sourceToken); //$NON-NLS-1$
+            rules.add(sourceRule2);
+        }
+    }
 }

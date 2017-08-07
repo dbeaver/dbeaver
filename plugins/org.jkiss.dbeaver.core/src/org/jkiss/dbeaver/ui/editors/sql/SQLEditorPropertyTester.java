@@ -76,7 +76,7 @@ public class SQLEditorPropertyTester extends PropertyTester
                         document != null &&
                         !new SQLIdentifierDetector(
                             editor.getSyntaxManager().getStructSeparator(),
-                            editor.getSyntaxManager().getQuoteSymbol())
+                            editor.getSyntaxManager().getQuoteStrings())
                             .detectIdentifier(document, new Region(selection.getOffset(), selection.getLength())).isEmpty();
             }
             case PROP_CAN_EXPORT:

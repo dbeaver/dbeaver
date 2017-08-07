@@ -46,6 +46,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
     @Override
     protected Control createControl(Composite parent) {
         checkBox = new Button(parent, SWT.CHECK);
+        //checkBox.set
         checkBox.setFont(parent.getFont());
         checkBox.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -85,8 +86,13 @@ public class CustomCheckboxCellEditor extends CellEditor {
     @Override
     public LayoutData getLayoutData() {
         LayoutData layoutData = super.getLayoutData();
-        layoutData.grabHorizontal = false;
-        layoutData.horizontalAlignment = SWT.CENTER;
+        if ((getStyle() & SWT.LEFT) == SWT.LEFT) {
+            layoutData.grabHorizontal = false;
+            layoutData.horizontalAlignment = SWT.LEFT;
+        } else {
+            layoutData.grabHorizontal = false;
+            layoutData.horizontalAlignment = SWT.CENTER;
+        }
         return layoutData;
     }
 

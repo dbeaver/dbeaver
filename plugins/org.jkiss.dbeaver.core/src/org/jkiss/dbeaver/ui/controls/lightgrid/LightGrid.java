@@ -78,6 +78,7 @@ public abstract class LightGrid extends Canvas {
      * in mode.
      */
     private static final int SELECTION_DRAG_BORDER_THRESHOLD = 2;
+    private static final boolean MAXIMIZE_SINGLE_COLUMN = false;
 
     public enum EventSource {
         MOUSE,
@@ -386,7 +387,7 @@ public abstract class LightGrid extends Canvas {
         //setForeground(JFaceColors.getBannerForeground(display));
         //setBackground(JFaceColors.getBannerBackground(display));
 /*
-        ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+        ColorRegistry colorRegistry = UIUtils.getColorRegistry();
         setLineColor(colorRegistry.get(JFacePreferences.QUALIFIER_COLOR));
         setForeground(colorRegistry.get(JFacePreferences.CONTENT_ASSIST_FOREGROUND_COLOR));
         setBackground(colorRegistry.get(JFacePreferences.CONTENT_ASSIST_BACKGROUND_COLOR));
@@ -521,7 +522,7 @@ public abstract class LightGrid extends Canvas {
 
             scrollValuesObsolete = true;
 
-            if (getColumnCount() == 1) {
+            if (getColumnCount() == 1 && MAXIMIZE_SINGLE_COLUMN) {
                 // Here we going to maximize single column to entire grid's width
                 // Sometimes (when new grid created and filled with data very fast our client area size is zero
                 // So let's add a workaround for it and use column's width in this case
@@ -3170,33 +3171,46 @@ public abstract class LightGrid extends Canvas {
                     showItem(intentItem);
                     selectionEvent = updateCellSelection(cells, ctrlFlag, true, false, EventSource.MOUSE);
                 }
+                final GridColumn prevHoveringColumn = hoveringColumn;
                 if (cellColumnDragSelectionOccurring && handleCellHover(e.x, e.y)) {
-                    GridColumn intentCol = hoveringColumn;
-
-                    if (intentCol == null) return;  //temporary
-
-                    GridColumn iterCol = intentCol;
-
+                    boolean dragging;
                     List<GridPos> newSelected = new ArrayList<>();
 
-                    boolean decreasing = (indexOf(iterCol) > indexOf(focusColumn));
+                    GridColumn iterCol = hoveringColumn;
+                    if (iterCol != null) {
+                        boolean decreasing = (indexOf(iterCol) > indexOf(focusColumn));
+                        dragging = true;
 
-                    while (iterCol != null) {
-                        getCells(iterCol, newSelected);
+                        while (iterCol != null) {
+                            getCells(iterCol, newSelected);
 
-                        if (iterCol == focusColumn) {
-                            break;
+                            if (iterCol == focusColumn) {
+                                break;
+                            }
+
+                            if (decreasing) {
+                                iterCol = getPreviousVisibleColumn(iterCol);
+                            } else {
+                                iterCol = getNextVisibleColumn(iterCol);
+                            }
+
                         }
-
-                        if (decreasing) {
-                            iterCol = getPreviousVisibleColumn(iterCol);
+                    } else {
+                        dragging = false;
+                        if (e.x <= rowHeaderWidth) {
+                            GridColumn prev = prevHoveringColumn == null ? null : getPreviousVisibleColumn(prevHoveringColumn);
+                            if (prev != null) {
+                                showColumn(prev);
+                                getCells(prev, newSelected);
+                                ctrlFlag = SWT.MOD1;
+                            }
                         } else {
-                            iterCol = getNextVisibleColumn(iterCol);
+
                         }
 
                     }
 
-                    selectionEvent = updateCellSelection(newSelected, ctrlFlag, true, false, EventSource.MOUSE);
+                    selectionEvent = updateCellSelection(newSelected, ctrlFlag, dragging, false, EventSource.MOUSE);
                 }
 
             }
