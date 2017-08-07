@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.data.office.export;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.HashMap;
 import java.util.List;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
@@ -59,6 +60,12 @@ public class DataExporterXLSX extends StreamExporterAbstract{
     private static final String PROP_FALSESTRING = "falseString";
     
     private static final String PROP_EXPORT_SQL = "exportSql";
+    private static final String PROP_SPLIT_SQLTEXT = "splitSqlText";
+    
+    private static final String PROP_SPLIT_BYROWCOUNT = "splitByRowCount";
+    private static final String PROP_SPLIT_BYCOL = "splitByColNum";
+    
+    private static final int EXCEL2007MAXROWS = 1048575;
     
     enum FontStyleProp  {NONE, BOLD, ITALIC, STRIKEOUT, UNDERLINE}
     
@@ -69,17 +76,21 @@ public class DataExporterXLSX extends StreamExporterAbstract{
     private List<DBDAttributeBinding> columns;
     
     private SXSSFWorkbook wb;    
-    private Sheet sh;
 	
     private boolean printHeader = false;
     private boolean rowNumber = false;
     private String boolTrue="YES";
 	private String boolFalse="NO";
 	private boolean exportSql = false;
+	private boolean splitSqlText = false; 
 	
-	private int rowIndex;
+	private int splitByRowCount = EXCEL2007MAXROWS;
+	private int splitByCol = 0;
+	
 	private XSSFCellStyle style;
 	private XSSFCellStyle styleHeader;
+	
+	private HashMap<Object,Worksheet> worksheets;  
     
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
@@ -137,14 +148,42 @@ public class DataExporterXLSX extends StreamExporterAbstract{
             exportSql = false;
             
         }
+        
+        try {
+            
+        	splitSqlText = (Boolean) site.getProperties().get(PROP_SPLIT_SQLTEXT);
+            
+        } catch (Exception e) {
+        	
+        	splitSqlText = false;
+            
+        }
+        
+        try {
+            
+        	splitByRowCount = (Integer) site.getProperties().get(PROP_SPLIT_BYROWCOUNT);
+            
+        } catch (Exception e) {
+        	
+        	splitByRowCount = EXCEL2007MAXROWS;
+            
+        }
+        
+        try {
+            
+        	splitByCol = (Integer) site.getProperties().get(PROP_SPLIT_BYCOL);
+            
+        } catch (Exception e) {
+        	
+        	splitByCol = -1;
+            
+        }
 
         
 	    wb = new SXSSFWorkbook(ROW_WINDOW);
 	    
-        sh = wb.createSheet();
-
-        rowIndex =0;
-        
+	    worksheets =  new HashMap<Object,Worksheet>(1);
+	    
         styleHeader = (XSSFCellStyle) wb.createCellStyle();
         
         
@@ -221,23 +260,40 @@ public class DataExporterXLSX extends StreamExporterAbstract{
       	try {			
 			if (exportSql) {
 				try {
-					sh = wb.createSheet();
-					Row row = sh.createRow(0);
-					Cell newcell = row.createCell(0);
-					newcell.setCellValue(getSite().getSource().getName()); 
+					
+					Sheet sh = wb.createSheet();
+					if (splitSqlText) {
+						String[] sqlText = getSite().getSource().getName().split("\n",wb.getSpreadsheetVersion().getMaxRows());
+						
+						int sqlRownum = 0;
+						
+						for(String s: sqlText) {
+							 Row row = sh.createRow(sqlRownum);
+							 Cell newcell = row.createCell(0);
+							 newcell.setCellValue(s);
+							 sqlRownum++;
+						}
+						
+					} else {
+						 Row row = sh.createRow(0);
+						 Cell newcell = row.createCell(0);
+						 newcell.setCellValue(getSite().getSource().getName());
+					}
+			    	sh = null;
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 			wb.write(getSite().getOutputStream());
 	      	wb.dispose();
+
 		} catch (IOException e) {			
 			e.printStackTrace();			
 		}
-    	
-    	
-    	sh = null;
     	wb = null;
+    	for (Worksheet w : worksheets.values()) {
+    		w.dispose();
+    	}
         super.dispose();
     }
     
@@ -247,15 +303,15 @@ public class DataExporterXLSX extends StreamExporterAbstract{
 		
 	        columns = getSite().getAttributes();
 	        
-	        if (printHeader) {
+	        /*if (printHeader) { FIXME
 	            printHeader();
-	        }
+	        }*/
 		
 	}
 
-	 private void printHeader()
+	 private void printHeader(Worksheet wsh)
 	    {
-		    Row row = sh.createRow(rowIndex);
+		    Row row = wsh.getSh().createRow(wsh.getCurrentRow());
 		    
 		    int startCol = rowNumber ? 1 : 0;
 		    
@@ -269,7 +325,7 @@ public class DataExporterXLSX extends StreamExporterAbstract{
                 cell.setCellValue(colName); 
                 cell.setCellStyle(styleHeader); 
 	        }
-	        rowIndex = 1;
+	        wsh.incRow();
 	    }
 
 
@@ -296,13 +352,37 @@ public class DataExporterXLSX extends StreamExporterAbstract{
 	    } 
 	 
 
+	 private Worksheet createSheet(Object colValue){
+		 Worksheet w = new Worksheet(wb.createSheet(),colValue, 0);
+		 if (printHeader) {
+			 printHeader(w);
+		 }
+		 return w;
+	 }
+	 
+	 private Worksheet getWsh(Object[] row) {
+		 Object colValue = ((splitByCol < 0) || (splitByCol >= columns.size())) ? "" : row[splitByCol];
+		 Worksheet w = worksheets.get(colValue);
+		 if (w == null) {
+				w = createSheet(colValue); 
+				worksheets.put(w.getColumnVal(), w); 
+		 } else {
+			 if (w.getCurrentRow() >= splitByRowCount) {
+					w = createSheet(colValue); 
+					worksheets.put(w.getColumnVal(), w); 				 
+			 }
+		 }
+		 return w;
+	 }
 	 
 	@Override
 	public void exportRow(DBCSession session, Object[] row)
 			throws DBException, IOException
 	{
 		
-		Row rowX = sh.createRow(rowIndex);
+		Worksheet wsh = getWsh(row);  
+		
+		Row rowX = wsh.getSh().createRow(wsh.getCurrentRow());
 		
 		int startCol = 0;
 		
@@ -310,7 +390,7 @@ public class DataExporterXLSX extends StreamExporterAbstract{
 			
 			Cell cell = rowX.createCell(startCol);
 			cell.setCellStyle(style);
-			cell.setCellValue(String.valueOf(rowIndex));
+			cell.setCellValue(String.valueOf(wsh.getCurrentRow()));
 			startCol++;
 		}
 		
@@ -349,7 +429,7 @@ public class DataExporterXLSX extends StreamExporterAbstract{
             }
            
         }
-        rowIndex++;
+        wsh.incRow();
 		
 	}
 

@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -31,11 +33,15 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 
 /**
  * PrefPageDatabaseGeneral
@@ -50,6 +56,9 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
     private Spinner longOperationsTimeout;
 
     private Combo defaultResourceEncoding;
+
+    private Button logsDebugEnabled;
+    private TextWithOpenFile logsDebugLocation;
 
     public PrefPageDatabaseGeneral()
     {
@@ -78,9 +87,9 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         {
             Group agentGroup = UIUtils.createControlGroup(composite, "Task Bar", 2, SWT.NONE, 0);
 
-            longOperationsCheck = UIUtils.createCheckbox(agentGroup, "Enable long-time operations notification", false);
-            longOperationsCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
-            longOperationsCheck.setToolTipText("Shows special notification in system taskbar after long-time operation (e.g. SQL query) finish.");
+            longOperationsCheck = UIUtils.createCheckbox(agentGroup,
+                    "Enable long-time operations notification",
+                    "Shows special notification in system taskbar after long-time operation (e.g. SQL query) finish.", false, 2);
 
             longOperationsTimeout = UIUtils.createLabelSpinner(agentGroup, "Long-time operation timeout", 0, 0, Integer.MAX_VALUE);
 
@@ -97,6 +106,28 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
             defaultResourceEncoding = UIUtils.createEncodingCombo(groupResources, GeneralUtils.DEFAULT_ENCODING);
             defaultResourceEncoding.setToolTipText("Default encoding for scripts and text files. Change requires restart");
 
+        }
+
+        {
+            // Logs
+            Group groupLogs = UIUtils.createControlGroup(composite, "Debug logs", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+
+            logsDebugEnabled = UIUtils.createCheckbox(groupLogs,
+                    "Enable debug logs",
+                    "Debug logs can be used for DBeaver itself debugging. Also used to store all errors/warnings/messages", false, 2);
+            UIUtils.createControlLabel(groupLogs, "Log file location");
+            logsDebugLocation = new TextWithOpenFile(groupLogs, "Debug log file location", new String[] { "*.log", "*.txt" } );
+            UIUtils.installContentProposal(
+                    logsDebugLocation.getTextControl(),
+                    new TextContentAdapter(),
+                    new SimpleContentProposalProvider(new String[] {
+                            GeneralUtils.variablePattern(SystemVariablesResolver.VAR_WORKSPACE),
+                            GeneralUtils.variablePattern(SystemVariablesResolver.VAR_HOME)
+                    }));
+            logsDebugLocation.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            Label tipLabel = UIUtils.createLabel(groupLogs, "These options will take effect after DBeaver restart");
+            tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false , 2, 1));
         }
 
         {
@@ -128,6 +159,9 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         longOperationsTimeout.setSelection(store.getInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT));
 
         defaultResourceEncoding.setText(store.getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING));
+
+        logsDebugEnabled.setSelection(store.getBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED));
+        logsDebugLocation.setText(store.getString(DBeaverPreferences.LOGS_DEBUG_LOCATION));
     }
 
     @Override
@@ -141,6 +175,9 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
 
         store.setValue(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING, defaultResourceEncoding.getText());
+
+        store.setValue(DBeaverPreferences.LOGS_DEBUG_ENABLED, logsDebugEnabled.getSelection());
+        store.setValue(DBeaverPreferences.LOGS_DEBUG_LOCATION, logsDebugLocation.getText());
 
         PrefUtils.savePreferenceStore(store);
 

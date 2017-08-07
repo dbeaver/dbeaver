@@ -683,6 +683,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
             if (keyNumbers == null) {
                 return null;
             }
+            long[] indColClasses = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "indclass"));
             int[] keyOptions = PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, "indoption"));
             String expr = JDBCUtils.safeGetString(dbResult, "expr");
             Collection<PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
@@ -701,13 +702,15 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                     }
                 }
                 int options = keyOptions == null || keyOptions.length < keyNumbers.length ? 0 : keyOptions[i];
+                long colOpClass = indColClasses == null || indColClasses.length < keyNumbers.length ? 0 : indColClasses[i];
 
                 PostgreIndexColumn col = new PostgreIndexColumn(
                     object,
                     attr,
                     attrExpression,
                     i,
-                    (options & 0x01) != 0, // This is a kind of lazy hack. Actually this flag depends on access method.
+                        colOpClass != 0 || (options & 0x01) != 0, // This is a kind of lazy hack. Actually this flag depends on access method.
+                    colOpClass,
                     false);
                 result[i] = col;
             }

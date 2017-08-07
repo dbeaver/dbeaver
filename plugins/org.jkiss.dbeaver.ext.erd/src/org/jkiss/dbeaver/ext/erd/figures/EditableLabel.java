@@ -19,11 +19,12 @@
  */
 package org.jkiss.dbeaver.ext.erd.figures;
 
-import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * A customized Label based on the label used in the flow example. 
@@ -70,10 +71,10 @@ public class EditableLabel extends Label
 		if (selected)
 		{
 			graphics.pushState();
-			graphics.setBackgroundColor(ColorConstants.menuBackgroundSelected);
+			graphics.setBackgroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
 			graphics.fillRectangle(getSelectionRectangle());
 			graphics.popState();
-			graphics.setForegroundColor(ColorConstants.white);
+			graphics.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
 		}
 		super.paintFigure(graphics);
 	}

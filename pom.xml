@@ -9,9 +9,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>4.1.0</dbeaver-version>
+        <dbeaver-version>4.1.2</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-        <tycho-version>0.26.0</tycho-version>
+        <tycho-version>1.0.0</tycho-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
         <eclipse-p2-repo.url>http://download.eclipse.org/releases/neon/</eclipse-p2-repo.url>

@@ -29,6 +29,7 @@ import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -129,7 +130,7 @@ public class SQLSemanticProcessor {
                 select.setOrderByElements(orderByElements);
             }
             for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
-                Expression orderExpr = getConstraintExpression(select, co);
+                Expression orderExpr = getConstraintExpression(dataSource, select, co);
                 OrderByElement element = new OrderByElement();
                 element.setExpression(orderExpr);
                 if (co.isOrderDescending()) {
@@ -143,9 +144,9 @@ public class SQLSemanticProcessor {
         return true;
     }
 
-    private static Expression getConstraintExpression(PlainSelect select, DBDAttributeConstraint co) throws JSQLParserException {
+    private static Expression getConstraintExpression(DBPDataSource dataSource, PlainSelect select, DBDAttributeConstraint co) throws JSQLParserException {
         Expression orderExpr;
-        String attrName = co.getAttribute().getName();
+        String attrName = DBUtils.getQuotedIdentifier(dataSource, co.getAttribute().getName());
         if (attrName.isEmpty()) {
             orderExpr = new LongValue(co.getAttribute().getOrdinalPosition() + 1);
         } else if (CommonUtils.isJavaIdentifier(attrName)) {

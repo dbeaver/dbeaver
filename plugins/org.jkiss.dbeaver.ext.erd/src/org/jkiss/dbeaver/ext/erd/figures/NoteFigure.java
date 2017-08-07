@@ -20,14 +20,15 @@
  */
 package org.jkiss.dbeaver.ext.erd.figures;
 
-import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.CompoundBorder;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.text.FlowPage;
 import org.eclipse.draw2d.text.TextFlow;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Figure used to represent a note
@@ -44,11 +45,11 @@ public class NoteFigure extends FlowPage {
         textFlow = new TextFlow(note.getObject());
         add(textFlow);
 
-        setBackgroundColor(ColorConstants.tooltipBackground);
-        setForegroundColor(ColorConstants.tooltipForeground);
+        setBackgroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_NOTE_BACKGROUND));
+        setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_NOTE_FOREGROUND));
         setOpaque(true);
         setBorder(new CompoundBorder(
-            new LineBorder(ColorConstants.black, 1),
+            new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND), 1),
             new MarginBorder(5)
         ));
     }

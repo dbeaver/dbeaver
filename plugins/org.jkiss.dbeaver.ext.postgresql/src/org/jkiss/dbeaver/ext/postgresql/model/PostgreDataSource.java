@@ -271,6 +271,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
         getDefaultInstance().cacheDataTypes(monitor);
 
+        // Update database name and URL in connection settings and save datasources
+        DBPConnectionConfiguration conConfig = getContainer().getConnectionConfiguration();
+        conConfig.setDatabaseName(activeDatabaseName);
+        conConfig.setUrl(getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), conConfig));
+        getContainer().getRegistry().flushConfig();
+
+        // Notify UI
         if (oldDatabase != null) {
             DBUtils.fireObjectSelect(oldDatabase, false);
             DBUtils.fireObjectUpdate(oldDatabase, false);

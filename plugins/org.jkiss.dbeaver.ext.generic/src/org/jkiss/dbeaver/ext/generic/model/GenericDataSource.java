@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -61,7 +62,7 @@ public class GenericDataSource extends JDBCDataSource
     static boolean populateClientAppName = false;
 
     private final TableTypeCache tableTypeCache;
-    private final JDBCBasicDataTypeCache dataTypeCache;
+    private final JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> dataTypeCache;
     private List<GenericCatalog> catalogs;
     private List<GenericSchema> schemas;
     private final GenericMetaModel metaModel;
@@ -83,7 +84,7 @@ public class GenericDataSource extends JDBCDataSource
         super(monitor, container, dialect, false);
         this.metaModel = metaModel;
         final DBPDriver driver = container.getDriver();
-        this.dataTypeCache = metaModel.createDataTypeCache(container);
+        this.dataTypeCache = metaModel.createDataTypeCache(this);
         this.tableTypeCache = new TableTypeCache();
         this.queryGetActiveDB = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
         this.querySetActiveDB = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_SET_ACTIVE_DB));
@@ -912,6 +913,10 @@ public class GenericDataSource extends JDBCDataSource
     public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
         ErrorPosition position = metaModel.getErrorPosition(error);
         return position == null ? null : new ErrorPosition[] { position };
+    }
+
+    public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
+        return dataTypeCache.getAllObjects(monitor, this);
     }
 
     @Override

@@ -37,6 +37,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset.presentation"; //$NON-NLS-1$
 
     private Button gridShowOddRows;
+    private Button rightJustifyNumbers;
     private Spinner gridRowBatchSize;
     private Button gridShowCellIcons;
     private Combo gridDoubleClickBehavior;
@@ -57,6 +58,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS) ||
+            store.contains(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION) ||
             store.contains(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK) ||
@@ -88,9 +90,10 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         {
             Group uiGroup = UIUtils.createControlGroup(composite, "Grid", 2, SWT.NONE, 0);
 
-            gridShowOddRows = UIUtils.createLabelCheckbox(uiGroup, "Mark odd/even rows", false);
+            gridShowOddRows = UIUtils.createCheckbox(uiGroup, "Mark odd/even rows", null, false, 2);
+            rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, "Right-justify numbers and date/times", null, false, 2);
             gridRowBatchSize = UIUtils.createLabelSpinner(uiGroup, "Row batch size", 1, 1, Short.MAX_VALUE);
-            gridShowCellIcons = UIUtils.createLabelCheckbox(uiGroup, "Show cell icons", false);
+            gridShowCellIcons = UIUtils.createCheckbox(uiGroup, "Show cell icons", null, false, 2);
             gridDoubleClickBehavior = UIUtils.createLabelCombo(uiGroup, "Double-click behavior", SWT.READ_ONLY);
             gridDoubleClickBehavior.add("None", Spreadsheet.DoubleClickBehavior.NONE.ordinal());
             gridDoubleClickBehavior.add("Editor", Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
@@ -112,6 +115,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     {
         try {
             gridShowOddRows.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS));
+            rightJustifyNumbers.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS));
             gridRowBatchSize.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE));
             gridShowCellIcons.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS));
             gridDoubleClickBehavior.select(
@@ -131,6 +135,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     {
         try {
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS, gridShowOddRows.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS, rightJustifyNumbers.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE, gridRowBatchSize.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS, gridShowCellIcons.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(Spreadsheet.DoubleClickBehavior.class, gridDoubleClickBehavior.getSelectionIndex()).name());
@@ -148,6 +153,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     protected void clearPreferences(DBPPreferenceStore store)
     {
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
         store.setToDefault(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
         store.setToDefault(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK);

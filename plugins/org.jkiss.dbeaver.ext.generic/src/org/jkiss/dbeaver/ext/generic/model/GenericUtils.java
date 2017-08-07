@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaColumn;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -139,6 +142,11 @@ public class GenericUtils {
         } else {
             return JDBCUtils.safeGetObject(dbResult, column.toString());
         }
+    }
+
+    public static boolean isLegacySQLDialect(DBSObject owner) {
+        SQLDialect dialect = SQLUtils.getDialectFromObject(owner);
+        return dialect instanceof GenericSQLDialect && ((GenericSQLDialect)dialect).isLegacySQLDialect();
     }
 
 }

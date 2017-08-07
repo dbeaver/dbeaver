@@ -10,7 +10,7 @@
               description="%dataTransfer.consumer.stream.description"
               settings="org.jkiss.dbeaver.data.office.export.StreamPOIConsumerSettings">
             <page class="org.jkiss.dbeaver.data.office.export.StreamPOIConsumerPageSettings"/>
-            <page class="org.jkiss.dbeaver.data.office.export.StreamPOIConsumerPageOutput"/>            
+            <page class="org.jkiss.dbeaver.data.office.export.StreamPOIConsumerPageOutput"/>
           <processor
                     id="stream.xlsx"
                     class="org.jkiss.dbeaver.data.office.export.DataExporterXLSX"
@@ -22,11 +22,14 @@
                     <property id="border" label="%dataTransfer.processor.xlsx.property.border.name" type="string" description="%dataTransfer.processor.xlsx.property.border.description" defaultValue="THIN" required="false" validValues="NONE,THIN,THICK"/>
                     <property id="extension" label="File extension" defaultValue="xlsx"/>
                     <property id="nullString" label="%dataTransfer.processor.xlsx.property.nullString.name" type="string" description="%dataTransfer.processor.xlsx.property.nullString.description" defaultValue="" required="false"/>
-                    <property id="header" label="%dataTransfer.processor.xlsx.property.header.name" type="boolean" description="%dataTransfer.processor.xlsx.property.header.description" defaultValue="yes" required="true"/>                                        
+                    <property id="header" label="%dataTransfer.processor.xlsx.property.header.name" type="boolean" description="%dataTransfer.processor.xlsx.property.header.description" defaultValue="yes" required="true"/>
                     <property id="headerfont" label="%dataTransfer.processor.xlsx.property.headerFont.name" type="string" description="%dataTransfer.processor.xlsx.property.headerFont.description" defaultValue="BOLD" required="false" validValues="NONE,BOLD,ITALIC,STRIKEOUT,UNDERLINE"/>
                     <property id="trueString" label="%dataTransfer.processor.xlsx.property.boolStringTrue.name" type="string" description="%dataTransfer.processor.xlsx.property.boolStringTrue.description" defaultValue="+" required="false"/>
                     <property id="falseString" label="%dataTransfer.processor.xlsx.property.boolStringFalse.name" type="string" description="%dataTransfer.processor.xlsx.property.boolStringFalse.description" defaultValue="-" required="false"/>
-                    <property id="exportSql" label="%dataTransfer.processor.xlsx.property.exportSql.name" type="boolean" description="%dataTransfer.processor.xlsx.property.exportSql.description" defaultValue="false" required="false"/>                                                            
+                    <property id="exportSql" label="%dataTransfer.processor.xlsx.property.exportSql.name" type="boolean" description="%dataTransfer.processor.xlsx.property.exportSql.description" defaultValue="false" required="false"/>
+                    <property id="splitSqlText" label="%dataTransfer.processor.xlsx.property.splitSqlText.name" type="boolean" description="%dataTransfer.processor.xlsx.property.splitSqlText.description" defaultValue="false" required="false"/>
+                    <property id="splitByRowCount" label="%dataTransfer.processor.xlsx.property.splitByRowCount.name" type="integer" description="%dataTransfer.processor.xlsx.property.splitByRowCount.description" defaultValue="1048575" required="false"/>
+                    <property id="splitByColNum" label="%dataTransfer.processor.xlsx.property.splitByColNum.name" type="integer" description="%dataTransfer.processor.xlsx.property.splitByColNum.description" defaultValue="" required="false"/>
                 </propertyGroup>
           </processor>
         </node>

@@ -1674,9 +1674,7 @@
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
             </toolbar>
-        </menuContribution>
 
-        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=dbeaver-transactions">
             <toolbar id="dbeaver-transaction-monitor" label="Transaction monitor">
                 <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 <control class="org.jkiss.dbeaver.ui.controls.txn.TransactionMonitorToolbar$ToolbarContribution">
@@ -2058,7 +2056,7 @@
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.extras">
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout" label="Layout">
                 <dynamic id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.resultSet.orientation" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor$ResultSetOrientationMenuContributor"/>
-                <separator visible="true"/>
+                <separator name="layout_toggles" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
@@ -2474,13 +2472,6 @@
                 value="255,255,225">
             <description>Value editor background</description>
         </colorDefinition>
-        <!--colorDefinition
-            label="??ell foreground"
-            categoryId="org.jkiss.dbeaver.ui.presentation.results"
-            id="org.jkiss.dbeaver.sql.resultset.color.cell.foreground"
-            value="COLOR_WIDGET_FOREGROUND">
-            <description>Modified cell foreground</description>
-        </colorDefinition-->
         <colorDefinition
                 label="Modified cell background"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
@@ -2508,6 +2499,13 @@
                 id="org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background"
                 value="245, 245, 245">
             <description>Read-only cell background</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Matched (find/replace) row background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.cell.matched.background"
+                value="255, 215, 00">
+            <description>New row background</description>
         </colorDefinition>
         <colorDefinition
                 label="Grid lines color"
@@ -2893,6 +2891,7 @@
     <extension point="org.jkiss.dbeaver.sqlCommand">
         <command id="set" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandSet" label="Set" description="Sets variable/parameter value"/>
         <command id="echo" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandEcho" label="Echo" description="Prints string to Output log"/>
+        <command id="include" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandInclude" label="Include" description="Include another SQL script file"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">

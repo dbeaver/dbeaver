@@ -17,12 +17,10 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
-import org.eclipse.equinox.security.storage.StorageException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -93,6 +91,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private final List<DataSourceDescriptor> dataSources = new ArrayList<>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
+    private final List<DBSObjectFilter> savedFilters = new ArrayList<>();
     private volatile boolean saveInProgress = false;
 
     public DataSourceRegistry(DBPPlatform platform, IProject project)
@@ -307,6 +306,52 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return parent;
     }
 
+    ////////////////////////////////////////////////////
+    // Saved filters
+
+    @Nullable
+    @Override
+    public DBSObjectFilter getSavedFilter(String name) {
+        for (DBSObjectFilter filter : savedFilters) {
+            if (CommonUtils.equalObjects(filter.getName(), name)) {
+                return filter;
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public List<DBSObjectFilter> getSavedFilters() {
+        return savedFilters;
+    }
+
+    @Override
+    public void updateSavedFilter(DBSObjectFilter filter) {
+        DBSObjectFilter filterCopy = new DBSObjectFilter(filter);
+        for (int i = 0; i < savedFilters.size(); i++) {
+            if (CommonUtils.equalObjects(savedFilters.get(i).getName(), filter.getName())) {
+                savedFilters.set(i, filterCopy);
+                return;
+            }
+        }
+        savedFilters.add(filterCopy);
+    }
+
+    @Override
+    public void removeSavedFilter(String filterName) {
+        for (int i = 0; i < savedFilters.size(); ) {
+            if (CommonUtils.equalObjects(savedFilters.get(i).getName(), filterName)) {
+                savedFilters.remove(i);
+            } else {
+                i++;
+            }
+        }
+    }
+
+    ////////////////////////////////////////////////////
+    // Data sources
+
     public void addDataSource(DBPDataSourceContainer dataSource)
     {
         final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
@@ -381,16 +426,25 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public void notifyDataSourceListeners(final DBPEvent event)
     {
-        if (dataSourceListeners.isEmpty()) {
-            return;
-        }
         final List<DBPEventListener> listeners;
         synchronized (dataSourceListeners) {
+            if (dataSourceListeners.isEmpty()) {
+                return;
+            }
             listeners = new ArrayList<>(dataSourceListeners);
         }
-        for (DBPEventListener listener : listeners) {
-            listener.handleDataSourceEvent(event);
-        }
+        new Job("Notify datasource events") {
+            {
+                setSystem(true);
+            }
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                for (DBPEventListener listener : listeners) {
+                    listener.handleDataSourceEvent(event);
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     @Override
@@ -447,6 +501,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         if (!project.isOpen()) {
             return;
         }
+        // Clear filters before reload
+        savedFilters.clear();
+        // Parse with SAX
         ParseResults parseResults = new ParseResults();
         try {
             for (IResource res : project.members(IContainer.INCLUDE_HIDDEN)) {
@@ -545,21 +602,34 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         try {
                             XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
                             xml.setButify(true);
-                            xml.startElement("data-sources");
-                            if (origin.isDefault()) {
-                                // Folders (only for default origin)
-                                for (DataSourceFolder folder : dataSourceFolders) {
-                                    saveFolder(xml, folder);
+                            try (XMLBuilder.Element el1 = xml.startElement("data-sources")) {
+                                if (origin.isDefault()) {
+                                    // Folders (only for default origin)
+                                    for (DataSourceFolder folder : dataSourceFolders) {
+                                        saveFolder(xml, folder);
+                                    }
                                 }
-                            }
-                            // Datasources
-                            for (DataSourceDescriptor dataSource : localDataSources) {
-                                // Skip temporary
-                                if (!dataSource.isTemporary()) {
-                                    saveDataSource(xml, dataSource);
+
+                                // Datasources
+                                for (DataSourceDescriptor dataSource : localDataSources) {
+                                    // Skip temporary
+                                    if (!dataSource.isTemporary()) {
+                                        saveDataSource(xml, dataSource);
+                                    }
                                 }
+
+                                // Filters
+                                if (origin.isDefault()) {
+                                    try (XMLBuilder.Element el2 = xml.startElement(RegistryConstants.TAG_FILTERS)) {
+                                        for (DBSObjectFilter cf : savedFilters) {
+                                            if (!cf.isEmpty()) {
+                                                saveObjectFiler(xml, null, null, cf);
+                                            }
+                                        }
+                                    }
+                                }
+
                             }
-                            xml.endElement();
                             xml.flush();
                         } catch (IOException ex) {
                             log.warn("IO error while saving datasources", ex);
@@ -574,7 +644,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     }
                     try {
                         getSecurePreferences().flush();
-                    } catch (IOException e) {
+                    } catch (Throwable e) {
                         log.error("Error saving secured preferences", e);
                     }
                 } catch (CoreException ex) {
@@ -645,8 +715,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private void saveDataSource(XMLBuilder xml, DataSourceDescriptor dataSource)
         throws IOException
     {
-        clearSecuredPasswords(dataSource);
-
         xml.startElement(RegistryConstants.TAG_DATA_SOURCE);
         xml.addAttribute(RegistryConstants.ATTR_ID, dataSource.getId());
         xml.addAttribute(RegistryConstants.ATTR_PROVIDER, dataSource.getDriver().getProviderDescriptor().getId());
@@ -870,7 +938,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         prefNode.remove(RegistryConstants.ATTR_PASSWORD);
                     }
                 }
-            } catch (StorageException e) {
+            } catch (Throwable e) {
                 log.error("Can't save password in secure storage", e);
             }
         }
@@ -889,7 +957,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     }
 
     private void clearSecuredPasswords(DataSourceDescriptor dataSource) {
-        dataSource.getSecurePreferences().removeNode();
+        try {
+            dataSource.getSecurePreferences().removeNode();
+        } catch (Throwable e) {
+            log.debug("Error clearing '" + dataSource.getId() + "' secure storage");
+        }
     }
 
     @Nullable
@@ -910,7 +982,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private void saveObjectFiler(XMLBuilder xml, String typeName, String objectID, DBSObjectFilter filter) throws IOException
     {
         xml.startElement(RegistryConstants.TAG_FILTER);
-        xml.addAttribute(RegistryConstants.ATTR_TYPE, typeName);
+        if (typeName != null) {
+            xml.addAttribute(RegistryConstants.ATTR_TYPE, typeName);
+        }
         if (objectID != null) {
             xml.addAttribute(RegistryConstants.ATTR_ID, objectID);
         }
@@ -1211,6 +1285,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             curDataSource.updateObjectFilter(typeName, objectID, curFilter);
 
                         }
+                    } else {
+                        curFilter = new DBSObjectFilter();
+                        curFilter.setName(atts.getValue(RegistryConstants.ATTR_NAME));
+                        curFilter.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
+                        curFilter.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED), true));
+                        savedFilters.add(curFilter);
                     }
                     break;
                 case RegistryConstants.TAG_INCLUDE:
@@ -1287,7 +1367,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         creds[0] = prefNode.get(RegistryConstants.ATTR_USER, null);
                         creds[1] = prefNode.get(RegistryConstants.ATTR_PASSWORD, null);
                     }
-                } catch (StorageException e) {
+                } catch (Throwable e) {
                     // Most likely user canceled master password enter of failed by some other reason.
                     // Anyhow we won't try it again
                     log.error("Can't read password from secure storage", e);

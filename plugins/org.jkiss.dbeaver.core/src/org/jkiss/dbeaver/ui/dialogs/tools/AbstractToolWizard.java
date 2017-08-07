@@ -18,13 +18,17 @@
 package org.jkiss.dbeaver.ui.dialogs.tools;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
@@ -152,6 +156,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         if (getContainer().getCurrentPage() != logPage) {
             getContainer().showPage(logPage);
         }
+        long startTime = System.currentTimeMillis();
         try {
             DBeaverUI.run(getContainer(), true, true, this);
         }
@@ -170,8 +175,19 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             getContainer().updateButtons();
 
         }
-        onSuccess();
+        long workTime = System.currentTimeMillis() - startTime;
+        notifyToolFinish(task + " finished", workTime);
+        onSuccess(workTime);
         return false;
+    }
+
+    protected void notifyToolFinish(String toolName, long workTime) {
+        // Make a sound
+        Display.getCurrent().beep();
+        // Notify agent
+        if (workTime > DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
+            DBeaverUI.notifyAgent(toolName, IStatus.INFO);
+        }
     }
 
     public String getObjectsName() {
@@ -270,7 +286,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         return false;
     }
 
-    protected void onSuccess()
+    protected void onSuccess(long workTime)
     {
 
     }

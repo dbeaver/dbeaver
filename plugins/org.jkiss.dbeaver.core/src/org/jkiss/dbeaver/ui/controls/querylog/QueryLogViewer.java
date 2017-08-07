@@ -87,7 +87,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final String VIEWER_ID = "DBeaver.QM.LoigViewer";
     private static final int MIN_ENTRIES_PER_PAGE = 1;
 
-    public static final RGB COLOR_LIGHT_GREEN = new RGB(0xE4, 0xFF, 0xB5);
+    public static final RGB COLOR_LIGHT_GREEN = new RGB(0xBD, 0xFE, 0xBF);
+    //189, 254, 191 #bdfebf
     public static final RGB COLOR_LIGHT_RED = new RGB(0xFF, 0x63, 0x47);
     public static final RGB COLOR_LIGHT_YELLOW = new RGB(0xFF, 0xE4, 0xB5);
     public static final RGB COLOR_BLACK = new RGB(0x00, 0x00, 0x00);

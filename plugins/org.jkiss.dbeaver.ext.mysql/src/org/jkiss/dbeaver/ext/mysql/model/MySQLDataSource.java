@@ -67,7 +67,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 {
     private static final Log log = Log.getLog(MySQLDataSource.class);
 
-    private final JDBCBasicDataTypeCache dataTypeCache;
+    private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
     private List<MySQLEngine> engines;
     private final CatalogCache catalogCache = new CatalogCache();
     private List<MySQLPrivilege> privileges;
@@ -81,7 +81,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         throws DBException
     {
         super(monitor, container, new MySQLDialect());
-        dataTypeCache = new JDBCBasicDataTypeCache(container);
+        dataTypeCache = new JDBCBasicDataTypeCache<>(this);
     }
 
     @Override

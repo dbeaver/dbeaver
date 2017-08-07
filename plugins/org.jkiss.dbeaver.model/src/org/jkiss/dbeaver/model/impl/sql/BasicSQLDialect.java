@@ -54,6 +54,7 @@ public class BasicSQLDialect implements SQLDialect {
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
             SQLConstants.KEYWORD_SELECT,
             };
+    public static final String[][] DEFAULT_QUOTE_STRINGS = {{"\"", "\""}};
 
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
@@ -81,9 +82,9 @@ public class BasicSQLDialect implements SQLDialect {
 
     @Nullable
     @Override
-    public String getIdentifierQuoteString()
+    public String[][] getIdentifierQuoteStrings()
     {
-        return "\"";
+        return DEFAULT_QUOTE_STRINGS;
     }
 
     @NotNull

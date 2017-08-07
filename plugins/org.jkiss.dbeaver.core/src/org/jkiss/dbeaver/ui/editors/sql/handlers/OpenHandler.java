@@ -255,6 +255,10 @@ public class OpenHandler extends AbstractDataSourceHandler {
         String sqlText)
     {
         StringEditorInput sqlInput = new StringEditorInput(name, sqlText, false, GeneralUtils.DEFAULT_ENCODING);
+        return openSQLConsole(workbenchWindow, dataSourceContainer, sqlInput);
+    }
+
+    public static SQLEditor openSQLConsole(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSourceContainer, IEditorInput sqlInput) {
         EditorUtils.setInputDataSource(sqlInput, dataSourceContainer, false);
         return openSQLEditor(workbenchWindow, sqlInput);
     }

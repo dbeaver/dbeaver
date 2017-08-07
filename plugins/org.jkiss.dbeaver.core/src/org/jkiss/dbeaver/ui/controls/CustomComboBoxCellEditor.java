@@ -66,7 +66,7 @@ public class CustomComboBoxCellEditor extends ComboBoxCellEditor {
             // Install proposal provider for editable combos
             proposalProvider = new SimpleContentProposalProvider(comboBox.getItems());
             proposalProvider.setFiltering(true);
-            UIUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider, true);
+            UIUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider, true, true);
         }
 
         return comboBox;

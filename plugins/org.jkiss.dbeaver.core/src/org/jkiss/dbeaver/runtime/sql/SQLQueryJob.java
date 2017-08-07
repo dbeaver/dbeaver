@@ -71,7 +71,7 @@ import java.util.Map;
  *
  * @author Serge Rider
  */
-public class SQLQueryJob extends DataSourceJob implements Closeable
+public class SQLQueryJob extends DataSourceJob
 {
     private static final Log log = Log.getLog(SQLQueryJob.class);
 
@@ -489,7 +489,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         if (command.isEmptyCommand()) {
             return true;
         }
-        SQLCommandHandlerDescriptor commandHandler = SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommand());
+        SQLCommandHandlerDescriptor commandHandler = SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommandId());
         if (commandHandler == null) {
             throw new DBException("Command '" + command.getCommand() + "' not supported");
         }
@@ -815,8 +815,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         this.fetchResultSetNumber = fetchResultSetNumber;
     }
 
-    @Override
-    public void close() {
+    public void closeJob() {
         closeStatement();
     }
 

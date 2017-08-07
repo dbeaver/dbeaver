@@ -24,6 +24,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,7 +42,9 @@ import java.util.List;
 public class EditObjectFilterDialog extends HelpEnabledDialog {
 
     public static final int SHOW_GLOBAL_FILTERS_ID = 1000;
+    private static final String NULL_FILTER_NAME = "";
 
+    private final DBPDataSourceRegistry dsRegistry;
     private String objectTitle;
     private DBSObjectFilter filter;
     private boolean globalFilter;
@@ -48,9 +52,12 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     private ControlEnableState blockEnableState;
     private Table includeTable;
     private Table excludeTable;
+    private Combo namesCombo;
+    private Button enableButton;
 
-    public EditObjectFilterDialog(Shell shell, String objectTitle, DBSObjectFilter filter, boolean globalFilter) {
+    public EditObjectFilterDialog(Shell shell, DBPDataSourceRegistry dsRegistry, String objectTitle, DBSObjectFilter filter, boolean globalFilter) {
         super(shell, IHelpContextIds.CTX_EDIT_OBJECT_FILTERS);
+        this.dsRegistry = dsRegistry;
         this.objectTitle = objectTitle;
         this.filter = new DBSObjectFilter(filter);
         this.globalFilter = globalFilter;
@@ -69,7 +76,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
         Composite topPanel = UIUtils.createPlaceholder(composite, globalFilter ? 1 : 2);
         topPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        final Button enableButton = UIUtils.createCheckbox(topPanel, CoreMessages.dialog_filter_button_enable, false);
+        enableButton = UIUtils.createCheckbox(topPanel, CoreMessages.dialog_filter_button_enable, false);
         enableButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -97,9 +104,68 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
         UIUtils.createInfoLabel(blockControl, "You can use masks (%, _ and *) in filters");
 
+        {
+            Group sfGroup = UIUtils.createControlGroup(composite, "Saved filter", 4, GridData.FILL_HORIZONTAL, 0);
+            namesCombo = UIUtils.createLabelCombo(sfGroup, "Name", SWT.DROP_DOWN);
+            namesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            namesCombo.add(NULL_FILTER_NAME);
+            List<String> sfNames = new ArrayList<>();
+            for (DBSObjectFilter sf : dsRegistry.getSavedFilters()) {
+                sfNames.add(sf.getName());
+            }
+            Collections.sort(sfNames);
+            for (String sfName : sfNames) {
+                namesCombo.add(sfName);
+            }
+            namesCombo.setText(CommonUtils.notEmpty(filter.getName()));
+            namesCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    changeSavedFilter();
+                }
+            });
+
+            Button saveButton = UIUtils.createPushButton(sfGroup, "Save", null);
+            saveButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    saveConfigurations();
+                }
+            });
+            Button removeButton = UIUtils.createPushButton(sfGroup, "Remove", null);
+            removeButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    dsRegistry.removeSavedFilter(namesCombo.getText());
+                    namesCombo.setText(NULL_FILTER_NAME);
+                }
+            });
+        }
+
         enableFiltersContent();
 
         return composite;
+    }
+
+    private void changeSavedFilter() {
+        String filterName = namesCombo.getText();
+        if (CommonUtils.equalObjects(filterName, filter.getName())) {
+            return;
+        }
+        if (CommonUtils.isEmpty(filterName)) {
+            // Reset filter
+            fillFilterValues(includeTable, null);
+            fillFilterValues(excludeTable, null);
+        } else {
+            // Find saved filter
+            DBSObjectFilter savedFilter = dsRegistry.getSavedFilter(filterName);
+            if (savedFilter != null) {
+                fillFilterValues(includeTable, savedFilter.getInclude());
+                fillFilterValues(excludeTable, savedFilter.getExclude());
+            }
+        }
+        filter.setName(filterName);
     }
 
     private Table createEditableList(String name, List<String> values) {
@@ -116,11 +182,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         final TableColumn valueColumn = UIUtils.createTableColumn(valueTable, SWT.LEFT, CoreMessages.dialog_filter_table_column_value);
         valueColumn.setWidth(300);
 
-        if (!CommonUtils.isEmpty(values)) {
-            for (String value : values) {
-                new TableItem(valueTable, SWT.LEFT).setText(value);
-            }
-        }
+        fillFilterValues(valueTable, values);
 
         final CustomTableEditor tableEditor = new CustomTableEditor(valueTable) {
             @Override
@@ -188,7 +250,16 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         return valueTable;
     }
 
-    protected void enableFiltersContent() {
+    private void fillFilterValues(Table valueTable, List<String> values) {
+        valueTable.removeAll();
+        if (!CommonUtils.isEmpty(values)) {
+            for (String value : values) {
+                new TableItem(valueTable, SWT.LEFT).setText(value);
+            }
+        }
+    }
+
+    private void enableFiltersContent() {
         if (filter.isEnabled()) {
             if (blockEnableState != null) {
                 blockEnableState.restore();
@@ -200,8 +271,13 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     }
 
     private void saveConfigurations() {
+        filter.setEnabled(enableButton.getSelection());
         filter.setInclude(collectValues(includeTable));
         filter.setExclude(collectValues(excludeTable));
+        filter.setName(namesCombo.getText());
+        if (!CommonUtils.isEmpty(filter.getName())) {
+            dsRegistry.updateSavedFilter(filter);
+        }
     }
 
     private List<String> collectValues(Table table) {

@@ -45,6 +45,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
     String compression;
     String encoding;
     boolean showViews;
+    boolean useInserts;
     public List<PostgreDatabaseBackupInfo> objects = new ArrayList<>();
 
     private PostgreBackupWizardPageObjects objectsPage;
@@ -92,7 +93,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
     }
 
     @Override
-	public void onSuccess() {
+	public void onSuccess(long workTime) {
         UIUtils.showMessageBox(
             getShell(),
             "Database export",
@@ -112,6 +113,9 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
         }
         if (!CommonUtils.isEmpty(encoding)) {
             cmd.add("--encoding=" + encoding);
+        }
+        if (useInserts) {
+            cmd.add("--inserts");
         }
 
         // Objects

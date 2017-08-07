@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.sqlite.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
@@ -29,16 +30,16 @@ import java.util.List;
 /**
  * SQLiteDataTypeCache
  */
-public class SQLiteDataTypeCache extends JDBCBasicDataTypeCache
+public class SQLiteDataTypeCache extends JDBCBasicDataTypeCache<GenericStructContainer, SQLiteDataType>
 {
 
-    public SQLiteDataTypeCache(DBPDataSourceContainer owner) {
+    public SQLiteDataTypeCache(GenericStructContainer owner) {
         super(owner);
     }
 
     @Override
-    protected synchronized void loadObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource) throws DBException {
-        List<DBSDataType> types = new ArrayList<>();
+    protected synchronized void loadObjects(DBRProgressMonitor monitor, GenericStructContainer dataSource) throws DBException {
+        List<SQLiteDataType> types = new ArrayList<>();
         for (SQLiteAffinity affinity : SQLiteAffinity.values()) {
             SQLiteDataType dataType = new SQLiteDataType((SQLiteDataSource) dataSource, affinity);
             types.add(dataType);

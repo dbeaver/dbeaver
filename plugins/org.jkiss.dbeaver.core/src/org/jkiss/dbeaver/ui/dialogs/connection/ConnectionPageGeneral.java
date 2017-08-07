@@ -495,6 +495,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                         public void widgetSelected(SelectionEvent e) {
                             EditObjectFilterDialog dialog = new EditObjectFilterDialog(
                                 getShell(),
+                                dataSourceDescriptor.getRegistry(),
                                 filterInfo.title,
                                 filterInfo.filter != null ? filterInfo.filter : new DBSObjectFilter(),
                                 true);

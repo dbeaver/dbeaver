@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -54,17 +56,31 @@ public class TrayIconHandler {
         }
         trayItem = new TrayIcon(Toolkit.getDefaultToolkit().getImage(logoFile.getAbsolutePath()));
         trayItem.setImageAutoSize(true);
+        {
+            PopupMenu popupMenu = new PopupMenu();
+            MenuItem showItem = new MenuItem("Show DBeaver");
+            showItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showMainWindow();
+                }
+            });
+            popupMenu.add(showItem);
+            trayItem.setPopupMenu(popupMenu);
+        }
         trayItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e)
             {
-
             }
         });
         trayItem.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e)
             {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    showMainWindow();
+                }
             }
         });
 
@@ -79,6 +95,21 @@ public class TrayIconHandler {
         } catch (AWTException e) {
             log.error(e);
         }
+    }
+
+    private void showMainWindow() {
+        DBeaverUI.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                Shell activeShell = DBeaverUI.getActiveWorkbenchShell();
+                if (activeShell != null){
+                    if (activeShell.getMinimized()) {
+                        activeShell.setMinimized(false);
+                    }
+                    activeShell.forceActive();
+                }
+            }
+        });
     }
 
     public void hide()

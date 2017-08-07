@@ -79,10 +79,15 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
         if (!objects.isEmpty()) {
             if (activePart instanceof EntityEditor) {
                 // Save editor before compile
-                // USe null monitor as entity editr has its own detached job for save
+                // USe null monitor as entity editor has its own detached job for save
                 EntityEditor entityEditor = (EntityEditor) activePart;
                 if (entityEditor.isDirty()) {
-                    entityEditor.doSave(new NullProgressMonitor());
+                    NullProgressMonitor monitor = new NullProgressMonitor();
+                    entityEditor.doSave(monitor);
+                    if (monitor.isCanceled()) {
+                        // Save failed - doesn't make sense to compile
+                        return null;
+                    }
                 }
             }
             final Shell activeShell = HandlerUtil.getActiveShell(event);
