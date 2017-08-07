@@ -29,7 +29,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
@@ -257,8 +256,6 @@ public abstract class LightGrid extends Canvas {
 
     private boolean columnScrolling = false;
 
-    private Color cellHeaderSelectionBackground;
-
     /**
      * Dispose listener.  This listener is removed during the dispose event to allow re-firing of
      * the event.
@@ -417,14 +414,6 @@ public abstract class LightGrid extends Canvas {
         initListeners();
 
         recalculateSizes();
-
-        RGB cellSel = UIUtils.blend(
-            display.getSystemColor(SWT.COLOR_LIST_SELECTION).getRGB(),
-            new RGB(255, 255, 255),
-            50);
-
-        cellHeaderSelectionBackground = new Color(display, cellSel);
-
 
         setDragDetect(false);
     }
@@ -688,18 +677,6 @@ public abstract class LightGrid extends Canvas {
     public void setForeground(Color color) {
         super.setForeground(foregroundColor = color);
         getContentProvider().resetColors();
-    }
-
-
-    /**
-     * Returns the background color of column and row headers when a cell in
-     * the row or header is selected.
-     *
-     * @return cell header selection background color
-     */
-    public Color getCellHeaderSelectionBackground()
-    {
-        return cellHeaderSelectionBackground;
     }
 
     /**
@@ -2719,8 +2696,6 @@ public abstract class LightGrid extends Canvas {
         removeListener(SWT.Dispose, disposeListener);
         notifyListeners(SWT.Dispose, event);
         event.type = SWT.None;
-
-        UIUtils.dispose(cellHeaderSelectionBackground);
     }
 
     /**
@@ -4212,7 +4187,7 @@ public abstract class LightGrid extends Canvas {
 
     private void drawEmptyColumnHeader(GC gc, int x, int y, int width, int height)
     {
-        setDefaultBackground(gc);
+        gc.setBackground(getContentProvider().getCellHeaderBackground());
 
         gc.fillRectangle(
             x, 
@@ -4223,11 +4198,11 @@ public abstract class LightGrid extends Canvas {
 
     private void drawEmptyRowHeader(GC gc, int x, int y, int width, int height)
     {
-        gc.setBackground(rowHeaderRenderer.DEFAULT_BACKGROUND);
+        gc.setBackground(getContentProvider().getCellHeaderBackground());
 
         gc.fillRectangle(x, y, width, height + 1);
 
-        gc.setForeground(rowHeaderRenderer.DEFAULT_FOREGROUND);
+        gc.setForeground(getContentProvider().getCellHeaderForeground());
 
         gc.drawLine(
             x + width - 1,
@@ -4242,10 +4217,8 @@ public abstract class LightGrid extends Canvas {
     }
 
     private void drawEmptyCell(GC gc, int x, int y, int width, int height) {
-        IGridLabelProvider labelProvider = getLabelProvider();
-        Color foreground = labelProvider.getForeground(null);
-        setDefaultBackground(gc);
-        gc.setForeground(foreground);
+        gc.setBackground(getContentProvider().getCellHeaderBackground());
+        gc.setForeground(getContentProvider().getCellHeaderForeground());
 
         gc.fillRectangle(x, y, width + 1, height);
 
@@ -4265,7 +4238,7 @@ public abstract class LightGrid extends Canvas {
 
     private void drawTopLeftCell(GC gc, int x, int y, int width, int height) {
         int sortOrder = getContentProvider().getSortOrder(null);
-        gc.setBackground(rowHeaderRenderer.DEFAULT_BACKGROUND);
+        gc.setBackground(getContentProvider().getCellHeaderBackground());
 
         gc.fillRectangle(
             x,
@@ -4273,7 +4246,7 @@ public abstract class LightGrid extends Canvas {
             width - 1,
             height + 1);
 
-        gc.setForeground(rowHeaderRenderer.DEFAULT_FOREGROUND);
+        gc.setForeground(getContentProvider().getCellHeaderForeground());
 
         gc.drawLine(
             x + width - 1,

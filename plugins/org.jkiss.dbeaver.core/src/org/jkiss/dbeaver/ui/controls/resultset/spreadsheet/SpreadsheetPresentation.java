@@ -139,6 +139,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color foregroundNull;
     private Color foregroundSelected, backgroundSelected;
     private Color backgroundMatched;
+    private Color cellHeaderForeground, cellHeaderBackground, cellHeaderSelectionBackground;
     private Font boldFont, italicFont, bolItalicFont;
 
     private boolean showOddRows = true;
@@ -166,8 +167,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
         this.italicFont = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
-
-        this.foregroundNull = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
         this.spreadsheet = new Spreadsheet(
             parent,
@@ -234,6 +233,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         UIUtils.dispose(this.italicFont);
         UIUtils.dispose(this.boldFont);
+
+        UIUtils.dispose(this.cellHeaderSelectionBackground);
     }
 
     public void scrollToRow(@NotNull RowPosition position)
@@ -987,6 +988,23 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.backgroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
         this.backgroundMatched = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MATCHED);
 
+        this.cellHeaderForeground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_FOREGROUND);
+        this.cellHeaderBackground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_BACKGROUND);
+        {
+            if (this.cellHeaderSelectionBackground != null) {
+                UIUtils.dispose(this.cellHeaderSelectionBackground);
+                this.cellHeaderSelectionBackground = null;
+            }
+            Color headerSelectionBackground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_SELECTED_BACKGROUND);
+            RGB cellSel = UIUtils.blend(
+                    headerSelectionBackground.getRGB(),
+                    new RGB(255, 255, 255),
+                    50);
+            this.cellHeaderSelectionBackground = new Color(getSpreadsheet().getDisplay(), cellSel);
+        }
+        this.foregroundNull = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND);
+
+
         this.spreadsheet.setLineColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_NORMAL));
         this.spreadsheet.setLineSelectedColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED));
 
@@ -1560,6 +1578,21 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 backgroundNormal = controller.getDefaultBackground();
             }
             return backgroundNormal;
+        }
+
+        @Override
+        public Color getCellHeaderForeground() {
+            return cellHeaderForeground;
+        }
+
+        @Override
+        public Color getCellHeaderBackground() {
+            return cellHeaderBackground;
+        }
+
+        @Override
+        public Color getCellHeaderSelectionBackground() {
+            return cellHeaderSelectionBackground;
         }
 
         @Override

@@ -2521,6 +2521,34 @@
                 value="105, 105, 105">
             <description>Selected lines color</description>
         </colorDefinition>
+        <colorDefinition
+                label="Grid header background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.header.background"
+                value="COLOR_WIDGET_BACKGROUND">
+            <description>Grid header background</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Grid header foreground"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.header.foreground"
+                value="COLOR_LIST_FOREGROUND">
+            <description>Grid header foreground</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Grid selected header background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.header.selected.background"
+                value="COLOR_LIST_SELECTION">
+            <description>Grid header background</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Grid NULL value foreground"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.null.foreground"
+                value="COLOR_WIDGET_NORMAL_SHADOW">
+            <description>Grid NULL value foreground</description>
+        </colorDefinition>
 
         <colorDefinition
                 label="SQL keyword color"
