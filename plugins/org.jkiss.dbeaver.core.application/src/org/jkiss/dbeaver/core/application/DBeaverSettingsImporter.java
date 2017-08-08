@@ -159,7 +159,7 @@ class DBeaverSettingsImporter {
                 public void widgetSelected(SelectionEvent e) {
                     MessageBox messageBox = new MessageBox(windowShell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
                     messageBox.setText("Skip workspace migration");
-                    messageBox.setMessage("Skipping workspace migration you will loose all previous workspace data.\n\nAre you sure?");
+                    messageBox.setMessage("Skipping workspace migration you will lose all previous workspace data.\n\nAre you sure?");
                     int response = messageBox.open();
                     if (response == SWT.YES) {
                         shellResult = SWT.IGNORE;
