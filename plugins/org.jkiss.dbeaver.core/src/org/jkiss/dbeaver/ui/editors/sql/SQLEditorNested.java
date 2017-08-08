@@ -233,14 +233,12 @@ public abstract class SQLEditorNested<T extends DBSObject>
                             sourceText = "/* ERROR WHILE READING SOURCE:\n\n" + e.getMessage() + "\n*/";
                             throw new InvocationTargetException(e);
                         } finally {
-                            if (!isDisposed()) {
-                                DBeaverUI.syncExec(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        resetDocumentContents(monitor);
-                                    }
-                                });
-                            }
+                            DBeaverUI.syncExec(new Runnable() {
+                                @Override
+                                public void run() {
+                                    resetDocumentContents(monitor);
+                                }
+                            });
                         }
                     }
                 });
@@ -254,6 +252,10 @@ public abstract class SQLEditorNested<T extends DBSObject>
         }
 
         private void resetDocumentContents(DBRProgressMonitor monitor) {
+            if (isDisposed()) {
+                return;
+            }
+
             try {
                 doResetDocument(getEditorInput(), RuntimeUtils.getNestedMonitor(monitor));
                 // Reset undo queue
