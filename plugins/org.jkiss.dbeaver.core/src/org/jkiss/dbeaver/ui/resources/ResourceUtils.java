@@ -154,6 +154,9 @@ public class ResourceUtils {
 
     private static void findScriptList(IFolder folder, @Nullable DBPDataSourceContainer container, List<ResourceInfo> result)
     {
+        if (folder == null) {
+            return;
+        }
         try {
             // Search in project scripts
             for (IResource resource : folder.members()) {

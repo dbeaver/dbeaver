@@ -184,8 +184,13 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
 
     public String getDefaultRoot(IProject project)
     {
-        IEclipsePreferences resourceHandlers = ProjectRegistry.getResourceHandlerPreferences(project, ProjectRegistry.RESOURCE_ROOT_FOLDER_NODE);
-        return resourceHandlers.get(id, defaultRoot);
+        try {
+            IEclipsePreferences resourceHandlers = ProjectRegistry.getResourceHandlerPreferences(project, ProjectRegistry.RESOURCE_ROOT_FOLDER_NODE);
+            return resourceHandlers.get(id, defaultRoot);
+        } catch (Exception e) {
+            log.error("Can't obtain resource handler preferences", e);
+            return null;
+        }
     }
 
     public List<String> getRoots()
