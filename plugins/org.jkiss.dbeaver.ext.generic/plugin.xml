@@ -417,6 +417,8 @@
                     <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
                     <parameter name="query-set-active-db" value=""/>
                     <parameter name="legacy-sql-dialect" value="true"/>
+
+                    <property name="@dbeaver-default-resultset.column.label.ignore" value="true"/>
                 </driver>
                 <driver
                     id="h2_server"

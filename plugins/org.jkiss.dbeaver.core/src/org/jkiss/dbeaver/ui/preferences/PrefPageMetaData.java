@@ -41,6 +41,8 @@ public class PrefPageMetaData extends TargetPrefPage
     private Button separateMetaConnectionCheck;
     private Button caseSensitiveNamesCheck;
 
+    private Button ignoreColumnLabelCheck;
+
     public PrefPageMetaData()
     {
         super();
@@ -53,7 +55,8 @@ public class PrefPageMetaData extends TargetPrefPage
         return
             store.contains(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES) ||
             store.contains(ModelPreferences.META_SEPARATE_CONNECTION) ||
-            store.contains(ModelPreferences.META_CASE_SENSITIVE)
+            store.contains(ModelPreferences.META_CASE_SENSITIVE) ||
+            store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)
             ;
     }
 
@@ -70,9 +73,15 @@ public class PrefPageMetaData extends TargetPrefPage
         {
             Group metadataGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_metadata, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            separateMetaConnectionCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_separate_meta_connection, false);
-            caseSensitiveNamesCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_case_sensitive_names, false);
-            readExpensiveCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_show_row_count, false);
+            separateMetaConnectionCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_separate_meta_connection, "Opening separate metadata connection may increase performance because there will no UI locks during query execution", false, 1);
+            caseSensitiveNamesCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_case_sensitive_names, "Generate case-sensitive object names in DDL queries", false, 1);
+            readExpensiveCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_show_row_count, "It makes sense to disable this option if your database executes such queries too slowly (e.g. because of big number of data)", false, 1);
+        }
+
+        {
+            Group queriesGroup = UIUtils.createControlGroup(composite, "Query metadata", 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+
+            ignoreColumnLabelCheck = UIUtils.createCheckbox(queriesGroup, "Use column names instead of column labels", "Ignore column labels in data viewer", false, 1);
         }
 
         return composite;
@@ -85,6 +94,8 @@ public class PrefPageMetaData extends TargetPrefPage
             readExpensiveCheck.setSelection(store.getBoolean(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES));
             separateMetaConnectionCheck.setSelection(store.getBoolean(ModelPreferences.META_SEPARATE_CONNECTION));
             caseSensitiveNamesCheck.setSelection(store.getBoolean(ModelPreferences.META_CASE_SENSITIVE));
+
+            ignoreColumnLabelCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -97,6 +108,8 @@ public class PrefPageMetaData extends TargetPrefPage
             store.setValue(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
             store.setValue(ModelPreferences.META_SEPARATE_CONNECTION, separateMetaConnectionCheck.getSelection());
             store.setValue(ModelPreferences.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
+
+            store.setValue(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL, ignoreColumnLabelCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -109,6 +122,8 @@ public class PrefPageMetaData extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES);
         store.setToDefault(ModelPreferences.META_SEPARATE_CONNECTION);
         store.setToDefault(ModelPreferences.META_CASE_SENSITIVE);
+
+        store.setToDefault(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL);
     }
 
     @Override
