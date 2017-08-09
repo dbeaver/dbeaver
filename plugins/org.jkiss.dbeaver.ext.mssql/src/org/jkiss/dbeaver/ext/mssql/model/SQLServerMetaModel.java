@@ -133,7 +133,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         catalog = DBUtils.getQuotedIdentifier(dataSource, catalog);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String mdQuery = serverType == ServerType.SQL_SERVER ?
-                catalog + "." + systemSchema + ".sp_helptext '" + schema + "." + name + "'"
+                catalog + "." + systemSchema + ".sp_helptext '" + DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name) + "'"
                 :
                 "SELECT sc.text\n" +
                 "FROM " + catalog + "." + systemSchema + ".sysobjects so\n" +
