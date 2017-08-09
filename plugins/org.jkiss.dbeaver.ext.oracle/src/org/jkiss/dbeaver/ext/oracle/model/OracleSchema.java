@@ -251,6 +251,26 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Association
+    public Collection<OracleTableTrigger> getTableTriggers(DBRProgressMonitor monitor)
+            throws DBException
+    {
+        List<OracleTableTrigger> allTableTriggers = new ArrayList<>();
+        for (OracleTableBase table : tableCache.getAllObjects(monitor, this)) {
+            Collection<OracleTableTrigger> triggers = table.getTriggers(monitor);
+            if (!CommonUtils.isEmpty(triggers)) {
+                allTableTriggers.addAll(triggers);
+            }
+        }
+        allTableTriggers.sort(new Comparator<OracleTableTrigger>() {
+            @Override
+            public int compare(OracleTableTrigger o1, OracleTableTrigger o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        return allTableTriggers;
+    }
+
+    @Association
     public Collection<OracleDBLink> getDatabaseLinks(DBRProgressMonitor monitor)
         throws DBException
     {
