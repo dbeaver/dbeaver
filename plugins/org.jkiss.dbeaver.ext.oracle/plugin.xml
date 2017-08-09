@@ -152,6 +152,12 @@
                             <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
                             </items>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger" label="%tree.table.triggers.node.name" icon="#triggers" description="Table triggers">
+                            <items label="%tree.table.trigger.node.name" path="tabletrigger" property="tableTriggers" icon="#trigger">
+                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="false">
+                                </items>
+                            </items>
+                        </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="%tree.database_links.node.name" icon="#folder_link" description="Database Links (DBLinks)">
                             <items label="%tree.database_links.node.name" path="databaseLink" property="databaseLinks" icon="#link"/>
                         </folder>
