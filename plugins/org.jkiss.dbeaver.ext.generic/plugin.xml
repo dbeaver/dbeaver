@@ -415,7 +415,7 @@
                     <file type="jar" path="repo:/drivers/informix/ifxlang.jar"/>
                     <file type="license" path="repo:/drivers/informix/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
-                    <parameter name="query-set-active-db" value=""/>
+                    <parameter name="query-set-active-db" value="DATABASE ?"/>
                     <parameter name="legacy-sql-dialect" value="true"/>
 
                     <property name="@dbeaver-default-resultset.column.label.ignore" value="true"/>
