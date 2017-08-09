@@ -10,9 +10,12 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -30,17 +33,15 @@ public class DBeaverStackRenderer extends StackRenderer {
 
         IWorkbenchPart workbenchPart = getWorkbenchPart(part);
         if (workbenchPart instanceof IEditorPart) {
-            IFile inputFile = EditorUtils.getFileFromInput(((IEditorPart) workbenchPart).getEditorInput());
-            if (inputFile != null) {
-                File localFile = inputFile.getLocation().toFile();
-                if (localFile != null) {
-                    populateFileMenu(menu, workbenchPart, inputFile, localFile);
-                }
+            IEditorInput editorInput = ((IEditorPart) workbenchPart).getEditorInput();
+            File localFile = EditorUtils.getLocalFileFromInput(editorInput);
+            if (localFile != null) {
+                populateFileMenu(menu, workbenchPart, EditorUtils.getFileFromInput(editorInput), localFile);
             }
         }
     }
 
-    private void populateFileMenu(final Menu menu, final IWorkbenchPart workbenchPart, final IFile inputFile, final File file) {
+    private void populateFileMenu(@NotNull final Menu menu, @NotNull final IWorkbenchPart workbenchPart, @Nullable final IFile inputFile, @NotNull final File file) {
         new MenuItem(menu, SWT.SEPARATOR);
 
         {
@@ -67,7 +68,7 @@ public class DBeaverStackRenderer extends StackRenderer {
             });
         }
 
-        {
+        if (inputFile != null) {
             MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
             String renameText = "Rename File";
             if (workbenchPart instanceof SQLEditor) {
