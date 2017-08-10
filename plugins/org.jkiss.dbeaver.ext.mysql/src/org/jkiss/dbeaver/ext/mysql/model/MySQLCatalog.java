@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
@@ -352,30 +354,32 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTableBase object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder();
-            sql.append("SHOW FULL TABLES FROM ").append(DBUtils.getQuotedIdentifier(owner));
-            if (object != null || objectName != null) {
-                sql.append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
-            }
-            return session.prepareStatement(sql.toString());
-/*
-            StringBuilder sql = new StringBuilder();
-            sql.append("SHOW FULL TABLES FROM ").append(DBUtils.getQuotedIdentifier(owner));
-            String tableNameCol = "Tables_in_" + owner.getName();
-            if (object != null || objectName != null) {
-                sql.append(" WHERE ").append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(object != null ? object.getName() : objectName));
+            if (!session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)) {
+                // Client side filter
+                sql.append("SHOW FULL TABLES FROM ").append(DBUtils.getQuotedIdentifier(owner));
+                if (object != null || objectName != null) {
+                    sql.append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
+                }
             } else {
-                DBSObjectFilter tableFilters = owner.getDataSource().getContainer().getObjectFilter(MySQLTable.class, owner, false);
-                if (tableFilters != null && !tableFilters.isEmpty()) {
-                    sql.append(" WHERE 1=1");
-                    for (String incName : CommonUtils.safeCollection(tableFilters.getInclude())) {
-                        sql.append(" AND ").append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(incName));
-                    }
-                    for (String incName : CommonUtils.safeCollection(tableFilters.getExclude())) {
-                        sql.append(" AND ").append(tableNameCol).append(" NOT LIKE ").append(SQLUtils.quoteString(incName));
+                sql.append("SHOW FULL TABLES FROM ").append(DBUtils.getQuotedIdentifier(owner));
+                String tableNameCol = "Tables_in_" + owner.getName();
+                if (object != null || objectName != null) {
+                    sql.append(" WHERE ").append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
+                } else {
+                    DBSObjectFilter tableFilters = owner.getDataSource().getContainer().getObjectFilter(MySQLTable.class, owner, false);
+                    if (tableFilters != null && !tableFilters.isEmpty()) {
+                        sql.append(" WHERE 1=1");
+                        for (String incName : CommonUtils.safeCollection(tableFilters.getInclude())) {
+                            sql.append(" AND ").append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                        }
+                        for (String incName : CommonUtils.safeCollection(tableFilters.getExclude())) {
+                            sql.append(" AND ").append(tableNameCol).append(" NOT LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                        }
                     }
                 }
             }
-*/
+
+            return session.prepareStatement(sql.toString());
         }
 
         @Override
