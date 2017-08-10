@@ -251,7 +251,7 @@ class SQLCompletionAnalyzer
                         }
                     }
                     if (structureAssistant != null) {
-                        makeProposalsFromAssistant(structureAssistant, sc, lastToken);
+                        makeProposalsFromAssistant(dataSource, structureAssistant, sc, lastToken);
                     }
                 }
             }
@@ -530,9 +530,10 @@ class SQLCompletionAnalyzer
     }
 
     private void makeProposalsFromAssistant(
-        DBSStructureAssistant assistant,
-        @Nullable DBSObjectContainer rootSC,
-        String objectName)
+            DBPDataSource dataSource,
+            DBSStructureAssistant assistant,
+            @Nullable DBSObjectContainer rootSC,
+            String objectName)
     {
         try {
             Collection<DBSObjectReference> references = assistant.findObjectsByMask(
@@ -541,7 +542,7 @@ class SQLCompletionAnalyzer
                 assistant.getAutoCompleteObjectTypes(),
                 request.wordDetector.removeQuotes(objectName) + "%",
                 request.wordDetector.isQuoted(objectName),
-                false,
+                dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT),
                 100);
             for (DBSObjectReference reference : references) {
                 request.proposals.add(makeProposalsFromObject(reference, reference.getObjectType().getImage()));
