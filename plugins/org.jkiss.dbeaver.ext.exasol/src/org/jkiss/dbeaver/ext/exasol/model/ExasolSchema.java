@@ -17,6 +17,13 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model;
 
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableCache;
@@ -36,13 +43,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 
 
 public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, DBPScriptObject {
@@ -64,15 +64,16 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
     private final ExasolTableUniqueKeyCache constraintCache = new ExasolTableUniqueKeyCache(tableCache);
     private final ExasolTableForeignKeyCache associationCache = new ExasolTableForeignKeyCache(tableCache);
 
-    public ExasolSchema(ExasolDataSource exasolDataSource, String name) {
+    public ExasolSchema(ExasolDataSource exasolDataSource, String name, String owner) {
         super(exasolDataSource, true);
         this.name = name;
+        this.owner = owner;
         this.scriptCache = new ExasolJDBCObjectSimpleCacheLiterals<>(
         		ExasolScript.class,
         		"select "
         		+ "script_name,script_owner,script_language,script_type,script_result_type,script_text,script_comment,b.created "
         		+ "from EXA_ALL_SCRIPTS a inner join EXA_ALL_OBJECTS b "
-        		+ "on a.script_name = b.object_name and a.script_schema = b.root_name where a.script_schema = '%s' order by script_name",
+        		+ "on a.script_name = b.object_name and a.script_schema = b.root_name and b.object_type = 'SCRIPT' where a.script_schema = '%s' order by script_name",
         		name);
         
         this.functionCache = new ExasolJDBCObjectSimpleCacheLiterals<>(ExasolFunction.class,
@@ -83,7 +84,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
                 "    SYS.EXA_ALL_FUNCTIONS F\n" + 
                 "INNER JOIN SYS.EXA_ALL_OBJECTS O ON\n" + 
                 "    F.FUNCTION_SCHEMA = O.ROOT_NAME\n" + 
-                "    AND F.FUNCTION_NAME = O.OBJECT_NAME\n" + 
+                "    AND F.FUNCTION_NAME = O.OBJECT_NAME and o.object_type = 'FUNCTION'\n" + 
                 "WHERE\n" + 
                 "    F.FUNCTION_SCHEMA = '%s'\n" + 
                 "ORDER BY\n" + 
@@ -94,9 +95,11 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
 
     public ExasolSchema(ExasolDataSource exasolDataSource, ResultSet dbResult) throws DBException {
 
-        this(exasolDataSource, JDBCUtils.safeGetStringTrimmed(dbResult, "OBJECT_NAME"));
-
-        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
+        this(
+                exasolDataSource, 
+                JDBCUtils.safeGetStringTrimmed(dbResult, "OBJECT_NAME"), 
+                JDBCUtils.safeGetString(dbResult, "OWNER")
+            );
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
         this.remarks = JDBCUtils.safeGetString(dbResult, "OBJECT_COMMENT");
         this.name = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
@@ -236,7 +239,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
         return createTime;
     }
 
-    @Property(viewable = true, editable = true, order = 3)
+    @Property(viewable = true, editable = true, updatable = true, order = 3)
     public String getDescription() {
         return remarks;
     }
@@ -246,9 +249,14 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
     	remarks = newRemarks;
     }
 
-    @Property(viewable = true, editable = false, order = 4)
+    @Property(viewable = true, editable = false, updatable = true,  order = 4)
     public String getOwner() {
         return owner;
+    }
+    
+    public void setOwner(String owner)
+    {
+        this.owner = owner;
     }
 
     public ExasolTableCache getTableCache() {
@@ -279,6 +287,5 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
 	{
 	    return true;
 	}
-
 
 }

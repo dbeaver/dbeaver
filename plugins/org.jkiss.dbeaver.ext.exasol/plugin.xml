@@ -439,6 +439,10 @@
               class="org.jkiss.dbeaver.ext.exasol.manager.ExasolFunctionManager"
               objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction">
         </manager>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolSchemaManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema">
+        </manager>
     </extension>
     <extension point="org.eclipse.ui.editors">
         <editor
