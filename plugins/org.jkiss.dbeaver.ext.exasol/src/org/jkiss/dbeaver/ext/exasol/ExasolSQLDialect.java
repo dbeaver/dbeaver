@@ -17,16 +17,25 @@
  */
 package org.jkiss.dbeaver.ext.exasol;
 
+import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.rules.EndOfLineRule;
+import org.eclipse.jface.text.rules.IRule;
+import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 
 import java.sql.SQLException;
+import java.util.List;
 
-public class ExasolSQLDialect extends JDBCSQLDialect {
+public class ExasolSQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
 
     private static final Log LOG = Log.getLog(ExasolDataSource.class);
     
@@ -66,6 +75,21 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
     public String[] getExecuteKeywords() {
         return new String[]{};
     }
-   
+
+    @Override
+    public void extendRules(@NotNull List<IRule> rules, @NotNull SQLRuleProvider.RulePosition position) {
+        if (position == SQLRuleProvider.RulePosition.CONTROL) {
+            final SQLControlToken sourceToken = new SQLControlToken(
+                    new TextAttribute(UIUtils.getGlobalColor(SQLConstants.CONFIG_COLOR_COMMAND), null, SWT.BOLD),
+                    "exasol.define");
+
+            EndOfLineRule sourceRule = new EndOfLineRule("define", sourceToken); //$NON-NLS-1$
+            rules.add(sourceRule);
+
+            EndOfLineRule sourceRule2 = new EndOfLineRule("DEFINE", sourceToken); //$NON-NLS-1$
+            rules.add(sourceRule2);
+        }
+    }
+
 }
 

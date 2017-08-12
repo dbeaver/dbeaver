@@ -22,6 +22,7 @@ import org.eclipse.jface.text.IRegion;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,17 +58,9 @@ public class SQLIdentifierDetector extends SQLWordDetector
         return identifier.indexOf(structSeparator) != -1;
     }
 
-    public List<String> splitIdentifier(String identifier)
+    public String[] splitIdentifier(String identifier)
     {
-        if (!containsSeparator(identifier)) {
-            return Collections.singletonList(identifier);
-        }
-        List<String> tokens = new ArrayList<>();
-        StringTokenizer st = new StringTokenizer(identifier, String.valueOf(structSeparator));
-        while (st.hasMoreTokens()) {
-            tokens.add(st.nextToken());
-        }
-        return tokens;
+        return SQLUtils.splitFullIdentifier(identifier, structSeparator, quoteStrings);
     }
 
     @Override

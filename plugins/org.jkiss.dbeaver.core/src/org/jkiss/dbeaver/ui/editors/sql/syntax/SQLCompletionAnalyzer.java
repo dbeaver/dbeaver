@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -143,7 +142,7 @@ class SQLCompletionAnalyzer
 
         DBSObjectContainer sc = rootContainer;
         DBSObject childObject = sc;
-        List<String> tokens = request.wordDetector.splitWordPart();
+        String[] tokens = request.wordDetector.splitWordPart();
 
         // Detect selected object (container).
         // There could be multiple selected objects on different hierarchy levels (e.g. PG)
@@ -157,9 +156,9 @@ class SQLCompletionAnalyzer
         }
 
         String lastToken = null;
-        for (int i = 0; i < tokens.size(); i++) {
-            final String token = tokens.get(i);
-            if (i == tokens.size() - 1 && !request.wordDetector.getWordPart().endsWith(".")) {
+        for (int i = 0; i < tokens.length; i++) {
+            final String token = tokens[i];
+            if (i == tokens.length - 1 && !request.wordDetector.getWordPart().endsWith(".")) {
                 lastToken = token;
                 break;
             }
@@ -230,10 +229,10 @@ class SQLCompletionAnalyzer
         } else {
             // Get matched children
             makeProposalsFromChildren(childObject, lastToken);
-            if (tokens.size() == 1) {
+            if (tokens.length == 1) {
                 // Get children from selected object
             }
-            if (request.proposals.isEmpty() || tokens.size() == 1) {
+            if (request.proposals.isEmpty() || tokens.length == 1) {
                 // Try in active object
                 for (int k = 0; k < selectedContainers.length; k++) {
                     if (selectedContainers[k] != null && selectedContainers[k] != childObject) {
@@ -324,7 +323,7 @@ class SQLCompletionAnalyzer
                 for (int i = 1; i <= groupCount; i++) {
                     String group = matcher.group(i);
                     if (!CommonUtils.isEmpty(group)) {
-                        String[] allNames = splitFullIdentifier(group, catalogSeparator, quoteStrings);
+                        String[] allNames = SQLUtils.splitFullIdentifier(group, catalogSeparator, quoteStrings);
                         Collections.addAll(nameList, allNames);
                     }
                 }
@@ -386,46 +385,6 @@ class SQLCompletionAnalyzer
             log.error(e);
             return null;
         }
-    }
-
-    private String[] splitFullIdentifier(final String fullName, String nameSeparator, String[][] quoteStrings) {
-        String name = fullName.trim();
-        if (ArrayUtils.isEmpty(quoteStrings)) {
-            return name.split(Pattern.quote(nameSeparator));
-        }
-        if (!name.contains(nameSeparator)) {
-            return new String[] { name };
-        }
-        List<String> nameList = new ArrayList<>();
-        while (!name.isEmpty()) {
-            boolean hadQuotedPart = false;
-            for (String[] quotePair : quoteStrings) {
-                if (name.startsWith(quotePair[0])) {
-                    int endPos = name.indexOf(quotePair[1]);
-                    if (endPos != -1) {
-                        // Quoted part
-                        nameList.add(name.substring(quotePair[0].length(), endPos));
-                        name = name.substring(endPos + quotePair[1].length()).trim();
-                        hadQuotedPart = true;
-                        break;
-                    }
-                }
-            }
-            if (!hadQuotedPart) {
-                int endPos = name.indexOf(nameSeparator);
-                if (endPos != -1) {
-                    nameList.add(name.substring(0, endPos));
-                    name = name.substring(endPos);
-                } else {
-                    nameList.add(name);
-                    break;
-                }
-            }
-            if (!name.isEmpty() && name.startsWith(nameSeparator)) {
-                name = name.substring(nameSeparator.length()).trim();
-            }
-        }
-        return nameList.toArray(new String[nameList.size()]);
     }
 
     private void makeProposalsFromChildren(DBPObject parent, @Nullable String startPart)
