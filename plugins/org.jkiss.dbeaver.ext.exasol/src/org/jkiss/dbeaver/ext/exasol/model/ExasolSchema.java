@@ -86,10 +86,11 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
                 "    F.FUNCTION_SCHEMA = O.ROOT_NAME\n" + 
                 "    AND F.FUNCTION_NAME = O.OBJECT_NAME and o.object_type = 'FUNCTION'\n" + 
                 "WHERE\n" + 
-                "    F.FUNCTION_SCHEMA = '%s'\n" + 
+                "    F.FUNCTION_SCHEMA = '%s' and O.OBJECT_TYPE = 'FUNCTION'\n" + 
                 "ORDER BY\n" + 
                 "    FUNCTION_NAME\n", 
                 name);
+        
 
     }
 
@@ -106,12 +107,16 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
 
 
     }
-
+    
     @NotNull
     @Override
     @Property(viewable = true, editable = false, order = 1)
     public String getName() {
         return this.name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -217,7 +222,8 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
     
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-
+        
+        ((ExasolDataSource) getDataSource()).refreshObject(monitor);
         functionCache.clearCache();
         scriptCache.clearCache();
         tableCache.clearCache();
