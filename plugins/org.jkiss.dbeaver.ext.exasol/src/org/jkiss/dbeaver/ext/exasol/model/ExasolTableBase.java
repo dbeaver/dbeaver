@@ -17,6 +17,10 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model;
 
+import java.sql.ResultSet;
+import java.util.Collection;
+import java.util.Collections;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -34,10 +38,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
-
-import java.sql.ResultSet;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * @author Karl Griesser
@@ -120,8 +120,9 @@ public abstract class ExasolTableBase extends JDBCTable<ExasolDataSource, Exasol
     public ExasolTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
         if (this instanceof ExasolTable) {
             return getContainer().getTableCache().getChild(monitor, getContainer(), (ExasolTable) this, attributeName);
-        }
-
+        } else if (this instanceof ExasolView) {
+            return getContainer().getViewCache().getChild(monitor, getSchema(), (ExasolView) this, attributeName); 
+        } 
         // Other kinds don't have columns..
         throw new DBException("Unknown object with columns encountered");
     }

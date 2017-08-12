@@ -80,7 +80,7 @@ import org.jkiss.utils.CommonUtils;
 public class ExasolDataSource extends JDBCDataSource
 		implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
 
-	private static final Log LOG = Log.getLog(ExasolDataSource.class);
+    private static final Log LOG = Log.getLog(ExasolDataSource.class);
 
 	private static final String GET_CURRENT_SCHEMA = "SELECT CURRENT_SCHEMA";
 	private static final String SET_CURRENT_SCHEMA = "OPEN SCHEMA \"%s\"";
@@ -397,7 +397,7 @@ public class ExasolDataSource extends JDBCDataSource
 
 		return this;
 	}
-
+	
 	// --------------------------
 	// Manage Children: ExasolSchema
 	// --------------------------
@@ -592,6 +592,8 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		return connectionCache.getObject(monitor, this, name);
 	}
+	
+	
 
     @Association
 	public Collection<ExasolBaseObjectGrant> getBaseTableGrants(DBRProgressMonitor monitor) throws DBException
@@ -736,6 +738,11 @@ public class ExasolDataSource extends JDBCDataSource
 	// Standards Getters
 	// -------------------------
 
+   public DBSObjectCache<ExasolDataSource, ExasolConnection> getConnectionCache()
+    {
+        return connectionCache;
+    }
+   
 	public DBSObjectCache<ExasolDataSource, ExasolUser> getUserCache()
 	{
 		return userCache;
@@ -745,6 +752,8 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		return schemaCache;
 	}
+	
+	
 
 	@Override
 	public Collection<? extends DBSDataType> getLocalDataTypes()
