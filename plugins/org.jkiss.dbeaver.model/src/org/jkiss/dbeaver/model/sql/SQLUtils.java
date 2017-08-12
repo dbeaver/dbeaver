@@ -45,10 +45,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.lang.reflect.Array;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -758,5 +755,49 @@ public final class SQLUtils {
             }
         }
         return script.toString();
+    }
+
+    public static String[] splitFullIdentifier(final String fullName, char nameSeparator, String[][] quoteStrings) {
+        return splitFullIdentifier(fullName, String.valueOf(nameSeparator), quoteStrings);
+    }
+
+    public static String[] splitFullIdentifier(final String fullName, String nameSeparator, String[][] quoteStrings) {
+        String name = fullName.trim();
+        if (ArrayUtils.isEmpty(quoteStrings)) {
+            return name.split(Pattern.quote(nameSeparator));
+        }
+        if (!name.contains(nameSeparator)) {
+            return new String[] { name };
+        }
+        List<String> nameList = new ArrayList<>();
+        while (!name.isEmpty()) {
+            boolean hadQuotedPart = false;
+            for (String[] quotePair : quoteStrings) {
+                if (name.startsWith(quotePair[0])) {
+                    int endPos = name.indexOf(quotePair[1]);
+                    if (endPos != -1) {
+                        // Quoted part
+                        nameList.add(name.substring(quotePair[0].length(), endPos));
+                        name = name.substring(endPos + quotePair[1].length()).trim();
+                        hadQuotedPart = true;
+                        break;
+                    }
+                }
+            }
+            if (!hadQuotedPart) {
+                int endPos = name.indexOf(nameSeparator);
+                if (endPos != -1) {
+                    nameList.add(name.substring(0, endPos));
+                    name = name.substring(endPos);
+                } else {
+                    nameList.add(name);
+                    break;
+                }
+            }
+            if (!name.isEmpty() && name.startsWith(nameSeparator)) {
+                name = name.substring(nameSeparator.length()).trim();
+            }
+        }
+        return nameList.toArray(new String[nameList.size()]);
     }
 }
