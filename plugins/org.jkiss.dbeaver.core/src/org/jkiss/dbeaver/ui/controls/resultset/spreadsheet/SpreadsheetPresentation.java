@@ -85,10 +85,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
+import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel;
 import org.jkiss.dbeaver.ui.data.IMultiController;
@@ -111,7 +108,7 @@ import java.util.regex.*;
  * Spreadsheet presentation.
  * Visualizes results as grid.
  */
-public class SpreadsheetPresentation extends AbstractPresentation implements IResultSetEditor, ISelectionProvider, IStatefulControl, IAdaptable  {
+public class SpreadsheetPresentation extends AbstractPresentation implements IResultSetEditor, ISelectionProvider, IStatefulControl, IAdaptable, IGridController {
 
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
@@ -174,7 +171,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             controller.getSite(),
             this,
             new ContentProvider(),
-            new GridLabelProvider());
+            new GridLabelProvider(),
+            this);
         this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         this.spreadsheet.addSelectionListener(new SelectionAdapter() {
@@ -1167,6 +1165,22 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             spreadsheet.showSelection();
         }
         fireSelectionChanged(selection);
+    }
+
+    @Override
+    public void moveColumn(Object dragColumn, Object dropColumn) {
+        if (dragColumn instanceof DBDAttributeBinding && dropColumn instanceof DBDAttributeBinding) {
+//System.out.println("SWAP " + dragColumn + " -> " + dropColumn);
+            DBDDataFilter dataFilter = new DBDDataFilter(controller.getModel().getDataFilter());
+            final DBDAttributeConstraint c1 = dataFilter.getConstraint((DBDAttributeBinding) dragColumn);
+            final DBDAttributeConstraint c2 = dataFilter.getConstraint((DBDAttributeBinding) dropColumn);
+            final int vp2 = c2.getVisualPosition();
+            c2.setVisualPosition(c1.getVisualPosition());
+            c1.setVisualPosition(vp2);
+            spreadsheet.resetFocus();
+            controller.setDataFilter(dataFilter, false);
+        }
+
     }
 
     private class SpreadsheetSelectionImpl implements IResultSetSelection {
