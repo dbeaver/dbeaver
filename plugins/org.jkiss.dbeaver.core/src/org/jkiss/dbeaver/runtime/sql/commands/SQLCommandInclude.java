@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
 import org.jkiss.dbeaver.runtime.sql.SQLControlCommandHandler;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
@@ -52,7 +53,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         if (CommonUtils.isEmpty(fileName)) {
             throw new DBException("Empty input file");
         }
-        fileName = GeneralUtils.replaceVariables(fileName, new GeneralUtils.MapResolver(scriptContext.getVariables())).trim();
+        fileName = GeneralUtils.replaceVariables(fileName, new ScriptVariablesResolver(scriptContext)).trim();
         fileName = DBUtils.getUnQuotedIdentifier(scriptContext.getExecutionContext().getDataSource(), fileName);
 
         File curFile = scriptContext.getSourceFile();

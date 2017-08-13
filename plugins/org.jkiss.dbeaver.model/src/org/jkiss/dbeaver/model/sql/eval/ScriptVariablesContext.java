@@ -32,16 +32,16 @@ public class ScriptVariablesContext implements JexlContext {
 
     @Override
     public Object get(String name) {
-        return scriptContext.getVariables().get(name);
+        return scriptContext.getVariable(name);
     }
 
     @Override
     public void set(String name, Object value) {
-        scriptContext.getVariables().put(name, value);
+        scriptContext.setVariable(name, value);
     }
 
     @Override
     public boolean has(String name) {
-        return scriptContext.getVariables().containsKey(name);
+        return scriptContext.hasVariable(name);
     }
 }

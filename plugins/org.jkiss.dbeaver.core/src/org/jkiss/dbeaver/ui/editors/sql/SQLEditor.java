@@ -153,6 +153,7 @@ public class SQLEditor extends SQLEditorBase implements
     private DBPDataSource curDataSource;
     private volatile DBCExecutionContext executionContext;
     private volatile DBCExecutionContext lastExecutionContext;
+    private SQLScriptContext globalScriptContext;
     private volatile boolean syntaxLoaded = false;
     private volatile boolean ownContext = false;
     private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
@@ -303,6 +304,19 @@ public class SQLEditor extends SQLEditorBase implements
                     executionContext = dataSource.getDefaultContext(false);
                 }
             }
+        }
+        if (this.executionContext != null) {
+            SQLScriptContext oldGlobalContext = globalScriptContext;
+            this.globalScriptContext = new SQLScriptContext(
+                    null,
+                    executionContext,
+                    EditorUtils.getLocalFileFromInput(getEditorInput()),
+                    new OutputLogWriter());
+            if (oldGlobalContext != null) {
+                this.globalScriptContext.copyFrom(oldGlobalContext);
+            }
+        } else {
+            this.globalScriptContext = null;
         }
     }
 
@@ -1668,7 +1682,7 @@ public class SQLEditor extends SQLEditorBase implements
                     executionContext,
                     resultsContainer,
                     queries,
-                    new SQLScriptContext(executionContext, localFile, new OutputLogWriter()),
+                    new SQLScriptContext(globalScriptContext, executionContext, localFile, new OutputLogWriter()),
                     this,
                     listener);
 

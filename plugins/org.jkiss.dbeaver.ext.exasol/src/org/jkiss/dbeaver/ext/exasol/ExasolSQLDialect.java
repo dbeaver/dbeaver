@@ -79,15 +79,15 @@ public class ExasolSQLDialect extends JDBCSQLDialect implements SQLRuleProvider 
     @Override
     public void extendRules(@NotNull List<IRule> rules, @NotNull SQLRuleProvider.RulePosition position) {
         if (position == SQLRuleProvider.RulePosition.CONTROL) {
-            final SQLControlToken sourceToken = new SQLControlToken(
+            final SQLControlToken defineToken = new SQLControlToken(
                     new TextAttribute(UIUtils.getGlobalColor(SQLConstants.CONFIG_COLOR_COMMAND), null, SWT.BOLD),
                     "exasol.define");
 
-            EndOfLineRule sourceRule = new EndOfLineRule("define", sourceToken); //$NON-NLS-1$
-            rules.add(sourceRule);
+            EndOfLineRule defineRule = new EndOfLineRule("define", defineToken); //$NON-NLS-1$
+            rules.add(defineRule);
 
-            EndOfLineRule sourceRule2 = new EndOfLineRule("DEFINE", sourceToken); //$NON-NLS-1$
-            rules.add(sourceRule2);
+            EndOfLineRule defineRule2 = new EndOfLineRule("DEFINE", defineToken); //$NON-NLS-1$
+            rules.add(defineRule2);
         }
     }
 
