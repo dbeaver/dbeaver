@@ -1197,7 +1197,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 return;
             }
             if (location != DropLocation.SWAP) {
-                System.out.println("Move " + dragC + " from " + sourcePosition + " into " + targetPosition);
                 // Reposition columns
                 for (DBDAttributeConstraint c : dataFilter.getConstraints()) {
                     if (c == dragC) {
@@ -1218,8 +1217,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
                 dragC.setVisualPosition(targetPosition);
             }
-            spreadsheet.resetFocus();
             controller.setDataFilter(dataFilter, false);
+            spreadsheet.setFocusColumn(targetPosition);
+            spreadsheet.refreshData(false, true);
         }
 
     }
