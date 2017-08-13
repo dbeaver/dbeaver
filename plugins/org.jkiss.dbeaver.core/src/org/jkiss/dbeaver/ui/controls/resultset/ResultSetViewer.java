@@ -340,7 +340,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
+    public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
     {
         if (!model.getDataFilter().equals(dataFilter)) {
             //model.setDataFilter(dataFilter);

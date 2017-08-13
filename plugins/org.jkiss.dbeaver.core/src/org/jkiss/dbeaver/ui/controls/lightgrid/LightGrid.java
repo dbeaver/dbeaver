@@ -431,6 +431,9 @@ public abstract class LightGrid extends Canvas {
     @NotNull
     public abstract IGridLabelProvider getLabelProvider();
 
+    @Nullable
+    public abstract IGridController getGridController();
+
     public boolean hasNodes() {
         return !rowNodes.isEmpty();
     }
@@ -3762,6 +3765,10 @@ public abstract class LightGrid extends Canvas {
         focusColumn = column;
     }
 
+    public void resetFocus() {
+        focusColumn = null;
+        focusItem = -1;
+    }
 
     /**
      * Returns true if the table is set to horizontally scroll column-by-column
@@ -4263,7 +4270,7 @@ public abstract class LightGrid extends Canvas {
     // DnD
     /////////////////////////////////////////////////////////////////////////////////
 
-    public void addDragAndDropSupport()
+    private void addDragAndDropSupport()
     {
         int operations = DND.DROP_MOVE;
 
@@ -4272,10 +4279,13 @@ public abstract class LightGrid extends Canvas {
         source.addDragListener (new DragSourceListener() {
 
             private Image dragImage;
+            private long lastDragEndTime;
 
             @Override
             public void dragStart(DragSourceEvent event) {
-                if (hoveringColumn == null || !headerColumnDragStarted) {
+                if (hoveringColumn == null || !headerColumnDragStarted ||
+                    (lastDragEndTime > 0 && System.currentTimeMillis() - lastDragEndTime < 100))
+                {
                     event.doit = false;
                 } else {
                     draggingColumn = hoveringColumn;
@@ -4301,6 +4311,7 @@ public abstract class LightGrid extends Canvas {
                     UIUtils.dispose(dragImage);
                     dragImage = null;
                 }
+                lastDragEndTime = System.currentTimeMillis();
             }
         });
 
@@ -4376,7 +4387,11 @@ public abstract class LightGrid extends Canvas {
                 if (draggingColumn == null || draggingColumn == overColumn) {
                     return;
                 }
-                System.out.println("DROP " + draggingColumn.getElement() + " over " + overColumn.getElement());
+                IGridController gridController = getGridController();
+                if (gridController != null) {
+                    gridController.moveColumn(draggingColumn.getElement(), overColumn.getElement());
+                }
+                draggingColumn = null;
             }
         });
     }
