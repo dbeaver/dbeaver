@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
@@ -29,6 +30,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
@@ -160,6 +163,8 @@ public abstract class LightGrid extends Canvas {
     private boolean cellRowSelectedOnLastMouseDown;
     private boolean cellColumnSelectedOnLastMouseDown;
 
+    private boolean headerColumnDragStarted;
+
     private GridColumn shiftSelectionAnchorColumn;
 
     private GridColumn focusColumn;
@@ -224,6 +229,7 @@ public abstract class LightGrid extends Canvas {
     private int resizingColumnStartWidth = 0;
     private int hoveringItem;
     private GridColumn hoveringColumn;
+    private GridColumn draggingColumn;
 
     /**
      * String-based detail of what is being hovered over in a cell. This allows
@@ -310,7 +316,7 @@ public abstract class LightGrid extends Canvas {
      */
     private String displayedToolTipText;
 
-    private boolean hoveringOnSelectionDragArea = false;
+    private boolean hoveringOnHeaderDragArea = false;
 
     /**
      * A range of rows in a <code>Grid</code>.
@@ -415,7 +421,8 @@ public abstract class LightGrid extends Canvas {
 
         recalculateSizes();
 
-        setDragDetect(false);
+        addDragAndDropSupport();
+        setDragDetect(true);
     }
 
     @NotNull
@@ -1983,6 +1990,12 @@ public abstract class LightGrid extends Canvas {
             }
             hoveringOnColumnResizer = overResizer;
         }
+
+        if (hoveringOnHeader && !overSorter && !overResizer) {
+            hoveringOnHeaderDragArea = true;
+        } else {
+            hoveringOnHeaderDragArea = false;
+        }
     }
 
     /**
@@ -2761,12 +2774,18 @@ public abstract class LightGrid extends Canvas {
         int row = getRow(point);
 
         if (isListening(SWT.DragDetect)) {
-            if (hoveringOnSelectionDragArea) {
-                if (dragDetect(e)) {
-                    return;
+
+            if (hoveringOnHeaderDragArea) {
+                if (e.button == 1 && (e.stateMask & SWT.MOD3) != 0) {
+                    if (dragDetect(e)) {
+                        // Drag and drop started
+                        headerColumnDragStarted = true;
+                        return;
+                    }
                 }
             }
         }
+        headerColumnDragStarted = false;
 
         GridColumn col = null;
         if (row >= 0) {
@@ -4071,39 +4090,6 @@ public abstract class LightGrid extends Canvas {
         normalFont = font;
     }
 
-    /**
-     * Determines if the mouse is hovering on the selection drag area and changes the
-     * pointer and sets field appropriately.
-     * <p/>
-     * Note:  The 'selection drag area' is that part of the selection,
-     * on which a drag event can be initiated.  This is either the border
-     * of the selection (i.e. a cell border between a selected and a non-selected
-     * cell) or the complete selection (i.e. anywhere on a selected cell).
-     */
-    private boolean handleHoverOnSelectionDragArea(int x, int y)
-    {
-        boolean over = false;
-//    	Point inSelection = null;
-
-        if ((!rowHeaderVisible || x > rowHeaderWidth - SELECTION_DRAG_BORDER_THRESHOLD)
-            && (!columnHeadersVisible || y > headerHeight - SELECTION_DRAG_BORDER_THRESHOLD)) {
-            // not on a header
-
-            // drag area is the entire selection
-
-            {
-                Point p = new Point(x, y);
-                GridPos cell = getCell(p);
-                over = cell != null && isCellSelected(cell);
-            }
-        }
-
-        if (over != hoveringOnSelectionDragArea) {
-            hoveringOnSelectionDragArea = over;
-        }
-        return over;
-    }
-
     public String getCellText(Object colElement, Object rowElement)
     {
         String text = getContentProvider().getCellText(colElement, rowElement);
@@ -4272,6 +4258,151 @@ public abstract class LightGrid extends Canvas {
             GridColumnRenderer.paintSort(gc, sortBounds, sortOrder);
         }
     }
+
+    /////////////////////////////////////////////////////////////////////////////////
+    // DnD
+    /////////////////////////////////////////////////////////////////////////////////
+
+    public void addDragAndDropSupport()
+    {
+        int operations = DND.DROP_MOVE;
+
+        final DragSource source = new DragSource(this, operations);
+        source.setTransfer(new Transfer[] { GridColumnTransfer.INSTANCE });
+        source.addDragListener (new DragSourceListener() {
+
+            private Image dragImage;
+
+            @Override
+            public void dragStart(DragSourceEvent event) {
+                if (hoveringColumn == null || !headerColumnDragStarted) {
+                    event.doit = false;
+                } else {
+                    draggingColumn = hoveringColumn;
+                    Rectangle columnBounds = hoveringColumn.getBounds();
+                    GC gc = new GC(LightGrid.this);
+                    dragImage = new Image(Display.getCurrent(), columnBounds.width, columnBounds.height);
+                    gc.copyArea(
+                            dragImage,
+                            columnBounds.x,
+                            columnBounds.y);
+                    event.image = dragImage;
+                    gc.dispose();
+                }
+            }
+
+            @Override
+            public void dragSetData (DragSourceEvent event) {
+            }
+            @Override
+            public void dragFinished(DragSourceEvent event) {
+                draggingColumn = null;
+                if (dragImage != null) {
+                    UIUtils.dispose(dragImage);
+                    dragImage = null;
+                }
+            }
+        });
+
+        DropTarget dropTarget = new DropTarget(this, DND.DROP_MOVE);
+        dropTarget.setTransfer(new Transfer[] {GridColumnTransfer.INSTANCE});
+        dropTarget.addDropListener(new DropTargetListener() {
+            @Override
+            public void dragEnter(DropTargetEvent event)
+            {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragLeave(DropTargetEvent event)
+            {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragOperationChanged(DropTargetEvent event)
+            {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragOver(DropTargetEvent event)
+            {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void drop(DropTargetEvent event)
+            {
+                handleDragEvent(event);
+                if (event.detail == DND.DROP_MOVE) {
+                    moveColumns(event);
+                }
+            }
+
+            @Override
+            public void dropAccept(DropTargetEvent event)
+            {
+                handleDragEvent(event);
+            }
+
+            private void handleDragEvent(DropTargetEvent event)
+            {
+                event.detail = isDropSupported(event) ? DND.DROP_MOVE : DND.DROP_NONE;
+                event.feedback = DND.FEEDBACK_SELECT;
+            }
+
+            private boolean isDropSupported(DropTargetEvent event)
+            {
+                if (!hoveringOnHeaderDragArea) {
+                    return false;
+                }
+                if (draggingColumn == null || draggingColumn.getGrid() != LightGrid.this) {
+                    return false;
+                }
+                GridColumn overColumn = getOverColumn(event);
+                return draggingColumn != overColumn;
+            }
+
+            private GridColumn getOverColumn(DropTargetEvent event) {
+                Point dragPoint = new Point(event.x, event.y);
+                dragPoint = getDisplay().map(null, LightGrid.this, dragPoint);
+                return getColumn(dragPoint);
+            }
+
+            private void moveColumns(DropTargetEvent event)
+            {
+                GridColumn overColumn = getOverColumn(event);
+                if (draggingColumn == null || draggingColumn == overColumn) {
+                    return;
+                }
+                System.out.println("DROP " + draggingColumn.getElement() + " over " + overColumn.getElement());
+            }
+        });
+    }
+
+
+    public final static class GridColumnTransfer extends LocalObjectTransfer<GridColumn> {
+
+        private static final GridColumnTransfer INSTANCE = new GridColumnTransfer();
+        private static final String TYPE_NAME = "LighGrid.GridColumn Transfer" + System.currentTimeMillis() + ":" + INSTANCE.hashCode();//$NON-NLS-1$
+        private static final int TYPEID = registerType(TYPE_NAME);
+
+        private GridColumnTransfer() {
+        }
+
+        @Override
+        protected int[] getTypeIds() {
+            return new int[] { TYPEID };
+        }
+
+        @Override
+        protected String[] getTypeNames() {
+            return new String[] { TYPE_NAME };
+        }
+
+    }
+
 
 }
 
