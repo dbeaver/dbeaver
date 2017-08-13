@@ -11,12 +11,12 @@ Supports any database which has JDBC driver (which basically means - ANY databas
 * Based on <a href="http://www.eclipse.org/">Eclipse</a> platform.
 * Uses plugins architecture and provides additional functionality for the following databases: MySQL/MariaDB, PostgreSQL, Oracle, DB2 LUW, Exasol, SQL Server, SQLite, Firebird, H2, HSQLDB, Derby, Teradata, Vertica, Netezza, Informix.
 
-<a href="http://dbeaver.jkiss.org/product/dbeaver-ss-classic.png"><img src="http://dbeaver.jkiss.org/product/dbeaver-ss-classic.png" width="400"/></a>
-<a href="http://dbeaver.jkiss.org/product/dbeaver-ss-dark.png"><img src="http://dbeaver.jkiss.org/product/dbeaver-ss-dark.png" width="400"/></a>
+<a href="https://dbeaver.jkiss.org/product/dbeaver-ss-classic.png"><img src="https://dbeaver.jkiss.org/product/dbeaver-ss-classic.png" width="400"/></a>
+<a href="https://dbeaver.jkiss.org/product/dbeaver-ss-dark.png"><img src="https://dbeaver.jkiss.org/product/dbeaver-ss-dark.png" width="400"/></a>
 
 ## Download
 
-You can download prebuilt binaries from <a href="http://dbeaver.jkiss.org/download">official web site</a> or directly from <a href="https://github.com/serge-rider/dbeaver/releases">GitHub releases</a>.
+You can download prebuilt binaries from <a href="https://dbeaver.jkiss.org/download">official web site</a> or directly from <a href="https://github.com/serge-rider/dbeaver/releases">GitHub releases</a>.
 
 ## Running
 
