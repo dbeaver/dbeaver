@@ -19,6 +19,12 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 public interface IGridController {
 
-    void moveColumn(Object dragColumn, Object dropColumn);
+    enum DropLocation {
+        DROP_BEFORE,
+        DROP_AFTER,
+        SWAP
+    }
+
+    void moveColumn(Object dragColumn, Object dropColumn, DropLocation location);
 
 }

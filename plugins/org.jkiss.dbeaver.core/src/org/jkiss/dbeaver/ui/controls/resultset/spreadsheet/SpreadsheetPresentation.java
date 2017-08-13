@@ -102,7 +102,6 @@ import org.jkiss.utils.CommonUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
-import java.util.regex.*;
 
 /**
  * Spreadsheet presentation.
@@ -1168,15 +1167,57 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     @Override
-    public void moveColumn(Object dragColumn, Object dropColumn) {
+    public void moveColumn(Object dragColumn, Object dropColumn, DropLocation location) {
         if (dragColumn instanceof DBDAttributeBinding && dropColumn instanceof DBDAttributeBinding) {
-//System.out.println("SWAP " + dragColumn + " -> " + dropColumn);
+
             DBDDataFilter dataFilter = new DBDDataFilter(controller.getModel().getDataFilter());
-            final DBDAttributeConstraint c1 = dataFilter.getConstraint((DBDAttributeBinding) dragColumn);
-            final DBDAttributeConstraint c2 = dataFilter.getConstraint((DBDAttributeBinding) dropColumn);
-            final int vp2 = c2.getVisualPosition();
-            c2.setVisualPosition(c1.getVisualPosition());
-            c1.setVisualPosition(vp2);
+            final DBDAttributeConstraint dragC = dataFilter.getConstraint((DBDAttributeBinding) dragColumn);
+            final DBDAttributeConstraint dropC = dataFilter.getConstraint((DBDAttributeBinding) dropColumn);
+
+            int sourcePosition = dragC.getVisualPosition();
+            int targetPosition = dropC.getVisualPosition();
+            switch (location) {
+                case DROP_AFTER:
+                    if (sourcePosition > targetPosition && targetPosition < dataFilter.getConstraints().size() - 1) {
+                        targetPosition++;
+                    }
+                    break;
+                case DROP_BEFORE:
+                    if (sourcePosition < targetPosition && targetPosition > 0) {
+                        targetPosition--;
+                    }
+                    break;
+                case SWAP:
+                    dropC.setVisualPosition(dragC.getVisualPosition());
+                    dragC.setVisualPosition(targetPosition);
+                    break;
+
+            }
+            if (sourcePosition == targetPosition) {
+                return;
+            }
+            if (location != DropLocation.SWAP) {
+                System.out.println("Move " + dragC + " from " + sourcePosition + " into " + targetPosition);
+                // Reposition columns
+                for (DBDAttributeConstraint c : dataFilter.getConstraints()) {
+                    if (c == dragC) {
+                        continue;
+                    }
+                    int cPos = c.getVisualPosition();
+                    if (sourcePosition < targetPosition) {
+                        // Move to the right
+                        if (cPos > sourcePosition && cPos <= targetPosition) {
+                            c.setVisualPosition(cPos - 1);
+                        }
+                    } else {
+                        // Move to the left
+                        if (cPos < sourcePosition && cPos >= targetPosition) {
+                            c.setVisualPosition(cPos + 1);
+                        }
+                    }
+                }
+                dragC.setVisualPosition(targetPosition);
+            }
             spreadsheet.resetFocus();
             controller.setDataFilter(dataFilter, false);
         }

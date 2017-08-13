@@ -4376,8 +4376,7 @@ public abstract class LightGrid extends Canvas {
             }
 
             private GridColumn getOverColumn(DropTargetEvent event) {
-                Point dragPoint = new Point(event.x, event.y);
-                dragPoint = getDisplay().map(null, LightGrid.this, dragPoint);
+                Point dragPoint = getDisplay().map(null, LightGrid.this, new Point(event.x, event.y));
                 return getColumn(dragPoint);
             }
 
@@ -4389,7 +4388,16 @@ public abstract class LightGrid extends Canvas {
                 }
                 IGridController gridController = getGridController();
                 if (gridController != null) {
-                    gridController.moveColumn(draggingColumn.getElement(), overColumn.getElement());
+                    IGridController.DropLocation location;// = IGridController.DropLocation.SWAP;
+
+                    Point dropPoint = getDisplay().map(null, LightGrid.this, new Point(event.x, event.y));
+                    Rectangle columnBounds = overColumn.getBounds();
+                    if (dropPoint.x > columnBounds.x + columnBounds.width / 2) {
+                        location = IGridController.DropLocation.DROP_AFTER;
+                    } else {
+                        location = IGridController.DropLocation.DROP_BEFORE;
+                    }
+                    gridController.moveColumn(draggingColumn.getElement(), overColumn.getElement(), location);
                 }
                 draggingColumn = null;
             }
