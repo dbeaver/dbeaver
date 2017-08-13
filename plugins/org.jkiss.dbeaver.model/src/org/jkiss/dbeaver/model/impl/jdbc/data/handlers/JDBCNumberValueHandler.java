@@ -286,6 +286,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             return object;
         } else if (object instanceof String) {
             return DBValueFormatting.convertStringToNumber((String) object, getNumberType(type), formatter);
+        } else if (object instanceof Boolean) {
+            return (Boolean) object ? 1 : 0;
         } else {
             log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to numeric");
             return null;
