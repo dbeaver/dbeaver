@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -32,7 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class ExasolConnection
-		implements DBPRefreshableObject, DBPSaveableObject, DBPScriptObject{
+		implements DBPRefreshableObject, DBPNamedObject2, DBPSaveableObject, DBPScriptObject{
 
 	private ExasolDataSource dataSource;
 	private String connectionName;
@@ -87,6 +88,7 @@ public class ExasolConnection
 		return this.connectionName;
 	}
 	
+	@Override
 	public void setName(String name)
 	{
 	    this.connectionName = name;
