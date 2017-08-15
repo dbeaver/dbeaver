@@ -77,8 +77,8 @@ public class ImageUtils {
         /*if (!DBeaverCore.getInstance().getLocalSystem().isWindows())*/ {
             imageCheckboxEnabledOff = DBeaverIcons.getImage(UIIcon.CHECK_OFF);
             imageCheckboxEnabledOn = DBeaverIcons.getImage(UIIcon.CHECK_ON);
-            imageCheckboxDisabledOn = DBeaverIcons.getImage(UIIcon.CHECK_ON);
-            imageCheckboxDisabledOff = DBeaverIcons.getImage(UIIcon.CHECK_OFF);
+            imageCheckboxDisabledOn = makeDisableImage(DBeaverIcons.getImage(UIIcon.CHECK_ON));
+            imageCheckboxDisabledOff = makeDisableImage(DBeaverIcons.getImage(UIIcon.CHECK_OFF));
             return;
         }
 /*
@@ -129,6 +129,10 @@ public class ImageUtils {
         image.dispose();
         return fixedImage;
 */
+    }
+
+    private static Image makeDisableImage(Image image) {
+        return new Image(image.getDevice(), image, SWT.IMAGE_DISABLE);
     }
 
     public static Image removeImageBorder(Image srcImage, Color borderColor)
