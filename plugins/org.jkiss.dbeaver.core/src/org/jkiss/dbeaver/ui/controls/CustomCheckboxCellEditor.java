@@ -21,11 +21,13 @@ import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -33,7 +35,8 @@ import org.jkiss.utils.CommonUtils;
  */
 public class CustomCheckboxCellEditor extends CellEditor {
 
-    private Button checkBox;
+    private Label checkBox;
+    private boolean checked;
 
     public CustomCheckboxCellEditor(Composite parent) {
         this(parent, SWT.NONE);
@@ -45,12 +48,13 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
     @Override
     protected Control createControl(Composite parent) {
-        checkBox = new Button(parent, SWT.CHECK);
-        //checkBox.set
+        checkBox = new Label(parent, SWT.NONE);
+        setCheckIcon();
         checkBox.setFont(parent.getFont());
-        checkBox.addSelectionListener(new SelectionAdapter() {
+        checkBox.addMouseListener(new MouseAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void mouseDown(MouseEvent e) {
+                checked = !checked;
                 applyEditorValue();
                 // This is needed for MacOS
                 fireApplyEditorValue();
@@ -67,9 +71,14 @@ public class CustomCheckboxCellEditor extends CellEditor {
         return checkBox;
     }
 
+    private void setCheckIcon() {
+        Image image = checked ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff();
+        checkBox.setImage(image);
+    }
+
     @Override
     protected Boolean doGetValue() {
-        return checkBox.getSelection();
+        return checked;
     }
 
     @Override
@@ -80,7 +89,8 @@ public class CustomCheckboxCellEditor extends CellEditor {
     @Override
     protected void doSetValue(Object value) {
         Assert.isTrue(checkBox != null && (value instanceof Boolean));
-        checkBox.setSelection(CommonUtils.toBoolean(value));
+        checked = CommonUtils.toBoolean(value);
+        setCheckIcon();
     }
 
     @Override
@@ -102,6 +112,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
         markDirty();
         boolean isValid = isCorrect(newValue);
         setValueValid(isValid);
+        setCheckIcon();
 
         //fireApplyEditorValue();
     }
