@@ -59,12 +59,10 @@ public class ExasolConnectionDialog extends BaseDialog {
         
         final Composite group = new Composite(composite, SWT.NONE);
         group.setLayout(new GridLayout(2, false));
-        final Text nameText = UIUtils.createLabelText(group, "Schema Name", "");
+        final Text nameText = UIUtils.createLabelText(group, "Connection Name", "");
         
         final Text urlText = UIUtils.createLabelText(group,"Connection URL", "");
 
-
-        
         final Group configGroup  = UIUtils.createControlGroup(group, "Credentials", 1, GridData.FILL_HORIZONTAL, 0);
         Button saveCred = UIUtils.createCheckbox(configGroup, "Provide Credentials", false);
         
@@ -80,6 +78,7 @@ public class ExasolConnectionDialog extends BaseDialog {
             public void modifyText(ModifyEvent e) {
                 name = nameText.getText();
                 user = userText.getText();
+                url  = urlText.getText();
                 password = passwordText.getText();
                 comment = commentText.getText();
                 getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
