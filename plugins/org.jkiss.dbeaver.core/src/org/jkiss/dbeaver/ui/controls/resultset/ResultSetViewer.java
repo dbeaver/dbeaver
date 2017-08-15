@@ -288,6 +288,11 @@ public class ResultSetViewer extends Viewer
         setDataFilter(model.createDataFilter(), refresh);
     }
 
+    public void saveDataFilter()
+    {
+
+    }
+
     void switchFilterFocus() {
         boolean filterFocused = filtersPanel.getEditControl().isFocusControl();
         if (filterFocused) {

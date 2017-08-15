@@ -94,6 +94,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private final ToolBar filterToolbar;
     private final ToolItem filtersApplyButton;
     private final ToolItem filtersClearButton;
+    private final ToolItem filtersSaveButton;
     private final ToolItem autoRefreshButton;
     private final ToolItem historyBackButton;
     private final ToolItem historyForwardButton;
@@ -226,7 +227,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             filtersClearButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersClearButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_RESET));
-            filtersClearButton.setToolTipText("Remove all filters");
+            filtersClearButton.setToolTipText("Remove all filters/orderings");
             filtersClearButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -234,6 +235,18 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 }
             });
             filtersClearButton.setEnabled(false);
+
+
+            filtersSaveButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
+            filtersSaveButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_SAVE));
+            filtersSaveButton.setToolTipText("Save filter settings for current object");
+            filtersSaveButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    viewer.saveDataFilter();
+                }
+            });
+            filtersSaveButton.setEnabled(false);
 
             ToolItem filtersCustomButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
@@ -319,7 +332,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             String filterText = filtersText.getText();
             filtersText.setEnabled(supportsDataFilter);
             filtersApplyButton.setEnabled(supportsDataFilter);
-            filtersClearButton.setEnabled(supportsDataFilter && !CommonUtils.isEmpty(filterText));
+            filtersClearButton.setEnabled(viewer.getModel().getDataFilter().hasFilters());
+            filtersSaveButton.setEnabled(true);
             // Update history buttons
             if (historyPosition > 0) {
                 historyBackButton.setEnabled(true);
