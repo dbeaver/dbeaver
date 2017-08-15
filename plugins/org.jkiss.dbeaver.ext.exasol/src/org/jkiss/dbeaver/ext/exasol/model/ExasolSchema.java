@@ -32,7 +32,9 @@ import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableUniqueKeyCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolViewCache;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolJDBCObjectSimpleCacheLiterals;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -45,13 +47,14 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
 
-public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, DBPScriptObject {
+public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNamedObject2,  DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, DBPScriptObject {
 
     private static final List<String> SYSTEM_SCHEMA = Arrays.asList("SYS","EXA_STATISTICS");
     private String name;
     private String owner;
     private Timestamp createTime;
     private String remarks;
+    private boolean persisted;
 
 
     // ExasolSchema's children
@@ -91,6 +94,9 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
                 "    FUNCTION_NAME\n", 
                 name);
         
+        
+        this.persisted = false;
+        
 
     }
 
@@ -104,6 +110,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
         this.remarks = JDBCUtils.safeGetString(dbResult, "OBJECT_COMMENT");
         this.name = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
+        this.persisted = true;
 
 
     }
@@ -115,6 +122,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
         return this.name;
     }
     
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -293,5 +301,4 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPRe
 	{
 	    return true;
 	}
-
 }
