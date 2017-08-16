@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
@@ -65,6 +67,7 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -89,6 +92,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -2212,20 +2216,7 @@ public class ResultSetViewer extends Viewer
 
         // Pump data
         DBSDataContainer dataContainer = getDataContainer();
-        DBDDataFilter dataFilter = null;
-
-        DataFilterRegistry.SavedDataFilter savedConfig = DataFilterRegistry.getInstance().getSavedConfig(dataContainer);
-        if (savedConfig != null) {
-            try {
-                dataFilter = new DBDDataFilter(new ArrayList<>());
-                savedConfig.restoreDataFilter(new VoidProgressMonitor(), dataContainer, dataFilter);
-                if (!dataFilter.hasFilters()) {
-                    dataFilter = null;
-                }
-            } catch (DBException e) {
-                DBeaverUI.getInstance().showError("Filter restore", "Error resting data filter state", e);
-            }
-        }
+        DBDDataFilter dataFilter = restoreDataFilter(dataContainer);
 
         if (container.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
@@ -2248,6 +2239,30 @@ public class ResultSetViewer extends Viewer
                         "Can't refresh after reconnect. Re-execute query." :
                         "Previous query is still running");
         }
+    }
+
+    private DBDDataFilter restoreDataFilter(DBSDataContainer dataContainer) {
+
+        // Restore data filter
+        DataFilterRegistry.SavedDataFilter savedConfig = DataFilterRegistry.getInstance().getSavedConfig(dataContainer);
+        if (savedConfig != null) {
+            final DBDDataFilter dataFilter = new DBDDataFilter(new ArrayList<>());
+            DBRRunnableWithProgress restoreTask = new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    try {
+                        savedConfig.restoreDataFilter(new VoidProgressMonitor(), dataContainer, dataFilter);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            };
+            RuntimeUtils.runTask(restoreTask, "Restore data filter", 60000);
+            if (dataFilter.hasFilters()) {
+                return dataFilter;
+            }
+        }
+        return null;
     }
 
     public void refreshWithFilter(DBDDataFilter filter) {
