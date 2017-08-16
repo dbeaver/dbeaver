@@ -33,6 +33,10 @@ public class DBDDataFilter {
     private String order;
     private String where;
 
+    public DBDDataFilter() {
+        this.constraints = new ArrayList<>();
+    }
+
     public DBDDataFilter(List<DBDAttributeConstraint> constraints)
     {
         this.constraints = constraints;
