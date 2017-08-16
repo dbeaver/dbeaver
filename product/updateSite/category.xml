@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-    <description name="DBeaver Update Site" url="http://dbeaver.jkiss.org/update/latest">DBeaver Update Site</description>
+    <description name="DBeaver Update Site" url="https://dbeaver.jkiss.org/update/latest">DBeaver Update Site</description>
     <category-def name="org.jkiss.dbeaver" label="DBeaver">
         <description>Universal Database Manager</description>
     </category-def>
