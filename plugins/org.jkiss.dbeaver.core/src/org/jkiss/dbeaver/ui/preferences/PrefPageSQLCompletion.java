@@ -42,6 +42,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     private Button csHideDuplicates;
     private Button csShortName;
     private Button csInsertSpace;
+    private Button csUseGlobalSearch;
 
     public PrefPageSQLCompletion()
     {
@@ -60,7 +61,8 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.contains(SQLPreferenceConstants.PROPOSAL_INSERT_CASE) ||
             store.contains(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) ||
             store.contains(SQLPreferenceConstants.PROPOSAL_SHORT_NAME) ||
-            store.contains(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS)
+            store.contains(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS) ||
+            store.contains(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT)
         ;
     }
 
@@ -116,6 +118,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csHideDuplicates = UIUtils.createCheckbox(assistGroup, "Hide duplicate names from non-active schemas", null, false, 2);
             csShortName = UIUtils.createCheckbox(assistGroup, "Use short object names (omit schema/catalog)", null, false, 2);
             csInsertSpace = UIUtils.createCheckbox(assistGroup, "Insert space after table/column names", null, false, 2);
+            csUseGlobalSearch = UIUtils.createCheckbox(assistGroup, "Use global search (in all schemas)", "Search for objects in all schemas. Otherwise search only in current/system schemas.", false, 2);
         }
 
         return composite;
@@ -135,6 +138,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csShortName.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_SHORT_NAME));
             csInsertSpace.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS));
 
+            csUseGlobalSearch.setSelection(store.getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -152,6 +156,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, csHideDuplicates.getSelection());
             store.setValue(SQLPreferenceConstants.PROPOSAL_SHORT_NAME, csShortName.getSelection());
             store.setValue(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS, csInsertSpace.getSelection());
+            store.setValue(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT, csUseGlobalSearch.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -169,6 +174,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS);
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_SHORT_NAME);
         store.setToDefault(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
+        store.setToDefault(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT);
     }
 
     @Override

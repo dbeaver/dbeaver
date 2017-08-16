@@ -115,7 +115,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         closeConnections(DISCONNECT_ALL_TIMEOUT);
         // Do not save config on shutdown.
         // Some data source might be broken due to misconfiguration
-        // and we don't want to loose their config just after restart
+        // and we don't want to lose their config just after restart
 //        if (getProject().isOpen()) {
 //            flushConfig();
 //        }

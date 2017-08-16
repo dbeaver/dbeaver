@@ -28,8 +28,8 @@ import java.util.List;
 public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvider {
 
     public static final String[][] SQLSERVER_QUOTE_STRINGS = {
+            {"[", "]"},
             {"\"", "\""},
-            {"[", "]"}
     };
 
     public SQLServerDialect() {

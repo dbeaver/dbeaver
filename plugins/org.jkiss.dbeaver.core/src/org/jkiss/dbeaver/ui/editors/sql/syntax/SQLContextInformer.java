@@ -136,7 +136,7 @@ public class SQLContextInformer
         if (!CommonUtils.equalObjects(fullName, tableName)) {
             int divPos = fullName.indexOf(syntaxManager.getStructSeparator());
             if (divPos != -1) {
-                String[] parts = ArrayUtils.toArray(String.class, CommonUtils.splitString(fullName, syntaxManager.getStructSeparator()));
+                String[] parts = wordDetector.splitIdentifier(fullName);
                 tableName = parts[parts.length - 1];
                 containerNames = ArrayUtils.remove(String.class, parts, parts.length - 1);
                 for (int i = 0; i < containerNames.length; i++) {

@@ -53,18 +53,18 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.sql.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.registry.sql.SQLCommandsRegistry;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.UIConfirmation;
+import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorResponse;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * SQLQueryJob
@@ -580,14 +580,13 @@ public class SQLQueryJob extends DataSourceJob
     private boolean fillStatementParameters(final List<SQLQueryParameter> parameters)
     {
         boolean allSet = true;
-        Map<String, Object> scriptVariables = scriptContext.getVariables();
         for (SQLQueryParameter param : parameters) {
             if (param.getValue() == null) {
                 allSet = false;
             }
             String paramName = param.getTitle();
-            if (scriptVariables.containsKey(paramName)) {
-                Object varValue = scriptVariables.get(paramName);
+            if (scriptContext.hasVariable(paramName)) {
+                Object varValue = scriptContext.getVariable(paramName);
                 String strValue;
                 if (varValue instanceof String) {
                     strValue = SQLUtils.quoteString(getExecutionContext().getDataSource(), (String) varValue);
@@ -612,9 +611,9 @@ public class SQLQueryJob extends DataSourceJob
         if (okPressed) {
             // Save values back to script context
             for (SQLQueryParameter param : parameters) {
-                if (param.isNamed() && scriptVariables.containsKey(param.getTitle())) {
+                if (param.isNamed() && scriptContext.hasVariable(param.getTitle())) {
                     String strValue = param.getValue();
-                    scriptVariables.put(param.getTitle(), SQLUtils.unQuoteString(getExecutionContext().getDataSource(), strValue));
+                    scriptContext.setVariable(param.getTitle(), SQLUtils.unQuoteString(getExecutionContext().getDataSource(), strValue));
                 }
             }
         }

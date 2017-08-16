@@ -37,6 +37,8 @@ public class SQLScriptContext {
 
     private final Map<String, Object> data = new HashMap<>();
 
+    @Nullable
+    private final SQLScriptContext parentContext;
     @NotNull
     private final DBCExecutionContext executionContext;
     @Nullable
@@ -45,9 +47,11 @@ public class SQLScriptContext {
     private final PrintWriter outputWriter;
 
     public SQLScriptContext(
+            @Nullable SQLScriptContext parentContext,
             @NotNull DBCExecutionContext executionContext,
             @Nullable File sourceFile,
             @NotNull Writer outputWriter) {
+        this.parentContext = parentContext;
         this.executionContext = executionContext;
         this.sourceFile = sourceFile;
         this.outputWriter = new PrintWriter(outputWriter);
@@ -64,8 +68,28 @@ public class SQLScriptContext {
     }
 
     @NotNull
-    public Map<String, Object> getVariables() {
-        return variables;
+    public boolean hasVariable(String name) {
+        if (variables.containsKey(name)) {
+            return true;
+        }
+        return parentContext != null && parentContext.hasVariable(name);
+    }
+
+    @NotNull
+    public Object getVariable(String name) {
+        Object value = variables.get(name);
+        if (value == null && parentContext != null) {
+            value = parentContext.getVariable(name);
+        }
+        return value;
+    }
+
+    @NotNull
+    public void setVariable(String name, Object value) {
+        variables.put(name, value);
+        if (parentContext != null) {
+            parentContext.setVariable(name, value);
+        }
     }
 
     @NotNull
@@ -85,4 +109,14 @@ public class SQLScriptContext {
         return outputWriter;
     }
 
+    public void copyFrom(SQLScriptContext context) {
+        this.variables.clear();
+        this.variables.putAll(context.variables);
+
+        this.data.clear();
+        this.data.putAll(context.data);
+
+        this.pragmas.clear();
+        this.pragmas.putAll(context.pragmas);
+    }
 }

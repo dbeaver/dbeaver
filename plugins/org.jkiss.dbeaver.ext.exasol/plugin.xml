@@ -439,6 +439,18 @@
               class="org.jkiss.dbeaver.ext.exasol.manager.ExasolFunctionManager"
               objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction">
         </manager>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolSchemaManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema">
+        </manager>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolConnectionManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolConnection">
+        </manager>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolForeignKeyManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey">
+        </manager>
     </extension>
     <extension point="org.eclipse.ui.editors">
         <editor
@@ -491,6 +503,10 @@
             <scope group="com.exasol"/>
         </repository>
 
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlCommand">
+        <command id="exasol.define" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandSet" label="Define" description="Defines variable"/>
     </extension>
 
 </plugin>

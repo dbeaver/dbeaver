@@ -51,6 +51,7 @@ public final class ModelPreferences
     public static final String CONTENT_CACHE_MAX_SIZE = "content.cache.maxsize"; //$NON-NLS-1$
     public static final String META_SEPARATE_CONNECTION = "database.meta.separate.connection"; //$NON-NLS-1$
     public static final String META_CASE_SENSITIVE = "database.meta.casesensitive"; //$NON-NLS-1$
+    public static final String META_USE_SERVER_SIDE_FILTERS = "database.meta.server.side.filters"; //$NON-NLS-1$
 
     public static final String META_CLIENT_NAME_OVERRIDE = "database.meta.client.name.override"; //$NON-NLS-1$
     public static final String META_CLIENT_NAME_VALUE = "database.meta.client.name.value"; //$NON-NLS-1$
@@ -64,6 +65,8 @@ public final class ModelPreferences
     public static final String RESULT_SET_MAX_ROWS_USE_SQL = "resultset.maxrows.sql"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_PRESENTATION = "resultset.binary.representation"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_STRING_MAX_LEN = "resultset.binary.stringMaxLength"; //$NON-NLS-1$
+    // This will ignore label in result set metadata and will use names always (some buggy drivers return description or other crap in labels - #1952)
+    public static final String RESULT_SET_IGNORE_COLUMN_LABEL = "resultset.column.label.ignore"; //$NON-NLS-1$
 
     public static final String SQL_PARAMETERS_ENABLED = "sql.parameter.enabled"; //$NON-NLS-1$
     public static final String SQL_PARAMETERS_IN_DDL_ENABLED = "sql.parameter.ddl.enabled"; //$NON-NLS-1$
@@ -109,6 +112,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, MEMORY_CONTENT_MAX_SIZE, 10000);
         PrefUtils.setDefaultPreferenceValue(store, META_SEPARATE_CONNECTION, true);
         PrefUtils.setDefaultPreferenceValue(store, META_CASE_SENSITIVE, false);
+        PrefUtils.setDefaultPreferenceValue(store, META_USE_SERVER_SIDE_FILTERS, true);
 
         PrefUtils.setDefaultPreferenceValue(store, META_CLIENT_NAME_OVERRIDE, false);
         PrefUtils.setDefaultPreferenceValue(store, META_CLIENT_NAME_VALUE, "");
@@ -127,6 +131,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_BINARY_PRESENTATION, DBConstants.BINARY_FORMATS[0].getId());
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_BINARY_STRING_MAX_LEN, 32);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_USE_FETCH_SIZE, false);
+        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_IGNORE_COLUMN_LABEL, false);
 
         // QM
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);

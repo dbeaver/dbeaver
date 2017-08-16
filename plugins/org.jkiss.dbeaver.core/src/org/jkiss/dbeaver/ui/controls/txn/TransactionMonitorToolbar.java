@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
@@ -117,7 +118,6 @@ public class TransactionMonitorToolbar {
 
         MonitorPanel(Composite parent) {
             super(parent, SWT.BORDER);
-            //setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
             setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
             addPaintListener(new PaintListener() {
                 @Override
@@ -148,6 +148,17 @@ public class TransactionMonitorToolbar {
                     TransactionLogDialog.showDialog(getShell(), getActiveExecutionContext());
                 }
             });
+        }
+
+        @Override
+        public Point computeSize(int wHint, int hHint, boolean changed) {
+            final int fontHeight = UIUtils.getFontHeight(this);
+            int panelWidth = fontHeight * 8;
+            Point point = super.computeSize(wHint, hHint, changed);
+            if (point.x < panelWidth) {
+                point.x = panelWidth;
+            }
+            return point;
         }
 
         @Override

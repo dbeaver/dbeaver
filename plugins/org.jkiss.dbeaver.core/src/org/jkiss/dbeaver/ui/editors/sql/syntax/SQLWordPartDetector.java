@@ -192,7 +192,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
         return prevKeyWord;
     }
 
-    public List<String> splitWordPart()
+    public String[] splitWordPart()
     {
         return super.splitIdentifier(wordPart);
     }

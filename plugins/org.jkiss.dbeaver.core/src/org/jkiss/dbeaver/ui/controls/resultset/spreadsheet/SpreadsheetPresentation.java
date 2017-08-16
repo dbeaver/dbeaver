@@ -85,10 +85,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
+import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel;
 import org.jkiss.dbeaver.ui.data.IMultiController;
@@ -105,13 +102,12 @@ import org.jkiss.utils.CommonUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
-import java.util.regex.*;
 
 /**
  * Spreadsheet presentation.
  * Visualizes results as grid.
  */
-public class SpreadsheetPresentation extends AbstractPresentation implements IResultSetEditor, ISelectionProvider, IStatefulControl, IAdaptable  {
+public class SpreadsheetPresentation extends AbstractPresentation implements IResultSetEditor, ISelectionProvider, IStatefulControl, IAdaptable, IGridController {
 
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
@@ -139,6 +135,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color foregroundNull;
     private Color foregroundSelected, backgroundSelected;
     private Color backgroundMatched;
+    private Color cellHeaderForeground, cellHeaderBackground, cellHeaderSelectionBackground;
     private Font boldFont, italicFont, bolItalicFont;
 
     private boolean showOddRows = true;
@@ -167,15 +164,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
         this.italicFont = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
 
-        this.foregroundNull = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
-
         this.spreadsheet = new Spreadsheet(
             parent,
             SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
             controller.getSite(),
             this,
             new ContentProvider(),
-            new GridLabelProvider());
+            new GridLabelProvider(),
+            this);
         this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         this.spreadsheet.addSelectionListener(new SelectionAdapter() {
@@ -234,6 +230,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         UIUtils.dispose(this.italicFont);
         UIUtils.dispose(this.boldFont);
+
+        UIUtils.dispose(this.cellHeaderSelectionBackground);
     }
 
     public void scrollToRow(@NotNull RowPosition position)
@@ -987,6 +985,23 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.backgroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
         this.backgroundMatched = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MATCHED);
 
+        this.cellHeaderForeground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_FOREGROUND);
+        this.cellHeaderBackground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_BACKGROUND);
+        {
+            if (this.cellHeaderSelectionBackground != null) {
+                UIUtils.dispose(this.cellHeaderSelectionBackground);
+                this.cellHeaderSelectionBackground = null;
+            }
+            Color headerSelectionBackground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_SELECTED_BACKGROUND);
+            RGB cellSel = UIUtils.blend(
+                    headerSelectionBackground.getRGB(),
+                    new RGB(255, 255, 255),
+                    50);
+            this.cellHeaderSelectionBackground = new Color(getSpreadsheet().getDisplay(), cellSel);
+        }
+        this.foregroundNull = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND);
+
+
         this.spreadsheet.setLineColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_NORMAL));
         this.spreadsheet.setLineSelectedColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED));
 
@@ -1149,6 +1164,64 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             spreadsheet.showSelection();
         }
         fireSelectionChanged(selection);
+    }
+
+    @Override
+    public void moveColumn(Object dragColumn, Object dropColumn, DropLocation location) {
+        if (dragColumn instanceof DBDAttributeBinding && dropColumn instanceof DBDAttributeBinding) {
+
+            DBDDataFilter dataFilter = new DBDDataFilter(controller.getModel().getDataFilter());
+            final DBDAttributeConstraint dragC = dataFilter.getConstraint((DBDAttributeBinding) dragColumn);
+            final DBDAttributeConstraint dropC = dataFilter.getConstraint((DBDAttributeBinding) dropColumn);
+
+            int sourcePosition = dragC.getVisualPosition();
+            int targetPosition = dropC.getVisualPosition();
+            switch (location) {
+                case DROP_AFTER:
+                    if (sourcePosition > targetPosition && targetPosition < dataFilter.getConstraints().size() - 1) {
+                        targetPosition++;
+                    }
+                    break;
+                case DROP_BEFORE:
+                    if (sourcePosition < targetPosition && targetPosition > 0) {
+                        targetPosition--;
+                    }
+                    break;
+                case SWAP:
+                    dropC.setVisualPosition(dragC.getVisualPosition());
+                    dragC.setVisualPosition(targetPosition);
+                    break;
+
+            }
+            if (sourcePosition == targetPosition) {
+                return;
+            }
+            if (location != DropLocation.SWAP) {
+                // Reposition columns
+                for (DBDAttributeConstraint c : dataFilter.getConstraints()) {
+                    if (c == dragC) {
+                        continue;
+                    }
+                    int cPos = c.getVisualPosition();
+                    if (sourcePosition < targetPosition) {
+                        // Move to the right
+                        if (cPos > sourcePosition && cPos <= targetPosition) {
+                            c.setVisualPosition(cPos - 1);
+                        }
+                    } else {
+                        // Move to the left
+                        if (cPos < sourcePosition && cPos >= targetPosition) {
+                            c.setVisualPosition(cPos + 1);
+                        }
+                    }
+                }
+                dragC.setVisualPosition(targetPosition);
+            }
+            controller.setDataFilter(dataFilter, false);
+            spreadsheet.setFocusColumn(targetPosition);
+            spreadsheet.refreshData(false, true);
+        }
+
     }
 
     private class SpreadsheetSelectionImpl implements IResultSetSelection {
@@ -1560,6 +1633,21 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 backgroundNormal = controller.getDefaultBackground();
             }
             return backgroundNormal;
+        }
+
+        @Override
+        public Color getCellHeaderForeground() {
+            return cellHeaderForeground;
+        }
+
+        @Override
+        public Color getCellHeaderBackground() {
+            return cellHeaderBackground;
+        }
+
+        @Override
+        public Color getCellHeaderSelectionBackground() {
+            return cellHeaderSelectionBackground;
         }
 
         @Override

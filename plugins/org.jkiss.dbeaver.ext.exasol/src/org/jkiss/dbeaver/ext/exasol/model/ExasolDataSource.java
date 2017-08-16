@@ -17,6 +17,16 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
@@ -26,7 +36,18 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider;
 import org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect;
-import org.jkiss.dbeaver.ext.exasol.manager.security.*;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolBaseObjectGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolConnectionGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolGrantee;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRoleGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolSchemaGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolScriptGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolSystemGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolTableGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolTableObjectType;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser;
+import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolViewGrant;
 import org.jkiss.dbeaver.ext.exasol.model.plan.ExasolPlanAnalyser;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -56,15 +77,10 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.SQLException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class ExasolDataSource extends JDBCDataSource
 		implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
 
-	private static final Log LOG = Log.getLog(ExasolDataSource.class);
+    private static final Log LOG = Log.getLog(ExasolDataSource.class);
 
 	private static final String GET_CURRENT_SCHEMA = "SELECT CURRENT_SCHEMA";
 	private static final String SET_CURRENT_SCHEMA = "OPEN SCHEMA \"%s\"";
@@ -381,7 +397,7 @@ public class ExasolDataSource extends JDBCDataSource
 
 		return this;
 	}
-
+	
 	// --------------------------
 	// Manage Children: ExasolSchema
 	// --------------------------
@@ -520,6 +536,23 @@ public class ExasolDataSource extends JDBCDataSource
 		return virtualSchemaCache.getObject(monitor, this, name);
 	}
 
+	
+	public Collection<ExasolGrantee> getAllGrantees(DBRProgressMonitor monitor) throws DBException
+	{
+	   ArrayList<ExasolGrantee> grantees = new ArrayList<>();
+	   
+	   for (ExasolUser user : this.getUsers(monitor)) {
+	       grantees.add((ExasolGrantee) user);
+	   }
+	   
+	   for (ExasolRole role : this.getRoles(monitor))
+	   {
+	       grantees.add((ExasolGrantee) role);
+	   }
+	   
+	   return grantees;
+	}
+	
     @Association
 	public Collection<ExasolUser> getUsers(DBRProgressMonitor monitor)
 			throws DBException
@@ -559,6 +592,8 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		return connectionCache.getObject(monitor, this, name);
 	}
+	
+	
 
     @Association
 	public Collection<ExasolBaseObjectGrant> getBaseTableGrants(DBRProgressMonitor monitor) throws DBException
@@ -703,6 +738,11 @@ public class ExasolDataSource extends JDBCDataSource
 	// Standards Getters
 	// -------------------------
 
+   public DBSObjectCache<ExasolDataSource, ExasolConnection> getConnectionCache()
+    {
+        return connectionCache;
+    }
+   
 	public DBSObjectCache<ExasolDataSource, ExasolUser> getUserCache()
 	{
 		return userCache;
@@ -712,6 +752,8 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		return schemaCache;
 	}
+	
+	
 
 	@Override
 	public Collection<? extends DBSDataType> getLocalDataTypes()

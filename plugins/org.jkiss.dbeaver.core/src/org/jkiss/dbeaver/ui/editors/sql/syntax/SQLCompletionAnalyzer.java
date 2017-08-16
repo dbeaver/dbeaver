@@ -142,7 +142,7 @@ class SQLCompletionAnalyzer
 
         DBSObjectContainer sc = rootContainer;
         DBSObject childObject = sc;
-        List<String> tokens = request.wordDetector.splitWordPart();
+        String[] tokens = request.wordDetector.splitWordPart();
 
         // Detect selected object (container).
         // There could be multiple selected objects on different hierarchy levels (e.g. PG)
@@ -156,9 +156,9 @@ class SQLCompletionAnalyzer
         }
 
         String lastToken = null;
-        for (int i = 0; i < tokens.size(); i++) {
-            final String token = tokens.get(i);
-            if (i == tokens.size() - 1 && !request.wordDetector.getWordPart().endsWith(".")) {
+        for (int i = 0; i < tokens.length; i++) {
+            final String token = tokens[i];
+            if (i == tokens.length - 1 && !request.wordDetector.getWordPart().endsWith(".")) {
                 lastToken = token;
                 break;
             }
@@ -229,10 +229,10 @@ class SQLCompletionAnalyzer
         } else {
             // Get matched children
             makeProposalsFromChildren(childObject, lastToken);
-            if (tokens.size() == 1) {
+            if (tokens.length == 1) {
                 // Get children from selected object
             }
-            if (request.proposals.isEmpty() || tokens.size() == 1) {
+            if (request.proposals.isEmpty() || tokens.length == 1) {
                 // Try in active object
                 for (int k = 0; k < selectedContainers.length; k++) {
                     if (selectedContainers[k] != null && selectedContainers[k] != childObject) {
@@ -250,7 +250,7 @@ class SQLCompletionAnalyzer
                         }
                     }
                     if (structureAssistant != null) {
-                        makeProposalsFromAssistant(structureAssistant, sc, lastToken);
+                        makeProposalsFromAssistant(dataSource, structureAssistant, sc, lastToken);
                     }
                 }
             }
@@ -295,8 +295,13 @@ class SQLCompletionAnalyzer
                 token = token.substring(0, token.length() -1);
             }
 
-            //String separatorPattern = ".".equals(catalogSeparator) ? "\\." : Pattern.quote(catalogSeparator);
-            String tableNamePattern = "([\\w_$\\.\\-\"`]+)";
+            String[][] quoteStrings = sqlDialect.getIdentifierQuoteStrings();
+            StringBuilder quotes = new StringBuilder();
+            for (String[] quotePair : quoteStrings) {
+                if (quotes.indexOf(quotePair[0]) == -1) quotes.append('\\').append(quotePair[0]);
+                if (quotes.indexOf(quotePair[1]) == -1) quotes.append('\\').append(quotePair[1]);
+            }
+            String tableNamePattern = "([\\w_$\\.\\-" + quotes.toString() + "]+)";
             String structNamePattern;
             if (CommonUtils.isEmpty(token)) {
                 structNamePattern = "(?:from|update|join|into)\\s*" + tableNamePattern;
@@ -318,7 +323,7 @@ class SQLCompletionAnalyzer
                 for (int i = 1; i <= groupCount; i++) {
                     String group = matcher.group(i);
                     if (!CommonUtils.isEmpty(group)) {
-                        String[] allNames = group.split(Pattern.quote(catalogSeparator));
+                        String[] allNames = SQLUtils.splitFullIdentifier(group, catalogSeparator, quoteStrings);
                         Collections.addAll(nameList, allNames);
                     }
                 }
@@ -484,9 +489,10 @@ class SQLCompletionAnalyzer
     }
 
     private void makeProposalsFromAssistant(
-        DBSStructureAssistant assistant,
-        @Nullable DBSObjectContainer rootSC,
-        String objectName)
+            DBPDataSource dataSource,
+            DBSStructureAssistant assistant,
+            @Nullable DBSObjectContainer rootSC,
+            String objectName)
     {
         try {
             Collection<DBSObjectReference> references = assistant.findObjectsByMask(
@@ -495,7 +501,7 @@ class SQLCompletionAnalyzer
                 assistant.getAutoCompleteObjectTypes(),
                 request.wordDetector.removeQuotes(objectName) + "%",
                 request.wordDetector.isQuoted(objectName),
-                false,
+                dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT),
                 100);
             for (DBSObjectReference reference : references) {
                 request.proposals.add(makeProposalsFromObject(reference, reference.getObjectType().getImage()));

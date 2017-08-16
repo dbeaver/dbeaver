@@ -74,13 +74,14 @@ public class ImageUtils {
     {
         // Capture checkbox image - only for windows
         // There could be hard-to-understand problems in Linux
-        if (!DBeaverCore.getInstance().getLocalSystem().isWindows()) {
+        /*if (!DBeaverCore.getInstance().getLocalSystem().isWindows())*/ {
             imageCheckboxEnabledOff = DBeaverIcons.getImage(UIIcon.CHECK_OFF);
             imageCheckboxEnabledOn = DBeaverIcons.getImage(UIIcon.CHECK_ON);
-            imageCheckboxDisabledOn = DBeaverIcons.getImage(UIIcon.CHECK_ON);
-            imageCheckboxDisabledOff = DBeaverIcons.getImage(UIIcon.CHECK_OFF);
+            imageCheckboxDisabledOn = makeDisableImage(DBeaverIcons.getImage(UIIcon.CHECK_ON));
+            imageCheckboxDisabledOff = makeDisableImage(DBeaverIcons.getImage(UIIcon.CHECK_OFF));
             return;
         }
+/*
         final Shell shell = DBeaverUI.getActiveWorkbenchShell();
         Button checkBox = new Button(shell, SWT.CHECK);
         checkBox.setVisible(true);
@@ -100,6 +101,7 @@ public class ImageUtils {
         } finally {
             UIUtils.dispose(checkBox);
         }
+*/
     }
 
     public static Image captureWidget(Control widget, Color borderColor, Image defaultImage)
@@ -127,6 +129,10 @@ public class ImageUtils {
         image.dispose();
         return fixedImage;
 */
+    }
+
+    private static Image makeDisableImage(Image image) {
+        return new Image(image.getDevice(), image, SWT.IMAGE_DISABLE);
     }
 
     public static Image removeImageBorder(Image srcImage, Color borderColor)

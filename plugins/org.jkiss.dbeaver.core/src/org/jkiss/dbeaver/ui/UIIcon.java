@@ -100,6 +100,7 @@ public class UIIcon {
     public static final DBIcon FILTER_CLIPBOARD = new DBIcon("filter_clipboard", "misc/filter_clipboard.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_APPLY = new DBIcon("filter_apply", "misc/filter_apply.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_RESET = new DBIcon("filter_reset", "misc/filter_reset.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_SAVE = new DBIcon("filter_save", "misc/filter_save.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon EVENT = new DBIcon("event", "misc/event.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon HOME = new DBIcon("home", "misc/home.png"); //$NON-NLS-1$ //$NON-NLS-2$

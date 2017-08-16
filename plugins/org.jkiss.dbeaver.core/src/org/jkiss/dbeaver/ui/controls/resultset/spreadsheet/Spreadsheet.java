@@ -65,6 +65,8 @@ public class Spreadsheet extends LightGrid implements Listener {
     private final IGridContentProvider contentProvider;
     @NotNull
     private final IGridLabelProvider labelProvider;
+    @Nullable
+    private final IGridController gridController;
 
     private Clipboard clipboard;
 
@@ -74,7 +76,8 @@ public class Spreadsheet extends LightGrid implements Listener {
         @NotNull final IWorkbenchPartSite site,
         @NotNull final SpreadsheetPresentation presentation,
         @NotNull final IGridContentProvider contentProvider,
-        @NotNull final IGridLabelProvider labelProvider)
+        @NotNull final IGridLabelProvider labelProvider,
+        @Nullable final IGridController gridController)
     {
         super(parent, style);
         GridLayout layout = new GridLayout(1, true);
@@ -88,6 +91,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         this.presentation = presentation;
         this.contentProvider = contentProvider;
         this.labelProvider = labelProvider;
+        this.gridController = gridController;
 
         this.clipboard = new Clipboard(getDisplay());
 
@@ -369,6 +373,11 @@ public class Spreadsheet extends LightGrid implements Listener {
     public IGridLabelProvider getLabelProvider()
     {
         return labelProvider;
+    }
+
+    @Override
+    public IGridController getGridController() {
+        return gridController;
     }
 
     public void redrawGrid()
