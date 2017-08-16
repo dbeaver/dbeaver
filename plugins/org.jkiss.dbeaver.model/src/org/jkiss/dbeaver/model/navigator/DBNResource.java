@@ -363,11 +363,15 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
         throws DBException
     {
         if (resource instanceof IFolder) {
-            IFolder newFolder = ((IFolder) resource).getFolder(folderName);
-            if (newFolder.exists()) {
-                throw new DBException("Folder '" + folderName + "' already exists in '" + resource.getFullPath().toString() + "'");
-            }
             try {
+                IFolder parentFolder = (IFolder) resource;
+                if (!parentFolder.exists()) {
+                    parentFolder.create(true, true, new NullProgressMonitor());
+                }
+                IFolder newFolder = parentFolder.getFolder(folderName);
+                if (newFolder.exists()) {
+                    throw new DBException("Folder '" + folderName + "' already exists in '" + resource.getFullPath().toString() + "'");
+                }
                 newFolder.create(true, true, new NullProgressMonitor());
             } catch (CoreException e) {
                 throw new DBException("Can't create new folder", e);

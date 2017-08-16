@@ -11,6 +11,11 @@
             'org.jkiss.dbeaver.sql.resultset.color.cell.matched.background=139,69,19'
             'org.jkiss.dbeaver.sql.resultset.color.lines.normal=64,64,64'
             'org.jkiss.dbeaver.sql.resultset.color.lines.selected=105,105,105'
+            'org.jkiss.dbeaver.sql.resultset.color.header.background=120,120,120'
+            'org.jkiss.dbeaver.sql.resultset.color.header.foreground=255,255,255'
+            'org.jkiss.dbeaver.sql.resultset.color.header.selected.background=105,105,150'
+            'org.jkiss.dbeaver.sql.resultset.color.null.foreground=100,100,100'
+
             'org.jkiss.dbeaver.sql.editor.color.text.foreground=221,221,221'
             'org.jkiss.dbeaver.sql.editor.color.text.background=65,70,74'
             'org.jkiss.dbeaver.sql.editor.color.disabled.background=0,0,0'

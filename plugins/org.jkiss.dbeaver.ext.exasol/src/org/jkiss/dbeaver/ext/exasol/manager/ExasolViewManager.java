@@ -17,12 +17,16 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
+import java.util.List;
+
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableBase;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolView;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -31,10 +35,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
-
 public class ExasolViewManager
-        extends SQLObjectEditor<ExasolView, ExasolSchema> {
+        extends SQLObjectEditor<ExasolView, ExasolSchema> implements DBEObjectRenamer<ExasolView> {
 
     @Override
     public long getMakerOptions()
@@ -111,5 +113,26 @@ public class ExasolViewManager
         } catch (DBCException e) {
         }
     }
+
+    @Override
+    public void renameObject(DBECommandContext commandContext,
+            ExasolView object, String newName) throws DBException
+    {
+        processObjectRename(commandContext, object, newName);
+    }
+    
+    @Override
+    protected void addObjectRenameActions(List<DBEPersistAction> actions,
+            SQLObjectEditor<ExasolView, ExasolSchema>.ObjectRenameCommand command)
+    {
+        ExasolView obj = command.getObject();
+        actions.add(
+                new SQLDatabasePersistAction(
+                    "Rename View",
+                    "RENAME VIEW " +  DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getOldName()) + " to " +
+                        DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getNewName()))
+            );
+    }
+
     
 }

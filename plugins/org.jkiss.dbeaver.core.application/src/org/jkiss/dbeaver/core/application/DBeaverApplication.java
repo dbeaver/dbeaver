@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
@@ -108,6 +109,11 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     public Object start(IApplicationContext context) {
         instance = this;
 
+        // Create display
+        getDisplay();
+
+        DelayedEventsProcessor processor = new DelayedEventsProcessor(display);
+
         // Set display name at the very beginning (#609)
         // This doesn't initialize display - just sets default title
         Display.setAppName(GeneralUtils.getProductName());
@@ -151,9 +157,6 @@ public class DBeaverApplication implements IApplication, DBPApplication {
 
         // Run instance server
         instanceServer = DBeaverInstanceServer.startInstanceServer();
-
-        // Create display
-        getDisplay();
 
         // Prefs default
         PlatformUI.getPreferenceStore().setDefault(

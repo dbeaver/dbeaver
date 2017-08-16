@@ -87,13 +87,11 @@ class GridColumnRenderer extends AbstractRenderer
         boolean drawSelected = false;
 
         if (flat && (selected || hovering)) {
-            gc.setBackground(grid.getCellHeaderSelectionBackground());
-            //gc.setForeground(grid.getCellHeaderSelectionForeground());
+            gc.setBackground(grid.getContentProvider().getCellHeaderSelectionBackground());
         } else {
-            gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-            //gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
+            gc.setBackground(grid.getContentProvider().getCellHeaderBackground());
         }
-        gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
+        gc.setForeground(grid.getContentProvider().getCellHeaderForeground());
 
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 

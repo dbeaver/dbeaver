@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.*;
 import org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSession;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -131,7 +132,7 @@ public class ExasolUtils {
                 //get only first as there is only 1 primary key
                 ExasolTableUniqueKey pk = null;
                 pk = pks.iterator().next();
-                ddlOutput.append(getPKDdl(pk, monitor));
+                ddlOutput.append("\n" + getPKDdl(pk, monitor) + ";\n");
             }
 
             //foreign key
@@ -140,7 +141,7 @@ public class ExasolUtils {
 
                 //look keys
                 for (ExasolTableForeignKey fk : fks) {
-                    ddlOutput.append(getFKDdl(fk, monitor));
+                    ddlOutput.append("\n" + getFKDdl(fk, monitor) + ";\n");
                 }
             }
 
@@ -158,15 +159,25 @@ public class ExasolUtils {
 	{
 		ExasolTable exasolTable = fk.getTable();
         ArrayList<String> columns = new ArrayList<String>();
+        ArrayList<String> refColumns = new ArrayList<String>();
         for (DBSEntityAttributeRef c : fk.getAttributeReferences(monitor)) {
-            columns.add("\"" + c.getAttribute().getName() + "\"");
+            columns.add(DBUtils.getQuotedIdentifier(c.getAttribute()));
+        }
+        
+        for (DBSEntityAttributeRef c : fk.getReferencedConstraint().getAttributeReferences(monitor))
+        {
+            refColumns.add(DBUtils.getQuotedIdentifier(c.getAttribute()));
         }
     	String fk_enabled = " DISABLE ";
     	
     	if (fk.getEnabled())
     		fk_enabled = " ENABLE ";
 
-    	return "\nALTER TABLE \"" + exasolTable.getSchema().getName() + "\".\"" + exasolTable.getName() + "\" ADD CONSTRAINT " + fk.getName() + " FOREIGN KEY (" + CommonUtils.joinStrings(",", columns) + ") REFERENCES \"" + fk.getReferencedTable().getSchema().getName() + "\".\"" + fk.getReferencedTable().getName() + "\" " + fk_enabled + " ;\n";
+    	return "ALTER TABLE " + DBUtils.getObjectFullName(exasolTable, DBPEvaluationContext.DDL) + 
+    			" ADD CONSTRAINT " + DBUtils.getQuotedIdentifier(fk) + 
+    			" FOREIGN KEY (" + CommonUtils.joinStrings(",", columns) + 
+    			") REFERENCES " + DBUtils.getObjectFullName(fk.getAssociatedEntity(), DBPEvaluationContext.DDL) + " (" + 
+    			CommonUtils.joinStrings(",", refColumns) + ")" + fk_enabled;
 		
 	}
 	
@@ -177,7 +188,7 @@ public class ExasolUtils {
         for (DBSEntityAttributeRef c : pk.getAttributeReferences(monitor)) {
             columns.add("\"" + c.getAttribute().getName() + "\"");
         }
-        return "\nALTER TABLE \"" + exasolTable.getSchema().getName() + "\".\"" + exasolTable.getName() + "\" ADD CONSTRAINT " + pk.getName() + " PRIMARY KEY (" + CommonUtils.joinStrings(",", columns) + ") " + (pk.getEnabled() ? " ENABLE " : " DISABLE ") + " ;\n";
+        return "ALTER TABLE " + DBUtils.getObjectFullName(exasolTable, DBPEvaluationContext.DDL) + " ADD CONSTRAINT " + DBUtils.getQuotedIdentifier(pk) + " PRIMARY KEY (" + CommonUtils.joinStrings(",", columns) + ") " + (pk.getEnabled() ? " ENABLE " : " DISABLE ");
 	}
 	
 	public static String getConnectionDdl(ExasolConnection con, DBRProgressMonitor monitor) throws DBException

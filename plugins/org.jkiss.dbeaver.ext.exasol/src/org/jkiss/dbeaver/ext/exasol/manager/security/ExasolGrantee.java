@@ -17,6 +17,10 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager.security;
 
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -24,10 +28,6 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Collection;
 
 public abstract class ExasolGrantee
 		implements DBPSaveableObject, DBPRefreshableObject {
@@ -45,6 +45,8 @@ public abstract class ExasolGrantee
 			this.persisted = false;
 		}
 	}
+	
+	public abstract String getName(); 
 
 	@Override
 	public boolean isPersisted()

@@ -14,29 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.sql.commands;
+package org.jkiss.dbeaver.model.sql.eval;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
-import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
-import org.jkiss.dbeaver.runtime.sql.SQLControlCommandHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
- * Control command handler
+ * ScriptVariablesResolver
  */
-public class SQLCommandEcho implements SQLControlCommandHandler {
+public class ScriptVariablesResolver implements GeneralUtils.IVariableResolver {
 
-    @Override
-    public boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext) throws DBException {
-        String parameter = command.getParameter();
-        if (parameter != null) {
-            parameter = GeneralUtils.replaceVariables(parameter, new ScriptVariablesResolver(scriptContext));
-        }
-        scriptContext.getOutputWriter().println(parameter);
+    private final SQLScriptContext scriptContext;
 
-        return true;
+    public ScriptVariablesResolver(SQLScriptContext scriptContext) {
+        this.scriptContext = scriptContext;
     }
 
+    @Override
+    public String get(String name) {
+        return CommonUtils.toString(scriptContext.getVariable(name));
+    }
 }

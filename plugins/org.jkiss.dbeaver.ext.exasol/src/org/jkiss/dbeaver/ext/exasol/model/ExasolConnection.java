@@ -17,9 +17,13 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model;
 
+import java.sql.Date;
+import java.sql.ResultSet;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -28,20 +32,37 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.sql.Date;
-import java.sql.ResultSet;
-
 public class ExasolConnection
-		implements DBPRefreshableObject, DBPSaveableObject, DBPScriptObject{
+		implements DBPRefreshableObject, DBPNamedObject2, DBPSaveableObject, DBPScriptObject{
 
 	private ExasolDataSource dataSource;
 	private String connectionName;
 	private String connectionString;
 	private String userName;
+	private String password="";
 	private Date created;
-	private String comment;
+	private String comment="";
 	private Boolean persisted;
 
+	
+	public ExasolConnection(
+	        ExasolDataSource dataSource,
+	        String name,
+	        String url,
+            String comment,
+	        String user,
+	        String password
+	        )
+	{
+	    this.persisted = false;
+	    this.connectionName = name;
+	    this.connectionString = url;
+	    this.comment = comment;
+	    this.userName = user;
+	    this.password = password;
+	    this.dataSource = dataSource;
+	}
+	
 	public ExasolConnection(ExasolDataSource dataSource, ResultSet dbResult)
 	{
 		this.dataSource = dataSource;
@@ -55,21 +76,33 @@ public class ExasolConnection
 		} else {
 			this.connectionName = "new connection";
 			this.persisted = false;
+			this.password = "";
 		}
 
 	}
 
 	@Override
-	@Property(viewable = true, order = 10)
+	@Property(viewable = true, editable=true, order = 10)
 	public String getName()
 	{
 		return this.connectionName;
 	}
+	
+	@Override
+	public void setName(String name)
+	{
+	    this.connectionName = name;
+	}
 
-	@Property(viewable = true, order = 20)
+	@Property(viewable = true,editable=true, updatable=true, order = 20)
 	public String getConnectionString()
 	{
 		return this.connectionString;
+	}
+	
+	public void setConnectionString(String url)
+	{
+	    this.connectionString = url;
 	}
 
 	@Property(viewable = true, order = 30)
@@ -78,17 +111,27 @@ public class ExasolConnection
 		return this.created;
 	}
 
-	@Property(viewable = true, order = 30)
+	@Property(viewable = true,editable=true, updatable=true, order = 30)
 	public String getUserName()
 	{
 		return this.userName;
 	}
 
+   public void setUserName(String userName)
+    {
+        this.userName = userName;
+    }
+
 	@Override
-	@Property(viewable = true, order = 50)
+	@Property(viewable = true, editable= true, updatable=true, order = 50)
 	public String getDescription()
 	{
 		return this.comment;
+	}
+	
+	public void setDescription(String comment)
+	{
+	    this.comment = comment;
 	}
 
 	@Override
@@ -120,6 +163,7 @@ public class ExasolConnection
 	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
 			throws DBException
 	{
+        ((ExasolDataSource) getDataSource()).refreshObject(monitor);
 		return this;
 	}
 
@@ -133,5 +177,15 @@ public class ExasolConnection
 			return "User needs full access to dictionary or dba privilege to generate ddl for connections";
 		}
 	}
+	
+    @Property(viewable = true, editable= true, updatable=true, order = 35)
+	public String getPassword()
+	{
+	    return password;
+	}
 
+    public void setPassword(String password) 
+    {
+        this.password = password;
+    }
 }

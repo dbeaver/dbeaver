@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -160,6 +161,7 @@ public interface IResultSetController extends DBPContextProvider {
 
     void updatePanelsContent(boolean forceRefresh);
 
+    void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData);
 
     /**
      * Enable/disable viewer actions. May be used by editors to "lock" RSV actions like navigation, edit, etc.

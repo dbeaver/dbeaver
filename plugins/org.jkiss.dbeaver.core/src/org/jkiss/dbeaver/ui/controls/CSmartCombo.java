@@ -53,6 +53,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private int visibleItemCount = 10;
     private int widthHint = SWT.DEFAULT;
     private Shell popup;
+    private long disposeTime = -1;
     private Button arrow;
     private boolean hasFocus;
     private Listener listener, filter;
@@ -574,9 +575,16 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 text.setFocus();
             }
             if (this.popup != null) {
-                this.popup.dispose();
+                final Shell toDispose = this.popup;
                 this.popup = null;
                 this.dropDownControl = null;
+                disposeTime = System.currentTimeMillis();
+                DBeaverUI.asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        toDispose.dispose();
+                    }
+                });
             }
             return;
         }
@@ -764,7 +772,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 break;
             }
             case SWT.Selection: {
-                dropDown(!isDropped());
+                if (!isDropped() && (System.currentTimeMillis() - disposeTime) > 200) {
+                    dropDown(true);
+                }
                 break;
             }
         }
@@ -896,7 +906,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 }
                 boolean dropped = isDropped();
                 //this.text.selectAll();
-                dropDown(!dropped);
+                if (!dropped && (System.currentTimeMillis() - disposeTime) > 200) {
+                    dropDown(true);
+                }
                 break;
             }
             case SWT.MouseUp: {

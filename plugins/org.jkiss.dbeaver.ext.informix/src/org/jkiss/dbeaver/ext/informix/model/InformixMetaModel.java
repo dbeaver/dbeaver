@@ -77,7 +77,7 @@ public class InformixMetaModel extends GenericMetaModel
                 "WHERE T2.tabid = T1.tabid AND T2.tabname = ?";
 
             try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
-                dbStat.setString(2, table.getName());
+                dbStat.setString(1, table.getName());
                 List<GenericTrigger> result = new ArrayList<>();
 
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {

@@ -22,8 +22,15 @@ import org.eclipse.osgi.util.NLS;
 
 public class ExasolMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.exasol.ExasolResources"; //$NON-NLS-1$
+    public static String dialog_schema_drop_title;
+    public static String dialog_schema_drop_message;
+    public static String dialog_connection_alter_message;
+    public static String dialog_connection_alter_title;
+    
 	public static String dialog_table_tools_options;
 	public static String dialog_table_tools_result;
+	
+	public static String dialog_general_continue;
 
     static {
         // initialize resource bundle
@@ -55,6 +62,7 @@ public class ExasolMessages extends NLS {
 	public static String dialog_table_tools_row_sep;
 	public static String dialog_table_tools_encoding;
 	public static String dialog_table_tools_import_title;
+	public static String dialog_struct_edit_fk_label_fk_name;
     
 
 }
