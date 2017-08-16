@@ -76,6 +76,17 @@ public class DBDDataFilter {
         return null;
     }
 
+    @Nullable
+    public DBDAttributeConstraint getConstraint(String name)
+    {
+        for (DBDAttributeConstraint co : constraints) {
+            if (CommonUtils.equalObjects(co.getAttribute().getName(), name)) {
+                return co;
+            }
+        }
+        return null;
+    }
+
     public void addConstraints(List<DBDAttributeConstraint> constraints) {
         this.constraints.addAll(constraints);
     }
