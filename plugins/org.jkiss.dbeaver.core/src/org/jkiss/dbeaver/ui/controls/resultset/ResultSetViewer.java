@@ -2237,10 +2237,10 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private DBDDataFilter restoreDataFilter(DBSDataContainer dataContainer) {
+    private DBDDataFilter restoreDataFilter(final DBSDataContainer dataContainer) {
 
         // Restore data filter
-        DataFilterRegistry.SavedDataFilter savedConfig = DataFilterRegistry.getInstance().getSavedConfig(dataContainer);
+        final DataFilterRegistry.SavedDataFilter savedConfig = DataFilterRegistry.getInstance().getSavedConfig(dataContainer);
         if (savedConfig != null) {
             final DBDDataFilter dataFilter = new DBDDataFilter();
             DBRRunnableWithProgress restoreTask = new DBRRunnableWithProgress() {
