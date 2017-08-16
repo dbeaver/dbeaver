@@ -2242,12 +2242,12 @@ public class ResultSetViewer extends Viewer
         // Restore data filter
         DataFilterRegistry.SavedDataFilter savedConfig = DataFilterRegistry.getInstance().getSavedConfig(dataContainer);
         if (savedConfig != null) {
-            final DBDDataFilter dataFilter = new DBDDataFilter(new ArrayList<>());
+            final DBDDataFilter dataFilter = new DBDDataFilter();
             DBRRunnableWithProgress restoreTask = new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        savedConfig.restoreDataFilter(new VoidProgressMonitor(), dataContainer, dataFilter);
+                        savedConfig.restoreDataFilter(monitor, dataContainer, dataFilter);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
