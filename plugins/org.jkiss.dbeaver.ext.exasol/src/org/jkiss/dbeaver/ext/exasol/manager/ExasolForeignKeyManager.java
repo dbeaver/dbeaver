@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableKeyColumn;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolCreateForeignKeyDialog;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolCreateForeignKeyDialog.FKColumnInfo;
@@ -114,6 +115,24 @@ public class ExasolForeignKeyManager
 		);
 	}
 
+	@Override
+	protected void addObjectModifyActions(List<DBEPersistAction> actionList,
+			SQLObjectEditor<ExasolTableForeignKey, ExasolTable>.ObjectChangeCommand command)
+	{
+		final ExasolTableForeignKey constraint = command.getObject();
+		
+		if (command.getProperties().containsKey("enabled"))
+		{
+			actionList.add(
+					new SQLDatabasePersistAction("Alter FK",
+							"ALTER TABLE " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + 
+							" MODIFY CONSTRAINT " + constraint.getName() + " " +
+							(constraint.getEnabled() ? "ENABLE" : "DISABLE")
+							)
+					);
+		}
+	}
+	
 	@Override
     protected void processObjectRename(DBECommandContext commandContext, ExasolTableForeignKey object, String newName) throws DBException
     {
