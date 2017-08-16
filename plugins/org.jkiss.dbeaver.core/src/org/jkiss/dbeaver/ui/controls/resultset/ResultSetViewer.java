@@ -290,7 +290,12 @@ public class ResultSetViewer extends Viewer
 
     public void saveDataFilter()
     {
-
+        DBCExecutionContext context = getExecutionContext();
+        if (context == null) {
+            log.error("Can't save data filter with null context");
+            return;
+        }
+        DataFilterRegistry.getInstance().saveDataFilter(getDataContainer(), model.getDataFilter());
     }
 
     void switchFilterFocus() {
@@ -2207,17 +2212,33 @@ public class ResultSetViewer extends Viewer
 
         // Pump data
         DBSDataContainer dataContainer = getDataContainer();
+        DBDDataFilter dataFilter = null;
+
+        DataFilterRegistry.SavedDataFilter savedConfig = DataFilterRegistry.getInstance().getSavedConfig(dataContainer);
+        if (savedConfig != null) {
+            try {
+                dataFilter = new DBDDataFilter(new ArrayList<>());
+                savedConfig.restoreDataFilter(new VoidProgressMonitor(), dataContainer, dataFilter);
+                if (!dataFilter.hasFilters()) {
+                    dataFilter = null;
+                }
+            } catch (DBException e) {
+                DBeaverUI.getInstance().showError("Filter restore", "Error resting data filter state", e);
+            }
+        }
+
         if (container.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
-            runDataPump(dataContainer, null, 0, segmentSize, -1, true, false, new Runnable() {
+            Runnable finalizer = new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     if (activePresentation.getControl() != null && !activePresentation.getControl().isDisposed()) {
                         activePresentation.formatData(true);
                     }
                 }
-            });
+            };
+
+            runDataPump(dataContainer, dataFilter, 0, segmentSize, -1, true, false, finalizer);
         } else {
             DBUserInterface.getInstance().showError(
                     "Error executing query",

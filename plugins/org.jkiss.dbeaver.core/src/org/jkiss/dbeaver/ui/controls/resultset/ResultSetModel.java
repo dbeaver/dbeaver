@@ -536,6 +536,7 @@ public class ResultSetModel {
         // Add new data
         appendData(rows);
 
+        // Init data filter
         if (metadataChanged) {
             this.dataFilter = createDataFilter();
         } else {
