@@ -7,7 +7,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableKeyColumn;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolCreateForeignKeyDialog;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolCreateForeignKeyDialog.FKColumnInfo;
