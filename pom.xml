@@ -9,9 +9,10 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>4.1.2</dbeaver-version>
+        <dbeaver-version>4.1.3</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.0.0</tycho-version>
+        <tycho-versions-version>0.26.0</tycho-versions-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
         <eclipse-p2-repo.url>http://download.eclipse.org/releases/neon/</eclipse-p2-repo.url>
@@ -128,6 +129,13 @@
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-maven-plugin</artifactId>
                 <version>${tycho-version}</version>
+                <extensions>true</extensions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-versions-plugin</artifactId>
+                <version>${tycho-versions-version}</version>
                 <extensions>true</extensions>
             </plugin>
 
