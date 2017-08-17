@@ -46,6 +46,12 @@ public abstract class ExasolGrantee
 		}
 	}
 	
+	public ExasolGrantee(ExasolDataSource dataSource, Boolean persisted)
+	{
+		this.dataSource = dataSource;
+		this.persisted = persisted;
+	}
+	
 	public abstract String getName(); 
 
 	@Override

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -40,7 +41,7 @@ import java.util.List;
 /**
  * @author Karl Griesser
  */
-public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> implements DBSEntityReferrer,DBPScriptObject {
+public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> implements DBSEntityReferrer,DBPScriptObject, DBPNamedObject2 {
 
     private String owner;
     private Boolean enabled;
@@ -58,8 +59,14 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> imple
 
     }
 
-    public ExasolTableUniqueKey(ExasolTable exasolTable, DBSEntityConstraintType constraintType) {
-        super(exasolTable, null, null, constraintType, false);
+    public ExasolTableUniqueKey(
+    		ExasolTable exasolTable, 
+    		DBSEntityConstraintType constraintType,
+    		Boolean enabled,
+    		String name
+    		) {
+        super(exasolTable, name, "", constraintType, false);
+        this.enabled = enabled;
     }
 
     // -----------------
@@ -119,10 +126,12 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> imple
         return owner;
     }
 
-    @Property(viewable = true, editable = false)
+    @Property(viewable = true, editable = true, updatable = true)
     public Boolean getEnabled() {
         return enabled;
     }
+    
+    
 
 	public boolean hasColumn(ExasolTableColumn column)
 	{
@@ -142,6 +151,11 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> imple
 	{
 		return ExasolUtils.getPKDdl(this, monitor);
 	}
+	
+	public void setEnabled(Boolean enable)
+	{
+		this.enabled = enable;
+	}
 
-
+    
 }

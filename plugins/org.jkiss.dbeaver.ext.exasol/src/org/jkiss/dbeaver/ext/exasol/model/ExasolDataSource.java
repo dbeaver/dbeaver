@@ -687,6 +687,11 @@ public class ExasolDataSource extends JDBCDataSource
 	// Authorities
 	// -----------------------
 
+	public Boolean hasAlterUserPrivilege()
+	{
+		return this.exasolCurrentUserPrivileges.UserHasAlterUserPriv();
+	}
+	
 	public boolean isAuthorizedForUsers()
 	{
 		return this.exasolCurrentUserPrivileges.getUserIsAuthorizedForUsers();
@@ -702,7 +707,6 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		return this.exasolCurrentUserPrivileges.getUserIsAuthorizedForRoles();
 	}
-	
 	
 	public boolean isAuthorizedForRolePrivs()
 	{
@@ -746,6 +750,11 @@ public class ExasolDataSource extends JDBCDataSource
 	public DBSObjectCache<ExasolDataSource, ExasolUser> getUserCache()
 	{
 		return userCache;
+	}
+	
+	public DBSObjectCache<ExasolDataSource, ExasolRole> getRoleCache()
+	{
+		return roleCache;
 	}
 
 	public DBSObjectCache<ExasolDataSource, ExasolSchema> getSchemaCache()
@@ -851,5 +860,6 @@ public class ExasolDataSource extends JDBCDataSource
     {
     	return exasolCurrentUserPrivileges;
     }
+    
 
 }
