@@ -34,7 +34,9 @@ import org.jkiss.dbeaver.core.application.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.core.application.update.CheckForUpdateAction;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.actions.common.EmergentExitAction;
+import org.jkiss.dbeaver.ui.actions.common.ExternalPageAction;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
 import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
@@ -218,6 +220,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.equinox.p2.ui.sdk.install"));
                 helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.ui.help.installationDialog"));
                 helpMenu.add(checkUpdatesAction);
+                helpMenu.add(new ExternalPageAction("Enterprise Edition", UIIcon.DBEAVER_LOGO_SMALL, "https://dbeaver.com"));
             } else {
                 helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
             }
@@ -259,4 +262,5 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             statusLine.add(localeItem);
         }
     }
+
 }
