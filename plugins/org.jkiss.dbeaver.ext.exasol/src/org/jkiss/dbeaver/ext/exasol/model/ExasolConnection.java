@@ -188,4 +188,10 @@ public class ExasolConnection
     {
         this.password = password;
     }
+    
+    @Override
+    public String toString()
+    {
+    	return "Connection "+getName();
+    }
 }

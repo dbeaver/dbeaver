@@ -115,6 +115,24 @@ public class ExasolForeignKeyManager
 	}
 
 	@Override
+	protected void addObjectModifyActions(List<DBEPersistAction> actionList,
+			SQLObjectEditor<ExasolTableForeignKey, ExasolTable>.ObjectChangeCommand command)
+	{
+		final ExasolTableForeignKey constraint = command.getObject();
+		
+		if (command.getProperties().containsKey("enabled"))
+		{
+			actionList.add(
+					new SQLDatabasePersistAction("Alter FK",
+							"ALTER TABLE " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + 
+							" MODIFY CONSTRAINT " + constraint.getName() + " " +
+							(constraint.getEnabled() ? "ENABLE" : "DISABLE")
+							)
+					);
+		}
+	}
+	
+	@Override
     protected void processObjectRename(DBECommandContext commandContext, ExasolTableForeignKey object, String newName) throws DBException
     {
         ObjectRenameCommand command = new ObjectRenameCommand(object, ModelMessages.model_jdbc_rename_object, newName);

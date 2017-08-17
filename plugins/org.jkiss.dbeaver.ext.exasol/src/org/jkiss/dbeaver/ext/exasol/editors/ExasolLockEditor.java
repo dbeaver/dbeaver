@@ -39,11 +39,13 @@ public class ExasolLockEditor extends AbstractLockEditor {
 	   public static final String sidWait = "wsid"; 
 	
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected LockManagerViewer createLockViewer(
 			DBCExecutionContext executionContext, Composite parent)
 	{
-	    DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> lockManager = (DBAServerLockManager) new ExasolLockManager((ExasolDataSource) executionContext.getDataSource());
+	    @SuppressWarnings("rawtypes")
+		DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> lockManager = (DBAServerLockManager) new ExasolLockManager((ExasolDataSource) executionContext.getDataSource());
 		
 		return new LockManagerViewer(this, parent, lockManager) {
 			   @Override
@@ -51,7 +53,8 @@ public class ExasolLockEditor extends AbstractLockEditor {
 	            {
 	                contributionManager.add(new Separator());
 	            }
-	            @Override
+	            @SuppressWarnings("serial")
+				@Override
 	            protected void onLockSelect(final DBAServerLock<?> lock)
 	            {
 	                super.onLockSelect(lock);
