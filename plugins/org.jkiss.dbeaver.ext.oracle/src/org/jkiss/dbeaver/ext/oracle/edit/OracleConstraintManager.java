@@ -17,13 +17,20 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import java.util.List;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -56,7 +63,9 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
                     parent,
                     new DBSEntityConstraintType[] {
                         DBSEntityConstraintType.PRIMARY_KEY,
-                        DBSEntityConstraintType.UNIQUE_KEY });
+                        DBSEntityConstraintType.UNIQUE_KEY },
+                    	true
+                    );
                 if (!editPage.edit()) {
                     return null;
                 }
@@ -66,7 +75,7 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
                     editPage.getConstraintName(),
                     editPage.getConstraintType(),
                     null,
-                    OracleObjectStatus.ENABLED);
+                    editPage.isEnableConstraint() ? OracleObjectStatus.ENABLED : OracleObjectStatus.DISABLED);
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     constraint.addColumn(
@@ -98,6 +107,20 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
             return "UNIQUE"; //$NON-NLS-1$
         }
         return super.getAddConstraintTypeClause(constraint);
+    }
+    
+    @Override
+    protected void addObjectCreateActions(List<DBEPersistAction> actions,
+    		SQLObjectEditor<OracleTableConstraint, OracleTableBase>.ObjectCreateCommand command)
+    {
+    	OracleTableConstraint constraint = (OracleTableConstraint) command.getObject();
+    	OracleTableBase table = constraint.getTable();
+        actions.add(
+                new SQLDatabasePersistAction(
+                    ModelMessages.model_jdbc_create_new_constraint,
+                    "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(table, command) + 
+                    " "  + (constraint.getStatus() == OracleObjectStatus.ENABLED ? "ENABLE" : "DISABLE" )
+                	));
     }
 
 }

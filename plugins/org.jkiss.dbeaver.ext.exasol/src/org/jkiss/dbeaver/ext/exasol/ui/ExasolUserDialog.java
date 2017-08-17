@@ -35,16 +35,15 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 
-public class ExasolConnectionDialog extends BaseDialog {
+public class ExasolUserDialog extends BaseDialog {
 
     private String name = "";
-    private String user = "";
     private String password = "";
-    private String url = "";
+    private String ldapDN = "";
     private String comment = "";
 
     
-    public ExasolConnectionDialog(Shell parentShell, ExasolDataSource datasource)
+    public ExasolUserDialog(Shell parentShell, ExasolDataSource datasource)
     {
         super(parentShell,"Create Connection",null);
     }
@@ -64,38 +63,30 @@ public class ExasolConnectionDialog extends BaseDialog {
         gd.horizontalIndent = 0;
         group.setLayoutData(gd);
         group.setLayout(new GridLayout(2, true));  
-        group.setLayout(new GridLayout(2, false));
-        final Text nameText = UIUtils.createLabelText(group, "Connection Name", "");
-        final Text urlText = UIUtils.createLabelText(group,"Connection URL", "");
-        final Text commentText = UIUtils.createLabelText(group,"Description", "");
+        final Text nameText = UIUtils.createLabelText(group, "User Name", "");
 
-
-        Button saveCred = UIUtils.createCheckbox(group, "Provide Credentials","Credential", false, 2);
-        Text userText = UIUtils.createLabelText(group, "User", "");
-        userText.setEnabled(false);
+        final Text commentText = UIUtils.createLabelText(group,"Comment", "");
+        
         Text passwordText = UIUtils.createLabelText(group, "Password", "", SWT.PASSWORD);
-        passwordText.setEnabled(false);
+        Button ldapDNCheck = UIUtils.createCheckbox(group, "LDAP User", "Create LDAP User", false, 2);
+        final Text urlText = UIUtils.createLabelText(group,"LDAP DN", "");
+        urlText.setEnabled(false);
 
         
         ModifyListener mod = new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
                 name = nameText.getText();
-                user = userText.getText();
-                url  = urlText.getText();
+                ldapDN  = urlText.getText();
                 password = passwordText.getText();
                 comment = commentText.getText();
+                getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
                 //enable/disable OK button   
                 if (
                         (
-                            saveCred.getSelection() &
-                            (
-                                CommonUtils.isEmpty(user) |
-                                CommonUtils.isEmpty(password)
-                            )
+                            ldapDNCheck.getSelection() & CommonUtils.isEmpty(ldapDN) 
                         ) 
-                        | name.isEmpty() 
-                        | url.isEmpty()
+                        | name.isEmpty() | (!ldapDNCheck.getSelection() & CommonUtils.isEmpty(password) )
                     )
                 {
                     getButton(IDialogConstants.OK_ID).setEnabled(false);
@@ -106,17 +97,20 @@ public class ExasolConnectionDialog extends BaseDialog {
         };
         
         nameText.addModifyListener(mod);
-        userText.addModifyListener(mod);
-        urlText.addModifyListener(mod);
         passwordText.addModifyListener(mod);
-        commentText.addModifyListener(mod);
-        saveCred.addSelectionListener(new SelectionAdapter() {
+        urlText.addModifyListener(mod);
+        ldapDNCheck.addSelectionListener(new SelectionAdapter() {
             
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                userText.setEnabled(saveCred.getSelection());
-                passwordText.setEnabled(saveCred.getSelection());
+            	if (ldapDNCheck.getSelection()) {
+                	passwordText.setText("");
+            	} else {
+                	urlText.setText("");
+            	}
+            	passwordText.setEnabled(!ldapDNCheck.getSelection());
+            	urlText.setEnabled(ldapDNCheck.getSelection());
             }
             
         });
@@ -130,21 +124,15 @@ public class ExasolConnectionDialog extends BaseDialog {
     }
 
 
-    public String getUser()
-    {
-        return user;
-    }
-
-
     public String getPassword()
     {
         return password;
     }
     
 
-    public String getUrl()
+    public String getLDAPDN()
     {
-        return url;
+        return ldapDN;
     }
 
     public String getComment()
@@ -159,5 +147,8 @@ public class ExasolConnectionDialog extends BaseDialog {
         super.createButtonsForButtonBar(parent);
         getButton(IDialogConstants.OK_ID).setEnabled(false);
     }
+
+
+
 
 }

@@ -146,12 +146,12 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
     @Nullable
     @NotNull
     @Override
-    @Property(id = "reference", viewable = false)
+    @Property(id = "reference", viewable = true)
     public ExasolTableUniqueKey getReferencedConstraint() {
         return referencedKey;
     }
 
-    @Property(viewable = true, editable = true)
+    @Property(viewable = true, editable = true, updatable = true)
     public Boolean getEnabled() {
         return this.enabled;
     }
@@ -179,6 +179,6 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
 	{
 		this.constName = name;
 	}
-	
+		
 
 }
