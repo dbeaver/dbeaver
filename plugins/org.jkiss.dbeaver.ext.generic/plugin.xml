@@ -795,7 +795,7 @@
                     sampleURL="jdbc:redshift://{host}:{port}/{database}"
                     defaultPort="5439"
                     description="Amazon Redshift JDBC driver">
-                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/RedshiftJDBC41-1.1.17.1017.jar"/>
+                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/RedshiftJDBC41-no-awssdk-1.2.7.1003.jar"/>
                 </driver>
 
                 <!-- Virtuoso  -->
