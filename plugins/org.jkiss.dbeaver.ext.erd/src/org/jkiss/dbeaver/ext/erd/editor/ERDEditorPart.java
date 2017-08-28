@@ -88,6 +88,7 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.util.*;
 
@@ -683,6 +684,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             return;
         }
 
+        File outFile = new File(filePath);
+        if (outFile.exists()) {
+            if (!UIUtils.confirmAction(shell, "Overwrite file", "File '" + filePath + "' already exists.\nOverwrite?")) {
+                return;
+            }
+        }
         IFigure figure = rootPart.getLayer(ScalableFreeformRootEditPart.PRINTABLE_LAYERS);
         Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane) figure).getFreeformExtent() : figure.getBounds();
         try {
