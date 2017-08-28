@@ -63,6 +63,7 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
@@ -685,6 +686,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         IFigure figure = rootPart.getLayer(ScalableFreeformRootEditPart.PRINTABLE_LAYERS);
         Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane) figure).getFreeformExtent() : figure.getBounds();
         try {
+            if (contentBounds.isEmpty()) {
+                throw new DBException("Can't save empty diagram");
+            }
             try (FileOutputStream fos = new FileOutputStream(filePath)) {
                 Rectangle r = figure.getBounds();
                 GC gc = null;
