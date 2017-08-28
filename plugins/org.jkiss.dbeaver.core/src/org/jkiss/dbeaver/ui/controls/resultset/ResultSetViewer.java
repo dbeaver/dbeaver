@@ -1559,7 +1559,7 @@ public class ResultSetViewer extends Viewer
 
                 MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(ResultSetCopySpecialHandler.CMD_COPY_SPECIAL));
                 extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCopySpecialHandler.CMD_COPY_SPECIAL));
-                extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_COPY_COLUMN_NAMES));
+                extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCopySpecialHandler.CMD_COPY_COLUMN_NAMES));
                 if (row != null) {
                     extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_COPY_ROW_NAMES));
                 }
