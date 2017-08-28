@@ -773,12 +773,14 @@ public final class SQLUtils {
         while (!name.isEmpty()) {
             boolean hadQuotedPart = false;
             for (String[] quotePair : quoteStrings) {
-                if (name.startsWith(quotePair[0])) {
-                    int endPos = name.indexOf(quotePair[1]);
+                String startQuote = quotePair[0];
+                String endQuote = quotePair[1];
+                if (!CommonUtils.isEmpty(startQuote) && !CommonUtils.isEmpty(endQuote) && name.startsWith(startQuote)) {
+                    int endPos = name.indexOf(endQuote);
                     if (endPos != -1) {
                         // Quoted part
-                        nameList.add(name.substring(quotePair[0].length(), endPos));
-                        name = name.substring(endPos + quotePair[1].length()).trim();
+                        nameList.add(name.substring(startQuote.length(), endPos));
+                        name = name.substring(endPos + endQuote.length()).trim();
                         hadQuotedPart = true;
                         break;
                     }
