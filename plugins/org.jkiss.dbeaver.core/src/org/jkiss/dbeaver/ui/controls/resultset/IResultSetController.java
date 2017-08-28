@@ -174,4 +174,5 @@ public interface IResultSetController extends DBPContextProvider {
 
     void lockActionsByFocus(Control lockedBy);
 
+    IResultSetSelection getSelection();
 }
