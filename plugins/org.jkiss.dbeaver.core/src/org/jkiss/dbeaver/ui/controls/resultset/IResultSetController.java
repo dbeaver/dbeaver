@@ -84,6 +84,8 @@ public interface IResultSetController extends DBPContextProvider {
 
     List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor);
 
+    boolean checkForChanges();
+
     /**
      * Refreshes data. Reverts all changes and clears filters.
      */

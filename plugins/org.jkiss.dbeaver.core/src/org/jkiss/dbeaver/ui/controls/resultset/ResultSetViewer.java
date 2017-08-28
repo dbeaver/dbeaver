@@ -2123,7 +2123,8 @@ public class ResultSetViewer extends Viewer
         return container.getExecutionContext();
     }
 
-    private boolean checkForChanges() {
+    @Override
+    public boolean checkForChanges() {
         // Check if we are dirty
         if (isDirty()) {
             int checkResult = new UITask<Integer>() {
