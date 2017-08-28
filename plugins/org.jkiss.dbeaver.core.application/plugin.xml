@@ -177,6 +177,7 @@
               parentId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
 
         <!-- Text editors -->
+        <key commandId="org.eclipse.ui.edit.text.openLocalFile" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+O"/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F3"/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.create" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+F3"/>
 

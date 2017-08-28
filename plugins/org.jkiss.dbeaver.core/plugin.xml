@@ -2170,7 +2170,7 @@
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+F6"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+F6"/>
         <!--<key commandId="org.jkiss.dbeaver.ui.editors.sql.assist.templates" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SPACE"/>-->
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+O"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+O"/>
 
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+/"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+/"/>
