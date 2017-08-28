@@ -715,6 +715,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     public void refreshPart(final Object source, boolean force)
     {
+        if (getContainer() == null || getContainer().isDisposed()) {
+            return;
+        }
         if (force && getDatabaseObject().isPersisted()) {
             // Lists and commands should be refreshed only if we make real refresh from remote storage
             // Otherwise just update object's properties
