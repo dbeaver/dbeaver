@@ -89,7 +89,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     @Property(viewable = true, order = 20)
     public PostgreTablespace getTablespace(DBRProgressMonitor monitor) throws DBException {
         if (tablespaceId == 0) {
-            return null;
+            return getDatabase().getDefaultTablespace(monitor);
         }
         return PostgreUtils.getObjectById(monitor, getDatabase().tablespaceCache, getDatabase(), tablespaceId);
     }
