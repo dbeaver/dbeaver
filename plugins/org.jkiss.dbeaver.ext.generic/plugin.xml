@@ -794,7 +794,8 @@
                     class="com.amazon.redshift.jdbc41.Driver"
                     sampleURL="jdbc:redshift://{host}:{port}/{database}"
                     defaultPort="5439"
-                    description="Amazon Redshift JDBC driver">
+                    description="Amazon Redshift JDBC driver"
+                    webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html">
                     <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/RedshiftJDBC41-no-awssdk-1.2.7.1003.jar"/>
                 </driver>
 
