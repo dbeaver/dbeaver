@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
+    <annotation>
+        <appInfo>
+            <meta.schema plugin="org.jkiss.dbeaver.core" id="org.jkiss.dbeaver.product.bundles" name="Product bundles"/>
+        </appInfo>
+        <documentation>
+            Tools
+        </documentation>
+    </annotation>
+
+    <element name="extension">
+        <annotation>
+            <appInfo>
+                <meta.element/>
+            </appInfo>
+        </annotation>
+        <complexType>
+            <sequence>
+                <element ref="bundle"/>
+            </sequence>
+            <attribute name="point" type="string" use="required">
+                <annotation>
+                    <documentation>
+
+                    </documentation>
+                </annotation>
+            </attribute>
+            <attribute name="id" type="string">
+                <annotation>
+                    <documentation>
+                        Extension ID
+                    </documentation>
+                </annotation>
+            </attribute>
+            <attribute name="name" type="string">
+                <annotation>
+                    <documentation>
+
+                    </documentation>
+                    <appInfo>
+                        <meta.attribute translatable="true"/>
+                    </appInfo>
+                </annotation>
+            </attribute>
+        </complexType>
+    </element>
+
+    <element name="bundle">
+        <annotation>
+            <documentation>
+                Bundle
+            </documentation>
+        </annotation>
+        <complexType>
+            <attribute name="id" type="string" use="required">
+                <annotation>
+                    <documentation>
+                        Bundle ID
+                    </documentation>
+                </annotation>
+            </attribute>
+            <attribute name="label" type="string">
+                <annotation>
+                    <documentation>
+                        Bundle name
+                    </documentation>
+                    <appInfo>
+                        <meta.attribute translatable="true"/>
+                    </appInfo>
+                </annotation>
+            </attribute>
+            <attribute name="description" type="string">
+                <annotation>
+                    <documentation>
+                        Bundle description
+                    </documentation>
+                    <appInfo>
+                        <meta.attribute translatable="true"/>
+                    </appInfo>
+                </annotation>
+            </attribute>
+        </complexType>
+    </element>
+
+</schema>

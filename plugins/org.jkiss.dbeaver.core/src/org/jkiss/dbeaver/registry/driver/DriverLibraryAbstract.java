@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.registry.ProductBundleRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.CommonUtils;
@@ -69,6 +70,13 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
             log.error("Bad file path");
             return null;
         }
+        String bundle = config.getAttribute(RegistryConstants.ATTR_BUNDLE);
+
+        if (!CommonUtils.isEmpty(bundle) && !ProductBundleRegistry.getInstance().hasBundle(bundle)) {
+            // This file is in bundle which is not included in the product. Skip it.
+            return null;
+        }
+
         if (path.startsWith(DriverLibraryRepository.PATH_PREFIX)) {
             return new DriverLibraryRepository(driver, config);
         } else if (path.startsWith(DriverLibraryMavenArtifact.PATH_PREFIX)) {
