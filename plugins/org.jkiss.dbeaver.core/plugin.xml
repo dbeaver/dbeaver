@@ -36,6 +36,7 @@
     <extension-point id="org.jkiss.dbeaver.resultset.panel" name="Result set panels" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sql.covert" name="SQL text conversions" schema="schema/org.jkiss.dbeaver.sql.convert.exsd"/>
     <extension-point id="org.jkiss.dbeaver.tools" name="Tools" schema="schema/org.jkiss.dbeaver.tools.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.product.bundles" name="Product bundles" schema="schema/org.jkiss.dbeaver.product.bundles.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
