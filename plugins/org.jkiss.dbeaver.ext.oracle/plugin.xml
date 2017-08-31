@@ -289,6 +289,13 @@
                     <fileSource url="http://www.oracle.com/technetwork/database/index-100632.html" name="Oracle XML Developers Kit">
                         <file name="xmlparserv2.jar " description="XML Parser"/>
                     </fileSource>
+
+                    <file type="license" path="drivers/oracle/LICENSE.txt" bundle="drivers.oracle"/>
+                    <file type="jar" path="drivers/oracle/ojdbc6.jar" bundle="drivers.oracle"/>
+                    <file type="jar" path="drivers/oracle/orai18n.jar" bundle="drivers.oracle"/>
+                    <file type="jar" path="drivers/oracle/xdb.jar" bundle="drivers.oracle"/>
+                    <file type="jar" path="drivers/oracle/xmlparserv2.jar" bundle="drivers.oracle"/>
+
                 </driver>
             </drivers>
             <views>
