@@ -387,6 +387,9 @@
                         <file name="db2jcc4.jar" description="JDBC driver"/>
                     </fileSource>
 -->
+                    <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
+                    <file type="jar" path="drivers/db2/db2jcc4.jar" bundle="drivers.db2"/>
+
                 </driver>
             </drivers>
 
