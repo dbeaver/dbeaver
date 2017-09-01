@@ -70,11 +70,22 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
             log.error("Bad file path");
             return null;
         }
-        String bundle = config.getAttribute(RegistryConstants.ATTR_BUNDLE);
 
-        if (!CommonUtils.isEmpty(bundle) && !ProductBundleRegistry.getInstance().hasBundle(bundle)) {
-            // This file is in bundle which is not included in the product. Skip it.
-            return null;
+        // Check bundle
+        String bundle = config.getAttribute(RegistryConstants.ATTR_BUNDLE);
+        if (!CommonUtils.isEmpty(bundle)) {
+            boolean not = false;
+            if (bundle.startsWith("!")) {
+                not = true;
+                bundle = bundle.substring(1);
+            }
+            boolean hasBundle = ProductBundleRegistry.getInstance().hasBundle(bundle);
+            if ((!hasBundle && !not) || (hasBundle && not)) {
+                // This file is in bundle which is not included in the product.
+                // Or it is marked as exclusive and bundle exists.
+                // Skip it in both cases.
+                return null;
+            }
         }
 
         if (path.startsWith(DriverLibraryRepository.PATH_PREFIX)) {
