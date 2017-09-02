@@ -255,6 +255,10 @@ public class DiagramLoader
                     if (!CommonUtils.isEmpty(colorBg)) {
                         visualInfo.bgColor = UIUtils.getSharedColor(colorBg);
                     }
+                    String orderStr = entityElem.getAttribute(ATTR_ORDER);
+                    if (!CommonUtils.isEmpty(orderStr)) {
+                        visualInfo.zOrder = Integer.parseInt(orderStr);
+                    }
 
                     TableLoadInfo info = new TableLoadInfo(tableId, table, visualInfo);
                     tableInfos.add(info);
@@ -336,6 +340,10 @@ public class DiagramLoader
                 String colorBg = noteElem.getAttribute(ATTR_COLOR_BG);
                 if (!CommonUtils.isEmpty(colorBg)) {
                     visualInfo.bgColor = UIUtils.getSharedColor(colorBg);
+                }
+                String orderStr = noteElem.getAttribute(ATTR_ORDER);
+                if (!CommonUtils.isEmpty(orderStr)) {
+                    visualInfo.zOrder = Integer.parseInt(orderStr);
                 }
                 diagram.addVisualInfo(note, visualInfo);
             }
