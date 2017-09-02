@@ -351,6 +351,14 @@ public class EntityDiagram extends ERDObject<DBSObject>
         List<ERDObject> children = new ArrayList<>(entities.size() + notes.size());
         children.addAll(entities);
         children.addAll(notes);
+        children.sort(new Comparator<ERDObject>() {
+            @Override
+            public int compare(ERDObject o1, ERDObject o2) {
+                NodeVisualInfo vi1 = getVisualInfo(o1);
+                NodeVisualInfo vi2 = getVisualInfo(o2);
+                return vi1 != null && vi2 != null ? vi1.zOrder - vi2.zOrder : 0;
+            }
+        });
         return children;
     }
 
