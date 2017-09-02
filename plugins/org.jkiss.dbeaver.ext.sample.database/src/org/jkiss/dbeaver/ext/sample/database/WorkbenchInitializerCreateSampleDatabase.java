@@ -53,6 +53,10 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             // Create was canceled
             return;
         }
+        if (DataSourceRegistry.getAllDataSources().size() > 1) {
+            // Seems to be experienced user - no need in sampel db
+            return;
+        }
         IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
         if (activeProject == null) {
             // No active project

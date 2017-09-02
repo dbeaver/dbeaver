@@ -8,7 +8,7 @@
     <version>1.0.0</version>
     <relativePath>../../</relativePath>
   </parent>
-  <artifactId>sample.database</artifactId>
+  <artifactId>org.jkiss.dbeaver.ext.sample.database</artifactId>
   <version>1.0.0</version>
   <packaging>eclipse-plugin</packaging>
 </project>
