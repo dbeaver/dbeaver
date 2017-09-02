@@ -43,8 +43,10 @@ import java.beans.PropertyChangeEvent;
  */
 public class NotePart extends NodePart
 {
+    public NotePart() {
+    }
 
-	public ERDNote getNote()
+    public ERDNote getNote()
 	{
 		return (ERDNote) getModel();
 	}

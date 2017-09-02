@@ -19,28 +19,28 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.draw2d.AbsoluteBendpoint;
 import org.eclipse.draw2d.Bendpoint;
 import org.eclipse.draw2d.RelativeBendpoint;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.swt.graphics.Color;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
-import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
-import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.ext.erd.part.EntityPart;
-import org.jkiss.dbeaver.ext.erd.part.NotePart;
+import org.jkiss.dbeaver.ext.erd.part.*;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
@@ -61,34 +61,36 @@ public class DiagramLoader
 {
     private static final Log log = Log.getLog(DiagramLoader.class);
 
-    public static final String TAG_DIAGRAM = "diagram";
-    public static final String TAG_ENTITIES = "entities";
-    public static final String TAG_DATA_SOURCE = "data-source";
-    public static final String TAG_ENTITY = "entity";
-    public static final String TAG_PATH = "path";
-    public static final String TAG_RELATIONS = "relations";
-    public static final String TAG_RELATION = "relation";
-    public static final String TAG_BEND = "bend";
+    private static final String TAG_DIAGRAM = "diagram";
+    private static final String TAG_ENTITIES = "entities";
+    private static final String TAG_DATA_SOURCE = "data-source";
+    private static final String TAG_ENTITY = "entity";
+    private static final String TAG_PATH = "path";
+    private static final String TAG_RELATIONS = "relations";
+    private static final String TAG_RELATION = "relation";
+    private static final String TAG_BEND = "bend";
 
-    public static final String ATTR_VERSION = "version";
-    public static final String ATTR_NAME = "name";
-    public static final String ATTR_TIME = "time";
-    public static final String ATTR_ID = "id";
-    public static final String ATTR_FQ_NAME = "fq-name";
-    public static final String ATTR_REF_NAME = "ref-name";
-    public static final String ATTR_TYPE = "type";
-    public static final String ATTR_PK_REF = "pk-ref";
-    public static final String ATTR_FK_REF = "fk-ref";
+    private static final String ATTR_VERSION = "version";
+    private static final String ATTR_NAME = "name";
+    private static final String ATTR_TIME = "time";
+    private static final String ATTR_ID = "id";
+    private static final String ATTR_ORDER = "order";
+    private static final String ATTR_COLOR_BG = "color-bg";
+    private static final String ATTR_FQ_NAME = "fq-name";
+    private static final String ATTR_REF_NAME = "ref-name";
+    private static final String ATTR_TYPE = "type";
+    private static final String ATTR_PK_REF = "pk-ref";
+    private static final String ATTR_FK_REF = "fk-ref";
     private static final String TAG_COLUMN = "column";
-    public static final String ATTR_X = "x";
-    public static final String ATTR_Y = "y";
-    public static final String ATTR_W = "w";
-    public static final String ATTR_H = "h";
+    private static final String ATTR_X = "x";
+    private static final String ATTR_Y = "y";
+    private static final String ATTR_W = "w";
+    private static final String ATTR_H = "h";
 
-    public static final int ERD_VERSION_1 = 1;
+    private static final int ERD_VERSION_1 = 1;
     private static final String BEND_ABSOLUTE = "abs";
     private static final String BEND_RELATIVE = "rel";
-    public static final String TAG_NOTES = "notes";
+    private static final String TAG_NOTES = "notes";
     private static final String TAG_NOTE = "note";
 
     private static class TableSaveInfo {
@@ -368,9 +370,11 @@ public class DiagramLoader
         }
     }
 
-    public static void save(DBRProgressMonitor monitor, DiagramPart diagramPart, final EntityDiagram diagram, boolean verbose, OutputStream out)
+    public static void save(DBRProgressMonitor monitor, @Nullable DiagramPart diagramPart, final EntityDiagram diagram, boolean verbose, OutputStream out)
         throws IOException
     {
+        List allNodeFigures = diagramPart == null ? new ArrayList() : diagramPart.getFigure().getChildren();
+
         // Prepare DS objects map
         Map<DBPDataSourceContainer, DataSourceObjects> dsMap = new IdentityHashMap<>();
         if (diagram != null) {
@@ -443,6 +447,9 @@ public class DiagramLoader
                     Rectangle tableBounds;
                     if (tablePart != null) {
                         tableBounds = tablePart.getBounds();
+
+                        saveColorAndOrder(allNodeFigures, xml, tablePart);
+
                     } else {
                         tableBounds = diagram.getInitBounds(erdEntity);
                     }
@@ -450,6 +457,7 @@ public class DiagramLoader
                         xml.addAttribute(ATTR_X, tableBounds.x);
                         xml.addAttribute(ATTR_Y, tableBounds.y);
                     }
+
                     for (DBSObject parent = table.getParentObject(); parent != null && parent != dsContainer; parent = parent.getParentObject()) {
                         xml.startElement(TAG_PATH);
                         xml.addAttribute(ATTR_NAME, parent.getName());
@@ -492,7 +500,10 @@ public class DiagramLoader
                             xml.startElement(TAG_COLUMN);
                             xml.addAttribute(ATTR_NAME, column.getAttribute().getName());
                             try {
-                                xml.addAttribute(ATTR_REF_NAME, DBUtils.getReferenceAttribute(monitor, association, column.getAttribute()).getName());
+                                DBSEntityAttribute referenceAttribute = DBUtils.getReferenceAttribute(monitor, association, column.getAttribute());
+                                if (referenceAttribute != null) {
+                                    xml.addAttribute(ATTR_REF_NAME, referenceAttribute.getName());
+                                }
                             } catch (DBException e) {
                                 log.warn("Error getting reference attribute", e);
                             }
@@ -535,6 +546,8 @@ public class DiagramLoader
                 NotePart notePart = diagramPart == null ? null : diagramPart.getNotePart(note);
                 xml.startElement(TAG_NOTE);
                 if (notePart != null) {
+                    saveColorAndOrder(allNodeFigures, xml, notePart);
+
                     Rectangle noteBounds = notePart.getBounds();
                     if (noteBounds != null) {
                         xml.addAttribute(ATTR_X, noteBounds.x);
@@ -552,6 +565,16 @@ public class DiagramLoader
         xml.endElement();
 
         xml.flush();
+    }
+
+    private static void saveColorAndOrder(List allNodeFigures, XMLBuilder xml, NodePart nodePart) throws IOException {
+        if (nodePart != null) {
+            xml.addAttribute(ATTR_ORDER, allNodeFigures.indexOf(nodePart));
+            Color color = nodePart.getCustomBackgroundColor();
+            if (color != null) {
+                xml.addAttribute(ATTR_COLOR_BG, StringConverter.asString(color.getRGB()));
+            }
+        }
     }
 
 
