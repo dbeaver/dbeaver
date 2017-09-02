@@ -264,4 +264,8 @@
         </config>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.core.application.WorkbenchInitializerNewConnection"/>
+    </extension>
+
 </plugin>
