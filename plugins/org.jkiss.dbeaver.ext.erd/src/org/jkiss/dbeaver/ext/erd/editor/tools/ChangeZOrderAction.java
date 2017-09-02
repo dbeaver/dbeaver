@@ -3,7 +3,6 @@ package org.jkiss.dbeaver.ext.erd.editor.tools;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.gef.ui.actions.SelectionAction;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ext.erd.part.NodePart;
 
@@ -25,7 +24,12 @@ public class ChangeZOrderAction extends SelectionAction {
     }
 
     protected boolean calculateEnabled() {
-        return true;
+        for (Object item : selection.toArray()) {
+            if (item instanceof NodePart) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected void init() {
@@ -38,13 +42,15 @@ public class ChangeZOrderAction extends SelectionAction {
                 IFigure child = ((NodePart) item).getFigure();
                 final IFigure parent = child.getParent();
                 final List children = parent.getChildren();
-                children.remove( child );
-                if (front) {
-                    children.add(child);
-                } else {
-                    children.add(0, child);
+                if (children != null) {
+                    children.remove(child);
+                    if (front) {
+                        children.add(child);
+                    } else {
+                        children.add(0, child);
+                    }
+                    child.repaint();
                 }
-                child.repaint();
             }
         }
 

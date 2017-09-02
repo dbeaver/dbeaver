@@ -72,4 +72,5 @@ public class NoteFigure extends FlowPage {
         textFlow.setPreferredSize(size);
         super.setPreferredSize(size);
     }
+
 }
