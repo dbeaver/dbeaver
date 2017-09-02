@@ -1,0 +1,52 @@
+package org.jkiss.dbeaver.ext.erd.editor.tools;
+
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.gef.ui.actions.SelectionAction;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
+import org.jkiss.dbeaver.ext.erd.part.NodePart;
+
+import java.util.List;
+
+public class ChangeZOrderAction extends SelectionAction {
+
+    private IStructuredSelection selection;
+    private boolean front;
+
+    public ChangeZOrderAction(ERDEditorPart part, IStructuredSelection selection, boolean front) {
+        super(part);
+        this.selection = selection;
+        this.front = front;
+
+        this.setText(front ? "Bring to front" : "Send to back");
+        this.setToolTipText(front ? "Bring to front" : "Send to back");
+        this.setId(front ? "bringToFront" : "sendToBack");
+    }
+
+    protected boolean calculateEnabled() {
+        return true;
+    }
+
+    protected void init() {
+        super.init();
+    }
+
+    public void run() {
+        for (Object item : selection.toArray()) {
+            if (item instanceof NodePart) {
+                IFigure child = ((NodePart) item).getFigure();
+                final IFigure parent = child.getParent();
+                final List children = parent.getChildren();
+                children.remove( child );
+                if (front) {
+                    children.add(child);
+                } else {
+                    children.add(0, child);
+                }
+                child.repaint();
+            }
+        }
+
+    }
+}
