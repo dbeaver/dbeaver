@@ -19,5 +19,8 @@
 
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ext.sample.database.WorkbenchInitializerCreateSampleDatabase"/>
+    </extension>
 
 </plugin>
