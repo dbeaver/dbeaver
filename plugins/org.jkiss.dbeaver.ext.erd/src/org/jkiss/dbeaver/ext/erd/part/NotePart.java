@@ -30,6 +30,7 @@ import org.eclipse.gef.RequestConstants;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.figures.NoteFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
+import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.NoteEditPolicy;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
@@ -140,7 +141,8 @@ public class NotePart extends NodePart
     protected IFigure createFigure()
 	{
         final NoteFigure noteFigure = new NoteFigure(getNote());
-        Rectangle bounds = ((DiagramPart) getParent()).getDiagram().getInitBounds(getNote());
+        EntityDiagram.NodeVisualInfo visualInfo = ((DiagramPart) getParent()).getDiagram().getVisualInfo(getNote(), true);
+        Rectangle bounds = visualInfo.initBounds;
         if (bounds != null) {
             noteFigure.setBounds(bounds);
             noteFigure.setPreferredSize(bounds.getSize());
@@ -149,6 +151,10 @@ public class NotePart extends NodePart
             //noteFigure.setSize(bounds.getSize());
         } else if (noteFigure.getSize().isEmpty()) {
             noteFigure.setPreferredSize(new Dimension(100, 50));
+        }
+        this.customBackground = visualInfo.bgColor;
+        if (this.customBackground != null) {
+            noteFigure.setBackgroundColor(this.customBackground);
         }
         return noteFigure;
     }
