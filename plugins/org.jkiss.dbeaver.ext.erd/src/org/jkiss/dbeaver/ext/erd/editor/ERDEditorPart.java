@@ -76,6 +76,7 @@ import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.editor.tools.ChangeZOrderAction;
+import org.jkiss.dbeaver.ext.erd.editor.tools.SetPartColorAction;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
@@ -759,6 +760,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         if (selection.isEmpty()) {
             return;
         }
+        menu.add(new ChangeZOrderAction(this, selection, true));
+        menu.add(new ChangeZOrderAction(this, selection, false));
+        menu.add(new SetPartColorAction(this, selection));
+
         Set<IAction> actionSet = new HashSet<>();
         for (Object actionId : getSelectionActions()) {
             IAction action = getActionRegistry().getAction(actionId);
@@ -767,8 +772,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 actionSet.add(action);
             }
         }
-        menu.add(new ChangeZOrderAction(this, selection, true));
-        menu.add(new ChangeZOrderAction(this, selection, false));
     }
 
     public void printDiagram()
