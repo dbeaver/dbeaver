@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DB2 Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.db2;singleton:=true
-Bundle-Version: 2.1.48
-Bundle-Release-Date: 20170821
+Bundle-Version: 2.1.49
+Bundle-Release-Date: 20170904
 Bundle-Activator: org.jkiss.dbeaver.ext.db2.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,

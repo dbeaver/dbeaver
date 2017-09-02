@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Vertica Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.vertica;singleton:=true
-Bundle-Version: 1.0.56
-Bundle-Release-Date: 20170821
+Bundle-Version: 1.0.57
+Bundle-Release-Date: 20170904
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.views,

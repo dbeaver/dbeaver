@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: WMI Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.wmi;singleton:=true
-Bundle-Version: 2.0.65
-Bundle-Release-Date: 20170821
+Bundle-Version: 2.0.66
+Bundle-Release-Date: 20170904
 Bundle-Activator: org.jkiss.dbeaver.ext.wmi.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,

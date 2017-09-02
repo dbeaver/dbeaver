@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.core.eclipse;singleton:=true
-Bundle-Version: 4.1.3
-Bundle-Release-Date: 20170821
+Bundle-Version: 4.2.0
+Bundle-Release-Date: 20170904
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: .
 Bundle-Vendor: %Bundle-Vendor
