@@ -27,10 +27,12 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.part.*;
 import org.jkiss.dbeaver.model.*;
@@ -39,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -109,13 +112,13 @@ public class DiagramLoader
     private static class TableLoadInfo {
         final String objectId;
         final DBSEntity table;
-        final Rectangle bounds;
+        final EntityDiagram.NodeVisualInfo visualInfo;
 
-        private TableLoadInfo(String objectId, DBSEntity table, Rectangle bounds)
+        private TableLoadInfo(String objectId, DBSEntity table, EntityDiagram.NodeVisualInfo visualInfo)
         {
             this.objectId = objectId;
             this.table = table;
-            this.bounds = bounds;
+            this.visualInfo = visualInfo;
         }
     }
 
@@ -239,15 +242,21 @@ public class DiagramLoader
                     String locY = entityElem.getAttribute(ATTR_Y);
 
                     DBSEntity table = (DBSEntity) child;
-                    Rectangle bounds = new Rectangle();
+                    EntityDiagram.NodeVisualInfo visualInfo = new EntityDiagram.NodeVisualInfo();
+
+                    visualInfo.initBounds = new Rectangle();
                     if (CommonUtils.isEmpty(locX) || CommonUtils.isEmpty(locY)) {
                         diagram.setNeedsAutoLayout(true);
                     } else {
-                        bounds.x = Integer.parseInt(locX);
-                        bounds.y = Integer.parseInt(locY);
+                        visualInfo.initBounds.x = Integer.parseInt(locX);
+                        visualInfo.initBounds.y = Integer.parseInt(locY);
+                    }
+                    String colorBg = entityElem.getAttribute(ATTR_COLOR_BG);
+                    if (!CommonUtils.isEmpty(colorBg)) {
+                        visualInfo.bgColor = UIUtils.getSharedColor(colorBg);
                     }
 
-                    TableLoadInfo info = new TableLoadInfo(tableId, table, bounds);
+                    TableLoadInfo info = new TableLoadInfo(tableId, table, visualInfo);
                     tableInfos.add(info);
                     tableMap.put(info.objectId, info);
                     monitor.worked(1);
@@ -319,11 +328,16 @@ public class DiagramLoader
                 String locY = noteElem.getAttribute(ATTR_Y);
                 String locW = noteElem.getAttribute(ATTR_W);
                 String locH = noteElem.getAttribute(ATTR_H);
+                EntityDiagram.NodeVisualInfo visualInfo = new EntityDiagram.NodeVisualInfo();
                 if (!CommonUtils.isEmpty(locX) && !CommonUtils.isEmpty(locY) && !CommonUtils.isEmpty(locW) && !CommonUtils.isEmpty(locH)) {
-                    Rectangle bounds = new Rectangle(
+                    visualInfo.initBounds = new Rectangle(
                         Integer.parseInt(locX), Integer.parseInt(locY), Integer.parseInt(locW), Integer.parseInt(locH));
-                    diagram.addInitBounds(note, bounds);
                 }
+                String colorBg = noteElem.getAttribute(ATTR_COLOR_BG);
+                if (!CommonUtils.isEmpty(colorBg)) {
+                    visualInfo.bgColor = UIUtils.getSharedColor(colorBg);
+                }
+                diagram.addVisualInfo(note, visualInfo);
             }
         }
 
@@ -338,7 +352,7 @@ public class DiagramLoader
         for (TableLoadInfo info : tableInfos) {
             final ERDEntity erdEntity = diagram.getERDTable(info.table);
             if (erdEntity != null) {
-                diagram.addInitBounds(erdEntity, info.bounds);
+                diagram.addVisualInfo(erdEntity, info.visualInfo);
             }
         }
 
@@ -444,18 +458,20 @@ public class DiagramLoader
                     if (table instanceof DBPQualifiedObject) {
                         xml.addAttribute(ATTR_FQ_NAME, ((DBPQualifiedObject)table).getFullyQualifiedName(DBPEvaluationContext.UI));
                     }
-                    Rectangle tableBounds;
+                    EntityDiagram.NodeVisualInfo visualInfo;
                     if (tablePart != null) {
-                        tableBounds = tablePart.getBounds();
+                        visualInfo = new EntityDiagram.NodeVisualInfo();
+                        visualInfo.initBounds = tablePart.getBounds();
+                        visualInfo.bgColor = tablePart.getCustomBackgroundColor();
 
                         saveColorAndOrder(allNodeFigures, xml, tablePart);
 
                     } else {
-                        tableBounds = diagram.getInitBounds(erdEntity);
+                        visualInfo = diagram.getVisualInfo(erdEntity);
                     }
-                    if (tableBounds != null) {
-                        xml.addAttribute(ATTR_X, tableBounds.x);
-                        xml.addAttribute(ATTR_Y, tableBounds.y);
+                    if (visualInfo != null && visualInfo.initBounds != null) {
+                        xml.addAttribute(ATTR_X, visualInfo.initBounds.x);
+                        xml.addAttribute(ATTR_Y, visualInfo.initBounds.y);
                     }
 
                     for (DBSObject parent = table.getParentObject(); parent != null && parent != dsContainer; parent = parent.getParentObject()) {
@@ -569,7 +585,7 @@ public class DiagramLoader
 
     private static void saveColorAndOrder(List allNodeFigures, XMLBuilder xml, NodePart nodePart) throws IOException {
         if (nodePart != null) {
-            xml.addAttribute(ATTR_ORDER, allNodeFigures.indexOf(nodePart));
+            xml.addAttribute(ATTR_ORDER, allNodeFigures.indexOf(nodePart.getFigure()));
             Color color = nodePart.getCustomBackgroundColor();
             if (color != null) {
                 xml.addAttribute(ATTR_COLOR_BG, StringConverter.asString(color.getRGB()));

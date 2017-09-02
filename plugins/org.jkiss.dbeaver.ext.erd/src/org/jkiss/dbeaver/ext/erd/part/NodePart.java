@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public abstract class NodePart extends PropertyAwarePart implements NodeEditPart, IColorizedPart {
 
-    private Color customBackground;
+    protected Color customBackground;
     private Rectangle bounds;
 
 
