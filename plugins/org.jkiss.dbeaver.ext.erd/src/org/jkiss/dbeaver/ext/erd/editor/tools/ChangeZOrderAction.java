@@ -1,6 +1,7 @@
 package org.jkiss.dbeaver.ext.erd.editor.tools;
 
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.ui.actions.SelectionAction;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
@@ -37,22 +38,35 @@ public class ChangeZOrderAction extends SelectionAction {
     }
 
     public void run() {
-        for (Object item : selection.toArray()) {
-            if (item instanceof NodePart) {
-                IFigure child = ((NodePart) item).getFigure();
-                final IFigure parent = child.getParent();
-                final List children = parent.getChildren();
-                if (children != null) {
-                    children.remove(child);
-                    if (front) {
-                        children.add(child);
-                    } else {
-                        children.add(0, child);
+        this.execute(this.createReorderCommand(selection.toArray()));
+    }
+
+    private Command createReorderCommand(final Object[] objects) {
+        return new Command() {
+            @Override
+            public void execute() {
+                for (Object item : objects) {
+                    if (item instanceof NodePart) {
+                        IFigure child = ((NodePart) item).getFigure();
+                        final IFigure parent = child.getParent();
+                        final List children = parent.getChildren();
+                        if (children != null) {
+                            children.remove(child);
+                            if (front) {
+                                children.add(child);
+                            } else {
+                                children.add(0, child);
+                            }
+                            child.repaint();
+                        }
                     }
-                    child.repaint();
                 }
             }
-        }
 
+            @Override
+            public boolean canUndo() {
+                return false;
+            }
+        };
     }
 }
