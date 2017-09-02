@@ -75,6 +75,7 @@ import org.jkiss.dbeaver.ext.erd.action.ERDEditorPropertyTester;
 import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
+import org.jkiss.dbeaver.ext.erd.editor.tools.ChangeZOrderAction;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
@@ -752,6 +753,22 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         avMenu.add(new ChangeAttributeVisibilityAction(ERDAttributeVisibility.PRIMARY));
         avMenu.add(new ChangeAttributeVisibilityAction(ERDAttributeVisibility.NONE));
         menu.add(avMenu);
+    }
+
+    public void fillPartContextMenu(IMenuManager menu, IStructuredSelection selection) {
+        if (selection.isEmpty()) {
+            return;
+        }
+        Set<IAction> actionSet = new HashSet<>();
+        for (Object actionId : getSelectionActions()) {
+            IAction action = getActionRegistry().getAction(actionId);
+            if (!actionSet.contains(action)) {
+                menu.add(action);
+                actionSet.add(action);
+            }
+        }
+        menu.add(new ChangeZOrderAction(this, selection, true));
+        menu.add(new ChangeZOrderAction(this, selection, false));
     }
 
     public void printDiagram()
