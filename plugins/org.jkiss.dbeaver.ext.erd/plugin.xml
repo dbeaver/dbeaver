@@ -347,10 +347,10 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.ext.erd.export.format">
-        <exportFormat ext="png" label="PNG format" impl="org.jkiss.dbeaver.ext.erd.export.ERDExportRasterImage"/>
-        <exportFormat ext="gif" label="GIF format" impl="org.jkiss.dbeaver.ext.erd.export.ERDExportRasterImage"/>
-        <exportFormat ext="bmp" label="BMP format" impl="org.jkiss.dbeaver.ext.erd.export.ERDExportRasterImage"/>
-        <exportFormat ext="graphml" label="GraphML format" impl="org.jkiss.dbeaver.ext.erd.export.ERDExportGraphML"/>
+        <exportFormat ext="png" label="PNG format" class="org.jkiss.dbeaver.ext.erd.export.ERDExportRasterImage"/>
+        <exportFormat ext="gif" label="GIF format" class="org.jkiss.dbeaver.ext.erd.export.ERDExportRasterImage"/>
+        <exportFormat ext="bmp" label="BMP format" class="org.jkiss.dbeaver.ext.erd.export.ERDExportRasterImage"/>
+        <exportFormat ext="graphml" label="GraphML format" class="org.jkiss.dbeaver.ext.erd.export.ERDExportGraphML"/>
     </extension>
 
 </plugin>
