@@ -10,7 +10,7 @@
         <relativePath>../../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.data.office</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <packaging>eclipse-plugin</packaging>
 
 <!--
