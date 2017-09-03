@@ -734,7 +734,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             }
             UIUtils.launchProgram(filePath);
             //UIUtils.showMessageBox(shell, "Save ERD", "Diagram has been exported to " + filePath, SWT.ICON_INFORMATION);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             DBUserInterface.getInstance().showError("Save ERD as image", null, e);
         }
 
