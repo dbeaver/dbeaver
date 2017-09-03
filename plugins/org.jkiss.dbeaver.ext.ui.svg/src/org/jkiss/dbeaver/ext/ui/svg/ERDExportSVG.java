@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.ui.svg;
 
+import org.apache.batik.ext.awt.image.codec.png.PNGImageWriter;
+import org.apache.batik.ext.awt.image.spi.ImageWriterRegistry;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -25,6 +27,7 @@ import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 
@@ -37,10 +40,14 @@ public class ERDExportSVG implements ERDExportFormatHandler
 {
     private static final Log log = Log.getLog(ERDExportSVG.class);
 
+    static {
+        // For some reason image writers aren't registered in Batik registry automatically
+        // Probably because of cut dependencies (which are fucking huge for Batic codec)
+        ImageWriterRegistry.getInstance().register(new PNGImageWriter());
+    }
 
     @Override
     public void exportDiagram(EntityDiagram diagram, IFigure diagramFigure, DiagramPart diagramPart, File targetFile) throws DBException {
-
         try {
             IFigure figure = diagramPart.getFigure();
             Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane) figure).getFreeformExtent() : figure.getBounds();
@@ -57,7 +64,11 @@ public class ERDExportSVG implements ERDExportFormatHandler
             graphics.translate(contentBounds.x * -1, contentBounds.y * -1);
             paintDiagram(graphics, figure);
 
-            svgGenerator.stream(targetFile.getAbsolutePath());
+            String filePath = targetFile.getAbsolutePath();
+
+            svgGenerator.stream(filePath);
+
+            UIUtils.launchProgram(filePath);
         } catch (Exception e) {
             DBUserInterface.getInstance().showError("Save ERD as SVG", null, e);
         }

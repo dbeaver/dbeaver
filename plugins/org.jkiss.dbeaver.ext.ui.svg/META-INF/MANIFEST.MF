@@ -12,5 +12,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ext.erd,
  org.apache.xmlgraphics.batik-svggen;bundle-version="1.9.1",
- org.apache.xmlgraphics.batik-awt-util;bundle-version="1.9.1"
+ org.apache.xmlgraphics.batik-awt-util;bundle-version="1.9.1",
+ org.apache.xmlgraphics.batik-codec;bundle-version="1.9.1"
 Bundle-ActivationPolicy: lazy
