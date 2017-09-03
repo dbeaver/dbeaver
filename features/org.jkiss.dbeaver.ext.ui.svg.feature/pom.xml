@@ -8,8 +8,8 @@
     <version>1.0.0</version>
     <relativePath>../../</relativePath>
   </parent>
-  <artifactId>org.jkiss.dbeaver.ext.office.feature</artifactId>
-  <version>1.1.0</version>
+  <artifactId>org.jkiss.dbeaver.ext.ui.svg.feature</artifactId>
+  <version>1.0.0</version>
   <packaging>eclipse-feature</packaging>
   <groupId>org.jkiss.dbeaver</groupId>
 </project>

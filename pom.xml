@@ -48,6 +48,7 @@
         <module>plugins/org.jkiss.dbeaver.ext.exasol</module>
         <module>plugins/org.jkiss.dbeaver.ext.wmi</module>
         <module>plugins/org.jkiss.dbeaver.ext.sample.database</module>
+        <module>plugins/org.jkiss.dbeaver.ext.ui.svg</module>
 		<module>plugins/org.jkiss.dbeaver.data.office</module>
         <module>plugins/org.jkiss.dbeaver.model</module>
         <module>plugins/org.jkiss.dbeaver.test</module>
@@ -60,6 +61,7 @@
         <module>features/org.jkiss.dbeaver.ext.wmi.feature</module>
         <module>features/org.jkiss.dbeaver.ext.exasol.feature</module>
 		<module>features/org.jkiss.dbeaver.ext.office.feature</module>
+        <module>features/org.jkiss.dbeaver.ext.ui.svg.feature</module>
         <module>features/org.jkiss.dbeaver.rcp.feature</module>
         <module>features/org.jkiss.dbeaver.runtime.feature</module>
         <module>features/org.jkiss.dbeaver.standalone.feature</module>
