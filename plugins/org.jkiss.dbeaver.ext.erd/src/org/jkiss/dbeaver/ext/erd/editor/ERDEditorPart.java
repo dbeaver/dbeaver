@@ -664,25 +664,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         saveDialog.setFilterNames(new String[]{
             "PNG format (*.png)",
             "GIF format (*.gif)",
-//            "JPEG format (*.jpg)",
             "Bitmap format (*.bmp)",
+            //"SVG format (*.svg)",
             "GraphML (*.graphml)"
         });
 
         String filePath = DialogUtils.openFileDialog(saveDialog);
         if (filePath == null || filePath.trim().length() == 0) {
-            return;
-        }
-
-        int imageType = SWT.IMAGE_BMP;
-        if (filePath.toLowerCase().endsWith(".jpg")) {
-            imageType = SWT.IMAGE_JPEG;
-        } else if (filePath.toLowerCase().endsWith(".png")) {
-            imageType = SWT.IMAGE_PNG;
-        } else if (filePath.toLowerCase().endsWith(".gif")) {
-            imageType = SWT.IMAGE_GIF;
-        } else if (filePath.toLowerCase().endsWith(".graphml")) {
-            new ERDExportGraphML(getDiagram(), getDiagramPart()).exportDiagramToGraphML(filePath);
             return;
         }
 
@@ -692,6 +680,22 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 return;
             }
         }
+
+        int imageType = SWT.IMAGE_BMP;
+        if (filePath.toLowerCase().endsWith(".jpg")) {
+            imageType = SWT.IMAGE_JPEG;
+        } else if (filePath.toLowerCase().endsWith(".png")) {
+            imageType = SWT.IMAGE_PNG;
+        } else if (filePath.toLowerCase().endsWith(".gif")) {
+            imageType = SWT.IMAGE_GIF;
+        } else if (filePath.toLowerCase().endsWith(".gif")) {
+            //new ERDExportSVG(getDiagram(), getDiagramPart()).exportDiagramToSVG(filePath);
+            return;
+        } else if (filePath.toLowerCase().endsWith(".graphml")) {
+            new ERDExportGraphML(getDiagram(), getDiagramPart()).exportDiagramToGraphML(filePath);
+            return;
+        }
+
         IFigure figure = rootPart.getLayer(ScalableFreeformRootEditPart.PRINTABLE_LAYERS);
         Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane) figure).getFreeformExtent() : figure.getBounds();
         try {
