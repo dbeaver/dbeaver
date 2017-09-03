@@ -46,6 +46,9 @@
 
 								<!-- Batik -->
 								<artifact><id>org.apache.xmlgraphics:batik-svggen:1.9.1</id></artifact>
+								<artifact><id>org.apache.xmlgraphics:batik-codec:1.9.1</id>
+									<transitive>false</transitive>
+								</artifact>
 							</artifacts>
 							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
 
