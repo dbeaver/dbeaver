@@ -496,7 +496,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         String selText = selection.getText().trim();
         selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText);
         if (!CommonUtils.isEmpty(selText)) {
-            SQLScriptElement parsedElement = parseQuery(getDocument(), selection.getOffset(), selection.getOffset() + selection.getLength(), selection.getOffset(), false);
+            SQLScriptElement parsedElement = parseQuery(getDocument(), selection.getOffset(), selection.getOffset() + selection.getLength(), selection.getOffset(), false, false);
             if (parsedElement instanceof SQLControlCommand) {
                 // This is a command
                 element = parsedElement;
@@ -570,7 +570,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         } catch (BadLocationException e) {
             log.warn(e);
         }
-        return parseQuery(document, startPos, document.getLength(), currentPos, false);
+        return parseQuery(document, startPos, document.getLength(), currentPos, false, false);
     }
 
     public SQLScriptElement extractNextQuery(boolean next) {
@@ -634,15 +634,50 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         return partitioner != null && SQLPartitionScanner.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitioner.getContentType(currentPos));
     }
 
-    protected void startScriptEvaluation() {
+    private void startScriptEvaluation() {
         ruleManager.startEval();
     }
 
-    protected void endScriptEvaluation() {
+    private void endScriptEvaluation() {
         ruleManager.endEval();
     }
 
-    protected SQLScriptElement parseQuery(final IDocument document, final int startPos, final int endPos, final int currentPos, final boolean scriptMode) {
+    public List<SQLScriptElement> extractScriptQueries(int startOffset, int length, boolean scriptMode, boolean keepDelimiters)
+    {
+        List<SQLScriptElement> queryList = new ArrayList<>();
+
+        IDocument document = getDocument();
+        if (document == null) {
+            return queryList;
+        }
+
+        this.startScriptEvaluation();
+        try {
+            for (int queryOffset = startOffset; ; ) {
+                SQLScriptElement query = parseQuery(document, queryOffset, startOffset + length, queryOffset, scriptMode, keepDelimiters);
+                if (query == null) {
+                    break;
+                }
+                queryList.add(query);
+                queryOffset = query.getOffset() + query.getLength();
+            }
+        }
+        finally {
+            this.endScriptEvaluation();
+        }
+
+        if (getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
+            // Parse parameters
+            for (SQLScriptElement query : queryList) {
+                if (query instanceof SQLQuery) {
+                    ((SQLQuery)query).setParameters(parseParameters(getDocument(), (SQLQuery) query));
+                }
+            }
+        }
+        return queryList;
+    }
+
+    protected SQLScriptElement parseQuery(final IDocument document, final int startPos, final int endPos, final int currentPos, final boolean scriptMode, final boolean keepDelimiters) {
         if (endPos - startPos <= 0) {
             return null;
         }
@@ -794,7 +829,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     String queryText = document.get(statementStart, tokenOffset - statementStart);
                     queryText = SQLUtils.fixLineFeeds(queryText);
 
-                    if (isDelimiter && (hasBlocks ? dialect.isDelimiterAfterBlock() : dialect.isDelimiterAfterQuery())) {
+                    if (isDelimiter && (keepDelimiters || (hasBlocks ? dialect.isDelimiterAfterBlock() : dialect.isDelimiterAfterQuery()))) {
                         if (delimiterText != null) {
                             queryText += delimiterText;
                         }
