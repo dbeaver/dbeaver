@@ -967,9 +967,9 @@ public class SQLEditor extends SQLEditorBase implements
             // Execute all SQL statements consequently
             ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
             if (selection.getLength() > 1) {
-                elements = extractScriptQueries(selection.getOffset(), selection.getLength());
+                elements = extractScriptQueries(selection.getOffset(), selection.getLength(), true, false);
             } else {
-                elements = extractScriptQueries(0, document.getLength());
+                elements = extractScriptQueries(0, document.getLength(), true, false);
             }
         } else {
             // Execute statement under cursor or selected text (if selection present)
@@ -1115,41 +1115,6 @@ public class SQLEditor extends SQLEditorBase implements
             }
             curQueryProcessor.processQueries(queries, false, export, false, queryListener);
         }
-    }
-
-    private List<SQLScriptElement> extractScriptQueries(int startOffset, int length)
-    {
-        List<SQLScriptElement> queryList = new ArrayList<>();
-
-        IDocument document = getDocument();
-        if (document == null) {
-            return queryList;
-        }
-
-        this.startScriptEvaluation();
-        try {
-            for (int queryOffset = startOffset; ; ) {
-                SQLScriptElement query = parseQuery(document, queryOffset, startOffset + length, queryOffset, true);
-                if (query == null) {
-                    break;
-                }
-                queryList.add(query);
-                queryOffset = query.getOffset() + query.getLength();
-            }
-        }
-        finally {
-            this.endScriptEvaluation();
-        }
-
-        if (getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
-            // Parse parameters
-            for (SQLScriptElement query : queryList) {
-                if (query instanceof SQLQuery) {
-                    ((SQLQuery)query).setParameters(parseParameters(getDocument(), (SQLQuery) query));
-                }
-            }
-        }
-        return queryList;
     }
 
     private void setStatus(String status, DBPMessageType messageType)
