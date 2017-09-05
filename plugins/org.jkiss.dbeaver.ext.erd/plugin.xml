@@ -19,6 +19,8 @@
 
 <plugin>
 
+    <extension-point id="org.jkiss.dbeaver.ext.erd.export.format" name="Workbench handlers" schema="schema/org.jkiss.dbeaver.ext.erd.export.format.exsd"/>
+
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
                 file-extensions="erd"
@@ -342,6 +344,13 @@
         <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
             <newWizardShortcut id="org.jkiss.dbeaver.ext.erd.navigator.DiagramCreateWizard"/>
         </perspectiveExtension>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ext.erd.export.format">
+        <exportFormat ext="png" label="PNG format" class="org.jkiss.dbeaver.ext.erd.export.ERDExportRasterImage"/>
+        <exportFormat ext="gif" label="GIF format" class="org.jkiss.dbeaver.ext.erd.export.ERDExportRasterImage"/>
+        <exportFormat ext="bmp" label="BMP format" class="org.jkiss.dbeaver.ext.erd.export.ERDExportRasterImage"/>
+        <exportFormat ext="graphml" label="GraphML format" class="org.jkiss.dbeaver.ext.erd.export.ERDExportGraphML"/>
     </extension>
 
 </plugin>

@@ -49,54 +49,47 @@ import java.util.List;
 /**
  * Represents the editable/resizable table which can have columns added,
  * removed, renamed etc.
- * 
+ *
  * @author Serge Rider
  */
-public class EntityPart extends NodePart
-{
-	protected DirectEditManager manager;
+public class EntityPart extends NodePart {
+    protected DirectEditManager manager;
 
-    public EntityPart()
-    {
+    public EntityPart() {
     }
 
     /**
-	 * Returns the Table model object represented by this EditPart
-	 */
-	public ERDEntity getTable()
-	{
-		return (ERDEntity) getModel();
-	}
+     * Returns the Table model object represented by this EditPart
+     */
+    public ERDEntity getTable() {
+        return (ERDEntity) getModel();
+    }
 
-	/**
-	 * @return the children Model objects as a new ArrayList
-	 */
-	@Override
-    protected List<ERDEntityAttribute> getModelChildren()
-	{
-		return getTable().getColumns();
-	}
+    /**
+     * @return the children Model objects as a new ArrayList
+     */
+    @Override
+    protected List<ERDEntityAttribute> getModelChildren() {
+        return getTable().getColumns();
+    }
 
-	@Override
-    protected List<ERDAssociation> getModelSourceConnections()
-	{
-		return getTable().getForeignKeyRelationships();
-	}
+    @Override
+    protected List<ERDAssociation> getModelSourceConnections() {
+        return getTable().getForeignKeyRelationships();
+    }
 
-	@Override
-    protected List<ERDAssociation> getModelTargetConnections()
-	{
-		return getTable().getPrimaryKeyRelationships();
-	}
+    @Override
+    protected List<ERDAssociation> getModelTargetConnections() {
+        return getTable().getPrimaryKeyRelationships();
+    }
 
-	//******************* Editing related methods *********************/
+    //******************* Editing related methods *********************/
 
-	/**
-	 * Creates edit policies and associates these with roles
-	 */
-	@Override
-    protected void createEditPolicies()
-	{
+    /**
+     * Creates edit policies and associates these with roles
+     */
+    @Override
+    protected void createEditPolicies() {
         final boolean editEnabled = isEditEnabled();
         if (editEnabled) {
             installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityNodeEditPolicy());
@@ -105,187 +98,175 @@ public class EntityPart extends NodePart
             installEditPolicy(EditPolicy.COMPONENT_ROLE, new EntityEditPolicy());
             //installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new EntityDirectEditPolicy());
         }
-	}
+    }
 
     //******************* Direct editing related methods *********************/
 
-	/**
-	 * @see org.eclipse.gef.EditPart#performRequest(org.eclipse.gef.Request)
-	 */
-	@Override
-    public void performRequest(Request request)
-	{
-		if (request.getType() == RequestConstants.REQ_DIRECT_EDIT)
-		{
+    /**
+     * @see org.eclipse.gef.EditPart#performRequest(org.eclipse.gef.Request)
+     */
+    @Override
+    public void performRequest(Request request) {
+        if (request.getType() == RequestConstants.REQ_DIRECT_EDIT) {
 /*
-			if (request instanceof DirectEditRequest
+            if (request instanceof DirectEditRequest
 					&& !directEditHitTest(((DirectEditRequest) request).getLocation().getCopy()))
 				return;
 			performDirectEdit();
 */
-		} else if (request.getType() == RequestConstants.REQ_OPEN) {
+        } else if (request.getType() == RequestConstants.REQ_OPEN) {
             getTable().openEditor();
         }
-	}
+    }
 
-	private boolean directEditHitTest(Point requestLoc)
-	{
-		EntityFigure figure = getFigure();
-		EditableLabel nameLabel = figure.getNameLabel();
-		nameLabel.translateToRelative(requestLoc);
+    private boolean directEditHitTest(Point requestLoc) {
+        EntityFigure figure = getFigure();
+        EditableLabel nameLabel = figure.getNameLabel();
+        nameLabel.translateToRelative(requestLoc);
         return nameLabel.containsPoint(requestLoc);
     }
 
-	protected void performDirectEdit()
-	{
-		if (manager == null)
-		{
-			ERDGraphicalViewer viewer = getViewer();
-			ValidationMessageHandler handler = viewer.getValidationHandler();
+    protected void performDirectEdit() {
+        if (manager == null) {
+            ERDGraphicalViewer viewer = getViewer();
+            ValidationMessageHandler handler = viewer.getValidationHandler();
 
-			EntityFigure figure = getFigure();
-			EditableLabel nameLabel = figure.getNameLabel();
-			manager = new ExtendedDirectEditManager(this, TextCellEditor.class, new LabelCellEditorLocator(nameLabel),
-					nameLabel, new TableNameCellEditorValidator(handler));
-		}
-		manager.show();
-	}
+            EntityFigure figure = getFigure();
+            EditableLabel nameLabel = figure.getNameLabel();
+            manager = new ExtendedDirectEditManager(this, TextCellEditor.class, new LabelCellEditorLocator(nameLabel),
+                nameLabel, new TableNameCellEditorValidator(handler));
+        }
+        manager.show();
+    }
 
-	public void handleNameChange(String value)
-	{
-		EntityFigure entityFigure = getFigure();
-		EditableLabel label = entityFigure.getNameLabel();
-		label.setVisible(false);
-		refreshVisuals();
-	}
+    public void handleNameChange(String value) {
+        EntityFigure entityFigure = getFigure();
+        EditableLabel label = entityFigure.getNameLabel();
+        label.setVisible(false);
+        refreshVisuals();
+    }
 
-	/**
-	 * Reverts to existing name in model when exiting from a direct edit
-	 * (possibly before a commit which will result in a change in the label
-	 * value)
-	 */
-	public void revertNameChange()
-	{
-		EntityFigure entityFigure = getFigure();
-		EditableLabel label = entityFigure.getNameLabel();
-		ERDEntity entity = getTable();
-		label.setText(entity.getObject().getName());
-		label.setVisible(true);
-		refreshVisuals();
-	}
+    /**
+     * Reverts to existing name in model when exiting from a direct edit
+     * (possibly before a commit which will result in a change in the label
+     * value)
+     */
+    public void revertNameChange() {
+        EntityFigure entityFigure = getFigure();
+        EditableLabel label = entityFigure.getNameLabel();
+        ERDEntity entity = getTable();
+        label.setText(entity.getObject().getName());
+        label.setVisible(true);
+        refreshVisuals();
+    }
 
-	//******************* Miscellaneous stuff *********************/
+    //******************* Miscellaneous stuff *********************/
 
-	public String toString()
-	{
+    public String toString() {
         return DBUtils.getObjectFullName(getTable().getObject(), DBPEvaluationContext.UI);
-	}
+    }
 
-	//******************* Listener related methods *********************/
+    //******************* Listener related methods *********************/
 
-	/**
-	 * Handles change in name when committing a direct edit
-	 */
-	@Override
-    protected void commitNameChange(PropertyChangeEvent evt)
-	{
-		EntityFigure entityFigure = getFigure();
-		EditableLabel label = entityFigure.getNameLabel();
-		label.setText(getTable().getObject().getName());
-		label.setVisible(true);
-		refreshVisuals();
-	}
+    /**
+     * Handles change in name when committing a direct edit
+     */
+    @Override
+    protected void commitNameChange(PropertyChangeEvent evt) {
+        EntityFigure entityFigure = getFigure();
+        EditableLabel label = entityFigure.getNameLabel();
+        label.setText(getTable().getObject().getName());
+        label.setVisible(true);
+        refreshVisuals();
+    }
 
-	//******************* Layout related methods *********************/
+    //******************* Layout related methods *********************/
 
-	/**
-	 * Creates a figure which represents the table
-	 */
-	@Override
-    protected EntityFigure createFigure()
-	{
+    /**
+     * Creates a figure which represents the table
+     */
+    @Override
+    protected EntityFigure createFigure() {
         final EntityFigure figure = new EntityFigure(getTable());
         final EntityDiagram diagram = ((DiagramPart) getParent()).getDiagram();
-        Rectangle bounds = diagram.getInitBounds(getTable());
-        if (bounds != null) {
-            figure.setLocation(bounds.getLocation());
+        EntityDiagram.NodeVisualInfo visualInfo = diagram.getVisualInfo(getTable());
+        if (visualInfo != null) {
+            if (visualInfo.initBounds != null) {
+                figure.setLocation(visualInfo.initBounds.getLocation());
+            }
+            this.customBackground = visualInfo.bgColor;
+            if (this.customBackground != null) {
+                figure.setBackgroundColor(this.customBackground);
+            }
         }
 
         return figure;
     }
 
-	@Override
-	public EntityFigure getFigure() {
-		return (EntityFigure)super.getFigure();
-	}
+    @Override
+    public EntityFigure getFigure() {
+        return (EntityFigure) super.getFigure();
+    }
 
-	/**
-	 * Reset the layout constraint, and revalidate the content pane
-	 */
-	@Override
-    protected void refreshVisuals()
-	{
-		EntityFigure entityFigure = getFigure();
-		Point location = entityFigure.getLocation();
-		DiagramPart parent = (DiagramPart) getParent();
-		Rectangle constraint = new Rectangle(location.x, location.y, -1, -1);
-		parent.setLayoutConstraint(this, entityFigure, constraint);
-	}
+    /**
+     * Reset the layout constraint, and revalidate the content pane
+     */
+    @Override
+    protected void refreshVisuals() {
+        EntityFigure entityFigure = getFigure();
+        Point location = entityFigure.getLocation();
+        DiagramPart parent = (DiagramPart) getParent();
+        Rectangle constraint = new Rectangle(location.x, location.y, -1, -1);
+        parent.setLayoutConstraint(this, entityFigure, constraint);
+    }
 
-	/**
-	 * @return the Content pane for adding or removing child figures
-	 */
-	@Override
-    public EntityFigure getContentPane()
-	{
+    /**
+     * @return the Content pane for adding or removing child figures
+     */
+    @Override
+    public EntityFigure getContentPane() {
 //		EntityFigure figure = (EntityFigure) getFigure();
 //		return figure.getColumnsFigure();
         return getFigure();
-	}
+    }
 
-	@Override
-    public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connection)
-	{
-		return new ChopboxAnchor(getFigure());
-	}
-
-	@Override
-    public ConnectionAnchor getSourceConnectionAnchor(Request request)
-	{
+    @Override
+    public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connection) {
         return new ChopboxAnchor(getFigure());
-		//return new TopAnchor(getFigure());
-	}
+    }
 
-	@Override
-    public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connection)
-	{
+    @Override
+    public ConnectionAnchor getSourceConnectionAnchor(Request request) {
         return new ChopboxAnchor(getFigure());
-		//return new BottomAnchor(getFigure());
-	}
+        //return new TopAnchor(getFigure());
+    }
 
-	@Override
-    public ConnectionAnchor getTargetConnectionAnchor(Request request)
-	{
-		return new ChopboxAnchor(getFigure());
-	}
+    @Override
+    public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connection) {
+        return new ChopboxAnchor(getFigure());
+        //return new BottomAnchor(getFigure());
+    }
 
-	/**
-	 * Sets the width of the line when selected
-	 */
-	@Override
-    public void setSelected(int value)
-	{
-		super.setSelected(value);
-		EntityFigure entityFigure = getFigure();
-		if (value != EditPart.SELECTED_NONE)
-			entityFigure.setSelected(true);
-		else
-			entityFigure.setSelected(false);
-		entityFigure.repaint();
-	}
+    @Override
+    public ConnectionAnchor getTargetConnectionAnchor(Request request) {
+        return new ChopboxAnchor(getFigure());
+    }
 
-    public AssociationPart getConnectionPart(ERDAssociation rel, boolean source)
-    {
+    /**
+     * Sets the width of the line when selected
+     */
+    @Override
+    public void setSelected(int value) {
+        super.setSelected(value);
+        EntityFigure entityFigure = getFigure();
+        if (value != EditPart.SELECTED_NONE)
+            entityFigure.setSelected(true);
+        else
+            entityFigure.setSelected(false);
+        entityFigure.repaint();
+    }
+
+    public AssociationPart getConnectionPart(ERDAssociation rel, boolean source) {
         for (Object conn : source ? getSourceConnections() : getTargetConnections()) {
             if (conn instanceof AssociationPart && ((AssociationPart) conn).getAssociation() == rel) {
                 return (AssociationPart) conn;
@@ -296,26 +277,23 @@ public class EntityPart extends NodePart
 
     @Override
     public ERDGraphicalViewer getViewer() {
-        return (ERDGraphicalViewer)super.getViewer();
+        return (ERDGraphicalViewer) super.getViewer();
     }
 
     @Override
-    public void activate()
-    {
+    public void activate() {
         super.activate();
         getViewer().handleTableActivate(getTable().getObject());
     }
 
     @Override
-    public void deactivate()
-    {
+    public void deactivate() {
         getViewer().handleTableDeactivate(getTable().getObject());
         super.deactivate();
     }
 
     @Override
-    protected void finalize() throws Throwable
-    {
+    protected void finalize() throws Throwable {
         super.finalize();
     }
 }

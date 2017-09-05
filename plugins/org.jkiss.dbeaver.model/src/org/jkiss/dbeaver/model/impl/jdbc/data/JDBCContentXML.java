@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.utils.MimeTypes;
 import java.io.IOException;
 import java.io.Reader;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLXML;
 
 /**
@@ -109,39 +110,43 @@ public class JDBCContentXML extends JDBCContentLOB {
         throws DBCException
     {
         try {
-            if (storage != null) {
-                // Try 3 jdbc methods to set character stream
-                Reader streamReader = storage.getContentReader();
+            if (xml != null) {
+                preparedStatement.setSQLXML(paramIndex, xml);
+            } else if (storage != null) {
                 try {
-                    preparedStatement.setCharacterStream(
-                        paramIndex,
-                        streamReader);
+                    preparedStatement.setSQLXML(paramIndex, new JDBCSQLXMLImpl(storage));
                 }
                 catch (Throwable e) {
-                    if (e instanceof SQLException) {
-                        throw (SQLException)e;
-                    } else {
+                    if (e instanceof SQLException && !(e instanceof SQLFeatureNotSupportedException)) {
+                        throw (SQLException) e;
+                    }
+                    // Try 3 jdbc methods to set character stream
+                    Reader streamReader = storage.getContentReader();
+                    try {
+                        preparedStatement.setCharacterStream(
+                            paramIndex,
+                            streamReader);
+                    } catch (Throwable e0) {
+                        if (e0 instanceof SQLException && !(e0 instanceof SQLFeatureNotSupportedException)) {
+                            throw (SQLException) e0;
+                        }
                         long streamLength = ContentUtils.calculateContentLength(storage.getContentReader());
                         try {
                             preparedStatement.setCharacterStream(
                                 paramIndex,
                                 streamReader,
                                 streamLength);
-                        }
-                        catch (Throwable e1) {
-                            if (e1 instanceof SQLException) {
-                                throw (SQLException)e1;
-                            } else {
-                                preparedStatement.setCharacterStream(
-                                    paramIndex,
-                                    streamReader,
-                                    (int)streamLength);
+                        } catch (Throwable e1) {
+                            if (e1 instanceof SQLException && !(e instanceof SQLFeatureNotSupportedException)) {
+                                throw (SQLException) e1;
                             }
+                            preparedStatement.setCharacterStream(
+                                paramIndex,
+                                streamReader,
+                                (int) streamLength);
                         }
                     }
                 }
-            } else if (xml != null) {
-                preparedStatement.setSQLXML(paramIndex, xml);
             } else {
                 preparedStatement.setNull(paramIndex, java.sql.Types.SQLXML);
             }

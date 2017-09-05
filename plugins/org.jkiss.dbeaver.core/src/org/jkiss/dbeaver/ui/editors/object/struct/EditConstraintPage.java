@@ -24,6 +24,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
@@ -61,6 +62,8 @@ public class EditConstraintPage extends AttributesSelectorPage {
     private Map<DBSEntityConstraintType, String> TYPE_PREFIX = new HashMap<>();
     private Group expressionGroup;
     private Text expressionText;
+    private Boolean enableConstraint = true;
+    private Boolean showEnable = false;
 
     public EditConstraintPage(
         String title,
@@ -72,6 +75,18 @@ public class EditConstraintPage extends AttributesSelectorPage {
         this.constraintTypes = constraintTypes;
         Assert.isTrue(!ArrayUtils.isEmpty(this.constraintTypes));
     }
+
+    public EditConstraintPage(
+            String title,
+            DBSEntity entity,
+            DBSEntityConstraintType[] constraintTypes, Boolean showEnable)
+        {
+            super(title, entity);
+            this.entity = entity;
+            this.constraintTypes = constraintTypes;
+            this.showEnable = showEnable;
+            Assert.isTrue(!ArrayUtils.isEmpty(this.constraintTypes));
+        }
 
     public EditConstraintPage(
         String title,
@@ -170,6 +185,16 @@ public class EditConstraintPage extends AttributesSelectorPage {
                 toggleEditAreas();
             }
         });
+        
+        final Button enableConstraintButton = UIUtils.createCheckbox(panel, "Enable Constraint", true);
+        enableConstraintButton.setVisible(showEnable);
+        enableConstraintButton.addSelectionListener(new SelectionAdapter() {
+        	@Override
+        	public void widgetSelected(SelectionEvent e)
+        	{
+        		enableConstraint = enableConstraintButton.getSelection();
+        	}
+		});
     }
 
     @Override
@@ -225,6 +250,11 @@ public class EditConstraintPage extends AttributesSelectorPage {
             }
         }
         return false;
+    }
+    
+    public boolean isEnableConstraint()
+    {
+    	return this.enableConstraint;
     }
 
 }

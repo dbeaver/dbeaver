@@ -54,7 +54,7 @@ class GridCellRenderer extends AbstractRenderer
     {
         boolean drawBackground = true;
 
-        if (grid.isEnabled()) {
+        //if (grid.isEnabled()) {
             Color back = grid.getCellBackground(col, row, selected);
 
             if (back != null) {
@@ -62,9 +62,9 @@ class GridCellRenderer extends AbstractRenderer
             } else {
                 drawBackground = false;
             }
-        } else {
+        /*} else {
             grid.setDefaultBackground(gc);
-        }
+        }*/
         gc.setForeground(grid.getCellForeground(col, row, selected));
 
         if (drawBackground) {

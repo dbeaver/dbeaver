@@ -34,7 +34,7 @@
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
-            <property name="versionUpdateURL" value="http://dbeaver.jkiss.org/product/version.xml"/>
+            <property name="versionUpdateURL" value="https://dbeaver.jkiss.org/product/version.xml"/>
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="startupForegroundColor" value="000000"/>
@@ -177,6 +177,7 @@
               parentId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
 
         <!-- Text editors -->
+        <key commandId="org.eclipse.ui.edit.text.openLocalFile" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+O"/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F3"/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.create" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+F3"/>
 
@@ -261,6 +262,10 @@
     <extension point="org.eclipse.ui.helpSupport">
         <config class="org.jkiss.dbeaver.ui.help.GitHubWikiHelpUI">
         </config>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.core.application.WorkbenchInitializerNewConnection"/>
     </extension>
 
 </plugin>

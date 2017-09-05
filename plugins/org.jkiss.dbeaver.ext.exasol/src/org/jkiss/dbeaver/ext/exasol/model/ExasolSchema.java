@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.ext.exasol.tools.ExasolJDBCObjectSimpleCacheLiterals;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -54,7 +53,6 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     private String owner;
     private Timestamp createTime;
     private String remarks;
-    private boolean persisted;
 
 
     // ExasolSchema's children
@@ -95,7 +93,6 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
                 name);
         
         
-        this.persisted = false;
         
 
     }
@@ -110,7 +107,6 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
         this.remarks = JDBCUtils.safeGetString(dbResult, "OBJECT_COMMENT");
         this.name = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
-        this.persisted = true;
 
 
     }
@@ -126,7 +122,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     public void setName(String name) {
         this.name = name;
     }
-
+    
     @Override
     public Collection<ExasolTableBase> getChildren(DBRProgressMonitor monitor) throws DBException {
         List<ExasolTableBase> allChildren = new ArrayList<>();

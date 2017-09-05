@@ -9,13 +9,14 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>4.1.2</dbeaver-version>
+        <dbeaver-version>4.2.0</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.0.0</tycho-version>
+        <tycho-versions-version>0.26.0</tycho-versions-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
         <eclipse-p2-repo.url>http://download.eclipse.org/releases/neon/</eclipse-p2-repo.url>
-        <local-p2-repo.url>http://dbeaver.jkiss.org/eclipse-repo</local-p2-repo.url>
+        <local-p2-repo.url>https://dbeaver.jkiss.org/eclipse-repo</local-p2-repo.url>
     </properties>
 
     <modules>
@@ -46,6 +47,8 @@
         <module>plugins/org.jkiss.dbeaver.ext.teradata</module>
         <module>plugins/org.jkiss.dbeaver.ext.exasol</module>
         <module>plugins/org.jkiss.dbeaver.ext.wmi</module>
+        <module>plugins/org.jkiss.dbeaver.ext.sample.database</module>
+        <module>plugins/org.jkiss.dbeaver.ext.ui.svg</module>
 		<module>plugins/org.jkiss.dbeaver.data.office</module>
         <module>plugins/org.jkiss.dbeaver.model</module>
         <module>plugins/org.jkiss.dbeaver.test</module>
@@ -58,6 +61,7 @@
         <module>features/org.jkiss.dbeaver.ext.wmi.feature</module>
         <module>features/org.jkiss.dbeaver.ext.exasol.feature</module>
 		<module>features/org.jkiss.dbeaver.ext.office.feature</module>
+        <module>features/org.jkiss.dbeaver.ext.ui.svg.feature</module>
         <module>features/org.jkiss.dbeaver.rcp.feature</module>
         <module>features/org.jkiss.dbeaver.runtime.feature</module>
         <module>features/org.jkiss.dbeaver.standalone.feature</module>
@@ -130,6 +134,15 @@
                 <version>${tycho-version}</version>
                 <extensions>true</extensions>
             </plugin>
+
+<!--
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-versions-plugin</artifactId>
+                <version>${tycho-versions-version}</version>
+                <extensions>true</extensions>
+            </plugin>
+-->
 
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>

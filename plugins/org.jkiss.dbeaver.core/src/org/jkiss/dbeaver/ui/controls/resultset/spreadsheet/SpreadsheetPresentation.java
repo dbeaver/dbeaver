@@ -1070,6 +1070,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         if (!ResultSetUtils.isServerSideFiltering(controller) || !controller.isHasMoreData()) {
+            if (!controller.checkForChanges()) {
+                return;
+            }
             reorderLocally();
         } else {
             controller.refreshData(null);

@@ -186,6 +186,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
                 children.add(dataSource);
             }
         }
+        sortNodes(children);
         return children;
     }
 

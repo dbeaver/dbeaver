@@ -27,7 +27,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
@@ -58,20 +57,25 @@ public class ExasolConnectionDialog extends BaseDialog {
         final Composite composite = super.createDialogArea(parent);
         
         final Composite group = new Composite(composite, SWT.NONE);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 250;
+        gd.heightHint = 200;
+        gd.verticalIndent = 0;
+        gd.horizontalIndent = 0;
+        group.setLayoutData(gd);
+        group.setLayout(new GridLayout(2, true));  
         group.setLayout(new GridLayout(2, false));
         final Text nameText = UIUtils.createLabelText(group, "Connection Name", "");
-        
         final Text urlText = UIUtils.createLabelText(group,"Connection URL", "");
+        final Text commentText = UIUtils.createLabelText(group,"Description", "");
 
-        final Group configGroup  = UIUtils.createControlGroup(group, "Credentials", 1, GridData.FILL_HORIZONTAL, 0);
-        Button saveCred = UIUtils.createCheckbox(configGroup, "Provide Credentials", false);
-        
-        Text userText = UIUtils.createLabelText(configGroup, "User", "");
+
+        Button saveCred = UIUtils.createCheckbox(group, "Provide Credentials","Credential", false, 2);
+        Text userText = UIUtils.createLabelText(group, "User", "");
         userText.setEnabled(false);
-        Text passwordText = UIUtils.createLabelText(configGroup, "Password", "", SWT.PASSWORD);
+        Text passwordText = UIUtils.createLabelText(group, "Password", "", SWT.PASSWORD);
         passwordText.setEnabled(false);
 
-        final Text commentText = UIUtils.createLabelText(group,"Comment", "");
         
         ModifyListener mod = new ModifyListener() {
             @Override
@@ -81,7 +85,6 @@ public class ExasolConnectionDialog extends BaseDialog {
                 url  = urlText.getText();
                 password = passwordText.getText();
                 comment = commentText.getText();
-                getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
                 //enable/disable OK button   
                 if (
                         (
@@ -104,7 +107,9 @@ public class ExasolConnectionDialog extends BaseDialog {
         
         nameText.addModifyListener(mod);
         userText.addModifyListener(mod);
+        urlText.addModifyListener(mod);
         passwordText.addModifyListener(mod);
+        commentText.addModifyListener(mod);
         saveCred.addSelectionListener(new SelectionAdapter() {
             
             @Override

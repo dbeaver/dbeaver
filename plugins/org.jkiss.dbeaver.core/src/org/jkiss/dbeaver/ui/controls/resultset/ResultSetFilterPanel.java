@@ -236,7 +236,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             });
             filtersClearButton.setEnabled(false);
 
-
             filtersSaveButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersSaveButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_SAVE));
             filtersSaveButton.setToolTipText("Save filter settings for current object");
@@ -333,7 +332,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             filtersText.setEnabled(supportsDataFilter);
             filtersApplyButton.setEnabled(supportsDataFilter);
             filtersClearButton.setEnabled(viewer.getModel().getDataFilter().hasFilters());
-            filtersSaveButton.setEnabled(true);
+            filtersSaveButton.setEnabled(viewer.getDataContainer() instanceof DBSEntity);
             // Update history buttons
             if (historyPosition > 0) {
                 historyBackButton.setEnabled(true);

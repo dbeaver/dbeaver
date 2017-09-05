@@ -18,14 +18,19 @@
 package org.jkiss.dbeaver.ext.erd.part;
 
 import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.NodeEditPart;
+import org.eclipse.swt.graphics.Color;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Abstract node part
  */
-public abstract class NodePart extends PropertyAwarePart implements NodeEditPart {
+public abstract class NodePart extends PropertyAwarePart implements NodeEditPart, IColorizedPart {
 
+    protected Color customBackground;
     private Rectangle bounds;
 
 
@@ -58,6 +63,23 @@ public abstract class NodePart extends PropertyAwarePart implements NodeEditPart
             Figure entityFigure = (Figure) getFigure();
             DiagramPart parent = (DiagramPart) getParent();
             parent.setLayoutConstraint(this, entityFigure, bounds);
+        }
+    }
+
+    @Override
+    public Color getCustomBackgroundColor() {
+        return customBackground;
+    }
+
+    @Override
+    public void customizeBackgroundColor(Color color) {
+        this.customBackground = color;
+        IFigure figure = getFigure();
+        if (figure != null) {
+            figure.setBackgroundColor(
+                customBackground == null ?
+                    UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_NOTE_BACKGROUND) :
+                    customBackground);
         }
     }
 

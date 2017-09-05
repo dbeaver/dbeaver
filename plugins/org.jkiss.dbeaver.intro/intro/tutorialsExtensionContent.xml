@@ -20,7 +20,7 @@
 					style="css/tutorials.css" alt-style="css/tutorials.properties" path="tutorials/@">
 	<group label="Database managing" id="dbeaver" style-id="content-group">
 	  <link
-		 url="http://dbeaver.jkiss.org/about/"
+		 url="https://dbeaver.jkiss.org/about/"
 		 label="Visit the DBeaver homepage" id="dbeaver-task" style-id="content-link">
 		<text>Learn about the benefits of database managing with DBeaver</text>
 	  </link>

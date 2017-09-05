@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.eclipse.jface.text.TextAttribute;
-import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLFullLineRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 import org.jkiss.utils.ArrayUtils;
 
@@ -137,10 +137,7 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
                     new TextAttribute(UIUtils.getGlobalColor(SQLConstants.CONFIG_COLOR_COMMAND), null, SWT.BOLD),
                     "mysql.source");
 
-            EndOfLineRule sourceRule = new EndOfLineRule("source", sourceToken); //$NON-NLS-1$
-            rules.add(sourceRule);
-
-            EndOfLineRule sourceRule2 = new EndOfLineRule("SOURCE", sourceToken); //$NON-NLS-1$
+            SQLFullLineRule sourceRule2 = new SQLFullLineRule("SOURCE", sourceToken); //$NON-NLS-1$
             rules.add(sourceRule2);
         }
     }

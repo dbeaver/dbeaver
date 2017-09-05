@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="4.1.2" useFeatures="true" includeLaunchers="true">
+<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="4.2.0" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -41,7 +41,7 @@
    </vm>
 
    <license>
-        <url>http://dbeaver.jkiss.org/about/</url>
+        <url>https://dbeaver.jkiss.org/about/</url>
         <text>
    DBeaver - Universal Database Manager
     Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)

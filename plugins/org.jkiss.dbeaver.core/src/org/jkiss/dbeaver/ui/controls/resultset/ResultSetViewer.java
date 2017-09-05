@@ -290,7 +290,12 @@ public class ResultSetViewer extends Viewer
 
     public void saveDataFilter()
     {
-
+        DBCExecutionContext context = getExecutionContext();
+        if (context == null) {
+            log.error("Can't save data filter with null context");
+            return;
+        }
+        DataFilterRegistry.getInstance().saveDataFilter(getDataContainer(), model.getDataFilter());
     }
 
     void switchFilterFocus() {
@@ -1554,7 +1559,7 @@ public class ResultSetViewer extends Viewer
 
                 MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(ResultSetCopySpecialHandler.CMD_COPY_SPECIAL));
                 extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCopySpecialHandler.CMD_COPY_SPECIAL));
-                extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_COPY_COLUMN_NAMES));
+                extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCopySpecialHandler.CMD_COPY_COLUMN_NAMES));
                 if (row != null) {
                     extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_COPY_ROW_NAMES));
                 }
@@ -2118,7 +2123,8 @@ public class ResultSetViewer extends Viewer
         return container.getExecutionContext();
     }
 
-    private boolean checkForChanges() {
+    @Override
+    public boolean checkForChanges() {
         // Check if we are dirty
         if (isDirty()) {
             int checkResult = new UITask<Integer>() {
@@ -2207,17 +2213,20 @@ public class ResultSetViewer extends Viewer
 
         // Pump data
         DBSDataContainer dataContainer = getDataContainer();
+        DBDDataFilter dataFilter = restoreDataFilter(dataContainer);
+
         if (container.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
-            runDataPump(dataContainer, null, 0, segmentSize, -1, true, false, new Runnable() {
+            Runnable finalizer = new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     if (activePresentation.getControl() != null && !activePresentation.getControl().isDisposed()) {
                         activePresentation.formatData(true);
                     }
                 }
-            });
+            };
+
+            runDataPump(dataContainer, dataFilter, 0, segmentSize, -1, true, false, finalizer);
         } else {
             DBUserInterface.getInstance().showError(
                     "Error executing query",
@@ -2227,6 +2236,30 @@ public class ResultSetViewer extends Viewer
                         "Can't refresh after reconnect. Re-execute query." :
                         "Previous query is still running");
         }
+    }
+
+    private DBDDataFilter restoreDataFilter(final DBSDataContainer dataContainer) {
+
+        // Restore data filter
+        final DataFilterRegistry.SavedDataFilter savedConfig = DataFilterRegistry.getInstance().getSavedConfig(dataContainer);
+        if (savedConfig != null) {
+            final DBDDataFilter dataFilter = new DBDDataFilter();
+            DBRRunnableWithProgress restoreTask = new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    try {
+                        savedConfig.restoreDataFilter(monitor, dataContainer, dataFilter);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            };
+            RuntimeUtils.runTask(restoreTask, "Restore data filter", 60000);
+            if (dataFilter.hasFilters()) {
+                return dataFilter;
+            }
+        }
+        return null;
     }
 
     public void refreshWithFilter(DBDDataFilter filter) {
