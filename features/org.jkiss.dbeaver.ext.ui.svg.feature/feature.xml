@@ -18,24 +18,14 @@
       %license
    </license>
 
-   <plugin
-         id="org.jkiss.dbeaver.ext.ui.svg"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+   <plugin id="org.jkiss.dbeaver.ext.ui.svg" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
-   <plugin
-         id="org.apache.xmlgraphics.batik-svggen"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-   <plugin
-           id="org.apache.xmlgraphics.batik-codec"
-           download-size="0"
-           install-size="0"
-           version="0.0.0"
-           unpack="false"/>
+   <plugin id="org.apache.xmlgraphics.batik-svggen" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.apache.xmlgraphics.batik-codec" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.apache.xmlgraphics.batik-awt-util" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.apache.xmlgraphics.batik-constants" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.apache.xmlgraphics.batik-i18n" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.apache.xmlgraphics.batik-util" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.apache.xmlgraphics.commons" download-size="0" install-size="0" version="0.0.0"/>
 
 </feature>
