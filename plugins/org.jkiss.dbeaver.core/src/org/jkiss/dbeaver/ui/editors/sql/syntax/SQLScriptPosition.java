@@ -27,16 +27,22 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 public class SQLScriptPosition extends Position implements Comparable<SQLScriptPosition> {
 
     private final ProjectionAnnotation foldingAnnotation;
+    private final boolean isMultiline;
 
-    public SQLScriptPosition(int offset, int length, ProjectionAnnotation foldingAnnotation)
+    public SQLScriptPosition(int offset, int length, boolean isMultiline, ProjectionAnnotation foldingAnnotation)
     {
         super(offset, length);
         this.foldingAnnotation = foldingAnnotation;
+        this.isMultiline = isMultiline;
     }
 
     public ProjectionAnnotation getFoldingAnnotation()
     {
         return foldingAnnotation;
+    }
+
+    public boolean isMultiline() {
+        return isMultiline;
     }
 
     @Override

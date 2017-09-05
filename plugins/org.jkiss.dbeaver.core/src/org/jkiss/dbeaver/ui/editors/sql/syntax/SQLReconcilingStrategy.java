@@ -29,6 +29,7 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -64,9 +65,8 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     @Override
     public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion)
     {
-        regionOffset = dirtyRegion.getOffset();
-        regionLength = dirtyRegion.getLength();
-        calculatePositions();
+        // Update parsed regions
+        reconcile(dirtyRegion);
     }
 
     @Override
@@ -74,6 +74,17 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     {
         regionOffset = partition.getOffset();
         regionLength = partition.getLength();
+
+        for (int i = 0; i < parsedPositions.size(); i++) {
+            SQLScriptPosition sp = parsedPositions.get(i);
+            if (sp.getOffset() <= regionOffset + regionLength && sp.getOffset() + sp.getLength() >= regionOffset + regionLength) {
+                SQLScriptPosition startPos = i > 0 ? parsedPositions.get(i - 1) : sp;
+                SQLScriptPosition endPos = i < parsedPositions.size() - 1 ? parsedPositions.get(i + 1) : sp;
+                regionOffset = i == 0 ? 0 : startPos.getOffset();
+                regionLength = endPos.getOffset() + endPos.getLength() + regionLength;
+                break;
+            }
+        }
         calculatePositions();
     }
 
@@ -125,6 +136,9 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             for (SQLScriptElement se : queries) {
                 int queryOffset = se.getOffset();
                 int queryLength = se.getLength();
+
+                boolean isMultiline = document.getLineOfOffset(queryOffset) != document.getLineOfOffset(queryOffset + queryLength);
+
                 // Expand query to the end of line
                 for (int i = queryOffset + queryLength; i < documentLength; i++) {
                     char ch = document.getChar(i);
@@ -135,20 +149,31 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                         break;
                     }
                 }
-                addedPositions.add(new SQLScriptPosition(queryOffset, queryLength, new ProjectionAnnotation()));
+                addedPositions.add(new SQLScriptPosition(queryOffset, queryLength, isMultiline, new ProjectionAnnotation()));
             }
-            parsedPositions.addAll(addedPositions);
-
             if (!addedPositions.isEmpty()) {
+                final int firstQueryPos = addedPositions.get(0).getOffset();
+                int posBeforeFirst = 0;
+                for (int i = 0; i < parsedPositions.size(); i++) {
+                    SQLScriptPosition sp = parsedPositions.get(i);
+                    if (sp.getOffset() >= firstQueryPos) {
+                        break;
+                    }
+                    posBeforeFirst = i;
+                }
+                parsedPositions.addAll(posBeforeFirst, addedPositions);
+
                 addedAnnotations = new HashMap<>();
                 for (SQLScriptPosition pos : addedPositions) {
-                    addedAnnotations.put(pos.getFoldingAnnotation(), pos);
+                    if (pos.isMultiline()) {
+                        addedAnnotations.put(pos.getFoldingAnnotation(), pos);
+                    }
                 }
             }
         } catch (Exception e) {
             log.error(e);
         }
-        if (removedAnnotations != null || addedAnnotations != null) {
+        if (removedAnnotations != null || !CommonUtils.isEmpty(addedAnnotations)) {
             annotationModel.modifyAnnotations(
                 removedAnnotations,
                 addedAnnotations,
