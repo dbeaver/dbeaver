@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 
@@ -53,7 +52,7 @@ public class ExasolConnectionManager
     
     
     @Override
-    public DBSObjectCache<? extends DBSObject, ExasolConnection> getObjectsCache(
+    public DBSObjectCache<ExasolDataSource, ExasolConnection> getObjectsCache(
             ExasolConnection object)
     {
         ExasolDataSource source = (ExasolDataSource) object.getDataSource();
@@ -74,9 +73,21 @@ public class ExasolConnectionManager
                 {
                     return null;
                 }
-                return new ExasolConnection(parent, dialog.getName(), dialog.getUrl(), dialog.getComment(), dialog.getUrl(), dialog.getPassword());
+                ExasolConnection con = new ExasolConnection(parent, dialog.getName(), dialog.getUrl(), dialog.getComment(), dialog.getUrl(), dialog.getPassword());
+                return con;
             }
         }.execute();
+    }
+    
+    private SQLDatabasePersistAction Comment(ExasolConnection con)
+    {
+    	return new SQLDatabasePersistAction(
+                	"Comment on Connection",
+                	String.format("COMMENT ON CONNECTION %s is ''",
+    	                DBUtils.getQuotedIdentifier(con),
+    	                ExasolUtils.quoteString(con.getDescription())
+    	            )                
+                );
     }
     
     @Override
@@ -85,7 +96,7 @@ public class ExasolConnectionManager
     {
         final ExasolConnection con = command.getObject();
         
-        StringBuilder script = new StringBuilder(String.format("CREATE CONNECTION %s ",DBUtils.getQuotedIdentifier(con)));
+        StringBuilder script = new StringBuilder(String.format("CREATE CONNECTION %s TO ",DBUtils.getQuotedIdentifier(con)));
        
         script.append(" '" + ExasolUtils.quoteString(con.getConnectionString()) + "' ");
         
@@ -104,15 +115,7 @@ public class ExasolConnectionManager
         
         if (! con.getDescription().isEmpty())
         {
-            actions.add(
-                    new SQLDatabasePersistAction(
-                            "Comment on Connection",
-                            String.format("COMMENT ON CONNECTION %s is ''",
-                                    DBUtils.getQuotedIdentifier(con),
-                                    ExasolUtils.quoteString(con.getDescription())
-                                    )
-                            )
-                    );
+            actions.add(Comment(con));
         }
        
         
@@ -151,9 +154,8 @@ public class ExasolConnectionManager
         
         if (com.containsKey("description"))
         {
-            String script = "COMMENT ON CONNECTION " + DBUtils.getQuotedIdentifier(con) + " IS '" +  ExasolUtils.quoteString(con.getDescription()) + "'";
             actionList.add(
-                    new SQLDatabasePersistAction("Change comment on Connection", script)
+                    Comment(con)
                     );
         }
         

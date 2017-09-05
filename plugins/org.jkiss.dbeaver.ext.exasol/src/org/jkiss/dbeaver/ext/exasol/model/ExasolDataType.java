@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -179,7 +178,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
 
     @Nullable
     @Override
-    public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBCException {
+    public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

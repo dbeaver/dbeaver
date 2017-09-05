@@ -23,6 +23,8 @@ import org.eclipse.gef.ContextMenuProvider;
 import org.eclipse.gef.ui.actions.GEFActionConstants;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 
@@ -55,7 +57,12 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider
         if (editor.isLoaded()) {
             GEFActionConstants.addStandardActionGroups(menu);
 
-            menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+			ISelection selection = editor.getGraphicalViewer().getSelection();
+			if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+				editor.fillPartContextMenu(menu, (IStructuredSelection)selection);
+			}
+
+			menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
             menu.add(new Separator());
             editor.fillAttributeVisibilityMenu(menu);

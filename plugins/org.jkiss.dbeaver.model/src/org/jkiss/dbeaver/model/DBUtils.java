@@ -474,6 +474,18 @@ public final class DBUtils {
         return path;
     }
 
+    public static String getObjectFullId(@NotNull DBSObject object) {
+        DBSObject[] path = getObjectPath(object, true);
+        StringBuilder pathStr = new StringBuilder();
+        for (DBSObject obj : path) {
+            if (pathStr.length() > 0) {
+                pathStr.append('/');
+            }
+            pathStr.append(getQuotedIdentifier(obj));
+        }
+        return pathStr.toString();
+    }
+
     public static boolean isNullValue(@Nullable Object value)
     {
         return (value == null || (value instanceof DBDValue && ((DBDValue) value).isNull()));

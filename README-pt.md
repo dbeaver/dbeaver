@@ -8,16 +8,16 @@
 Ferramenta de acesso a bancos de dados multiplataforma para desenvolvedores, programadores SQL, DBAs e analistas.
 Suporta qualquer SGBD que tenha um driver JDBC (o que basicamente quer dizer - QUALQUER SGBD). Também pode funcionar com SGBDs que não possuem driver JDBC (WMI, MongoDB, Cassandra, Redis).
 
-* Possui inúmeros <a href="http://dbeaver.jkiss.org/docs/features/">recursos</a>. 
+* Possui inúmeros <a href="https://dbeaver.jkiss.org/docs/features/">recursos</a>.
 * Baseado na plataforma <a href="http://www.eclipse.org/">Eclipse</a>.
 * Utiliza plataforma de plugins e provê funcionalidades adicionais para os SGBDs mais populares (MySQL, PostgreSQL, Oracle, DB2 na versão 3.7.x).
 
-<a href="http://dbeaver.jkiss.org/product/dbeaver-ss-classic.png"><img src="http://dbeaver.jkiss.org/product/dbeaver-ss-classic.png" width="400"/></a>
-<a href="http://dbeaver.jkiss.org/product/dbeaver-ss-dark.png"><img src="http://dbeaver.jkiss.org/product/dbeaver-ss-dark.png" width="400"/></a>
+<a href="https://dbeaver.jkiss.org/product/dbeaver-ss-classic.png"><img src="http://dbeaver.jkiss.org/product/dbeaver-ss-classic.png" width="400"/></a>
+<a href="https://dbeaver.jkiss.org/product/dbeaver-ss-dark.png"><img src="http://dbeaver.jkiss.org/product/dbeaver-ss-dark.png" width="400"/></a>
 
 ## Download
 
-Você pode baixar os arquivos pré compilados em http://dbeaver.jkiss.org/download/
+Você pode baixar os arquivos pré compilados em https://dbeaver.jkiss.org/download/
 
 ## Compilação
 
@@ -40,5 +40,5 @@ Arquivos em `product/standalone/target/products`
 - DBeaver é um projeto sem intenções lucrativas. Por favor, não espere ações imediatas aos relatos.
 - Caso tenha dúvidas, sugestões, ideias, etc - <a href="mailto:serge@jkiss.org">fale comigo</a>.
 - Pull requests são bem vindos.
-- Visite http://dbeaver.jkiss.org para mais informação.
+- Visite https://dbeaver.jkiss.org para mais informação.
 - Obrigado por utilizar DBeaver! Marque com estrela se gostar.

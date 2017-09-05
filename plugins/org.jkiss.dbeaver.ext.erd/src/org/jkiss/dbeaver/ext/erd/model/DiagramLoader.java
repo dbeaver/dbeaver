@@ -19,28 +19,31 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.draw2d.AbsoluteBendpoint;
 import org.eclipse.draw2d.Bendpoint;
 import org.eclipse.draw2d.RelativeBendpoint;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
-import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
-import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.ext.erd.part.EntityPart;
-import org.jkiss.dbeaver.ext.erd.part.NotePart;
+import org.jkiss.dbeaver.ext.erd.part.*;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
@@ -61,34 +64,36 @@ public class DiagramLoader
 {
     private static final Log log = Log.getLog(DiagramLoader.class);
 
-    public static final String TAG_DIAGRAM = "diagram";
-    public static final String TAG_ENTITIES = "entities";
-    public static final String TAG_DATA_SOURCE = "data-source";
-    public static final String TAG_ENTITY = "entity";
-    public static final String TAG_PATH = "path";
-    public static final String TAG_RELATIONS = "relations";
-    public static final String TAG_RELATION = "relation";
-    public static final String TAG_BEND = "bend";
+    private static final String TAG_DIAGRAM = "diagram";
+    private static final String TAG_ENTITIES = "entities";
+    private static final String TAG_DATA_SOURCE = "data-source";
+    private static final String TAG_ENTITY = "entity";
+    private static final String TAG_PATH = "path";
+    private static final String TAG_RELATIONS = "relations";
+    private static final String TAG_RELATION = "relation";
+    private static final String TAG_BEND = "bend";
 
-    public static final String ATTR_VERSION = "version";
-    public static final String ATTR_NAME = "name";
-    public static final String ATTR_TIME = "time";
-    public static final String ATTR_ID = "id";
-    public static final String ATTR_FQ_NAME = "fq-name";
-    public static final String ATTR_REF_NAME = "ref-name";
-    public static final String ATTR_TYPE = "type";
-    public static final String ATTR_PK_REF = "pk-ref";
-    public static final String ATTR_FK_REF = "fk-ref";
+    private static final String ATTR_VERSION = "version";
+    private static final String ATTR_NAME = "name";
+    private static final String ATTR_TIME = "time";
+    private static final String ATTR_ID = "id";
+    private static final String ATTR_ORDER = "order";
+    private static final String ATTR_COLOR_BG = "color-bg";
+    private static final String ATTR_FQ_NAME = "fq-name";
+    private static final String ATTR_REF_NAME = "ref-name";
+    private static final String ATTR_TYPE = "type";
+    private static final String ATTR_PK_REF = "pk-ref";
+    private static final String ATTR_FK_REF = "fk-ref";
     private static final String TAG_COLUMN = "column";
-    public static final String ATTR_X = "x";
-    public static final String ATTR_Y = "y";
-    public static final String ATTR_W = "w";
-    public static final String ATTR_H = "h";
+    private static final String ATTR_X = "x";
+    private static final String ATTR_Y = "y";
+    private static final String ATTR_W = "w";
+    private static final String ATTR_H = "h";
 
-    public static final int ERD_VERSION_1 = 1;
+    private static final int ERD_VERSION_1 = 1;
     private static final String BEND_ABSOLUTE = "abs";
     private static final String BEND_RELATIVE = "rel";
-    public static final String TAG_NOTES = "notes";
+    private static final String TAG_NOTES = "notes";
     private static final String TAG_NOTE = "note";
 
     private static class TableSaveInfo {
@@ -107,13 +112,13 @@ public class DiagramLoader
     private static class TableLoadInfo {
         final String objectId;
         final DBSEntity table;
-        final Rectangle bounds;
+        final EntityDiagram.NodeVisualInfo visualInfo;
 
-        private TableLoadInfo(String objectId, DBSEntity table, Rectangle bounds)
+        private TableLoadInfo(String objectId, DBSEntity table, EntityDiagram.NodeVisualInfo visualInfo)
         {
             this.objectId = objectId;
             this.table = table;
-            this.bounds = bounds;
+            this.visualInfo = visualInfo;
         }
     }
 
@@ -237,15 +242,25 @@ public class DiagramLoader
                     String locY = entityElem.getAttribute(ATTR_Y);
 
                     DBSEntity table = (DBSEntity) child;
-                    Rectangle bounds = new Rectangle();
+                    EntityDiagram.NodeVisualInfo visualInfo = new EntityDiagram.NodeVisualInfo();
+
+                    visualInfo.initBounds = new Rectangle();
                     if (CommonUtils.isEmpty(locX) || CommonUtils.isEmpty(locY)) {
                         diagram.setNeedsAutoLayout(true);
                     } else {
-                        bounds.x = Integer.parseInt(locX);
-                        bounds.y = Integer.parseInt(locY);
+                        visualInfo.initBounds.x = Integer.parseInt(locX);
+                        visualInfo.initBounds.y = Integer.parseInt(locY);
+                    }
+                    String colorBg = entityElem.getAttribute(ATTR_COLOR_BG);
+                    if (!CommonUtils.isEmpty(colorBg)) {
+                        visualInfo.bgColor = UIUtils.getSharedColor(colorBg);
+                    }
+                    String orderStr = entityElem.getAttribute(ATTR_ORDER);
+                    if (!CommonUtils.isEmpty(orderStr)) {
+                        visualInfo.zOrder = Integer.parseInt(orderStr);
                     }
 
-                    TableLoadInfo info = new TableLoadInfo(tableId, table, bounds);
+                    TableLoadInfo info = new TableLoadInfo(tableId, table, visualInfo);
                     tableInfos.add(info);
                     tableMap.put(info.objectId, info);
                     monitor.worked(1);
@@ -317,11 +332,20 @@ public class DiagramLoader
                 String locY = noteElem.getAttribute(ATTR_Y);
                 String locW = noteElem.getAttribute(ATTR_W);
                 String locH = noteElem.getAttribute(ATTR_H);
+                EntityDiagram.NodeVisualInfo visualInfo = new EntityDiagram.NodeVisualInfo();
                 if (!CommonUtils.isEmpty(locX) && !CommonUtils.isEmpty(locY) && !CommonUtils.isEmpty(locW) && !CommonUtils.isEmpty(locH)) {
-                    Rectangle bounds = new Rectangle(
+                    visualInfo.initBounds = new Rectangle(
                         Integer.parseInt(locX), Integer.parseInt(locY), Integer.parseInt(locW), Integer.parseInt(locH));
-                    diagram.addInitBounds(note, bounds);
                 }
+                String colorBg = noteElem.getAttribute(ATTR_COLOR_BG);
+                if (!CommonUtils.isEmpty(colorBg)) {
+                    visualInfo.bgColor = UIUtils.getSharedColor(colorBg);
+                }
+                String orderStr = noteElem.getAttribute(ATTR_ORDER);
+                if (!CommonUtils.isEmpty(orderStr)) {
+                    visualInfo.zOrder = Integer.parseInt(orderStr);
+                }
+                diagram.addVisualInfo(note, visualInfo);
             }
         }
 
@@ -336,7 +360,7 @@ public class DiagramLoader
         for (TableLoadInfo info : tableInfos) {
             final ERDEntity erdEntity = diagram.getERDTable(info.table);
             if (erdEntity != null) {
-                diagram.addInitBounds(erdEntity, info.bounds);
+                diagram.addVisualInfo(erdEntity, info.visualInfo);
             }
         }
 
@@ -368,9 +392,11 @@ public class DiagramLoader
         }
     }
 
-    public static void save(DBRProgressMonitor monitor, DiagramPart diagramPart, final EntityDiagram diagram, boolean verbose, OutputStream out)
+    public static void save(DBRProgressMonitor monitor, @Nullable DiagramPart diagramPart, final EntityDiagram diagram, boolean verbose, OutputStream out)
         throws IOException
     {
+        List allNodeFigures = diagramPart == null ? new ArrayList() : diagramPart.getFigure().getChildren();
+
         // Prepare DS objects map
         Map<DBPDataSourceContainer, DataSourceObjects> dsMap = new IdentityHashMap<>();
         if (diagram != null) {
@@ -440,16 +466,22 @@ public class DiagramLoader
                     if (table instanceof DBPQualifiedObject) {
                         xml.addAttribute(ATTR_FQ_NAME, ((DBPQualifiedObject)table).getFullyQualifiedName(DBPEvaluationContext.UI));
                     }
-                    Rectangle tableBounds;
+                    EntityDiagram.NodeVisualInfo visualInfo;
                     if (tablePart != null) {
-                        tableBounds = tablePart.getBounds();
+                        visualInfo = new EntityDiagram.NodeVisualInfo();
+                        visualInfo.initBounds = tablePart.getBounds();
+                        visualInfo.bgColor = tablePart.getCustomBackgroundColor();
+
+                        saveColorAndOrder(allNodeFigures, xml, tablePart);
+
                     } else {
-                        tableBounds = diagram.getInitBounds(erdEntity);
+                        visualInfo = diagram.getVisualInfo(erdEntity);
                     }
-                    if (tableBounds != null) {
-                        xml.addAttribute(ATTR_X, tableBounds.x);
-                        xml.addAttribute(ATTR_Y, tableBounds.y);
+                    if (visualInfo != null && visualInfo.initBounds != null) {
+                        xml.addAttribute(ATTR_X, visualInfo.initBounds.x);
+                        xml.addAttribute(ATTR_Y, visualInfo.initBounds.y);
                     }
+
                     for (DBSObject parent = table.getParentObject(); parent != null && parent != dsContainer; parent = parent.getParentObject()) {
                         xml.startElement(TAG_PATH);
                         xml.addAttribute(ATTR_NAME, parent.getName());
@@ -492,7 +524,10 @@ public class DiagramLoader
                             xml.startElement(TAG_COLUMN);
                             xml.addAttribute(ATTR_NAME, column.getAttribute().getName());
                             try {
-                                xml.addAttribute(ATTR_REF_NAME, DBUtils.getReferenceAttribute(monitor, association, column.getAttribute()).getName());
+                                DBSEntityAttribute referenceAttribute = DBUtils.getReferenceAttribute(monitor, association, column.getAttribute());
+                                if (referenceAttribute != null) {
+                                    xml.addAttribute(ATTR_REF_NAME, referenceAttribute.getName());
+                                }
                             } catch (DBException e) {
                                 log.warn("Error getting reference attribute", e);
                             }
@@ -535,6 +570,8 @@ public class DiagramLoader
                 NotePart notePart = diagramPart == null ? null : diagramPart.getNotePart(note);
                 xml.startElement(TAG_NOTE);
                 if (notePart != null) {
+                    saveColorAndOrder(allNodeFigures, xml, notePart);
+
                     Rectangle noteBounds = notePart.getBounds();
                     if (noteBounds != null) {
                         xml.addAttribute(ATTR_X, noteBounds.x);
@@ -552,6 +589,16 @@ public class DiagramLoader
         xml.endElement();
 
         xml.flush();
+    }
+
+    private static void saveColorAndOrder(List allNodeFigures, XMLBuilder xml, NodePart nodePart) throws IOException {
+        if (nodePart != null) {
+            xml.addAttribute(ATTR_ORDER, allNodeFigures.indexOf(nodePart.getFigure()));
+            Color color = nodePart.getCustomBackgroundColor();
+            if (color != null) {
+                xml.addAttribute(ATTR_COLOR_BG, StringConverter.asString(color.getRGB()));
+            }
+        }
     }
 
 

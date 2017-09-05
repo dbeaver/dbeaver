@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Sample Database Plug-in
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.sample.database;singleton:=true
+Bundle-Version: 1.0.1
+Bundle-Release-Date: 20170904
+Bundle-Activator: org.jkiss.dbeaver.ext.sample.database.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.jkiss.dbeaver.core,
+ org.eclipse.core.resources,
+ org.jkiss.dbeaver.ext.sqlite
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-Vendor: JKISS
+Export-Package: org.jkiss.dbeaver.ext.sample.database

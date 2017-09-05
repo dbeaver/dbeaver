@@ -20,7 +20,7 @@
 					style="css/whatsnew.css" alt-style="css/whatsnew.properties" path="whatsnew/@">
 	<group id="content-group" style-id="content-group">
 	  <link label="Mylyn Application Lifecycle Tools"
-			url="http://dbeaver.jkiss.org/download/"
+			url="https://dbeaver.jkiss.org/download/"
 			id="dbeaver-whatsnew" style-id="content-link">
 		<text>
 		  Visit the DBeaver download

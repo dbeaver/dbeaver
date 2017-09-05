@@ -54,7 +54,7 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
         return textWidget;
     }
 
-    // Let source viewer reconfiguration possible (http://dbeaver.jkiss.org/forum/viewtopic.php?f=2&t=2939)
+    // Let source viewer reconfiguration possible (https://dbeaver.jkiss.org/forum/viewtopic.php?f=2&t=2939)
     public void setHyperlinkPresenter(IHyperlinkPresenter hyperlinkPresenter) throws IllegalStateException {
         if (fHyperlinkManager != null) {
             fHyperlinkManager.uninstall();

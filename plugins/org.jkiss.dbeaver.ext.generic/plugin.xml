@@ -634,7 +634,10 @@
                     webURL="http://www.vertica.com/"
                     description="Driver for Vertica Database">
 
-                    <file type="jar" path="repo:/drivers/vertica/vertica-jdk5-6.1.2-0.jar"/>
+                    <file type="license" path="drivers/vertica/LICENSE.txt" bundle="drivers.vertica"/>
+                    <file type="jar" path="drivers/vertica/vertica-6.1.3.jar" bundle="drivers.vertica"/>
+
+                    <file type="jar" path="repo:/drivers/vertica/vertica-jdk5-6.1.2-0.jar" bundle="!drivers.vertica"/>
 
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-scroll" value="false"/>
@@ -794,8 +797,9 @@
                     class="com.amazon.redshift.jdbc41.Driver"
                     sampleURL="jdbc:redshift://{host}:{port}/{database}"
                     defaultPort="5439"
-                    description="Amazon Redshift JDBC driver">
-                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/RedshiftJDBC41-1.1.17.1017.jar"/>
+                    description="Amazon Redshift JDBC driver"
+                    webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html">
+                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/RedshiftJDBC41-no-awssdk-1.2.7.1003.jar"/>
                 </driver>
 
                 <!-- Virtuoso  -->

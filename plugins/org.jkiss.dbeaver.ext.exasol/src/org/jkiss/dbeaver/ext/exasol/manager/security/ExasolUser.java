@@ -18,20 +18,24 @@
 package org.jkiss.dbeaver.ext.exasol.manager.security;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
+
 public class ExasolUser extends ExasolGrantee
-		implements DBAUser, DBPRefreshableObject, DBPSaveableObject {
+		implements DBAUser,  DBPSaveableObject, DBPNamedObject2, DBPRefreshableObject {
 
 
 	private ExasolDataSource dataSource;
@@ -64,21 +68,32 @@ public class ExasolUser extends ExasolGrantee
 			this.created = null;
 		}
 	}
+	
+	public ExasolUser(ExasolDataSource datasource, String name, String description, String dn, String password)
+	{
+		super(datasource, false);
+		this.dataSource = datasource;
+		this.userName = name;
+		this.description = description;
+		this.dn = dn;
+		this.password = password;
+		this.priority = "";
+	}
 
 	@Override
-	@Property(viewable = true, order = 100)
+	@Property(viewable = true, updatable=true, editable=true, order = 100)
 	public String getDescription()
 	{
 		return this.description;
 	}
 
-	@Property(viewable = true, order = 20)
+	@Property(viewable = true, editable=true, updatable=true, order = 20)
 	public String getPassword()
 	{
 		return this.password;
 	}
 
-	@Property(viewable = true, order = 30)
+	@Property(viewable = true, editable=true, updatable=true, order = 30)
 	public String getDn()
 	{
 		return this.dn;
@@ -119,6 +134,37 @@ public class ExasolUser extends ExasolGrantee
 	public String getName()
 	{
 		return this.userName;
+	}
+
+	@Override
+	public void setName(String newName)
+	{
+		this.userName = newName;
+	}
+	
+	public void setPassword(String newPassword)
+	{
+		this.password = newPassword;
+		this.dn = "";
+	}
+	
+	public void setDN(String dn)
+	{
+		this.dn = dn;
+		this.password = "";
+	}
+	
+	@Override
+	public DBSObject refreshObject(DBRProgressMonitor monitor)
+			throws DBException
+	{
+		return this;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "User " + getName();
 	}
 
 }

@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ext.erd.model;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeStyle;
@@ -41,12 +42,18 @@ import java.util.*;
  */
 public class EntityDiagram extends ERDObject<DBSObject>
 {
+    public static class NodeVisualInfo {
+        public Rectangle initBounds;
+        public Color bgColor;
+        public int zOrder = 0;
+    }
+
 	private String name;
 	private List<ERDEntity> entities = new ArrayList<>();
 	private boolean layoutManualDesired = true;
 	private boolean layoutManualAllowed = false;
     private Map<DBSEntity, ERDEntity> tableMap = new IdentityHashMap<>();
-    private Map<ERDObject, Rectangle> initBounds = new IdentityHashMap<>();
+    private Map<ERDObject, NodeVisualInfo> nodeVisuals = new IdentityHashMap<>();
     private List<ERDNote> notes = new ArrayList<>();
     private boolean needsAutoLayout;
     private ERDAttributeVisibility attributeVisibility = ERDAttributeVisibility.PRIMARY;
@@ -233,7 +240,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
         copy.tableMap.putAll(this.tableMap);
         copy.layoutManualDesired = this.layoutManualDesired;
         copy.layoutManualAllowed = this.layoutManualAllowed;
-        copy.initBounds = initBounds;
+        copy.nodeVisuals = nodeVisuals;
         return copy;
     }
 
@@ -297,17 +304,27 @@ public class EntityDiagram extends ERDObject<DBSObject>
     {
         this.entities.clear();
         this.tableMap.clear();
-        this.initBounds.clear();
+        this.nodeVisuals.clear();
     }
 
-    public Rectangle getInitBounds(ERDObject erdObject)
+    public NodeVisualInfo getVisualInfo(ERDObject erdObject)
     {
-        return initBounds.get(erdObject);
+        return getVisualInfo(erdObject, false);
     }
 
-    public void addInitBounds(ERDObject erdTable, Rectangle bounds)
+    public NodeVisualInfo getVisualInfo(ERDObject erdObject, boolean create)
     {
-        initBounds.put(erdTable, bounds);
+        NodeVisualInfo visualInfo = nodeVisuals.get(erdObject);
+        if (visualInfo == null && create) {
+            visualInfo = new NodeVisualInfo();
+            nodeVisuals.put(erdObject, visualInfo);
+        }
+        return visualInfo;
+    }
+
+    public void addVisualInfo(ERDObject erdTable, NodeVisualInfo visualInfo)
+    {
+        nodeVisuals.put(erdTable, visualInfo);
     }
 
     public boolean isNeedsAutoLayout()
@@ -334,6 +351,14 @@ public class EntityDiagram extends ERDObject<DBSObject>
         List<ERDObject> children = new ArrayList<>(entities.size() + notes.size());
         children.addAll(entities);
         children.addAll(notes);
+        children.sort(new Comparator<ERDObject>() {
+            @Override
+            public int compare(ERDObject o1, ERDObject o2) {
+                NodeVisualInfo vi1 = getVisualInfo(o1);
+                NodeVisualInfo vi2 = getVisualInfo(o2);
+                return vi1 != null && vi2 != null ? vi1.zOrder - vi2.zOrder : 0;
+            }
+        });
         return children;
     }
 

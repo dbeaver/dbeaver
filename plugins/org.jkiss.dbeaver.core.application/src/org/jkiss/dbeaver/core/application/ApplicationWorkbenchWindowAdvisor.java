@@ -39,11 +39,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
+import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
+import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor implements DBPProjectListener {
     private static final Log log = Log.getLog(ApplicationWorkbenchWindowAdvisor.class);
@@ -149,21 +148,21 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         log.debug("Finish initialization");
         super.postWindowOpen();
 
-        if (isShowNewConnection()) {
+        if (isRunWorkbenchInitializers()) {
             // Open New Connection wizard
             DBeaverUI.asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    IWorkbenchWindow window = getWindowConfigurer().getWindow();
-                    CreateConnectionDialog dialog = new CreateConnectionDialog(window, new NewConnectionWizard());
-                    dialog.open();
+                    for (IWorkbenchWindowInitializer wwInit : WorkbenchHandlerRegistry.getInstance().getWorkbenchWindowInitializers()) {
+                        wwInit.initializeWorkbenchWindow(getWindowConfigurer().getWindow());
+                    }
                 }
             });
         }
     }
 
-    protected boolean isShowNewConnection() {
-        return DataSourceRegistry.getAllDataSources().isEmpty();
+    protected boolean isRunWorkbenchInitializers() {
+        return true;
     }
 
     @Override

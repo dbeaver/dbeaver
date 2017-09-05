@@ -33,6 +33,10 @@ public class DBDDataFilter {
     private String order;
     private String where;
 
+    public DBDDataFilter() {
+        this.constraints = new ArrayList<>();
+    }
+
     public DBDDataFilter(List<DBDAttributeConstraint> constraints)
     {
         this.constraints = constraints;
@@ -70,6 +74,17 @@ public class DBDDataFilter {
     {
         for (DBDAttributeConstraint co : constraints) {
             if (co.matches(attribute, metaChanged)) {
+                return co;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public DBDAttributeConstraint getConstraint(String name)
+    {
+        for (DBDAttributeConstraint co : constraints) {
+            if (CommonUtils.equalObjects(co.getAttribute().getName(), name)) {
                 return co;
             }
         }

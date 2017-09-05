@@ -54,7 +54,7 @@ Licensing
 
 Web
 ==========
-  Main web site: http://dbeaver.jkiss.org
+  Main web site: https://dbeaver.jkiss.org
   Source code: https://github.com/serge-rider/dbeaver
 
 Contacts

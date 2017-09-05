@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.exasol;
 
 import org.eclipse.jface.text.TextAttribute;
-import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
@@ -30,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLFullLineRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 
 import java.sql.SQLException;
@@ -83,10 +83,10 @@ public class ExasolSQLDialect extends JDBCSQLDialect implements SQLRuleProvider 
                     new TextAttribute(UIUtils.getGlobalColor(SQLConstants.CONFIG_COLOR_COMMAND), null, SWT.BOLD),
                     "exasol.define");
 
-            EndOfLineRule defineRule = new EndOfLineRule("define", defineToken); //$NON-NLS-1$
+            SQLFullLineRule defineRule = new SQLFullLineRule("define", defineToken); //$NON-NLS-1$
             rules.add(defineRule);
 
-            EndOfLineRule defineRule2 = new EndOfLineRule("DEFINE", defineToken); //$NON-NLS-1$
+            SQLFullLineRule defineRule2 = new SQLFullLineRule("DEFINE", defineToken); //$NON-NLS-1$
             rules.add(defineRule2);
         }
     }

@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: SVG format support
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.ui.svg;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Vendor: JKISS
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.ui,
+ org.eclipse.gef,
+ org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.ext.erd,
+ org.apache.xmlgraphics.batik-svggen;bundle-version="1.9.1",
+ org.apache.xmlgraphics.batik-awt-util;bundle-version="1.9.1",
+ org.apache.xmlgraphics.batik-codec;bundle-version="1.9.1"
+Bundle-ActivationPolicy: lazy

@@ -116,6 +116,10 @@ public abstract class AbstractJob extends Job
         // Run canceling job
         if (!blockCanceled) {
             Job cancelJob = new Job("Cancel block") { //$NON-N LS-1$
+                {
+                    setSystem(true);
+                    setUser(false);
+                }
                 @Override
                 protected IStatus run(IProgressMonitor monitor)
                 {

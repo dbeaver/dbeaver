@@ -36,6 +36,8 @@
     <extension-point id="org.jkiss.dbeaver.resultset.panel" name="Result set panels" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sql.covert" name="SQL text conversions" schema="schema/org.jkiss.dbeaver.sql.convert.exsd"/>
     <extension-point id="org.jkiss.dbeaver.tools" name="Tools" schema="schema/org.jkiss.dbeaver.tools.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.product.bundles" name="Product bundles" schema="schema/org.jkiss.dbeaver.product.bundles.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="Workbench handlers" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
@@ -2170,7 +2172,7 @@
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+F6"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+F6"/>
         <!--<key commandId="org.jkiss.dbeaver.ui.editors.sql.assist.templates" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SPACE"/>-->
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+O"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+O"/>
 
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+/"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+/"/>

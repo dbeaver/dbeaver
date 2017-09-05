@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -251,12 +252,16 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 break;
             }
             case CMD_COPY_COLUMN_NAMES: {
+                ResultSetCopySpecialHandler.CopyConfigDialog configDialog = new ResultSetCopySpecialHandler.CopyConfigDialog(HandlerUtil.getActiveShell(event), "CopyGridNamesOptionsDialog");
+                if (configDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
                 StringBuilder buffer = new StringBuilder();
                 IResultSetSelection selection = rsv.getSelection();
                 Collection<DBDAttributeBinding> attrs = selection.isEmpty() ? rsv.getModel().getVisibleAttributes() : selection.getSelectedAttributes();
                 for (DBDAttributeBinding attr : attrs) {
                     if (buffer.length() > 0) {
-                        buffer.append("\t");
+                        buffer.append(configDialog.copySettings.getColumnDelimiter());
                     }
                     String colName = attr.getLabel();
                     if (CommonUtils.isEmpty(colName)) {
@@ -268,11 +273,16 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 break;
             }
             case CMD_COPY_ROW_NAMES: {
+                ResultSetCopySpecialHandler.CopyConfigDialog configDialog = new ResultSetCopySpecialHandler.CopyConfigDialog(HandlerUtil.getActiveShell(event), "CopyGridNamesOptionsDialog");
+                if (configDialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
+
                 StringBuilder buffer = new StringBuilder();
                 IResultSetSelection selection = rsv.getSelection();
-                for (ResultSetRow row : ((IResultSetSelection)selection).getSelectedRows()) {
+                for (ResultSetRow row : selection.getSelectedRows()) {
                     if (buffer.length() > 0) {
-                        buffer.append("\n");
+                        buffer.append(configDialog.copySettings.getRowDelimiter());
                     }
                     buffer.append(row.getVisualNumber() + 1);
                 }
