@@ -65,27 +65,13 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     @Override
     public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion)
     {
-        // Update parsed regions
-        reconcile(dirtyRegion);
+        calculatePositions(dirtyRegion);
     }
 
     @Override
     public void reconcile(IRegion partition)
     {
-        regionOffset = partition.getOffset();
-        regionLength = partition.getLength();
-
-        for (int i = 0; i < parsedPositions.size(); i++) {
-            SQLScriptPosition sp = parsedPositions.get(i);
-            if (sp.getOffset() <= regionOffset + regionLength && sp.getOffset() + sp.getLength() >= regionOffset + regionLength) {
-                SQLScriptPosition startPos = i > 0 ? parsedPositions.get(i - 1) : sp;
-                SQLScriptPosition endPos = i < parsedPositions.size() - 1 ? parsedPositions.get(i + 1) : sp;
-                regionOffset = i == 0 ? 0 : startPos.getOffset();
-                regionLength = endPos.getOffset() + endPos.getLength() + regionLength;
-                break;
-            }
-        }
-        calculatePositions();
+        calculatePositions(partition);
     }
 
     @Override
@@ -96,36 +82,80 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     @Override
     public void initialReconcile()
     {
-        regionOffset = 0;
-        regionLength = document.getLength();
-        calculatePositions();
+        calculatePositions(null);
     }
 
     private List<SQLScriptPosition> parsedPositions = new ArrayList<>();
 
-    protected void calculatePositions()
+    protected void calculatePositions(IRegion partition)
     {
+        List<Annotation> removedAnnotations = null;
+        Map<Annotation, Position> addedAnnotations = null;
+
+        if (partition == null) {
+            regionOffset = 0;
+            regionLength = document.getLength();
+        } else {
+            regionOffset = partition.getOffset();
+            regionLength = partition.getLength();
+
+            for (int i = 0; i < parsedPositions.size(); i++) {
+                SQLScriptPosition sp = parsedPositions.get(i);
+                if (sp.getOffset() <= regionOffset + regionLength && sp.getOffset() + sp.getLength() >= regionOffset + regionLength) {
+                    SQLScriptPosition startPos = i > 0 ? parsedPositions.get(i - 1) : sp;
+                    SQLScriptPosition endPos = i < parsedPositions.size() - 1 ? parsedPositions.get(i + 1) : sp;
+                    regionOffset = i == 0 ? 0 : startPos.getOffset();
+                    regionLength = endPos.getOffset() + endPos.getLength() + regionLength;
+                    break;
+                }
+            }
+
+/*
+            if (partition instanceof DirtyRegion) {
+                // Modify positions
+                DirtyRegion dirtyRegion = (DirtyRegion)partition;
+                // Shift parsed positions
+                boolean insert = DirtyRegion.INSERT.equals(dirtyRegion.getType());
+                for (SQLScriptPosition sp : parsedPositions) {
+                    if (dirtyRegion.getOffset() > sp.getOffset() && dirtyRegion.getOffset() < sp.getOffset() + sp.getLength()) {
+                        // In this position
+                        if (insert) {
+                            sp.setLength(sp.getLength() + dirtyRegion.getLength());
+                        } else {
+                            sp.setLength(sp.getLength() - dirtyRegion.getLength());
+                        }
+                    } else if (sp.getOffset() >= dirtyRegion.getOffset()) {
+                        // After this position
+                        if (insert) {
+                            sp.setOffset(sp.getOffset() + dirtyRegion.getLength());
+                        } else {
+                            sp.setOffset(sp.getOffset() - dirtyRegion.getLength());
+                        }
+                    }
+                }
+            }
+*/
+        }
         ProjectionAnnotationModel annotationModel = editor.getAnnotationModel();
         if (annotationModel == null) {
             return;
         }
-        List<SQLScriptElement> queries = editor.extractScriptQueries(regionOffset, regionLength, false, true);
-
-        Annotation[] removedAnnotations = null;
-        Map<Annotation, Position> addedAnnotations = null;
+        List<SQLScriptElement> queries = editor.extractScriptQueries(regionOffset, document.getLength() - regionOffset, false, true);
 
         {
             List<SQLScriptPosition> removedPositions = new ArrayList<>();
             for (SQLScriptPosition sp : parsedPositions) {
-                if (sp.getOffset() >= regionOffset && sp.getOffset() <= regionOffset + regionLength) {
+                if (sp.getOffset() >= regionOffset/* && sp.getOffset() <= regionOffset + regionLength*/) {
                     removedPositions.add(sp);
                 }
             }
             if (!removedPositions.isEmpty()) {
                 parsedPositions.removeAll(removedPositions);
-                removedAnnotations = new Annotation[removedPositions.size()];
-                for (int i = 0; i < removedPositions.size(); i++) {
-                    removedAnnotations[i] = removedPositions.get(i).getFoldingAnnotation();
+                removedAnnotations = new ArrayList<>();
+                for (SQLScriptPosition removedPosition : removedPositions) {
+                    if (removedPosition.isMultiline()) {
+                        removedAnnotations.add(removedPosition.getFoldingAnnotation());
+                    }
                 }
             }
         }
@@ -175,7 +205,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         }
         if (removedAnnotations != null || !CommonUtils.isEmpty(addedAnnotations)) {
             annotationModel.modifyAnnotations(
-                removedAnnotations,
+                removedAnnotations == null ? null : removedAnnotations.toArray(new Annotation[removedAnnotations.size()]),
                 addedAnnotations,
                 null);
         }
