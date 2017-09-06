@@ -122,7 +122,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 JDBCStatement statement;
                 try {
                     if (!scrollable && !updatable) {
-                        statement = createStatement();
+                        statement = createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
                     } else {
                         statement = createStatement(
                                 scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
