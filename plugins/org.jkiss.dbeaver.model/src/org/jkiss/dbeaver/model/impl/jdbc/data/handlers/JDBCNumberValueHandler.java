@@ -203,7 +203,9 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     statement.setLong(paramIndex, number.longValue());
                     break;
                 case Types.FLOAT:
-                    if (number instanceof Double) {
+                    if (number instanceof BigDecimal) {
+                        statement.setBigDecimal(paramIndex, (BigDecimal) number);
+                    } else if (number instanceof Double) {
                         statement.setDouble(paramIndex, number.doubleValue());
                     } else {
                         statement.setFloat(paramIndex, number.floatValue());
@@ -211,7 +213,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     break;
                 case Types.DOUBLE:
                 case Types.REAL:
-                    statement.setDouble(paramIndex, number.doubleValue());
+                    if (number instanceof BigDecimal) {
+                        statement.setBigDecimal(paramIndex, (BigDecimal) number);
+                    } else {
+                        statement.setDouble(paramIndex, number.doubleValue());
+                    }
                     break;
                 case Types.INTEGER:
                     if (number instanceof Long) {
