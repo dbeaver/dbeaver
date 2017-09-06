@@ -44,6 +44,8 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     private Button csInsertSpace;
     private Button csUseGlobalSearch;
 
+    private Button csFoldingEnabled;
+
     public PrefPageSQLCompletion()
     {
         super();
@@ -62,7 +64,9 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.contains(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) ||
             store.contains(SQLPreferenceConstants.PROPOSAL_SHORT_NAME) ||
             store.contains(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS) ||
-            store.contains(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT)
+            store.contains(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT) ||
+
+            store.contains(SQLPreferenceConstants.FOLDING_ENABLED)
         ;
     }
 
@@ -77,15 +81,9 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Composite composite2 = UIUtils.createPlaceholder(composite, 2);
-        ((GridLayout)composite2.getLayout()).horizontalSpacing = 5;
-        composite2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
         // Content assistant
         {
-            Composite assistGroup = UIUtils.createControlGroup(composite2, "SQL assistant/completion", 2, GridData.FILL_HORIZONTAL, 0);
-            assistGroup.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_BEGINNING));
-            ((GridData)assistGroup.getLayoutData()).verticalSpan = 2;
+            Composite assistGroup = UIUtils.createControlGroup(composite, "SQL assistant/completion", 2, GridData.FILL_HORIZONTAL, 0);
 
             csAutoActivationCheck = UIUtils.createCheckbox(assistGroup, "Enable auto activation", "Enables content assistant auto activation (on text typing)", false, 2);
 
@@ -121,6 +119,12 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csUseGlobalSearch = UIUtils.createCheckbox(assistGroup, "Use global search (in all schemas)", "Search for objects in all schemas. Otherwise search only in current/system schemas.", false, 2);
         }
 
+        // Content assistant
+        {
+            Composite foldingGroup = UIUtils.createControlGroup(composite, "Folding", 2, GridData.FILL_HORIZONTAL, 0);
+
+            csUseGlobalSearch = UIUtils.createCheckbox(foldingGroup, "Folding enabled", "Use folding in SQL scripts.", false, 2);
+        }
         return composite;
     }
 
@@ -139,6 +143,8 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csInsertSpace.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS));
 
             csUseGlobalSearch.setSelection(store.getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT));
+
+            csUseGlobalSearch.setSelection(store.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -157,6 +163,8 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.PROPOSAL_SHORT_NAME, csShortName.getSelection());
             store.setValue(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS, csInsertSpace.getSelection());
             store.setValue(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT, csUseGlobalSearch.getSelection());
+
+            store.setValue(SQLPreferenceConstants.FOLDING_ENABLED, csUseGlobalSearch.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -175,6 +183,8 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_SHORT_NAME);
         store.setToDefault(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
         store.setToDefault(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT);
+
+        store.setToDefault(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
     @Override

@@ -29,6 +29,7 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -89,6 +90,10 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     protected void calculatePositions(IRegion partition)
     {
+        if (!editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED)) {
+            return;
+        }
+
         List<Annotation> removedAnnotations = null;
         Map<Annotation, Position> addedAnnotations = null;
 
