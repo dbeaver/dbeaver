@@ -26,10 +26,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgrePlanAnalyser;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
@@ -508,11 +505,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         return new PostgreJdbcFactory();
     }
 
+    @Override
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
+    {
+        return new PostgreDataSourceInfo(metaData);
+    }
+
     @Nullable
     @Override
     public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
-            return new QueryTransformerLimit(false);
+            return new QueryTransformerLimit(false, true);
         }
         return null;
     }
