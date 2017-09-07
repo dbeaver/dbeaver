@@ -53,6 +53,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -1641,6 +1642,7 @@ public class ResultSetViewer extends Viewer
                     customizeAction.setEnabled(false);
                     viewMenu.add(customizeAction);
                 }
+                viewMenu.add(new TransformComplexTypesToggleAction());
                 if (getModel().isSingleSource()) {
                     if (valueController != null) {
                         viewMenu.add(new SetRowColorAction(attr, valueController.getValue()));
@@ -3228,6 +3230,35 @@ public class ResultSetViewer extends Viewer
                 setDataFilter(dataFilter, true);
             }
         }
+    }
+
+    private class TransformComplexTypesToggleAction extends Action {
+        TransformComplexTypesToggleAction()
+        {
+            super("Structurize complex types", AS_CHECK_BOX);
+            setToolTipText("Visualize complex types (arrays, structures, maps) in results grid as separate columns");
+        }
+
+        @Override
+        public boolean isChecked() {
+            DBPDataSource dataSource = getDataContainer().getDataSource();
+            return dataSource != null &&
+                dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);
+        }
+
+        @Override
+        public void run()
+        {
+            DBPDataSource dataSource = getDataContainer().getDataSource();
+            if (dataSource == null) {
+                return;
+            }
+            DBPPreferenceStore preferenceStore = dataSource.getContainer().getPreferenceStore();
+            boolean curValue = preferenceStore.getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);
+            preferenceStore.setValue(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES, !curValue);
+            refreshData(null);
+        }
+
     }
 
     private abstract class ColorAction extends Action {
