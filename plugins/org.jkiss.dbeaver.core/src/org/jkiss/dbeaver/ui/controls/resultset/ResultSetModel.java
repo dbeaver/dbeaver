@@ -232,7 +232,7 @@ public class ResultSetModel {
         List<DBDAttributeBinding> result = new ArrayList<>(nestedBindings);
         for (Iterator<DBDAttributeBinding> iter = result.iterator(); iter.hasNext(); ) {
             final DBDAttributeConstraint constraint = dataFilter.getConstraint(iter.next());
-            if (constraint == null || !constraint.isVisible()) {
+            if (constraint != null && !constraint.isVisible()) {
                 iter.remove();
             }
         }

@@ -7,16 +7,16 @@ public class HugeTableGenerator {
 
     public static void main(String[] args) throws SQLException {
 
-        final String url = "jdbc:postgresql://localhost/postgres";
+        final String url = "jdbc:oracle:thin:@127.0.0.1:1521:ORCL";
         final Properties props = new Properties();
-        props.setProperty("user", "");
-        props.setProperty("password", "");
+        props.setProperty("user", "sys as sysdba");
+        props.setProperty("password", "cityman");
 
         try (Connection conn = DriverManager.getConnection(url, props)) {
             conn.setAutoCommit(true);
 
             try (PreparedStatement stmt = conn.prepareStatement(
-                        "CREATE TABLE BigTable (table_key int8, some_string varchar(64), create_time timestamp, primary key(table_key))"))
+                        "CREATE TABLE BigTable (table_key integer, some_string varchar(64), create_time timestamp, primary key(table_key))"))
             {
                 stmt.execute();
             }
