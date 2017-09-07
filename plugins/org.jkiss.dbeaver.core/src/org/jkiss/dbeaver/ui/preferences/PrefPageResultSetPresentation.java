@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -38,6 +39,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
     private Button gridShowOddRows;
     private Button rightJustifyNumbers;
+    private Button transformComplexTypes;
     private Spinner gridRowBatchSize;
     private Button gridShowCellIcons;
     private Combo gridDoubleClickBehavior;
@@ -59,6 +61,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         return
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS) ||
             store.contains(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS) ||
+            store.contains(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION) ||
             store.contains(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK) ||
@@ -85,6 +88,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
             autoSwitchMode = UIUtils.createCheckbox(uiGroup, "Switch to record/grid mode on single/multiple row(s)", false);
             showDescription = UIUtils.createCheckbox(uiGroup, "Show column description in header", false);
+            transformComplexTypes = UIUtils.createCheckbox(uiGroup, "Structurize complex types", "Visualize complex types (arrays, structures, maps) in results grid as separate columns", false, 1);
         }
 
         {
@@ -116,6 +120,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         try {
             gridShowOddRows.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS));
             rightJustifyNumbers.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS));
+            transformComplexTypes.setSelection(store.getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES));
+
             gridRowBatchSize.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE));
             gridShowCellIcons.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS));
             gridDoubleClickBehavior.select(
@@ -136,6 +142,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         try {
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS, gridShowOddRows.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS, rightJustifyNumbers.getSelection());
+            store.setValue(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES, transformComplexTypes.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE, gridRowBatchSize.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS, gridShowCellIcons.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(Spreadsheet.DoubleClickBehavior.class, gridDoubleClickBehavior.getSelectionIndex()).name());
@@ -154,6 +161,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     {
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
         store.setToDefault(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
+        store.setToDefault(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);
+
         store.setToDefault(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
         store.setToDefault(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK);
