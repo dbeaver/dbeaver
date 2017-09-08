@@ -22,6 +22,8 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
@@ -80,6 +82,12 @@ class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implements IFon
 */
         } else if (obj instanceof DBNNode) {
             text = ((DBNNode) obj).getNodeName();
+            if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SHOW_OBJECT_TIPS)) {
+                String briefInfo = ((DBNNode) obj).getNodeBriefInfo();
+                if (!CommonUtils.isEmpty(briefInfo)) {
+                    text += " (" + briefInfo + ")";
+                }
+            }
         } else if (obj != null) {
             text = obj.toString();
         }
