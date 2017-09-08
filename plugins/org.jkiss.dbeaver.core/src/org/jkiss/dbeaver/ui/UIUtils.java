@@ -1303,9 +1303,9 @@ public class UIUtils {
         e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + offset);
     }
 
-    public static void launchProgram(String path)
+    public static boolean launchProgram(String path)
     {
-        Program.launch(path);
+        return Program.launch(path);
     }
 
     public static void fillDefaultStyledTextContextMenu(final StyledText text) {

@@ -27,7 +27,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DatabaseProducerSettings implements IDataTransferSettings {
 
-    enum ExtractType {
+    public enum ExtractType {
         SINGLE_QUERY,
         SEGMENTS
     }

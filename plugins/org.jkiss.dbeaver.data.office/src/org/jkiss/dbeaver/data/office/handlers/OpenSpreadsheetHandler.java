@@ -19,7 +19,31 @@ package org.jkiss.dbeaver.data.office.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.data.office.export.DataExporterXLSX;
+import org.jkiss.dbeaver.data.office.export.StreamPOIConsumerSettings;
+import org.jkiss.dbeaver.data.office.export.StreamPOITransferConsumer;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 public class OpenSpreadsheetHandler extends AbstractHandler
 {
@@ -28,6 +52,65 @@ public class OpenSpreadsheetHandler extends AbstractHandler
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+        IResultSetController resultSet = ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
+        if (resultSet == null) {
+            DBeaverUI.getInstance().showError("Open Excel", "No active results viewer");
+            return null;
+        }
+
+        DBSDataContainer dataContainer = resultSet.getDataContainer();
+        if (dataContainer == null) {
+            DBeaverUI.getInstance().showError("Open Excel", "No data container");
+            return null;
+        }
+
+
+        AbstractJob exportJob = new AbstractJob("Open Excel") {
+
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                try {
+                    File tempDir = DBeaverCore.getInstance().getTempFolder(monitor, "office-files");
+                    File tempFile = new File(tempDir, "results.data." + System.currentTimeMillis() + ".xlsx");
+
+                    DataExporterXLSX exporter = new DataExporterXLSX();
+
+                    StreamPOITransferConsumer consumer = new StreamPOITransferConsumer();
+                    StreamPOIConsumerSettings settings = new StreamPOIConsumerSettings();
+
+                    settings.setOutputEncodingBOM(false);
+                    settings.setOpenFolderOnFinish(false);
+                    settings.setOutputFolder(tempDir.getAbsolutePath());
+                    settings.setOutputFilePattern(tempFile.getName());
+
+                    Map<Object, Object> properties = DataExporterXLSX.getDefaultProperties();
+                    consumer.initTransfer(dataContainer, settings, exporter, properties);
+
+                    DatabaseTransferProducer producer = new DatabaseTransferProducer(dataContainer);
+                    DatabaseProducerSettings producerSettings = new DatabaseProducerSettings();
+                    producerSettings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY);
+                    producerSettings.setQueryRowCount(false);
+
+                    producer.transferData(monitor, consumer, producerSettings);
+
+                    consumer.finishTransfer(monitor, false);
+
+                    DBeaverUI.asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!UIUtils.launchProgram(tempFile.getAbsolutePath())) {
+                                DBeaverUI.getInstance().showError("Open XLSX", "Can't open XLSX file '" + tempFile.getAbsolutePath() + "'");
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    return GeneralUtils.makeExceptionStatus("Error opening Excel", e);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        exportJob.schedule();
+
         return null;
     }
 
