@@ -57,6 +57,10 @@
             <command commandId="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet"/>
         </menuContribution>
 
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=results_export">
+            <command commandId="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet"/>
+        </menuContribution>
+
     </extension>
 
 </plugin>
