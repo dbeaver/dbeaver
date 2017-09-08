@@ -1356,6 +1356,31 @@ public class UIUtils {
         });
     }
 
+    public static Combo createDelimiterCombo(Composite group, String label, String[] options, String defDelimiter, boolean multiDelims) {
+        createControlLabel(group, label);
+        Combo combo = new Combo(group, SWT.BORDER | SWT.DROP_DOWN);
+        combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        for (String option : options) {
+            combo.add(CommonUtils.escapeDisplayString(option));
+        }
+        if (!multiDelims) {
+            if (!ArrayUtils.contains(options, defDelimiter)) {
+                combo.add(CommonUtils.escapeDisplayString(defDelimiter));
+            }
+            String[] items = combo.getItems();
+            for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
+                String delim = CommonUtils.unescapeDisplayString(items[i]);
+                if (delim.equals(defDelimiter)) {
+                    combo.select(i);
+                    break;
+                }
+            }
+        } else {
+            combo.setText(CommonUtils.escapeDisplayString(defDelimiter));
+        }
+        return combo;
+    }
+
     private static class StyledTextAction extends Action {
         private final StyledText styledText;
         private final int action;

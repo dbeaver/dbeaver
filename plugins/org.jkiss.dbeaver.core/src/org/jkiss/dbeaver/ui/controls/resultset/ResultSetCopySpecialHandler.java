@@ -21,8 +21,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.commands.IElementUpdater;
@@ -32,7 +30,6 @@ import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -119,9 +116,9 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
             ((GridLayout)group.getLayout()).numColumns = 2;
 
             createControlsBefore(group);
-            colDelimCombo = createDelimiterCombo(group, "Column Delimiter", new String[] {"\t", ";", ","}, copySettings.getColumnDelimiter());
-            rowDelimCombo = createDelimiterCombo(group, "Row Delimiter", new String[] {"\n", "|", "^"}, copySettings.getRowDelimiter());
-            quoteStringCombo = createDelimiterCombo(group, "Quote Character", new String[] {"\"", "'"}, copySettings.getQuoteString());
+            colDelimCombo = UIUtils.createDelimiterCombo(group, "Column Delimiter", new String[] {"\t", ";", ","}, copySettings.getColumnDelimiter(), false);
+            rowDelimCombo = UIUtils.createDelimiterCombo(group, "Row Delimiter", new String[] {"\n", "|", "^"}, copySettings.getRowDelimiter(), false);
+            quoteStringCombo = UIUtils.createDelimiterCombo(group, "Quote Character", new String[] {"\"", "'"}, copySettings.getQuoteString(), false);
             createControlsAfter(group);
             return group;
         }
@@ -132,29 +129,6 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
 
         protected void createControlsBefore(Composite group) {
 
-        }
-
-        protected Combo createDelimiterCombo(Composite group, String label, String[] options, String defDelimiter) {
-            UIUtils.createControlLabel(group, label);
-            Combo combo = new Combo(group, SWT.BORDER | SWT.DROP_DOWN);
-            combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            for (String option : options) {
-                if (option.equals("\t")) option = "\\t";
-                if (option.equals("\n")) option = "\\n";
-                combo.add(option);
-            }
-            if (!ArrayUtils.contains(options, defDelimiter)) {
-                combo.add(defDelimiter);
-            }
-            String[] items = combo.getItems();
-            for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-                String delim = CommonUtils.unescapeDisplayString(items[i]);
-                if (delim.equals(defDelimiter)) {
-                    combo.select(i);
-                    break;
-                }
-            }
-            return combo;
         }
 
         @Override
