@@ -67,6 +67,11 @@ public class OpenSpreadsheetHandler extends AbstractHandler
 
         AbstractJob exportJob = new AbstractJob("Open Excel") {
 
+            {
+                setUser(true);
+                setSystem(false);
+            }
+
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
