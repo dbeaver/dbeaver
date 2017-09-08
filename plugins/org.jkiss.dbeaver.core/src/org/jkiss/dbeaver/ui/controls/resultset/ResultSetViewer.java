@@ -46,6 +46,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
+import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.NotNull;
@@ -1143,6 +1144,17 @@ public class ResultSetViewer extends Viewer
             };
             rowCountLabel.setLayoutData(new RowData(10 * fontHeight, SWT.DEFAULT));
             rowCountLabel.setMessage("Row Count");
+        }
+        {
+            ToolBarManager addToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            addToolbar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+            final IMenuService menuService = getSite().getService(IMenuService.class);
+            if (menuService != null) {
+                menuService.populateContributionManager(addToolbar, "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status");
+            }
+            addToolbar.update(true);
+            addToolbar.createControl(statusBar);
+            toolbarList.add(addToolbar);
         }
     }
 
