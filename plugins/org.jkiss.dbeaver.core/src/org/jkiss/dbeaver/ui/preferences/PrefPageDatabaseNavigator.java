@@ -46,7 +46,8 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     private Button sortFoldersFirstCheck;
     private Button groupByDriverCheck;
     private Button syncEditorDataSourceWithNavigator;
-    private Combo doubleClickBehavior;
+    private Combo dsDoubleClickBehavior;
+    private Combo objDoubleClickBehavior;
 
     public PrefPageDatabaseNavigator()
     {
@@ -79,11 +80,16 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
 
             syncEditorDataSourceWithNavigator = UIUtils.createCheckbox(navigatorGroup, "Auto-sync editor connection with navigator selection", "Automatically sets editor (e.g. SQL editor) connection from selected navigator node.\nMakes sense if you need to change active connection/schema frequently.", false, 2);
 
-            doubleClickBehavior = UIUtils.createLabelCombo(navigatorGroup, "Double-click on connection", SWT.DROP_DOWN | SWT.READ_ONLY);
-            doubleClickBehavior.add("Open Properties", NavigatorViewBase.DoubleClickBehavior.EDIT.ordinal());
-            doubleClickBehavior.add("Connect / Disconnect", NavigatorViewBase.DoubleClickBehavior.CONNECT.ordinal());
-            doubleClickBehavior.add("Open SQL Editor", NavigatorViewBase.DoubleClickBehavior.SQL_EDITOR.ordinal());
-            doubleClickBehavior.add("Expand / Collapse", NavigatorViewBase.DoubleClickBehavior.EXPAND.ordinal());
+            objDoubleClickBehavior = UIUtils.createLabelCombo(navigatorGroup, "Double-click on node", SWT.DROP_DOWN | SWT.READ_ONLY);
+            objDoubleClickBehavior.add("Open Properties", 0);
+            objDoubleClickBehavior.add("Expand / Collapse", 1);
+
+            dsDoubleClickBehavior = UIUtils.createLabelCombo(navigatorGroup, "Double-click on connection", SWT.DROP_DOWN | SWT.READ_ONLY);
+            dsDoubleClickBehavior.add("Open Properties", NavigatorViewBase.DoubleClickBehavior.EDIT.ordinal());
+            dsDoubleClickBehavior.add("Connect / Disconnect", NavigatorViewBase.DoubleClickBehavior.CONNECT.ordinal());
+            dsDoubleClickBehavior.add("Open SQL Editor", NavigatorViewBase.DoubleClickBehavior.SQL_EDITOR.ordinal());
+            dsDoubleClickBehavior.add("Expand / Collapse", NavigatorViewBase.DoubleClickBehavior.EXPAND.ordinal());
+
         }
 
         performDefaults();
@@ -102,7 +108,9 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         sortFoldersFirstCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_FOLDERS_FIRST));
         groupByDriverCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER));
         syncEditorDataSourceWithNavigator.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
-        doubleClickBehavior.select(
+        NavigatorViewBase.DoubleClickBehavior objDCB = NavigatorViewBase.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
+        objDoubleClickBehavior.select(objDCB == NavigatorViewBase.DoubleClickBehavior.EXPAND ? 1 : 0);
+        dsDoubleClickBehavior.select(
             NavigatorViewBase.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK)).ordinal());
     }
 
@@ -117,8 +125,13 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(DBeaverPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, sortFoldersFirstCheck.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, syncEditorDataSourceWithNavigator.getSelection());
+        NavigatorViewBase.DoubleClickBehavior objDCB = NavigatorViewBase.DoubleClickBehavior.EXPAND;
+        if (objDoubleClickBehavior.getSelectionIndex() == 0) {
+            objDCB = NavigatorViewBase.DoubleClickBehavior.EDIT;
+        }
+        store.setValue(DBeaverPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK, objDCB.name());
         store.setValue(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK,
-            CommonUtils.fromOrdinal(NavigatorViewBase.DoubleClickBehavior.class, doubleClickBehavior.getSelectionIndex()).name());
+            CommonUtils.fromOrdinal(NavigatorViewBase.DoubleClickBehavior.class, dsDoubleClickBehavior.getSelectionIndex()).name());
 
         PrefUtils.savePreferenceStore(store);
 
