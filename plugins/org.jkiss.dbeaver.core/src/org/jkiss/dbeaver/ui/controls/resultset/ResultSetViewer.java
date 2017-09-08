@@ -1743,6 +1743,7 @@ public class ResultSetViewer extends Viewer
                 }
             });
         }
+        manager.add(new GroupMarker("results_export"));
         manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
         if (dataContainer != null && model.hasData()) {
             manager.add(new Separator());

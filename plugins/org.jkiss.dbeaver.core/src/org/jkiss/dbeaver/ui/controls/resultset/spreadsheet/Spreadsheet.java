@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
+import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 
 /**
  * ResultSetControl
@@ -332,7 +333,7 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     private void hookContextMenu()
     {
-        MenuManager menuMgr = new MenuManager();
+        MenuManager menuMgr = new MenuManager(null, AbstractPresentation.RESULT_SET_PRESENTATION_CONTEXT_MENU);
         Menu menu = menuMgr.createContextMenu(this);
         menuMgr.addMenuListener(new IMenuListener() {
             @Override
@@ -348,7 +349,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         });
         menuMgr.setRemoveAllWhenShown(true);
         super.setMenu(menu);
-        site.registerContextMenu(menuMgr, null);
+        site.registerContextMenu(menuMgr, presentation);
     }
 
     public void cancelInlineEditor()

@@ -43,6 +43,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     private static final String PRESENTATION_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.presentation";
     //public static final String RESULTS_CONTROL_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset.focused";
     public static final StructuredSelection EMPTY_SELECTION = new StructuredSelection();
+    public static final String RESULT_SET_PRESENTATION_CONTEXT_MENU = "org.jkiss.dbeaver.ui.controls.resultset.conext.menu";
 
     @NotNull
     protected IResultSetController controller;
@@ -124,7 +125,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
 
     protected void registerContextMenu() {
         // Register context menu
-        MenuManager menuMgr = new MenuManager();
+        MenuManager menuMgr = new MenuManager(null, RESULT_SET_PRESENTATION_CONTEXT_MENU);
         Menu menu = menuMgr.createContextMenu(getControl());
         menuMgr.addMenuListener(new IMenuListener() {
             @Override
