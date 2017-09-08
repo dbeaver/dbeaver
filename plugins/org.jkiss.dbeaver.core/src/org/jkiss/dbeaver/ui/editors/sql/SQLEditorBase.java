@@ -403,6 +403,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             if (formatAction != null) {
                 formatMenu.add(formatAction);
             }
+            formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.morph.delimited.list"));
             formatMenu.add(getAction(ITextEditorActionConstants.UPPER_CASE));
             formatMenu.add(getAction(ITextEditorActionConstants.LOWER_CASE));
             formatMenu.add(new Separator());
