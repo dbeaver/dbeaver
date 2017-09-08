@@ -119,6 +119,15 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     }
 
     @Override
+    public String getNodeBriefInfo() {
+        if (getObject() instanceof DBPToolTipObject) {
+            return ((DBPToolTipObject)getObject()).getObjectToolTip();
+        } else {
+            return super.getNodeBriefInfo();
+        }
+    }
+
+    @Override
     public String getNodeFullName()
     {
         if (getObject() instanceof DBPQualifiedObject) {

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -105,6 +106,11 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject, IAd
     public abstract String getNodeType();
 
     public abstract String getNodeName();
+
+    @Nullable
+    public String getNodeBriefInfo() {
+        return null;
+    }
 
     public abstract String getNodeDescription();
 

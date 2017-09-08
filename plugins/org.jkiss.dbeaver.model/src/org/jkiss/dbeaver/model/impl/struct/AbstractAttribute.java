@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPToolTipObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -26,7 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 /**
  * AbstractAttribute
  */
-public abstract class AbstractAttribute implements DBSAttributeBase
+public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipObject
 {
     protected String name;
     protected int valueType;
@@ -195,6 +196,11 @@ public abstract class AbstractAttribute implements DBSAttributeBase
     public boolean isPersisted()
     {
         return true;
+    }
+
+    @Override
+    public String getObjectToolTip() {
+        return DBUtils.getFullTypeName(this);
     }
 
     @Override
