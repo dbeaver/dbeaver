@@ -487,6 +487,22 @@ public class CommonUtils {
     }
 
     @NotNull
+    public static String escapeDisplayString(@NotNull final String delim) {
+        StringBuilder str = new StringBuilder();
+        for (int i = 0; i < delim.length(); i++) {
+            char c = delim.charAt(i);
+            if (c == '\n') {
+                str.append("\\n");
+            } else if (c == '\t') {
+                str.append("\\t");
+            } else {
+                str.append(c);
+            }
+        }
+        return str.toString();
+    }
+
+    @NotNull
     public static String unescapeDisplayString(@NotNull final String delim) {
         return delim.replace("\\t", "\t").replace("\\n", "\n").replace("\\r", "\r");
     }
