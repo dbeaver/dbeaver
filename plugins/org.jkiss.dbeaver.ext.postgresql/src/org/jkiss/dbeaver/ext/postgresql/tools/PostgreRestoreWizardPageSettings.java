@@ -33,6 +33,7 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
 
     private TextWithOpenFile inputFileText;
     private Combo formatCombo;
+    private Button cleanFirstButton;
 
     protected PostgreRestoreWizardPageSettings(PostgreRestoreWizard wizard)
     {
@@ -68,6 +69,12 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
         formatCombo.select(wizard.format.ordinal());
         formatCombo.addListener(SWT.Selection, updateListener);
 
+        cleanFirstButton = UIUtils.createCheckbox(formatGroup,
+            "Clean (drop) database objects before recreating them",
+            false
+        );
+        cleanFirstButton.addListener(SWT.Selection, updateListener);
+
         Group inputGroup = UIUtils.createControlGroup(composite, "Input", 2, GridData.FILL_HORIZONTAL, 0);
         UIUtils.createControlLabel(inputGroup, "Backup file");
         inputFileText = new TextWithOpenFile(inputGroup, "Choose backup file", new String[] {"*.backup","*"});
@@ -83,6 +90,7 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
     {
         wizard.format = PostgreBackupWizard.ExportFormat.values()[formatCombo.getSelectionIndex()];
         wizard.inputFile = inputFileText.getText();
+        wizard.cleanFirst = cleanFirstButton.getSelection();
 
         getContainer().updateButtons();
     }
