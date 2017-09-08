@@ -124,40 +124,44 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
                 if (selection.size() == 1) {
                     Object node = selection.getFirstElement();
-                    if ((node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFolder) ||
-                        (node instanceof DBNDataSource &&
-                            DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK)) == DoubleClickBehavior.EXPAND))
-                    {
-                        if (Boolean.TRUE.equals(viewer.getExpandedState(node))) {
-                            viewer.collapseToLevel(node, 1);
-                        } else {
-                            viewer.expandToLevel(node, 1);
-                        }
+                    if ((node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFolder)) {
+                        toggleNode(viewer, node);
                     } else if (node instanceof DBNDataSource) {
-                        DBPDataSourceContainer dataSource = ((DBNDataSource) node).getObject();
-                        NavigatorViewBase.DoubleClickBehavior doubleClickBehavior =
-                            NavigatorViewBase.DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
-                        switch (doubleClickBehavior) {
-                            case EDIT:
-                                NavigatorHandlerObjectOpen.openEntityEditor((DBNDataSource) node, null, DBeaverUI.getActiveWorkbenchWindow());
-                                break;
-                            case CONNECT:
-                                if (dataSource.isConnected()) {
-                                    DataSourceHandler.disconnectDataSource(dataSource, null);
-                                } else {
-                                    DataSourceHandler.connectToDataSource(null, dataSource, null);
-                                }
-                                break;
-                            case SQL_EDITOR:
-                                try {
-                                    OpenHandler.openRecentScript(getSite().getWorkbenchWindow(), dataSource, null);
-                                } catch (CoreException e) {
-                                    DBUserInterface.getInstance().showError("Open SQL editor", "Can't open SQL editor", e);
-                                }
-                                break;
+                        DoubleClickBehavior dsBehaviorDefault = DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
+                        if (dsBehaviorDefault == DoubleClickBehavior.EXPAND) {
+                            toggleNode(viewer, node);
+                        } else {
+                            DBPDataSourceContainer dataSource = ((DBNDataSource) node).getObject();
+                            NavigatorViewBase.DoubleClickBehavior doubleClickBehavior =
+                                NavigatorViewBase.DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
+                            switch (doubleClickBehavior) {
+                                case EDIT:
+                                    NavigatorHandlerObjectOpen.openEntityEditor((DBNDataSource) node, null, DBeaverUI.getActiveWorkbenchWindow());
+                                    break;
+                                case CONNECT:
+                                    if (dataSource.isConnected()) {
+                                        DataSourceHandler.disconnectDataSource(dataSource, null);
+                                    } else {
+                                        DataSourceHandler.connectToDataSource(null, dataSource, null);
+                                    }
+                                    break;
+                                case SQL_EDITOR:
+                                    try {
+                                        OpenHandler.openRecentScript(getSite().getWorkbenchWindow(), dataSource, null);
+                                    } catch (CoreException e) {
+                                        DBUserInterface.getInstance().showError("Open SQL editor", "Can't open SQL editor", e);
+                                    }
+                                    break;
+                            }
                         }
                     } else {
-                        NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, getSite());
+                        DoubleClickBehavior dcBehaviorDefault = DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
+
+                        if (dcBehaviorDefault == DoubleClickBehavior.EXPAND) {
+                            toggleNode(viewer, node);
+                        } else {
+                            NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, getSite());
+                        }
                     }
                 }
             }
@@ -170,6 +174,14 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         NavigatorUtils.addDragAndDropSupport(navigatorTree.getViewer());
 
         return navigatorTree;
+    }
+
+    private void toggleNode(TreeViewer viewer, Object node) {
+        if (Boolean.TRUE.equals(viewer.getExpandedState(node))) {
+            viewer.collapseToLevel(node, 1);
+        } else {
+            viewer.expandToLevel(node, 1);
+        }
     }
 
     protected void onSelectionChange(IStructuredSelection structSel) {
