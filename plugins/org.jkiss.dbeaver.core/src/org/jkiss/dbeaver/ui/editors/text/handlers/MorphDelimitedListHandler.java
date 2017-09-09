@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
@@ -30,9 +31,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 public final class MorphDelimitedListHandler extends AbstractTextHandler {
 
@@ -53,7 +59,11 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
                     }
                     String formattedText = morphText(activeShell, textSelection.getText());
                     if (formattedText != null) {
-
+                        try {
+                            document.replace(textSelection.getOffset(), textSelection.getLength(), formattedText);
+                        } catch (BadLocationException e) {
+                            DBeaverUI.getInstance().showError("Morph text", "Error replacing text", e);
+                        }
                     }
                 }
             }
@@ -67,9 +77,49 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
         if (configDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
-        System.out.println(text);
 
-        return null;
+        List<String> tokens = new ArrayList<>();
+        MorphDelimitedListSettings settings = configDialog.morphSettings;
+        StringTokenizer st = new StringTokenizer(text, settings.getSourceDelimiter());
+        while (st.hasMoreTokens()) {
+            tokens.add(st.nextToken());
+        }
+        StringBuilder buf = new StringBuilder();
+        if (!CommonUtils.isEmpty(settings.getLeadingText())) {
+            buf.append(settings.getLeadingText());
+        }
+        int lastLineFeed = 0;
+        for (int i = 0; i < tokens.size(); i++) {
+            String token = tokens.get(i);
+            if (!CommonUtils.isEmpty(settings.getQuoteString())) {
+                buf.append(settings.getQuoteString()).append(token).append(settings.getQuoteString());
+                lastLineFeed += settings.getQuoteString().length() * 2 + token.length();
+            } else {
+                buf.append(token);
+                lastLineFeed += token.length();
+            }
+            if (i < tokens.size() - 1) {
+                buf.append(settings.getTargetDelimiter());
+                lastLineFeed += settings.getTargetDelimiter().length();
+
+                if (settings.wrapLine > 0) {
+                    int nextTokenLength = tokens.get(i + 1).length();
+                    if (!CommonUtils.isEmpty(settings.getQuoteString())) {
+                        nextTokenLength += settings.getQuoteString().length() * 2;
+                    }
+                    if (lastLineFeed + nextTokenLength > settings.wrapLine) {
+                        buf.append("\n");
+                        lastLineFeed = 0;
+                    }
+                }
+            }
+        }
+
+        if (!CommonUtils.isEmpty(settings.getTrailingText())) {
+            buf.append(settings.getTrailingText());
+        }
+
+        return buf.toString();
     }
 
     public static class MorphDelimitedListSettings {
@@ -161,7 +211,7 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
             morphSettings.setSourceDelimiter("\t\n,");
             morphSettings.setTargetDelimiter(",");
             morphSettings.setQuoteString("\"");
-            morphSettings.setWrapLine(0);
+            morphSettings.setWrapLine(80);
             if (settings.get(PARAM_SOURCE_DELIMITER) != null) {
                 morphSettings.setSourceDelimiter(settings.get(PARAM_SOURCE_DELIMITER));
             }
@@ -219,7 +269,7 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
                 Group targetGroup = UIUtils.createControlGroup(group, "Target", 2, GridData.FILL_BOTH, SWT.DEFAULT);
                 targetDelimCombo = UIUtils.createDelimiterCombo(targetGroup, "Result delimiter", new String[] {"\n", "\t", ";", ","}, morphSettings.getTargetDelimiter(), false);
                 quoteStringCombo = UIUtils.createDelimiterCombo(targetGroup, "String quote character", new String[] {"\"", "'"}, morphSettings.getQuoteString(), false);
-                wrapLineAtColumn = UIUtils.createLabelSpinner(targetGroup, "Wrap line at column", morphSettings.getWrapLine(), 0, Integer.MAX_VALUE);
+                wrapLineAtColumn = UIUtils.createLabelSpinner(targetGroup, "Wrap line at column", "Inserts line feeds after spcified number of characters. Zero means no wrap.", morphSettings.getWrapLine(), 0, Integer.MAX_VALUE);
                 leadingText = UIUtils.createLabelText(targetGroup, "Leading text", morphSettings.getLeadingText(), SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
                 ((GridData) leadingText.getLayoutData()).widthHint = textWidthHint;
                 ((GridData) leadingText.getLayoutData()).verticalAlignment = GridData.FILL;
