@@ -24,7 +24,6 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.File;
@@ -38,11 +37,11 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     private PostgreRestoreWizardPageSettings settingsPage;
     private PostgreDatabaseRestoreInfo restoreInfo;
 
-    public String inputFile;
+    String inputFile;
     boolean cleanFirst;
 
-    public PostgreRestoreWizard(PostgreDatabase database) {
-        super(Collections.<DBSObject>singletonList(database), "Database restore");
+    PostgreRestoreWizard(PostgreDatabase database) {
+        super(Collections.singletonList(database), "Database restore");
         restoreInfo = new PostgreDatabaseRestoreInfo(database);
     }
 
@@ -89,12 +88,11 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     }
 
     @Override
-    public void fillProcessParameters(List<String> cmd, PostgreDatabaseRestoreInfo arg) throws IOException
-    {
+    public void fillProcessParameters(List<String> cmd, PostgreDatabaseRestoreInfo arg) throws IOException {
         super.fillProcessParameters(cmd, arg);
 
-        if(cleanFirst){
-          cmd.add("-c");
+        if (cleanFirst) {
+            cmd.add("-c");
         }
     }
 
@@ -113,8 +111,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, final PostgreDatabaseRestoreInfo arg, ProcessBuilder processBuilder, Process process)
-    {
+    protected void startProcessHandler(DBRProgressMonitor monitor, final PostgreDatabaseRestoreInfo arg, ProcessBuilder processBuilder, Process process) {
         super.startProcessHandler(monitor, arg, processBuilder, process);
         new BinaryFileTransformerJob(monitor, new File(inputFile), process.getOutputStream()).start();
     }
