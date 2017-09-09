@@ -1116,6 +1116,18 @@ public class ResultSetViewer extends Viewer
         }
 
         {
+            ToolBarManager addToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            addToolbar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+            final IMenuService menuService = getSite().getService(IMenuService.class);
+            if (menuService != null) {
+                menuService.populateContributionManager(addToolbar, "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status");
+            }
+            addToolbar.update(true);
+            addToolbar.createControl(statusBar);
+            toolbarList.add(addToolbar);
+        }
+
+        {
             final int fontHeight = UIUtils.getFontHeight(statusBar);
             statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
             statusLabel.setLayoutData(new RowData(40 * fontHeight, SWT.DEFAULT));
@@ -1144,17 +1156,6 @@ public class ResultSetViewer extends Viewer
             };
             rowCountLabel.setLayoutData(new RowData(10 * fontHeight, SWT.DEFAULT));
             rowCountLabel.setMessage("Row Count");
-        }
-        {
-            ToolBarManager addToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            addToolbar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-            final IMenuService menuService = getSite().getService(IMenuService.class);
-            if (menuService != null) {
-                menuService.populateContributionManager(addToolbar, "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status");
-            }
-            addToolbar.update(true);
-            addToolbar.createControl(statusBar);
-            toolbarList.add(addToolbar);
         }
     }
 

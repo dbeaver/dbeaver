@@ -22,7 +22,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -37,12 +36,9 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
-import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
 
 public class OpenSpreadsheetHandler extends AbstractHandler
@@ -76,7 +72,9 @@ public class OpenSpreadsheetHandler extends AbstractHandler
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
                     File tempDir = DBeaverCore.getInstance().getTempFolder(monitor, "office-files");
-                    File tempFile = new File(tempDir, "results.data." + System.currentTimeMillis() + ".xlsx");
+                    File tempFile = new File(tempDir,
+                        CommonUtils.escapeFileName(CommonUtils.truncateString(dataContainer.getName(), 32)) +
+                            "." + System.currentTimeMillis() + ".xlsx");
 
                     DataExporterXLSX exporter = new DataExporterXLSX();
 
