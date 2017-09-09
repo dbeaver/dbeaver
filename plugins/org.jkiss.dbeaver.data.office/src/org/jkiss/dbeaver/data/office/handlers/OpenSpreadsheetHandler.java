@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.Map;
 
 public class OpenSpreadsheetHandler extends AbstractHandler
@@ -74,7 +75,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                     File tempDir = DBeaverCore.getInstance().getTempFolder(monitor, "office-files");
                     File tempFile = new File(tempDir,
                         CommonUtils.escapeFileName(CommonUtils.truncateString(dataContainer.getName(), 32)) +
-                            "." + System.currentTimeMillis() + ".xlsx");
+                            "." + new SimpleDateFormat("yyyyMMdd-HHmmss").format(System.currentTimeMillis()) + ".xlsx");
 
                     DataExporterXLSX exporter = new DataExporterXLSX();
 
