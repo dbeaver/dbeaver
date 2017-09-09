@@ -493,6 +493,8 @@ public class CommonUtils {
             char c = delim.charAt(i);
             if (c == '\n') {
                 str.append("\\n");
+            } else if (c == '\r') {
+                str.append("\\r");
             } else if (c == '\t') {
                 str.append("\\t");
             } else {
