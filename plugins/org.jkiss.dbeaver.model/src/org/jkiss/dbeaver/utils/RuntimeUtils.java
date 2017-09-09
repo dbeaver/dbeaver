@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
@@ -143,10 +144,12 @@ public class RuntimeUtils {
             return new MultiStatus(status.getPlugin(), status.getCode(), children, status.getMessage(), null);
         } else if (status instanceof Status) {
             String messagePrefix = "";
-            if (status.getException() != null) {
+            if (status.getException() != null && (CommonUtils.isEmpty(status.getException().getMessage()))) {
                 messagePrefix = status.getException().getClass().getName() + ": ";
+                return new Status(status.getSeverity(), status.getPlugin(), status.getCode(), messagePrefix + status.getMessage(), null);
+            } else {
+                return status;
             }
-            return new Status(status.getSeverity(), status.getPlugin(), status.getCode(), messagePrefix + status.getMessage(), null);
         }
         return status;
     }

@@ -59,8 +59,8 @@ public class OpenSpreadsheetHandler extends AbstractHandler
         }
 
         DBSDataContainer dataContainer = resultSet.getDataContainer();
-        if (dataContainer == null) {
-            DBeaverUI.getInstance().showError("Open Excel", "No data container");
+        if (dataContainer == null || dataContainer.getDataSource() == null) {
+            DBeaverUI.getInstance().showError("Open Excel", "Not connected to a database");
             return null;
         }
 
@@ -109,7 +109,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                         }
                     });
                 } catch (Exception e) {
-                    return GeneralUtils.makeExceptionStatus("Error opening Excel", e);
+                    DBeaverUI.getInstance().showError("Error opening in Excel", null, e);
                 }
                 return Status.OK_STATUS;
             }
