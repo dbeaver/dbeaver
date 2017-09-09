@@ -39,6 +39,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     private PostgreDatabaseRestoreInfo restoreInfo;
 
     public String inputFile;
+    boolean cleanFirst;
 
     public PostgreRestoreWizard(PostgreDatabase database) {
         super(Collections.<DBSObject>singletonList(database), "Database restore");
@@ -79,18 +80,22 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     }
 
     @Override
-	public void onSuccess(long workTime) {
+    public void onSuccess(long workTime) {
         UIUtils.showMessageBox(
             getShell(),
             "Database restore",
             "Restore '" + getObjectsName() + "'",
             SWT.ICON_INFORMATION);
-	}
+    }
 
     @Override
     public void fillProcessParameters(List<String> cmd, PostgreDatabaseRestoreInfo arg) throws IOException
     {
         super.fillProcessParameters(cmd, arg);
+
+        if(cleanFirst){
+          cmd.add("-c");
+        }
     }
 
     @Override
