@@ -71,10 +71,10 @@ public class EditableLabel extends Label
 		if (selected)
 		{
 			graphics.pushState();
-			graphics.setBackgroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
-			graphics.fillRectangle(getSelectionRectangle());
+			graphics.setBackgroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
+			graphics.fillRoundRectangle(getSelectionRectangle(), 3, 3);
 			graphics.popState();
-			graphics.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
+			graphics.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
 		}
 		super.paintFigure(graphics);
 	}
