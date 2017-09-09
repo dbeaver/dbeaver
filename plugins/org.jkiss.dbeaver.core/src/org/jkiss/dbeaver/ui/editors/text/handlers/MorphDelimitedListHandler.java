@@ -80,7 +80,14 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
 
         List<String> tokens = new ArrayList<>();
         MorphDelimitedListSettings settings = configDialog.morphSettings;
-        StringTokenizer st = new StringTokenizer(text, settings.getSourceDelimiter());
+        String sourceDelimiter = settings.getSourceDelimiter();
+
+        // Fix line feed
+        if (sourceDelimiter.contains("\n") && !sourceDelimiter.contains("\r")) {
+            sourceDelimiter += "\r";
+        }
+
+        StringTokenizer st = new StringTokenizer(text, sourceDelimiter);
         while (st.hasMoreTokens()) {
             tokens.add(st.nextToken());
         }
