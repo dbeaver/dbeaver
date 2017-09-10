@@ -156,8 +156,8 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                         }
                     } else {
                         DoubleClickBehavior dcBehaviorDefault = DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
-
-                        if (dcBehaviorDefault == DoubleClickBehavior.EXPAND) {
+                        boolean hasChildren = node instanceof DBNNode && ((DBNNode) node).hasChildren(true);
+                        if (hasChildren && dcBehaviorDefault == DoubleClickBehavior.EXPAND) {
                             toggleNode(viewer, node);
                         } else {
                             NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, getSite());
