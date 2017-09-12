@@ -49,10 +49,13 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
     private final PostgreDataSource dataSource;
     private List<PostgreRole> allUsers;
     private List<PostgreCharset> allEncodings;
+    private List<PostgreCollation> allCollations;
     private List<PostgreTablespace> allTablespaces;
+    private List<String> allTemplates;
 
     private String name;
     private PostgreRole owner;
+    private String dbTemplate;
     private PostgreCharset encoding;
     private PostgreTablespace tablespace;
 
@@ -85,6 +88,14 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
         });
 
         final Composite groupDefinition = UIUtils.createControlGroup(composite, "Definition", 2, GridData.FILL_HORIZONTAL, SWT.NONE);
+        final Combo templateCombo = UIUtils.createLabelCombo(groupDefinition, "Template database", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        templateCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                dbTemplate = templateCombo.getText();
+            }
+        });
+
         final Combo encodingCombo = UIUtils.createLabelCombo(groupDefinition, "Encoding", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         encodingCombo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -110,6 +121,7 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
                     allUsers = new ArrayList<>(database.getUsers(monitor));
                     allEncodings = new ArrayList<>(database.getEncodings(monitor));
                     allTablespaces = new ArrayList<>(database.getTablespaces(monitor));
+                    allTemplates = new ArrayList<>(dataSource.getTemplateDatabases(monitor));
 
                     final PostgreRole dba = database.getDBA(monitor);
                     final String defUserName = dba == null ? "" : dba.getName();
@@ -127,6 +139,11 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
                                 }
                             }
                             userCombo.setText(defUserName);
+
+                            templateCombo.add("");
+                            for (String tpl : allTemplates) {
+                                templateCombo.add(tpl);
+                            }
 
                             for (PostgreCharset charset : allEncodings) {
                                 encodingCombo.add(charset.getName());
@@ -161,6 +178,10 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
 
     public PostgreRole getOwner() {
         return owner;
+    }
+
+    public String getTemplateName() {
+        return dbTemplate;
     }
 
     public PostgreCharset getEncoding() {

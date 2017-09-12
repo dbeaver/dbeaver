@@ -60,6 +60,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     private long oid;
     private String name;
     private long ownerId;
+    private String templateName;
     private long encodingId;
     private String collate;
     private String ctype;
@@ -100,11 +101,12 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "dattablespace");
     }
 
-    public PostgreDatabase(PostgreDataSource dataSource, String name, PostgreRole owner, PostgreTablespace tablespace, PostgreCharset encoding)
+    public PostgreDatabase(PostgreDataSource dataSource, String name, PostgreRole owner, String templateName, PostgreTablespace tablespace, PostgreCharset encoding)
     {
         this.dataSource = dataSource;
         this.name = name;
         this.ownerId = owner.getObjectId();
+        this.templateName = templateName;
         this.tablespaceId = tablespace.getObjectId();
         this.encodingId = encoding.getObjectId();
     }
@@ -154,6 +156,10 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
 
     ///////////////////////////////////////////////////
     // Properties
+
+    public String getTemplateName() {
+        return templateName;
+    }
 
     @Property(viewable = false, order = 3)
     public PostgreRole getDBA(DBRProgressMonitor monitor) throws DBException {
