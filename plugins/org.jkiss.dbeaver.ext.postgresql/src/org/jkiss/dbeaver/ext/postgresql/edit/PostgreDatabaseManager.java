@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateDatabaseDialog;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.UITask;
 
 import java.util.List;
 
@@ -55,11 +57,16 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     @Override
     protected PostgreDatabase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreDataSource parent, Object copyFrom)
     {
-        PostgreCreateDatabaseDialog dialog = new PostgreCreateDatabaseDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return null;
-        }
-        return new PostgreDatabase(parent, dialog.getName());
+        return new UITask<PostgreDatabase>() {
+            @Override
+            protected PostgreDatabase runTask() {
+                PostgreCreateDatabaseDialog dialog = new PostgreCreateDatabaseDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
+                if (dialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
+                return new PostgreDatabase(parent, dialog.getName());
+            }
+        }.execute();
     }
 
     @Override

@@ -120,7 +120,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
             return new DBEPersistAction[] {
                 new SQLDatabasePersistAction(MySQLMessages.edit_user_manager_command_drop_user, "DROP USER " + getObject().getFullName()) { //$NON-NLS-2$
                     @Override
-                    public void handleExecute(DBCSession session, Throwable error)
+                    public void afterExecute(DBCSession session, Throwable error)
                     {
                         if (error == null) {
                             getObject().setPersisted(false);

@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
  */
 public interface DBEPersistAction {
 
-    public enum ActionType {
+    enum ActionType {
         INITIALIZER,
         NORMAL,
         OPTIONAL,
@@ -36,7 +36,10 @@ public interface DBEPersistAction {
 
     String getScript();
 
-    void handleExecute(DBCSession session, Throwable error)
+    void beforeExecute(DBCSession session)
+        throws DBCException;
+
+    void afterExecute(DBCSession session, Throwable error)
         throws DBCException;
 
     ActionType getType();

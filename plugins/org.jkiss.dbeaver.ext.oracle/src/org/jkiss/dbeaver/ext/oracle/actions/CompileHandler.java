@@ -252,11 +252,12 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                         script,
                         false, false, false))
                     {
+                        action.beforeExecute(session);
                         dbStat.executeStatement();
                     }
-                    action.handleExecute(session, null);
+                    action.afterExecute(session, null);
                 } catch (DBCException e) {
-                    action.handleExecute(session, e);
+                    action.afterExecute(session, e);
                     throw e;
                 }
                 if (action instanceof OracleObjectPersistAction) {
