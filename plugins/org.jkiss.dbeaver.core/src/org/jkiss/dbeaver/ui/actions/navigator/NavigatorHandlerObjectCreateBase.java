@@ -115,6 +115,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
 
         public CreateJob(CommandTarget commandTarget, DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker, CONTAINER_TYPE parentObject, DBSObject sourceObject) {
             super("Create new database object with " + objectMaker.getClass().getSimpleName());
+            setUser(true);
             this.commandTarget = commandTarget;
             this.objectMaker = objectMaker;
             this.parentObject = parentObject;

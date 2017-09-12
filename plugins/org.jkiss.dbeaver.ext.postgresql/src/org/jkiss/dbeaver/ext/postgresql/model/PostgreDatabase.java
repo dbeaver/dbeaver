@@ -45,7 +45,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.LongKeyMap;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * PostgreDatabase
@@ -353,15 +355,8 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        roleCache.clearCache();
-        accessMethodCache.clearCache();
-        languageCache.clearCache();
-        encodingCache.clearCache();
-        tablespaceCache.clearCache();
-        schemaCache.clearCache();
-
-        cacheDataTypes(monitor);
-        return this;
+        // Refresh all properties
+        return dataSource.getDatabaseCache().refreshObject(monitor, dataSource, this);
     }
 
     public Collection<PostgreRole> getUsers(DBRProgressMonitor monitor) throws DBException {
