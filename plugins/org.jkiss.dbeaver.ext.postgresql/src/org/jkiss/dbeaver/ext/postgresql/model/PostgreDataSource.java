@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -446,16 +447,21 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         return databaseCache.getCachedObjects();
     }
 
-    class DatabaseCache extends JDBCObjectCache<PostgreDataSource, PostgreDatabase>
+    class DatabaseCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreDatabase>
     {
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataSource owner) throws SQLException
+        protected PostgreDatabase fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
+            return new PostgreDatabase(owner, resultSet);
+        }
+
+        @Override
+        public JDBCStatement prepareLookupStatement(JDBCSession session, PostgreDataSource owner, PostgreDatabase object, String objectName) throws SQLException {
             final boolean showNDD = CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
             StringBuilder catalogQuery = new StringBuilder(
                 "SELECT db.oid,db.*" +
-                "\nFROM pg_catalog.pg_database db WHERE NOT datistemplate AND datallowconn");
-            if (!showNDD) {
+                    "\nFROM pg_catalog.pg_database db WHERE NOT datistemplate AND datallowconn");
+            if (object != null || objectName != null || !showNDD) {
                 catalogQuery.append("\nAND db.datname=?");
             }
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(PostgreDatabase.class, null, false);
@@ -466,20 +472,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                 catalogQuery.append("\nORDER BY db.datname");
             }
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
-            if (!showNDD) {
-                dbStat.setString(1, activeDatabaseName);
+            if (object != null || objectName != null || !showNDD) {
+                dbStat.setString(1, object != null ? object.getName() : (objectName != null ? objectName : activeDatabaseName));
             } else if (catalogFilters != null) {
                 JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
             }
             return dbStat;
         }
-
-        @Override
-        protected PostgreDatabase fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
-        {
-            return new PostgreDatabase(owner, resultSet);
-        }
-
     }
 
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile("\\n\\s*\\p{L}+: ([0-9]+)");

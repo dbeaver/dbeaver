@@ -407,6 +407,8 @@ public class DBNModel implements IResourceChangeListener {
                         }
                     }
                 }
+                // It is actual parent and there are no folders
+                return node;
             }
         }
         // Not found
