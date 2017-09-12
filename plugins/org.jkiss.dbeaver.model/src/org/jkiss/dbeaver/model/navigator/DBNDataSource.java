@@ -22,18 +22,21 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * DBNDataSource
  */
-public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
+public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAdaptable
 {
     private final DBPDataSourceContainer dataSource;
     private DBXTreeNode treeRoot;
@@ -77,6 +80,29 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     public Object getValueObject()
     {
         return dataSource.getDataSource();
+    }
+
+    @Override
+    public String getChildrenType() {
+        final List<DBXTreeNode> metaChildren = treeRoot.getChildren(this);
+        if (CommonUtils.isEmpty(metaChildren) || metaChildren.size() > 1) {
+            return "?";
+        } else {
+            return metaChildren.get(0).getChildrenType(getDataSource());
+        }
+    }
+
+    @Override
+    public Class<?> getChildrenClass() {
+        final List<DBXTreeNode> metaChildren = treeRoot.getChildren(this);
+        if (CommonUtils.isEmpty(metaChildren) || metaChildren.size() > 1) {
+            return null;
+        }
+        DBXTreeNode childNode = metaChildren.get(0);
+        if (childNode instanceof DBXTreeItem) {
+            return getChildrenClass((DBXTreeItem) childNode);
+        }
+        return null;
     }
 
     @Override

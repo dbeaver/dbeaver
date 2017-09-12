@@ -86,6 +86,9 @@ public class ObjectPropertyTester extends PropertyTester
                     }
                 }
                 DBNContainer container;
+                if (node instanceof DBNDataSource) {
+                    
+                }
                 if (node instanceof DBNContainer) {
                     // Try to detect child type
                     objectType = ((DBNContainer) node).getChildrenClass();

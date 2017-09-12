@@ -16,10 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateDatabaseDialog;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -52,14 +55,11 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     @Override
     protected PostgreDatabase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreDataSource parent, Object copyFrom)
     {
-/*
-        PostgreCreateSchemaDialog dialog = new PostgreCreateSchemaDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
+        PostgreCreateDatabaseDialog dialog = new PostgreCreateDatabaseDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
-        return new PostgreSchema(parent, dialog.getName(), dialog.getOwner());
-*/
-        return null;
+        return new PostgreDatabase(parent, dialog.getName());
     }
 
     @Override
@@ -82,7 +82,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     @Override
     public void renameObject(DBECommandContext commandContext, PostgreDatabase catalog, String newName) throws DBException
     {
-        throw new DBException("Direct database rename is not yet implemented in Postgre. You should use export/import functions for that.");
+        throw new DBException("Direct database rename is not yet implemented in PostgreSQL. You should use export/import functions for that.");
     }
 
 }
