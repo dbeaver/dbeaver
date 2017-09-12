@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 
 import java.util.List;
@@ -63,7 +64,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
-                return new PostgreDatabase(parent, dialog.getName());
+                return new PostgreDatabase(parent, dialog.getName(), dialog.getOwner(), dialog.getTablespace(), dialog.getEncoding());
             }
         }.execute();
     }
@@ -72,8 +73,24 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
         final PostgreDatabase database = command.getObject();
+        StringBuilder sql = new StringBuilder();
+        sql.append("CREATE DATABASE ").append(DBUtils.getQuotedIdentifier(database));
+        try {
+            VoidProgressMonitor monitor = new VoidProgressMonitor();
+            if (database.getDBA(monitor) != null) {
+                sql.append("\nOWNER = ").append(database.getDBA(monitor).getName());
+            }
+            if (database.getDefaultEncoding(monitor) != null) {
+                sql.append("\nENCODING = '").append(database.getDefaultEncoding(monitor).getName()).append("'");
+            }
+            if (database.getDefaultTablespace(monitor) != null) {
+                sql.append("\nTABLESPACE = ").append(database.getDefaultTablespace(monitor).getName());
+            }
+        } catch (DBException e) {
+            log.error(e);
+        }
         actions.add(
-            new SQLDatabasePersistActionAtomic("Create database", "CREATE DATABASE " + DBUtils.getQuotedIdentifier(database))
+            new SQLDatabasePersistActionAtomic("Create database", sql.toString())
         );
     }
 

@@ -163,6 +163,14 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
         return owner;
     }
 
+    public PostgreCharset getEncoding() {
+        return encoding;
+    }
+
+    public PostgreTablespace getTablespace() {
+        return tablespace;
+    }
+
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
