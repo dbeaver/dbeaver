@@ -47,10 +47,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
@@ -645,8 +642,8 @@ public class NavigatorUtils {
         static NodeFolderComparator INSTANCE = new NodeFolderComparator();
         @Override
         public int compare(DBNNode node1, DBNNode node2) {
-            int first = node1 instanceof DBNContainer ? -1 : 1;
-            int second = node2 instanceof DBNContainer ? -1 : 1;
+            int first = node1 instanceof DBNLocalFolder || node1 instanceof DBSFolder ? -1 : 1;
+            int second = node2 instanceof DBNLocalFolder || node2 instanceof DBSFolder ? -1 : 1;
             return first - second;
         }
     }

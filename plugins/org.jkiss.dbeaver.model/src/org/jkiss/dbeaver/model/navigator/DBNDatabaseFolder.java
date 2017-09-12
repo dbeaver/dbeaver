@@ -126,20 +126,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     @Override
     public Class<? extends DBSObject> getChildrenClass()
     {
-        String itemsType = CommonUtils.toString(meta.getType());
-        if (CommonUtils.isEmpty(itemsType)) {
-            return null;
-        }
-        Class<DBSObject> aClass = meta.getSource().getObjectClass(itemsType, DBSObject.class);
-        if (aClass == null) {
-            log.error("Items class '" + itemsType + "' not found");
-            return null;
-        }
-        if (!DBSObject.class.isAssignableFrom(aClass)) {
-            log.error("Class '" + aClass.getName() + "' doesn't extend DBSObject");
-            return null;
-        }
-        return aClass ;
+        return getFolderChildrenClass(meta);
     }
 
     @Override
