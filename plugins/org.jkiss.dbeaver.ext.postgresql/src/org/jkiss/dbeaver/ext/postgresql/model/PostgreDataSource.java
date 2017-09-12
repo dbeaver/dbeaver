@@ -46,6 +46,8 @@ import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -445,6 +447,22 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public Collection<PostgreDatabase> getAvailableInstances() {
         return databaseCache.getCachedObjects();
+    }
+
+    public List<String> getTemplateDatabases(DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load template databases")) {
+            try (PreparedStatement dbStat = session.prepareStatement("SELECT db.datname FROM pg_catalog.pg_database db WHERE datistemplate")) {
+                try (ResultSet resultSet = dbStat.executeQuery()) {
+                    List<String> dbNames = new ArrayList<>();
+                    while (resultSet.next()) {
+                        dbNames.add(resultSet.getString(1));
+                    }
+                    return dbNames;
+                }
+            }
+        } catch (Exception e) {
+            throw new DBException("Error eading templkate databases", e);
+        }
     }
 
     class DatabaseCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreDatabase>

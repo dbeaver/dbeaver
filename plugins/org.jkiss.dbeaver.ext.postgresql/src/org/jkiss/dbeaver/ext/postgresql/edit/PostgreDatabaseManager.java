@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -64,7 +65,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
-                return new PostgreDatabase(parent, dialog.getName(), dialog.getOwner(), dialog.getTablespace(), dialog.getEncoding());
+                return new PostgreDatabase(parent, dialog.getName(), dialog.getOwner(), dialog.getTemplateName(), dialog.getTablespace(), dialog.getEncoding());
             }
         }.execute();
     }
@@ -79,6 +80,9 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
             VoidProgressMonitor monitor = new VoidProgressMonitor();
             if (database.getDBA(monitor) != null) {
                 sql.append("\nOWNER = ").append(database.getDBA(monitor).getName());
+            }
+            if (!CommonUtils.isEmpty(database.getTemplateName())) {
+                sql.append("\nTEMPLATE = ").append(database.getTemplateName());
             }
             if (database.getDefaultEncoding(monitor) != null) {
                 sql.append("\nENCODING = '").append(database.getDefaultEncoding(monitor).getName()).append("'");
