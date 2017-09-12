@@ -98,10 +98,13 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "dattablespace");
     }
 
-    public PostgreDatabase(PostgreDataSource dataSource, String name)
+    public PostgreDatabase(PostgreDataSource dataSource, String name, PostgreRole owner, PostgreTablespace tablespace, PostgreCharset encoding)
     {
         this.dataSource = dataSource;
         this.name = name;
+        this.ownerId = owner.getObjectId();
+        this.tablespaceId = tablespace.getObjectId();
+        this.encodingId = encoding.getObjectId();
     }
 
     @NotNull
