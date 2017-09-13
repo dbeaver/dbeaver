@@ -45,6 +45,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     private Combo gridDoubleClickBehavior;
     private Button autoSwitchMode;
     private Button showDescription;
+    private Button showConnectionName;
 
     private Spinner textMaxColumnSize;
     private ValueFormatSelector textValueFormat;
@@ -64,6 +65,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.contains(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION) ||
+            store.contains(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME) ||
             store.contains(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK) ||
             store.contains(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE) ||
             store.contains(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE) ||
@@ -88,6 +90,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
             autoSwitchMode = UIUtils.createCheckbox(uiGroup, "Switch to record/grid mode on single/multiple row(s)", false);
             showDescription = UIUtils.createCheckbox(uiGroup, "Show column description in header", false);
+            showConnectionName = UIUtils.createCheckbox(uiGroup, "Show connection name in status", false);
             transformComplexTypes = UIUtils.createCheckbox(uiGroup, "Structurize complex types", "Visualize complex types (arrays, structures, maps) in results grid as separate columns", false, 1);
         }
 
@@ -128,6 +131,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
                 Spreadsheet.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK)).ordinal());
             autoSwitchMode.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE));
             showDescription.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION));
+            showConnectionName.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME));
 
             textMaxColumnSize.setSelection(store.getInt(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE));
             textValueFormat.select(DBDDisplayFormat.safeValueOf(store.getString(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT)));
@@ -148,6 +152,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.setValue(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(Spreadsheet.DoubleClickBehavior.class, gridDoubleClickBehavior.getSelectionIndex()).name());
             store.setValue(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE, autoSwitchMode.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION, showDescription.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME, showConnectionName.getSelection());
             store.setValue(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, textMaxColumnSize.getSelection());
             store.setValue(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT, textValueFormat.getSelection().name());
         } catch (Exception e) {
@@ -168,6 +173,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK);
         store.setToDefault(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME);
         store.setToDefault(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
         store.setToDefault(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT);
     }
