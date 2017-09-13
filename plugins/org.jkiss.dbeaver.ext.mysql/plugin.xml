@@ -146,7 +146,7 @@
                     defaultPort="3306"
                     webURL="http://www.mysql.com/products/connector/"
                     description="MySQL standard driver">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.39]"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]"/>
                     <property name="connectTimeout" value="20000"/>
                 </driver>
                 <driver
