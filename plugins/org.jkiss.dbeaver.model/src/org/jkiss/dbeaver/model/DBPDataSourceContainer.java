@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Collection;
 import java.util.Date;
@@ -189,4 +190,6 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
     ISecurePreferences getSecurePreferences();
 
     Date getConnectTime();
+
+    GeneralUtils.IVariableResolver getVariablesResolver();
 }

@@ -53,6 +53,8 @@ import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -72,6 +74,22 @@ public class DataSourceDescriptor
         DBPRefreshableObject
 {
     private static final Log log = Log.getLog(DataSourceDescriptor.class);
+
+    public static final String[][] CONNECT_VARIABLES = new String[][]{
+        {RegistryConstants.VARIABLE_HOST, "target host"},
+        {RegistryConstants.VARIABLE_PORT, "target port"},
+        {RegistryConstants.VARIABLE_SERVER, "target server name"},
+        {RegistryConstants.VARIABLE_DATABASE, "target database"},
+        {RegistryConstants.VARIABLE_USER, "user name"},
+        {RegistryConstants.VARIABLE_PASSWORD, "password (plain)"},
+        {RegistryConstants.VARIABLE_URL, "JDBC URL"},
+
+        {SystemVariablesResolver.VAR_WORKSPACE, "workspace path"},
+        {SystemVariablesResolver.VAR_HOME, "user home path"},
+        {SystemVariablesResolver.VAR_DBEAVER_HOME, "application install path"},
+        {SystemVariablesResolver.VAR_APP_NAME, "application name"},
+        {SystemVariablesResolver.VAR_APP_VERSION, "application version"},
+    };
 
     @NotNull
     private final DBPDataSourceRegistry registry;
@@ -771,20 +789,7 @@ public class DataSourceDescriptor
         DBPConnectionConfiguration info = getActualConnectionConfiguration();
         DBRShellCommand command = info.getEvent(eventType);
         if (command != null && command.isEnabled()) {
-            Map<String, Object> variables = new HashMap<>();
-            for (Map.Entry<String, String> entry : info.getProperties().entrySet()) {
-                variables.put(CommonUtils.toString(entry.getKey()), entry.getValue());
-            }
-            variables.put(RegistryConstants.VARIABLE_HOST, info.getHostName());
-            variables.put(RegistryConstants.VARIABLE_PORT, info.getHostPort());
-            variables.put(RegistryConstants.VARIABLE_SERVER, info.getServerName());
-            variables.put(RegistryConstants.VARIABLE_DATABASE, info.getDatabaseName());
-            variables.put(RegistryConstants.VARIABLE_USER, info.getUserName());
-            variables.put(RegistryConstants.VARIABLE_PASSWORD, info.getUserPassword());
-            variables.put(RegistryConstants.VARIABLE_URL, info.getUrl());
-
-            final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, variables);
-            //processDescriptor.getProcessBuilder().redirectErrorStream(true);
+            final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, getVariablesResolver());
 
             monitor.subTask("Execute process " + processDescriptor.getName());
             DBUserInterface.getInstance().executeProcess(processDescriptor);
@@ -1240,4 +1245,28 @@ public class DataSourceDescriptor
         }
     }
 
+    @Override
+    public GeneralUtils.IVariableResolver getVariablesResolver() {
+        return new GeneralUtils.IVariableResolver() {
+            @Override
+            public String get(String name) {
+                String propValue = getActualConnectionConfiguration().getProperties().get(name);
+                if (propValue != null) {
+                    return propValue;
+                }
+
+                name = name.toLowerCase(Locale.ENGLISH);
+                switch (name) {
+                    case RegistryConstants.VARIABLE_HOST: return getActualConnectionConfiguration().getHostName();
+                    case RegistryConstants.VARIABLE_PORT: return getActualConnectionConfiguration().getHostPort();
+                    case RegistryConstants.VARIABLE_SERVER: return getActualConnectionConfiguration().getServerName();
+                    case RegistryConstants.VARIABLE_DATABASE: return getActualConnectionConfiguration().getDatabaseName();
+                    case RegistryConstants.VARIABLE_USER: return getActualConnectionConfiguration().getUserName();
+                    case RegistryConstants.VARIABLE_PASSWORD: return getActualConnectionConfiguration().getUserPassword();
+                    case RegistryConstants.VARIABLE_URL: return getActualConnectionConfiguration().getUrl();
+                    default: return SystemVariablesResolver.INSTANCE.get(name);
+                }
+            }
+        };
+    }
 }

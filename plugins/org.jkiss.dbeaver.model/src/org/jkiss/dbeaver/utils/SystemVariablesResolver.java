@@ -23,24 +23,35 @@ import org.jkiss.utils.StandardConstants;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Locale;
 
 /**
  * SystemVariablesResolver
  */
 public class SystemVariablesResolver implements GeneralUtils.IVariableResolver {
 
+    public static SystemVariablesResolver INSTANCE = new SystemVariablesResolver();
+
+    public static final String VAR_APP_NAME = "application.name";
+    public static final String VAR_APP_VERSION = "application.version";
     public static final String VAR_WORKSPACE = "workspace";
     public static final String VAR_HOME = "home";
     public static final String VAR_DBEAVER_HOME = "dbeaver_home";
 
     @Override
     public String get(String name) {
-        if (name.equalsIgnoreCase(VAR_HOME)) {
-            return getUserHome();
-        } else if (name.equalsIgnoreCase(VAR_WORKSPACE)) {
-            return getWorkspacePath();
-        } else if (name.equalsIgnoreCase(VAR_DBEAVER_HOME)) {
-            return getInstallPath();
+        name = name.toLowerCase(Locale.ENGLISH);
+        switch (name) {
+            case VAR_APP_NAME:
+                return GeneralUtils.getProductName();
+            case VAR_APP_VERSION:
+                return GeneralUtils.getProductVersion().toString();
+            case VAR_HOME:
+                return getUserHome();
+            case VAR_WORKSPACE:
+                return getWorkspacePath();
+            case VAR_DBEAVER_HOME:
+                return getInstallPath();
         }
         return null;
     }
