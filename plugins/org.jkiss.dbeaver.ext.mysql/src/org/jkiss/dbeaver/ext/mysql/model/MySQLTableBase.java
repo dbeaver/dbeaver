@@ -35,11 +35,13 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * MySQLTable base
@@ -137,21 +139,10 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
                 "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullyQualifiedName(DBPEvaluationContext.DDL))) {
                 try (ResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        byte[] ddl;
                         if (isView()) {
-                            ddl = dbResult.getBytes("Create View");
+                            return dbResult.getString("Create View");
                         } else {
-                            ddl = dbResult.getBytes("Create Table");
-                        }
-                        if (ddl == null) {
-                            return null;
-                        } else {
-                            try {
-                                return new String(ddl, getContainer().getDefaultCharset().getName());
-                            } catch (UnsupportedEncodingException e) {
-                                log.debug(e);
-                                return new String(ddl);
-                            }
+                            return dbResult.getString("Create Table");
                         }
                     } else {
                         return "DDL is not available";
