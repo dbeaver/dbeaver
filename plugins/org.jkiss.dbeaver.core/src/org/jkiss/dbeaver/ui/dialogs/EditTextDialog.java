@@ -33,8 +33,14 @@ public class EditTextDialog extends BaseDialog {
 
     public EditTextDialog(Shell parentShell, String title, String text)
     {
+        this(parentShell, title, null, false);
+    }
+
+    public EditTextDialog(Shell parentShell, String title, String text, boolean readOnly)
+    {
         super(parentShell, title, null);
         this.text = text;
+        this.readonly = readOnly;
     }
 
     public void setReadonly(boolean readonly)

@@ -17,15 +17,14 @@
 
 package org.jkiss.dbeaver.model.runtime;
 
-import java.io.*;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+
+import java.io.*;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * DBRProcessDescriptor
@@ -44,12 +43,12 @@ public class DBRProcessDescriptor
         this(command, null);
     }
 
-    public DBRProcessDescriptor(final DBRShellCommand command, final Map<String, Object> variables)
+    public DBRProcessDescriptor(final DBRShellCommand command, final GeneralUtils.IVariableResolver variablesResolver)
     {
         this.command = command;
-        String commandLine = variables == null ?
+        String commandLine = variablesResolver == null ?
             command.getCommand() :
-            GeneralUtils.replaceVariables(command.getCommand(), new GeneralUtils.MapResolver(variables));
+            GeneralUtils.replaceVariables(command.getCommand(), variablesResolver);
 
         processBuilder = new ProcessBuilder(GeneralUtils.parseCommandLine(commandLine));
         // Set working directory

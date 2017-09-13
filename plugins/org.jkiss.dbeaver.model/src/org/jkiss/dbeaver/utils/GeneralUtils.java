@@ -346,6 +346,15 @@ public class GeneralUtils {
     }
 
     @NotNull
+    public static String generateVariablesLegend(@NotNull String[][] vars) {
+        StringBuilder text = new StringBuilder();
+        for (String[] var : vars) {
+            text.append(GeneralUtils.variablePattern(var[0])).append("\t- ").append(var[1]).append("\n");
+        }
+        return text.toString();
+    }
+
+    @NotNull
     public static String replaceVariables(@NotNull String string, IVariableResolver resolver) {
         try {
             Matcher matcher = VAR_PATTERN.matcher(string);

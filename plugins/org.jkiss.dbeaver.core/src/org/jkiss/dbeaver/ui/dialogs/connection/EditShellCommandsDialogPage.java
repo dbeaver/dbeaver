@@ -28,13 +28,12 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
+import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -173,22 +172,7 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
                 });
             }
 
-            Group helpGroup = new Group(detailsGroup, SWT.NONE);
-            helpGroup.setText("Command parameters");
-            helpGroup.setLayout(new GridLayout(2, false));
-            helpGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-            Label infoLabel = new Label(helpGroup, SWT.NONE);
-            infoLabel.setText("You may use following variables:");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            infoLabel.setLayoutData(gd);
-            addVariableLegend(helpGroup, RegistryConstants.VARIABLE_HOST, "target host");
-            addVariableLegend(helpGroup, RegistryConstants.VARIABLE_PORT, "target port");
-            addVariableLegend(helpGroup, RegistryConstants.VARIABLE_SERVER, "target server name");
-            addVariableLegend(helpGroup, RegistryConstants.VARIABLE_DATABASE, "target database");
-            addVariableLegend(helpGroup, RegistryConstants.VARIABLE_USER, "user name");
-            addVariableLegend(helpGroup, RegistryConstants.VARIABLE_PASSWORD, "password (plain)");
-            addVariableLegend(helpGroup, RegistryConstants.VARIABLE_URL, "JDBC URL");
+            new VariablesHintLabel(detailsGroup, DataSourceDescriptor.CONNECT_VARIABLES);
         }
 
         selectEventType(null);
@@ -212,16 +196,6 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
         Spinner spinner = UIUtils.createSpinner(waitFinishGroup, "-1 to wait forever", 0, defaultValue, maxSelection);
         UIUtils.createLabel(waitFinishGroup, CoreMessages.dialog_connection_events_checkbox_wait_finish_timeout);
         return spinner;
-    }
-
-    private void addVariableLegend(Composite group, String varName, String description) {
-        Text nameText = new Text(group, SWT.READ_ONLY);
-        nameText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        nameText.setText(GeneralUtils.variablePattern(varName));
-
-        Label descText = new Label(group, SWT.READ_ONLY);
-        descText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        descText.setText("-" + description);
     }
 
     private DBPConnectionEventType getSelectedEventType()
