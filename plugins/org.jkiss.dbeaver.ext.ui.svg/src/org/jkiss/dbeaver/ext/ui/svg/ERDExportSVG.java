@@ -21,6 +21,7 @@ import org.apache.batik.ext.awt.image.spi.ImageWriterRegistry;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gef.editparts.LayerManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatHandler;
@@ -36,8 +37,7 @@ import java.io.File;
 /**
  * SVG exporter
  */
-public class ERDExportSVG implements ERDExportFormatHandler
-{
+public class ERDExportSVG implements ERDExportFormatHandler {
     private static final Log log = Log.getLog(ERDExportSVG.class);
 
     static {
@@ -64,6 +64,12 @@ public class ERDExportSVG implements ERDExportFormatHandler
             graphics.translate(contentBounds.x * -1, contentBounds.y * -1);
             paintDiagram(graphics, figure);
 
+            LayerManager layerManager = (LayerManager) diagramPart.getViewer().getEditPartRegistry().get(LayerManager.ID);
+            IFigure connectionLayer = layerManager.getLayer("Connection Layer");
+            if (connectionLayer != null) {
+                paintDiagram(graphics, connectionLayer);
+            }
+
             String filePath = targetFile.getAbsolutePath();
 
             svgGenerator.stream(filePath);
@@ -75,48 +81,38 @@ public class ERDExportSVG implements ERDExportFormatHandler
     }
 
 
-    /** Paints the figure onto the given graphics */
-    public static void paintDiagram(Graphics g, IFigure figure)
-    {
+    /**
+     * Paints the figure onto the given graphics
+     */
+    public static void paintDiagram(Graphics g, IFigure figure) {
         // Store state, so modified state of Graphics (while painting children) can be easily restored
         g.pushState();
-        try
-        {
+        try {
             IClippingStrategy clippingStrategy = figure.getClippingStrategy();
 
             // Iterate over the children to check whether a child is a(nother) layer or an actual figure
             // Not painting the layers themselves is likely to get rid of borders and graphics settings that are not
             // supported (like Graphics#setTextAntiAliassing())
-            for (Object childObject : figure.getChildren())
-            {
-                if (childObject instanceof Layer)
-                {
+            for (Object childObject : figure.getChildren()) {
+                if (childObject instanceof Layer) {
                     // Found another layer, process it to search for actual figures
                     paintDiagram(g, (IFigure) childObject);
-                }
-                else
-                {
+                } else {
                     // Found something to draw
                     // Use same/similar method as being using in Figure#paintChildren() in order to get clipping right
                     IFigure child = (IFigure) childObject;
-                    if (child.isVisible())
-                    {
+                    if (child.isVisible()) {
                         // determine clipping areas for child
                         Rectangle[] clipping = null;
-                        if (clippingStrategy != null)
-                        {
+                        if (clippingStrategy != null) {
                             clipping = clippingStrategy.getClip(child);
-                        }
-                        else
-                        {
+                        } else {
                             // default clipping behaviour is to clip at bounds
-                            clipping = new Rectangle[] { child.getBounds() };
+                            clipping = new Rectangle[]{child.getBounds()};
                         }
                         // child may now paint inside the clipping areas
-                        for (int j = 0; j < clipping.length; j++)
-                        {
-                            if (clipping[j].intersects(g.getClip(Rectangle.SINGLETON)))
-                            {
+                        for (int j = 0; j < clipping.length; j++) {
+                            if (clipping[j].intersects(g.getClip(Rectangle.SINGLETON))) {
                                 g.clipRect(clipping[j]);
                                 child.paint(g);
                                 g.restoreState();
@@ -125,8 +121,37 @@ public class ERDExportSVG implements ERDExportFormatHandler
                     }
                 }
             }
-        } finally
-        {
+
+            for (Object childObject : figure.getChildren()) {
+                if (childObject instanceof Layer) {
+                    // Found another layer, process it to search for actual figures
+                    paintDiagram(g, (IFigure) childObject);
+                } else {
+                    // Found something to draw
+                    // Use same/similar method as being using in Figure#paintChildren() in order to get clipping right
+                    IFigure child = (IFigure) childObject;
+                    if (child.isVisible()) {
+                        // determine clipping areas for child
+                        Rectangle[] clipping = null;
+                        if (clippingStrategy != null) {
+                            clipping = clippingStrategy.getClip(child);
+                        } else {
+                            // default clipping behaviour is to clip at bounds
+                            clipping = new Rectangle[]{child.getBounds()};
+                        }
+                        // child may now paint inside the clipping areas
+                        for (int j = 0; j < clipping.length; j++) {
+                            if (clipping[j].intersects(g.getClip(Rectangle.SINGLETON))) {
+                                g.clipRect(clipping[j]);
+                                child.paint(g);
+                                g.restoreState();
+                            }
+                        }
+                    }
+                }
+            }
+
+        } finally {
             // Always pop the state again to prevent problems
             g.popState();
         }
