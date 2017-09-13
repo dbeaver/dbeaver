@@ -1337,6 +1337,9 @@ public class ResultSetViewer extends Viewer
         if (hasWarnings) {
             statusMessage += " - " + dataReceiver.getErrorList().size() + " warning(s)";
         }
+        if (getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME)) {
+            statusMessage += " [" + getDataContainer().getDataSource().getContainer().getName() + "]";
+        }
         setStatus(statusMessage, hasWarnings ? DBPMessageType.WARNING : DBPMessageType.INFORMATION);
 
         // Update row count label
