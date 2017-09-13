@@ -1338,7 +1338,13 @@ public class ResultSetViewer extends Viewer
             statusMessage += " - " + dataReceiver.getErrorList().size() + " warning(s)";
         }
         if (getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME)) {
-            statusMessage += " [" + getDataContainer().getDataSource().getContainer().getName() + "]";
+            DBSDataContainer dataContainer = getDataContainer();
+            if (dataContainer != null) {
+                DBPDataSource dataSource = dataContainer.getDataSource();
+                if (dataSource != null) {
+                    statusMessage += " [" + dataSource.getContainer().getName() + "]";
+                }
+            }
         }
         setStatus(statusMessage, hasWarnings ? DBPMessageType.WARNING : DBPMessageType.INFORMATION);
 
