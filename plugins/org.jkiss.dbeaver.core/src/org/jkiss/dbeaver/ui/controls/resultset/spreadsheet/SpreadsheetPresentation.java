@@ -1286,7 +1286,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 List<Integer> rowSelection = new ArrayList<>(spreadsheet.getRowSelection());
                 Collections.sort(rowSelection);
                 for (Integer row : rowSelection) {
-                    attrs.add((DBDAttributeBinding) elements[row]);
+                    if (row < elements.length) {
+                        // Index may be out of bounds in case of complex attributes
+                        attrs.add((DBDAttributeBinding) elements[row]);
+                    }
                 }
                 return attrs;
             } else {
