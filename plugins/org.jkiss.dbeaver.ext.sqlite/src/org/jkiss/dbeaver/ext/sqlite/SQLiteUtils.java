@@ -21,6 +21,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteObjectType;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -36,13 +38,31 @@ public class SQLiteUtils {
 
     public static String readMasterDefinition(DBRProgressMonitor monitor, JDBCDataSource dataSource, SQLiteObjectType objectType, String sourceObjectName, GenericTable table) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load PostgreSQL description")) {
-            return JDBCUtils.queryString(
-                session,
-                "SELECT sql FROM sqlite_master WHERE type=? AND name=? AND tbl_name=?\n" +
-                "UNION ALL\n" +
-                "SELECT sql FROM sqlite_temp_master WHERE type=? AND name=? AND tbl_name=?\n",
-                objectType.name(), sourceObjectName, table.getName(),
-                objectType.name(), sourceObjectName, table.getName());
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT sql FROM sqlite_master WHERE type=? AND tbl_name=?" + (sourceObjectName != null ? " AND name=?" : "") + "\n" +
+                    "UNION ALL\n" +
+                    "SELECT sql FROM sqlite_temp_master WHERE type=? AND tbl_name=?" + (sourceObjectName != null ? " AND name=?" : "") + "\n"))
+            {
+                int paramIndex = 1;
+                dbStat.setString(paramIndex++, objectType.name());
+                dbStat.setString(paramIndex++, table.getName());
+                if (sourceObjectName != null) {
+                    dbStat.setString(paramIndex++, sourceObjectName);
+                }
+                dbStat.setString(paramIndex++, objectType.name());
+                dbStat.setString(paramIndex++, table.getName());
+                if (sourceObjectName != null) {
+                    dbStat.setString(paramIndex++, sourceObjectName);
+                }
+                try (JDBCResultSet resultSet = dbStat.executeQuery()) {
+                    StringBuilder sql = new StringBuilder();
+                    while (resultSet.next()) {
+                        sql.append(resultSet.getString(1));
+                        sql.append(";\n");
+                    }
+                    return sql.toString();
+                }
+            }
         } catch (Exception e) {
             log.debug(e);
             return null;

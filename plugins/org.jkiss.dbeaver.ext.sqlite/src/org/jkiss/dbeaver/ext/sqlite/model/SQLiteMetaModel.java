@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -55,7 +56,12 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
 
     @Override
     public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
-        return SQLiteUtils.readMasterDefinition(monitor, sourceObject.getDataSource(), SQLiteObjectType.table, sourceObject.getName(), sourceObject);
+        String tableDDL = SQLiteUtils.readMasterDefinition(monitor, sourceObject.getDataSource(), SQLiteObjectType.table, sourceObject.getName(), sourceObject);
+        String indexesDDL = SQLiteUtils.readMasterDefinition(monitor, sourceObject.getDataSource(), SQLiteObjectType.index, null, sourceObject);
+        if (CommonUtils.isEmpty(indexesDDL)) {
+            return tableDDL;
+        }
+        return tableDDL + "\n" + indexesDDL;
     }
 
     @Override
