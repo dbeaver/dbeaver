@@ -1281,9 +1281,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public Collection<DBDAttributeBinding> getSelectedAttributes() {
             if (controller.isRecordMode()) {
+                Object[] elements = spreadsheet.getContentProvider().getElements(false);
                 List<DBDAttributeBinding> attrs = new ArrayList<>();
-                for (Integer row : spreadsheet.getRowSelection()) {
-                    attrs.add(controller.getModel().getVisibleAttribute(row));
+                List<Integer> rowSelection = new ArrayList<>(spreadsheet.getRowSelection());
+                Collections.sort(rowSelection);
+                for (Integer row : rowSelection) {
+                    attrs.add((DBDAttributeBinding) elements[row]);
                 }
                 return attrs;
             } else {
