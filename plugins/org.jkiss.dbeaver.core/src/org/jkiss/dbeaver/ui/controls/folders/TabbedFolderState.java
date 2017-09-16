@@ -54,7 +54,7 @@ import java.util.Map;
  */
 public class TabbedFolderState {
 
-    public static class TabState {
+    static class TabState {
         int height;
         int width;
         boolean embedded;
@@ -66,13 +66,21 @@ public class TabbedFolderState {
         return tabStates.get(tabId);
     }
 
-    public TabState getTabState(String tabId, boolean create) {
+    Map<String, TabState> getTabStates() {
+        return tabStates;
+    }
+
+    TabState getTabState(String tabId, boolean create) {
         TabState state = tabStates.get(tabId);
         if (state == null && create) {
             state = new TabState();
             tabStates.put(tabId, state);
         }
         return state;
+    }
+
+    public void setTabState(String tabId, TabState state) {
+        tabStates.put(tabId, state);
     }
 
     public void setTabHeight(String tabId, int height) {
