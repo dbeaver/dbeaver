@@ -127,20 +127,21 @@ public class SQLTokenizedFormatter implements SQLFormatter {
             FormatterToken t1 = argList.get(index + 1);
             FormatterToken t2 = argList.get(index + 2);
 
-            if (t0.getType() == TokenType.KEYWORD
-                    && t1.getType() == TokenType.SPACE
-                    && t2.getType() == TokenType.KEYWORD) {
-                if (((t0.getString().equalsIgnoreCase("ORDER") || t0 //$NON-NLS-1$
-                        .getString().equalsIgnoreCase("GROUP")) && t2 //$NON-NLS-1$
-                        .getString().equalsIgnoreCase("BY"))) { //$NON-NLS-1$
-                    t0.setString(t0.getString() + " " + t2.getString()); //$NON-NLS-1$
+            String tokenString = t0.getString().toUpperCase(Locale.ENGLISH);
+            String token2String = t2.getString().toUpperCase(Locale.ENGLISH);;
+            // Concatenate tokens
+            if (t0.getType() == TokenType.KEYWORD && t1.getType() == TokenType.SPACE && t2.getType() == TokenType.KEYWORD) {
+                if (((tokenString.equals("ORDER") || tokenString.equals("GROUP") || tokenString.equals("CONNECT")) && token2String.equals("BY")) ||
+                    ((tokenString.equals("START")) && token2String.equals("WITH")))
+                {
+                    t0.setString(t0.getString() + " " + t2.getString());
                     argList.remove(index + 1);
                     argList.remove(index + 1);
                 }
             }
 
             // Oracle style joins
-            if (t0.getString().equals("(") && t1.getString().equals("+") && t2.getString().equals(")")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            if (tokenString.equals("(") && t1.getString().equals("+") && token2String.equals(")")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 t0.setString("(+)"); //$NON-NLS-1$
                 argList.remove(index + 1);
                 argList.remove(index + 1);
@@ -188,6 +189,8 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                     case "FROM":
                     case "WHERE":
                     case "SET":
+                    case "START WITH":
+                    case "CONNECT BY":
                     case "ORDER BY":
                     case "GROUP BY":
                     case "HAVING":  //$NON-NLS-1$
