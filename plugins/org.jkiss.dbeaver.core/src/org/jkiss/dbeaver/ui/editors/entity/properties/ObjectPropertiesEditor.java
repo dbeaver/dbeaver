@@ -204,13 +204,14 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             // Unexpected
             return;
         }
-        Point propsSize = children[0].computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        Point foldersSize = children[1].computeSize(SWT.DEFAULT, SWT.DEFAULT);
         //Point foldersSize = children[1].computeSize(SWT.DEFAULT, SWT.DEFAULT);
         Point sashSize = sashForm.getSize();
-        if (propsSize.y < sashSize.y / 2) {
+        if (foldersSize.y > sashSize.y / 2) {
             int[] weights = new int[] {
-                propsSize.y,
-                (sashSize.y - propsSize.y)};
+                (sashSize.y - foldersSize.y),
+                foldersSize.y
+            };
             sashForm.setWeights(weights);
         } else {
             sashForm.setWeights(new int[] { 400, 600 });

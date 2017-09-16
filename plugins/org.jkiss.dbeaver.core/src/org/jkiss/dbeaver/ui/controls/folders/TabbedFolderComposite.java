@@ -53,7 +53,6 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
     private FolderPane[] folderPanes;
     private FolderPane lastActiveFolder = null;
 
-    private static Map<String, TabbedFolderState> savedStates = new HashMap<>();
     private TabbedFolderState folderState;
 
     private class FolderPane {
@@ -255,11 +254,7 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
     public void setFolders(@NotNull final String objectId, @NotNull final TabbedFolderInfo[] folders) {
         this.folders = folders;
 
-        folderState = savedStates.get(objectId);
-        if (folderState == null) {
-            folderState = new TabbedFolderState();
-            savedStates.put(objectId, folderState);
-        }
+        folderState = TabbedFoldersRegistry.getInstance().getFolderState(objectId);
 
         List<List<TabbedFolderInfo>> groups = new ArrayList<>();
         List<TabbedFolderInfo> curGroup = null;
@@ -305,6 +300,7 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
                 @Override
                 public void controlResized(ControlEvent e) {
                     tabState.height = folderPane.folderList.getSize().y;
+                    TabbedFoldersRegistry.getInstance().saveConfig();
                 }
             });
         }
