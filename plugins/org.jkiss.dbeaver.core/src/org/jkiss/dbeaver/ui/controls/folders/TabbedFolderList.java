@@ -678,7 +678,7 @@ public class TabbedFolderList extends Composite {
     }
 
     public Point computeSize(int wHint, int hHint, boolean changed) {
-        Point result = super.computeSize(hHint, wHint, changed);
+        Point result = super.computeSize(wHint, hHint, changed);
         Object layoutData = getLayoutData();
         if (layoutData instanceof GridData && ((GridData) layoutData).widthHint != -1) {
             result.x = ((GridData) layoutData).widthHint;
@@ -789,7 +789,7 @@ public class TabbedFolderList extends Composite {
      *
      * @return the height of a tab.
      */
-    private int getTabHeight() {
+    int getTabHeight() {
         int tabHeight = getTextDimension("").y + INDENT_LEFT; //$NON-NLS-1$
         if (tabsThatFitInComposite == 1) {
 			/*

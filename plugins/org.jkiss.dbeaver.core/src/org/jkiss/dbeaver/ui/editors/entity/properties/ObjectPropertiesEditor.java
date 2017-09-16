@@ -153,7 +153,10 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         folderComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Load properties
-        folderComposite.setFolders(folders);
+        {
+            String objectId = "PropertiesEditor." + getDatabaseObject().getClass().getName();
+            folderComposite.setFolders(objectId, folders);
+        }
 
         // Collect section contributors
         GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
