@@ -71,6 +71,17 @@ public class FireBirdDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new GenericSQLDialect());
     }
 
+    public String getMetaFieldValue(String name, int type) {
+        IntKeyMap<MetaFieldInfo> fieldMap = metaFields.get(name);
+        if (fieldMap != null) {
+            MetaFieldInfo info = fieldMap.get(type);
+            if (info != null) {
+                return info.name;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void initialize(DBRProgressMonitor monitor) throws DBException {
         // Read metadata

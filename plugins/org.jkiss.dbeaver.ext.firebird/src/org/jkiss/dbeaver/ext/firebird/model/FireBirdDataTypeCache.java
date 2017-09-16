@@ -73,21 +73,31 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                             String typeName = JDBCUtils.safeGetString(dbResult, "RDB$FIELD_NAME");
                             int fieldLength = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_LENGTH");
                             int fieldScale = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_SCALE");
+                            int fieldPrecision = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_PRECISION");
                             int fieldType = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_TYPE");
                             int fieldSubType = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_SUB_TYPE");
                             int charLength = JDBCUtils.safeGetInt(dbResult, "RDB$CHARACTER_LENGTH");
                             int collationId = JDBCUtils.safeGetInt(dbResult, "RDB$COLLATION_ID");
                             int charsetId = JDBCUtils.safeGetInt(dbResult, "RDB$CHARACTER_SET_ID");
+                            String validationSource = JDBCUtils.safeGetString(dbResult, "RDB$VALIDATION_SOURCE");
+                            String computedSource = JDBCUtils.safeGetString(dbResult, "RDB$COMPUTED_SOURCE");
                             String typeDescription = JDBCUtils.safeGetString(dbResult, "RDB$DESCRIPTION");
+                            String defaultSource = JDBCUtils.safeGetString(dbResult, "RDB$DEFAULT_SOURCE");
 
                             FireBirdFieldType fieldDT = FireBirdFieldType.getById(fieldType);
                             if (fieldDT == null) {
                                 log.error("Field type '" + fieldType + "' not found");
                                 continue;
                             }
+                            String charsetName = dataSource.getMetaFieldValue(FireBirdConstants.TYPE_CHARACTER_SET_NAME, charsetId);
+                            boolean notNull = JDBCUtils.safeGetInt(dbResult, "RDB$NULL_FLAG") == 1;
 
                             FireBirdDataType dataType = new FireBirdDataType(
-                                dataSource, fieldDT, fieldSubType, typeName, typeDescription, false, true, fieldLength, fieldScale, fieldScale);
+                                dataSource, fieldDT, fieldSubType, typeName, typeDescription, false, true, fieldPrecision, fieldScale, fieldScale,
+                                fieldLength, charLength,
+                                computedSource, validationSource, defaultSource,
+                                charsetName,
+                                notNull);
                             tmpObjectList.add(dataType);
                         }
                     }
