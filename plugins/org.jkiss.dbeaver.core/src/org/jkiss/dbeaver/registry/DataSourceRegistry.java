@@ -559,7 +559,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         if (!fromFile.exists()) {
             return;
         }
-        try (InputStream is = fromFile.getContents()) {
+        try (InputStream is = fromFile.getContents(true)) {
             loadDataSources(is, origin, refresh, parseResults);
         } catch (DBException ex) {
             log.warn("Error loading datasource config from " + fromFile.getFullPath(), ex);
