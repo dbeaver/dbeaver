@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -46,6 +47,16 @@ public class FireBirdMetaModel extends GenericMetaModel
 
     public FireBirdMetaModel() {
         super();
+    }
+
+    @Override
+    public GenericDataSource createDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+        return new FireBirdDataSource(monitor, container, this);
+    }
+
+    @Override
+    public FireBirdDataTypeCache createDataTypeCache(@NotNull GenericStructContainer container) {
+        return new FireBirdDataTypeCache(container);
     }
 
     @Override
@@ -180,6 +191,6 @@ public class FireBirdMetaModel extends GenericMetaModel
     @Override
     public boolean isSystemTable(GenericTable table) {
         final String tableName = table.getName();
-        return tableName.contains("RDB$");    // [JDBC: Firebird]
+        return tableName.contains("$");    // [JDBC: Firebird]
     }
 }

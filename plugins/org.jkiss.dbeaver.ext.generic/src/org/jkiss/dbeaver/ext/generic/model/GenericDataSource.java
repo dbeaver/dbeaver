@@ -472,7 +472,6 @@ public class GenericDataSource extends JDBCDataSource
             }
             determineSelectedEntity(session);
 
-
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex, this);
         }
@@ -913,6 +912,10 @@ public class GenericDataSource extends JDBCDataSource
     public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
         ErrorPosition position = metaModel.getErrorPosition(error);
         return position == null ? null : new ErrorPosition[] { position };
+    }
+
+    protected JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> getDataTypeCache() {
+        return dataTypeCache;
     }
 
     public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
