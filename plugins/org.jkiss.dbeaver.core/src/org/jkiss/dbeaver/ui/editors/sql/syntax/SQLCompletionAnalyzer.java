@@ -538,7 +538,7 @@ class SQLCompletionAnalyzer
                         if (selectedObject != structObject.getContainer()) {
                             replaceString = DBUtils.getFullQualifiedName(
                                 dataSource,
-                                structObject.getContainer(),
+                                structObject.getContainer() instanceof DBPDataSource ? null : structObject.getContainer(),
                                 object);
                             isSingleObject = false;
                         }
