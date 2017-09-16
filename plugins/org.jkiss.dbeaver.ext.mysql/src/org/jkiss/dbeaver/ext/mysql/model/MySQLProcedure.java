@@ -254,4 +254,8 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return getContainer().proceduresCache.refreshObject(monitor, getContainer(), this);
     }
 
+    @Override
+    public String toString() {
+        return procedureType.name() + " " + getName();
+    }
 }

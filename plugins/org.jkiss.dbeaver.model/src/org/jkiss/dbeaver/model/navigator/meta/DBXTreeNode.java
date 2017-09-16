@@ -250,6 +250,11 @@ public abstract class DBXTreeNode
         return visibleIf;
     }
 
+    @Override
+    public String toString() {
+        return "Node " + id;
+    }
+
     public void addActionHandler(DBXTreeNodeHandler.Action action, DBXTreeNodeHandler.Perform perform, String command) {
         if (handlers == null) {
             handlers = new ArrayList<>();
