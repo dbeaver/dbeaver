@@ -42,7 +42,7 @@ public abstract class ObjectViewerRenderer {
 
     private boolean isTree;
     // Current selection coordinates
-    private transient Item selectedItem;
+    private transient Item selectedItem, lastClickItem;
     private transient int selectedColumn = -1;
 
     private ColumnViewer itemsViewer;
@@ -105,10 +105,10 @@ public abstract class ObjectViewerRenderer {
 
     public String getSelectedText()
     {
-        if (selectedItem == null || selectedColumn == -1) {
+        if (lastClickItem == null || selectedColumn == -1) {
             return null;
         }
-        Object cellValue = getCellValue(selectedItem.getData(), selectedColumn);
+        Object cellValue = getCellValue(lastClickItem.getData(), selectedColumn);
         return getCellString(cellValue, false);
     }
 
@@ -315,6 +315,7 @@ public abstract class ObjectViewerRenderer {
             } else {
                 hoverItem = detectTableItem(e.x, e.y);
             }
+            lastClickItem = hoverItem;
             if ((e.stateMask & SWT.CTRL) == 0 && (e.stateMask & SWT.ALT) == 0) {
                 // Navigate only if CTRL pressed
                 return;
