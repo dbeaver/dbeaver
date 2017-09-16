@@ -75,7 +75,7 @@ public class TestDialog extends TrayDialog {
         gd.widthHint = 300;
         gd.heightHint = 300;
         folderComposite.setLayoutData(gd);
-        folderComposite.setFolders(tabs);
+        folderComposite.setFolders("TestDialog", tabs);
 
         return group;
     }
