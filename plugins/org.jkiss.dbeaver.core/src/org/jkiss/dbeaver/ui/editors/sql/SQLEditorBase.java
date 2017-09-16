@@ -831,7 +831,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     queryText = SQLUtils.fixLineFeeds(queryText);
 
                     if (isDelimiter && (keepDelimiters || (hasBlocks ? dialect.isDelimiterAfterBlock() : dialect.isDelimiterAfterQuery()))) {
-                        if (delimiterText != null) {
+                        if (delimiterText != null && delimiterText.equals(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
+                            // Add delimiter in the end of query. Do this only for semicolon delimiters
+                            // Quite dirty workaround needed for SQL server
                             queryText += delimiterText;
                         }
                     }
