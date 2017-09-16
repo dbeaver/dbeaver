@@ -32,23 +32,27 @@ public class DBException extends Exception
     private static final long serialVersionUID = 1L;
 
     private final DBPDataSource dataSource;
+    private final boolean hasMessage;
 
     public DBException(String message)
     {
         super(message);
         this.dataSource = null;
+        this.hasMessage = true;
     }
 
     public DBException(String message, Throwable cause)
     {
         super(message, cause);
         this.dataSource = null;
+        this.hasMessage = message != null;
     }
 
     public DBException(Throwable cause, DBPDataSource dataSource)
     {
         super(cause instanceof SQLException ? makeMessage((SQLException) cause) : cause.getMessage(), cause);
         this.dataSource = dataSource;
+        this.hasMessage = false;
     }
 
 
@@ -56,6 +60,7 @@ public class DBException extends Exception
     {
         super(message, cause);
         this.dataSource = dataSource;
+        this.hasMessage = message != null;
     }
 
     public DBPDataSource getDataSource()
@@ -68,6 +73,10 @@ public class DBException extends Exception
             return ((DBException) cause).getDataSource();
         }
         return null;
+    }
+
+    public boolean hasMessage() {
+        return hasMessage;
     }
 
     public int getErrorCode()

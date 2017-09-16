@@ -36,6 +36,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -397,23 +398,43 @@ public class GeneralUtils {
     public static IStatus makeExceptionStatus(int severity, Throwable ex)
     {
         Throwable cause = ex.getCause();
-        if (cause == null) {
+        SQLException nextError = null;
+        if (ex instanceof SQLException) {
+            nextError = ((SQLException) ex).getNextException();
+        }
+        if (cause == null && nextError == null) {
             return new Status(
                 severity,
                 ModelPreferences.PLUGIN_ID,
                 getExceptionMessage(ex),
                 ex);
         } else {
-            if (ex instanceof DBException && CommonUtils.equalObjects(ex.getMessage(), cause.getMessage())) {
+            if (ex instanceof DBException && !((DBException) ex).hasMessage()) {
                 // Skip empty duplicate DBException
-                return makeExceptionStatus(cause);
+                return makeExceptionStatus(severity, cause);
             }
-            return new MultiStatus(
-                ModelPreferences.PLUGIN_ID,
-                0,
-                new IStatus[]{makeExceptionStatus(severity, cause)},
-                getExceptionMessage(ex),
-                ex);
+            if (nextError != null) {
+                List<IStatus> errorChain = new ArrayList<>();
+                if (cause != null) {
+                    errorChain.add(makeExceptionStatus(severity, cause));
+                }
+                for (SQLException error = nextError; error != null; error = error.getNextException()) {
+                    errorChain.add(makeExceptionStatus(severity, error));
+                }
+                return new MultiStatus(
+                    ModelPreferences.PLUGIN_ID,
+                    0,
+                    errorChain.toArray(new IStatus[errorChain.size()]),
+                    getExceptionMessage(ex),
+                    ex);
+            } else {
+                return new MultiStatus(
+                    ModelPreferences.PLUGIN_ID,
+                    0,
+                    new IStatus[]{makeExceptionStatus(severity, cause)},
+                    getExceptionMessage(ex),
+                    ex);
+            }
         }
     }
 
