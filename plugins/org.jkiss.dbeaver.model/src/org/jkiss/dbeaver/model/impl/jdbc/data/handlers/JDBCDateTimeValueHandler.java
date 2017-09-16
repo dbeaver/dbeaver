@@ -74,13 +74,23 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             }
         }
         catch (SQLException e) {
-            if (e.getCause() instanceof ParseException) {
+            if (e.getCause() instanceof ParseException || e.getCause() instanceof UnsupportedOperationException) {
                 // [SQLite] workaround.
                 try {
-                    //return getValueFromObject(session, type, ((JDBCResultSet) resultSet).getObject(index + 1), false);
-                    // Do not convert to Date object because table column has STRING type
-                    // and it will be converted in string at late binding stage making incorrect string value: Date.toString()
-                    return ((JDBCResultSet) resultSet).getObject(index + 1);
+                    Object objectValue = ((JDBCResultSet) resultSet).getObject(index + 1);
+                    if (objectValue instanceof Date) {
+                        return objectValue;
+                    } else if (objectValue instanceof String) {
+                        // Do not convert to Date object because table column has STRING type
+                        // and it will be converted in string at late binding stage making incorrect string value: Date.toString()
+                        return objectValue;
+                    } else if (objectValue != null) {
+                        // Perhaps some database-specific timestamp representation. E.lg. H2 TimestampWithTimezone
+                        return objectValue.toString();
+                    } else {
+                        return null;
+                    }
+
                 } catch (SQLException e1) {
                     // Ignore
                     log.debug("Can't retrieve datetime object");
