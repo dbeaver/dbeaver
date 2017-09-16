@@ -102,7 +102,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 try {
                     // Read value with maximum precision. Some drivers reports FLOAT but means double [JDBC:SQLite]
                     value = resultSet.getDouble(index);
-                } catch (SQLException e) {
+                } catch (SQLException | ClassCastException | NumberFormatException e) {
                     value = resultSet.getFloat(index);
                 }
                 break;
@@ -110,7 +110,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 try {
                     // Read value with maximum precision. Some drivers reports INTEGER but means long [JDBC:SQLite]
                     value = resultSet.getLong(index);
-                } catch (SQLException e) {
+                } catch (SQLException | ClassCastException | NumberFormatException e) {
                     value = resultSet.getInt(index);
                 }
                 break;
