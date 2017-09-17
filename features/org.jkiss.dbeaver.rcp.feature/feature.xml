@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-        id="org.jkiss.dbeaver.rcp.feature" label="RCP" version="2.1.38">
+        id="org.jkiss.dbeaver.rcp.feature" label="RCP" version="2.1.39">
 
     <description>
         Feature for standalone DBeaver RCP

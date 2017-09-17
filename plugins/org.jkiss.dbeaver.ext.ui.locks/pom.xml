@@ -9,6 +9,6 @@
     <relativePath>../../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.ui.locks</artifactId>
-  <version>1.0.9</version>
+  <version>1.0.10</version>
   <packaging>eclipse-plugin</packaging>
 </project>

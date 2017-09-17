@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Locks Graph Plugin
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.ui.locks;singleton:=true
-Bundle-Version: 1.0.9
+Bundle-Version: 1.0.10
 Bundle-Vendor: Andrew Khitrin
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: org.eclipse.core.runtime,

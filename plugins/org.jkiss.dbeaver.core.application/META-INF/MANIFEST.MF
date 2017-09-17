@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Standalone
 Bundle-SymbolicName: org.jkiss.dbeaver.core.application;singleton:=true
-Bundle-Version: 4.2.0
-Bundle-Release-Date: 20170904
+Bundle-Version: 4.2.1
+Bundle-Release-Date: 20170918
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: .
 Bundle-Vendor: JKISS
