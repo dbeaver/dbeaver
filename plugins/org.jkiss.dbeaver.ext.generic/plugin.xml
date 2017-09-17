@@ -177,7 +177,7 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL JDBC driver. Can be used for old PostgreSQL server versions (before 8.x).">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:{.*jdbc4}"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[9.4.1212.jre7]"/>
 
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
