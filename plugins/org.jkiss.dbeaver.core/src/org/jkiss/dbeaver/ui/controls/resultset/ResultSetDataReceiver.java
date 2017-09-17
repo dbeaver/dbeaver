@@ -158,7 +158,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                     resultSetViewer.getActivePresentation().refreshData(true, false, !resultSetViewer.getModel().isMetadataChanged());
                 } else {
                     resultSetViewer.appendData(tmpRows);
-                    resultSetViewer.getActivePresentation().refreshData(false, true, false);
+                    resultSetViewer.getActivePresentation().refreshData(false, true, true);
                 }
                 resultSetViewer.updateStatusMessage();
                 // Check for more data
