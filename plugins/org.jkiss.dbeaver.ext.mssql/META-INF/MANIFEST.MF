@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: MSSQL Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.mssql;singleton:=true
-Bundle-Version: 1.0.58
-Bundle-Release-Date: 20170904
+Bundle-Version: 1.0.59
+Bundle-Release-Date: 20170918
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.views,

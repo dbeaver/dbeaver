@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Apache Derby Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.derby;singleton:=true
-Bundle-Version: 1.1.49
-Bundle-Release-Date: 20170904
+Bundle-Version: 1.1.50
+Bundle-Release-Date: 20170918
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.views,
