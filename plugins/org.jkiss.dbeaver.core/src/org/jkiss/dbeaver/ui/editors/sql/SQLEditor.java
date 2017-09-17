@@ -1850,6 +1850,7 @@ public class SQLEditor extends SQLEditorBase implements
         public QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber, DBSDataContainer dataContainer) {
             this(queryProcessor, resultSetNumber);
             this.dataContainer = dataContainer;
+            updateResultsName(getResultsTabName(resultSetNumber, 0, dataContainer.getName()), null);
         }
 
         void updateResultsName(String resultSetName, String toolTip) {
