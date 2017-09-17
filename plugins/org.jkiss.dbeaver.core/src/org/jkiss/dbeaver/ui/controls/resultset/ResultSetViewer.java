@@ -2494,7 +2494,9 @@ public class ResultSetViewer extends Viewer
                                     restorePresentationState(presentationState);
                                 }
                             }
-                            activePresentation.updateValueView();
+                            if (metadataChanged) {
+                                activePresentation.updateValueView();
+                            }
                             updatePanelsContent(false);
 
                             if (!scroll) {
