@@ -2013,21 +2013,11 @@ public class ResultSetViewer extends Viewer
     }
 
     private void openResultsInNewWindow(DBRProgressMonitor monitor, DBSEntity targetEntity, final DBDDataFilter newFilter) {
-        final DBCExecutionContext executionContext = getExecutionContext();
-        if (executionContext == null) {
-            return;
+        if (targetEntity instanceof DBSDataContainer) {
+            getContainer().openNewContainer(monitor, (DBSDataContainer) targetEntity, newFilter);
+        } else {
+            UIUtils.showMessageBox(null, "Open link", "Target entity '" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "' - is not a data container", SWT.ICON_ERROR);
         }
-        final DBNDatabaseNode targetNode = executionContext.getDataSource().getContainer().getPlatform().getNavigatorModel().getNodeByObject(monitor, targetEntity, false);
-        if (targetNode == null) {
-            UIUtils.showMessageBox(null, "Open link", "Can't navigate to '" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "' - navigator node not found", SWT.ICON_ERROR);
-            return;
-        }
-        DBeaverUI.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                openNewDataEditor(targetNode, newFilter);
-            }
-        });
     }
 
     @Override
@@ -3526,6 +3516,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+/*
     public static void openNewDataEditor(DBNDatabaseNode targetNode, DBDDataFilter newFilter) {
         IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
             targetNode,
@@ -3545,5 +3536,6 @@ public class ResultSetViewer extends Viewer
             }
         }
     }
+*/
 
 }

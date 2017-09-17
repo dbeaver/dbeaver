@@ -17,8 +17,12 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 /**
@@ -49,5 +53,11 @@ public interface IResultSetContainer {
 
     boolean isReadyToRun();
 
-    // void
+    /**
+     * Opens new results container with specified data container and filter
+     * @param dataContainer data container
+     * @param newFilter     data filter
+     */
+    void openNewContainer(DBRProgressMonitor monitor, @NotNull DBSDataContainer dataContainer, @NotNull DBDDataFilter newFilter);
+
 }
