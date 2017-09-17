@@ -512,12 +512,7 @@ public class SQLEditor extends SQLEditorBase implements
             public void widgetSelected(SelectionEvent e) {
                 Object data = e.item.getData();
                 if (data instanceof QueryResultsContainer) {
-                    curResultsContainer = (QueryResultsContainer) data;
-                    curQueryProcessor = curResultsContainer.queryProcessor;
-                    ResultSetViewer rsv = curResultsContainer.getResultSetController();
-                    if (rsv != null) {
-                        //rsv.getActivePresentation().getControl().setFocus();
-                    }
+                    setActiveResultsContainer((QueryResultsContainer) data);
                 }
             }
         });
@@ -647,6 +642,15 @@ public class SQLEditor extends SQLEditorBase implements
             });
             menuMgr.setRemoveAllWhenShown(true);
             resultTabs.setMenu(menu);
+        }
+    }
+
+    private void setActiveResultsContainer(QueryResultsContainer data) {
+        curResultsContainer = data;
+        curQueryProcessor = curResultsContainer.queryProcessor;
+        ResultSetViewer rsv = curResultsContainer.getResultSetController();
+        if (rsv != null) {
+            //rsv.getActivePresentation().getControl().setFocus();
         }
     }
 
@@ -1579,6 +1583,12 @@ public class SQLEditor extends SQLEditorBase implements
             return resultsProvider;
         }
 
+        private QueryResultsContainer createResultsProvider(DBSDataContainer dataContainer) {
+            QueryResultsContainer resultsProvider = new QueryResultsContainer(this, resultContainers.size(), dataContainer);
+            resultContainers.add(resultsProvider);
+            return resultsProvider;
+        }
+
         @NotNull
         QueryResultsContainer getFirstResults()
         {
@@ -1777,6 +1787,8 @@ public class SQLEditor extends SQLEditorBase implements
         private final int resultSetNumber;
         private SQLScriptElement query = null;
         private SQLScriptElement lastGoodQuery = null;
+        // Data container and filter are non-null only in case of associations navigation
+        private DBSDataContainer dataContainer;
 
         private QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber)
         {
@@ -1835,6 +1847,11 @@ public class SQLEditor extends SQLEditorBase implements
             });
         }
 
+        public QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber, DBSDataContainer dataContainer) {
+            this(queryProcessor, resultSetNumber);
+            this.dataContainer = dataContainer;
+        }
+
         void updateResultsName(String resultSetName, String toolTip) {
             if (tabItem != null && !tabItem.isDisposed()) {
                 if (!CommonUtils.isEmpty(resultSetName)) {
@@ -1879,8 +1896,24 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
+        public void openNewContainer(DBRProgressMonitor monitor, DBSDataContainer dataContainer, DBDDataFilter newFilter) {
+            DBeaverUI.syncExec(new Runnable() {
+                @Override
+                public void run() {
+                    QueryResultsContainer resultsProvider = queryProcessor.createResultsProvider(dataContainer);
+                    resultsProvider.tabItem.getParent().setSelection(resultsProvider.tabItem);
+                    setActiveResultsContainer(resultsProvider);
+                    resultsProvider.viewer.refreshWithFilter(newFilter);
+                }
+            });
+        }
+
+        @Override
         public int getSupportedFeatures()
         {
+            if (dataContainer != null) {
+                return dataContainer.getSupportedFeatures();
+            }
             int features = DATA_SELECT;
             features |= DATA_COUNT;
 
@@ -1894,6 +1927,9 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
         {
+            if (dataContainer != null) {
+                return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags);
+            }
             final SQLQueryJob job = queryProcessor.curJob;
             if (job == null) {
                 throw new DBCException("No active query - can't read data");
@@ -1948,6 +1984,9 @@ public class SQLEditor extends SQLEditorBase implements
         public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter)
             throws DBCException
         {
+            if (dataContainer != null) {
+                return dataContainer.countData(source, session, dataFilter);
+            }
             DBPDataSource dataSource = getDataSource();
             if (!(dataSource instanceof SQLDataSource)) {
                 throw new DBCException("Query transform is not supported by datasource");
@@ -1984,7 +2023,11 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public String getDescription()
         {
-            return CoreMessages.editors_sql_description;
+            if (dataContainer != null) {
+                return dataContainer.getDescription();
+            } else {
+                return CoreMessages.editors_sql_description;
+            }
         }
 
         @Nullable
@@ -2004,13 +2047,20 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public boolean isPersisted()
         {
-            return true;
+            if (dataContainer != null) {
+                return dataContainer.isPersisted();
+            } else {
+                return true;
+            }
         }
 
         @NotNull
         @Override
         public String getName()
         {
+            if (dataContainer != null) {
+                return dataContainer.getName();
+            }
             String name = lastGoodQuery != null ?
                     lastGoodQuery.getOriginalText() :
                     (query == null ? null : query.getOriginalText());
@@ -2028,6 +2078,9 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public String toString() {
+            if (dataContainer != null) {
+                return dataContainer.toString();
+            }
             return query == null ?
                 "SQL Query / " + SQLEditor.this.getEditorInput().getName() :
                 query.getOriginalText();

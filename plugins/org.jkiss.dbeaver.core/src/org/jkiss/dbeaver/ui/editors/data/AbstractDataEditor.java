@@ -17,17 +17,31 @@
 package org.jkiss.dbeaver.ui.editors.data;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+
+import java.util.Collections;
 
 /**
  * AbstractDataEditor
@@ -35,6 +49,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends AbstractDatabaseObjectEditor<OBJECT_TYPE>
     implements IResultSetContainer,IResultSetListener
 {
+    private static final Log log = Log.getLog(AbstractDataEditor.class);
+
     private ResultSetViewer resultSetView;
     private boolean loaded = false;
     //private boolean running = false;
@@ -110,6 +126,48 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
     public boolean isReadyToRun()
     {
         return true;
+    }
+
+    @Override
+    public void openNewContainer(DBRProgressMonitor monitor, DBSDataContainer dataContainer, DBDDataFilter newFilter) {
+        final DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext == null) {
+            log.error("Can't open new container - not execution context found");
+            return;
+        }
+
+        final DBNDatabaseNode targetNode = executionContext.getDataSource().getContainer().getPlatform().getNavigatorModel().getNodeByObject(monitor, dataContainer, false);
+        if (targetNode == null) {
+            UIUtils.showMessageBox(null, "Open link", "Can't navigate to '" + DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.UI) + "' - navigator node not found", SWT.ICON_ERROR);
+            return;
+        }
+
+        openNewDataEditor(targetNode, newFilter);
+    }
+
+    public static void openNewDataEditor(DBNDatabaseNode targetNode, DBDDataFilter newFilter) {
+        DBeaverUI.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
+                    targetNode,
+                    DatabaseDataEditor.class.getName(),
+                    Collections.singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, newFilter),
+                    DBeaverUI.getActiveWorkbenchWindow()
+                );
+
+                if (entityEditor instanceof MultiPageEditorPart) {
+                    Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
+                    if (selectedPage instanceof IResultSetContainer) {
+                        ResultSetViewer rsv = (ResultSetViewer) ((IResultSetContainer) selectedPage).getResultSetController();
+                        if (rsv != null && !rsv.isRefreshInProgress() && !newFilter.equals(rsv.getModel().getDataFilter())) {
+                            // Set filter directly
+                            rsv.refreshWithFilter(newFilter);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     @Override
