@@ -89,7 +89,8 @@ class PostgreDialect extends JDBCSQLDialect {
 
     @Override
     public String[][] getBlockBoundStrings() {
-        return super.getBlockBoundStrings();
+        // PostgreSQL-specific blocks ($$) should be used everywhere
+        return null;//super.getBlockBoundStrings();
     }
 
     @Override
