@@ -121,7 +121,7 @@ public class DBDAttributeConstraintBase {
 
     public boolean hasFilter()
     {
-        return hasCondition() || orderPosition > 0;
+        return hasCondition() || orderPosition > 0 || !visible;
     }
 
     public boolean hasCondition() {
