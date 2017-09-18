@@ -95,6 +95,8 @@ class SQLTokensParser {
         case '!': // greater than operator
         case '~': // greater than operator
         case '`': // apos
+        case '[': // bracket open
+        case ']': // bracket close
             return true;
         default:
             return false;
@@ -214,21 +216,31 @@ class SQLTokensParser {
         } else {
             if (fChar == '\'' || isQuoteChar(fChar)) {
                 fPos++;
-                char quoteChar = fChar;
+                char endQuoteChar = fChar;
+                // Close quote char may differ
+                if (quoteStrings != null) {
+                    for (String[] quoteString : quoteStrings) {
+                        if (quoteString[0].charAt(0) == endQuoteChar) {
+                            endQuoteChar = quoteString[1].charAt(0);
+                            break;
+                        }
+                    }
+                }
+
                 StringBuilder s = new StringBuilder();
-                s.append(quoteChar);
+                s.append(fChar);
                 for (;;) {
                     fChar = fBefore.charAt(fPos);
                     s.append(fChar);
                     fPos++;
                     char fNextChar = fPos >= fBefore.length() - 1 ? 0 : fBefore.charAt(fPos);
-                    if (fChar == quoteChar && fNextChar == quoteChar) {
+                    if (fChar == endQuoteChar && fNextChar == endQuoteChar) {
                         // Escaped quote
                         s.append(fChar);
                         fPos++;
                         continue;
                     }
-                    if (fChar == quoteChar) {
+                    if (fChar == endQuoteChar) {
                         return new FormatterToken(TokenType.VALUE, s.toString(), start_pos);
                     }
                 }
