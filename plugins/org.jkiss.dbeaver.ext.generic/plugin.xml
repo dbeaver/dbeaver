@@ -158,7 +158,7 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard JDBC driver. Replaced by PostgreSQL extension driver.">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[9.4.1212.jre7]"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[9.4.1212.jre7]" bundle="!drivers.postgresql"/>
 
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
@@ -177,7 +177,7 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL JDBC driver. Can be used for old PostgreSQL server versions (before 8.x).">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[9.4.1212.jre7]"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[9.4.1212.jre7]" bundle="!drivers.postgresql"/>
 
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
@@ -296,7 +296,7 @@
                     sampleURL="jdbc:as400://{host};[libraries={database};]"
                     defaultPort=""
                     description="DB2 iSeries/AS 400 driver">
-                    <file type="jar" path="maven:/net.sf.jt400:jt400:RELEASE"/>
+                    <file type="jar" path="maven:/net.sf.jt400:jt400:RELEASE" bundle="!drivers.jt400"/>
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
@@ -327,9 +327,9 @@
 
                     <parameter name="script-delimiter-after-query" value="true"/>
 
-                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE"/>
-                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/jtds/SSO/x86/ntlmauth.dll"/>
-                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/jtds/SSO/x64/ntlmauth.dll"/>
+                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE" bundle="!drivers.jtds"/>
+                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/jtds/SSO/x86/ntlmauth.dll" bundle="!drivers.jtds"/>
+                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/jtds/SSO/x64/ntlmauth.dll" bundle="!drivers.jtds"/>
                 </driver>
 
                 <driver
@@ -359,12 +359,12 @@
                     </fileSource>
 -->
 
-                    <file type="jar" path="repo:/drivers/mssql/sqljdbc4.jar"/>
-                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/mssql/auth/x86/sqljdbc_auth.dll"/>
-                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/mssql/auth/x64/sqljdbc_auth.dll"/>
-                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/mssql/xa/x86/sqljdbc_xa.dll"/>
-                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/mssql/xa/x64/sqljdbc_xa.dll"/>
-                    <file type="license" path="repo:/drivers/mssql/LICENSE.txt"/>
+                    <file type="jar" path="repo:/drivers/mssql/sqljdbc4.jar" bundle="!drivers.mssql"/>
+                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/mssql/auth/x86/sqljdbc_auth.dll" bundle="!drivers.mssql"/>
+                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/mssql/auth/x64/sqljdbc_auth.dll" bundle="!drivers.mssql"/>
+                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/mssql/xa/x86/sqljdbc_xa.dll" bundle="!drivers.mssql"/>
+                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/mssql/xa/x64/sqljdbc_xa.dll" bundle="!drivers.mssql"/>
+                    <file type="license" path="repo:/drivers/mssql/LICENSE.txt" bundle="!drivers.mssql"/>
                 </driver>
 
                 <driver
@@ -388,7 +388,7 @@
                     <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
                     <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
 
-                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE"/>
+                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE" bundle="!drivers.sybase"/>
                 </driver>
                 <driver
                     id="sap_maxdb"
@@ -399,8 +399,8 @@
                     defaultPort="7200"
                     webURL="http://www.sdn.sap.com/irj/sdn/maxdb"
                     description="SAP MaxDB - The SAP Database System">
-                    <file type="jar" path="repo:/drivers/maxdb/sapdbc.jar"/>
-                    <file type="license" path="repo:/drivers/maxdb/LICENSE.txt"/>
+                    <file type="jar" path="repo:/drivers/maxdb/sapdbc.jar" bundle="!drivers.maxdb"/>
+                    <file type="license" path="repo:/drivers/maxdb/LICENSE.txt" bundle="!drivers.maxdb"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUAL"/>
                     <parameter name="query-set-active-db" value="SET CURRENT_SCHEMA = ?"/>
                 </driver>
@@ -412,9 +412,9 @@
                     defaultPort="1533"
                     webURL="http://www.developers.net/ibmshowcase/focus/Informix"
                     description="IBM Informix Dynamic Server">
-                    <file type="jar" path="repo:/drivers/informix/ifxjdbc.jar"/>
-                    <file type="jar" path="repo:/drivers/informix/ifxlang.jar"/>
-                    <file type="license" path="repo:/drivers/informix/LICENSE.txt"/>
+                    <file type="jar" path="repo:/drivers/informix/ifxjdbc.jar" bundle="!drivers.informix"/>
+                    <file type="jar" path="repo:/drivers/informix/ifxlang.jar" bundle="!drivers.informix"/>
+                    <file type="license" path="repo:/drivers/informix/LICENSE.txt" bundle="!drivers.informix"/>
                     <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
                     <parameter name="query-set-active-db" value="DATABASE ?"/>
                     <parameter name="legacy-sql-dialect" value="true"/>
@@ -431,7 +431,7 @@
                     defaultPort="9092"
                     webURL="http://www.h2database.com/"
                     description="H2 Server">
-                    <file type="jar" path="maven:/com.h2database:h2:RELEASE"/>
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE" bundle="!drivers.h2"/>
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
                 </driver>
@@ -445,7 +445,7 @@
                     webURL="http://www.h2database.com/"
                     embedded="true"
                     description="H2 Embedded">
-                    <file type="jar" path="maven:/com.h2database:h2:RELEASE"/>
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE" bundle="!drivers.h2"/>
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
                 </driver>
@@ -457,9 +457,9 @@
                     webURL="http://sun.com"
                     description="ODBC bridge driver">
                     <os name="win32"/>
-                    <file type="jar" path="repo:/drivers/odbc/jdbc-odbc-bridge-jre7.jar"/>
-                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/odbc/x86/JdbcOdbc.dll"/>
-                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/odbc/x64/JdbcOdbc.dll"/>
+                    <file type="jar" path="repo:/drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="!drivers.odbc"/>
+                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/odbc/x86/JdbcOdbc.dll" bundle="!drivers.odbc"/>
+                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/odbc/x64/JdbcOdbc.dll" bundle="!drivers.odbc"/>
                 </driver>
                 <driver
                     id="derby"
@@ -470,7 +470,7 @@
                     webURL="http://db.apache.org/"
                     embedded="true"
                     description="Derby (Java DB) embedded driver">
-                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE"/>
+                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE" bundle="!drivers.derby"/>
                     <parameter name="create-url-param" value=";create=true"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
@@ -487,7 +487,7 @@
                     defaultPort="1527"
                     webURL="http://db.apache.org/"
                     description="Derby (Java DB) server driver">
-                    <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE" bundle="!drivers.derby"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                     <parameter name="supports-scroll" value="true"/>
@@ -513,7 +513,7 @@
                     defaultPort="9001"
                     webURL="http://hsqldb.org/"
                     description="HyperSQL DataBase - Server Mode">
-                    <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE"/>
+                    <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE" bundle="!drivers.hsqldb"/>
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="supports-limits" value="true"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
@@ -530,7 +530,7 @@
                     webURL="http://hsqldb.org/"
                     embedded="true"
                     description="HyperSQL DataBase - Embedded Mode">
-                    <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE"/>
+                    <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE" bundle="!drivers.hsqldb"/>
                     <property name="shutdown" value="true"/>
                     <parameter name="create-url-param" value=";create=true"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
@@ -576,7 +576,7 @@
                     defaultPort="3050"
                     webURL=""
                     description="Firebird JayBird driver">
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE"/>
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE" bundle="!drivers.firebird"/>
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="script-delimiter-redefiner" value="SET TERM"/>
@@ -595,7 +595,7 @@
                     <replace provider="generic" driver="sqlite_xerial"/>
                     <replace provider="generic" driver="sqlite_ch_werner"/>
 
-                    <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE"/>
+                    <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE" bundle="!drivers.sqlite.xerial"/>
 
                     <parameter name="supports-references" value="true"/>
                     <parameter name="supports-struct-cache" value="false"/>
@@ -611,9 +611,9 @@
                     defaultPort="1025"
                     webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
                     description="Teradata JDBC Type 4 driver">
-                    <file type="jar" path="repo:/drivers/teradata/terajdbc4.jar"/>
-                    <file type="jar" path="repo:/drivers/teradata/tdgssconfig.jar"/>
-                    <file type="license" path="repo:/drivers/teradata/LICENSE.txt"/>
+                    <file type="jar" path="repo:/drivers/teradata/terajdbc4.jar" bundle="!drivers.teradata"/>
+                    <file type="jar" path="repo:/drivers/teradata/tdgssconfig.jar" bundle="!drivers.teradata"/>
+                    <file type="license" path="repo:/drivers/teradata/LICENSE.txt" bundle="!drivers.teradata"/>
                 </driver>
                 <driver
                     id="mysql3"
@@ -623,7 +623,7 @@
                     defaultPort="3306"
                     webURL="http://www.mysql.com/products/connector/"
                     description="Driver for MySQL 3.x and earlier">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE" bundle="!drivers.mysql"/>
                 </driver>
                 <driver
                     id="vertica"
@@ -671,7 +671,7 @@
                     <property name="charset" value="UTF-8"/>
                     <parameter name="supports-stored-code" value="false"/>
                     <!--<file type="jar" path="repo:/drivers/csvjdbc/csvjdbc-1.0-23.jar"/>-->
-                    <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE"/>
+                    <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
                 </driver>
                 <driver
                     id="msaccess_ucanaccess"
@@ -684,7 +684,7 @@
                     embedded="true"
                     description="Microsoft Access driver">
 
-                    <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE"/>
+                    <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE" bundle="!drivers.ucanaccess"/>
                 </driver>
                 <driver
                     id="netezza"
