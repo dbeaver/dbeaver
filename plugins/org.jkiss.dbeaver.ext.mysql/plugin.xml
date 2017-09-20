@@ -147,6 +147,8 @@
                     webURL="http://www.mysql.com/products/connector/"
                     description="MySQL standard driver">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]" bundle="!drivers.mysql"/>
+                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
                 </driver>
                 <driver
