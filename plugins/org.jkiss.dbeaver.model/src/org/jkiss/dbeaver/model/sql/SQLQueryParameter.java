@@ -23,12 +23,18 @@ public class SQLQueryParameter {
     private int ordinalPosition;
     private String name;
     private String value;
-    private int tokenOffset;
-    private int tokenLength;
+    private final int tokenOffset;
+    private final int tokenLength;
     private SQLQueryParameter previous;
 
     public SQLQueryParameter(int ordinalPosition, String name, int tokenOffset, int tokenLength)
     {
+        if (tokenOffset < 0) {
+            throw new IndexOutOfBoundsException("Bad parameter offset: " + tokenOffset);
+        }
+        if (tokenLength <= 0) {
+            throw new IndexOutOfBoundsException("Bad parameter length: " + tokenLength);
+        }
         this.ordinalPosition = ordinalPosition;
         this.name = name.trim();
         this.tokenOffset = tokenOffset;

@@ -887,14 +887,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         boolean supportParamsInDDL = getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED);
         boolean execQuery = false;
         List<SQLQueryParameter> parameters = null;
-        ruleManager.setRange(document, query.getOffset(), query.getLength());
+        final int queryOffset = query.getOffset();
+        final int queryLength = query.getLength();
+        ruleManager.setRange(document, queryOffset, queryLength);
 
         boolean firstKeyword = true;
         for (;;) {
             IToken token = ruleManager.nextToken();
-            int tokenOffset = ruleManager.getTokenOffset();
+            final int tokenOffset = ruleManager.getTokenOffset();
             final int tokenLength = ruleManager.getTokenLength();
-            if (token.isEOF() || tokenOffset > query.getOffset() + query.getLength()) {
+            if (token.isEOF() || tokenOffset > queryOffset + queryLength) {
                 break;
             }
             // Handle only parameters which are not in SQL blocks
@@ -936,7 +938,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     SQLQueryParameter parameter = new SQLQueryParameter(
                         parameters.size(),
                         paramName,
-                        tokenOffset - query.getOffset(),
+                        tokenOffset - queryOffset,
                         tokenLength);
 
                     SQLQueryParameter previous = null;
