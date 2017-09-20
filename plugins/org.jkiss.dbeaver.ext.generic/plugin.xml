@@ -840,6 +840,18 @@
                     <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE"/>
                 </driver>
 
+                <!-- OrientDB -->
+                <driver
+                        id="orientdb_jdbc"
+                        label="OrientDB"
+                        class="com.orientechnologies.orient.jdbc.OrientJdbcDriver"
+                        sampleURL="jdbc:orient:remote:{host}/{database}"
+                        defaultPort=""
+                        description="OrientDB JDBC driver"
+                        webURL="https://github.com/orientechnologies/orientdb-jdbc">
+                    <file type="jar" path="maven:/com.orientechnologies:orientdb-jdbc:RELEASE[1.7]"/>
+                </driver>
+
             </drivers>
 
             <views>
