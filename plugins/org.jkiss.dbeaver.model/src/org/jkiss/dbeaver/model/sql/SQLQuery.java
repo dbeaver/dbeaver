@@ -58,8 +58,8 @@ public class SQLQuery implements SQLScriptElement {
     private String originalText;
     @NotNull
     private String text;
-    private int offset;
-    private int length;
+    private final int offset;
+    private final int length;
     private Object data;
     private int resultsOffset = -1;
     private int resultsMaxRows = -1;
