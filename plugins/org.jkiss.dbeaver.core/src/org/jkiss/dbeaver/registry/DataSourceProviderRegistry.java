@@ -124,6 +124,11 @@ public class DataSourceProviderRegistry
             for (IConfigurationElement ext : extElements) {
                 ExternalResourceDescriptor resource = new ExternalResourceDescriptor(ext);
                 resourceContributions.put(resource.getName(), resource);
+                if (!CommonUtils.isEmpty(resource.getAlias())) {
+                    for (String alias : resource.getAlias().split(",")) {
+                        resourceContributions.put(alias, resource);
+                    }
+                }
             }
         }
 

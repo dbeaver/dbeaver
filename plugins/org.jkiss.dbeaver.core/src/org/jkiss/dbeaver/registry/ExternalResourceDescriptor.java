@@ -31,17 +31,23 @@ public class ExternalResourceDescriptor extends AbstractDescriptor
 
     private static final Log log = Log.getLog(ExternalResourceDescriptor.class);
     private final String name;
+    private final String alias;
 
     public ExternalResourceDescriptor(IConfigurationElement config)
     {
         super(config);
 
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
+        this.alias = config.getAttribute(RegistryConstants.ATTR_ALIAS);
     }
 
     public String getName()
     {
         return name;
+    }
+
+    public String getAlias() {
+        return alias;
     }
 
     public URL getURL()
