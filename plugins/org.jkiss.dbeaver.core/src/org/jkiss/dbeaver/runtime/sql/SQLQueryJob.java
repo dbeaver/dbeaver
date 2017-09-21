@@ -250,10 +250,13 @@ public class SQLQueryJob extends DataSourceJob
                             txnManager.commit(session);
                             monitor.done();
                         }
-                    } else {
+                    } else if (errorHandling == SQLScriptErrorHandling.STOP_ROLLBACK) {
                         monitor.beginTask("Rollback data", 1);
                         txnManager.rollback(session, null);
                         monitor.done();
+                    } else {
+                        // Just ignore error
+                        log.info("Script executed with errors. Changes were not commmitted.");
                     }
                 }
 
