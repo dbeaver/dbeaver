@@ -1195,15 +1195,13 @@ public class SQLEditor extends SQLEditorBase implements
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
         }
-        for (QueryProcessor queryProcessor : queryProcessors) {
-            for (QueryResultsContainer resultsProvider : queryProcessor.getResultContainers()) {
-                ResultSetViewer rsv = resultsProvider.getResultSetController();
-                if (rsv != null) {
-                    if (executionContext == null) {
-                        rsv.setStatus(CoreMessages.editors_sql_status_not_connected_to_database);
-                    } else {
-                        rsv.setStatus(CoreMessages.editors_sql_staus_connected_to + executionContext.getDataSource().getContainer().getName() + "'"); //$NON-NLS-2$
-                    }
+        if (curResultsContainer != null) {
+            ResultSetViewer rsv = curResultsContainer.getResultSetController();
+            if (rsv != null) {
+                if (executionContext == null) {
+                    rsv.setStatus(CoreMessages.editors_sql_status_not_connected_to_database);
+                } else {
+                    rsv.setStatus(CoreMessages.editors_sql_staus_connected_to + executionContext.getDataSource().getContainer().getName() + "'"); //$NON-NLS-2$
                 }
             }
         }
