@@ -19,17 +19,18 @@ package org.jkiss.dbeaver.model.data.aggregate;
 /**
  * FunctionSum
  */
-public class FunctionSum implements IAggregateFunction {
+public class FunctionSum extends FunctionNumeric {
 
-    double result = Double.NaN;
+    protected double result = Double.NaN;
 
     @Override
     public boolean accumulate(Object value) {
-        if (value instanceof Number) {
+        Number num = getNumeric(value);
+        if (num != null) {
             if (Double.isNaN(result)) {
                 result = 0.0;
             }
-            result += ((Number)value).doubleValue();
+            result += num.doubleValue();
             return true;
         }
         return false;
@@ -42,4 +43,5 @@ public class FunctionSum implements IAggregateFunction {
         }
         return result;
     }
+
 }

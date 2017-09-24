@@ -17,33 +17,26 @@
 package org.jkiss.dbeaver.model.data.aggregate;
 
 /**
- * FunctionAvg
+ * FunctionSum
  */
-public class FunctionAvg extends FunctionNumeric {
+public abstract class FunctionNumeric implements IAggregateFunction {
 
-    protected double result = Double.NaN;
-
-    @Override
-    public boolean accumulate(Object value) {
-        Number num = getNumeric(value);
-        if (num != null) {
-            if (Double.isNaN(result)) {
-                result = 0.0;
-            }
-            result += num.doubleValue();
-            return true;
-        }/* else if (value instanceof Date) {
-            dateResult += ((Date)value).getTime();
-            return true;
-        }*/
-        return false;
-    }
-
-    @Override
-    public Object getResult(int valueCount) {
-        if (Double.isNaN(result)) {
+    protected static Number getNumeric(Object value) {
+        if (value == null) {
             return null;
         }
-        return result / valueCount;
+        if (!(value instanceof Number)) {
+            String strValue = value.toString();
+            try {
+                value = Double.parseDouble(strValue);
+            } catch (NumberFormatException e) {
+                // Not a number. Its ok, do not warn  
+            }
+        }
+        if (value instanceof Number) {
+            return (Number) value;
+        }
+        return null;
     }
+
 }
