@@ -229,6 +229,13 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                     case "USING":  //$NON-NLS-1$ //$NON-NLS-2$
                         index += insertReturnAndIndent(argList, index, indent + 1);
                         break;
+                    case "TOP":  //$NON-NLS-1$ //$NON-NLS-2$
+                        // SQL Server specific
+                        index += insertReturnAndIndent(argList, index, indent);
+                        if (argList.size() < index + 3) {
+                            index += insertReturnAndIndent(argList, index + 3, indent);
+                        }
+                        break;
                     case "UNION":
                     case "INTERSECT":
                     case "EXCEPT": //$NON-NLS-1$
