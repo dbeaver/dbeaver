@@ -31,7 +31,8 @@ public class FunctionMedian implements IAggregateFunction {
 
     @Override
     public boolean accumulate(Object value) {
-        if (value instanceof Comparable) {
+        value = FunctionNumeric.getComparable(value);
+        if (value != null) {
             cache.add((Comparable) value);
             return true;
         }

@@ -28,6 +28,10 @@ public class FunctionMode implements IAggregateFunction {
 
     @Override
     public boolean accumulate(Object value) {
+        Number num = FunctionNumeric.getNumeric(value);
+        if (num != null) {
+            value = num;
+        }
         if (value != null) {
             cache.add(value);
             return true;
