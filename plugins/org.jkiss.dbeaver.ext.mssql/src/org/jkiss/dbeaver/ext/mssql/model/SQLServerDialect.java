@@ -38,6 +38,7 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
+        addSQLKeyword("TOP");
     }
 
     public String[][] getIdentifierQuoteStrings() {
