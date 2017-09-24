@@ -999,6 +999,7 @@ public class ResultSetViewer extends Viewer
     {
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CHANGED);
+        fireResultSetChange();
         updateToolbar();
     }
 
