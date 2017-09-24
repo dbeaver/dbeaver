@@ -571,7 +571,7 @@ public class SQLQueryJob extends DataSourceJob
         for (int i = parameters.size(); i > 0; i--) {
             SQLQueryParameter parameter = parameters.get(i - 1);
             String paramValue = parameter.getValue();
-            if (paramValue.isEmpty()) {
+            if (paramValue == null || paramValue.isEmpty()) {
                 paramValue = SQLConstants.NULL_VALUE;
             }
             query = query.substring(0, parameter.getTokenOffset()) + paramValue + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
