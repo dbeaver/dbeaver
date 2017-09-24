@@ -28,23 +28,23 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPreferenceConstants;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
 import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
@@ -170,6 +170,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             }
             return IApplication.EXIT_OK;
         } finally {
+            shutdown();
 /*
             try {
                 Job.getJobManager().join(null, new NullProgressMonitor());
@@ -327,6 +328,20 @@ public class DBeaverApplication implements IApplication, DBPApplication {
 
     @Override
     public void stop() {
+        final IWorkbench workbench = PlatformUI.getWorkbench();
+        if (workbench == null)
+            return;
+        final Display display = workbench.getDisplay();
+        display.syncExec(new Runnable() {
+            @Override
+            public void run() {
+                if (!display.isDisposed())
+                    workbench.close();
+            }
+        });
+    }
+
+    private void shutdown() {
         log.debug("DBeaver is stopping"); //$NON-NLS-1$
         try {
             final IWorkbench workbench = PlatformUI.getWorkbench();
@@ -335,16 +350,6 @@ public class DBeaverApplication implements IApplication, DBPApplication {
 
             instanceServer = null;
             DBeaverInstanceServer.stopInstanceServer();
-
-            final Display display = workbench.getDisplay();
-            DBeaverUI.syncExec(new Runnable() {
-                @Override
-                public void run() {
-                    if (!display.isDisposed())
-                        workbench.close();
-                }
-            });
-
         } catch (Throwable e) {
             log.error(e);
         } finally {
@@ -430,7 +435,34 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             System.out.println(threadDump);
             return true;
         }
+
+        if (commandLine.hasOption(DBeaverCommandLine.PARAM_CLOSE_TABS)) {
+            closeAllEditors();
+        }
+        if (commandLine.hasOption(DBeaverCommandLine.PARAM_DISCONNECT_ALL)) {
+            executeWorkbenchCommand(CoreCommands.CMD_DISCONNECT_ALL);
+        }
+
         return false;
+    }
+
+    private static void closeAllEditors() {
+        log.debug("Close all open editor tabs");
+        IWorkbenchWindow window = DBeaverUI.getActiveWorkbenchWindow();
+        if (window != null) {
+            IWorkbenchPage page = window.getActivePage();
+            if (page != null) {
+                page.closeAllEditors(false);
+            }
+        }
+    }
+
+    protected static void executeWorkbenchCommand(String commandId) {
+        try {
+            ActionUtils.runCommand(commandId, DBeaverUI.getActiveWorkbenchWindow());
+        } catch (Exception e) {
+            log.error("Can't execute command '" + commandId + "'", e);
+        }
     }
 
     public IInstanceController getInstanceServer() {
