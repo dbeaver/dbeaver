@@ -34,6 +34,7 @@ public interface CoreCommands
 
     String CMD_CONNECT = "org.jkiss.dbeaver.core.connect";
     String CMD_DISCONNECT = "org.jkiss.dbeaver.core.disconnect";
+    String CMD_DISCONNECT_ALL = "org.jkiss.dbeaver.core.disconnectAll";
     String CMD_INVALIDATE = "org.jkiss.dbeaver.core.invalidate";
     String CMD_COMMIT = "org.jkiss.dbeaver.core.commit";
     String CMD_ROLLBACK = "org.jkiss.dbeaver.core.rollback";
