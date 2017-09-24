@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeStyle;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Column entry in model Table
@@ -43,11 +44,19 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
 
 	public String getLabelText()
 	{
+        String text;
         if (diagram.hasAttributeStyle(ERDAttributeStyle.TYPES)) {
-            return object.getName() + ": " + object.getFullTypeName();
+            text = object.getName() + ": " + object.getFullTypeName();
         } else {
-            return object.getName();
+            text = object.getName();
         }
+        if (diagram.hasAttributeStyle(ERDAttributeStyle.COMMENTS)) {
+            String comment = object.getDescription();
+            if (!CommonUtils.isEmpty(comment)) {
+                text += " - " + comment;
+            }
+        }
+        return text;
 	}
 
     public DBPImage getLabelImage()
