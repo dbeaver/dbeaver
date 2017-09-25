@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2017 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -77,7 +77,7 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
 
         // COLNAME in USAGEAUTH
         // PRIVTYPE in ALTERINAUTH
-        // GRANTABLE in ALTERINAUTH
+        // GRANTABLE in CREATEINAUTH
         sb.append("SELECT GRANTOR,GRANTORTYPE");
         sb.append("     , '").append(DB2ObjectType.COLUMN.name()).append("' AS OBJ_TYPE");
         sb.append("     , TABSCHEMA AS OBJ_SCHEMA, TABNAME AS OBJ_NAME");
