@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2017 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
 
+import java.sql.ResultSet;
+
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
@@ -25,8 +27,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import java.sql.ResultSet;
 
 /**
  * DB2 Authorisations on Columns
@@ -48,21 +48,15 @@ public class DB2AuthColumn extends DB2AuthBase {
     {
         super(monitor, db2Grantee, db2TableColumn, resultSet);
 
+        // PRIVTYPE in ALTERINAUTH
+        // GRANTABLE in CREATEINAUTH
         String privType = JDBCUtils.safeGetString(resultSet, "ALTERINAUTH");
-        String grantable = JDBCUtils.safeGetString(resultSet, "ALTERINAUTH");
+        String grantable = JDBCUtils.safeGetString(resultSet, "CREATEINAUTH");
 
         if (privType.equals(UPDATE_PRIVILEGE)) {
-            if (grantable.equals(DB2AuthHeldType.N)) {
-                update = DB2AuthHeldType.Y;
-            } else {
-                update = DB2AuthHeldType.G;
-            }
+            update = grantable.equals(DB2AuthHeldType.N.name()) ? DB2AuthHeldType.Y : DB2AuthHeldType.G;
         } else {
-            if (grantable.equals(DB2AuthHeldType.N)) {
-                reference = DB2AuthHeldType.Y;
-            } else {
-                reference = DB2AuthHeldType.G;
-            }
+            reference = grantable.equals(DB2AuthHeldType.N.getName()) ? DB2AuthHeldType.Y : DB2AuthHeldType.G;
         }
     }
 
