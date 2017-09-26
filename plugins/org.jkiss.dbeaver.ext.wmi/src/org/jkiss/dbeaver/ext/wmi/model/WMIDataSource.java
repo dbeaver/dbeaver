@@ -74,6 +74,11 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
         return new WMIDataSourceInfo();
     }
 
+    @Override
+    public Object getDataSourceFeature(String featureId) {
+        return null;
+    }
+
     @NotNull
     @Override
     public DBCExecutionContext getDefaultContext(boolean meta) {

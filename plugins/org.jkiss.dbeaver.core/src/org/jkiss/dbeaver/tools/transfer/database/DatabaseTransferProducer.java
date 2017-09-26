@@ -71,13 +71,14 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         DBPDataSource dataSource = getSourceObject().getDataSource();
         assert (dataSource != null);
         boolean newConnection = settings.isOpenNewConnections();
+        boolean forceDataReadTransactions = Boolean.TRUE.equals(dataSource.getDataSourceFeature(FEATURE_FORCE_TRANSACTIONS));
         DBCExecutionContext context = newConnection ?
             dataSource.openIsolatedContext(monitor, "Data transfer producer") : dataSource.getDefaultContext(false);
         try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask)) {
             try {
                 AbstractExecutionSource transferSource = new AbstractExecutionSource(dataContainer, context, consumer);
                 session.enableLogging(false);
-                if (newConnection) {
+                if (newConnection || forceDataReadTransactions) {
                     // Turn off auto-commit in source DB
                     // Auto-commit has to be turned off because some drivers allows to read LOBs and
                     // other complex structures only in transactional mode
@@ -136,9 +137,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     monitor.done();
                 }
 
-                //dataContainer.readData(context, consumer, dataFilter, -1, -1);
             } finally {
-                if (newConnection) {
+                if (newConnection || forceDataReadTransactions) {
                     DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
                     if (txnManager != null) {
                         try {
