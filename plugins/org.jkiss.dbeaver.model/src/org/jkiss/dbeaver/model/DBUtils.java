@@ -96,7 +96,9 @@ public final class DBUtils {
     @NotNull
     public static String getUnQuotedIdentifier(@NotNull String str, @NotNull String quote1, @NotNull String quote2)
     {
-        if (quote1 != null && quote2 != null && str.startsWith(quote1) && str.endsWith(quote2)) {
+        if (quote1 != null && quote2 != null && str.length() >= quote1.length() + quote2.length() &&
+            str.startsWith(quote1) && str.endsWith(quote2))
+        {
             return str.substring(quote1.length(), str.length() - quote2.length());
         }
         return str;
