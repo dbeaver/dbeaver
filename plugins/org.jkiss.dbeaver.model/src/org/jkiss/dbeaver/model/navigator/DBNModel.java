@@ -624,7 +624,7 @@ public class DBNModel implements IResourceChangeListener {
                 if (realListeners == null || realListeners.length == 0) {
                     continue;
                 }
-                DBNEvent[] realEvents;
+                final DBNEvent[] realEvents;
                 synchronized (eventCache) {
                     if (eventCache.isEmpty()) {
                         continue;

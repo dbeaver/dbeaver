@@ -20,9 +20,13 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -33,6 +37,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Postgre index manager
@@ -111,4 +116,22 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
         return "DROP INDEX " + PATTERN_ITEM_INDEX; //$NON-NLS-1$
     }
 
+    @Override
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command) {
+        PostgreIndex index = command.getObject();
+        if (index.isPersisted()) {
+            try {
+                String indexDDL = index.getObjectDefinitionText(new VoidProgressMonitor());
+                if (!CommonUtils.isEmpty(indexDDL)) {
+                    actions.add(
+                        new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_index, indexDDL)
+                    );
+                    return;
+                }
+            } catch (DBException e) {
+                log.warn("Can't extract index DDL", e);
+            }
+        }
+        super.addObjectCreateActions(actions, command);
+    }
 }
