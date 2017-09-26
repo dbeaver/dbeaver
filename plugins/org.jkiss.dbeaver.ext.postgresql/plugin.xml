@@ -290,6 +290,7 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
         </editor>
         <editor id="postgresql.source.ddl" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
                 label="DDL" description="DDL" icon="#sql_text" position="additions_middle"
