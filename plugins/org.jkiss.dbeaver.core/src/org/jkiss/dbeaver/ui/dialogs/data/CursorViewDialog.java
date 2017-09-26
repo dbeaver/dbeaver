@@ -140,7 +140,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
 
     @Override
     public DBCExecutionContext getExecutionContext() {
-        return resultSetViewer.getContainer().getExecutionContext();
+        return getValueController().getExecutionContext();
     }
 
     @Nullable
