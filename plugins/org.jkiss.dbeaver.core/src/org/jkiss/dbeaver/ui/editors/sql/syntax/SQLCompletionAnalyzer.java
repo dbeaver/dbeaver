@@ -301,7 +301,7 @@ class SQLCompletionAnalyzer
                 if (quotes.indexOf(quotePair[0]) == -1) quotes.append('\\').append(quotePair[0]);
                 if (quotes.indexOf(quotePair[1]) == -1) quotes.append('\\').append(quotePair[1]);
             }
-            String tableNamePattern = "([\\w_$\\.\\-" + quotes.toString() + "]+)";
+            String tableNamePattern = "([\\p{L}_$\\.\\-" + quotes.toString() + "]+)";
             String structNamePattern;
             if (CommonUtils.isEmpty(token)) {
                 structNamePattern = "(?:from|update|join|into)\\s*" + tableNamePattern;
