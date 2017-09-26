@@ -455,4 +455,9 @@ public class DBeaverUI implements DBPPlatformUI {
             });
         }
     }
+
+    @Override
+    public void executeInUI(Runnable runnable) {
+        syncExec(runnable);
+    }
 }
