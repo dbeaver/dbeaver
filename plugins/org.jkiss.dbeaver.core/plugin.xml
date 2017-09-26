@@ -2969,6 +2969,7 @@
             <supports kind="DOCUMENT"/>
             <supports kind="ROWID"/>
             <supports kind="ANY"/>
+            <supports typeName="REFCURSOR"/>
         </manager>
         <manager class="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager" id="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager">
             <supports typeName="BIT"/>
