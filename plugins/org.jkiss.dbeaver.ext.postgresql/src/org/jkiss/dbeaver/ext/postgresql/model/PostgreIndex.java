@@ -209,7 +209,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
-        if (indexDDL == null) {
+        if (indexDDL == null && isPersisted()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read index definition")) {
                 indexDDL = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_indexdef(?)", indexId);
             } catch (SQLException e) {
