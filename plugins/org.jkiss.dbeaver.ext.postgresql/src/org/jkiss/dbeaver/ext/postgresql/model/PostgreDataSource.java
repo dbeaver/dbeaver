@@ -533,6 +533,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
             return new QueryTransformerLimit(false, true);
+        } else if (type == DBCQueryTransformType.FETCH_ALL_TABLE) {
+            return new QueryTransformerFetchAll();
         }
         return null;
     }
