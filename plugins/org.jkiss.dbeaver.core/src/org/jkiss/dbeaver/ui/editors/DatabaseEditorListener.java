@@ -78,16 +78,10 @@ public class DatabaseEditorListener implements INavigatorListener
                     event.getNodeChange() == DBNEvent.NodeChange.LOAD)
                 {
                     if (getTreeNode() == event.getNode()) {
-                        runner = new Runnable() {
-                            @Override
-                            public void run()
-                            {
-                                databaseEditor.refreshPart(
-                                    event,
-                                    event.getNodeChange() == DBNEvent.NodeChange.REFRESH &&
-                                    event.getSource() == DBNEvent.FORCE_REFRESH);
-                            }
-                        };
+                        databaseEditor.refreshPart(
+                            event,
+                            event.getNodeChange() == DBNEvent.NodeChange.REFRESH &&
+                            event.getSource() == DBNEvent.FORCE_REFRESH);
                     }
                 } else if (event.getNodeChange() == DBNEvent.NodeChange.UNLOAD) {
                     closeEditor = true;
@@ -99,16 +93,10 @@ public class DatabaseEditorListener implements INavigatorListener
                     dispose();
                     return;
                 }
-                runner = new Runnable() { @Override
-                                          public void run() {
-                    IWorkbenchPage workbenchPage = databaseEditor.getSite().getWorkbenchWindow().getActivePage();
-                    if (workbenchPage != null) {
-                        workbenchPage.closeEditor(databaseEditor, false);
-                    }
-                }};
-            }
-            if (runner != null) {
-                DBeaverUI.asyncExec(runner);
+                IWorkbenchPage workbenchPage = databaseEditor.getSite().getWorkbenchWindow().getActivePage();
+                if (workbenchPage != null) {
+                    workbenchPage.closeEditor(databaseEditor, false);
+                }
             }
         }
     }

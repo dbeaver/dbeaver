@@ -847,19 +847,14 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
         final DBNNode node = event.getNode();
         if (node instanceof DBNResource && activeFile.equals(((DBNResource) node).getResource())) {
-            DBeaverUI.syncExec(new Runnable() {
-                @Override
-                public void run() {
-                    final int selConnection = connectionCombo.getSelectionIndex();
-                    if (selConnection > 0 && activeFile != null) {
-                        DBPDataSourceContainer visibleContainer = connectionCombo.getItem(selConnection);
-                        DBPDataSourceContainer newContainer = EditorUtils.getFileDataSource(activeFile);
-                        if (newContainer != visibleContainer) {
-                            updateControls(true);
-                        }
-                    }
+            final int selConnection = connectionCombo.getSelectionIndex();
+            if (selConnection > 0 && activeFile != null) {
+                DBPDataSourceContainer visibleContainer = connectionCombo.getItem(selConnection);
+                DBPDataSourceContainer newContainer = EditorUtils.getFileDataSource(activeFile);
+                if (newContainer != visibleContainer) {
+                    updateControls(true);
                 }
-            });
+            }
         }
     }
 
