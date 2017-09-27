@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;

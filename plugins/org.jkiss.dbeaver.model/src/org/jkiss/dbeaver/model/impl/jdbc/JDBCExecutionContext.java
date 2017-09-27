@@ -19,16 +19,19 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCSavepointImpl;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -188,7 +191,15 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             return InvalidateResult.CONNECTED;
         }
 
-        if (!JDBCUtils.isConnectionAlive(getDataSource(), getConnection())) {
+        DBRRunnableWithResult<Boolean> checkTask = new DBRRunnableWithResult<Boolean>() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                result = JDBCUtils.isConnectionAlive(getDataSource(), getConnection());
+            }
+        };
+        RuntimeUtils.runTask(checkTask, "Check connection is alive", 10000);
+
+        if (!checkTask.getResult()) {
             Boolean prevAutocommit = autoCommit;
             Integer txnLevel = transactionIsolationLevel;
             boolean addNewContext = false;
