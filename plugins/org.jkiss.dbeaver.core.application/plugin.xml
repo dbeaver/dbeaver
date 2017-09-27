@@ -269,4 +269,17 @@
         <workbenchWindowInitializer class="org.jkiss.dbeaver.core.application.WorkbenchInitializerNewConnection"/>
     </extension>
 
+
+    <extension point="org.eclipse.ui.activities">
+        <activity id="hideE4Activity" name="MenuAndToolbarHidingActivity">
+            <enabledWhen>
+                <with variable="activePartId">
+                    <equals value="nonExistentPartId"/>
+                </with>
+            </enabledWhen>
+        </activity>
+        <!-- Hide Eclipse userstorage activities -->
+        <activityPatternBinding activityId="hideE4Activity" pattern="org.eclipse.userstorage.*"/>
+    </extension>
+
 </plugin>
