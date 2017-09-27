@@ -197,9 +197,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 result = JDBCUtils.isConnectionAlive(getDataSource(), getConnection());
             }
         };
-        RuntimeUtils.runTask(checkTask, "Check connection is alive", 10000);
+        boolean checkOk = RuntimeUtils.runTask(checkTask, "Check connection is alive", 10000);
 
-        if (!checkTask.getResult()) {
+        if (!checkOk || checkTask.getResult() == null || !checkTask.getResult()) {
             Boolean prevAutocommit = autoCommit;
             Integer txnLevel = transactionIsolationLevel;
             boolean addNewContext = false;
