@@ -27,6 +27,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.IControlContentAdapter;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -51,6 +52,8 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.internal.ide.IDEInternalPreferences;
+import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
@@ -80,10 +83,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Locale;
-import java.util.SortedMap;
+import java.util.*;
 
 /**
  * UI Utils
@@ -918,20 +918,37 @@ public class UIUtils {
         if (shell == null) {
             return;
         }
-        IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
-        IProduct product = Platform.getProduct();
-        String title = product == null ? "Unknown" : product.getName(); //$NON-NLS-1$
-        if (activeProject != null) {
-            title += " - " + activeProject.getName(); //$NON-NLS-1$
+        IPreferenceStore ps = IDEWorkbenchPlugin.getDefault().getPreferenceStore();
+        StringJoiner sj = new StringJoiner(" - "); //$NON-NLS-1$
+
+        if (ps.getBoolean(IDEInternalPreferences.SHOW_PRODUCT_IN_TITLE)) {
+            sj.add(GeneralUtils.getProductTitle());
+        }
+        if (ps.getBoolean(IDEInternalPreferences.SHOW_LOCATION_NAME)) {
+            String workspaceName = ps.getString(IDEInternalPreferences.WORKSPACE_NAME);
+            if (workspaceName != null && workspaceName.length() > 0) {
+                sj.add(workspaceName);
+            }
+        }
+        if (ps.getBoolean(IDEInternalPreferences.SHOW_LOCATION)) {
+            String workspaceLocation = Platform.getLocation().toOSString();
+            sj.add(workspaceLocation);
+        }
+
+        if (ps.getBoolean(IDEInternalPreferences.SHOW_PERSPECTIVE_IN_TITLE)) {
+            IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+            if (activeProject != null) {
+                sj.add(activeProject.getName()); //$NON-NLS-1$
+            }
         }
         IWorkbenchPage activePage = window.getActivePage();
         if (activePage != null) {
             IEditorPart activeEditor = activePage.getActiveEditor();
             if (activeEditor != null) {
-                title += " - [ " + activeEditor.getTitle() + " ]";
+                sj.add(activeEditor.getTitle());
             }
         }
-        shell.setText(title);
+        shell.setText(sj.toString());
     }
 
     public static void showPreferencesFor(Shell shell, Object element, String ... defPageID)
