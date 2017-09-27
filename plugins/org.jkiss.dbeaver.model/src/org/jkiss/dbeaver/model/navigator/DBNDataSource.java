@@ -94,7 +94,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
 
     @Override
     public Class<?> getChildrenClass() {
-        final List<DBXTreeNode> metaChildren = treeRoot.getChildren(this);
+        final List<DBXTreeNode> metaChildren = treeRoot.getChildren(null);
         if (CommonUtils.isEmpty(metaChildren) || metaChildren.size() > 1) {
             return null;
         }
