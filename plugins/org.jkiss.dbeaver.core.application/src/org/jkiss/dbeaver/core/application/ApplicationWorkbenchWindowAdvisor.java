@@ -151,14 +151,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         log.debug("Finish initialization");
         super.postWindowOpen();
 
-        IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        IContributionItem[] items = ((WorkbenchWindow) workbenchWindow).getToolBarManager().getItems();
-        for (IContributionItem item : items) {
-            if (item.getId().equals("org.eclipse.userstorage.accounts")) {
-                item.setVisible(false);
-            }
-        }
-
         if (isRunWorkbenchInitializers()) {
             // Open New Connection wizard
             DBeaverUI.asyncExec(new Runnable() {
