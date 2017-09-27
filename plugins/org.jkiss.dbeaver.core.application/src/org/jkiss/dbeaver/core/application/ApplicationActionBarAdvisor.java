@@ -31,9 +31,9 @@ import org.eclipse.ui.internal.registry.IActionSetDescriptor;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.application.about.AboutBoxAction;
+import org.jkiss.dbeaver.core.application.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.core.application.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.actions.common.EmergentExitAction;
 import org.jkiss.dbeaver.ui.actions.common.ExternalPageAction;
@@ -94,6 +94,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             }
         }
     }
+
     protected boolean isShowAltHelp() {
         return true;
     }
