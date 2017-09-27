@@ -225,7 +225,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     @Override
                     public void run() {
                         int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                        moveColumn(selectionIndex, 0);
+                        moveColumns(selectionIndex, 0);
                     }
                 });
                 moveTopButton.setEnabled(false);
@@ -233,7 +233,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     @Override
                     public void run() {
                         int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                        moveColumn(selectionIndex, selectionIndex - 1);
+                        swapColumns(selectionIndex, selectionIndex - 1);
                     }
                 });
                 moveUpButton.setEnabled(false);
@@ -241,7 +241,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     @Override
                     public void run() {
                         int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                        moveColumn(selectionIndex, selectionIndex + 1);
+                        swapColumns(selectionIndex, selectionIndex + 1);
                     }
                 });
                 moveDownButton.setEnabled(false);
@@ -249,7 +249,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     @Override
                     public void run() {
                         int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                        moveColumn(selectionIndex, getItemsCount() - 1);
+                        moveColumns(selectionIndex, getItemsCount() - 1);
                     }
                 });
                 moveBottomButton.setEnabled(false);
@@ -364,13 +364,39 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         return tree.indexOf(selection[0]);
     }
 
-    private void moveColumn(int curIndex, int newIndex)
+    private void swapColumns(int curIndex, int newIndex)
     {
         final DBDAttributeConstraint c1 = getBindingConstraint((DBDAttributeBinding) columnsViewer.getTree().getItem(curIndex).getData());
         final DBDAttributeConstraint c2 = getBindingConstraint((DBDAttributeBinding) columnsViewer.getTree().getItem(newIndex).getData());
         final int vp2 = c2.getVisualPosition();
         c2.setVisualPosition(c1.getVisualPosition());
         c1.setVisualPosition(vp2);
+        refreshData();
+        moveTopButton.setEnabled(newIndex > 0);
+        moveUpButton.setEnabled(newIndex > 0);
+        moveDownButton.setEnabled(newIndex < getItemsCount() - 1);
+        moveBottomButton.setEnabled(newIndex < getItemsCount() - 1);
+    }
+
+    private void moveColumns(int curIndex, int newIndex)
+    {
+        if (curIndex == newIndex) {
+            return;
+        }
+        final DBDAttributeConstraint curAttr = getBindingConstraint((DBDAttributeBinding) columnsViewer.getTree().getItem(curIndex).getData());
+        // Update other constraints indexes
+        for (DBDAttributeConstraint c : constraints) {
+            if (newIndex < curIndex) {
+                if (c.getVisualPosition() >= newIndex && c.getVisualPosition() < curIndex) {
+                    c.setVisualPosition(c.getVisualPosition() + 1);
+                }
+            } else {
+                if (c.getVisualPosition() > curIndex && c.getVisualPosition() <= newIndex) {
+                    c.setVisualPosition(c.getVisualPosition() - 1);
+                }
+            }
+        }
+        curAttr.setVisualPosition(newIndex);
         refreshData();
         moveTopButton.setEnabled(newIndex > 0);
         moveUpButton.setEnabled(newIndex > 0);
