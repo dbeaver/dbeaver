@@ -1,0 +1,3 @@
+files:
+  - source: plugin.properties
+    translation: '%original_file_name%_%two_letters_code%.properties'
