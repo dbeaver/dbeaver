@@ -777,7 +777,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             }
 
             boolean cursorInsideToken = currentPos >= tokenOffset && currentPos < tokenOffset + tokenLength;
-            if (isControl && (scriptMode || cursorInsideToken)) {
+            if (isControl && (scriptMode || cursorInsideToken) && !hasValuableTokens) {
                 // Control query
                 try {
                     String controlText = document.get(tokenOffset, tokenLength);
