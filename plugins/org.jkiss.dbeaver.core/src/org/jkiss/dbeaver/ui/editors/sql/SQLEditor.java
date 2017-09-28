@@ -501,6 +501,9 @@ public class SQLEditor extends SQLEditorBase implements
         //toolTipAction.setEnabled(false);
 
         CoreFeatures.SQL_EDITOR_OPEN.use();
+
+        // Start output reader
+        new ServerOutputReader().schedule();
     }
 
     private void createResultTabs()
@@ -2211,6 +2214,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         private void processQueryResult(DBCSession session, SQLQueryResult result) {
+            dumpServerOutput(result);
             if (!scriptMode) {
                 runPostExecuteActions(result);
             }
@@ -2361,7 +2365,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void runPostExecuteActions(@Nullable SQLQueryResult result) {
+    private void dumpServerOutput(@Nullable SQLQueryResult result) {
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
             final DBPDataSource dataSource = executionContext.getDataSource();
@@ -2371,8 +2375,17 @@ public class SQLEditor extends SQLEditorBase implements
                 outputReader = new DefaultServerOutputReader(result);
             }
             if (outputReader != null && outputReader.isServerOutputEnabled()) {
-                dumpServerOutput(executionContext, outputReader);
+                synchronized (serverOutputs) {
+                    serverOutputs.add(new ServerOutputInfo(outputReader, executionContext));
+                }
             }
+        }
+    }
+
+    private void runPostExecuteActions(@Nullable SQLQueryResult result) {
+        final DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext != null) {
+            final DBPDataSource dataSource = executionContext.getDataSource();
             // Refresh active object
             if (result == null || !result.hasError() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)) {
                 final DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
@@ -2391,41 +2404,6 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         }
-    }
-
-    private void dumpServerOutput(@NotNull final DBCExecutionContext executionContext, @NotNull final DBCServerOutputReader outputReader) {
-        new AbstractJob("Dump server output") {
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                final StringWriter dump = new StringWriter();
-                try {
-                    outputReader.readServerOutput(monitor, executionContext, new PrintWriter(dump, true));
-                    final String dumpString = dump.toString();
-                    if (!dumpString.isEmpty()) {
-                        DBeaverUI.asyncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (outputViewer.isDisposed()) {
-                                    return;
-                                }
-                                try {
-                                    IOUtils.copyText(new StringReader(dumpString), outputViewer.getOutputWriter());
-                                } catch (IOException e) {
-                                    log.error(e);
-                                }
-                                if (outputViewer.isHasNewOutput()) {
-                                    outputViewer.scrollToEnd();
-                                    updateOutputViewerIcon(true);
-                                }
-                            }
-                        });
-                    }
-                } catch (Exception e) {
-                    log.error(e);
-                }
-                return Status.OK_STATUS;
-            }
-        }.schedule();
     }
 
     private void updateOutputViewerIcon(boolean alert) {
@@ -2465,6 +2443,73 @@ public class SQLEditor extends SQLEditorBase implements
             } finally {
                 if (success == null) {
                     success = true;
+                }
+            }
+        }
+    }
+
+    private static class ServerOutputInfo {
+        private final DBCServerOutputReader outputReader;
+        private final DBCExecutionContext executionContext;
+
+        ServerOutputInfo(DBCServerOutputReader outputReader, DBCExecutionContext executionContext) {
+            this.outputReader = outputReader;
+            this.executionContext = executionContext;
+        }
+    }
+
+    private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
+
+    private class ServerOutputReader extends AbstractJob {
+
+        ServerOutputReader() {
+            super("Dump server output");
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            dumpOutput(monitor);
+
+            if (!DBeaverCore.isClosing()) {
+                schedule(200);
+            }
+
+            return Status.OK_STATUS;
+        }
+
+        private void dumpOutput(DBRProgressMonitor monitor) {
+            List<ServerOutputInfo> outputs;
+            synchronized (serverOutputs) {
+                outputs = new ArrayList<>(serverOutputs);
+                serverOutputs.clear();
+            }
+
+            for (ServerOutputInfo info : outputs) {
+                final StringWriter dump = new StringWriter();
+                try {
+                    info.outputReader.readServerOutput(monitor, info.executionContext, new PrintWriter(dump, true));
+                    final String dumpString = dump.toString();
+                    if (!dumpString.isEmpty()) {
+                        DBeaverUI.asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (outputViewer.isDisposed()) {
+                                    return;
+                                }
+                                try {
+                                    IOUtils.copyText(new StringReader(dumpString), outputViewer.getOutputWriter());
+                                } catch (IOException e) {
+                                    log.error(e);
+                                }
+                                if (outputViewer.isHasNewOutput()) {
+                                    outputViewer.scrollToEnd();
+                                    updateOutputViewerIcon(true);
+                                }
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    log.error(e);
                 }
             }
         }
