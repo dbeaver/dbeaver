@@ -909,48 +909,6 @@ public class UIUtils {
         clipboard.dispose();
     }
 
-    public static void updateMainWindowTitle(IWorkbenchWindow window)
-    {
-        if (window == null) {
-            return;
-        }
-        Shell shell = window.getShell();
-        if (shell == null) {
-            return;
-        }
-        IPreferenceStore ps = IDEWorkbenchPlugin.getDefault().getPreferenceStore();
-        StringJoiner sj = new StringJoiner(" - "); //$NON-NLS-1$
-
-        if (ps.getBoolean(IDEInternalPreferences.SHOW_PRODUCT_IN_TITLE)) {
-            sj.add(GeneralUtils.getProductTitle());
-        }
-        if (ps.getBoolean(IDEInternalPreferences.SHOW_LOCATION_NAME)) {
-            String workspaceName = ps.getString(IDEInternalPreferences.WORKSPACE_NAME);
-            if (workspaceName != null && workspaceName.length() > 0) {
-                sj.add(workspaceName);
-            }
-        }
-        if (ps.getBoolean(IDEInternalPreferences.SHOW_LOCATION)) {
-            String workspaceLocation = Platform.getLocation().toOSString();
-            sj.add(workspaceLocation);
-        }
-
-        if (ps.getBoolean(IDEInternalPreferences.SHOW_PERSPECTIVE_IN_TITLE)) {
-            IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
-            if (activeProject != null) {
-                sj.add(activeProject.getName()); //$NON-NLS-1$
-            }
-        }
-        IWorkbenchPage activePage = window.getActivePage();
-        if (activePage != null) {
-            IEditorPart activeEditor = activePage.getActiveEditor();
-            if (activeEditor != null) {
-                sj.add(activeEditor.getTitle());
-            }
-        }
-        shell.setText(sj.toString());
-    }
-
     public static void showPreferencesFor(Shell shell, Object element, String ... defPageID)
     {
         PreferenceDialog propDialog;

@@ -353,8 +353,6 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         } else {
             activeFile = null;
         }
-
-        UIUtils.updateMainWindowTitle(workbenchWindow);
     }
 
     private void fillDataSourceList(boolean force) {
