@@ -274,7 +274,7 @@ public class SQLRuleManager extends RuleBasedScanner {
             }
 
             // Add word rule for keywords, types, and constants.
-            WordRule wordRule = new WordRule(new SQLWordDetector(), otherToken, true);
+            SQLWordRule wordRule = new SQLWordRule(delimRule, otherToken);
             for (String reservedWord : dialect.getReservedWords()) {
                 wordRule.addWord(reservedWord, keywordToken);
             }
