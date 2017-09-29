@@ -187,6 +187,13 @@
                 allowMultiple="true"
                 icon="icons/sql/page_data_grid.png"
                 name="%view.sql.results.title"/>
+        <view
+                id="org.jkiss.dbeaver.core.databaseOutput"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.views.DatabaseOutputView"
+                allowMultiple="false"
+                icon="icons/sql/page_output.png"
+                name="%view.database.output.title"/>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
