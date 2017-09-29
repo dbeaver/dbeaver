@@ -168,12 +168,12 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
     }
 
     @Override
-    public int getScale() {
+    public Integer getScale() {
         return attribute.getScale();
     }
 
     @Override
-    public int getPrecision() {
+    public Integer getPrecision() {
         return attribute.getPrecision();
     }
 

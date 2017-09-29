@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.utils.CommonUtils;
 
 /**
 * BitStringInlineEditor
@@ -39,7 +40,7 @@ public class BitStringInlineEditor extends BaseValueEditor<Text> {
         final boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
         final Text editor = new Text(valueController.getEditPlaceholder(), inline ? SWT.BORDER : SWT.NONE);
         editor.setEditable(!valueController.isReadOnly());
-        final int precision = valueController.getValueType().getPrecision();
+        final int precision = CommonUtils.toInt(valueController.getValueType().getPrecision());
         editor.setTextLimit(precision <= 1 ? 1 : precision);
         editor.addVerifyListener(new VerifyListener() {
             @Override

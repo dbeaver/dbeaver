@@ -135,12 +135,12 @@ public class DBDAttributeBindingElement extends DBDAttributeBindingNested implem
     }
 
     @Override
-    public int getScale() {
+    public Integer getScale() {
         return collection.getComponentType().getScale();
     }
 
     @Override
-    public int getPrecision() {
+    public Integer getPrecision() {
         return collection.getComponentType().getPrecision();
     }
 

@@ -126,12 +126,12 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     }
 
     @Override
-    public int getScale() {
+    public Integer getScale() {
         return getAttribute().getScale();
     }
 
     @Override
-    public int getPrecision() {
+    public Integer getPrecision() {
         return getAttribute().getPrecision();
     }
 
