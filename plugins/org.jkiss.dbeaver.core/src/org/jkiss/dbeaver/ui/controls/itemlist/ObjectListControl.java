@@ -358,6 +358,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     for (OBJECT_TYPE item : items) {
                         Object object = getObjectValue(item);
                         if (object != null && !classList.contains(object.getClass())) {
+                            // Remove all base classes if we have sub class
+                            for (int i = 0; i < classList.size(); i++) {
+                                Class<?> c = classList.get(i);
+                                if (c.isAssignableFrom(object.getClass())) {
+                                    classList.remove(i);
+                                } else {
+                                    i++;
+                                }
+                            }
                             classList.add(object.getClass());
                         }
                         if (renderer.isTree()) {
