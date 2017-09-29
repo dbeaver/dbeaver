@@ -136,15 +136,15 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         this.charLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_CHARACTER_MAXIMUM_LENGTH);
         if (this.charLength <= 0) {
             if (dataType != null) {
-                setMaxLength(dataType.getPrecision());
+                setMaxLength(CommonUtils.toInt(dataType.getPrecision()));
             }
         } else {
             setMaxLength(this.charLength);
         }
         this.comment = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_COMMENT);
         setRequired(!"YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_IS_NULLABLE)));
-        setScale(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NUMERIC_SCALE));
-        setPrecision(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NUMERIC_PRECISION));
+        setScale(JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_NUMERIC_SCALE));
+        setPrecision(JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_NUMERIC_PRECISION));
         String defaultValue = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_DEFAULT);
         if (defaultValue != null) {
             switch (getDataKind()) {
@@ -221,14 +221,14 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
 
     @Override
     //@Property(viewable = true, order = 41)
-    public int getScale()
+    public Integer getScale()
     {
         return super.getScale();
     }
 
     @Override
     //@Property(viewable = true, order = 42)
-    public int getPrecision()
+    public Integer getPrecision()
     {
         return super.getPrecision();
     }

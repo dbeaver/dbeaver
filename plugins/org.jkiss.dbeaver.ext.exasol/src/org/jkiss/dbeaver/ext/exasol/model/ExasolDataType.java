@@ -167,7 +167,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     }
 
     @Override
-    public int getPrecision() {
+    public Integer getPrecision() {
         if (typeDesc.precision != null) {
             return typeDesc.precision;
         } else {
@@ -238,7 +238,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
 
     @Override
     @Property(viewable = true, editable = false, order = 6)
-    public int getScale() {
+    public Integer getScale() {
         return scale;
     }
 

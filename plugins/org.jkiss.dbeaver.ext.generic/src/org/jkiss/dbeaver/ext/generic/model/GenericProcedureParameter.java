@@ -40,8 +40,8 @@ public class GenericProcedureParameter extends JDBCAttribute implements DBSProce
             int valueType,
             int ordinalPosition,
             int columnSize,
-            int scale,
-            int precision,
+            Integer scale,
+            Integer precision,
             boolean notNull,
             String remarks,
             DBSProcedureParameterKind parameterKind)

@@ -250,13 +250,13 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
 
     @Property(viewable = true, category = PROP_CATEGORY_COLUMN, order = 21)
     @Override
-    public int getPrecision() {
+    public Integer getPrecision() {
         return precision;
     }
 
     @Property(viewable = true, category = PROP_CATEGORY_COLUMN, order = 22)
     @Override
-    public int getScale() {
+    public Integer getScale() {
         return scale;
     }
 

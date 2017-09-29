@@ -318,13 +318,13 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     @Override
-    public int getScale()
+    public Integer getScale()
     {
         return typeDesc == null ? 0 : typeDesc.minScale;
     }
 
     @Override
-    public int getPrecision()
+    public Integer getPrecision()
     {
         return typeDesc == null ? 0 : typeDesc.precision;
     }
@@ -332,7 +332,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     @Override
     public long getMaxLength()
     {
-        return getPrecision();
+        return CommonUtils.toInt(getPrecision());
     }
 
     @Override

@@ -475,8 +475,8 @@ public class BasicSQLDialect implements SQLDialect {
             // If type is UDT (i.e. we can find it in type list) and type precision == column precision
             // then do not use explicit precision in column definition
             final DBSDataType dataType = DBUtils.getLocalDataType(((DBSObject) column).getDataSource(), column.getTypeName());
-            if (dataType != null && dataType.getScale() == column.getScale() &&
-                    ((dataType.getPrecision() > 0 && dataType.getPrecision() == column.getPrecision()) ||
+            if (dataType != null && CommonUtils.equalObjects(dataType.getScale(), column.getScale()) &&
+                    ((CommonUtils.toInt(dataType.getPrecision()) > 0 && CommonUtils.equalObjects(dataType.getPrecision(), column.getPrecision())) ||
                             (dataType.getMaxLength() > 0 && dataType.getMaxLength() == column.getMaxLength())))
             {
                 return null;
@@ -497,7 +497,7 @@ public class BasicSQLDialect implements SQLDialect {
         } else if (dataKind == DBPDataKind.NUMERIC) {
             if (typeName.equals("DECIMAL") || typeName.equals("NUMERIC") || typeName.equals("NUMBER")) {
                 int scale = column.getScale();
-                int precision = column.getPrecision();
+                int precision = CommonUtils.toInt(column.getPrecision());
                 if (precision == 0) {
                     precision = (int) column.getMaxLength();
                     if (precision > 0) {
@@ -512,7 +512,7 @@ public class BasicSQLDialect implements SQLDialect {
                 }
             } else if (typeName.equals("BIT")) {
                 // Bit string?
-                int precision = column.getPrecision();
+                int precision = CommonUtils.toInt(column.getPrecision());
                 if (precision > 1) {
                     return "(" + precision + ')';
                 }

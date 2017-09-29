@@ -367,8 +367,8 @@ public class ResultSetUtils
             attr1.getOrdinalPosition() == attr2.getOrdinalPosition() &&
             attr1.isRequired() == attr2.isRequired() &&
             attr1.getMaxLength() == attr2.getMaxLength() &&
-            attr1.getPrecision() == attr2.getPrecision() &&
-            attr1.getScale() == attr2.getScale() &&
+            CommonUtils.equalObjects(attr1.getPrecision(), attr2.getPrecision()) &&
+            CommonUtils.equalObjects(attr1.getScale(), attr2.getScale()) &&
             attr1.getTypeID() == attr2.getTypeID() &&
             CommonUtils.equalObjects(attr1.getTypeName(), attr2.getTypeName());
     }
