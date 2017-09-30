@@ -175,7 +175,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
     }
 
     @Override
-    public Object getRawValue() {
+    public byte[] getRawValue() {
         return data;
     }
 
