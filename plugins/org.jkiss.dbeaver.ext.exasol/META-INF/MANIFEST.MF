@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Exasol Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.exasol;singleton:=true
-Bundle-Version: 1.0.23
-Bundle-Release-Date: 20170918
+Bundle-Version: 1.0.24
+Bundle-Release-Date: 20171002
 Bundle-Activator: org.jkiss.dbeaver.ext.exasol.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,

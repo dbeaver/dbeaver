@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ext.wmi.feature"
       label="%featureName"
-      version="2.0.67"
+      version="2.0.68"
       provider-name="%providerName"
       plugin="org.jkiss.dbeaver.ext.wmi">
 

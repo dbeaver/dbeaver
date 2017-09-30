@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Model Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.model;singleton:=true
-Bundle-Version: 1.0.54
-Bundle-Release-Date: 20170918
+Bundle-Version: 1.0.55
+Bundle-Release-Date: 20171002
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Activator: org.jkiss.dbeaver.bundle.ModelActivator
