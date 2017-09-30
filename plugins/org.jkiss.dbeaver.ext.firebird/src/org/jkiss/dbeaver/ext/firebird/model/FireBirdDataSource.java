@@ -95,8 +95,16 @@ public class FireBirdDataSource extends GenericDataSource {
                             break;
                         }
                         String fieldName = JDBCUtils.safeGetString(dbResult, "RDB$FIELD_NAME");
+                        if (fieldName == null) {
+                            continue;
+                        }
+                        fieldName = fieldName.trim();
                         int fieldType = JDBCUtils.safeGetInt(dbResult, "RDB$TYPE");
                         String typeName = JDBCUtils.safeGetString(dbResult, "RDB$TYPE_NAME");
+                        if (typeName == null) {
+                            continue;
+                        }
+                        typeName = typeName.trim();
                         String fieldDescription = JDBCUtils.safeGetString(dbResult, "RDB$SYSTEM_FLAG");
                         IntKeyMap<MetaFieldInfo> metaFields = this.metaFields.get(fieldName);
                         if (metaFields == null) {
