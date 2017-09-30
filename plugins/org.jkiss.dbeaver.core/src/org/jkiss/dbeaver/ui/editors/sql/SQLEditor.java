@@ -86,6 +86,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -1078,6 +1079,21 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
 
+        final boolean isSingleQuery = (queries.size() == 1);
+        if (isSingleQuery && queries.get(0) instanceof SQLQuery) {
+            SQLQuery query = (SQLQuery) queries.get(0);
+            if (query.isDeleteUpdateDangerous()) {
+                String targetName = "multiple tables";
+                if (query.getSingleSource() != null) {
+                    targetName = query.getSingleSource().getEntityName();
+                }
+                if (!ConfirmationDialog.confirmActionWithParams(getSite().getShell(), DBeaverPreferences.CONFIRM_DANGER_SQL, query.getType().name(), targetName)) {
+                    return;
+                }
+            }
+        }
+
+
         if (sashForm.getMaximizedControl() != null) {
             sashForm.setMaximizedControl(null);
         }
@@ -1086,8 +1102,6 @@ public class SQLEditor extends SQLEditorBase implements
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) && isDirty()) {
             doSave(new NullProgressMonitor());
         }
-
-        final boolean isSingleQuery = (queries.size() == 1);
 
         if (!newTab || !isSingleQuery) {
             // We don't need new tab or we are executing a script - so close all extra tabs
