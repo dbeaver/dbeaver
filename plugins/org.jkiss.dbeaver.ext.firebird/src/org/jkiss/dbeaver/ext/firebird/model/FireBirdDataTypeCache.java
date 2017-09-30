@@ -61,8 +61,7 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
         try {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource.getDataSource(), "Load FireBird domain types")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT F.* FROM RDB$FIELDS F\n" +
-                    "WHERE f.RDB$FIELD_NAME NOT LIKE '%$%'"))
+                    "SELECT F.* FROM RDB$FIELDS F"))
                 {
                     monitor.subTask("Load FireBird domain types");
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {

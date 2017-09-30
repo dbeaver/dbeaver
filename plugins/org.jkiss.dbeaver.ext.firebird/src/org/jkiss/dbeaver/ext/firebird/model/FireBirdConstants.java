@@ -22,4 +22,6 @@ public class FireBirdConstants  {
     public static final String TYPE_FIELD_SUB_TYPE = "RDB$FIELD_SUB_TYPE";
     public static final String TYPE_CHARACTER_SET_NAME = "RDB$CHARACTER_SET_NAME";
 
+    public static final String CHARSET_OCTETS = "OCTETS";
+    public static final String CHARSET_BINARY = "BINARY";
 }

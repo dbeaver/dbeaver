@@ -57,6 +57,16 @@ public class FireBirdDataType extends GenericDataType {
         this.subType = 0;
     }
 
+    @Override
+    public DBPDataKind getDataKind() {
+        if (fieldType == FireBirdFieldType.CHAR &&
+            (FireBirdConstants.CHARSET_OCTETS.equals(charsetName) || FireBirdConstants.CHARSET_BINARY.equals(charsetName)))
+        {
+            return DBPDataKind.BINARY;
+        }
+        return super.getDataKind();
+    }
+
     @Property(order = 70)
     public int getSubType() {
         return subType;
