@@ -442,7 +442,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException
         {
             String colsView = "ALL_TAB_COLS";
-            if (!owner.getDataSource().isViewAvailable(session.getProgressMonitor(), "SYS", colsView)) {
+            if (!owner.getDataSource().isViewAvailable(session.getProgressMonitor(), OracleConstants.SCHEMA_SYS, colsView)) {
                 colsView = "ALL_TAB_COLUMNS";
             }
             StringBuilder sql = new StringBuilder(500);

@@ -102,6 +102,10 @@
                                         </items>
                                     </items>
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivTable" label="%tree.table_privileges.node.name" icon="#permissions" description="View Privileges" navigable="false">
+                                    <items label="%tree.privilege.node.name" path="tablePrivs" property="tablePrivs" icon="#privilege">
+                                    </items>
+                                </folder>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView" label="%tree.materialized_views.node.name" icon="#folder_view" description="Materialized Views">

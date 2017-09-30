@@ -92,7 +92,8 @@ public class OracleDataSource extends JDBCDataSource
         if (available == null) {
             try {
                 try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Check view existence")) {
-                    try (final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT 1 FROM " + DBUtils.getQuotedIdentifier(this, schemaName) + "." +
+                    try (final JDBCPreparedStatement dbStat = session.prepareStatement(
+                        "SELECT 1 FROM " + DBUtils.getQuotedIdentifier(this, schemaName) + "." +
                         DBUtils.getQuotedIdentifier(this, viewName)))
                     {
                         dbStat.setFetchSize(1);
