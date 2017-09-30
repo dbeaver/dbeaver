@@ -2891,6 +2891,16 @@
                 <property id="pattern" label="URL pattern" type="string" description="URL pattern. Variable ${value} will be replaced with real value." defaultValue="http://${value}" required="false"/>
             </propertyGroup>
         </transformer>
+        <transformer
+                class="org.jkiss.dbeaver.model.impl.data.transformers.UUIDAttributeTransformer"
+                id="org.jkiss.dbeaver.core.UUIDAttributeTransformer"
+                name="UUID"
+                description="Represents binary value as UUID."
+                applyByDefault="false"
+                custom="true">
+            <type kind="BINARY"/>
+            <type kind="CONTENT"/>
+        </transformer>
 
     </extension>
 
