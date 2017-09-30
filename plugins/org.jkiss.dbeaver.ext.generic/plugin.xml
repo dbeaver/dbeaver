@@ -878,6 +878,18 @@
                     <file type="jar" path="maven:/com.orientechnologies:orientdb-jdbc:RELEASE[1.7]"/>
                 </driver>
 
+                <!-- PrestoDB -->
+                <driver
+                        id="presto_jdbc"
+                        label="PrestoDB"
+                        class="com.facebook.presto.jdbc.PrestoDriver"
+                        sampleURL="jdbc:presto://{host}:{port}/{database}"
+                        defaultPort="8080"
+                        description="PrestoDB JDBC driver"
+                        webURL="https://prestodb.io/">
+                    <file type="jar" path="maven:/com.facebook.presto:presto-jdbc:RELEASE"/>
+                </driver>
+
             </drivers>
 
             <views>
