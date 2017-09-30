@@ -7,7 +7,7 @@
    </configIni>
 
    <launcherArgs>
-      <programArgs>-showsplash
+      <programArgs>-nl en -showsplash
       </programArgs>
       <programArgsLin>--launcher.GTK_version 2
       </programArgsLin>
