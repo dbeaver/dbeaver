@@ -9,7 +9,7 @@
     <relativePath>../../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.ui.svg.feature</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <packaging>eclipse-feature</packaging>
   <groupId>org.jkiss.dbeaver</groupId>
 </project>
