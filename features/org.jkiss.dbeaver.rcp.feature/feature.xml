@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-        id="org.jkiss.dbeaver.rcp.feature" label="RCP" version="2.1.39">
+      id="org.jkiss.dbeaver.rcp.feature"
+      label="%featureName"
+      version="2.1.39"
+      provider-name="%providerName">
 
-    <description>
-        Feature for standalone DBeaver RCP
-    </description>
+   <description>
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
 
         <plugin id="com.ibm.icu.base" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
         <plugin id="javax.annotation" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
