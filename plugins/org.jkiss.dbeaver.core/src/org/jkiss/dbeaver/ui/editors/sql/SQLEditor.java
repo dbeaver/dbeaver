@@ -1087,7 +1087,14 @@ public class SQLEditor extends SQLEditorBase implements
                 if (query.getSingleSource() != null) {
                     targetName = query.getSingleSource().getEntityName();
                 }
-                if (!ConfirmationDialog.confirmActionWithParams(getSite().getShell(), DBeaverPreferences.CONFIRM_DANGER_SQL, query.getType().name(), targetName)) {
+                if (ConfirmationDialog.showConfirmDialogEx(
+                    getSite().getShell(),
+                    DBeaverPreferences.CONFIRM_DANGER_SQL,
+                    ConfirmationDialog.CONFIRM,
+                    ConfirmationDialog.WARNING,
+                    query.getType().name(),
+                    targetName) != IDialogConstants.OK_ID)
+                {
                     return;
                 }
             }
