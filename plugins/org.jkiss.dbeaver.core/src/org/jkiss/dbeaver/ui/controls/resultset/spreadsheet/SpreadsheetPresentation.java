@@ -545,26 +545,36 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
 
             } else {
-                DBDAttributeBinding attr = getFocusAttribute();
-                ResultSetRow row = controller.getCurrentRow();
-                if (attr == null || row == null) {
-                    return;
-                }
-                if (controller.isAttributeReadOnly(attr)) {
-                    // No inline editors for readonly columns
-                    return;
-                }
+                Collection<GridPos> ssSelection = spreadsheet.getSelection();
+                for (GridPos pos : ssSelection) {
+                    DBDAttributeBinding attr;
+                    ResultSetRow row;
+                    if (controller.isRecordMode()) {
+                        attr = (DBDAttributeBinding) spreadsheet.getRowElement(pos.row);
+                        row = controller.getCurrentRow();
+                    } else {
+                        attr = (DBDAttributeBinding) spreadsheet.getColumnElement(pos.col);
+                        row = (ResultSetRow) spreadsheet.getRowElement(pos.row);
+                    }
+                    if (attr == null || row == null) {
+                        continue;
+                    }
+                    if (controller.isAttributeReadOnly(attr)) {
+                        // No inline editors for readonly columns
+                        continue;
+                    }
 
-                Object newValue = ResultSetUtils.getAttributeValueFromClipboard(attr);
-                if (newValue == null) {
-                    return;
+                    Object newValue = ResultSetUtils.getAttributeValueFromClipboard(attr);
+                    if (newValue == null) {
+                        continue;
+                    }
+                    new SpreadsheetValueController(
+                        controller,
+                        attr,
+                        row,
+                        IValueController.EditType.NONE,
+                        null).updateValue(newValue, false);
                 }
-                new SpreadsheetValueController(
-                    controller,
-                    attr,
-                    row,
-                    IValueController.EditType.NONE,
-                    null).updateValue(newValue, false);
             }
             controller.redrawData(false, true);
             controller.updateEditControls();
