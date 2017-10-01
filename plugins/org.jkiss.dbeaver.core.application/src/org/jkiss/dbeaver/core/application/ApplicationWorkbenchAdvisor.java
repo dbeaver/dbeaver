@@ -31,6 +31,7 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -58,6 +59,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
     private static final String WORKBENCH_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Workbench";
     private static final String APPEARANCE_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
+
     private static final String[] EXCLUDE_PREF_PAGES = {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Globalization",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Perspectives",
@@ -69,6 +71,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
         // Disable Install/Update
         "org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",
+
+        // Team preferences - not needed in CE
+        "org.eclipse.team.ui.TeamPreferences",
 
     };
 
@@ -131,13 +136,23 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     public void postStartup() {
         super.postStartup();
 
-        // Remove unneeded pref pages
-        PreferenceManager pm = PlatformUI.getWorkbench().getPreferenceManager();
-        for (String epp : EXCLUDE_PREF_PAGES) {
-            pm.remove(epp);
-        }
+        filterPreferencePages();
 
         startVersionChecker();
+    }
+
+    private void filterPreferencePages() {
+        // Remove unneeded pref pages
+        PreferenceManager pm = PlatformUI.getWorkbench().getPreferenceManager();
+
+        for (String epp : getExcludedPreferencePageIds()) {
+            pm.remove(epp);
+        }
+    }
+
+    @NotNull
+    protected String[] getExcludedPreferencePageIds() {
+        return EXCLUDE_PREF_PAGES;
     }
 
     private void startVersionChecker() {
