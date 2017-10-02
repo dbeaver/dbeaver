@@ -394,6 +394,7 @@ public class SQLQueryJob extends DataSourceJob
 
             // Execute statement
             try {
+                session.getProgressMonitor().subTask("Execute query");
                 boolean hasResultSet = dbcStatement.executeStatement();
                 curResult.setHasResultSet(hasResultSet);
                 statistics.addExecuteTime(System.currentTimeMillis() - startTime);
