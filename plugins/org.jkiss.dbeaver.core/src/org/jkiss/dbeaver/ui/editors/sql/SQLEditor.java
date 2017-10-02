@@ -2485,6 +2485,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         ServerOutputReader() {
             super("Dump server output");
+            setSystem(true);
         }
 
         @Override
