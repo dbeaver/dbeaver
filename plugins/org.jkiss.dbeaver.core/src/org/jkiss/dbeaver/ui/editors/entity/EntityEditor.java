@@ -219,6 +219,16 @@ public class EntityEditor extends MultiPageDatabaseEditor
         if (!isDirty()) {
             return;
         }
+        int previewResult = IDialogConstants.PROCEED_ID;
+        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW)) {
+            monitor.beginTask(CoreMessages.editors_entity_monitor_preview_changes, 1);
+            previewResult = showChanges(true);
+        }
+
+        if (previewResult != IDialogConstants.PROCEED_ID) {
+            monitor.setCanceled(true);
+            return;
+        }
 
         try {
             saveInProgress = true;
@@ -248,16 +258,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     private boolean saveCommandContext(final DBRProgressMonitor monitor)
     {
-        int previewResult = IDialogConstants.PROCEED_ID;
-        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW)) {
-            monitor.beginTask(CoreMessages.editors_entity_monitor_preview_changes, 1);
-            previewResult = showChanges(true);
-            monitor.done();
-        }
-
-        if (previewResult != IDialogConstants.PROCEED_ID) {
-            return true;
-        }
         monitor.beginTask("Save entity", 1);
         Throwable error = null;
         final DBECommandContext commandContext = getCommandContext();
