@@ -143,6 +143,11 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         }
     }
 
+    @Override
+    public void updateSelectionValue(Object value) {
+        updateValue(value, true);
+    }
+
     @Nullable
     @Override
     public DBDRowIdentifier getRowIdentifier()

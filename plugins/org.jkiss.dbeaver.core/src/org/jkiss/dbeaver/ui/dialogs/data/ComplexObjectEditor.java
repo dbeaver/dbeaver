@@ -443,6 +443,11 @@ public class ComplexObjectEditor extends TreeViewer {
         }
 
         @Override
+        public void updateSelectionValue(Object value) {
+            updateValue(value, true);
+        }
+
+        @Override
         public DBDValueHandler getValueHandler()
         {
             return valueHandler;
