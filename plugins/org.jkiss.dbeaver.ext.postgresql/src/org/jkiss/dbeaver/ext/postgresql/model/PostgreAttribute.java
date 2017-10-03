@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
@@ -82,7 +83,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         final long typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
         dataType = getTable().getDatabase().getDataType(typeId);
         if (dataType == null) {
-            throw new DBException("Attribute data type '" + typeId + "' not found");
+            log.error("Attribute data type '" + typeId + "' not found. Use " + PostgreConstants.TYPE_VARCHAR);
+            dataType = getTable().getDatabase().getDataType(PostgreConstants.TYPE_VARCHAR);
         }
         setTypeName(dataType.getTypeName());
         setValueType(dataType.getTypeID());
