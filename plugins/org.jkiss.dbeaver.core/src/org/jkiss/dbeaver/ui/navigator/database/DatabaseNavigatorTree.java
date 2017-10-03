@@ -212,7 +212,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                                 break;
                             case UNLOAD:
                                 treeViewer.collapseToLevel(event.getNode(), -1);
-                                treeViewer.refresh(getViewerObject(event.getNode()));
+                                treeViewer.update(getViewerObject(event.getNode()), null);
+                                treeViewer.collapseToLevel(event.getNode(), -1);
                                 break;
                             case REFRESH:
                                 treeViewer.refresh(getViewerObject(event.getNode()), true);
