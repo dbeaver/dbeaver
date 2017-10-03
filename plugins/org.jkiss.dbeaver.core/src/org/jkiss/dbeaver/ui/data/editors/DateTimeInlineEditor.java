@@ -66,6 +66,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
             "" :
             valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
         timeEditor.setValue(strValue);
+        timeEditor.selectAll();
     }
 
 }
