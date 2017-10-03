@@ -58,4 +58,8 @@ public class CustomTimeEditor {
     public Text getControl() {
         return timeEditor;
     }
+
+    public void selectAll() {
+        timeEditor.selectAll();
+    }
 }
