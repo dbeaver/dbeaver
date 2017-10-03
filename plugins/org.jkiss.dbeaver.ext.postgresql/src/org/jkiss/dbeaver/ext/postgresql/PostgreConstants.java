@@ -65,6 +65,7 @@ public class PostgreConstants {
     public static final DBDPseudoAttribute PSEUDO_ATTR_OID = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID, "oid",
         "oid", "oid", "Row identifier", false);
 
+    public static final String TYPE_VARCHAR = "varchar";
     public static final String TYPE_HSTORE = "hstore";
     public static final String TYPE_JSON = "json";
     public static final String TYPE_JSONB = "jsonb";
