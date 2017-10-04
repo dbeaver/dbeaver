@@ -21,14 +21,14 @@
 
 <plugin>
 
-    <extension point="org.eclipse.core.runtime.applications" id="standalone" name="DBeaver Standalone">
+    <extension point="org.eclipse.core.runtime.applications" id="standalone" name="%extension.standalone.name">
         <application visible="true">
             <run class="org.jkiss.dbeaver.core.application.DBeaverApplication"/>
         </application>
     </extension>
 
     <extension point="org.eclipse.core.runtime.products" id="product">
-        <product application="org.jkiss.dbeaver.core.application.standalone" description="%productSubTitle" name="DBeaver">
+        <product application="org.jkiss.dbeaver.core.application.standalone" description="%productSubTitle" name="%productName">
             <property name="aboutText" value="DBeaver - Universal Database Manager"/>
             <property name="copyright" value="%productCopyright"/>
             <property name="subTitle" value="%productSubTitle"/>
@@ -151,10 +151,10 @@
 
         <menuContribution allPopups="false" locationURI="menu:window?before=perspective">
             <separator name="perspective" visible="true"/>
-            <command commandId="org.eclipse.ui.window.customizePerspective" label="Customize Perspective"/>
+            <command commandId="org.eclipse.ui.window.customizePerspective" label="%command.org.eclipse.ui.window.customizePerspective.label"/>
             <command commandId="org.eclipse.ui.window.resetPerspective"/>
             <separator name="tabs" visible="true"/>
-            <menu label="Navigation">
+            <menu label="%menu.navigation">
                 <command commandId="org.eclipse.ui.navigate.nextTab"/>
                 <command commandId="org.eclipse.ui.navigate.previousTab"/>
                 <command commandId="org.eclipse.ui.navigate.nextSubTab"/>
@@ -240,7 +240,7 @@
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sqlexecute" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLExecute" name="%pref.page.name.sql.execute"/>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.completion" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLCompletion" name="%pref.page.name.sql.completion"/>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.format" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLFormat" name="%pref.page.name.sql.format"/>
-        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.templates" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLTemplates" name="Templates"/>
+        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.templates" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLTemplates" name="%pref.page.name.sql.templates"/>
 
         <page category="org.eclipse.ui.preferencePages.Editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="%pref.page.name.binary.editor">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.binary"/>
@@ -271,7 +271,7 @@
 
 
     <extension point="org.eclipse.ui.activities">
-        <activity id="hideE4Activity" name="MenuAndToolbarHidingActivity">
+        <activity id="hideE4Activity" name="%activity.hideE4Activity.name">
             <enabledWhen>
                 <with variable="activePartId">
                     <equals value="nonExistentPartId"/>
