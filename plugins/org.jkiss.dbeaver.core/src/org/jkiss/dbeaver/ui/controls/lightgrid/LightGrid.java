@@ -4272,7 +4272,7 @@ public abstract class LightGrid extends Canvas {
 
     private void addDragAndDropSupport()
     {
-        int operations = DND.DROP_MOVE;
+        final int operations = DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_LINK | DND.DROP_DEFAULT;
 
         final DragSource source = new DragSource(this, operations);
         source.setTransfer(new Transfer[] { GridColumnTransfer.INSTANCE });
@@ -4315,7 +4315,7 @@ public abstract class LightGrid extends Canvas {
             }
         });
 
-        DropTarget dropTarget = new DropTarget(this, DND.DROP_MOVE);
+        DropTarget dropTarget = new DropTarget(this, operations);
         dropTarget.setTransfer(new Transfer[] {GridColumnTransfer.INSTANCE});
         dropTarget.addDropListener(new DropTargetListener() {
             @Override
