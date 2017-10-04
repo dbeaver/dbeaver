@@ -130,21 +130,21 @@
                 </configuration>
             </plugin>
 
-<!--
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-maven-plugin</artifactId>
                 <version>${tycho-version}</version>
                 <extensions>true</extensions>
             </plugin>
--->
 
+<!--
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-versions-plugin</artifactId>
                 <version>${tycho-versions-version}</version>
                 <extensions>true</extensions>
             </plugin>
+-->
 
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
