@@ -495,9 +495,6 @@ public class SQLEditor extends SQLEditorBase implements
 
         createResultTabs();
 
-        // Update controls
-        onDataSourceChange();
-
         setAction(ITextEditorActionConstants.SHOW_INFORMATION, null);
         //toolTipAction.setEnabled(false);
 
@@ -505,6 +502,14 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Start output reader
         new ServerOutputReader().schedule();
+
+        DBeaverUI.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                // Update controls
+                onDataSourceChange();
+            }
+        });
     }
 
     private void createResultTabs()
