@@ -7,7 +7,7 @@ Bundle-Version: 4.2.2
 Bundle-Release-Date: 20171002
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.registry,
