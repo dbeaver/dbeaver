@@ -4359,7 +4359,9 @@ public abstract class LightGrid extends Canvas {
 
             private void handleDragEvent(DropTargetEvent event)
             {
-                event.detail = isDropSupported(event) ? event.detail : DND.DROP_NONE;
+                if (!isDropSupported(event)) {
+                    event.detail = DND.DROP_NONE;
+                }
                 event.feedback = DND.FEEDBACK_SELECT;
             }
 
