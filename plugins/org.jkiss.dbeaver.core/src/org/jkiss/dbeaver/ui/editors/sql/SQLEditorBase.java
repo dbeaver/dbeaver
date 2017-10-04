@@ -699,6 +699,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             int tokenOffset = ruleManager.getTokenOffset();
             int tokenLength = ruleManager.getTokenLength();
             int tokenType = token instanceof SQLToken ? ((SQLToken)token).getType() : SQLToken.T_UNKNOWN;
+            if (tokenOffset < startPos) {
+                // This may happen with EOF tokens (bug in jface?)
+                return null;
+            }
 
             boolean isDelimiter = tokenType == SQLToken.T_DELIMITER;
             boolean isControl = false;
