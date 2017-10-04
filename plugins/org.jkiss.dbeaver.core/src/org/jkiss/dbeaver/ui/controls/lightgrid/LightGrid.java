@@ -2778,8 +2778,8 @@ public abstract class LightGrid extends Canvas {
 
         if (isListening(SWT.DragDetect)) {
 
-            if (hoveringOnHeaderDragArea) {
-                if (e.button == 1 && (e.stateMask & SWT.MOD3) != 0) {
+            if (hoveringOnHeaderDragArea && hoveringColumn != null) {
+                if (e.button == 1 && hoveringColumn.isOverIcon(e.x, e.y)) {
                     if (dragDetect(e)) {
                         // Drag and drop started
                         headerColumnDragStarted = true;
@@ -4272,7 +4272,7 @@ public abstract class LightGrid extends Canvas {
 
     private void addDragAndDropSupport()
     {
-        final int operations = DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_LINK | DND.DROP_DEFAULT;
+        final int operations = DND.DROP_MOVE;//DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_LINK | DND.DROP_DEFAULT;
 
         final DragSource source = new DragSource(this, operations);
         source.setTransfer(new Transfer[] { GridColumnTransfer.INSTANCE });
@@ -4361,6 +4361,8 @@ public abstract class LightGrid extends Canvas {
             {
                 if (!isDropSupported(event)) {
                     event.detail = DND.DROP_NONE;
+                } else {
+                    event.detail = DND.DROP_MOVE;
                 }
                 event.feedback = DND.FEEDBACK_SELECT;
             }
