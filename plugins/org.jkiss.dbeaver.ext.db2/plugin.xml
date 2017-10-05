@@ -550,7 +550,7 @@
 
     <extension point="org.eclipse.ui.editors">
         <editor
-            name="Application Manager"
+            name="%editor.org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor.name"
             icon="icons/compile.png"
             class="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"
             id="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor">
