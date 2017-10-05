@@ -109,11 +109,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         syntaxManager = new SQLSyntaxManager();
         ruleManager = new SQLRuleManager(syntaxManager);
         themeListener = new IPropertyChangeListener() {
+            long lastUpdateTime = 0;
             @Override
             public void propertyChange(PropertyChangeEvent event)
             {
                 if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
                     event.getProperty().startsWith("org.jkiss.dbeaver.sql.editor")) {
+                    if (lastUpdateTime > 0 && System.currentTimeMillis() - lastUpdateTime < 500) {
+                        // Do not update too often (theme change may trigger this hundreds of times)
+                        return;
+                    }
+                    lastUpdateTime = System.currentTimeMillis();
                     reloadSyntaxRules();
                     // Reconfigure to let comments/strings colors to take effect
                     getSourceViewer().configure(getSourceViewerConfiguration());
