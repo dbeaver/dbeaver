@@ -135,12 +135,14 @@ class GridCellRenderer extends AbstractRenderer
                     break;
                 case IGridContentProvider.ALIGN_RIGHT:
                     // Right (numbers, datetimes)
+                    gc.setClipping(bounds);
                     Point textSize = gc.textExtent(text);
                     gc.drawString(
                             text,
                             bounds.x + bounds.width - (textSize.x + RIGHT_MARGIN),
                             bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
                             true);
+                    gc.setClipping((Rectangle) null);
                     break;
                 default:
                     gc.drawString(
