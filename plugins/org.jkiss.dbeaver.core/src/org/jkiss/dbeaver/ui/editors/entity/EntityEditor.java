@@ -407,7 +407,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 commandContext.getExecutionContext().getDataSource(),
                 command.getPersistActions(), false));
         }
-
+        if (script.length() == 0) {
+            return IDialogConstants.PROCEED_ID;
+        }
         ChangesPreviewer changesPreviewer = new ChangesPreviewer(script, allowSave);
         DBeaverUI.syncExec(changesPreviewer);
         return changesPreviewer.getResult();
