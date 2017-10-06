@@ -24,6 +24,7 @@
         <module>modules/org.jkiss.wmi</module>
 
         <module>plugins/org.jkiss.dbeaver.core</module>
+        <module>plugins/org.jkiss.dbeaver.ui</module>
         <module>plugins/org.jkiss.dbeaver.core.application</module>
         <module>plugins/org.jkiss.dbeaver.core.eclipse</module>
         <module>plugins/org.jkiss.dbeaver.ext.db2</module>

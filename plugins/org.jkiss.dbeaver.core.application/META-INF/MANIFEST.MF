@@ -26,4 +26,5 @@ Require-Bundle: org.eclipse.osgi,
  org.apache.commons.cli,
  org.w3c.css.sac,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.core
+ org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.ui

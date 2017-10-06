@@ -12,7 +12,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.ide,
  org.eclipse.ui.views,
  org.eclipse.gef,
- org.jkiss.dbeaver.core
+ org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.ui
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS
