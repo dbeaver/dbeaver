@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.perspective;
+package org.jkiss.dbeaver.internal.ui;
 
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
@@ -85,9 +85,9 @@ public class DBeaverPerspective implements IPerspectiveFactory
         bottomRight.addPlaceholder(IPageLayout.ID_BOOKMARKS);
 
         // Search views
-        bottomRight.addPlaceholder("org.eclipse.search.ui.views.SearchView");
-        bottomRight.addPlaceholder("org.jkiss.dbeaver.ui.search.DatabaseSearchView");
-        bottomRight.addPlaceholder("org.jkiss.dbeaver.core.shellProcess");
+        bottomRight.addPlaceholder("org.eclipse.search.ui.views.SearchView"); //$NON-NLS-1$
+        bottomRight.addPlaceholder("org.jkiss.dbeaver.ui.search.DatabaseSearchView"); //$NON-NLS-1$
+        bottomRight.addPlaceholder("org.jkiss.dbeaver.core.shellProcess"); //$NON-NLS-1$
 
         // Add view shortcuts
         layout.addShowViewShortcut(DatabaseNavigatorView.VIEW_ID);
