@@ -433,7 +433,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                 new SQLPartitionScanner(dialect),
                 SQLPartitionScanner.SQL_CONTENT_TYPES);
             partitioner.connect(document);
-            document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
+            try {
+                document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
+            } catch (Exception e) {
+                log.warn("Error setting SQL partitioner", e); //$NON-NLS-1$
+            }
 
             ProjectionViewer projectionViewer = (ProjectionViewer) getSourceViewer();
             if (projectionViewer != null && projectionViewer.getAnnotationModel() != null && document.getLength() > 0) {
