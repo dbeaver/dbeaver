@@ -431,11 +431,6 @@
                 <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
             </with>
         </definition>
-        <definition id="DBeaverPerspectiveActive">
-            <with variable="activeWorkbenchWindow.activePerspective">
-                <equals value="org.jkiss.dbeaver.core.perspective"/>
-            </with>
-        </definition>
         <definition id="org.jkiss.dbeaver.core.ui.navigator.part">
             <with variable="activePart">
                 <!--<instanceof value="org.jkiss.dbeaver.ui.navigator.INavigatorModelView"/>-->
@@ -2222,14 +2217,6 @@
               name="%context.org.jkiss.dbeaver.ui.editors.sql.name"
               parentId="org.eclipse.ui.textEditorScope">
         </context>
-    </extension>
-
-    <extension point="org.eclipse.ui.perspectives">
-        <perspective
-              class="org.jkiss.dbeaver.ui.perspective.DBeaverPerspective"
-              icon="icons/perspective.png"
-              id="org.jkiss.dbeaver.core.perspective"
-              name="%perspective.name"/>
     </extension>
 
     <extension point="org.eclipse.ui.editors">
