@@ -1394,7 +1394,7 @@ public class ResultSetViewer extends Viewer
         activePresentation.clearMetaData();
     }
 
-    void setData(List<Object[]> rows)
+    void setData(List<Object[]> rows, int focusRow)
     {
         if (viewerPanel.isDisposed()) {
             return;
@@ -1402,6 +1402,9 @@ public class ResultSetViewer extends Viewer
         this.curRow = null;
         this.model.setData(rows);
         this.curRow = (this.model.getRowCount() > 0 ? this.model.getRow(0) : null);
+        if (focusRow > 0 && focusRow < model.getRowCount()) {
+            this.curRow = model.getRow(focusRow);
+        }
 
         {
 
@@ -2434,6 +2437,7 @@ public class ResultSetViewer extends Viewer
             progressControl = (Composite) activePresentation.getControl();
         }
         final Object presentationState = savePresentationState();
+        dataReceiver.setFocusRow(focusRow);
         dataPumpJob = new ResultSetJobDataRead(
             dataContainer,
             useDataFilter,
@@ -2484,7 +2488,6 @@ public class ResultSetViewer extends Viewer
                                 if (!metadataChanged && focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
                                     // Seems to be refresh
                                     // Restore original position
-                                    curRow = model.getRow(focusRow);
                                     restorePresentationState(presentationState);
                                 }
                             }
