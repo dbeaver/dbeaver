@@ -435,7 +435,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             partitioner.connect(document);
             try {
                 document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 log.warn("Error setting SQL partitioner", e); //$NON-NLS-1$
             }
 
