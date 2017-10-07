@@ -973,7 +973,7 @@ public final class DBUtils {
         boolean scrollable) throws DBCException
     {
         DBCStatementType statementType = DBCStatementType.SCRIPT;
-        query = SQLUtils.makeUnifiedLineFeeds(query);
+        //query = SQLUtils.makeUnifiedLineFeeds(query);
         if (SQLUtils.isExecQuery(SQLUtils.getDialectFromObject(session.getDataSource()), query)) {
             statementType = DBCStatementType.EXEC;
         }
@@ -993,7 +993,7 @@ public final class DBUtils {
     {
         DBCStatementType statementType = DBCStatementType.QUERY;
         // Normalize query
-        query = SQLUtils.makeUnifiedLineFeeds(query);
+        //query = SQLUtils.makeUnifiedLineFeeds(query);
 
         if (SQLUtils.isExecQuery(SQLUtils.getDialectFromObject(session.getDataSource()), query)) {
             statementType = DBCStatementType.EXEC;
