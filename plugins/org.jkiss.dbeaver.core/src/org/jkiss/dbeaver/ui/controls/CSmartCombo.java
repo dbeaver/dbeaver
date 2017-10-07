@@ -49,7 +49,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private ITEM_TYPE selectedItem;
     private Label imageLabel;
     private Text text;
-    private Control dropDownControl;
+    private Table dropDownControl;
     private int visibleItemCount = 10;
     private int widthHint = SWT.DEFAULT;
     private Shell popup;
@@ -529,7 +529,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     }
 
     private void updateTableItems() {
-        Table table = (Table)dropDownControl;
+        Table table = dropDownControl;
         table.removeAll();
         createTableItems(table);
         table.setFocus();
@@ -571,9 +571,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             return;
         }
         if (!drop) {
-            if (!text.isDisposed()) {
-                text.setFocus();
-            }
             if (this.popup != null) {
                 final Shell toDispose = this.popup;
                 this.popup = null;
@@ -596,7 +593,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         Point size = getSize();
         int itemCount = this.items.size();
         itemCount = (itemCount == 0) ? this.visibleItemCount : Math.min(this.visibleItemCount, itemCount);
-        Table table = (Table)dropDownControl;
+        Table table = dropDownControl;
         int itemHeight = table.getItemHeight() * itemCount;
         Point listSize = table.computeSize(SWT.DEFAULT, itemHeight, false);
         if (tableFilter != null) {
@@ -680,7 +677,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 break;
             }
             case SWT.Selection: {
-                Table table = (Table)this.dropDownControl;
+                Table table = this.dropDownControl;
                 int index = table.getSelectionIndex();
                 if (index == -1) {
                     return;
@@ -784,6 +781,10 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     {
         switch (event.type) {
             case SWT.Dispose:
+                removeListener(SWT.Dispose, listener);
+                notifyListeners(SWT.Dispose, event);
+                event.type = SWT.None;
+
                 if (this.popup != null && !this.popup.isDisposed()) {
                     this.dropDownControl.removeListener(SWT.Dispose, this.listener);
                     this.popup.dispose();
