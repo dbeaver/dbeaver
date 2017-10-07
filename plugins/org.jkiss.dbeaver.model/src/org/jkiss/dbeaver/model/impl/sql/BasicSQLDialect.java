@@ -496,7 +496,7 @@ public class BasicSQLDialect implements SQLDialect {
             }
         } else if (dataKind == DBPDataKind.NUMERIC) {
             if (typeName.equals("DECIMAL") || typeName.equals("NUMERIC") || typeName.equals("NUMBER")) {
-                int scale = column.getScale();
+                Integer scale = column.getScale();
                 int precision = CommonUtils.toInt(column.getPrecision());
                 if (precision == 0) {
                     precision = (int) column.getMaxLength();
@@ -507,7 +507,7 @@ public class BasicSQLDialect implements SQLDialect {
                         //precision--; // One character for sign?
                     }
                 }
-                if (scale >= 0 && precision >= 0 && !(scale == 0 && precision == 0)) {
+                if (scale != null && scale >= 0 && precision >= 0 && !(scale == 0 && precision == 0)) {
                     return "(" + precision + ',' + scale + ')';
                 }
             } else if (typeName.equals("BIT")) {
