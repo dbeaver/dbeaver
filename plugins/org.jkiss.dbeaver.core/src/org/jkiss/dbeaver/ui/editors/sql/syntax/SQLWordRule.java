@@ -77,7 +77,7 @@ public class SQLWordRule implements IRule {
         }
         // Check for delimiter
         for (char[] wordDelimiter : delimiters) {
-            if (c == wordDelimiter[0]) {
+            if (!Character.isLetter(c) && c == wordDelimiter[0]) {
                 if (wordDelimiter.length == 1) {
                     return false;
                 }
