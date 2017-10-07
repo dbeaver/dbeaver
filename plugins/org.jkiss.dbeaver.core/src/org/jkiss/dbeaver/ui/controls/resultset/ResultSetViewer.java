@@ -1674,6 +1674,9 @@ public class ResultSetViewer extends Viewer
                         }
                     }
                     viewMenu.add(new CustomizeColorsAction(attr, row));
+                    if (getModel().hasColorMapping(getModel().getSingleSource())) {
+                        viewMenu.add(new ResetAllColorAction());
+                    }
                     viewMenu.add(new Separator());
                 }
                 viewMenu.add(new Action("Data formats ...") {
@@ -3347,6 +3350,22 @@ public class ResultSetViewer extends Viewer
         public void run() {
             final DBVEntity vEntity = getVirtualEntity(attribute);
             vEntity.removeColorOverride(attribute);
+            updateColors(vEntity);
+        }
+    }
+
+    private class ResetAllColorAction extends ColorAction {
+        ResetAllColorAction() {
+            super("Reset all colors");
+        }
+
+        @Override
+        public void run() {
+            final DBVEntity vEntity = getVirtualEntity(getModel().getAttributes()[0]);
+            if (!UIUtils.confirmAction("Reset all row coloring", "Are you sure you want to reset all color settings for '" + vEntity.getName() + "'?")) {
+                return;
+            }
+            vEntity.removeAllColorOverride();
             updateColors(vEntity);
         }
     }
