@@ -688,7 +688,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     @Override
     public void clearMetaData() {
         this.curAttribute = null;
-        this.columnOrder = SWT.NONE;
+        if (this.columnOrder != SWT.NONE) {
+            this.columnOrder = SWT.DEFAULT;
+        }
     }
 
     @Override
