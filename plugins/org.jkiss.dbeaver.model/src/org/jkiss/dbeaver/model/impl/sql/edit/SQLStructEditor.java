@@ -81,7 +81,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         for (Class childType : getChildTypes()) {
             Collection<? extends DBSObject> children = getChildObjects(monitor, object, childType);
             if (!CommonUtils.isEmpty(children)) {
-                SQLObjectEditor<DBSObject, CONTAINER_TYPE> nestedEditor = getObjectEditor(editorsRegistry, childType);
+                SQLObjectEditor<DBSObject, ?> nestedEditor = getObjectEditor(editorsRegistry, childType);
                 if (nestedEditor != null) {
                     for (DBSObject child : children) {
                         ObjectCreateCommand childCreateCommand = (ObjectCreateCommand) nestedEditor.makeCreateCommand(child);
