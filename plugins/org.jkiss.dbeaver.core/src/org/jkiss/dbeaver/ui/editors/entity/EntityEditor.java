@@ -914,25 +914,27 @@ public class EntityEditor extends MultiPageDatabaseEditor
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             try {
-                {
-                    // Save nested editors
-                    ProxyProgressMonitor proxyMonitor = new ProxyProgressMonitor(monitor);
-                    for (IEditorPart editor : editorMap.values()) {
-                        editor.doSave(proxyMonitor);
-                        if (monitor.isCanceled()) {
-                            return Status.CANCEL_STATUS;
-                        }
-                    }
-                    if (proxyMonitor.isCanceled()) {
-                        return Status.CANCEL_STATUS;
-                    }
-                }
-
                 final DBECommandContext commandContext = getCommandContext();
                 if (commandContext != null && commandContext.isDirty()) {
                     success = saveCommandContext(monitor);
                 } else {
                     success = true;
+                }
+
+                if (success) {
+                    // Save nested editors
+                    ProxyProgressMonitor proxyMonitor = new ProxyProgressMonitor(monitor);
+                    for (IEditorPart editor : editorMap.values()) {
+                        editor.doSave(proxyMonitor);
+                        if (monitor.isCanceled()) {
+                            success = false;
+                            return Status.CANCEL_STATUS;
+                        }
+                    }
+                    if (proxyMonitor.isCanceled()) {
+                        success = false;
+                        return Status.CANCEL_STATUS;
+                    }
                 }
 
                 return success ? Status.OK_STATUS : Status.CANCEL_STATUS;
