@@ -170,13 +170,13 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             hasAttr = false;
                             for (DBDAttributeBinding binding : keyAttributes) {
                                 if (hasAttr) sql.append(" AND ");
-                                sql.append(DBUtils.getObjectFullName(binding.getAttribute(), DBPEvaluationContext.DML)).append("=");
-                                appendAttributeValue(rsv, sql, binding, firstRow);
+                                appendValueCondition(rsv, sql, binding, firstRow);
                                 hasAttr = true;
                             }
                             sql.append(";\n");
                         }
                     }
+
                 }));
                 if (selectedRows.size() > 1) {
                     menu.add(makeAction("SELECT .. WHERE .. IN", new ResultSetAnalysisRunner(dataContainer.getDataSource(), rsv.getModel()) {
@@ -287,8 +287,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             hasAttr = false;
                             for (DBDAttributeBinding attr : keyAttributes) {
                                 if (hasAttr) sql.append(" AND ");
-                                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
-                                appendAttributeValue(rsv, sql, attr, firstRow);
+                                appendValueCondition(rsv, sql, attr, firstRow);
                                 hasAttr = true;
                             }
                             sql.append(";\n");
@@ -308,8 +307,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             boolean hasAttr = false;
                             for (DBDAttributeBinding binding : keyAttributes) {
                                 if (hasAttr) sql.append(" AND ");
-                                sql.append(DBUtils.getObjectFullName(binding.getAttribute(), DBPEvaluationContext.DML)).append("=");
-                                appendAttributeValue(rsv, sql, binding, firstRow);
+                                appendValueCondition(rsv, sql, binding, firstRow);
                                 hasAttr = true;
                             }
                             sql.append(";\n");
@@ -449,7 +447,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
     private abstract static class ResultSetAnalysisRunner extends BaseAnalysisRunner<ResultSetModel> {
 
-        protected ResultSetAnalysisRunner(DBPDataSource dataSource, ResultSetModel model)
+        ResultSetAnalysisRunner(DBPDataSource dataSource, ResultSetModel model)
         {
             super(Collections.singletonList(model));
         }
@@ -460,6 +458,17 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         protected Collection<? extends DBSAttributeBase> getAllAttributes(DBRProgressMonitor monitor, ResultSetModel object) throws DBException
         {
             return object.getVisibleAttributes();
+        }
+
+        void appendValueCondition(IResultSetController rsv, StringBuilder sql, DBDAttributeBinding binding, ResultSetRow firstRow) {
+            Object value = rsv.getModel().getCellValue(binding, firstRow);
+            sql.append(DBUtils.getObjectFullName(binding.getAttribute(), DBPEvaluationContext.DML));
+            if (DBUtils.isNullValue(value)) {
+                sql.append(" IS NULL");
+            } else {
+                sql.append("=");
+                appendAttributeValue(rsv, sql, binding, firstRow);
+            }
         }
 
         protected List<DBDAttributeBinding> getKeyAttributes(DBRProgressMonitor monitor, ResultSetModel object) throws DBException
