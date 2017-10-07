@@ -69,6 +69,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 List<SelectItem> selectItems = new ArrayList<>();
                 selectItems.add(new SelectExpressionItem(countFunc));
                 select.setSelectItems(selectItems);
+                select.setOrderByElements(null);
                 return new SQLQuery(dataSource, select.toString(), query, false);
             } else {
                 throw new DBException("Query [" + query.getText() + "] can't be modified");
