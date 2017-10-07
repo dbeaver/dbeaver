@@ -1201,6 +1201,7 @@ public class CoreMessages extends NLS {
 
 	public static String pref_page_sql_editor_group_resources;
 	public static String pref_page_sql_editor_group_misc;
+	public static String pref_page_results_group_advanced;
 	public static String pref_page_sql_editor_group_scripts;
 	public static String pref_page_sql_editor_group_parameters;
 	public static String pref_page_sql_editor_group_delimiters;
