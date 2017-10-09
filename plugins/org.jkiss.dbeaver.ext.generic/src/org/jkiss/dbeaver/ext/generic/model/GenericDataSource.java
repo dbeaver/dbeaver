@@ -496,7 +496,7 @@ public class GenericDataSource extends JDBCDataSource
                 } catch (Throwable e) {
                     // This method not supported (may be old driver version)
                     // Use general schema reading method
-                    log.debug("Error reading schemas in catalog '" + catalog.getName() + "' - " + e.getMessage());
+                    log.debug("Error reading schemas in catalog '" + catalog.getName() + "' - " + e.getClass().getSimpleName() + " - " + e.getMessage());
                 }
             }
             if (dbResult == null) {

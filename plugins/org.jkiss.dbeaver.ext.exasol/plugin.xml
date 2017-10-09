@@ -5,29 +5,29 @@
             point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
                 class="org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider"
-                description="Exasol Connector"
+                description="%datasource.exasol.description"
                 icon="icons/Exasol_icon.png"
                 id="exasol"
-                label="Exasol">
+                label="%datasource.exasol.label">
             <tree
-                    icon="icons/exasol_icon.png"
+                    icon="icons/Exasol_icon.png"
                     label="Exasol data source"
                     path="exasol">
                 <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema" label="%tree.schemas.node.name"
-                        icon="#folder_schemas" description="Schemas">
+                        icon="#folder_schemas" description="%tree.schemas.node.description">
                     <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
                         <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolTable" label="%tree.tables.node.name"
-                                icon="#folder_table" description="Tables">
+                                icon="#folder_table" description="%tree.tables.node.description">
                             <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
                                 <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn"
-                                        label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                        label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.description">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes"
                                            icon="#column">
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey"
                                         label="%tree.constraints.node.name" icon="#constraints"
-                                        description="Table constraints">
+                                        description="%tree.constraints.node.description">
                                     <items label="%tree.constraint.node.name" path="constraint" property="constraints"
                                            icon="#unique-key">
                                         <items label="%tree.constraint_columns.node.name" path="column"
@@ -37,7 +37,7 @@
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey"
                                         label="%tree.foreign_keys.node.name" icon="#foreign-keys"
-                                        description="Table foreign keys">
+                                        description="%tree.foreign_keys.node.description">
                                     <items label="%tree.foreign_key.node.name" path="association"
                                            property="associations" icon="#foreign-key">
                                         <items label="%tree.foreign_key_columns.node.name"
@@ -49,7 +49,7 @@
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolView" label="%tree.views.node.name"
-                                icon="#folder_view" description="Views">
+                                icon="#folder_view" description="%tree.views.node.description">
                             <items label="%tree.view.node.name" path="view" property="views" icon="#view">
                                 <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column"
                                        property="attributes" icon="#column">
@@ -57,12 +57,12 @@
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolScript" label="%tree.scripts.node.name"
-                                icon="#procedures" description="Scripts">
+                                icon="#procedures" description="%tree.scripts.node.description">
                             <items label="%tree.script.node.name" path="script" property="procedures" icon="#procedure">
                             </items>
                         </folder>
                         <folder
-                              description="Functions"
+                              description="%tree.functions.node.description"
                               icon="#procedures"
                               label="%tree.functions.node.name"
                               type="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction">
@@ -76,7 +76,7 @@
                     </items>
                 </folder>
                 <folder
-                      description="Database virtual schemas"
+                      description="%tree.virtualschemas.node.description"
                       icon="#folder_schema"
                       label="%tree.virtualschemas.node.name"
                       type="org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema"
@@ -87,7 +87,7 @@
                          path="virtualschema"
                          property="virtualSchemas">
                       <folder
-                            description="Tables"
+                            description="%tree.tables.node.description"
                             icon="#folder_table"
                             label="%tree.tables.node.name"
                             type="org.jkiss.dbeaver.ext.exasol.model.ExasolTable">
@@ -97,7 +97,7 @@
                                path="table"
                                property="tables">
                             <folder
-                                  description="Table columns"
+                                  description="%tree.columns.node.description"
                                   icon="#columns"
                                   label="%tree.columns.node.name"
                                   type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn">
@@ -109,7 +109,7 @@
                                </items>
                             </folder>
                             <folder
-                                  description="Table constraints"
+                                  description="%tree.constraints.node.description"
                                   icon="#constraints"
                                   label="%tree.constraints.node.name"
                                   type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey">
@@ -128,7 +128,7 @@
                                </items>
                             </folder>
                             <folder
-                                  description="Table foreign keys"
+                                  description="%tree.foreign_keys.node.description"
                                   icon="#foreign-keys"
                                   label="%tree.foreign_keys.node.name"
                                   type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey">
@@ -158,18 +158,18 @@
                    </items>
                 </folder>
                 <folder
-                      description="Maintenance/Settings"
+                      description="%tree.administer.node.description"
                       icon="#folder_admin"
                       label="%tree.administer.node.name"
                       visibleIf="object.dataSource.UserAuthorizedForSessions">
                     <object type="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSession"
                             label="%tree.sessions.node.name"
                             icon="#admin"
-                            description="Server Session manager"
+                            description="%tree.sessions.node.description"
                             editor="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
                             />
                     <object
-                          description="Server locks manager"
+                          description="%tree.locks.node.description"
                           editor="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor"
                           icon="#locks"
                           label="%tree.locks.node.name"
@@ -177,7 +177,7 @@
                     </object>
                 </folder>
                 <folder
-                      description="Connections"
+                      description="%tree.connections.node.description"
                       icon="#folder_connections"
                       label="%tree.connections.node.name"
                       type="org.jkiss.dbeaver.ext.exasol.model.ExasolConnection">
@@ -189,7 +189,7 @@
                    </items>
                 </folder>
                 <folder
-                      description="Users"
+                      description="%tree.users.node.description"
                       icon="#folder_user"
                       label="%tree.users.node.name"
                       type="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser">
@@ -256,7 +256,7 @@
                    </items>
                 </folder>
                 <folder
-                      description="Roles"
+                      description="%tree.roles.node.description"
                       icon="#folder_role"
                       label="%tree.roles.node.name"
                       type="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole"
@@ -326,11 +326,11 @@
             <drivers managable="true">
                 <driver
                         id="exasol"
-                        label="Exasol"
+                        label="%driver.exasol.label"
                         class="com.exasol.jdbc.EXADriver"
                         sampleURL="jdbc:exa:{host}[:{port}][;schema={database}]"
                         defaultPort="8563"
-                        description="Exasol JDBC driver"
+                        description="%driver.exasol.description"
                         webURL="https://www.exasol.com/portal/display/DOWNLOAD/EXASOL+Download+Section">
                    <file
                          path="maven:/com.exasol:exasol-jdbc:{.*5\.0\..*}"
@@ -406,10 +406,10 @@
         <editor
               class="org.jkiss.dbeaver.ext.exasol.editors.ExasolSourceViewEditor"
               contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
-              description="Source code"
+              description="%editor.exasol.source.view.description"
               icon="#sql_text"
               id="exasol.source.view"
-              label="Source"
+              label="%editor.exasol.source.view.label"
               position="additions_middle"
               type="folder">
            <objectType
@@ -457,13 +457,13 @@
     </extension>
     <extension point="org.eclipse.ui.editors">
         <editor
-                name="Application Manager"
+                name="%editor.org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor.name"
                 icon="icons/compile.png"
                 class="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
                 id="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor">
         </editor>
         <editor
-            name="Lock Manager"
+            name="%editor.org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor.name"
             class="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor"
             id="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor">
         </editor>
@@ -473,7 +473,7 @@
       <tools>
          <tool
                class="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolExportTableTool"
-               description="Export Tables, Views or Schemas to CSV"
+               description="%tool.org.jkiss.dbeaver.ext.exasol.table.export.description"
                id="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolExportTableTool"
                label="%tool.org.jkiss.dbeaver.ext.exasol.table.export.name">
             <objectType
@@ -488,7 +488,7 @@
          </tool>
          <tool
                class="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolImportTableTool"
-               description="Import Tables or Schemas from CSV"
+               description="%tool.org.jkiss.dbeaver.ext.exasol.table.import.description"
                id="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolImportTableTool"
                label="%tool.org.jkiss.dbeaver.ext.exasol.table.import.name">
             <objectType

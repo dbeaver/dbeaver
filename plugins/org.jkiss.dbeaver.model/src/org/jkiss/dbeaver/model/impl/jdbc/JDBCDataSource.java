@@ -278,6 +278,11 @@ public abstract class JDBCDataSource
         return dataSourceInfo;
     }
 
+    @Override
+    public Object getDataSourceFeature(String featureId) {
+        return null;
+    }
+
     @NotNull
     @Override
     public SQLDialect getSQLDialect() {

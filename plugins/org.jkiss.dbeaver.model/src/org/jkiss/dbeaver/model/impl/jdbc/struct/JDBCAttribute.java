@@ -32,8 +32,8 @@ public abstract class JDBCAttribute extends AbstractAttribute implements DBSObje
     {
     }
 
-    protected JDBCAttribute(String name, String typeName, int valueType, int ordinalPosition, long maxLength, int scale,
-                            int precision, boolean required, boolean sequence)
+    protected JDBCAttribute(String name, String typeName, int valueType, int ordinalPosition, long maxLength, Integer scale,
+                            Integer precision, boolean required, boolean sequence)
     {
         super(name, typeName, valueType, ordinalPosition, maxLength, scale, precision, required, sequence);
     }

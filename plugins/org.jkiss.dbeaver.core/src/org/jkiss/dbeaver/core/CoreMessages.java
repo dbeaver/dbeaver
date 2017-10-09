@@ -476,6 +476,10 @@ public class CoreMessages extends NLS {
 	public static String confirm_keep_statement_open_message;
 	public static String confirm_keep_statement_open_toggleMessage;
 
+	public static String confirm_dangerous_sql_title;
+	public static String confirm_dangerous_sql_message;
+	public static String confirm_dangerous_sql_toggleMessage;
+
 	public static String dialog_data_format_profiles_button_delete_profile;
 
 	public static String dialog_data_format_profiles_button_new_profile;
@@ -1197,6 +1201,7 @@ public class CoreMessages extends NLS {
 
 	public static String pref_page_sql_editor_group_resources;
 	public static String pref_page_sql_editor_group_misc;
+	public static String pref_page_results_group_advanced;
 	public static String pref_page_sql_editor_group_scripts;
 	public static String pref_page_sql_editor_group_parameters;
 	public static String pref_page_sql_editor_group_delimiters;

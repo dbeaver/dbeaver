@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchWindow;
 
 /**

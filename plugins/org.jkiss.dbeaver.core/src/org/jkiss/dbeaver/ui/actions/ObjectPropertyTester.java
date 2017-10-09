@@ -87,7 +87,7 @@ public class ObjectPropertyTester extends PropertyTester
                 }
                 DBNContainer container;
                 if (node instanceof DBNDataSource) {
-                    
+                    return true;
                 }
                 if (node instanceof DBNContainer) {
                     // Try to detect child type

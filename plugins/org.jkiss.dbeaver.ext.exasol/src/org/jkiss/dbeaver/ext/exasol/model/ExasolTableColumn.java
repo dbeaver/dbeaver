@@ -68,7 +68,7 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
         setRequired(! JDBCUtils.safeGetBoolean(dbResult, "COLUMN_IS_NULLABLE"));
         setDefaultValue(JDBCUtils.safeGetString(dbResult, "COLUMN_DEF"));
         setMaxLength(JDBCUtils.safeGetInt(dbResult, "COLUMN_SIZE"));
-        setScale(JDBCUtils.safeGetInt(dbResult, "DECIMAL_DIGITS"));
+        setScale(JDBCUtils.safeGetInteger(dbResult, "DECIMAL_DIGITS"));
         
 
         this.isInDistKey = JDBCUtils.safeGetBoolean(dbResult, "COLUMN_IS_DISTRIBUTION_KEY");
@@ -80,7 +80,7 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
 
         // drivers > 5 have the issue that a cast from decimal without scale is made to matching integer in sql
         // so meta data queries have to handle this case
-        if 	(tableBase.getDataSource().getDriverMajorVersion() > 5 && this.dataType.getName().equals("DECIMAL") && super.getScale() == 0)
+        if 	(tableBase.getDataSource().getDriverMajorVersion() > 5 && this.dataType.getName().equals("DECIMAL") && CommonUtils.toInt(super.getScale()) == 0)
         {
         	if (super.getMaxLength() <= 4) {
         		this.dataType = tableBase.getDataSource().getDataType(monitor,"SMALLINT");
@@ -167,12 +167,12 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
 
     @Override
     @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 39)
-    public int getScale() {
+    public Integer getScale() {
         return super.getScale();
     }
 
-    public void setScale(int scale) {
-        if (this.scale != scale)
+    public void setScale(Integer scale) {
+        if (!CommonUtils.equalObjects(this.scale, scale))
             this.changed = true;
         super.setScale(scale);
     }
@@ -194,11 +194,11 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
 
     @Override
     @Property(viewable = false, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 42)
-    public int getPrecision() {
+    public Integer getPrecision() {
         return super.getPrecision();
     }
 
-    public void setPrecision(int precision) {
+    public void setPrecision(Integer precision) {
         if (this.precision != precision)
             this.changed = true;
         super.precision = precision;

@@ -8,7 +8,7 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.model,
  org.jkiss.utils
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS
 Import-Package: org.eclipse.jface.text,
  org.eclipse.jface.text.rules

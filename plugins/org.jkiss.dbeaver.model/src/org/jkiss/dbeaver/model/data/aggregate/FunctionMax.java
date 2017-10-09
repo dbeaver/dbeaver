@@ -25,7 +25,8 @@ public class FunctionMax implements IAggregateFunction {
 
     @Override
     public boolean accumulate(Object value) {
-        if (value instanceof Comparable) {
+        value = FunctionNumeric.getComparable(value);
+        if (value != null) {
             if (result == null || AggregateUtils.compareValues((Comparable) value, result) > 0) {
                 result = (Comparable) value;
             }

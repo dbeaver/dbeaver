@@ -23,10 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.poi.ss.usermodel.BorderStyle;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -334,7 +331,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             if (CommonUtils.isEmpty(colName)) {
                 colName = column.getName();
             }
-            Cell cell = row.createCell(i + startCol);
+            Cell cell = row.createCell(i + startCol, CellType.STRING);
             cell.setCellValue(colName);
             cell.setCellStyle(styleHeader);
         }
@@ -397,16 +394,16 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
         if (rowNumber) {
 
-            Cell cell = rowX.createCell(startCol);
+            Cell cell = rowX.createCell(startCol, CellType.NUMERIC);
             cell.setCellStyle(style);
             cell.setCellValue(String.valueOf(wsh.getCurrentRow()));
             startCol++;
         }
 
         for (int i = 0; i < row.length; i++) {
-            Cell cell = rowX.createCell(i + startCol);
-            cell.setCellStyle(style);
             DBDAttributeBinding column = columns.get(i);
+            Cell cell = rowX.createCell(i + startCol, getCellType(column));
+            cell.setCellStyle(style);
 
             if (DBUtils.isNullValue(row[i])) {
                 if (!CommonUtils.isEmpty(nullString)) {
@@ -428,7 +425,11 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                 }
             } else if (row[i] instanceof Boolean) {
 
-                cell.setCellValue((Boolean) row[i] ? boolTrue : boolFalse);
+                cell.setCellValue((Boolean) row[i]);
+
+            } else if (row[i] instanceof Number) {
+
+                cell.setCellValue(((Number) row[i]).doubleValue());
 
             } else {
 
@@ -439,6 +440,19 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         }
         wsh.incRow();
 
+    }
+
+    private CellType getCellType(DBDAttributeBinding column) {
+        switch (column.getDataKind()) {
+            case NUMERIC:
+                return CellType.NUMERIC;
+            case BOOLEAN:
+                return CellType.BOOLEAN;
+            case STRING:
+                return CellType.STRING;
+            default:
+                return CellType.BLANK;
+        }
     }
 
     @Override

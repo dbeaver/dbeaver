@@ -31,6 +31,7 @@ public class SQLDelimiterRule implements IRule {
     private final IToken token;
     private char[][] delimiters, origDelimiters;
     private char[] buffer, origBuffer;
+
     public SQLDelimiterRule(String[] delimiters, IToken token) {
         this.token = token;
         this.origDelimiters = this.delimiters = new char[delimiters.length][];
@@ -44,6 +45,10 @@ public class SQLDelimiterRule implements IRule {
             index++;
         }
         this.origBuffer = this.buffer = new char[maxLength];
+    }
+
+    public char[][] getDelimiters() {
+        return delimiters;
     }
 
     @Override

@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-        id="org.jkiss.dbeaver.rcp.feature" label="RCP" version="2.1.39">
+      id="org.jkiss.dbeaver.rcp.feature"
+      label="%featureName"
+      version="2.1.40"
+      provider-name="%providerName">
 
-    <description>
-        Feature for standalone DBeaver RCP
-    </description>
+   <description>
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
 
         <plugin id="com.ibm.icu.base" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
         <plugin id="javax.annotation" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -110,22 +121,28 @@
         <!-- OS dependent -->
 
         <plugin id="org.eclipse.core.resources.win32.x86" os="win32" arch="x86" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+<!--
         <plugin id="org.eclipse.core.filesystem.aix.ppc" os="aix" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
         <plugin id="org.eclipse.core.filesystem.hpux.ia64" os="hpux" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+-->
         <plugin id="org.eclipse.core.filesystem.linux.x86" os="linux" arch="x86" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
         <plugin id="org.eclipse.core.filesystem.linux.x86_64" os="linux" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
         <plugin id="org.eclipse.core.filesystem.macosx" os="macosx" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
         <plugin id="org.eclipse.core.filesystem.win32.x86" os="win32" arch="x86" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
         <plugin id="org.eclipse.core.filesystem.win32.x86_64" os="win32" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
         <plugin id="org.eclipse.swt.cocoa.macosx.x86_64" os="macosx" ws="cocoa" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+<!--
         <plugin id="org.eclipse.swt.gtk.aix.ppc" os="aix" ws="gtk" arch="ppc" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
         <plugin id="org.eclipse.swt.gtk.aix.ppc64" os="aix" ws="gtk" arch="ppc64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
         <plugin id="org.eclipse.swt.gtk.hpux.ia64" os="hpux" ws="gtk" arch="ia64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
         <plugin id="org.eclipse.swt.gtk.linux.ppc64" os="linux" ws="gtk" arch="ppc64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
         <plugin id="org.eclipse.swt.gtk.linux.s390" os="linux" ws="gtk" arch="s390" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+-->
         <plugin id="org.eclipse.swt.gtk.linux.x86" os="linux" ws="gtk" arch="x86" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
         <plugin id="org.eclipse.swt.gtk.linux.x86_64" os="linux" ws="gtk" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+<!--
         <plugin id="org.eclipse.swt.gtk.solaris.x86_64" os="solaris" ws="gtk" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+-->
         <plugin id="org.eclipse.swt.win32.win32.x86" os="win32" ws="win32" arch="x86" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
         <plugin id="org.eclipse.swt.win32.win32.x86_64" os="win32" ws="win32" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
 

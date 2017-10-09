@@ -250,10 +250,13 @@ public class SQLQueryJob extends DataSourceJob
                             txnManager.commit(session);
                             monitor.done();
                         }
-                    } else {
+                    } else if (errorHandling == SQLScriptErrorHandling.STOP_ROLLBACK) {
                         monitor.beginTask("Rollback data", 1);
                         txnManager.rollback(session, null);
                         monitor.done();
+                    } else {
+                        // Just ignore error
+                        log.info("Script executed with errors. Changes were not commmitted.");
                     }
                 }
 
@@ -391,6 +394,7 @@ public class SQLQueryJob extends DataSourceJob
 
             // Execute statement
             try {
+                session.getProgressMonitor().subTask("Execute query");
                 boolean hasResultSet = dbcStatement.executeStatement();
                 curResult.setHasResultSet(hasResultSet);
                 statistics.addExecuteTime(System.currentTimeMillis() - startTime);
@@ -568,7 +572,7 @@ public class SQLQueryJob extends DataSourceJob
         for (int i = parameters.size(); i > 0; i--) {
             SQLQueryParameter parameter = parameters.get(i - 1);
             String paramValue = parameter.getValue();
-            if (paramValue.isEmpty()) {
+            if (paramValue == null || paramValue.isEmpty()) {
                 paramValue = SQLConstants.NULL_VALUE;
             }
             query = query.substring(0, parameter.getTokenOffset()) + paramValue + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());

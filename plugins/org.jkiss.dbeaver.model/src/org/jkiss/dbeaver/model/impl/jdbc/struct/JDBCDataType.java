@@ -126,7 +126,7 @@ public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
     }
 
     @Override
-    public int getScale()
+    public Integer getScale()
     {
         return minScale;
     }
@@ -142,7 +142,7 @@ public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
     }
 
     @Override
-    public int getPrecision()
+    public Integer getPrecision()
     {
         return precision;
     }

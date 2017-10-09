@@ -22,21 +22,25 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * PostgreIndex
  */
-public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase> implements DBPHiddenObject
+public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase> implements DBPScriptObject, DBPHiddenObject
 {
     private long indexId;
     private boolean isUnique;
@@ -52,6 +56,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     private long amId;
 
     private transient boolean isHidden;
+    private transient String indexDDL;
 
     public PostgreIndex(DBRProgressMonitor monitor, PostgreTableBase parent, String indexName, ResultSet dbResult) throws DBException {
         super(
@@ -198,6 +203,21 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     @Override
     public boolean isHidden() {
         return isHidden;
+    }
+
+    @Override
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
+    {
+        if (indexDDL == null && isPersisted()) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read index definition")) {
+                indexDDL = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_indexdef(?)", indexId);
+            } catch (SQLException e) {
+                throw new DBException(e, getDataSource());
+            }
+            indexDDL = SQLUtils.formatSQL(getDataSource(), indexDDL);
+        }
+        return indexDDL;
     }
 
     @Override

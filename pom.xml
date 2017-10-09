@@ -9,13 +9,13 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>4.2.1</dbeaver-version>
+        <dbeaver-version>4.2.2</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.0.0</tycho-version>
         <tycho-versions-version>0.26.0</tycho-versions-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
-        <eclipse-p2-repo.url>http://download.eclipse.org/releases/neon/</eclipse-p2-repo.url>
+        <eclipse-p2-repo.url>http://download.eclipse.org/releases/oxygen/</eclipse-p2-repo.url>
         <local-p2-repo.url>https://dbeaver.jkiss.org/eclipse-repo</local-p2-repo.url>
     </properties>
 
@@ -24,6 +24,7 @@
         <module>modules/org.jkiss.wmi</module>
 
         <module>plugins/org.jkiss.dbeaver.core</module>
+        <module>plugins/org.jkiss.dbeaver.ui</module>
         <module>plugins/org.jkiss.dbeaver.core.application</module>
         <module>plugins/org.jkiss.dbeaver.core.eclipse</module>
         <module>plugins/org.jkiss.dbeaver.ext.db2</module>
@@ -119,11 +120,13 @@
                             <ws>cocoa</ws>
                             <arch>x86_64</arch>
                         </environment>
+<!--
                         <environment>
                             <os>solaris</os>
                             <ws>gtk</ws>
                             <arch>x86_64</arch>
                         </environment>
+-->
                     </environments>
                 </configuration>
             </plugin>
@@ -149,8 +152,8 @@
                 <artifactId>tycho-compiler-plugin</artifactId>
                 <version>${tycho-version}</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                     <compilerArgument>-warn:+discouraged,forbidden</compilerArgument>
                 </configuration>
             </plugin>

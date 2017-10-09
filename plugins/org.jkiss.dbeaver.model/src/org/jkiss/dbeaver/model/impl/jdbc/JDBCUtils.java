@@ -704,10 +704,10 @@ public class JDBCUtils {
             return;
         }
         for (String inc : CommonUtils.safeCollection(filter.getInclude())) {
-            statement.setString(paramIndex++, inc);
+            statement.setString(paramIndex++, SQLUtils.makeSQLLike(inc));
         }
         for (String exc : CommonUtils.safeCollection(filter.getExclude())) {
-            statement.setString(paramIndex++, exc);
+            statement.setString(paramIndex++, SQLUtils.makeSQLLike(exc));
         }
     }
 

@@ -18,9 +18,10 @@ package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericDataType;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.meta.Property;
 
-public class FireBirdDataType extends GenericDataType {
+public class FireBirdDataType extends GenericDataType implements DBPSystemObject {
 
     private final FireBirdFieldType fieldType;
     private final int subType;
@@ -55,6 +56,16 @@ public class FireBirdDataType extends GenericDataType {
 
         this.fieldType = fieldType;
         this.subType = 0;
+    }
+
+    @Override
+    public DBPDataKind getDataKind() {
+        if (fieldType == FireBirdFieldType.CHAR &&
+            (FireBirdConstants.CHARSET_OCTETS.equals(charsetName) || FireBirdConstants.CHARSET_BINARY.equals(charsetName)))
+        {
+            return DBPDataKind.BINARY;
+        }
+        return super.getDataKind();
     }
 
     @Property(order = 70)
@@ -102,4 +113,8 @@ public class FireBirdDataType extends GenericDataType {
         return notNull;
     }
 
+    @Override
+    public boolean isSystem() {
+        return getTypeName().contains("$");    // [JDBC: Firebird]
+    }
 }

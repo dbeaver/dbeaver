@@ -49,6 +49,11 @@ public interface DBPDataSource extends DBSInstance
     DBPDataSourceInfo getInfo();
 
     /**
+     * Data source feature
+     */
+    Object getDataSourceFeature(String featureId);
+
+    /**
      * Reads base metadata from remote database or do any necessarily initialization routines.
      * @throws DBException on any DB error
      * @param monitor progress monitor

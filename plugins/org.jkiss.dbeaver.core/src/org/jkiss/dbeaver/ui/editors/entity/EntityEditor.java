@@ -219,6 +219,16 @@ public class EntityEditor extends MultiPageDatabaseEditor
         if (!isDirty()) {
             return;
         }
+        int previewResult = IDialogConstants.PROCEED_ID;
+        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW)) {
+            monitor.beginTask(CoreMessages.editors_entity_monitor_preview_changes, 1);
+            previewResult = showChanges(true);
+        }
+
+        if (previewResult != IDialogConstants.PROCEED_ID) {
+            monitor.setCanceled(true);
+            return;
+        }
 
         try {
             saveInProgress = true;
@@ -248,16 +258,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     private boolean saveCommandContext(final DBRProgressMonitor monitor)
     {
-        int previewResult = IDialogConstants.PROCEED_ID;
-        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW)) {
-            monitor.beginTask(CoreMessages.editors_entity_monitor_preview_changes, 1);
-            previewResult = showChanges(true);
-            monitor.done();
-        }
-
-        if (previewResult != IDialogConstants.PROCEED_ID) {
-            return true;
-        }
         monitor.beginTask("Save entity", 1);
         Throwable error = null;
         final DBECommandContext commandContext = getCommandContext();
@@ -407,7 +407,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 commandContext.getExecutionContext().getDataSource(),
                 command.getPersistActions(), false));
         }
-
+        if (script.length() == 0) {
+            return IDialogConstants.PROCEED_ID;
+        }
         ChangesPreviewer changesPreviewer = new ChangesPreviewer(script, allowSave);
         DBeaverUI.syncExec(changesPreviewer);
         return changesPreviewer.getResult();
@@ -912,25 +914,27 @@ public class EntityEditor extends MultiPageDatabaseEditor
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             try {
-                {
-                    // Save nested editors
-                    ProxyProgressMonitor proxyMonitor = new ProxyProgressMonitor(monitor);
-                    for (IEditorPart editor : editorMap.values()) {
-                        editor.doSave(proxyMonitor);
-                        if (monitor.isCanceled()) {
-                            return Status.CANCEL_STATUS;
-                        }
-                    }
-                    if (proxyMonitor.isCanceled()) {
-                        return Status.CANCEL_STATUS;
-                    }
-                }
-
                 final DBECommandContext commandContext = getCommandContext();
                 if (commandContext != null && commandContext.isDirty()) {
                     success = saveCommandContext(monitor);
                 } else {
                     success = true;
+                }
+
+                if (success) {
+                    // Save nested editors
+                    ProxyProgressMonitor proxyMonitor = new ProxyProgressMonitor(monitor);
+                    for (IEditorPart editor : editorMap.values()) {
+                        editor.doSave(proxyMonitor);
+                        if (monitor.isCanceled()) {
+                            success = false;
+                            return Status.CANCEL_STATUS;
+                        }
+                    }
+                    if (proxyMonitor.isCanceled()) {
+                        success = false;
+                        return Status.CANCEL_STATUS;
+                    }
                 }
 
                 return success ? Status.OK_STATUS : Status.CANCEL_STATUS;

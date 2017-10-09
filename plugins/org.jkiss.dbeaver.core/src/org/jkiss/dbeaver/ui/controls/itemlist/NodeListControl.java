@@ -303,12 +303,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                 // Add or remove - just reload list content
                 loadData(false);
             } else {
-                DBeaverUI.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        getItemsViewer().update(event.getNode(), null);
-                    }
-                });
+                getItemsViewer().update(event.getNode(), null);
             }
         }
     }

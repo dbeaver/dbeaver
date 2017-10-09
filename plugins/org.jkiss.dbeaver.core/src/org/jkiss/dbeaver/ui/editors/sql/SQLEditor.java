@@ -86,6 +86,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -494,13 +495,21 @@ public class SQLEditor extends SQLEditorBase implements
 
         createResultTabs();
 
-        // Update controls
-        onDataSourceChange();
-
         setAction(ITextEditorActionConstants.SHOW_INFORMATION, null);
         //toolTipAction.setEnabled(false);
 
         CoreFeatures.SQL_EDITOR_OPEN.use();
+
+        // Start output reader
+        new ServerOutputReader().schedule();
+
+        DBeaverUI.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                // Update controls
+                onDataSourceChange();
+            }
+        });
     }
 
     private void createResultTabs()
@@ -1075,6 +1084,28 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
 
+        final boolean isSingleQuery = (queries.size() == 1);
+        if (isSingleQuery && queries.get(0) instanceof SQLQuery) {
+            SQLQuery query = (SQLQuery) queries.get(0);
+            if (query.isDeleteUpdateDangerous()) {
+                String targetName = "multiple tables";
+                if (query.getSingleSource() != null) {
+                    targetName = query.getSingleSource().getEntityName();
+                }
+                if (ConfirmationDialog.showConfirmDialogEx(
+                    getSite().getShell(),
+                    DBeaverPreferences.CONFIRM_DANGER_SQL,
+                    ConfirmationDialog.CONFIRM,
+                    ConfirmationDialog.WARNING,
+                    query.getType().name(),
+                    targetName) != IDialogConstants.OK_ID)
+                {
+                    return;
+                }
+            }
+        }
+
+
         if (sashForm.getMaximizedControl() != null) {
             sashForm.setMaximizedControl(null);
         }
@@ -1083,8 +1114,6 @@ public class SQLEditor extends SQLEditorBase implements
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) && isDirty()) {
             doSave(new NullProgressMonitor());
         }
-
-        final boolean isSingleQuery = (queries.size() == 1);
 
         if (!newTab || !isSingleQuery) {
             // We don't need new tab or we are executing a script - so close all extra tabs
@@ -1195,15 +1224,13 @@ public class SQLEditor extends SQLEditorBase implements
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
         }
-        for (QueryProcessor queryProcessor : queryProcessors) {
-            for (QueryResultsContainer resultsProvider : queryProcessor.getResultContainers()) {
-                ResultSetViewer rsv = resultsProvider.getResultSetController();
-                if (rsv != null) {
-                    if (executionContext == null) {
-                        rsv.setStatus(CoreMessages.editors_sql_status_not_connected_to_database);
-                    } else {
-                        rsv.setStatus(CoreMessages.editors_sql_staus_connected_to + executionContext.getDataSource().getContainer().getName() + "'"); //$NON-NLS-2$
-                    }
+        if (curResultsContainer != null) {
+            ResultSetViewer rsv = curResultsContainer.getResultSetController();
+            if (rsv != null) {
+                if (executionContext == null) {
+                    rsv.setStatus(CoreMessages.editors_sql_status_not_connected_to_database);
+                } else {
+                    rsv.setStatus(CoreMessages.editors_sql_staus_connected_to + executionContext.getDataSource().getContainer().getName() + "'"); //$NON-NLS-2$
                 }
             }
         }
@@ -2213,6 +2240,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         private void processQueryResult(DBCSession session, SQLQueryResult result) {
+            dumpServerOutput(result);
             if (!scriptMode) {
                 runPostExecuteActions(result);
             }
@@ -2363,7 +2391,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void runPostExecuteActions(@Nullable SQLQueryResult result) {
+    private void dumpServerOutput(@Nullable SQLQueryResult result) {
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
             final DBPDataSource dataSource = executionContext.getDataSource();
@@ -2373,8 +2401,17 @@ public class SQLEditor extends SQLEditorBase implements
                 outputReader = new DefaultServerOutputReader(result);
             }
             if (outputReader != null && outputReader.isServerOutputEnabled()) {
-                dumpServerOutput(executionContext, outputReader);
+                synchronized (serverOutputs) {
+                    serverOutputs.add(new ServerOutputInfo(outputReader, executionContext));
+                }
             }
+        }
+    }
+
+    private void runPostExecuteActions(@Nullable SQLQueryResult result) {
+        final DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext != null) {
+            final DBPDataSource dataSource = executionContext.getDataSource();
             // Refresh active object
             if (result == null || !result.hasError() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)) {
                 final DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
@@ -2393,41 +2430,6 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         }
-    }
-
-    private void dumpServerOutput(@NotNull final DBCExecutionContext executionContext, @NotNull final DBCServerOutputReader outputReader) {
-        new AbstractJob("Dump server output") {
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                final StringWriter dump = new StringWriter();
-                try {
-                    outputReader.readServerOutput(monitor, executionContext, new PrintWriter(dump, true));
-                    final String dumpString = dump.toString();
-                    if (!dumpString.isEmpty()) {
-                        DBeaverUI.asyncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (outputViewer.isDisposed()) {
-                                    return;
-                                }
-                                try {
-                                    IOUtils.copyText(new StringReader(dumpString), outputViewer.getOutputWriter());
-                                } catch (IOException e) {
-                                    log.error(e);
-                                }
-                                if (outputViewer.isHasNewOutput()) {
-                                    outputViewer.scrollToEnd();
-                                    updateOutputViewerIcon(true);
-                                }
-                            }
-                        });
-                    }
-                } catch (Exception e) {
-                    log.error(e);
-                }
-                return Status.OK_STATUS;
-            }
-        }.schedule();
     }
 
     private void updateOutputViewerIcon(boolean alert) {
@@ -2467,6 +2469,74 @@ public class SQLEditor extends SQLEditorBase implements
             } finally {
                 if (success == null) {
                     success = true;
+                }
+            }
+        }
+    }
+
+    private static class ServerOutputInfo {
+        private final DBCServerOutputReader outputReader;
+        private final DBCExecutionContext executionContext;
+
+        ServerOutputInfo(DBCServerOutputReader outputReader, DBCExecutionContext executionContext) {
+            this.outputReader = outputReader;
+            this.executionContext = executionContext;
+        }
+    }
+
+    private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
+
+    private class ServerOutputReader extends AbstractJob {
+
+        ServerOutputReader() {
+            super("Dump server output");
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            dumpOutput(monitor);
+
+            if (!DBeaverCore.isClosing()) {
+                schedule(200);
+            }
+
+            return Status.OK_STATUS;
+        }
+
+        private void dumpOutput(DBRProgressMonitor monitor) {
+            List<ServerOutputInfo> outputs;
+            synchronized (serverOutputs) {
+                outputs = new ArrayList<>(serverOutputs);
+                serverOutputs.clear();
+            }
+
+            for (ServerOutputInfo info : outputs) {
+                final StringWriter dump = new StringWriter();
+                try {
+                    info.outputReader.readServerOutput(monitor, info.executionContext, new PrintWriter(dump, true));
+                    final String dumpString = dump.toString();
+                    if (!dumpString.isEmpty()) {
+                        DBeaverUI.asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (outputViewer.isDisposed()) {
+                                    return;
+                                }
+                                try {
+                                    IOUtils.copyText(new StringReader(dumpString), outputViewer.getOutputWriter());
+                                } catch (IOException e) {
+                                    log.error(e);
+                                }
+                                if (outputViewer.isHasNewOutput()) {
+                                    outputViewer.scrollToEnd();
+                                    updateOutputViewerIcon(true);
+                                }
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    log.error(e);
                 }
             }
         }

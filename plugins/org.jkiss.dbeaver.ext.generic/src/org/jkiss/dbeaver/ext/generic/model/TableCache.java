@@ -143,8 +143,8 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
         String typeName = GenericUtils.safeGetStringTrimmed(columnObject, dbResult, JDBCConstants.TYPE_NAME);
         long columnSize = GenericUtils.safeGetLong(columnObject, dbResult, JDBCConstants.COLUMN_SIZE);
         boolean isNotNull = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.columnNoNulls;
-        int scale = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.DECIMAL_DIGITS);
-        int precision = 0;//GenericUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_);
+        Integer scale = GenericUtils.safeGetInteger(columnObject, dbResult, JDBCConstants.DECIMAL_DIGITS);
+        Integer precision = null;
         if (valueType == Types.NUMERIC || valueType == Types.DECIMAL) {
             precision = (int) columnSize;
         }

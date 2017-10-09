@@ -243,7 +243,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     }
 
     @Override
-    public int getPrecision()
+    public Integer getPrecision()
     {
         if (typeDesc.precision != null) {
             return typeDesc.precision;
@@ -339,7 +339,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
     @Override
     @Property(viewable = true, editable = false, order = 6)
-    public int getScale()
+    public Integer getScale()
     {
         return scale;
     }

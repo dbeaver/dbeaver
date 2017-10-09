@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
@@ -32,7 +33,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 
@@ -83,7 +83,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         final long typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
         dataType = getTable().getDatabase().getDataType(typeId);
         if (dataType == null) {
-            throw new DBException("Attribute data type '" + typeId + "' not found");
+            log.error("Attribute data type '" + typeId + "' not found. Use " + PostgreConstants.TYPE_VARCHAR);
+            dataType = getTable().getDatabase().getDataType(PostgreConstants.TYPE_VARCHAR);
         }
         setTypeName(dataType.getTypeName());
         setValueType(dataType.getTypeID());
@@ -153,14 +154,14 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Override
     @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 22)
-    public int getPrecision()
+    public Integer getPrecision()
     {
         return super.getPrecision();
     }
 
     @Override
     @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 23)
-    public int getScale()
+    public Integer getScale()
     {
         return super.getScale();
     }

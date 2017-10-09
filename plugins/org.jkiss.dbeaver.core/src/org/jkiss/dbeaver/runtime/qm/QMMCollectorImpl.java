@@ -51,7 +51,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private List<Long> closedSessions = new ArrayList<>();
 
     // External listeners
-    private List<QMMetaListener> listeners = new ArrayList<>();
+    private final List<QMMetaListener> listeners = new ArrayList<>();
 
     // Temporary event pool
     private List<QMMetaEvent> eventPool = new ArrayList<>();
@@ -79,9 +79,11 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
                 log.warn("Some sessions are still open: " + openSessions);
             }
         }
-        if (!listeners.isEmpty()) {
-            log.warn("Some QM meta collector listeners are still open: " + listeners);
-            listeners.clear();
+        synchronized (listeners) {
+            if (!listeners.isEmpty()) {
+                log.warn("Some QM meta collector listeners are still open: " + listeners);
+                listeners.clear();
+            }
         }
         running = false;
     }
@@ -98,27 +100,33 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         return "Meta info collector";
     }
 
-    public synchronized void addListener(QMMetaListener listener)
+    public void addListener(QMMetaListener listener)
     {
-        listeners.add(listener);
-    }
-
-    public synchronized void removeListener(QMMetaListener listener)
-    {
-        if (!listeners.remove(listener)) {
-            log.warn("Listener '" + listener + "' is not registered in QM meta collector");
+        synchronized (listeners) {
+            listeners.add(listener);
         }
     }
 
-    private synchronized List<QMMetaListener> getListeners()
+    public void removeListener(QMMetaListener listener)
     {
-        if (listeners.isEmpty()) {
-            return Collections.emptyList();
+        synchronized (listeners) {
+            if (!listeners.remove(listener)) {
+                log.warn("Listener '" + listener + "' is not registered in QM meta collector");
+            }
         }
-        if (listeners.size() == 1) {
-            return Collections.singletonList(listeners.get(0));
+    }
+
+    private List<QMMetaListener> getListeners()
+    {
+        synchronized (listeners) {
+            if (listeners.isEmpty()) {
+                return Collections.emptyList();
+            }
+            if (listeners.size() == 1) {
+                return Collections.singletonList(listeners.get(0));
+            }
+            return new ArrayList<>(listeners);
         }
-        return new ArrayList<>(listeners);
     }
 
     private synchronized void fireMetaEvent(final QMMObject object, final QMMetaEvent.Action action)

@@ -141,7 +141,10 @@ public class SQLSyntaxManager {
         String extraDelimiters = preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
         StringTokenizer st = new StringTokenizer(extraDelimiters, " \t,");
         while (st.hasMoreTokens()) {
-            this.statementDelimiters = ArrayUtils.add(String.class, this.statementDelimiters, st.nextToken());
+            String delim = st.nextToken();
+            if (!ArrayUtils.contains(this.statementDelimiters, delim)) {
+                this.statementDelimiters = ArrayUtils.add(String.class, this.statementDelimiters, delim);
+            }
         }
         blankLineDelimiter = preferenceStore.getBoolean(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK);
 

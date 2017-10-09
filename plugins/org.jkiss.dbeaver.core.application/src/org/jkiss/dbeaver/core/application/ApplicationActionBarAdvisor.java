@@ -31,9 +31,9 @@ import org.eclipse.ui.internal.registry.IActionSetDescriptor;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.application.about.AboutBoxAction;
+import org.jkiss.dbeaver.core.application.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.core.application.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.actions.common.EmergentExitAction;
 import org.jkiss.dbeaver.ui.actions.common.ExternalPageAction;
@@ -76,6 +76,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         "org.eclipse.ui.edit.text.actionSet.annotationNavigation", //$NON-NLS-1$
         //"org.eclipse.ui.NavigateActionSet", //$NON-NLS-1$
         //"org.eclipse.search.searchActionSet" //$NON-NLS-1$
+        "org.eclipse.mylyn.tasks.ui.navigation",
     };
 
 
@@ -94,6 +95,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             }
         }
     }
+
     protected boolean isShowAltHelp() {
         return true;
     }
@@ -231,19 +233,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     protected void fillCoolBar(ICoolBarManager coolBar)
     {
         coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.LEFT), IActionConstants.TOOLBAR_DATABASE));
-
-/*
-        // Use CommandAction here as a workaround. Otherwise FORCE_TEXT mode just ignored by Eclipse 4.2+
-        // TODO: remove all manual mapping when it will be fixed by Eclipse - https://bugs.eclipse.org/bugs/show_bug.cgi?id=399065
-        ToolBarManager txnToolbar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
-        txnToolbar.add(ActionUtils.makeActionContribution(new CommandAction(PlatformUI.getWorkbench(), CoreCommands.CMD_COMMIT), true));
-        txnToolbar.add(ActionUtils.makeActionContribution(new CommandAction(PlatformUI.getWorkbench(), CoreCommands.CMD_ROLLBACK), true));
-        coolBar.add(new ToolBarContributionItem(txnToolbar, IActionConstants.TOOLBAR_TXN));
-*/
         coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_TXN));
         coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_EDIT));
         //coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_DATASOURCE));
-
     }
 
     @Override

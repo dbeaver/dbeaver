@@ -29,6 +29,9 @@ public class DBeaverCommandLine
     public static final String PARAM_THREAD_DUMP = "dump";
     public static final String PARAM_CONNECT = "con";
 
+    public static final String PARAM_CLOSE_TABS = "closeTabs";
+    public static final String PARAM_DISCONNECT_ALL = "disconnectAll";
+
     public final static Options ALL_OPTIONS = new Options()
         .addOption(PARAM_HELP, false, "Help")
 
@@ -36,6 +39,8 @@ public class DBeaverCommandLine
         .addOption(PARAM_STOP, "quit", false, "Stop DBeaver running instance")
         .addOption(PARAM_THREAD_DUMP, "thread-dump", false, "Print instance thread dump")
         .addOption(PARAM_CONNECT, "connect", true, "Connects to a specified database")
+        .addOption(PARAM_DISCONNECT_ALL, "disconnectAll", false, "Disconnect from all databases")
+        .addOption(PARAM_CLOSE_TABS, "closeTabs", false, "Close all open editors")
 
         // Eclipse options
         .addOption("product", true, "Product id")

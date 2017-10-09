@@ -356,16 +356,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             if (newObject != getObject()) {
                 reloadObject(monitor, newObject);
             }
-            if (reflect) model.fireNodeUpdate(source, this, DBNEvent.NodeChange.LOCK);
 
             this.reloadChildren(monitor, reflect);
 
             if (reflect) model.fireNodeUpdate(source, this, DBNEvent.NodeChange.REFRESH);
         } finally {
             this.locked = false;
-
-            // Unlock node
-            if (reflect) model.fireNodeUpdate(source, this, DBNEvent.NodeChange.UNLOCK);
         }
     }
 

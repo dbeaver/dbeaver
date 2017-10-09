@@ -92,12 +92,14 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
     @Override
     protected String getDropConstraintPattern(OracleTableConstraint constraint)
     {
-        String clause;
+        String clause = "CONSTRAINT"; //$NON-NLS-1$;
+/*
         if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
             clause = "PRIMARY KEY"; //$NON-NLS-1$
         } else {
             clause = "CONSTRAINT"; //$NON-NLS-1$
         }
+*/
         return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 

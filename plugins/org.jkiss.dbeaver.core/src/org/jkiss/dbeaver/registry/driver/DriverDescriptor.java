@@ -1475,9 +1475,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     String version = atts.getValue(RegistryConstants.ATTR_VERSION);
                     DBPDriverLibrary lib = curDriver.getDriverLibrary(path);
                     if (!custom && lib == null) {
-                        // This is predefined library from some previous version - as it wasn't defined in plugin.xml
+                        // Perhaps this library isn't included in driver bundle
+                        // Or this is predefined library from some previous version - as it wasn't defined in plugin.xml
                         // so let's just skip it
-                        log.debug("Skip obsolete custom library '" + path + "'");
+                        //log.debug("Skip obsolete custom library '" + path + "'");
                         return;
                     }
                     String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);

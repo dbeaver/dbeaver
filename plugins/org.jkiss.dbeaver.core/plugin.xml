@@ -19,38 +19,38 @@
   -->
 
 <plugin>
-    <extension-point id="org.jkiss.dbeaver.pluginService" name="Plugin service" schema="schema/org.jkiss.dbeaver.pluginService.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.mavenRepository" name="Maven repositories config" schema="schema/org.jkiss.dbeaver.mavenRepository.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataSourceProvider" name="DataSource provider" schema="schema/org.jkiss.dbeaver.dataSourceProvider.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.databaseEditor" name="Custom Entity Editor" schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataManager" name="Data managers" schema="schema/org.jkiss.dbeaver.dataManager.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataTransfer" name="Data Transfer Provider" schema="schema/org.jkiss.dbeaver.dataTransfer.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataFormatter" name="Data Formatters" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.aggregateFunction" name="Aggregate Functions" schema="schema/org.jkiss.dbeaver.aggregateFunction.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sqlCommand" name="SQL script commands" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.resourceHandler" name="Resource Handlers" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.networkHandler" name="Network Handlers" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.resources" name="Resources" schema="schema/org.jkiss.dbeaver.resources.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="Result set presentations" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.resultset.panel" name="Result set panels" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sql.covert" name="SQL text conversions" schema="schema/org.jkiss.dbeaver.sql.convert.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.tools" name="Tools" schema="schema/org.jkiss.dbeaver.tools.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.product.bundles" name="Product bundles" schema="schema/org.jkiss.dbeaver.product.bundles.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="Workbench handlers" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.pluginService" name="%extension-point.org.jkiss.dbeaver.pluginService.name" schema="schema/org.jkiss.dbeaver.pluginService.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.mavenRepository" name="%extension-point.org.jkiss.dbeaver.mavenRepository.name" schema="schema/org.jkiss.dbeaver.mavenRepository.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataSourceProvider" name="%extension-point.org.jkiss.dbeaver.dataSourceProvider.name" schema="schema/org.jkiss.dbeaver.dataSourceProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.databaseEditor" name="%extension-point.org.jkiss.dbeaver.databaseEditor.name" schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="%extension-point.org.jkiss.dbeaver.dataTypeProvider.name" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataManager" name="%extension-point.org.jkiss.dbeaver.dataManager.name" schema="schema/org.jkiss.dbeaver.dataManager.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataTransfer" name="%extension-point.org.jkiss.dbeaver.dataTransfer.name" schema="schema/org.jkiss.dbeaver.dataTransfer.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataFormatter" name="%extension-point.org.jkiss.dbeaver.dataFormatter.name" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.aggregateFunction" name="%extension-point.org.jkiss.dbeaver.aggregateFunction.name" schema="schema/org.jkiss.dbeaver.aggregateFunction.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlCommand" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resourceHandler" name="%extension-point.org.jkiss.dbeaver.resourceHandler.name" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.networkHandler" name="%extension-point.org.jkiss.dbeaver.networkHandler.name" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resources" name="%extension-point.org.jkiss.dbeaver.resources.name" schema="schema/org.jkiss.dbeaver.resources.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="%extension-point.org.jkiss.dbeaver.resultset.presentation.name" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resultset.panel" name="%extension-point.org.jkiss.dbeaver.resultset.panel.name" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sql.covert" name="%extension-point.org.jkiss.dbeaver.sql.covertname" schema="schema/org.jkiss.dbeaver.sql.convert.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.tools" name="%extension-point.org.jkiss.dbeaver.tools.name" schema="schema/org.jkiss.dbeaver.tools.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.product.bundles" name="%extension-point.org.jkiss.dbeaver.product.bundles.name" schema="schema/org.jkiss.dbeaver.product.bundles.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="%extension-point.org.jkiss.dbeaver.workbenchHandler.name" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
               base-type="org.eclipse.core.runtime.text"
               file-extensions="sql"
               id="org.jkiss.dbeaver.sql"
-              name="SQL Script"
+              name="%content-type.org.jkiss.dbeaver.sql.name"
               priority="high"
               describer="org.jkiss.dbeaver.ui.editors.sql.SQLContentTypeDescriber"/>
         <content-type
             file-extensions="bm"
             id="org.jkiss.dbeaver.bookmark"
-            name="Bookmark"
+            name="%content-type.org.jkiss.dbeaver.bookmark.name"
             priority="normal"
             describer="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarkContentTypeDescriber"/>
     </extension>
@@ -143,7 +143,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.views">
-        <category id="org.jkiss.dbeaver.core.category" name="Database"/>
+        <category id="org.jkiss.dbeaver.core.category" name="%category.org.jkiss.dbeaver.core.category.name"/>
         <view
                 id="org.jkiss.dbeaver.core.databaseNavigator"
                 category="org.jkiss.dbeaver.core.category"
@@ -187,6 +187,13 @@
                 allowMultiple="true"
                 icon="icons/sql/page_data_grid.png"
                 name="%view.sql.results.title"/>
+        <view
+                id="org.jkiss.dbeaver.core.databaseOutput"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.views.DatabaseOutputView"
+                allowMultiple="false"
+                icon="icons/sql/page_output.png"
+                name="%view.database.output.title"/>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
@@ -308,9 +315,9 @@
 
         <command id="org.jkiss.dbeaver.core.process.stop" name="%command.org.jkiss.dbeaver.core.process.stop.name" description="%command.org.jkiss.dbeaver.core.process.stop.description" categoryId="org.jkiss.dbeaver.core.util"/>
 
-        <command id="org.jkiss.dbeaver.ui.editors.text.content.format" name="Content Format" description="Format SQL text" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.text.content.format" name="%command.org.jkiss.dbeaver.ui.editors.text.content.format.name" description="%command.org.jkiss.dbeaver.ui.editors.text.content.format.description" categoryId="org.jkiss.dbeaver.core.sql"/>
 
-        <command id="org.jkiss.dbeaver.ui.tools.menu" name="Context tools" description="Shows context menu with database tools" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.ui.tools.menu" name="%command.org.jkiss.dbeaver.ui.tools.menu.name" description="%command.org.jkiss.dbeaver.ui.tools.menu.description" categoryId="org.jkiss.dbeaver.core.database"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -422,11 +429,6 @@
         <definition id="org.jkiss.dbeaver.core.ui.querylog.view">
             <with variable="activePart">
                 <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
-            </with>
-        </definition>
-        <definition id="DBeaverPerspectiveActive">
-            <with variable="activeWorkbenchWindow.activePerspective">
-                <equals value="org.jkiss.dbeaver.core.perspective"/>
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.navigator.part">
@@ -1660,7 +1662,7 @@
 
         <!-- Database toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
-            <toolbar id="dbeaver-general" label="Database Toolbar">
+            <toolbar id="dbeaver-general" label="%toolbar.dbeaver-general.label">
                 <command commandId="org.jkiss.dbeaver.core.new.connection"/>
                 <separator name="sql-tools" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.connect"/>
@@ -1672,12 +1674,12 @@
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
                 <separator name="additions" visible="false"/>
             </toolbar>
-            <toolbar id="dbeaver-transactions" label="Transactions">
+            <toolbar id="dbeaver-transactions" label="%toolbar.dbeaver-transactions.label">
                 <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
-                <command commandId="org.jkiss.dbeaver.core.commit" label="Commit" style="push" mode="FORCE_TEXT">
+                <command commandId="org.jkiss.dbeaver.core.commit" label="%command.org.jkiss.dbeaver.core.commit.label" style="push" mode="FORCE_TEXT">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
-                <command commandId="org.jkiss.dbeaver.core.rollback" label="Rollback" style="push" mode="FORCE_TEXT">
+                <command commandId="org.jkiss.dbeaver.core.rollback" label="%command.org.jkiss.dbeaver.core.rollbacklabel" style="push" mode="FORCE_TEXT">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_auto.png" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn">
@@ -1685,7 +1687,7 @@
                 </command>
             </toolbar>
 
-            <toolbar id="dbeaver-transaction-monitor" label="Transaction monitor">
+            <toolbar id="dbeaver-transaction-monitor" label="%toolbar.dbeaver-transaction-monitor.label">
                 <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 <control class="org.jkiss.dbeaver.ui.controls.txn.TransactionMonitorToolbar$ToolbarContribution">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
@@ -1694,7 +1696,7 @@
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
             </toolbar>
-            <toolbar id="dbeaver-datasource-selector" label="DataSource Selector">
+            <toolbar id="dbeaver-datasource-selector" label="%toolbar.dbeaver-datasource-selector.label">
                 <control class="org.jkiss.dbeaver.ui.perspective.DataSourceManagementToolbar$ToolbarContribution">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </control>
@@ -1706,7 +1708,7 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-            <toolbar id="dbeaver-edit" label="Edit actions">
+            <toolbar id="dbeaver-edit" label="%toolbar.dbeaver-edit.label">
                 <command commandId="org.eclipse.ui.file.save"/>
                 <command commandId="org.eclipse.ui.file.revert" icon="icons/file/reset.png"/>
                 <command commandId="org.eclipse.ui.edit.undo"/>
@@ -1721,7 +1723,7 @@
             <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
             <command commandId="org.jkiss.dbeaver.core.new.connection"/>
             <separator name="projects" visible="true"/>
-            <menu label="Active Project" commandId="org.jkiss.dbeaver.core.project.select">
+            <menu label="%menu.org.jkiss.dbeaver.core.project.select.label" commandId="org.jkiss.dbeaver.core.project.select">
                 <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorActiveProjectContributor"/>
             </menu>
             <command commandId="org.jkiss.dbeaver.core.new.folder"/>
@@ -1829,7 +1831,7 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
 
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.create" label="Create SQL script">
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.create" label="%command.org.jkiss.dbeaver.core.sql.editor.create.label">
                 <visibleWhen>
                     <with variable="selection">
                         <count value="1"/>
@@ -1871,7 +1873,7 @@
             <command commandId="org.eclipse.ui.edit.rename">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <menu label="Filter" icon="icons/misc/filter.png">
+            <menu label="%menu.filter.label" icon="icons/misc/filter.png">
                 <command commandId="org.jkiss.dbeaver.core.object.filter.add.exclude">
                     <visibleWhen checkEnabled="true"/>
                 </command>
@@ -2044,7 +2046,7 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.additions">
-            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute" label="Execute" icon="icons/sql/sql_exec.png">
+            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute.label" icon="icons/sql/sql_exec.png">
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
@@ -2056,7 +2058,7 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
             </menu>
-            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file" label="File">
+            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file.label">
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.rename"/>
                 <command commandId="org.eclipse.ui.file.revert"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"/>
@@ -2064,7 +2066,7 @@
             </menu>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.extras">
-            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout" label="Layout">
+            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.label">
                 <dynamic id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.resultSet.orientation" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor$ResultSetOrientationMenuContributor"/>
                 <separator name="layout_toggles" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
@@ -2073,7 +2075,7 @@
             </menu>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=group.copy">
-            <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="Advanced copy"/>
+            <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="%command.org.jkiss.dbeaver.core.edit.copy.special.label"/>
         </menuContribution>
 
         <!-- QM menu & toolbar -->
@@ -2109,7 +2111,7 @@
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.txn.log">
             <command commandId="org.jkiss.dbeaver.core.txn.log"/>
             <command commandId="org.jkiss.dbeaver.core.txn.pending"/>
-            <command commandId="org.eclipse.ui.views.showView" icon="icons/misc/qm.png" label="Query Manager" style="push">
+            <command commandId="org.eclipse.ui.views.showView" icon="icons/misc/qm.png" label="%command.org.eclipse.ui.views.showView.label" style="push">
                 <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.core.queryManager"/>
             </command>
         </menuContribution>
@@ -2198,31 +2200,23 @@
         <context
               id="org.jkiss.dbeaver.ui.context.navigator"
               parentId="org.eclipse.ui.contexts.window"
-              name="Database navigator context"
-              description="Database navigator context"/>
+              name="%context.org.jkiss.dbeaver.ui.context.navigator.name"
+              description="%context.org.jkiss.dbeaver.ui.context.navigator.description"/>
         <context
                 id="org.jkiss.dbeaver.ui.context.resultset"
                 parentId="org.eclipse.ui.contexts.window"
-                name="Results viewer context"
-                description="Results viewer context"/>
+                name="%context.org.jkiss.dbeaver.ui.context.resultset.name"
+                description="%context.org.jkiss.dbeaver.ui.context.resultset.description"/>
         <context
                 id="org.jkiss.dbeaver.ui.context.resultset.edit"
                 parentId="org.jkiss.dbeaver.ui.context.resultset"
-                name="Results edit context"
-                description="Results edit context"/>
+                name="%context.org.jkiss.dbeaver.ui.context.resultset.edit.name"
+                description="%context.org.jkiss.dbeaver.ui.context.resultset.edit.description"/>
         <context
               id="org.jkiss.dbeaver.ui.editors.sql"
-              name="SQL Editor Context"
+              name="%context.org.jkiss.dbeaver.ui.editors.sql.name"
               parentId="org.eclipse.ui.textEditorScope">
         </context>
-    </extension>
-
-    <extension point="org.eclipse.ui.perspectives">
-        <perspective
-              class="org.jkiss.dbeaver.ui.perspective.DBeaverPerspective"
-              icon="icons/perspective.png"
-              id="org.jkiss.dbeaver.core.perspective"
-              name="%perspective.name"/>
     </extension>
 
     <extension point="org.eclipse.ui.editors">
@@ -2264,7 +2258,7 @@
             global="false"
             id="org.jkiss.dbeaver.ui.editors.columns.script.position"
             includeInMenu="true"
-            name="Script position">
+            name="%column.org.jkiss.dbeaver.ui.editors.columns.script.position.name">
             <placement gravity="0.9"/>
             <targetClass class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase"/>
         </column>
@@ -2277,7 +2271,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
-        <page id="org.jkiss.dbeaver.preferences.main.resultset" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetMain" name="Result Sets">
+        <page id="org.jkiss.dbeaver.preferences.main.resultset" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetMain" name="%page.org.jkiss.dbeaver.preferences.main.resultset.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
@@ -2286,7 +2280,7 @@
                 </or>
             </enabledWhen>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.binaries" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetBinaries" name="Binaries">
+        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.binaries" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetBinaries" name="%page.org.jkiss.dbeaver.preferences.main.resultset.binaries.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
@@ -2295,7 +2289,7 @@
                 </or>
             </enabledWhen>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.presentation" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetPresentation" name="Presentation">
+        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.presentation" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetPresentation" name="%page.org.jkiss.dbeaver.preferences.main.resultset.presentation.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
@@ -2304,7 +2298,7 @@
                 </or>
             </enabledWhen>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.dataformat" class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat" name="Data Formats">
+        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.dataformat" class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat" name="%page.org.jkiss.dbeaver.preferences.main.dataformat.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
@@ -2314,7 +2308,7 @@
                 </or>
             </enabledWhen>
         </page>
-        <page id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnections" name="Connections">
+        <page id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnections" name="%page.org.jkiss.dbeaver.preferences.main.connections.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
@@ -2322,7 +2316,7 @@
                 </or>
             </enabledWhen>
         </page>
-        <page id="org.jkiss.dbeaver.preferences.main.meta" class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData" name="Metadata">
+        <page id="org.jkiss.dbeaver.preferences.main.meta" class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData" name="%page.org.jkiss.dbeaver.preferences.main.meta.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
@@ -2331,7 +2325,7 @@
                 </or>
             </enabledWhen>
         </page>
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageEntityEditor" id="org.jkiss.dbeaver.preferences.main.entityeditor" name="Database Editor">
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageEntityEditor" id="org.jkiss.dbeaver.preferences.main.entityeditor" name="%page.org.jkiss.dbeaver.preferences.main.entityeditor.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
@@ -2339,7 +2333,7 @@
                 </or>
             </enabledWhen>
         </page>
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" id="org.jkiss.dbeaver.preferences.main.sqleditor" name="SQL Editor">
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" id="org.jkiss.dbeaver.preferences.main.sqleditor" name="%page.org.jkiss.dbeaver.preferences.main.sqleditor.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
@@ -2348,7 +2342,7 @@
                 </or>
            </enabledWhen>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.completion" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLCompletion" name="SQL Completion / Folding">
+        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.completion" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLCompletion" name="%page.org.jkiss.dbeaver.preferences.main.sql.completion.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
@@ -2357,7 +2351,7 @@
                 </or>
             </enabledWhen>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.format" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLFormat" name="SQL Formatting">
+        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.format" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLFormat" name="%page.org.jkiss.dbeaver.preferences.main.sql.format.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
@@ -2366,7 +2360,7 @@
                 </or>
             </enabledWhen>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sqlexecute" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLExecute" name="SQL Processing">
+        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sqlexecute" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLExecute" name="%page.org.jkiss.dbeaver.preferences.main.sqlexecute.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
@@ -2375,7 +2369,7 @@
                 </or>
             </enabledWhen>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLTemplates" id="org.jkiss.dbeaver.preferences.main.sql.templates" name="Templates">
+        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLTemplates" id="org.jkiss.dbeaver.preferences.main.sql.templates" name="%page.org.jkiss.dbeaver.preferences.main.sql.templates.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
@@ -2384,17 +2378,17 @@
                 </or>
             </enabledWhen>
         </page>
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager" id="org.jkiss.dbeaver.preferences.main.qm" name="Query Manager">
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager" id="org.jkiss.dbeaver.preferences.main.qm" name="%page.org.jkiss.dbeaver.preferences.main.qm.name">
            <enabledWhen>
               <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
            </enabledWhen>
         </page>
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.connectionTypes" name="Connection Types">
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.connectionTypes" name="%page.org.jkiss.dbeaver.preferences.connectionTypes.name">
             <enabledWhen>
                 <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
             </enabledWhen>
         </page>
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectSettings" id="org.jkiss.dbeaver.preferences.projectSettings" name="DBeaver Settings">
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectSettings" id="org.jkiss.dbeaver.preferences.projectSettings" name="%page.org.jkiss.dbeaver.preferences.projectSettings.name">
             <enabledWhen>
                 <adapt type="org.eclipse.core.resources.IProject">
                     <test property="org.eclipse.core.resources.projectNature" value="org.jkiss.dbeaver.DBeaverNature"/>
@@ -2436,220 +2430,220 @@
     </extension>
 
     <extension point="org.eclipse.ui.themes">
-        <themeElementCategory label="SQL Editor" id="org.jkiss.dbeaver.ui.presentation.sql">
-            <description>SQL Editor</description>
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.label" id="org.jkiss.dbeaver.ui.presentation.sql">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.description</description>
         </themeElementCategory>
-        <themeElementCategory label="Database Query Results" id="org.jkiss.dbeaver.ui.presentation.results">
-            <description>SQL Editor</description>
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.results.label" id="org.jkiss.dbeaver.ui.presentation.results">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.results.description</description>
         </themeElementCategory>
-        <fontDefinition id="org.jkiss.dbeaver.sql.resultset.font" categoryId="org.jkiss.dbeaver.ui.presentation.results" label="Results grid font">
-            <description>The grid font is used for result set cells, header and rows number.</description>
+        <fontDefinition id="org.jkiss.dbeaver.sql.resultset.font" categoryId="org.jkiss.dbeaver.ui.presentation.results" label="%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.label">
+            <description>%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.description</description>
         </fontDefinition>
         <fontDefinition
                 id="org.jkiss.dbeaver.sql.editor.font.output"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                label="SQL output font"
+                label="%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.label"
                 value="Courier New-regular-10">
-            <description>Font to show SQL output. Preferred to be a monospace font.</description>
+            <description>%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.description</description>
             <fontValue os="linux" value="Monospace-regular-10"/>
             <fontValue os="macosx" value="Courier-regular-11"/>
         </fontDefinition>
         <colorDefinition
-                label="Selection background"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.selection.background"
                 value="COLOR_LIST_SELECTION">
-            <description>Selection background</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.description</description>
         </colorDefinition>
         <colorDefinition
-                label="Selection foreground"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.selection.foreground"
                 value="COLOR_LIST_SELECTION_TEXT">
-            <description>Selection foreground</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="Odd row background"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.odd.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.cell.odd.background"
                 value="219, 229, 241">
-            <description>Odd row background</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.odd.background.description</description>
         </colorDefinition>
         <colorDefinition
-                label="Value editor background"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.preview.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.preview.background"
                 value="255,255,225">
-            <description>Value editor background</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.preview.background.description</description>
         </colorDefinition>
         <colorDefinition
-                label="Modified cell background"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.modified.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.cell.modified.background"
                 value="255, 228, 181">
-            <description>Modified cell background</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.modified.background.description</description>
         </colorDefinition>
         <colorDefinition
-                label="New row background"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.new.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.cell.new.background"
                 value="228, 255, 181">
-            <description>New row background</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.new.background.description</description>
         </colorDefinition>
         <colorDefinition
-                label="Deleted row background"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background"
                 value="255, 99, 71">
-            <description>Deleted row background</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background.description</description>
         </colorDefinition>
         <colorDefinition
-                label="Read-only cell background"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background"
                 value="245, 245, 245">
-            <description>Read-only cell background</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background.description</description>
         </colorDefinition>
         <colorDefinition
-                label="Matched (find/replace) row background"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.matched.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.cell.matched.background"
                 value="255, 215, 00">
-            <description>New row background</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.matched.background.description</description>
         </colorDefinition>
         <colorDefinition
-                label="Grid lines color"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.lines.normal.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.lines.normal"
                 value="240, 240, 240">
-            <description>Lines color</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.lines.normal.description</description>
         </colorDefinition>
         <colorDefinition
-                label="Grid selected lines color"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.lines.selected.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.lines.selected"
                 value="105, 105, 105">
-            <description>Selected lines color</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.lines.selected.description</description>
         </colorDefinition>
         <colorDefinition
-                label="Grid header background"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.header.background"
                 value="COLOR_WIDGET_BACKGROUND">
-            <description>Grid header background</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.background.description</description>
         </colorDefinition>
         <colorDefinition
-                label="Grid header foreground"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.header.foreground"
                 value="COLOR_LIST_FOREGROUND">
-            <description>Grid header foreground</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="Grid selected header background"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.selected.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.header.selected.background"
                 value="COLOR_LIST_SELECTION">
-            <description>Grid header background</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.selected.background.description</description>
         </colorDefinition>
         <colorDefinition
-                label="Grid NULL value foreground"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.null.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.null.foreground"
                 value="COLOR_WIDGET_NORMAL_SHADOW">
-            <description>Grid NULL value foreground</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.null.foreground.description</description>
         </colorDefinition>
 
         <colorDefinition
-                label="SQL keyword color"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.keyword.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
                 id="org.jkiss.dbeaver.sql.editor.color.keyword.foreground"
                 value="COLOR_DARK_RED">
-            <description>SQL keyword color</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.keyword.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="SQL datatype color"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.datatype.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
                 id="org.jkiss.dbeaver.sql.editor.color.datatype.foreground"
                 value="COLOR_DARK_BLUE">
-            <description>SQL datatype color</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.datatype.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="SQL string color"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.string.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
                 id="org.jkiss.dbeaver.sql.editor.color.string.foreground"
                 value="COLOR_DARK_GREEN">
-            <description>SQL string color</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.string.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="SQL number color"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.number.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
                 id="org.jkiss.dbeaver.sql.editor.color.number.foreground"
                 value="COLOR_BLUE">
-            <description>SQL number color</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.number.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="SQL comment color"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.comment.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
                 id="org.jkiss.dbeaver.sql.editor.color.comment.foreground"
                 value="COLOR_DARK_GRAY">
-            <description>SQL comment color</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.comment.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="SQL delimiter foreground"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.delimiter.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
                 id="org.jkiss.dbeaver.sql.editor.color.delimiter.foreground"
                 value="COLOR_RED">
-            <description>SQL statement delimiter foreground</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.delimiter.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="SQL command foreground"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.command.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
                 id="org.jkiss.dbeaver.sql.editor.color.command.foreground"
                 value="COLOR_DARK_MAGENTA">
-            <description>Control command foreground</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.command.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="SQL parameter foreground"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.parameter.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
                 id="org.jkiss.dbeaver.sql.editor.color.parameter.foreground"
                 value="COLOR_DARK_BLUE">
-            <description>SQL parameter (?, :param, etc) foreground</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.parameter.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="SQL text foreground"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.text.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
                 id="org.jkiss.dbeaver.sql.editor.color.text.foreground"
                 value="COLOR_BLACK">
-            <description>SQL text foreground</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.text.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="SQL text background"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.text.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
                 id="org.jkiss.dbeaver.sql.editor.color.text.background"
                 value="COLOR_WHITE">
-            <description>SQL text background</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.text.background.description</description>
         </colorDefinition>
         <colorDefinition
-                label="SQL disabled background"
+                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.disabled.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
                 id="org.jkiss.dbeaver.sql.editor.color.disabled.background"
                 value="COLOR_WIDGET_BACKGROUND">
-            <description>SQL text background</description>
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.disabled.background.description</description>
         </colorDefinition>
 
     </extension>
 
     <extension point="org.eclipse.ui.exportWizards">
-        <category id="org.jkiss.dbeaver.core.export.resources" name="DBeaver"/>
+        <category id="org.jkiss.dbeaver.core.export.resources" name="%category.org.jkiss.dbeaver.core.export.resources.name"/>
         <wizard
              category="org.jkiss.dbeaver.core.export.resources"
              class="org.jkiss.dbeaver.tools.project.ProjectExportWizard"
              icon="icons/project.png"
              id="org.jkiss.dbeaver.core.wizard.export.project"
-             name="Project">
+             name="%wizard.org.jkiss.dbeaver.core.wizard.export.project.name">
            <description>
-               DBeaver Project
+               %wizard.org.jkiss.dbeaver.core.wizard.export.project.description
            </description>
         </wizard>
         <wizard
@@ -2657,23 +2651,23 @@
              class="org.jkiss.dbeaver.tools.scripts.ScriptsExportWizard"
              icon="icons/sql/sql_script.png"
              id="org.jkiss.dbeaver.core.wizard.export.scripts"
-             name="Scripts">
+             name="%wizard.org.jkiss.dbeaver.core.wizard.export.scripts.name">
            <description>
-               SQL Scripts
+               %wizard.org.jkiss.dbeaver.core.wizard.export.scripts.description
            </description>
         </wizard>
     </extension>
 
     <extension point="org.eclipse.ui.importWizards">
-        <category id="org.jkiss.dbeaver.core.import.resources" name="DBeaver"/>
+        <category id="org.jkiss.dbeaver.core.import.resources" name="%category.org.jkiss.dbeaver.core.import.resources.name"/>
         <wizard
             category="org.jkiss.dbeaver.core.import.resources"
             class="org.jkiss.dbeaver.tools.project.ProjectImportWizard"
             icon="icons/project.png"
             id="org.jkiss.dbeaver.core.wizard.import.project"
-            name="Project">
+            name="%wizard.org.jkiss.dbeaver.core.wizard.import.project.name">
             <description>
-                DBeaver Project
+                %wizard.org.jkiss.dbeaver.core.wizard.import.project.description
             </description>
         </wizard>
         <wizard
@@ -2681,23 +2675,23 @@
             class="org.jkiss.dbeaver.tools.scripts.ScriptsImportWizard"
             icon="icons/sql/sql_script.png"
             id="org.jkiss.dbeaver.core.wizard.import.scripts"
-            name="Scripts">
+            name="%wizard.org.jkiss.dbeaver.core.wizard.import.scripts.name">
             <description>
-                SQL Scripts
+                %wizard.org.jkiss.dbeaver.core.wizard.import.scripts.description
             </description>
         </wizard>
     </extension>
 
     <extension point="org.eclipse.ui.newWizards">
-        <category id="org.jkiss.dbeaver.core.new.general" name="DBeaver"/>
+        <category id="org.jkiss.dbeaver.core.new.general" name="%category.org.jkiss.dbeaver.core.new.general.name"/>
         <wizard
              category="org.jkiss.dbeaver.core.new.general"
              class="org.jkiss.dbeaver.tools.project.ProjectCreateWizard"
              icon="icons/project.png"
              id="org.jkiss.dbeaver.core.wizard.new.project"
-             name="Database Project">
+             name="%wizard.org.jkiss.dbeaver.core.wizard.new.project.name">
            <description>
-               DBeaver Project
+               %wizard.org.jkiss.dbeaver.core.wizard.new.project.description
            </description>
         </wizard>
         <wizard
@@ -2705,9 +2699,9 @@
              class="org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard"
              icon="icons/database.png"
              id="org.jkiss.dbeaver.core.wizard.new.connection"
-             name="Database Connection">
+             name="%wizard.org.jkiss.dbeaver.core.wizard.new.connection.name">
            <description>
-               Database connection
+               %wizard.org.jkiss.dbeaver.core.wizard.new.connection.description
            </description>
         </wizard>
     </extension>
@@ -2723,18 +2717,18 @@
     </extension>
 
     <extension point="org.eclipse.ui.keywords">
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.general" label="auto commit cursor rollback resultset lob script"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat" label="format date number string locale language"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.qm" label="query log statement ddl"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.binary" label="binary hex blob"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.content" label="lob blob clob"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.erd" label="erd diagram"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.sql" label="sql script commit fetch timeout"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.entity" label="object entity schema catalog table package column"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.ui.general" label="update http proxy"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.general" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.general.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.dataformat.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.qm" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.qm.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.binary" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.binary.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.content" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.content.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.erd" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.erd.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.sql" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.sql.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.entity" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.entity.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.ui.general" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.ui.general.label"/>
     </extension>
 
-    <extension point="org.eclipse.core.resources.natures" id="org.jkiss.dbeaver.DBeaverNature" name="DBeaver Nature">
+    <extension point="org.eclipse.core.resources.natures" id="org.jkiss.dbeaver.DBeaverNature" name="%extension.org.jkiss.dbeaver.DBeaverNature.name">
         <runtime>
             <run class="org.jkiss.dbeaver.core.DBeaverNature">
             </run>
@@ -2884,6 +2878,16 @@
                 <property id="pattern" label="URL pattern" type="string" description="URL pattern. Variable ${value} will be replaced with real value." defaultValue="http://${value}" required="false"/>
             </propertyGroup>
         </transformer>
+        <transformer
+                class="org.jkiss.dbeaver.model.impl.data.transformers.UUIDAttributeTransformer"
+                id="org.jkiss.dbeaver.core.UUIDAttributeTransformer"
+                name="UUID"
+                description="Represents binary value as UUID."
+                applyByDefault="false"
+                custom="true">
+            <type kind="BINARY"/>
+            <type kind="CONTENT"/>
+        </transformer>
 
     </extension>
 
@@ -2969,6 +2973,7 @@
             <supports kind="DOCUMENT"/>
             <supports kind="ROWID"/>
             <supports kind="ANY"/>
+            <supports typeName="REFCURSOR"/>
         </manager>
         <manager class="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager" id="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager">
             <supports typeName="BIT"/>
@@ -3018,8 +3023,8 @@
                     description="%dataTransfer.processor.xml.description"
                     icon="icons/misc/xml.png"
                     label="%dataTransfer.processor.xml.name">
-                <propertyGroup label="General">
-                    <property id="extension" label="File extension" defaultValue="xml"/>
+                <propertyGroup label="%dataTransfer.processor.xml.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.processor.xml.property.extension.label" defaultValue="xml"/>
                 </propertyGroup>
             </processor>
             <processor
@@ -3028,10 +3033,10 @@
                 description="%dataTransfer.processor.json.description"
                 icon="icons/misc/json.png"
                 label="%dataTransfer.processor.json.name">
-                <propertyGroup label="General">
-                    <property id="printTableName" label="Print table name" type="boolean" defaultValue="true"/>
-                    <property id="formatDateISO" label="Format dates in ISO 8601" type="boolean" defaultValue="true"/>
-                    <property id="extension" label="File extension" defaultValue="json"/>
+                <propertyGroup label="%dataTransfer.processor.json.propertyGroup.general.label">
+                    <property id="printTableName" label="%dataTransfer.processor.json.property.printTableName.label" type="boolean" defaultValue="true"/>
+                    <property id="formatDateISO" label="%dataTransfer.processor.json.property.formatDateISO.label" type="boolean" defaultValue="true"/>
+                    <property id="extension" label="%dataTransfer.processor.json.property.extension.label" defaultValue="json"/>
                 </propertyGroup>
             </processor>
             <processor
@@ -3040,8 +3045,8 @@
                     description="%dataTransfer.processor.html.description"
                     icon="icons/misc/html.png"
                     label="%dataTransfer.processor.html.name">
-                <propertyGroup label="General">
-                    <property id="extension" label="File extension" defaultValue="html"/>
+                <propertyGroup label="%dataTransfer.processor.html.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.processor.html.property.extension.label" defaultValue="html"/>
                     <property id="extractImages" label="%dataTransfer.processor.html.property.images.name" type="boolean" description="%dataTransfer.processor.html.property.images.description" defaultValue="true"/>
                 </propertyGroup>
             </processor>
@@ -3051,8 +3056,8 @@
                     description="%dataTransfer.processor.csv.description"
                     icon="icons/misc/csv.png"
                     label="%dataTransfer.processor.csv.name">
-                <propertyGroup label="General">
-                    <property id="extension" label="File extension" defaultValue="csv"/>
+                <propertyGroup label="%dataTransfer.processor.csv.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.processor.csv.property.extension.label" defaultValue="csv"/>
                     <property id="delimiter" label="%dataTransfer.processor.csv.property.delimiter.name" type="string" description="%dataTransfer.processor.csv.property.delimiter.description" defaultValue="," required="true"/>
                     <property id="header" label="%dataTransfer.processor.csv.property.header.name" type="string" description="%dataTransfer.processor.csv.property.header.description" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
                     <property id="escape" label="%dataTransfer.processor.csv.property.escape.name" type="string" description="%dataTransfer.processor.csv.property.escape.description" defaultValue="quotes" required="true" validValues="quotes,escape"/>
@@ -3067,9 +3072,9 @@
                     icon="icons/misc/sql.png"
                     label="%dataTransfer.processor.sql.name">
                 <sourceType type="org.jkiss.dbeaver.model.struct.rdb.DBSTable"/>
-                <propertyGroup label="General">
-                    <property id="extension" label="File extension" defaultValue="sql"/>
-                    <property id="format" label="Dates/numbers format" defaultValue="native" validValues="ui,edit,native"/>
+                <propertyGroup label="%dataTransfer.processor.sql.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.processor.sql.property.extension.label" defaultValue="sql"/>
+                    <property id="format" label="%dataTransfer.processor.xml.property.format.label" defaultValue="native" validValues="ui,edit,native"/>
                     <property id="omitSchema" label="%dataTransfer.processor.sql.property.omitSchema.name" type="boolean" description="%dataTransfer.processor.sql.property.omitSchema.description" required="false" defaultValue="false"/>
                     <property id="rowsInStatement" label="%dataTransfer.processor.sql.property.rowsInStatement.name" type="integer" description="%dataTransfer.processor.sql.property.rowsInStatement.description" defaultValue="10" required="true"/>
                 </propertyGroup>
@@ -3107,8 +3112,8 @@
         <handler
                 type="tunnel"
                 id="ssh_tunnel"
-                label="SSH Tunnel"
-                description="SSH tunnel"
+                label="%handler.ssh_tunnel.label"
+                description="%handler.ssh_tunnel.description"
                 secured="true"
                 uiClass="org.jkiss.dbeaver.ui.dialogs.net.SSHTunnelConfiguratorUI"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SSHTunnelImpl"/>
@@ -3123,8 +3128,8 @@
         <handler
                 type="proxy"
                 id="socks_proxy"
-                label="SOCKS Proxy"
-                description="SOCKS4/SOCKS5 proxy"
+                label="%handler.socks_proxy.label"
+                description="%handler.socks_proxy.description"
                 secured="true"
                 uiClass="org.jkiss.dbeaver.ui.dialogs.net.SocksProxyConfiguratorUI"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl"/>
@@ -3133,7 +3138,7 @@
     <extension point="org.jkiss.dbeaver.resultset.presentation">
         <presentation
                 id="spreadsheet"
-                label="Grid"
+                label="%presentation.spreadsheet.label"
                 description="Result set grid/spreadsheet"
                 icon="icons/sql/grid.png"
                 class="org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation"
@@ -3143,7 +3148,7 @@
         </presentation>
         <presentation
                 id="plaintext"
-                label="Text"
+                label="%presentation.plaintext.label"
                 description="Plain text presentation"
                 icon="icons/sql/sql_text.png"
                 class="org.jkiss.dbeaver.ui.controls.resultset.plaintext.PlainTextPresentation"
@@ -3156,7 +3161,7 @@
     <extension point="org.jkiss.dbeaver.resultset.panel">
         <panel
                 id="value-view"
-                label="Value viewer"
+                label="%panel.value-view.label"
                 description="View/edit cell value"
                 icon="icons/sql/panel_value.png"
                 default="true"
@@ -3165,7 +3170,7 @@
         </panel>
         <panel
                 id="column-aggregate"
-                label="Aggregate columns"
+                label="%panel.column-aggregate.label"
                 description="Aggregate/calculate column values"
                 icon="icons/sql/panel_aggregate.png"
                 default="false"
@@ -3174,7 +3179,7 @@
         </panel>
         <panel
                 id="results-metadata"
-                label="Metadata"
+                label="%panel.results-metadata.label"
                 description="Resultset metadata"
                 icon="icons/sql/panel_metadata.png"
                 default="false"

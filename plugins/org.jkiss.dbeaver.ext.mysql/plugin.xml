@@ -146,7 +146,9 @@
                     defaultPort="3306"
                     webURL="http://www.mysql.com/products/connector/"
                     description="MySQL standard driver">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]" bundle="!drivers.mysql"/>
+                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
                 </driver>
                 <driver
@@ -158,7 +160,7 @@
                     defaultPort="3306"
                     webURL="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/"
                     description="MySQL standard driver">
-                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[1.5.5]"/>
+                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[1.5.5]" bundle="!drivers.mariadb"/>
                 </driver>
             </drivers>
             <views>

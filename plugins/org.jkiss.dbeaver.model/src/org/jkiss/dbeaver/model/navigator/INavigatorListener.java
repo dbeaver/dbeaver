@@ -22,5 +22,8 @@ package org.jkiss.dbeaver.model.navigator;
  */
 public interface INavigatorListener
 {
+    /**
+     * Called in UI thread
+     */
     void nodeChanged(DBNEvent event);
 }
