@@ -88,8 +88,8 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         String charUsed = JDBCUtils.safeGetString(dbResult, "CHAR_USED");
         setMaxLength(JDBCUtils.safeGetLong(dbResult, "C".equals(charUsed) ? "CHAR_LENGTH" : "DATA_LENGTH"));
         setRequired(!"Y".equals(JDBCUtils.safeGetString(dbResult, "NULLABLE")));
-        setScale(JDBCUtils.safeGetInt(dbResult, "DATA_SCALE"));
-        setPrecision(JDBCUtils.safeGetInt(dbResult, "DATA_PRECISION"));
+        setScale(JDBCUtils.safeGetInteger(dbResult, "DATA_SCALE"));
+        setPrecision(JDBCUtils.safeGetInteger(dbResult, "DATA_PRECISION"));
         this.hidden = JDBCUtils.safeGetBoolean(dbResult, "HIDDEN_COLUMN", OracleConstants.YES);
     }
 
@@ -135,15 +135,15 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     }
 
     @Override
-    @Property(viewable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 41)
-    public int getPrecision()
+    @Property(viewable = true, order = 41)
+    public Integer getPrecision()
     {
         return super.getPrecision();
     }
 
     @Override
-    @Property(viewable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 42)
-    public int getScale()
+    @Property(viewable = true, order = 42)
+    public Integer getScale()
     {
         return super.getScale();
     }

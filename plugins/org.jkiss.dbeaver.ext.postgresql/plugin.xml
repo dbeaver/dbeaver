@@ -193,7 +193,9 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
                     <replace provider="generic" driver="postgresql"/>
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[9.4.1212.jre7]"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[9.4.1212.jre7]" bundle="!drivers.postgresql"/>
+                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
 
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
@@ -288,6 +290,7 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
         </editor>
         <editor id="postgresql.source.ddl" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
                 label="DDL" description="DDL" icon="#sql_text" position="additions_middle"

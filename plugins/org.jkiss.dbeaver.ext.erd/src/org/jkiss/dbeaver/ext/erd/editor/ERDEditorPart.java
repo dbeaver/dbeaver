@@ -714,6 +714,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         asMenu.add(new ChangeAttributePresentationAction(ERDAttributeStyle.ICONS));
         asMenu.add(new ChangeAttributePresentationAction(ERDAttributeStyle.TYPES));
         asMenu.add(new ChangeAttributePresentationAction(ERDAttributeStyle.NULLABILITY));
+        asMenu.add(new ChangeAttributePresentationAction(ERDAttributeStyle.COMMENTS));
         menu.add(asMenu);
 
         MenuManager avMenu = new MenuManager("Show Attributes");

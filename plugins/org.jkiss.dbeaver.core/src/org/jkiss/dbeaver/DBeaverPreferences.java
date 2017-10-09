@@ -76,6 +76,7 @@ public final class DBeaverPreferences
     public static final String CONFIRM_MANUAL_DOWNLOAD = "driver_download_manual"; //$NON-NLS-1$
     public static final String CONFIRM_VERSION_CHECK = "version_check"; //$NON-NLS-1$
     public static final String CONFIRM_KEEP_STATEMENT_OPEN = "keep_statement_open"; //$NON-NLS-1$
+    public static final String CONFIRM_DANGER_SQL = "dangerous_sql"; //$NON-NLS-1$
 
     private static final String PROPERTY_USE_ALL_COLUMNS_QUIET = "virtual-key-quiet";
 

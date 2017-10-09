@@ -22,17 +22,30 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 /**
-* CustomTimeEditor
-*/
+ * CustomTimeEditor
+ */
 public class CustomTimeEditor {
     private Text timeEditor;
+//    private Button timePickerButton;
 
     public CustomTimeEditor(Composite parent, int style) {
         this.timeEditor = new Text(parent, style);
+/*
+        Composite ph = UIUtils.createPlaceholder(parent, 2);
+        this.timeEditor = new Text(ph, style);
+
+        this.timePickerButton = new Button(ph, SWT.FLAT | SWT.ARROW | SWT.DOWN);
+        this.timePickerButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                super.widgetSelected(e);
+                UIUtils.showMessageBox(timePickerButton.getShell(), "asdf", "sdf", SWT.ICON_INFORMATION);
+            }
+        });
+*/
     }
 
-    public void setValue(@Nullable String value)
-    {
+    public void setValue(@Nullable String value) {
         if (value == null) {
             timeEditor.setText("");
         } else {
@@ -41,8 +54,7 @@ public class CustomTimeEditor {
     }
 
     public String getValue()
-        throws DBException
-    {
+        throws DBException {
         final String timeText = timeEditor.getText();
         if (timeText.isEmpty()) {
             return null;
@@ -57,5 +69,9 @@ public class CustomTimeEditor {
 
     public Text getControl() {
         return timeEditor;
+    }
+
+    public void selectAll() {
+        timeEditor.selectAll();
     }
 }

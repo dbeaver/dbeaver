@@ -49,16 +49,16 @@ public interface DBSTypedObject extends DBPObject
     DBPDataKind getDataKind();
 
     /**
-     * Value scale
+     * Value scale. Can be null if scale is not applicable/not specified to this data type.
      * @return scale
      */
-    int getScale();
+    Integer getScale();
 
     /**
-     * Value precision
+     * Value precision. Can be null if precision is not applicable/not specified to this data type.
      * @return precision
      */
-    int getPrecision();
+    Integer getPrecision();
 
     /**
      * Maximum length

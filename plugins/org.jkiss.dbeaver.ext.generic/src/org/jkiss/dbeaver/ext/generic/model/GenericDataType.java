@@ -53,7 +53,7 @@ public class GenericDataType extends JDBCDataType<GenericStructContainer>
 
     @Override
     @Property(viewable = true, order = 20)
-    public int getPrecision()
+    public Integer getPrecision()
     {
         return super.getPrecision();
     }

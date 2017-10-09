@@ -999,6 +999,7 @@ public class ResultSetViewer extends Viewer
     {
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CHANGED);
+        fireResultSetChange();
         updateToolbar();
     }
 
@@ -1393,7 +1394,7 @@ public class ResultSetViewer extends Viewer
         activePresentation.clearMetaData();
     }
 
-    void setData(List<Object[]> rows)
+    void setData(List<Object[]> rows, int focusRow)
     {
         if (viewerPanel.isDisposed()) {
             return;
@@ -1401,6 +1402,9 @@ public class ResultSetViewer extends Viewer
         this.curRow = null;
         this.model.setData(rows);
         this.curRow = (this.model.getRowCount() > 0 ? this.model.getRow(0) : null);
+        if (focusRow > 0 && focusRow < model.getRowCount()) {
+            this.curRow = model.getRow(focusRow);
+        }
 
         {
 
@@ -1673,6 +1677,9 @@ public class ResultSetViewer extends Viewer
                         }
                     }
                     viewMenu.add(new CustomizeColorsAction(attr, row));
+                    if (getModel().hasColorMapping(getModel().getSingleSource())) {
+                        viewMenu.add(new ResetAllColorAction());
+                    }
                     viewMenu.add(new Separator());
                 }
                 viewMenu.add(new Action("Data formats ...") {
@@ -1834,7 +1841,7 @@ public class ResultSetViewer extends Viewer
                             settings.setCustomTransformer(descriptor.getId());
                             TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(
                                 ResultSetViewer.this, attr, settings);
-                            if (settingsDialog.open() == IDialogConstants.OK_ID) {
+                            if (CommonUtils.isEmpty(settings.getTransformOptions()) || settingsDialog.open() == IDialogConstants.OK_ID) {
                                 saveTransformerSettings();
                             } else {
                                 settings.setCustomTransformer(oldCustomTransformer);
@@ -2430,6 +2437,7 @@ public class ResultSetViewer extends Viewer
             progressControl = (Composite) activePresentation.getControl();
         }
         final Object presentationState = savePresentationState();
+        dataReceiver.setFocusRow(focusRow);
         dataPumpJob = new ResultSetJobDataRead(
             dataContainer,
             useDataFilter,
@@ -2480,7 +2488,6 @@ public class ResultSetViewer extends Viewer
                                 if (!metadataChanged && focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
                                     // Seems to be refresh
                                     // Restore original position
-                                    curRow = model.getRow(focusRow);
                                     restorePresentationState(presentationState);
                                 }
                             }
@@ -3346,6 +3353,22 @@ public class ResultSetViewer extends Viewer
         public void run() {
             final DBVEntity vEntity = getVirtualEntity(attribute);
             vEntity.removeColorOverride(attribute);
+            updateColors(vEntity);
+        }
+    }
+
+    private class ResetAllColorAction extends ColorAction {
+        ResetAllColorAction() {
+            super("Reset all colors");
+        }
+
+        @Override
+        public void run() {
+            final DBVEntity vEntity = getVirtualEntity(getModel().getAttributes()[0]);
+            if (!UIUtils.confirmAction("Reset all row coloring", "Are you sure you want to reset all color settings for '" + vEntity.getName() + "'?")) {
+                return;
+            }
+            vEntity.removeAllColorOverride();
             updateColors(vEntity);
         }
     }

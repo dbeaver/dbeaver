@@ -129,6 +129,26 @@ class GridColumn {
         return x >= arrowBegin && x <= arrowEnd && y < bounds.y + sortBounds.height;
     }
 
+    public boolean isOverIcon(int x, int y) {
+        Rectangle bounds = getBounds();
+        if (y < bounds.y || y > bounds.y + bounds.height) {
+            return false;
+        }
+        Image image = grid.getLabelProvider().getImage(element);
+        if (image == null) {
+            return false;
+        }
+        Rectangle imgBounds = image.getBounds();
+        if (x >= bounds.x + GridColumnRenderer.LEFT_MARGIN &&
+            x <= bounds.x + GridColumnRenderer.LEFT_MARGIN + imgBounds.width + GridColumnRenderer.IMAGE_SPACING &&
+            y > bounds.y + GridColumnRenderer.TOP_MARGIN &&
+            y <= bounds.y + GridColumnRenderer.TOP_MARGIN + imgBounds.height)
+        {
+            return true;
+        }
+        return false;
+    }
+
     int getHeaderHeight(boolean includeChildren)
     {
         if (height < 0) {

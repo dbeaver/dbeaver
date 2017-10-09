@@ -35,6 +35,7 @@ public class OracleConstants {
     public static final String SCHEMA_SYS = "SYS";
     public static final String VIEW_ALL_SOURCE = "ALL_SOURCE";
     public static final String VIEW_DBA_SOURCE = "DBA_SOURCE";
+    public static final String VIEW_DBA_TAB_PRIVS = "DBA_TAB_PRIVS";
 
     public static final String[] SYSTEM_SCHEMAS = {
         "CTXSYS",
@@ -118,6 +119,7 @@ public class OracleConstants {
     public static final String PREF_EXPLAIN_TABLE_NAME = "oracle.explain.table";
     public static final String PREF_SUPPORT_ROWID = "oracle.support.rowid";
     public static final String PREF_DBMS_OUTPUT = "oracle.dbms.output";
+    public static final String PREF_DBMS_READ_ALL_SYNONYMS = "oracle.read.all.synonyms";
 
     public static final String NLS_DEFAULT_VALUE = "Default";
     public static final String PREF_KEY_DDL_FORMAT = "oracle.ddl.format";

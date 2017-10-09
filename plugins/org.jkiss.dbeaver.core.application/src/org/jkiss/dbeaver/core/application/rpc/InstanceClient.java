@@ -33,6 +33,9 @@ public class InstanceClient {
     public static IInstanceController createClient(String location) {
         try {
             File rmiFile = new File(location, ".metadata/" + IInstanceController.RMI_PROP_FILE);
+            if (!rmiFile.exists()) {
+                return null;
+            }
             Properties props = new Properties();
             try (InputStream is = new FileInputStream(rmiFile)) {
                 props.load(is);

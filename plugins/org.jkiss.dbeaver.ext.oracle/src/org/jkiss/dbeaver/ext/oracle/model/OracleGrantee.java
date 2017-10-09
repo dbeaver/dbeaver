@@ -118,11 +118,13 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleGrantee owner) throws SQLException
         {
+            boolean hasDBA = owner.getDataSource().isViewAvailable(session.getProgressMonitor(), OracleConstants.SCHEMA_SYS, OracleConstants.VIEW_DBA_TAB_PRIVS);
+
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT p.*,o.OBJECT_TYPE\n" +
-                "FROM DBA_TAB_PRIVS p, DBA_OBJECTS o\n" +
+                "FROM " + (hasDBA ? "DBA_TAB_PRIVS p, DBA_OBJECTS o" : "ALL_TAB_PRIVS p, ALL_OBJECTS o") + "\n" +
                 "WHERE p.GRANTEE=? " +
-                "AND o.OWNER=p.OWNER AND o.OBJECT_NAME=p.TABLE_NAME AND o.OBJECT_TYPE<>'PACKAGE BODY'");
+                "AND o.OWNER=p." + (hasDBA ? "OWNER" : "TABLE_SCHEMA") + " AND o.OBJECT_NAME=p.TABLE_NAME AND o.OBJECT_TYPE<>'PACKAGE BODY'");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }

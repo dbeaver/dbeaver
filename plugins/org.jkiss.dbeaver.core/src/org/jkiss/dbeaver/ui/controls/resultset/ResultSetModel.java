@@ -579,6 +579,11 @@ public class ResultSetModel {
         return colorMapping.containsKey(binding);
     }
 
+    boolean hasColorMapping(DBSEntity entity) {
+        DBVEntity virtualEntity = DBVUtils.findVirtualEntity(entity, false);
+        return virtualEntity != null && !CommonUtils.isEmpty(virtualEntity.getColorOverrides());
+    }
+
     void updateColorMapping() {
         colorMapping.clear();
         DBSEntity entity = getSingleSource();

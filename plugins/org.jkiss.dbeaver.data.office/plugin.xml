@@ -18,10 +18,10 @@
                         description="%dataTransfer.processor.xlsx.description"
                         icon="icons/excel.png"
                         label="%dataTransfer.processor.xlsx.name">
-                    <propertyGroup label="General">
+                    <propertyGroup label="%dataTransfer.processor.xlsx.propertyGroup.general.label">
                         <property id="rownumber" label="%dataTransfer.processor.xlsx.property.rowNumber.name" type="boolean" description="%dataTransfer.processor.xlsx.property.rowNumber.description" defaultValue="yes" required="false"/>
                         <property id="border" label="%dataTransfer.processor.xlsx.property.border.name" type="string" description="%dataTransfer.processor.xlsx.property.border.description" defaultValue="THIN" required="false" validValues="NONE,THIN,THICK"/>
-                        <property id="extension" label="File extension" defaultValue="xlsx"/>
+                        <property id="extension" label="%dataTransfer.processor.xlsx.property.extension.label" defaultValue="xlsx"/>
                         <property id="nullString" label="%dataTransfer.processor.xlsx.property.nullString.name" type="string" description="%dataTransfer.processor.xlsx.property.nullString.description" defaultValue="" required="false"/>
                         <property id="header" label="%dataTransfer.processor.xlsx.property.header.name" type="boolean" description="%dataTransfer.processor.xlsx.property.header.description" defaultValue="true" required="true"/>
                         <property id="headerfont" label="%dataTransfer.processor.xlsx.property.headerFont.name" type="string" description="%dataTransfer.processor.xlsx.property.headerFont.description" defaultValue="BOLD" required="false" validValues="NONE,BOLD,ITALIC,STRIKEOUT,UNDERLINE"/>
@@ -37,8 +37,8 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <category id="org.jkiss.dbeaver.ext.data.office" name="Oracle" description="Office Commands"/>
-        <command id="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet" name="Open results in Excel" description="Open results in Excel/Calc" categoryId="org.jkiss.dbeaver.ext.data.office"/>
+        <category id="org.jkiss.dbeaver.ext.data.office" name="%category.org.jkiss.dbeaver.ext.data.office.name" description="%category.org.jkiss.dbeaver.ext.data.office.description"/>
+        <command id="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet" name="%command.org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet.name" description="%command.org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet.description" categoryId="org.jkiss.dbeaver.ext.data.office"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">

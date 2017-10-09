@@ -109,11 +109,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         syntaxManager = new SQLSyntaxManager();
         ruleManager = new SQLRuleManager(syntaxManager);
         themeListener = new IPropertyChangeListener() {
+            long lastUpdateTime = 0;
             @Override
             public void propertyChange(PropertyChangeEvent event)
             {
                 if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
                     event.getProperty().startsWith("org.jkiss.dbeaver.sql.editor")) {
+                    if (lastUpdateTime > 0 && System.currentTimeMillis() - lastUpdateTime < 500) {
+                        // Do not update too often (theme change may trigger this hundreds of times)
+                        return;
+                    }
+                    lastUpdateTime = System.currentTimeMillis();
                     reloadSyntaxRules();
                     // Reconfigure to let comments/strings colors to take effect
                     getSourceViewer().configure(getSourceViewerConfiguration());
@@ -427,7 +433,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                 new SQLPartitionScanner(dialect),
                 SQLPartitionScanner.SQL_CONTENT_TYPES);
             partitioner.connect(document);
-            document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
+            try {
+                document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
+            } catch (Throwable e) {
+                log.warn("Error setting SQL partitioner", e); //$NON-NLS-1$
+            }
 
             ProjectionViewer projectionViewer = (ProjectionViewer) getSourceViewer();
             if (projectionViewer != null && projectionViewer.getAnnotationModel() != null && document.getLength() > 0) {
@@ -699,6 +709,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             int tokenOffset = ruleManager.getTokenOffset();
             int tokenLength = ruleManager.getTokenLength();
             int tokenType = token instanceof SQLToken ? ((SQLToken)token).getType() : SQLToken.T_UNKNOWN;
+            if (tokenOffset < startPos) {
+                // This may happen with EOF tokens (bug in jface?)
+                return null;
+            }
 
             boolean isDelimiter = tokenType == SQLToken.T_DELIMITER;
             boolean isControl = false;
@@ -777,7 +791,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             }
 
             boolean cursorInsideToken = currentPos >= tokenOffset && currentPos < tokenOffset + tokenLength;
-            if (isControl && (scriptMode || cursorInsideToken)) {
+            if (isControl && (scriptMode || cursorInsideToken) && !hasValuableTokens) {
                 // Control query
                 try {
                     String controlText = document.get(tokenOffset, tokenLength);
@@ -887,14 +901,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         boolean supportParamsInDDL = getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED);
         boolean execQuery = false;
         List<SQLQueryParameter> parameters = null;
-        ruleManager.setRange(document, query.getOffset(), query.getLength());
+        final int queryOffset = query.getOffset();
+        final int queryLength = query.getLength();
+        ruleManager.setRange(document, queryOffset, queryLength);
 
         boolean firstKeyword = true;
         for (;;) {
             IToken token = ruleManager.nextToken();
-            int tokenOffset = ruleManager.getTokenOffset();
+            final int tokenOffset = ruleManager.getTokenOffset();
             final int tokenLength = ruleManager.getTokenLength();
-            if (token.isEOF() || tokenOffset > query.getOffset() + query.getLength()) {
+            if (token.isEOF() || tokenOffset > queryOffset + queryLength) {
                 break;
             }
             // Handle only parameters which are not in SQL blocks
@@ -936,7 +952,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     SQLQueryParameter parameter = new SQLQueryParameter(
                         parameters.size(),
                         paramName,
-                        tokenOffset - query.getOffset(),
+                        tokenOffset - queryOffset,
                         tokenLength);
 
                     SQLQueryParameter previous = null;

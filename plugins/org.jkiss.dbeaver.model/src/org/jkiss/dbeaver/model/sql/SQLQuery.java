@@ -58,8 +58,8 @@ public class SQLQuery implements SQLScriptElement {
     private String originalText;
     @NotNull
     private String text;
-    private int offset;
-    private int length;
+    private final int offset;
+    private final int length;
     private Object data;
     private int resultsOffset = -1;
     private int resultsMaxRows = -1;
@@ -114,15 +114,7 @@ public class SQLQuery implements SQLScriptElement {
                         CommonUtils.isEmpty(plainSelect.getGroupByColumnReferences()) &&
                         CommonUtils.isEmpty(plainSelect.getIntoTables()))
                     {
-                        Table fromItem = (Table) plainSelect.getFromItem();
-                        Database database = fromItem.getDatabase();
-                        String catalogName = database == null ? null : database.getDatabaseName();
-                        String schemaName = fromItem.getSchemaName();
-                        String tableName = fromItem.getName();
-                        singleTableMeta = new SingleTableMeta(
-                            unquoteIdentifier(catalogName),
-                            unquoteIdentifier(schemaName),
-                            unquoteIdentifier(tableName));
+                        fillSingleSource((Table) plainSelect.getFromItem());
                     }
                     // Extract select items info
                     final List<SelectItem> items = plainSelect.getSelectItems();
@@ -135,10 +127,23 @@ public class SQLQuery implements SQLScriptElement {
                 }
             } else if (statement instanceof Insert) {
                 type = SQLQueryType.INSERT;
+                fillSingleSource(((Insert) statement).getTable());
             } else if (statement instanceof Update) {
                 type = SQLQueryType.UPDATE;
+                List<Table> tables = ((Update) statement).getTables();
+                if (tables != null && tables.size() == 1) {
+                    fillSingleSource(tables.get(0));
+                }
             } else if (statement instanceof Delete) {
                 type = SQLQueryType.DELETE;
+                if (((Delete) statement).getTable() != null) {
+                    fillSingleSource(((Delete) statement).getTable());
+                } else {
+                    List<Table> tables = ((Delete) statement).getTables();
+                    if (tables != null && tables.size() == 1) {
+                        fillSingleSource(tables.get(0));
+                    }
+                }
             } else if (statement instanceof Alter ||
                 statement instanceof CreateTable ||
                 statement instanceof CreateView ||
@@ -159,6 +164,17 @@ public class SQLQuery implements SQLScriptElement {
         if (matcher.find()) {
             queryTitle = matcher.group(1);
         }
+    }
+
+    private void fillSingleSource(Table fromItem) {
+        Database database = fromItem.getDatabase();
+        String catalogName = database == null ? null : database.getDatabaseName();
+        String schemaName = fromItem.getSchemaName();
+        String tableName = fromItem.getName();
+        singleTableMeta = new SingleTableMeta(
+            unquoteIdentifier(catalogName),
+            unquoteIdentifier(schemaName),
+            unquoteIdentifier(tableName));
     }
 
     private String unquoteIdentifier(String name) {
@@ -292,6 +308,22 @@ public class SQLQuery implements SQLScriptElement {
 
     public int getResultsMaxRows() {
         return resultsMaxRows;
+    }
+
+    public boolean isDeleteUpdateDangerous() {
+        if (statement == null) {
+            return false;
+        }
+        if (statement instanceof Delete) {
+            if (((Delete) statement).getWhere() == null) {
+                return true;
+            }
+        } else if (statement instanceof Update) {
+            if (((Update) statement).getWhere() == null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static class SingleTableMeta implements DBCEntityMetaData {

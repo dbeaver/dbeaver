@@ -61,8 +61,7 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
         try {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource.getDataSource(), "Load FireBird domain types")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT F.* FROM RDB$FIELDS F\n" +
-                    "WHERE f.RDB$FIELD_NAME NOT LIKE '%$%'"))
+                    "SELECT F.* FROM RDB$FIELDS F ORDER BY RDB$FIELD_NAME"))
                 {
                     monitor.subTask("Load FireBird domain types");
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -71,6 +70,9 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                                 break;
                             }
                             String typeName = JDBCUtils.safeGetString(dbResult, "RDB$FIELD_NAME");
+                            if (typeName == null) {
+                                continue;
+                            }
                             int fieldLength = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_LENGTH");
                             int fieldScale = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_SCALE");
                             int fieldPrecision = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_PRECISION");
@@ -93,7 +95,7 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                             boolean notNull = JDBCUtils.safeGetInt(dbResult, "RDB$NULL_FLAG") == 1;
 
                             FireBirdDataType dataType = new FireBirdDataType(
-                                dataSource, fieldDT, fieldSubType, typeName, typeDescription, false, true, fieldPrecision, fieldScale, fieldScale,
+                                dataSource, fieldDT, fieldSubType, typeName.trim(), typeDescription, false, true, fieldPrecision, fieldScale, fieldScale,
                                 fieldLength, charLength,
                                 computedSource, validationSource, defaultSource,
                                 charsetName,

@@ -27,6 +27,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.IControlContentAdapter;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -51,6 +52,8 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.internal.ide.IDEInternalPreferences;
+import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
@@ -80,10 +83,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Locale;
-import java.util.SortedMap;
+import java.util.*;
 
 /**
  * UI Utils
@@ -907,31 +907,6 @@ public class UIUtils {
         Clipboard clipboard = new Clipboard(display);
         clipboard.setContents(new Object[] { contents }, new Transfer[] { transfer });
         clipboard.dispose();
-    }
-
-    public static void updateMainWindowTitle(IWorkbenchWindow window)
-    {
-        if (window == null) {
-            return;
-        }
-        Shell shell = window.getShell();
-        if (shell == null) {
-            return;
-        }
-        IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
-        IProduct product = Platform.getProduct();
-        String title = product == null ? "Unknown" : product.getName(); //$NON-NLS-1$
-        if (activeProject != null) {
-            title += " - " + activeProject.getName(); //$NON-NLS-1$
-        }
-        IWorkbenchPage activePage = window.getActivePage();
-        if (activePage != null) {
-            IEditorPart activeEditor = activePage.getActiveEditor();
-            if (activeEditor != null) {
-                title += " - [ " + activeEditor.getTitle() + " ]";
-            }
-        }
-        shell.setText(title);
     }
 
     public static void showPreferencesFor(Shell shell, Object element, String ... defPageID)

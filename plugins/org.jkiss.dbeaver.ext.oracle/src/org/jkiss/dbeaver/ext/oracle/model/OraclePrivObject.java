@@ -40,6 +40,7 @@ public class OraclePrivObject extends OracleObject<OracleGrantee> implements DBA
     public OraclePrivObject(OracleGrantee grantee, ResultSet resultSet) {
         super(grantee, JDBCUtils.safeGetString(resultSet, "TABLE_NAME"), true);
         this.objectOwner = JDBCUtils.safeGetString(resultSet, "OWNER");
+        if (this.objectOwner == null) this.objectOwner = JDBCUtils.safeGetString(resultSet, "TABLE_SCHEMA");
         this.objectType = JDBCUtils.safeGetString(resultSet, "OBJECT_TYPE");
         this.privilege = JDBCUtils.safeGetString(resultSet, "PRIVILEGE");
         this.grantor = JDBCUtils.safeGetString(resultSet, "GRANTOR");

@@ -123,7 +123,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         {
             Composite foldingGroup = UIUtils.createControlGroup(composite, "Folding", 2, GridData.FILL_HORIZONTAL, 0);
 
-            csUseGlobalSearch = UIUtils.createCheckbox(foldingGroup, "Folding enabled", "Use folding in SQL scripts.", false, 2);
+            csFoldingEnabled = UIUtils.createCheckbox(foldingGroup, "Folding enabled", "Use folding in SQL scripts.", false, 2);
         }
         return composite;
     }
@@ -144,7 +144,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
 
             csUseGlobalSearch.setSelection(store.getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT));
 
-            csUseGlobalSearch.setSelection(store.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED));
+            csFoldingEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -164,7 +164,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS, csInsertSpace.getSelection());
             store.setValue(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT, csUseGlobalSearch.getSelection());
 
-            store.setValue(SQLPreferenceConstants.FOLDING_ENABLED, csUseGlobalSearch.getSelection());
+            store.setValue(SQLPreferenceConstants.FOLDING_ENABLED, csFoldingEnabled.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }

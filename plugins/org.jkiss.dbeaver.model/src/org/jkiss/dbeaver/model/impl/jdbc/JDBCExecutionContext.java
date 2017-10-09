@@ -19,16 +19,20 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCSavepointImpl;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -40,6 +44,9 @@ import java.sql.Savepoint;
 public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSource> implements DBCTransactionManager
 {
     private static final Log log = Log.getLog(JDBCExecutionContext.class);
+
+    // Time to wait for txn level/auto-commit detection
+    static final int TXN_INFO_READ_TIMEOUT = 5000;
 
     private volatile Connection connection;
     private volatile Boolean autoCommit;
@@ -188,7 +195,15 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             return InvalidateResult.CONNECTED;
         }
 
-        if (!JDBCUtils.isConnectionAlive(getDataSource(), getConnection())) {
+        DBRRunnableWithResult<Boolean> checkTask = new DBRRunnableWithResult<Boolean>() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                result = JDBCUtils.isConnectionAlive(getDataSource(), getConnection());
+            }
+        };
+        boolean checkOk = RuntimeUtils.runTask(checkTask, "Check connection is alive", 10000);
+
+        if (!checkOk || checkTask.getResult() == null || !checkTask.getResult()) {
             Boolean prevAutocommit = autoCommit;
             Integer txnLevel = transactionIsolationLevel;
             boolean addNewContext = false;
@@ -228,14 +243,22 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     public DBPTransactionIsolation getTransactionIsolation()
         throws DBCException
     {
-        try {
-            if (transactionIsolationLevel == null) {
-                transactionIsolationLevel = getConnection().getTransactionIsolation();
+        if (transactionIsolationLevel == null) {
+            if (!RuntimeUtils.runTask(new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    try {
+                        transactionIsolationLevel = getConnection().getTransactionIsolation();
+                    } catch (Throwable e) {
+                        transactionIsolationLevel = Connection.TRANSACTION_NONE;
+                        log.error("Error getting transaction isolation level", e);
+                    }
+                }
+            }, "Get transaction isolation level", TXN_INFO_READ_TIMEOUT)) {
+                throw new DBCException("Can't determine transaction isolation - timeout");
             }
-            return JDBCTransactionIsolation.getByCode(transactionIsolationLevel);
-        } catch (SQLException e) {
-            throw new JDBCException(e, dataSource);
         }
+        return JDBCTransactionIsolation.getByCode(transactionIsolationLevel);
     }
 
     @Override
@@ -262,15 +285,22 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     public boolean isAutoCommit()
         throws DBCException
     {
-        try {
-            if (autoCommit == null) {
-                autoCommit = getConnection().getAutoCommit();
+        if (autoCommit == null) {
+            // Run in task with timeout
+            if (!RuntimeUtils.runTask(new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    try {
+                        autoCommit = getConnection().getAutoCommit();
+                    } catch (Exception e) {
+                        log.error("Error getting auto commit state", e);
+                    }
+                }
+            }, "Get auto commit state", TXN_INFO_READ_TIMEOUT)) {
+                throw new DBCException("Can't determine auto-commit state - timeout");
             }
-            return autoCommit;
         }
-        catch (SQLException e) {
-            throw new JDBCException(e, dataSource);
-        }
+        return autoCommit;
     }
 
     @Override
@@ -280,7 +310,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         monitor.subTask("Set JDBC connection auto-commit " + autoCommit);
         try {
             connection.setAutoCommit(autoCommit);
-            this.autoCommit = null;
+            this.autoCommit = connection.getAutoCommit();
         }
         catch (SQLException e) {
             throw new JDBCException(e, dataSource);

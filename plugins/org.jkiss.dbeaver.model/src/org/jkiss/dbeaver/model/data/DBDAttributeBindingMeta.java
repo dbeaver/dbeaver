@@ -126,12 +126,12 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     }
 
     @Override
-    public int getScale() {
+    public Integer getScale() {
         return getAttribute().getScale();
     }
 
     @Override
-    public int getPrecision() {
+    public Integer getPrecision() {
         return getAttribute().getPrecision();
     }
 
@@ -214,6 +214,7 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
 
     public static boolean haveEqualsTypes(DBSTypedObject object1, DBSTypedObject object2) {
         return object1.getTypeID() == object2.getTypeID() &&
+            object1.getDataKind() == object2.getDataKind() &&
             object1.getTypeName().equalsIgnoreCase(object2.getTypeName());
     }
 

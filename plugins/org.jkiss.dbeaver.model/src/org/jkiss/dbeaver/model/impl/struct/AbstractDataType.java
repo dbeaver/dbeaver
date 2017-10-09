@@ -73,7 +73,7 @@ public abstract class AbstractDataType<DS extends DBPDataSource> implements DBSD
     }
 
     @Override
-    public int getScale() {
+    public Integer getScale() {
         return 0;
     }
 
@@ -94,7 +94,7 @@ public abstract class AbstractDataType<DS extends DBPDataSource> implements DBSD
     }
 
     @Override
-    public int getPrecision() {
+    public Integer getPrecision() {
         return 0;
     }
 

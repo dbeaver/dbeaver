@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.core.expressions.definitions">
+      <definition id="DBeaverPerspectiveActive">
+          <with variable="activeWorkbenchWindow.activePerspective">
+              <equals value="org.jkiss.dbeaver.core.perspective"/>
+          </with>
+      </definition>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.perspectives">
+<!-- 	
+//FIXME:AF: better id is "org.jkiss.dbeaver.ui.perspective.dbeaver", but perspectiveId change may affect user workbench layout
+-->
+      <perspective
+            class="org.jkiss.dbeaver.internal.ui.DBeaverPerspective"
+            icon="icons/perspective.png"
+            id="org.jkiss.dbeaver.core.perspective"
+            name="%perspective.name">
+      </perspective>
+   </extension>
+
+</plugin>

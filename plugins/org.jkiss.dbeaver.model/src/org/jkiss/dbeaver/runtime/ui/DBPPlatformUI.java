@@ -44,4 +44,6 @@ public interface DBPPlatformUI {
 
     void executeProcess(DBRProcessDescriptor processDescriptor);
 
+    void executeInUI(Runnable runnable);
+
 }

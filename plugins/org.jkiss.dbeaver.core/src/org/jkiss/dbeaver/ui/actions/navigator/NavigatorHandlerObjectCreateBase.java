@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -47,7 +48,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
     {
         try {
             DBNContainer container = null;
-            if (element instanceof DBNContainer) {
+            if (element instanceof DBNContainer && !(element instanceof DBNDataSource)) {
                 container = (DBNContainer) element;
             } else {
                 DBNNode parentNode = element.getParentNode();

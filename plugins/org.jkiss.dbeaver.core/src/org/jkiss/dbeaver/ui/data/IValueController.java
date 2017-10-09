@@ -75,6 +75,12 @@ public interface IValueController
     void updateValue(@Nullable Object value, boolean updatePresentation);
 
     /**
+     * Updates value in all selected cells
+     * @param value value
+     */
+    void updateSelectionValue(@Nullable Object value);
+
+    /**
      * Associated value handler
      * @return value handler
      */

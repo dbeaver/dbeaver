@@ -70,7 +70,7 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
 
     @Override
     @Property(viewable = true, editable = true, order = 6)
-    public int getPrecision()
+    public Integer getPrecision()
     {
         return precision == null ? 0 : precision;
     }
@@ -84,7 +84,7 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
 
     @Override
     @Property(viewable = true, editable = true, order = 7)
-    public int getScale()
+    public Integer getScale()
     {
         return scale == null ? 0 : scale;
     }

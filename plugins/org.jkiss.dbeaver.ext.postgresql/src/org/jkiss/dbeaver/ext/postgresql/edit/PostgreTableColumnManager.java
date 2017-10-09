@@ -63,8 +63,8 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     break;
                 case NUMERIC:
                     if (dataType.getTypeID() == Types.NUMERIC) {
-                        final int precision = column.getPrecision();
-                        final int scale = column.getScale();
+                        final int precision = CommonUtils.toInt(column.getPrecision());
+                        final int scale = CommonUtils.toInt(column.getScale());
                         if (scale > 0 || precision > 0) {
                             sql.append('(');
                             if (precision > 0) {
