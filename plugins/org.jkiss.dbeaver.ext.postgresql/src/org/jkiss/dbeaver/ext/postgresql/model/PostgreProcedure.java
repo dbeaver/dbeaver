@@ -357,7 +357,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             paramsSignature.append("(");
             boolean hasParam = false;
             for (PostgreProcedureParameter param : params) {
-                if (param.getParameterKind() == DBSProcedureParameterKind.OUT) {
+                if (param.getParameterKind() != DBSProcedureParameterKind.IN &&
+                    param.getParameterKind() != DBSProcedureParameterKind.INOUT)
+                {
                     continue;
                 }
                 if (hasParam) paramsSignature.append(',');
