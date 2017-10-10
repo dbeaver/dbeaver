@@ -23,6 +23,7 @@
         <module>modules/org.jkiss.utils</module>
         <module>modules/org.jkiss.wmi</module>
 
+        <module>plugins/org.jkiss.dbeaver.runtime.ide.core</module>
         <module>plugins/org.jkiss.dbeaver.core</module>
         <module>plugins/org.jkiss.dbeaver.ui</module>
         <module>plugins/org.jkiss.dbeaver.core.application</module>
@@ -70,6 +71,8 @@
 
         <module>product/updateSite</module>
         <module>product/standalone</module>
+
+        <module>tests/org.jkiss.dbeaver.runtime.ide.core.tests</module>
     </modules>
 
     <repositories>
