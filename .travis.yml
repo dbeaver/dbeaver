@@ -1,5 +1,5 @@
 language: java
-script: mvn test
+script: mvn verify
 dist: precise
 jdk:
   - oraclejdk8
