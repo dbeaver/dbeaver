@@ -525,6 +525,28 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         });
+        this.resultTabs.addListener(SWT.Resize, new Listener() {
+            @Override
+            public void handleEvent(Event event)
+            {
+                if (!sashForm.isDisposed()) {
+                    int[] weights = sashForm.getWeights();
+                    getActivePreferenceStore().setValue(SQLPreferenceConstants.RESULTS_PANEL_RATIO, weights[0] + "-" + weights[1]);
+                }
+            }
+        });
+        String resultsPanelRatio = getActivePreferenceStore().getString(SQLPreferenceConstants.RESULTS_PANEL_RATIO);
+        if (!CommonUtils.isEmpty(resultsPanelRatio)) {
+            String[] weights = resultsPanelRatio.split("-");
+            if (weights.length > 1) {
+                sashForm.setWeights(new int[] {
+                    Integer.parseInt(weights[0]),
+                    Integer.parseInt(weights[1]),
+                });
+            }
+        }
+
+
         getTextViewer().getTextWidget().addTraverseListener(new TraverseListener() {
             @Override
             public void keyTraversed(TraverseEvent e) {
