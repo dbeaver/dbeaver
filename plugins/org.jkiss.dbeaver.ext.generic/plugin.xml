@@ -158,14 +158,14 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard JDBC driver. Replaced by PostgreSQL extension driver.">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[9.4.1212.jre7]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.1.4.jre7]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
 
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
 
-                    <parameter name="query-get-active-db" value="SHOW search_path"/>
+                    <parameter name="query-get-active-db" value="select current_schema()"/>
                     <parameter name="query-set-active-db" value="SET search_path = &quot;?&quot;"/>
                     <parameter name="active-entity-type" value="schema"/>
                     <parameter name="supports-scroll" value="true"/>
@@ -179,14 +179,14 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL JDBC driver. Can be used for old PostgreSQL server versions (before 8.x).">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[9.4.1212.jre7]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.1.4.jre7]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
 
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
 
-                    <parameter name="query-get-active-db" value="SHOW search_path"/>
+                    <parameter name="query-get-active-db" value="select current_schema()"/>
                     <parameter name="query-set-active-db" value="SET search_path = &quot;?&quot;"/>
                     <parameter name="active-entity-type" value="schema"/>
                     <parameter name="supports-scroll" value="true"/>
@@ -665,6 +665,10 @@
                     <file type="jar" path="drivers/vertica/vertica.jar" bundle="drivers.vertica"/>
 
                     <file type="jar" path="repo:/drivers/vertica/vertica-jdk5-6.1.2-0.jar" bundle="!drivers.vertica"/>
+
+                    <parameter name="query-get-active-db" value="select current_schema()"/>
+                    <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
+                    <parameter name="active-entity-type" value="schema"/>
 
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-scroll" value="false"/>
