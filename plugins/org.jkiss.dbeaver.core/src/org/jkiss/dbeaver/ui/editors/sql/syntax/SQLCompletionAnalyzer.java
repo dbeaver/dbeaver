@@ -323,7 +323,7 @@ class SQLCompletionAnalyzer
                 for (int i = 1; i <= groupCount; i++) {
                     String group = matcher.group(i);
                     if (!CommonUtils.isEmpty(group)) {
-                        String[] allNames = SQLUtils.splitFullIdentifier(group, catalogSeparator, quoteStrings);
+                        String[] allNames = SQLUtils.splitFullIdentifier(group, catalogSeparator, quoteStrings, true);
                         Collections.addAll(nameList, allNames);
                     }
                 }
