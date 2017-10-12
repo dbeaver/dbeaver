@@ -528,7 +528,7 @@ public class SQLEditor extends SQLEditorBase implements
         getTextViewer().getTextWidget().addTraverseListener(new TraverseListener() {
             @Override
             public void keyTraversed(TraverseEvent e) {
-                if (e.detail == SWT.TRAVERSE_PAGE_NEXT) {
+                if (e.detail == SWT.TRAVERSE_TAB_NEXT) {
                     ResultSetViewer viewer = getActiveResultSetViewer();
                     if (viewer != null && viewer.getActivePresentation().getControl().isVisible()) {
                         viewer.getActivePresentation().getControl().setFocus();
