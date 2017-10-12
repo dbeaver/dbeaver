@@ -60,4 +60,5 @@ public class SQLPreferenceConstants
 
     public final static String RESULT_SET_CLOSE_ON_ERROR                = "SQLEditor.resultSet.closeOnError";
     public final static String RESULT_SET_ORIENTATION                   = "SQLEditor.resultSet.orientation";
+    public static final String RESULTS_PANEL_RATIO                      = "SQLEditor.resultSet.ratio";
 }
