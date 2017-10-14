@@ -17,11 +17,13 @@
 package org.jkiss.dbeaver.ui.perspective;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -65,7 +67,8 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
-import org.jkiss.dbeaver.ui.controls.CSmartCombo;
+import org.jkiss.dbeaver.ui.controls.CSmartSelector;
+import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -93,8 +96,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     private IPartListener partListener;
 
     private Text resultSetSize;
-    private CSmartCombo<DBPDataSourceContainer> connectionCombo;
-    private CSmartCombo<DBNDatabaseNode> databaseCombo;
+    private CSmartSelector<DBPDataSourceContainer> connectionCombo;
+    private CSmartSelector<DBNDatabaseNode> databaseCombo;
 
     private SoftReference<DBPDataSourceContainer> curDataSourceContainer = null;
 
@@ -307,6 +310,23 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             return dataSourceContainer.getRegistry().getDataSources();
         } else {
             return DataSourceRegistry.getAllDataSources();
+        }
+    }
+
+    private IProject getActiveProject() {
+        //Get project from active editor
+        final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
+        if (activeEditor != null && activeEditor.getEditorInput() instanceof IFileEditorInput) {
+            final IFile curFile = ((IFileEditorInput) activeEditor.getEditorInput()).getFile();
+            if (curFile != null) {
+                return curFile.getProject();
+            }
+        }
+        final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        if (dataSourceContainer != null) {
+            return dataSourceContainer.getRegistry().getProject();
+        } else {
+            return DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
         }
     }
 
@@ -590,37 +610,12 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
     }
 
-    private void changeDataSourceSelection() {
+    private void changeDataSourceSelection(final DBPDataSourceContainer selectedDataSource) {
         if (connectionCombo == null || connectionCombo.isDisposed()) {
             return;
         }
         final IDataSourceContainerProviderEx dataSourceUpdater = getActiveDataSourceUpdater();
         if (dataSourceUpdater == null) {
-            return;
-        }
-
-        DBPDataSourceContainer curDataSource = dataSourceUpdater.getDataSourceContainer();
-        final DBPDataSourceContainer selectedDataSource;
-        List<? extends DBPDataSourceContainer> dataSources = getAvailableDataSources();
-        if (!CommonUtils.isEmpty(dataSources)) {
-            int curIndex = connectionCombo.getSelectionIndex();
-            if (curIndex == 0) {
-                if (curDataSource == null) {
-                    // Nothing changed
-                    return;
-                }
-                selectedDataSource = null;
-            } else if (curIndex > dataSources.size()) {
-                log.warn("Connection combo index out of bounds (" + curIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-                return;
-            } else {
-                // Change data source
-                selectedDataSource = dataSources.get(curIndex - 1);
-                if (selectedDataSource == curDataSource) {
-                    return;
-                }
-            }
-        } else {
             return;
         }
 
@@ -725,7 +720,22 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         final int fontHeight = UIUtils.getFontHeight(parent);
         int comboWidth = fontHeight * 20;
 
-        connectionCombo = new CSmartCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new ConnectionLabelProvider());
+        connectionCombo = new CSmartSelector<DBPDataSourceContainer>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new ConnectionLabelProvider()) {
+            @Override
+            protected void dropDown(boolean drop) {
+                if (!drop) {
+                    return;
+                }
+
+                SelectDataSourceDialog dialog = new SelectDataSourceDialog(getShell(), getActiveProject(), getSelectedItem());
+                if (dialog.open() == IDialogConstants.CANCEL_ID) {
+                    return;
+                }
+                DBPDataSourceContainer dataSource = dialog.getDataSource();
+                super.select(dataSource);
+                changeDataSourceSelection(dataSource);
+            }
+        };
         RowData rd = new RowData();
         rd.width = comboWidth;
         connectionCombo.setLayoutData(rd);
@@ -734,48 +744,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
         connectionCombo.addItem(null);
         connectionCombo.select(0);
-        connectionCombo.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                changeDataSourceSelection();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
-        connectionCombo.setTableFilter(new CSmartCombo.TableFilter<DBPDataSourceContainer>() {
-            boolean enabled = false;
-            @Override
-            public String getFilterLabel() {
-                return "Connected";
-            }
-
-            @Override
-            public String getDefaultLabel() {
-                return "All";
-            }
-
-            @Override
-            public boolean isEnabled() {
-                return enabled;
-            }
-
-            @Override
-            public boolean setEnabled(boolean enabled) {
-                this.enabled = enabled;
-                return enabled;
-            }
-
-            @Override
-            public boolean filter(DBPDataSourceContainer item) {
-                return item != null && item.isConnected();
-            }
-        });
 
         comboWidth = fontHeight * 16;
-        databaseCombo = new CSmartCombo<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new DatabaseLabelProvider());
+        databaseCombo = new CSmartSelector<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new DatabaseLabelProvider());
         rd = new RowData();
         rd.width = comboWidth;
         databaseCombo.setLayoutData(rd);

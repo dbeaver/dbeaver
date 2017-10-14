@@ -20,6 +20,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
@@ -54,11 +55,13 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
             }
         }
         if (!scripts.isEmpty()) {
-            DBPDataSourceContainer dataSourceDescriptor = SelectDataSourceDialog.selectDataSource(activeShell, scripts.get(0).getProject());
-            if (dataSourceDescriptor != null) {
-                for (IFile script : scripts) {
-                    EditorUtils.setFileDataSource(script, dataSourceDescriptor, true);
-                }
+            SelectDataSourceDialog dialog = new SelectDataSourceDialog(activeShell, scripts.get(0).getProject(), null);
+            if (dialog.open() == IDialogConstants.CANCEL_ID) {
+                return null;
+            }
+            DBPDataSourceContainer dataSource = dialog.getDataSource();
+            for (IFile script : scripts) {
+                EditorUtils.setFileDataSource(script, dataSource, true);
             }
         }
         return null;

@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorInput;
@@ -146,8 +147,11 @@ public class OpenHandler extends AbstractDataSourceHandler {
             if (dataSourceRegistry.getDataSources().size() == 1) {
                 dataSourceContainer = dataSourceRegistry.getDataSources().get(0);
             } else if (!dataSourceRegistry.getDataSources().isEmpty()) {
-                dataSourceContainer = SelectDataSourceDialog.selectDataSource(
-                    HandlerUtil.getActiveShell(event), project);
+                SelectDataSourceDialog dialog = new SelectDataSourceDialog(HandlerUtil.getActiveShell(event), project, null);
+                if (dialog.open() == IDialogConstants.CANCEL_ID) {
+                    return null;
+                }
+                dataSourceContainer = dialog.getDataSource();
             }
         }
         return dataSourceContainer;

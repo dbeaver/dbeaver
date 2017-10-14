@@ -43,8 +43,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         boolean filter(FILTER_ITEM_TYPE item);
     }
 
-    private final ILabelProvider labelProvider;
-    private final List<ITEM_TYPE> items = new ArrayList<>();
+    protected final ILabelProvider labelProvider;
+    protected final List<ITEM_TYPE> items = new ArrayList<>();
     private TableFilter<ITEM_TYPE> tableFilter = null;
     private ITEM_TYPE selectedItem;
     private Label imageLabel;
@@ -565,7 +565,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         return this.popup != null && this.popup.getVisible();
     }
 
-    void dropDown(boolean drop)
+    protected void dropDown(boolean drop)
     {
         if (drop == isDropped()) {
             return;
