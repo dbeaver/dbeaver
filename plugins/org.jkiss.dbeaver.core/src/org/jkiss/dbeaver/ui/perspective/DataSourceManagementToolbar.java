@@ -750,10 +750,12 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 if (!drop) {
                     return;
                 }
+                DBPDataSourceContainer curDS = getDataSourceContainer();
                 DBNDatabaseNode selectedDB = getSelectedItem();
                 SelectObjectDialog<DBNDatabaseNode> dialog = new SelectObjectDialog<>(getShell(),
                     "Choose catalog/schema",
                     true,
+                    "SchemaSelector" + (curDS == null ? "": "_" + curDS.getDriver().getId()),
                     getItems(),
                     selectedDB == null ? null : Collections.singletonList(selectedDB));
                 if (dialog.open() == IDialogConstants.CANCEL_ID) {
