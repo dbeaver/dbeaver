@@ -53,15 +53,17 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
     private static final String DIALOG_ID = "DBeaver.SelectObjectDialog";//$NON-NLS-1$
 
     private String title;
+    private String listId;
     private Collection<T> objects;
     private List<T> selectedObjects = new ArrayList<>();
     private boolean singleSelection;
 
-    public SelectObjectDialog(Shell parentShell, String title, boolean singleSelection, Collection<T> objects, Collection<T> selected)
+    public SelectObjectDialog(Shell parentShell, String title, boolean singleSelection, String listId, Collection<T> objects, Collection<T> selected)
     {
         super(parentShell);
         this.title = title;
         this.singleSelection = singleSelection;
+        this.listId = listId;
         this.objects = new ArrayList<>(objects);
         if (selected != null) {
             selectedObjects.addAll(selected);
@@ -98,7 +100,7 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
             @NotNull
             @Override
             protected String getListConfigId(List<Class<?>> classList) {
-                return "ObjectsSelector";
+                return listId;
             }
 
             @Override
@@ -192,9 +194,9 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
         return selectedObjects.isEmpty() ? null : selectedObjects.get(0);
     }
 
-    public static <T extends DBPObject> T selectObject(Shell parentShell, String title, Collection<T> objects)
+    public static <T extends DBPObject> T selectObject(Shell parentShell, String title, String listId, Collection<T> objects)
     {
-        SelectObjectDialog<T> scDialog = new SelectObjectDialog<>(parentShell, title, true, objects, null);
+        SelectObjectDialog<T> scDialog = new SelectObjectDialog<>(parentShell, title, true, listId, objects, null);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             final List<T> selectedObjects = scDialog.getSelectedObjects();
             return CommonUtils.isEmpty(selectedObjects) ? null : selectedObjects.get(0);
