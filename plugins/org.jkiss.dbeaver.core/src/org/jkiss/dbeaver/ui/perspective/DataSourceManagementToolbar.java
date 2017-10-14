@@ -29,7 +29,10 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.RowData;
@@ -68,6 +71,7 @@ import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.CSmartSelector;
+import org.jkiss.dbeaver.ui.dialogs.SelectObjectDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -77,10 +81,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.ref.SoftReference;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * DataSource Toolbar
@@ -640,12 +641,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         updateJob.schedule();
     }
 
-    private void changeDataBaseSelection() {
-        if (databaseCombo == null || databaseCombo.isDisposed() || databaseCombo.getSelectionIndex() < 0) {
-            return;
-        }
+    private void changeDataBaseSelection(DBNDatabaseNode node) {
         DBPDataSourceContainer dsContainer = getDataSourceContainer();
-        final String newName = databaseCombo.getItemText(databaseCombo.getSelectionIndex());
+        final String newName = node.getNodeName();
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
             new AbstractJob("Change active database") {
@@ -746,7 +744,28 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         connectionCombo.select(0);
 
         comboWidth = fontHeight * 16;
-        databaseCombo = new CSmartSelector<>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new DatabaseLabelProvider());
+        databaseCombo = new CSmartSelector<DBNDatabaseNode>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new DatabaseLabelProvider()) {
+            @Override
+            protected void dropDown(boolean drop) {
+                if (!drop) {
+                    return;
+                }
+                DBNDatabaseNode selectedDB = getSelectedItem();
+                SelectObjectDialog<DBNDatabaseNode> dialog = new SelectObjectDialog<>(getShell(),
+                    "Choose catalog/schema",
+                    true,
+                    getItems(),
+                    selectedDB == null ? null : Collections.singletonList(selectedDB));
+                if (dialog.open() == IDialogConstants.CANCEL_ID) {
+                    return;
+                }
+                DBNDatabaseNode node = dialog.getSelectedObject();
+                if (node != null) {
+                    super.select(node);
+                }
+                changeDataBaseSelection(node);
+            }
+        };
         rd = new RowData();
         rd.width = comboWidth;
         databaseCombo.setLayoutData(rd);
@@ -755,17 +774,6 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip);
         databaseCombo.addItem(null);
         databaseCombo.select(0);
-        databaseCombo.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                changeDataBaseSelection();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
 
         resultSetSize = new Text(comboGroup, SWT.BORDER);
         resultSetSize.setTextLimit(10);

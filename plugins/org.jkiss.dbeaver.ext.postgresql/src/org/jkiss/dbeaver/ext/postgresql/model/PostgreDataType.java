@@ -112,7 +112,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             if (typTypeStr != null && !typTypeStr.isEmpty()) {
                 this.typeType = PostgreTypeType.valueOf(typTypeStr.toLowerCase(Locale.ENGLISH));
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.debug("Invalid type type [" + typTypeStr + "] - " + e.getMessage());
         }
         this.typeCategory = PostgreTypeCategory.X;
@@ -121,7 +121,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             if (typCategoryStr != null && !typCategoryStr.isEmpty()) {
                 this.typeCategory = PostgreTypeCategory.valueOf(typCategoryStr.toUpperCase(Locale.ENGLISH));
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.debug("Invalid type category [" + typCategoryStr + "] - " + e.getMessage());
         }
 
@@ -518,6 +518,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         long typeId = JDBCUtils.safeGetLong(dbResult, "oid");
         String name = JDBCUtils.safeGetString(dbResult, "typname");
         if (CommonUtils.isEmpty(name)) {
+            log.debug("Empty name for data type " + typeId);
             return null;
         }
         int typeLength = JDBCUtils.safeGetInt(dbResult, "typlen");
