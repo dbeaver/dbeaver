@@ -217,7 +217,19 @@
         <command id="org.jkiss.dbeaver.core.project.active" name="%command.org.jkiss.dbeaver.core.project.active.name" description="%command.org.jkiss.dbeaver.core.project.active.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.project.select" name="%command.org.jkiss.dbeaver.core.project.select.name" description="%command.org.jkiss.dbeaver.core.project.select.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.resource.create.folder" name="%command.org.jkiss.dbeaver.core.resource.create.folder.name" description="%command.org.jkiss.dbeaver.core.resource.create.folder.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
-        <command id="org.jkiss.dbeaver.core.resource.create.link" name="%command.org.jkiss.dbeaver.core.resource.link.folder.name" description="%command.org.jkiss.dbeaver.core.resource.link.folder.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command
+              categoryId="org.jkiss.dbeaver.core.navigator"
+              description="%command.org.jkiss.dbeaver.core.resource.link.file.description"
+              id="org.jkiss.dbeaver.core.resource.link.file"
+              name="%command.org.jkiss.dbeaver.core.resource.link.file.name">
+           <commandParameter
+                 id="org.jkiss.dbeaver.core.resource.link.file.contenttype"
+                 name="%commandParameter.org.jkiss.dbeaver.core.resource.link.file.contenttype.name"
+                 optional="true"
+                 values="org.jkiss.dbeaver.runtime.ContentTypeParameterValues">
+           </commandParameter>
+        </command>
+        <command id="org.jkiss.dbeaver.core.resource.link.folder" name="%command.org.jkiss.dbeaver.core.resource.link.folder.name" description="%command.org.jkiss.dbeaver.core.resource.link.folder.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.sql.script.associate" name="%command.org.jkiss.dbeaver.core.sql.script.associate.name" description="%command.org.jkiss.dbeaver.core.sql.script.associate.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
         <command id="org.jkiss.dbeaver.core.connect" name="%command.org.jkiss.dbeaver.core.connect.name" description="%command.org.jkiss.dbeaver.core.connect.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -343,7 +355,8 @@
         <image commandId="org.jkiss.dbeaver.core.project.refresh" icon="icons/refresh.png"/>
         <image commandId="org.jkiss.dbeaver.core.project.select" icon="icons/project.png"/>
         <image commandId="org.jkiss.dbeaver.core.resource.create.folder" icon="IMG_TOOL_NEW_WIZARD"/>
-        <image commandId="org.jkiss.dbeaver.core.resource.create.link" icon="icons/file/link.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resource.link.file" icon="icons/file/link.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resource.link.folder" icon="icons/file/link.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.sql.editor.open" icon="icons/sql/sql_script.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.recent" icon="icons/sql/sql_script_recent.png"/>
@@ -574,7 +587,19 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resource.create.link" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCreateLink">
+        <handler commandId="org.jkiss.dbeaver.core.resource.link.file" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerLinkFile">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.eclipse.core.resources.IResource">
+                            <test property="org.jkiss.dbeaver.core.resource.canCreateLink"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.resource.link.folder" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerLinkFolder">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -1827,7 +1852,14 @@
             <command commandId="org.jkiss.dbeaver.core.resource.create.folder">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.resource.create.link">
+            <command commandId="org.jkiss.dbeaver.core.resource.link.file">
+               <parameter
+                     name="org.jkiss.dbeaver.core.resource.link.file.contenttype"
+                     value="org.jkiss.dbeaver.sql">
+               </parameter>
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resource.link.folder">
                 <visibleWhen checkEnabled="true"/>
             </command>
 
