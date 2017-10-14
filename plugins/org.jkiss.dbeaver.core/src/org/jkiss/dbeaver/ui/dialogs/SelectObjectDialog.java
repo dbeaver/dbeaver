@@ -26,12 +26,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
-import org.jkiss.dbeaver.ui.controls.itemlist.ObjectListControl;
+import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -44,7 +48,7 @@ import java.util.List;
  *
  * @author Serge Rider
  */
-public class SelectObjectDialog<T> extends Dialog {
+public class SelectObjectDialog<T extends DBPObject> extends Dialog {
 
     private static final String DIALOG_ID = "DBeaver.SelectObjectDialog";//$NON-NLS-1$
 
@@ -53,12 +57,15 @@ public class SelectObjectDialog<T> extends Dialog {
     private List<T> selectedObjects = new ArrayList<>();
     private boolean singleSelection;
 
-    private SelectObjectDialog(Shell parentShell, String title, boolean singleSelection, Collection<T> objects)
+    public SelectObjectDialog(Shell parentShell, String title, boolean singleSelection, Collection<T> objects, Collection<T> selected)
     {
         super(parentShell);
         this.title = title;
         this.singleSelection = singleSelection;
-        this.objects = objects;
+        this.objects = new ArrayList<>(objects);
+        if (selected != null) {
+            selectedObjects.addAll(selected);
+        }
     }
 
     @Override
@@ -82,9 +89,10 @@ public class SelectObjectDialog<T> extends Dialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        ObjectListControl<T> objectList = new ObjectListControl<T>(
+        DatabaseObjectListControl<T> objectList = new DatabaseObjectListControl<T>(
             group,
-            SWT.BORDER | (singleSelection ? SWT.SINGLE : SWT.MULTI),
+            (singleSelection ? SWT.SINGLE : SWT.MULTI),
+            null,
             new ListContentProvider())
         {
             @NotNull
@@ -109,6 +117,30 @@ public class SelectObjectDialog<T> extends Dialog {
                         }
                     },
                     new ObjectsLoadVisualizer());
+            }
+
+            @Override
+            protected Object getObjectValue(T item) {
+                if (item instanceof DBSWrapper) {
+                    return ((DBSWrapper) item).getObject();
+                }
+                return super.getObjectValue(item);
+            }
+            @Override
+            protected DBPImage getObjectImage(T item)
+            {
+                if (item instanceof DBNDatabaseNode) {
+                    return ((DBNDatabaseNode) item).getNodeIcon();
+                }
+                return null;
+            }
+
+            @Override
+            protected void setListData(Collection<T> items, boolean append) {
+                super.setListData(items, append);
+                if (selectedObjects != null) {
+                    getItemsViewer().setSelection(new StructuredSelection(selectedObjects));
+                }
             }
         };
         objectList.createProgressPanel();
@@ -155,19 +187,14 @@ public class SelectObjectDialog<T> extends Dialog {
         return selectedObjects;
     }
 
-    public static <T> List<T> selectObjects(Shell parentShell, String title, Collection<T> objects)
+    public T getSelectedObject()
     {
-        SelectObjectDialog<T> scDialog = new SelectObjectDialog<>(parentShell, title, false, objects);
-        if (scDialog.open() == IDialogConstants.OK_ID) {
-            return scDialog.getSelectedObjects();
-        } else {
-            return null;
-        }
+        return selectedObjects.isEmpty() ? null : selectedObjects.get(0);
     }
 
-    public static <T> T selectObject(Shell parentShell, String title, Collection<T> objects)
+    public static <T extends DBPObject> T selectObject(Shell parentShell, String title, Collection<T> objects)
     {
-        SelectObjectDialog<T> scDialog = new SelectObjectDialog<>(parentShell, title, true, objects);
+        SelectObjectDialog<T> scDialog = new SelectObjectDialog<>(parentShell, title, true, objects, null);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             final List<T> selectedObjects = scDialog.getSelectedObjects();
             return CommonUtils.isEmpty(selectedObjects) ? null : selectedObjects.get(0);
