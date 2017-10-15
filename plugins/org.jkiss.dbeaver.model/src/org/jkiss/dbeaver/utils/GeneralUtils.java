@@ -419,7 +419,11 @@ public class GeneralUtils {
                     errorChain.add(makeExceptionStatus(severity, cause));
                 }
                 for (SQLException error = nextError; error != null; error = error.getNextException()) {
-                    errorChain.add(makeExceptionStatus(severity, error));
+                    errorChain.add(new Status(
+                        severity,
+                        ModelPreferences.PLUGIN_ID,
+                        getExceptionMessage(error),
+                        error));
                 }
                 return new MultiStatus(
                     ModelPreferences.PLUGIN_ID,
@@ -463,14 +467,14 @@ public class GeneralUtils {
     }
 
     public static String getStatusText(IStatus status) {
-        String text = status.getMessage();
+        StringBuilder text = new StringBuilder(status.getMessage());
         IStatus[] children = status.getChildren();
         if (children != null && children.length > 0) {
             for (IStatus child : children) {
-                text += "\n" + getStatusText(child);
+                text.append("\n").append(getStatusText(child));
             }
         }
-        return text;
+        return text.toString();
     }
 
     /**
