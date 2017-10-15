@@ -50,10 +50,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -94,6 +98,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_FILTER_MENU = "org.jkiss.dbeaver.core.resultset.filterMenu";
     public static final String CMD_COPY_COLUMN_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyColumnNames";
     public static final String CMD_COPY_ROW_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyRowNames";
+    public static final String CMD_EXPORT = "org.jkiss.dbeaver.core.resultset.export";
 
     public static IResultSetController getActiveResultSet(IWorkbenchPart activePart) {
         if (activePart instanceof IResultSetContainer) {
@@ -391,6 +396,19 @@ public class ResultSetCommandHandler extends AbstractHandler {
             }
             case CMD_FILTER_MENU: {
                 rsv.showFiltersMenu();
+                break;
+            }
+            case CMD_EXPORT: {
+                ActiveWizardDialog dialog = new ActiveWizardDialog(
+                    HandlerUtil.getActiveWorkbenchWindow(event),
+                    new DataTransferWizard(
+                        new IDataTransferProducer[]{
+                            new DatabaseTransferProducer(rsv.getDataContainer(), rsv.getModel().getDataFilter())},
+                        null
+                    ),
+                    rsv.getSelection()
+                );
+                dialog.open();
                 break;
             }
         }
