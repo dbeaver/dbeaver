@@ -10,6 +10,6 @@
   </parent>
   <groupId>org.jkiss.dbeaver</groupId>
   <artifactId>org.jkiss.dbeaver.ext.test</artifactId>
-  <version>1.0.70</version>
+  <version>1.0.71</version>
   <packaging>eclipse-plugin</packaging>
 </project>
