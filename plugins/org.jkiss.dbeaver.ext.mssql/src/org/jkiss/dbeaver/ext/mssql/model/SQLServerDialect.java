@@ -27,6 +27,12 @@ import java.util.List;
 
 public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvider {
 
+    private static final String[][] TSQL_BEGIN_END_BLOCK = new String[][]{
+        /*{
+            "BEGIN^TRANSACTION", "END"
+        }*/
+    };
+
     public static final String[][] SQLSERVER_QUOTE_STRINGS = {
             {"[", "]"},
             {"\"", "\""},
@@ -43,6 +49,11 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
 
     public String[][] getIdentifierQuoteStrings() {
         return SQLSERVER_QUOTE_STRINGS;
+    }
+
+    @Override
+    public String[][] getBlockBoundStrings() {
+        return TSQL_BEGIN_END_BLOCK;
     }
 
     @Override
