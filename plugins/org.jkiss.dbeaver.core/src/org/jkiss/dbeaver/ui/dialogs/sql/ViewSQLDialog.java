@@ -103,6 +103,10 @@ public class ViewSQLDialog extends BaseSQLDialog {
         return text;
     }
 
+    public void setSQLText(String text) {
+        this.text = text;
+    }
+
     @Override
     protected void buttonPressed(int buttonId)
     {
