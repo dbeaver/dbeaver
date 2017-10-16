@@ -226,6 +226,20 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         DBNModel.updateConfigAndRefreshDatabases(this);
     }
 
+    public boolean hasConnected() {
+        for (DBPDataSourceFolder childFolder : folder.getChildren()) {
+            if (getParentNode().getFolderNode(childFolder).hasConnected()) {
+                return true;
+            }
+        }
+        for (DBNDataSource ds : getDataSources()) {
+            if (ds.getDataSource() != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public String toString() {
         return folder.getFolderPath();

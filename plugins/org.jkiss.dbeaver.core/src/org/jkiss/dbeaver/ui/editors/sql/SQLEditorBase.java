@@ -653,7 +653,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         ruleManager.endEval();
     }
 
-    public List<SQLScriptElement> extractScriptQueries(int startOffset, int length, boolean scriptMode, boolean keepDelimiters)
+    public List<SQLScriptElement> extractScriptQueries(int startOffset, int length, boolean scriptMode, boolean keepDelimiters, boolean parseParameters)
     {
         List<SQLScriptElement> queryList = new ArrayList<>();
 
@@ -677,7 +677,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             this.endScriptEvaluation();
         }
 
-        if (getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
+        if (parseParameters && getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
             // Parse parameters
             for (SQLScriptElement query : queryList) {
                 if (query instanceof SQLQuery) {

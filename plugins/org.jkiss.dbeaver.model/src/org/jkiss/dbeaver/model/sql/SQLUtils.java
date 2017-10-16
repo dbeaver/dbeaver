@@ -764,10 +764,10 @@ public final class SQLUtils {
     }
 
     public static String[] splitFullIdentifier(final String fullName, char nameSeparator, String[][] quoteStrings) {
-        return splitFullIdentifier(fullName, String.valueOf(nameSeparator), quoteStrings);
+        return splitFullIdentifier(fullName, String.valueOf(nameSeparator), quoteStrings, false);
     }
 
-    public static String[] splitFullIdentifier(final String fullName, String nameSeparator, String[][] quoteStrings) {
+    public static String[] splitFullIdentifier(final String fullName, String nameSeparator, String[][] quoteStrings, boolean keepQuotes) {
         String name = fullName.trim();
         if (ArrayUtils.isEmpty(quoteStrings)) {
             return name.split(Pattern.quote(nameSeparator));
@@ -785,7 +785,10 @@ public final class SQLUtils {
                     int endPos = name.indexOf(endQuote, startQuote.length());
                     if (endPos != -1) {
                         // Quoted part
-                        nameList.add(name.substring(startQuote.length(), endPos));
+                        String partName = keepQuotes ?
+                            name.substring(0, endPos + endQuote.length()) :
+                            name.substring(startQuote.length(), endPos);
+                        nameList.add(partName);
                         name = name.substring(endPos + endQuote.length()).trim();
                         hadQuotedPart = true;
                         break;

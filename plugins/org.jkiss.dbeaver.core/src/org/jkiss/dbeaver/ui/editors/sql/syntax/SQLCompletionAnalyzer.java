@@ -323,7 +323,7 @@ class SQLCompletionAnalyzer
                 for (int i = 1; i <= groupCount; i++) {
                     String group = matcher.group(i);
                     if (!CommonUtils.isEmpty(group)) {
-                        String[] allNames = SQLUtils.splitFullIdentifier(group, catalogSeparator, quoteStrings);
+                        String[] allNames = SQLUtils.splitFullIdentifier(group, catalogSeparator, quoteStrings, false);
                         Collections.addAll(nameList, allNames);
                     }
                 }
@@ -334,18 +334,34 @@ class SQLCompletionAnalyzer
             return null;
         }
 
-        // Fix names (convert case or remove quotes)
-        for (int i = 0; i < nameList.size(); i++) {
-            String name = nameList.get(i);
-            String unquotedName = DBUtils.getUnQuotedIdentifier(dataSource, name);
-            if (!unquotedName.equals(name)) {
-                name = unquotedName;
-            } else {
-                name = DBObjectNameCaseTransformer.transformName(sc.getDataSource(), name);
+        {
+            List<String> unquotedNames = new ArrayList<>(nameList.size());
+            for (String name : nameList) {
+                unquotedNames.add(DBUtils.getUnQuotedIdentifier(dataSource, name));
             }
-            nameList.set(i, name);
-        }
 
+            DBSObject result = findObjectByPath(sc, unquotedNames);
+            if (result != null) {
+                return result;
+            }
+        }
+        {
+            // Fix names (convert case or remove quotes)
+            for (int i = 0; i < nameList.size(); i++) {
+                String name = nameList.get(i);
+                String unquotedName = DBUtils.getUnQuotedIdentifier(dataSource, name);
+                if (!unquotedName.equals(name)) {
+                    name = unquotedName;
+                } else {
+                    name = DBObjectNameCaseTransformer.transformName(sc.getDataSource(), name);
+                }
+                nameList.set(i, name);
+            }
+            return findObjectByPath(sc, nameList);
+        }
+    }
+
+    private DBSObject findObjectByPath(DBSObjectContainer sc, List<String> nameList) {
         try {
             DBSObject childObject = null;
             while (childObject == null) {
