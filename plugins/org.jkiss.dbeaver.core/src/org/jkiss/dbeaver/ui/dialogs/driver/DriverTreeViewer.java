@@ -28,9 +28,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.activities.IIdentifier;
-import org.eclipse.ui.activities.IWorkbenchActivitySupport;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -111,18 +108,7 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         this.site = site;
         this.providers = providers;
         if (this.providers == null) {
-            
-            IWorkbenchActivitySupport activitySupport = PlatformUI.getWorkbench().getActivitySupport();
-            List<DataSourceProviderDescriptor> enabled = new ArrayList<>();
-            List<DataSourceProviderDescriptor> dataSourceProviders = DataSourceProviderRegistry.getInstance().getDataSourceProviders();
-            for (DataSourceProviderDescriptor provider : dataSourceProviders) {
-                String identifierId = provider.getPluginId() + '/' + provider.getId();
-                IIdentifier identifier = activitySupport.getActivityManager().getIdentifier(identifierId);
-                if (identifier.isEnabled()) {
-                    enabled.add(provider);
-                }
-            }
-            this.providers = enabled;
+            this.providers = DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders();
         }
 
         TreeColumn nameColumn = new TreeColumn(getTree(), SWT.LEFT);

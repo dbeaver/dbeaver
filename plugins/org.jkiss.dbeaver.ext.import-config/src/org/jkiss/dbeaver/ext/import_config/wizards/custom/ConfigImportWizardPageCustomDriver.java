@@ -17,20 +17,13 @@
 
 package org.jkiss.dbeaver.ext.import_config.wizards.custom;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.activities.IIdentifier;
-import org.eclipse.ui.activities.IWorkbenchActivitySupport;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeControl;
@@ -52,17 +45,11 @@ public class ConfigImportWizardPageCustomDriver extends WizardPage implements IS
         Composite placeholder = new Composite(parent, SWT.NONE);
         placeholder.setLayout(new GridLayout(1, true));
 
-        List<DataSourceProviderDescriptor> providers = DataSourceProviderRegistry.getInstance().getDataSourceProviders();
-        IWorkbenchActivitySupport activitySupport = PlatformUI.getWorkbench().getActivitySupport();
-        List<DataSourceProviderDescriptor> enabled = new ArrayList<>();
-        for (DataSourceProviderDescriptor provider : providers) {
-            String identifierId = provider.getPluginId() + '/' + provider.getId();
-            IIdentifier identifier = activitySupport.getActivityManager().getIdentifier(identifierId);
-            if (identifier.isEnabled()) {
-                enabled.add(provider);
-            }
-        }
-        DriverTreeControl driverTreeControl = new DriverTreeControl(placeholder, this, enabled, true);
+        DriverTreeControl driverTreeControl = new DriverTreeControl(
+            placeholder,
+            this,
+            DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders(),
+            true);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 200;
         driverTreeControl.setLayoutData(gd);

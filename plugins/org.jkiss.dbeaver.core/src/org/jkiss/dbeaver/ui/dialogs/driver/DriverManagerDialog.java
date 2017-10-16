@@ -27,9 +27,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.activities.IIdentifier;
-import org.eclipse.ui.activities.IWorkbenchActivitySupport;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -42,7 +39,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -51,7 +47,7 @@ import java.util.List;
 public class DriverManagerDialog extends HelpEnabledDialog implements ISelectionChangedListener, IDoubleClickListener {
 
     private static final String DIALOG_ID = "DBeaver.DriverManagerDialog";//$NON-NLS-1$
-    public static final String DEFAULT_DS_PROVIDER = "generic";
+    private static final String DEFAULT_DS_PROVIDER = "generic";
 
     private DataSourceProviderDescriptor selectedProvider;
     private DataSourceProviderDescriptor onlyManagableProvider;
@@ -82,19 +78,10 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        List<DataSourceProviderDescriptor> providers = DataSourceProviderRegistry.getInstance().getDataSourceProviders();
-        IWorkbenchActivitySupport activitySupport = PlatformUI.getWorkbench().getActivitySupport();
-        List<DataSourceProviderDescriptor> enabled = new ArrayList<>();
-        for (DataSourceProviderDescriptor provider : providers) {
-            String identifierId = provider.getPluginId() + '/' + provider.getId();
-            IIdentifier identifier = activitySupport.getActivityManager().getIdentifier(identifierId);
-            if (identifier.isEnabled()) {
-                enabled.add(provider);
-            }
-        }
+        List<DataSourceProviderDescriptor> enabledProviders = DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders();
         {
             DataSourceProviderDescriptor manProvider = null;
-            for (DataSourceProviderDescriptor provider : enabled) {
+            for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
                 if (provider.isDriversManagable()) {
                     if (manProvider != null) {
                         manProvider = null;
@@ -117,7 +104,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            treeControl = new DriverTreeControl(group, this, enabled, false);
+            treeControl = new DriverTreeControl(group, this, enabledProviders, false);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 300;
