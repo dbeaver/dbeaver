@@ -65,3 +65,5 @@ If you need extra features or you want to support DBeaver - purchase EE version.
 Those who read up to this point - you can use community discounts (check our <a href="https://github.com/serge-rider/dbeaver/wiki/Enterprise-Edition">WIKI</a>).
 
 Save wild animals :) Thank you!  
+
+Serge
