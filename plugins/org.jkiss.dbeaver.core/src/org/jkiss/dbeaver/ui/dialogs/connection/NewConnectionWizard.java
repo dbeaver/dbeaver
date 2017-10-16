@@ -16,9 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.activities.IIdentifier;
+import org.eclipse.ui.activities.IWorkbenchActivitySupport;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -30,11 +38,6 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.IActionConstants;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * This is a sample new wizard.
@@ -101,9 +104,18 @@ public class NewConnectionWizard extends ConnectionWizard
         addPage(pageDrivers);
 
         List<DataSourceProviderDescriptor> providers = DataSourceProviderRegistry.getInstance().getDataSourceProviders();
+        IWorkbenchActivitySupport activitySupport = PlatformUI.getWorkbench().getActivitySupport();
+        List<DataSourceProviderDescriptor> enabled = new ArrayList<>();
         for (DataSourceProviderDescriptor provider : providers) {
-            DataSourceViewDescriptor view = provider.getView(IActionConstants.NEW_CONNECTION_POINT);
+            String identifierId = provider.getPluginId() + '/' + provider.getId();
+            IIdentifier identifier = activitySupport.getActivityManager().getIdentifier(identifierId);
+            if (identifier.isEnabled()) {
+                enabled.add(provider);
+            }
+        }
+        for (DataSourceProviderDescriptor provider : enabled) {
             availableProvides.add(provider);
+            DataSourceViewDescriptor view = provider.getView(IActionConstants.NEW_CONNECTION_POINT);
             if (view != null) {
                 ConnectionPageSettings pageSettings = new ConnectionPageSettings(
                     NewConnectionWizard.this,
