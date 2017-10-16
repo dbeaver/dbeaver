@@ -98,14 +98,14 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     }
 
     @NotNull
-    @Property(viewable = true, order = 1)
+    //@Property(viewable = false, order = 2)
     public PostgreDatabase getDatabase() {
         return database;
     }
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 2)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;

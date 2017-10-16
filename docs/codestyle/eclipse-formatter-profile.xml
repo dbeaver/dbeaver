@@ -74,7 +74,7 @@
 <setting id="org.eclipse.jdt.core.formatter.insert_space_before_opening_angle_bracket_in_type_parameters" value="do not insert"/>
 <setting id="org.eclipse.jdt.core.formatter.comment.clear_blank_lines_in_block_comment" value="false"/>
 <setting id="org.eclipse.jdt.core.formatter.insert_new_line_in_empty_type_declaration" value="insert"/>
-<setting id="org.eclipse.jdt.core.formatter.lineSplit" value="80"/>
+<setting id="org.eclipse.jdt.core.formatter.lineSplit" value="120"/>
 <setting id="org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_if" value="insert"/>
 <setting id="org.eclipse.jdt.core.formatter.insert_space_between_brackets_in_array_type_reference" value="do not insert"/>
 <setting id="org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_parenthesized_expression" value="do not insert"/>
@@ -89,7 +89,7 @@
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_superclass_in_type_declaration" value="16"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_assignment" value="0"/>
 <setting id="org.eclipse.jdt.core.compiler.problem.assertIdentifier" value="error"/>
-<setting id="org.eclipse.jdt.core.formatter.tabulation.char" value="tab"/>
+<setting id="org.eclipse.jdt.core.formatter.tabulation.char" value="space"/>
 <setting id="org.eclipse.jdt.core.formatter.insert_space_after_comma_in_constructor_declaration_parameters" value="insert"/>
 <setting id="org.eclipse.jdt.core.formatter.insert_space_after_semicolon_in_try_resources" value="insert"/>
 <setting id="org.eclipse.jdt.core.formatter.insert_space_before_prefix_operator" value="do not insert"/>

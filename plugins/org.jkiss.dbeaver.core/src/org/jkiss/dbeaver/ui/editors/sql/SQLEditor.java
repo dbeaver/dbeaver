@@ -525,10 +525,32 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         });
+        this.resultTabs.addListener(SWT.Resize, new Listener() {
+            @Override
+            public void handleEvent(Event event)
+            {
+                if (!sashForm.isDisposed()) {
+                    int[] weights = sashForm.getWeights();
+                    getPreferenceStore().setValue(SQLPreferenceConstants.RESULTS_PANEL_RATIO, weights[0] + "-" + weights[1]);
+                }
+            }
+        });
+        String resultsPanelRatio = getPreferenceStore().getString(SQLPreferenceConstants.RESULTS_PANEL_RATIO);
+        if (!CommonUtils.isEmpty(resultsPanelRatio)) {
+            String[] weights = resultsPanelRatio.split("-");
+            if (weights.length > 1) {
+                sashForm.setWeights(new int[] {
+                    Integer.parseInt(weights[0]),
+                    Integer.parseInt(weights[1]),
+                });
+            }
+        }
+
+
         getTextViewer().getTextWidget().addTraverseListener(new TraverseListener() {
             @Override
             public void keyTraversed(TraverseEvent e) {
-                if (e.detail == SWT.TRAVERSE_PAGE_NEXT) {
+                if (e.detail == SWT.TRAVERSE_TAB_NEXT) {
                     ResultSetViewer viewer = getActiveResultSetViewer();
                     if (viewer != null && viewer.getActivePresentation().getControl().isVisible()) {
                         viewer.getActivePresentation().getControl().setFocus();
@@ -980,9 +1002,9 @@ public class SQLEditor extends SQLEditorBase implements
             // Execute all SQL statements consequently
             ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
             if (selection.getLength() > 1) {
-                elements = extractScriptQueries(selection.getOffset(), selection.getLength(), true, false);
+                elements = extractScriptQueries(selection.getOffset(), selection.getLength(), true, false, true);
             } else {
-                elements = extractScriptQueries(0, document.getLength(), true, false);
+                elements = extractScriptQueries(0, document.getLength(), true, false, true);
             }
         } else {
             // Execute statement under cursor or selected text (if selection present)

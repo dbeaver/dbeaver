@@ -42,12 +42,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.*;
+import org.eclipse.ui.ISaveablePart2;
+import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
-import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -65,7 +67,6 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -76,17 +77,11 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
@@ -1744,21 +1739,7 @@ public class ResultSetViewer extends Viewer
         // Fill general menu
         final DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && model.hasData()) {
-            manager.add(new Action(CoreMessages.controls_resultset_viewer_action_export, DBeaverIcons.getImageDescriptor(UIIcon.EXPORT)) {
-                @Override
-                public void run() {
-                    ActiveWizardDialog dialog = new ActiveWizardDialog(
-                        site.getWorkbenchWindow(),
-                        new DataTransferWizard(
-                            new IDataTransferProducer[]{
-                                new DatabaseTransferProducer(dataContainer, model.getDataFilter())},
-                            null
-                        ),
-                        getSelection()
-                    );
-                    dialog.open();
-                }
-            });
+            manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_EXPORT));
         }
         manager.add(new GroupMarker("results_export"));
         manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
