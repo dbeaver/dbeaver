@@ -547,6 +547,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
 
+/*
         getTextViewer().getTextWidget().addTraverseListener(new TraverseListener() {
             @Override
             public void keyTraversed(TraverseEvent e) {
@@ -560,6 +561,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         });
+*/
         resultTabs.setSimple(true);
 
         //resultTabs.setMRUVisible(true);
