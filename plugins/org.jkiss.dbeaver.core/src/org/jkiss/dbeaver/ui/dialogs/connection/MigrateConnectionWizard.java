@@ -30,9 +30,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.activities.IIdentifier;
-import org.eclipse.ui.activities.IWorkbenchActivitySupport;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
@@ -40,7 +37,6 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -196,17 +192,11 @@ public class MigrateConnectionWizard extends Wizard
         public void createControl(Composite parent)
         {
             Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-            List<DataSourceProviderDescriptor> providers = DataSourceProviderRegistry.getInstance().getDataSourceProviders();
-            IWorkbenchActivitySupport activitySupport = PlatformUI.getWorkbench().getActivitySupport();
-            List<DataSourceProviderDescriptor> enabled = new ArrayList<>();
-            for (DataSourceProviderDescriptor provider : providers) {
-                String identifierId = provider.getPluginId() + '/' + provider.getId();
-                IIdentifier identifier = activitySupport.getActivityManager().getIdentifier(identifierId);
-                if (identifier.isEnabled()) {
-                    enabled.add(provider);
-                }
-            }
-            driverTreeControl = new DriverTreeControl(placeholder, this, enabled, true);
+            driverTreeControl = new DriverTreeControl(
+                placeholder,
+                this,
+                DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders(),
+                true);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 200;
             driverTreeControl.setLayoutData(gd);
