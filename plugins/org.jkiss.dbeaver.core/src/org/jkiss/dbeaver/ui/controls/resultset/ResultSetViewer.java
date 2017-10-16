@@ -1672,7 +1672,7 @@ public class ResultSetViewer extends Viewer
                         }
                     }
                     viewMenu.add(new CustomizeColorsAction(attr, row));
-                    if (getModel().hasColorMapping(getModel().getSingleSource())) {
+                    if (getModel().getSingleSource() != null && getModel().hasColorMapping(getModel().getSingleSource())) {
                         viewMenu.add(new ResetAllColorAction());
                     }
                     viewMenu.add(new Separator());
