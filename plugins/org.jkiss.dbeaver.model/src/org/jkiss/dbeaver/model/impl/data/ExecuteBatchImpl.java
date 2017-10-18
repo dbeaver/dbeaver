@@ -164,7 +164,11 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
 
                             // Read keys
                             if (keysReceiver != null) {
-                                readKeys(statement.getSession(), statement, keysReceiver);
+                                try {
+                                    readKeys(statement.getSession(), statement, keysReceiver);
+                                } catch (Exception e) {
+                                    log.warn("Error reading auto-generated keys", e);
+                                }
                             }
                         }
                     } else {
