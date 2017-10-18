@@ -108,7 +108,7 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         this.site = site;
         this.providers = providers;
         if (this.providers == null) {
-            this.providers = DataSourceProviderRegistry.getInstance().getDataSourceProviders();
+            this.providers = DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders();
         }
 
         TreeColumn nameColumn = new TreeColumn(getTree(), SWT.LEFT);

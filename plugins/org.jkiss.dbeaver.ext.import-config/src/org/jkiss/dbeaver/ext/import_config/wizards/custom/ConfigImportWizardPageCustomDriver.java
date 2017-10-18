@@ -45,7 +45,11 @@ public class ConfigImportWizardPageCustomDriver extends WizardPage implements IS
         Composite placeholder = new Composite(parent, SWT.NONE);
         placeholder.setLayout(new GridLayout(1, true));
 
-        DriverTreeControl driverTreeControl = new DriverTreeControl(placeholder, this, DataSourceProviderRegistry.getInstance().getDataSourceProviders(), true);
+        DriverTreeControl driverTreeControl = new DriverTreeControl(
+            placeholder,
+            this,
+            DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders(),
+            true);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 200;
         driverTreeControl.setLayoutData(gd);

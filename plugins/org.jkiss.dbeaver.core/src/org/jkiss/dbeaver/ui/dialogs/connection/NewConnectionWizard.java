@@ -100,10 +100,9 @@ public class NewConnectionWizard extends ConnectionWizard
         pageDrivers = new ConnectionPageDriver(this);
         addPage(pageDrivers);
 
-        List<DataSourceProviderDescriptor> providers = DataSourceProviderRegistry.getInstance().getDataSourceProviders();
-        for (DataSourceProviderDescriptor provider : providers) {
-            DataSourceViewDescriptor view = provider.getView(IActionConstants.NEW_CONNECTION_POINT);
+        for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
             availableProvides.add(provider);
+            DataSourceViewDescriptor view = provider.getView(IActionConstants.NEW_CONNECTION_POINT);
             if (view != null) {
                 ConnectionPageSettings pageSettings = new ConnectionPageSettings(
                     NewConnectionWizard.this,

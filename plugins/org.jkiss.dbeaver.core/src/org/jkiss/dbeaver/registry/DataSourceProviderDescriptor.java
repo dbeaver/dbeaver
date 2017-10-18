@@ -445,4 +445,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     public String toString() {
         return id;
     }
+
+    public String getFullIdentifier() {
+        return getPluginId() + '/' + id;
+    }
+
+
 }
