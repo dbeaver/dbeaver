@@ -47,7 +47,7 @@ import java.util.List;
 public class DriverManagerDialog extends HelpEnabledDialog implements ISelectionChangedListener, IDoubleClickListener {
 
     private static final String DIALOG_ID = "DBeaver.DriverManagerDialog";//$NON-NLS-1$
-    public static final String DEFAULT_DS_PROVIDER = "generic";
+    private static final String DEFAULT_DS_PROVIDER = "generic";
 
     private DataSourceProviderDescriptor selectedProvider;
     private DataSourceProviderDescriptor onlyManagableProvider;
@@ -78,10 +78,10 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        List<DataSourceProviderDescriptor> providers = DataSourceProviderRegistry.getInstance().getDataSourceProviders();
+        List<DataSourceProviderDescriptor> enabledProviders = DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders();
         {
             DataSourceProviderDescriptor manProvider = null;
-            for (DataSourceProviderDescriptor provider : providers) {
+            for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
                 if (provider.isDriversManagable()) {
                     if (manProvider != null) {
                         manProvider = null;
@@ -104,7 +104,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            treeControl = new DriverTreeControl(group, this, providers, false);
+            treeControl = new DriverTreeControl(group, this, enabledProviders, false);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 300;

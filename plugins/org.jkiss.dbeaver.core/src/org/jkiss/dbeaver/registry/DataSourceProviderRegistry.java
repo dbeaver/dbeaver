@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.activities.IActivityManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -163,6 +165,16 @@ public class DataSourceProviderRegistry
     public List<DataSourceProviderDescriptor> getDataSourceProviders()
     {
         return dataSourceProviders;
+    }
+
+    public List<DataSourceProviderDescriptor> getEnabledDataSourceProviders()
+    {
+        IActivityManager activityManager = PlatformUI.getWorkbench().getActivitySupport().getActivityManager();
+        List<DataSourceProviderDescriptor> enabled = new ArrayList<>(dataSourceProviders);
+        enabled.removeIf(p ->
+            !activityManager.getIdentifier(p.getFullIdentifier()).isEnabled()
+        );
+        return enabled;
     }
 
     @Nullable
