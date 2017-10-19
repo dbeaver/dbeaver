@@ -52,6 +52,12 @@
         </product>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.application">
+        <application id="dbeaver-ce-standalone"
+            name="%productName"
+            description="%productSubTitle"/>
+    </extension>
+
     <extension point="org.eclipse.ui.commands">
     </extension>
 

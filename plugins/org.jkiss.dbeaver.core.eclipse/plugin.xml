@@ -21,6 +21,12 @@
 
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.application">
+        <application id="dbeaver-ce-eclipse"
+            name="%productName"
+            description="%productSubTitle"/>
+    </extension>
+
     <extension point="org.eclipse.ui.menus">
         <!-- Edit menu -->
         <menuContribution allPopups="false" locationURI="menu:edit">
