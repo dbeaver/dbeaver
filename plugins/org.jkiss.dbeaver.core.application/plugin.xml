@@ -21,7 +21,7 @@
 
 <plugin> 
 
-  <extension point="org.eclipse.core.runtime.applications" id="standalone" name="HgAdmin Standalone"> 
+  <extension point="org.eclipse.core.runtime.applications" id="standalone" name="%extension.standalone.name"> 
     <application visible="true"> 
       <run class="org.jkiss.dbeaver.core.application.DBeaverApplication"/> 
     </application> 
@@ -52,6 +52,12 @@
     </product> 
   </extension>  
 
+  <extension point="org.jkiss.dbeaver.application">
+        <application id="dbeaver-ce-standalone"
+            name="%productName"
+            description="%productSubTitle"/>
+  </extension>
+  
   <extension point="org.eclipse.ui.commands">    
   </extension>  
 

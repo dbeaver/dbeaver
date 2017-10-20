@@ -161,6 +161,7 @@ public class ResultSetUtils
                             // Query may have expressions with the same alias as underlying table column
                             // and this expression may return very different data type. It breaks fetch completely.
                             // There should be a better solution but for now let's just disable this too smart feature.
+                            binding.setEntityAttribute(tableColumn, false);
                             continue;
                         }
 /*
@@ -173,7 +174,7 @@ public class ResultSetUtils
 */
                     }
 
-                    if (tableColumn != null && binding.setEntityAttribute(tableColumn)) {
+                    if (tableColumn != null && binding.setEntityAttribute(tableColumn, true)) {
                         // We have new type and new value handler.
                         // We have to fix already fetched values.
                         // E.g. we fetched strings and found out that we should handle them as LOBs or enums.
