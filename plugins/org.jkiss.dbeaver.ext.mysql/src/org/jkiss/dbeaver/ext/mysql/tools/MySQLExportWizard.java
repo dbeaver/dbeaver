@@ -66,6 +66,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
     boolean comments;
     boolean removeDefiner;
     boolean binariesInHex;
+    boolean noData;
     boolean showViews;
     private String extraCommandArgs;
 
@@ -92,6 +93,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
         comments = CommonUtils.getBoolean(store.getString("MySQL.export.comments"), false);
         removeDefiner = CommonUtils.getBoolean(store.getString("MySQL.export.removeDefiner"), false);
         binariesInHex = CommonUtils.getBoolean(store.getString("MySQL.export.binariesInHex"), false);
+        noData = CommonUtils.getBoolean(store.getString("MySQL.export.noData"), false);
         showViews = CommonUtils.getBoolean(store.getString("MySQL.export.showViews"), false);
         extraCommandArgs = store.getString("MySQL.export.extraArgs");
     }
@@ -176,6 +178,9 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
         if (binariesInHex) {
             cmd.add("--hex-blob"); //$NON-NLS-1$
         }
+        if (noData) {
+            cmd.add("--no-data"); //$NON-NLS-1$
+        }
         if (dumpEvents) cmd.add("--events"); //$NON-NLS-1$
         if (comments) cmd.add("--comments"); //$NON-NLS-1$
 	    
@@ -205,6 +210,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
         store.setValue("MySQL.export.comments", comments);
         store.setValue("MySQL.export.removeDefiner", removeDefiner);
         store.setValue("MySQL.export.binariesInHex", binariesInHex);
+        store.setValue("MySQL.export.noData", noData);
         store.setValue("MySQL.export.showViews", showViews);
         store.setValue("MySQL.export.extraArgs", extraCommandArgs);
 
