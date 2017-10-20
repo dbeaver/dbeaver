@@ -76,16 +76,16 @@ public class PrefPageMetaData extends TargetPrefPage
         {
             Group metadataGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_metadata, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            separateMetaConnectionCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_separate_meta_connection, "Opening separate metadata connection may increase performance because there will no UI locks during query execution", false, 1);
-            caseSensitiveNamesCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_case_sensitive_names, "Generate case-sensitive object names in DDL queries", false, 1);
-            readExpensiveCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_show_row_count, "It makes sense to disable this option if your database executes such queries too slowly (e.g. because of big number of data)", false, 1);
-            serverSideFiltersCheck = UIUtils.createCheckbox(metadataGroup, "Server side object filters", "Modify metadata queries so only necessary objects will be read from database (supported only by some datasources).\nOtherwise filtering will be applied on client side.\nIt makes sense to disable this option if you want to see linked object (e.g. from foreign keys).", false, 1);
+            separateMetaConnectionCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_separate_meta_connection, CoreMessages.pref_page_database_general_separate_meta_connection_tip, false, 1);
+            caseSensitiveNamesCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_case_sensitive_names, CoreMessages.pref_page_database_general_checkbox_case_sensitive_names_tip, false, 1);
+            readExpensiveCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_show_row_count, CoreMessages.pref_page_database_general_checkbox_show_row_count_tip, false, 1);
+            serverSideFiltersCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_server_side_object_filters, CoreMessages.pref_page_database_general_server_side_object_filters_tip, false, 1);
         }
 
         {
-            Group queriesGroup = UIUtils.createControlGroup(composite, "Query metadata", 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Group queriesGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_query_metadata, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            ignoreColumnLabelCheck = UIUtils.createCheckbox(queriesGroup, "Use column names instead of column labels", "Ignore column labels in data viewer", false, 1);
+            ignoreColumnLabelCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_general_use_column_names, CoreMessages.pref_page_database_general_use_column_names_tip, false, 1);
         }
 
         return composite;
