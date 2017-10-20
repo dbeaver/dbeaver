@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ValueFormatSelector;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.core.CoreMessages;
 
 /**
  * PrefPageResultSetPresentation
@@ -86,31 +87,30 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, "Common", 1, SWT.NONE, 0);
-
-            autoSwitchMode = UIUtils.createCheckbox(uiGroup, "Switch to record/grid mode on single/multiple row(s)", false);
-            showDescription = UIUtils.createCheckbox(uiGroup, "Show column description in header", false);
-            showConnectionName = UIUtils.createCheckbox(uiGroup, "Show connection name in status", false);
-            transformComplexTypes = UIUtils.createCheckbox(uiGroup, "Structurize complex types", "Visualize complex types (arrays, structures, maps) in results grid as separate columns", false, 1);
+            Group uiGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_common, 1, SWT.NONE, 0);
+            autoSwitchMode = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_switch_mode_on_rows, false);
+            showDescription = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_column_description, false);
+            showConnectionName = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_connection_name, false);
+            transformComplexTypes = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_structurize_complex_types, CoreMessages.pref_page_database_resultsets_label_structurize_complex_types_tip, false, 1);
         }
 
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, "Grid", 2, SWT.NONE, 0);
+            Group uiGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_grid, 2, SWT.NONE, 0);
 
-            gridShowOddRows = UIUtils.createCheckbox(uiGroup, "Mark odd/even rows", null, false, 2);
-            rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, "Right-justify numbers and date/times", null, false, 2);
-            gridRowBatchSize = UIUtils.createLabelSpinner(uiGroup, "Row batch size", 1, 1, Short.MAX_VALUE);
-            gridShowCellIcons = UIUtils.createCheckbox(uiGroup, "Show cell icons", null, false, 2);
-            gridDoubleClickBehavior = UIUtils.createLabelCombo(uiGroup, "Double-click behavior", SWT.READ_ONLY);
+            gridShowOddRows = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_mark_odd_rows, null, false, 2);
+            rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 2);
+            gridRowBatchSize = UIUtils.createLabelSpinner(uiGroup, CoreMessages.pref_page_database_resultsets_label_row_batch_size, 1, 1, Short.MAX_VALUE);
+            gridShowCellIcons = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_cell_icons, null, false, 2);
+            gridDoubleClickBehavior = UIUtils.createLabelCombo(uiGroup, CoreMessages.pref_page_database_resultsets_label_double_click_behavior, SWT.READ_ONLY);
             gridDoubleClickBehavior.add("None", Spreadsheet.DoubleClickBehavior.NONE.ordinal());
             gridDoubleClickBehavior.add("Editor", Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
             gridDoubleClickBehavior.add("Inline Editor", Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
         }
 
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, "Plain text", 2, SWT.NONE, 0);
+            Group uiGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_plain_text, 2, SWT.NONE, 0);
 
-            textMaxColumnSize = UIUtils.createLabelSpinner(uiGroup, "Maximum column length", 0, 10, Integer.MAX_VALUE);
+            textMaxColumnSize = UIUtils.createLabelSpinner(uiGroup, CoreMessages.pref_page_database_resultsets_label_maximum_column_length, 0, 10, Integer.MAX_VALUE);
             textValueFormat = new ValueFormatSelector(uiGroup);
         }
 
