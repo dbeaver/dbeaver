@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.core.CoreMessages;
 
 import java.io.InputStream;
 import java.util.Locale;
@@ -118,35 +119,35 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
         // Autoclose
         {
-            Composite acGroup = UIUtils.createControlGroup(composite, "Auto close", 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite acGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_format_group_auto_close, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            acSingleQuotesCheck = UIUtils.createCheckbox(acGroup, "Single quotes", false);
-            acDoubleQuotesCheck = UIUtils.createCheckbox(acGroup, "Double quotes", false);
-            acBracketsCheck = UIUtils.createCheckbox(acGroup, "Brackets", false);
+            acSingleQuotesCheck = UIUtils.createCheckbox(acGroup, CoreMessages.pref_page_sql_format_label_single_quotes, false);
+            acDoubleQuotesCheck = UIUtils.createCheckbox(acGroup, CoreMessages.pref_page_sql_format_label_double_quotes, false);
+            acBracketsCheck = UIUtils.createCheckbox(acGroup, CoreMessages.pref_page_sql_format_label_brackets, false);
         }
 
         {
             // Formatting
-            Composite afGroup = UIUtils.createControlGroup(composite, "Auto format", 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite afGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_format_group_auto_format, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
             afKeywordCase = UIUtils.createCheckbox(
                 afGroup,
-                "Convert keyword case",
-                "Auto-convert keywords to upper/lower case on enter",
+                CoreMessages.pref_page_sql_format_label_convert_keyword_case,
+                CoreMessages.pref_page_sql_format_label_convert_keyword_case_tip,
                 false, 1);
             afExtractFromSource = UIUtils.createCheckbox(
                 afGroup,
-                "Extract SQL from source code",
-                "On source code paste will remove all source language elements like quotes, +, \\n, etc", false, 1);
+                CoreMessages.pref_page_sql_format_label_extract_sql_from_source_code,
+               CoreMessages.pref_page_sql_format_label_extract_sql_from_source_code_tip, false, 1);
         }
 
-        Composite formatterGroup = UIUtils.createControlGroup(composite, "Formatter", 1, GridData.FILL_BOTH, 0);
+        Composite formatterGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_format_group_formatter, 1, GridData.FILL_BOTH, 0);
         ((GridData)formatterGroup.getLayoutData()).horizontalSpan = 2;
 
         {
             Composite formatterPanel = UIUtils.createPlaceholder(formatterGroup, 2);
             formatterPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            formatterSelector = UIUtils.createLabelCombo(formatterPanel, "Formatter", SWT.DROP_DOWN | SWT.READ_ONLY);
+            formatterSelector = UIUtils.createLabelCombo(formatterPanel, CoreMessages.pref_page_sql_format_label_formatter, SWT.DROP_DOWN | SWT.READ_ONLY);
             formatterSelector.add(capitalizeCaseName(SQLTokenizedFormatter.FORMATTER_ID));
             formatterSelector.add(capitalizeCaseName(SQLExternalFormatter.FORMATTER_ID));
             formatterSelector.addSelectionListener(new SelectionAdapter() {
@@ -162,7 +163,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
         {
             defaultGroup = UIUtils.createPlaceholder(formatterGroup, 2, 0);
             defaultGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            keywordCaseCombo = UIUtils.createLabelCombo(defaultGroup, "Keyword case", SWT.DROP_DOWN | SWT.READ_ONLY);
+            keywordCaseCombo = UIUtils.createLabelCombo(defaultGroup, CoreMessages.pref_page_sql_format_label_keyword_case, SWT.DROP_DOWN | SWT.READ_ONLY);
             keywordCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             keywordCaseCombo.add("Database");
             for (DBPIdentifierCase c :DBPIdentifierCase.values()) {
@@ -181,7 +182,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
             externalGroup = UIUtils.createPlaceholder(formatterGroup, 2, 5);
             externalGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            externalCmdText = UIUtils.createLabelText(externalGroup, "Command line", "");
+            externalCmdText = UIUtils.createLabelText(externalGroup, CoreMessages.pref_page_sql_format_label_external_command_line, "");
             externalCmdText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.installContentProposal(
                     externalCmdText,
@@ -189,15 +190,15 @@ public class PrefPageSQLFormat extends TargetPrefPage
                     new SimpleContentProposalProvider(new String[] {
                             GeneralUtils.variablePattern(SQLExternalFormatter.VAR_FILE)
                     }));
-            UIUtils.setContentProposalToolTip(externalCmdText, "External program with parameters", SQLExternalFormatter.VAR_FILE);
+            UIUtils.setContentProposalToolTip(externalCmdText, CoreMessages.pref_page_sql_format_label_external_set_content_tool_tip, SQLExternalFormatter.VAR_FILE);
 
             externalUseFile = UIUtils.createLabelCheckbox(externalGroup,
-                "Use temp file",
-                "Use temporary file to pass SQL text.\nTo pass file name in command line use parameter " + GeneralUtils.variablePattern(SQLExternalFormatter.VAR_FILE),
+                CoreMessages.pref_page_sql_format_label_external_use_temp_file,
+                CoreMessages.pref_page_sql_format_label_external_use_temp_file_tip + GeneralUtils.variablePattern(SQLExternalFormatter.VAR_FILE),
                 false);
             externalTimeout = UIUtils.createLabelSpinner(externalGroup,
-                "Exec timeout",
-                "Time to wait until formatter process finish (ms)",
+                CoreMessages.pref_page_sql_format_label_external_exec_timeout,
+                CoreMessages.pref_page_sql_format_label_external_exec_timeout_tip,
                 100, 100, 10000);
         }
 
