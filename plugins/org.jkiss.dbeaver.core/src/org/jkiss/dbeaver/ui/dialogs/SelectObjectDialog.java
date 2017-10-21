@@ -21,13 +21,16 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
@@ -36,6 +39,8 @@ import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
+import org.jkiss.dbeaver.ui.controls.itemlist.ObjectListControl;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -57,6 +62,7 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
     private Collection<T> objects;
     private List<T> selectedObjects = new ArrayList<>();
     private boolean singleSelection;
+    private Font boldFont;
 
     public SelectObjectDialog(Shell parentShell, String title, boolean singleSelection, String listId, Collection<T> objects, Collection<T> selected)
     {
@@ -68,6 +74,7 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
         if (selected != null) {
             selectedObjects.addAll(selected);
         }
+        this.boldFont = UIUtils.makeBoldFont(parentShell.getFont());
     }
 
     @Override
@@ -121,6 +128,10 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
                     new ObjectsLoadVisualizer());
             }
 
+            protected CellLabelProvider getColumnLabelProvider(ObjectColumn objectColumn) {
+                return new ObjectLabelProvider(objectColumn);
+            }
+
             @Override
             protected Object getObjectValue(T item) {
                 if (item instanceof DBSWrapper) {
@@ -142,6 +153,21 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
                 super.setListData(items, append);
                 if (selectedObjects != null) {
                     getItemsViewer().setSelection(new StructuredSelection(selectedObjects));
+                }
+            }
+
+            class ObjectLabelProvider extends ObjectColumnLabelProvider implements IFontProvider {
+                ObjectLabelProvider(ObjectColumn objectColumn) {
+                    super(objectColumn);
+                }
+
+                @Override
+                public Font getFont(Object element)
+                {
+                    if (selectedObjects.contains(element)) {
+                        return boldFont;
+                    }
+                    return null;
                 }
             }
         };
@@ -174,6 +200,15 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
         objectList.loadData();
 
         return group;
+    }
+
+    @Override
+    public int open() {
+        int result = super.open();
+
+        UIUtils.dispose(boldFont);
+
+        return result;
     }
 
     @Override
