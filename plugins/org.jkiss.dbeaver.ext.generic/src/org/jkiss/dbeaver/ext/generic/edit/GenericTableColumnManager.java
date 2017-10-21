@@ -75,6 +75,12 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     }
 
     @Override
+    protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column) {
+        // According to SQL92 DEFAULT comes before constraints
+        return new ColumnModifier[] {DataTypeModifier, DefaultModifier, NotNullModifier};
+    }
+
+    @Override
     protected long getDDLFeatures(GenericTableColumn object) {
         long features = 0;
         Object shortDrop = object.getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_DDL_DROP_COLUMN_SHORT);
