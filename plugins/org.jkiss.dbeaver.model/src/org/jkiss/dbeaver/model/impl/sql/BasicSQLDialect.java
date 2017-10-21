@@ -489,9 +489,9 @@ public class BasicSQLDialect implements SQLDialect {
                     return "(" + maxLength + ")";
                 }
             }
-        } else if (dataKind == DBPDataKind.CONTENT && !typeName.contains("LOB")) {
+        } else if ((dataKind == DBPDataKind.CONTENT || dataKind == DBPDataKind.BINARY) && !typeName.contains("LOB")) {
             final long maxLength = column.getMaxLength();
-            if (maxLength > 0) {
+            if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
                 return "(" + maxLength + ')';
             }
         } else if (dataKind == DBPDataKind.NUMERIC) {
