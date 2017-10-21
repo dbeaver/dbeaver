@@ -123,11 +123,27 @@ public abstract class PostgrePermission implements DBSObject, Comparable<Postgre
         return NONE;
     }
 
+    public void setPermission(PostgrePrivilegeType privilegeType, boolean permit) {
+        for (int i = 0; i < permissions.length; i++) {
+            if (permissions[i].privilegeType == privilegeType) {
+                if (permit) {
+                    permissions[i].permissions |= GRANTED;
+                } else {
+                    permissions[i].permissions = 0;
+                }
+            }
+        }
+    }
+
     // Properties for permissions viewer
 
-    @Property(viewable = true, order = 100, name = "SELECT")
+    @Property(viewable = true, editable = true, updatable = true, order = 100, name = "SELECT")
     public boolean hasPermissionSelect() {
         return getPermission(PostgrePrivilegeType.SELECT) != 0;
+    }
+
+    public void setPermissionSelect(boolean permitted) {
+        setPermission(PostgrePrivilegeType.SELECT, permitted);
     }
 
     @Property(viewable = true, order = 101, name = "INSERT")
