@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -38,7 +39,7 @@ import java.util.*;
 /**
  * PostgreRole
  */
-public class PostgreRole implements PostgreObject, PostgrePermissionsOwner {
+public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPRefreshableObject {
 
     public static final String CAT_SETTINGS = "Settings";
     public static final String CAT_FLAGS = "Flags";
@@ -243,6 +244,13 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner {
                 throw new DBException(e, getDataSource());
             }
         }
+    }
+
+    @Override
+    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+        membersCache.clearCache();
+        belongsCache.clearCache();
+        return this;
     }
 
     @Override
