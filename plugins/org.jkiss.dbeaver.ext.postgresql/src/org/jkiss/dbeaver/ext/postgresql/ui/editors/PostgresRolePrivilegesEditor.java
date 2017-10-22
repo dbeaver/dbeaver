@@ -67,7 +67,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
         this.pageControl = new PageControl(parent);
 
-        SashForm composite = UIUtils.createPartDivider(getSite().getPart(), this.pageControl, SWT.VERTICAL);
+        SashForm composite = UIUtils.createPartDivider(getSite().getPart(), this.pageControl, SWT.HORIZONTAL);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         roleOrObjectTable = new Table(composite, SWT.FULL_SELECTION);

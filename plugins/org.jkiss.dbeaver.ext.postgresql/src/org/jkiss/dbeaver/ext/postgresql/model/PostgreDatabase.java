@@ -362,7 +362,12 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         // Refresh all properties
-        return dataSource.getDatabaseCache().refreshObject(monitor, dataSource, this);
+        PostgreDatabase refDatabase = dataSource.getDatabaseCache().refreshObject(monitor, dataSource, this);
+        if (refDatabase != null && refDatabase == dataSource.getDefaultInstance()) {
+            // Cache types
+            refDatabase.cacheDataTypes(monitor);
+        }
+        return refDatabase;
     }
 
     public Collection<PostgreRole> getUsers(DBRProgressMonitor monitor) throws DBException {
@@ -492,6 +497,9 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     public String toString() {
         return name;
     }
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    // Caches
 
     class RoleCache extends JDBCObjectCache<PostgreDatabase, PostgreRole> {
 
