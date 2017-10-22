@@ -135,6 +135,10 @@ public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResu
         metaColumns.clear();
     }
 
+    public int getColumnCount() {
+        return metaColumns.size();
+    }
+
     public DBCAttributeMetaData addColumn(String label, DBPDataKind dataKind)
     {
         LocalResultSetColumn column = new LocalResultSetColumn(this, metaColumns.size(), label, dataKind);
