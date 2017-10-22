@@ -18,14 +18,22 @@ package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -34,20 +42,23 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
+import org.jkiss.dbeaver.ui.dialogs.SelectObjectDialog;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * PostgresRolePrivilegesEditor
@@ -60,10 +71,79 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     private boolean isLoaded;
     private Table roleOrObjectTable;
     private Table permissionTable;
+    private Action actionGrant;
+    private Action actionRevoke;
+    private Action actionCheckAll;
+    private Action actionCheckNone;
+    private List<PostgrePermission> currentPrivs;
 
     public void createPartControl(Composite parent) {
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
         parent.addDisposeListener(e -> UIUtils.dispose(boldFont));
+
+        {
+            actionGrant = new Action("Grant " + (isRoleEditor() ? "object" : "role"), DBeaverIcons.getImageDescriptor(getObjectAddIcon())) {
+                @Override
+                public void run() {
+                    try {
+                        VoidProgressMonitor monitor = new VoidProgressMonitor();
+                        if (isRoleEditor()) {
+                            DBNNode objectNode = BrowseObjectDialog.selectObject(getSite().getShell(), "Select object", null, null,
+                                new Class[]{PostgreTableBase.class}, new Class[]{PostgreTableBase.class});
+                        } else {
+                            List<PostgreRole> allRoles = new ArrayList<>(getDatabaseObject().getDatabase().getAuthIds(monitor));
+                            if (currentPrivs != null) {
+                                for (PostgrePermission p : currentPrivs) {
+                                    allRoles.remove(p.getTargetObject(monitor));
+                                }
+                            }
+                            SelectObjectDialog<PostgreRole> roleSelector = new SelectObjectDialog<>(
+                                getSite().getShell(),
+                                "Select role",
+                                true,
+                                "Permissions/Role/Selector",
+                                allRoles,
+                                null);
+                            if (roleSelector.open() == IDialogConstants.OK_ID) {
+
+                            }
+                        }
+                    } catch (DBException e) {
+                        DBeaverUI.getInstance().showError("Load object", "Error loading permission objects", e);
+                    }
+                }
+            };
+            actionRevoke = new Action("Revoke " + (isRoleEditor() ? "object" : "role"), DBeaverIcons.getImageDescriptor(getObjectRemoveIcon())) {
+                @Override
+                public void run() {
+                    super.run();
+                }
+            };
+            actionCheckAll = new Action("All") {
+                @Override
+                public void run() {
+                    boolean hadNonChecked = false;
+                    for (TableItem item : permissionTable.getItems()) {
+                        if (!item.getChecked()) hadNonChecked = true;
+                        item.setChecked(true);
+                    }
+                    if (hadNonChecked) updateCurrentPrivileges();
+                }
+            };
+            actionCheckNone = new Action("None") {
+                @Override
+                public void run() {
+                    boolean hadChecked = false;
+                    for (TableItem item : permissionTable.getItems()) {
+                        item.setChecked(false);
+                        if (item.getChecked()) hadChecked = true;
+                    }
+                    if (hadChecked) {
+                        updateCurrentPrivileges();
+                    }
+                }
+            };
+        }
 
         this.pageControl = new PageControl(parent);
 
@@ -96,13 +176,26 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         permissionTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         permissionTable.setHeaderVisible(true);
         permissionTable.setLinesVisible(true);
-        permissionTable.setEnabled(false);
         UIUtils.createTableColumn(permissionTable, SWT.LEFT, "Permission");
         UIUtils.createTableColumn(permissionTable, SWT.CENTER, "With GRANT");
         UIUtils.createTableColumn(permissionTable, SWT.CENTER, "With Hierarchy");
+        permissionTable.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (e.detail == SWT.CHECK) {
+                    updateCurrentPrivileges();
+                }
+            }
+        });
+        permissionTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e) {
+                super.mouseDown(e);
+            }
+        });
 
         for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
-            if (pt == PostgrePrivilegeType.UNKNOWN) {
+            if (!pt.isValid()) {
                 continue;
             }
             TableItem privItem = new TableItem(permissionTable, SWT.LEFT);
@@ -111,6 +204,40 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         }
 
         pageControl.createOrSubstituteProgressPanel(getSite());
+        updateObjectPermissions(null);
+        registerContextMenu();
+    }
+
+    private void updateCurrentPrivileges() {
+        System.out.println("Privs changed");
+    }
+
+    private void registerContextMenu()
+    {
+        // Register objects context menu
+        {
+            MenuManager menuMgr = new MenuManager();
+            menuMgr.addMenuListener(manager -> {
+                manager.add(actionGrant);
+                manager.add(actionRevoke);
+            });
+
+            menuMgr.setRemoveAllWhenShown(true);
+            Menu menu = menuMgr.createContextMenu(roleOrObjectTable);
+            roleOrObjectTable.setMenu(menu);
+        }
+        // Register objects context menu
+        {
+            MenuManager menuMgr = new MenuManager();
+            menuMgr.addMenuListener(manager -> {
+                manager.add(actionCheckAll);
+                manager.add(actionCheckNone);
+            });
+
+            menuMgr.setRemoveAllWhenShown(true);
+            Menu menu = menuMgr.createContextMenu(permissionTable);
+            permissionTable.setMenu(menu);
+        }
     }
 
     private void openPermObject() {
@@ -163,23 +290,38 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 }
             }
         }
+        actionRevoke.setEnabled(data != null);
+        actionCheckAll.setEnabled(data != null);
+        actionCheckNone.setEnabled(data != null);
     }
 
     private void fillPrivileges(Collection<PostgrePermission> privs) {
-        for (PostgrePermission permission : privs) {
+        currentPrivs = new ArrayList<>(privs);
+        for (PostgrePermission permission : currentPrivs) {
             TableItem permItem = new TableItem(roleOrObjectTable, SWT.LEFT);
             permItem.setData(permission);
             if (isRoleEditor()) {
                 permItem.setText(0,
                     ((PostgreRolePermission)permission).getFullTableName());
-                permItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
             } else {
                 permItem.setText(0,
                     ((PostgreTablePermission)permission).getGrantee());
-                permItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_USER));
             }
+            permItem.setImage(DBeaverIcons.getImage(getObjectIcon()));
 
         }
+    }
+
+    public DBIcon getObjectIcon() {
+        return isRoleEditor() ? UIIcon.ACTION_OBJECT : UIIcon.ACTION_USER;
+    }
+
+    public DBIcon getObjectAddIcon() {
+        return isRoleEditor() ? UIIcon.ACTION_OBJECT_ADD : UIIcon.ACTION_USER_ADD;
+    }
+
+    public DBIcon getObjectRemoveIcon() {
+        return isRoleEditor() ? UIIcon.ACTION_OBJECT_DELETE : UIIcon.ACTION_USER_DELETE;
     }
 
     private boolean isRoleEditor() {
@@ -252,6 +394,15 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         @Override
         protected void fillCustomActions(IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
+
+            ImageDescriptor imgD = DBeaverIcons.getImageDescriptor(getObjectIcon());
+            contributionManager.add(actionGrant);
+            contributionManager.add(actionRevoke);
+            contributionManager.add(new Separator());
+            contributionManager.add(actionCheckAll);
+            contributionManager.add(actionCheckNone);
+            contributionManager.add(new Separator());
+
             IWorkbenchSite workbenchSite = getSite();
             if (workbenchSite != null) {
                 contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));

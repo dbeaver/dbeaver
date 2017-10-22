@@ -176,5 +176,17 @@ public abstract class PostgrePermission implements DBSObject, Comparable<Postgre
         return getPermission(PostgrePrivilegeType.TRIGGER) != 0;
     }
 
+    /**
+     * Checks all privileges
+     */
+    public boolean hasAllPrivileges() {
+        for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
+            if (pt.isValid() && getPermission(pt) == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
 
