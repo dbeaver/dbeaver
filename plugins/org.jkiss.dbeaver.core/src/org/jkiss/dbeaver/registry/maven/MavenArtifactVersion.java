@@ -89,7 +89,11 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         this.artifact = artifact;
         this.version = version;
 
-        loadPOM(monitor);
+        try {
+            loadPOM(monitor);
+        } catch (IOException e) {
+            log.error("Error loading artifact version POM: " + e.getMessage());
+        }
     }
 
     @NotNull
