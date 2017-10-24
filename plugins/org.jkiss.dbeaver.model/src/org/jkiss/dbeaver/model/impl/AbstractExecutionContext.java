@@ -93,8 +93,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
                     // Replace variables
                     query = GeneralUtils.replaceVariables(query, getDataSource().getContainer().getVariablesResolver());
                     try {
-                        try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query, false, false, false))
-                        {
+                        try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.SCRIPT, query, false, false, false)) {
                             dbStat.executeStatement();
                         }
                     } catch (Exception e) {

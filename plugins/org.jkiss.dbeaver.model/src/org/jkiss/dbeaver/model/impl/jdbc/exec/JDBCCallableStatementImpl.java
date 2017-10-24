@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -27,8 +28,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -58,6 +61,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
     private static final Pattern EXEC_PATTERN = Pattern.compile("[a-z]+\\s+([^(]+)\\s*\\(");
 
     private DBSProcedure procedure;
+    private JDBCResultSetCallable procResults;
 
     public JDBCCallableStatementImpl(
         @NotNull JDBCSession connection,
@@ -66,6 +70,8 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         boolean disableLogging)
     {
         super(connection, original, query, disableLogging);
+
+        procResults = new JDBCResultSetCallable(getConnection(), this);
 
         // Find procedure definition
         try {
@@ -91,6 +97,45 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                 log.debug(e1);
             }
         }
+
+        if (procedure != null) {
+            try {
+                Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
+                if (!CommonUtils.isEmpty(params)) {
+                    for (DBSProcedureParameter param : params) {
+                        if (param.getParameterKind() == DBSProcedureParameterKind.OUT || param.getParameterKind() == DBSProcedureParameterKind.INOUT) {
+                            procResults.addColumn(param.getName(), param.getParameterType());
+                        }
+                    }
+                }
+            } catch (DBException e) {
+                log.warn("Error extracting callable results", e);
+            }
+        } else {
+            // Try to make columns from parameters meta
+            try {
+                JDBCDataSource dataSource = connection.getDataSource();
+                ParameterMetaData paramsMeta = original.getParameterMetaData();
+                int parameterCount = paramsMeta.getParameterCount();
+                if (parameterCount > 0) {
+                    for (int index = 0; index < parameterCount; index++) {
+                        int parameterMode = paramsMeta.getParameterMode(index + 1);
+                        if (parameterMode == ParameterMetaData.parameterModeOut || parameterMode == ParameterMetaData.parameterModeInOut) {
+                            DBSDataType dataType = dataSource.getLocalDataType(paramsMeta.getParameterTypeName(index + 1));
+                            if (dataType == null) {
+                                DBPDataKind dataKind = JDBCUtils.resolveDataKind(dataSource, paramsMeta.getParameterTypeName(index + 1), paramsMeta.getParameterType(index + 1));
+                                procResults.addColumn(String.valueOf(index + 1), dataKind);
+                            } else {
+                                procResults.addColumn(String.valueOf(index + 1), dataType);
+                            }
+                        }
+                    }
+                }
+            } catch (Throwable e) {
+                log.error("Error extracting parameters meta data", e);
+            }
+        }
+        procResults.addRow();
     }
 
     private static DBSProcedure findProcedure(DBCSession session, String queryString) throws DBException {
@@ -182,7 +227,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
     @Override
     public boolean executeStatement() throws DBCException {
         boolean hasResults = super.executeStatement();
-        if (!hasResults && procedure != null) {
+        if (!hasResults && procResults.getColumnCount() > 0) {
             return true;
         }
         return hasResults;
@@ -194,21 +239,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         JDBCResultSet resultSet = makeResultSet(getOriginal().getResultSet());
-        if (resultSet == null && procedure != null) {
-            JDBCResultSetCallable procResults = new JDBCResultSetCallable(getConnection(), this);
-            try {
-                Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
-                if (!CommonUtils.isEmpty(params)) {
-                    for (DBSProcedureParameter param : params) {
-                        if (param.getParameterKind() == DBSProcedureParameterKind.OUT || param.getParameterKind() == DBSProcedureParameterKind.INOUT) {
-                            procResults.addColumn(param.getName(), param.getParameterType());
-                        }
-                    }
-                }
-            } catch (DBException e) {
-                log.warn("Error extracting callable results", e);
-            }
-            procResults.addRow();
+        if (resultSet == null && procResults != null) {
             return procResults;
         }
         return resultSet;

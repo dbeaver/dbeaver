@@ -925,7 +925,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     protected class ObjectColumnLabelProvider extends ColumnLabelProvider implements ILabelProviderEx {
         protected final ObjectColumn objectColumn;
 
-        ObjectColumnLabelProvider(ObjectColumn objectColumn) {
+        protected ObjectColumnLabelProvider(ObjectColumn objectColumn) {
             this.objectColumn = objectColumn;
         }
 
