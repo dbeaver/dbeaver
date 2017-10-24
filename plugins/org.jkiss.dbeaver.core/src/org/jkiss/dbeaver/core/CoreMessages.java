@@ -97,19 +97,19 @@ public class CoreMessages extends NLS {
 	public static String actions_navigator_open;
 	public static String actions_navigator_view;
 	public static String actions_navigator_view_script_button;
-        public static String actions_spreadsheet_copy_special;
+    public static String actions_spreadsheet_copy_special;
 	
-    	public static String common_error_sql;
+    public static String common_error_sql;
 	
-    	public static String confirm_exit_title;
+    public static String confirm_exit_title;
 	public static String confirm_exit_message;
 	public static String confirm_exit_toggleMessage;
 	public static String confirm_order_resultset_title;
 	public static String confirm_order_resultset_message;
 	public static String confirm_order_resultset_toggleMessage;
-   	public static String confirm_fetch_all_rows_title;
-    	public static String confirm_fetch_all_rows_message;
-    	public static String confirm_fetch_all_rows_toggleMessage;
+    public static String confirm_fetch_all_rows_title;
+    public static String confirm_fetch_all_rows_message;
+    public static String confirm_fetch_all_rows_toggleMessage;
 	public static String confirm_close_resultset_edit_title;
 	public static String confirm_close_resultset_edit_message;
 	public static String confirm_close_resultset_edit_toggleMessage;
@@ -121,9 +121,9 @@ public class CoreMessages extends NLS {
 	public static String confirm_close_entity_edit_toggleMessage;
 	public static String confirm_entity_delete_title;
 	public static String confirm_entity_delete_message;
-    	public static String confirm_local_folder_delete_title;
-    	public static String confirm_local_folder_delete_message;
-    	public static String confirm_close_editor_edit_title;
+    public static String confirm_local_folder_delete_title;
+    public static String confirm_local_folder_delete_message;
+    public static String confirm_close_editor_edit_title;
 	public static String confirm_close_editor_edit_message;
 	public static String confirm_close_editor_edit_toggleMessage;
 	public static String confirm_driver_download_title;
@@ -132,9 +132,9 @@ public class CoreMessages extends NLS {
 	public static String confirm_driver_download_manual_title;
 	public static String confirm_driver_download_manual_message;
 	public static String confirm_driver_download_manual_toggleMessage;
-    	public static String confirm_version_check_title;
-    	public static String confirm_version_check_message;
-    	public static String confirm_version_check_toggleMessage;
+    public static String confirm_version_check_title;
+    public static String confirm_version_check_message;
+    public static String confirm_version_check_toggleMessage;
 	public static String confirm_entity_reject_title;
 	public static String confirm_entity_reject_message;
 	public static String confirm_entity_reject_toggleMessage;
@@ -147,7 +147,7 @@ public class CoreMessages extends NLS {
 	public static String controls_connection_properties_category_user_properties;
 	public static String controls_connection_properties_dialog_new_property_title;
 
-        public static String controls_client_home_selector_browse;
+    public static String controls_client_home_selector_browse;
 	public static String controls_client_homes_panel_button_add_home;
 	public static String controls_client_homes_panel_button_remove_home;
 	public static String controls_client_homes_panel_confirm_remove_home_text;
@@ -168,11 +168,11 @@ public class CoreMessages extends NLS {
 	public static String controls_imageview_zoom_in;
 	public static String controls_imageview_zoom_out;
 	public static String controls_itemlist_action_copy;
-    	public static String controls_locale_selector_group_locale;
-    	public static String controls_locale_selector_label_country;
-    	public static String controls_locale_selector_label_language;
-    	public static String controls_locale_selector_label_locale;
-    	public static String controls_locale_selector_label_variant;
+    public static String controls_locale_selector_group_locale;
+    public static String controls_locale_selector_label_country;
+    public static String controls_locale_selector_label_language;
+    public static String controls_locale_selector_label_locale;
+    public static String controls_locale_selector_label_variant;
 	public static String controls_object_list_job_props_read;
 	public static String controls_object_list_message_items;
 	public static String controls_object_list_message_no_items;
@@ -202,11 +202,11 @@ public class CoreMessages extends NLS {
 	public static String controls_querylog_column_time_tooltip;
 	public static String controls_querylog_column_type_name;
 	public static String controls_querylog_column_type_tooltip;
-    	public static String controls_querylog_column_connection_name;
-    	public static String controls_querylog_column_connection_tooltip;
+    public static String controls_querylog_column_connection_name;
+    public static String controls_querylog_column_connection_tooltip;
 	public static String controls_querylog_column_context_name;
 	public static String controls_querylog_column_context_tooltip;
-    	public static String controls_querylog_commit;
+    public static String controls_querylog_commit;
 	public static String controls_querylog_connected_to;
 	public static String controls_querylog_disconnected_from;
 	public static String controls_querylog_error;
@@ -236,10 +236,10 @@ public class CoreMessages extends NLS {
 
 	public static String controls_resultset_viewer_action_edit;
 	public static String controls_resultset_viewer_action_order_filter;
-    	public static String controls_resultset_viewer_action_custom_filter;
+    public static String controls_resultset_viewer_action_custom_filter;
 	public static String controls_resultset_viewer_action_refresh;
 	public static String controls_resultset_viewer_action_panels;
-    	public static String controls_resultset_viewer_action_options;
+    public static String controls_resultset_viewer_action_options;
 	public static String controls_resultset_viewer_add_new_row_context_name;
 	public static String controls_resultset_viewer_dialog_status_title;
 	public static String controls_resultset_check_autocommit_state;
@@ -249,7 +249,7 @@ public class CoreMessages extends NLS {
 	public static String controls_time_ms;
 
 	public static String controls_resultset_viewer_status_inserted_;
-    	public static String controls_resultset_viewer_status_empty;
+    public static String controls_resultset_viewer_status_empty;
 	public static String controls_resultset_viewer_status_no_data;
 	public static String controls_resultset_viewer_status_row;
 	public static String controls_resultset_viewer_status_rows;
@@ -294,15 +294,15 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_final_checkbox_filter_catalogs;
 	public static String dialog_connection_wizard_final_checkbox_filter_schemas;
 	public static String dialog_connection_wizard_final_checkbox_save_password_locally;
-    	public static String dialog_connection_wizard_final_checkbox_auto_commit;
+    public static String dialog_connection_wizard_final_checkbox_auto_commit;
 	public static String dialog_connection_wizard_final_checkbox_show_system_objects;
 	public static String dialog_connection_wizard_final_checkbox_show_util_objects;
-    	public static String dialog_connection_wizard_final_checkbox_connection_readonly;
+    public static String dialog_connection_wizard_final_checkbox_connection_readonly;
 	public static String dialog_connection_wizard_final_default_new_connection_name;
 	public static String dialog_connection_wizard_final_description;
 	public static String dialog_connection_wizard_final_group_filters;
 	public static String dialog_connection_wizard_final_group_security;
-    	public static String dialog_connection_wizard_final_group_misc;
+    public static String dialog_connection_wizard_final_group_misc;
 	public static String dialog_connection_wizard_final_header;
 	public static String dialog_connection_wizard_final_label_connection_name;
 	public static String dialog_connection_wizard_final_filter_catalogs;
@@ -392,8 +392,8 @@ public class CoreMessages extends NLS {
 	public static String dialog_edit_driver_title_create_driver;
 	public static String dialog_edit_driver_title_edit_driver;
 
-    	public static String data_transfer_wizard_name;
-    	public static String data_transfer_wizard_final_column_source;
+    public static String data_transfer_wizard_name;
+    public static String data_transfer_wizard_final_column_source;
 	public static String data_transfer_wizard_final_column_target;
 	public static String data_transfer_wizard_final_description;
 	public static String data_transfer_wizard_final_group_tables;
@@ -537,11 +537,11 @@ public class CoreMessages extends NLS {
 	public static String dialog_project_import_wizard_file_label_file;
 	public static String dialog_project_import_wizard_file_message_cannt_find_projects;
 	public static String dialog_project_import_wizard_file_message_choose_project;
-    	public static String dialog_project_import_wizard_file_message_project_exists;
+    public static String dialog_project_import_wizard_file_message_project_exists;
 	public static String dialog_project_import_wizard_file_message_ready;
 	public static String dialog_project_import_wizard_file_name;
 	public static String dialog_project_import_wizard_file_title;
-    	public static String dialog_project_import_wizard_message_success_import_message;
+    public static String dialog_project_import_wizard_message_success_import_message;
 	public static String dialog_project_import_wizard_message_success_import_title;
 	public static String dialog_project_import_wizard_monitor_import_drivers;
 	public static String dialog_project_import_wizard_monitor_import_project;
@@ -571,7 +571,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_scripts_import_wizard_window_title;
 
 	public static String dialog_search_objects_button_close;
-    	public static String dialog_search_objects_button_search;
+    public static String dialog_search_objects_button_search;
 	public static String dialog_search_objects_column_description;
 	public static String dialog_search_objects_column_type;
 	public static String dialog_search_objects_combo_contains;
@@ -585,7 +585,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_search_objects_message_no_objects_like_;
 	public static String dialog_search_objects_message_objects_found;
 	public static String dialog_search_objects_spinner_max_results;
-    	public static String dialog_search_objects_case_sensitive;
+    public static String dialog_search_objects_case_sensitive;
 	public static String dialog_search_objects_title;
 
 	public static String dialog_select_datasource_error_message;
@@ -593,7 +593,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_select_datasource_title;
 	public static String dialog_struct_columns_select_column;
 
-    	public static String dialog_struct_columns_select_error_load_columns_message;
+    public static String dialog_struct_columns_select_error_load_columns_message;
 	public static String dialog_struct_columns_select_error_load_columns_title;
 	public static String dialog_struct_columns_select_group_columns;
 	public static String dialog_struct_columns_select_label_table;
@@ -682,11 +682,11 @@ public class CoreMessages extends NLS {
 	public static String editors_sql_error_execution_plan_title;
 	public static String editors_sql_execution_log;
 	public static String editors_sql_explain_plan;
-    	public static String editors_sql_output;
+    public static String editors_sql_output;
 	public static String editors_sql_job_execute_query;
 	public static String editors_sql_job_execute_script;
 	public static String editors_sql_save_on_close_message;
-    	public static String editors_sql_save_on_close_text;
+    public static String editors_sql_save_on_close_text;
 	public static String editors_sql_status_cant_obtain_document;
 	public static String editors_sql_status_empty_query_string;
 	public static String editors_sql_status_not_connected_to_database;
@@ -733,7 +733,7 @@ public class CoreMessages extends NLS {
 	public static String model_ssh_configurator_label_port;
 	public static String model_ssh_configurator_label_private_key;
 	public static String model_ssh_configurator_label_user_name;
-    	public static String model_ssh_configurator_label_keep_alive;
+    public static String model_ssh_configurator_label_keep_alive;
 	public static String model_ssh_configurator_label_tunnel_timeout;
 
 	public static String pref_page_confirmations_combo_always;
@@ -745,14 +745,14 @@ public class CoreMessages extends NLS {
 	public static String pref_page_content_editor_checkbox_commit_on_content_apply;
 	public static String pref_page_content_editor_checkbox_commit_on_value_apply;
 	public static String pref_page_content_editor_checkbox_edit_long_as_lobs;
-    	public static String pref_page_content_editor_group_keys;
-    	public static String pref_page_content_editor_checkbox_keys_always_use_all_columns;
+    public static String pref_page_content_editor_group_keys;
+    public static String pref_page_content_editor_checkbox_keys_always_use_all_columns;
 	public static String pref_page_content_editor_checkbox_new_rows_after;
 	public static String pref_page_content_editor_checkbox_refresh_after_update;
 	public static String pref_page_content_editor_group_content;
 	public static String pref_page_content_editor_label_max_text_length;
-    	public static String pref_page_content_editor_group_hex;
-    	public static String pref_page_content_editor_hex_encoding;
+    public static String pref_page_content_editor_group_hex;
+    public static String pref_page_content_editor_hex_encoding;
 	public static String pref_page_content_cache_clob;
 	public static String pref_page_content_cache_blob;
 	
@@ -778,21 +778,21 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_general_label_result_set_max_size;
 	public static String pref_page_database_general_label_result_set_cancel_timeout;
 	public static String pref_page_database_general_label_result_set_cancel_timeout_tip;
-   	 public static String pref_page_database_resultsets_group_binary;
-    	public static String pref_page_database_resultsets_label_binary_use_strings;
-    	public static String pref_page_database_resultsets_label_binary_presentation;
-    	public static String pref_page_database_resultsets_label_binary_editor_type;
-    	public static String pref_page_database_resultsets_label_binary_strings_max_length;
-    	public static String pref_page_database_resultsets_label_auto_fetch_segment;
-    	public static String pref_page_database_resultsets_label_use_sql;
-    	public static String pref_page_database_resultsets_label_server_side_order;
+    public static String pref_page_database_resultsets_group_binary;
+    public static String pref_page_database_resultsets_label_binary_use_strings;
+    public static String pref_page_database_resultsets_label_binary_presentation;
+    public static String pref_page_database_resultsets_label_binary_editor_type;
+    public static String pref_page_database_resultsets_label_binary_strings_max_length;
+    public static String pref_page_database_resultsets_label_auto_fetch_segment;
+    public static String pref_page_database_resultsets_label_use_sql;
+    public static String pref_page_database_resultsets_label_server_side_order;
 	public static String pref_page_database_resultsets_label_fetch_size;
 	public static String pref_page_database_resultsets_label_read_metadata;
 	public static String pref_page_database_resultsets_label_read_references;
 
-    	public static String pref_page_query_manager_checkbox_ddl_executions;
+    public static String pref_page_query_manager_checkbox_ddl_executions;
 	public static String pref_page_query_manager_checkbox_metadata_read;
-    	public static String pref_page_query_manager_checkbox_metadata_write;
+    public static String pref_page_query_manager_checkbox_metadata_write;
 	public static String pref_page_query_manager_checkbox_other;
 	public static String pref_page_query_manager_checkbox_queries;
 	public static String pref_page_query_manager_checkbox_scripts;
@@ -804,16 +804,16 @@ public class CoreMessages extends NLS {
 	public static String pref_page_query_manager_checkbox_utility_functions;
 	public static String pref_page_query_manager_group_object_types;
 	public static String pref_page_query_manager_group_query_types;
-    	public static String pref_page_query_manager_group_settings;
+    public static String pref_page_query_manager_group_settings;
 	public static String pref_page_query_manager_group_storage;
-    	public static String pref_page_query_manager_checkbox_store_log_file;
-    	public static String pref_page_query_manager_logs_folder;
+    public static String pref_page_query_manager_checkbox_store_log_file;
+    public static String pref_page_query_manager_logs_folder;
 	public static String pref_page_query_manager_label_days_to_store_log;
 	public static String pref_page_query_manager_label_entries_per_page;
 
 	public static String pref_page_sql_editor_checkbox_fetch_resultsets;
 	public static String pref_page_sql_editor_text_statement_delimiter;
-    	public static String pref_page_sql_editor_checkbox_ignore_native_delimiter;
+    public static String pref_page_sql_editor_checkbox_ignore_native_delimiter;
 	public static String pref_page_sql_editor_checkbox_blank_line_delimiter;
 	public static String pref_page_sql_editor_checkbox_enable_sql_parameters;
 	public static String pref_page_sql_editor_title_pattern;
@@ -841,7 +841,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_editor_label_commit_after_line;
 	public static String pref_page_sql_editor_label_commit_type;
 	public static String pref_page_sql_editor_label_error_handling;
-    	public static String pref_page_sql_editor_label_invalidate_before_execute;
+    public static String pref_page_sql_editor_label_invalidate_before_execute;
 	public static String pref_page_sql_editor_label_sql_timeout;
 	public static String pref_page_sql_editor_label_sound_on_query_end;
 	public static String pref_page_sql_editor_label_refresh_defaults_after_execute;
@@ -858,9 +858,9 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_group_http_proxy;
 	public static String pref_page_ui_general_label_proxy_host;
 	public static String pref_page_ui_general_spinner_proxy_port;
-    	public static String pref_page_ui_general_label_proxy_user;
-    	public static String pref_page_ui_general_label_proxy_password;
-    	public static String pref_page_drivers_group_location;
+    public static String pref_page_ui_general_label_proxy_user;
+    public static String pref_page_ui_general_label_proxy_password;
+    public static String pref_page_drivers_group_location;
 
 	public static String registry_entity_editor_descriptor_description;
 	public static String registry_entity_editor_descriptor_name;
@@ -887,7 +887,7 @@ public class CoreMessages extends NLS {
 	public static String toolbar_editors_sql_run_statement_name;
 	public static String toolbar_editors_sql_run_statementNew_name;
 	public static String toolbar_editors_sql_run_script_name;
-    	public static String toolbar_editors_sql_run_scriptNew_name;
+    public static String toolbar_editors_sql_run_scriptNew_name;
 	public static String toolbar_editors_sql_run_explain_name;
 	
 	public static String tools_script_execute_wizard_task_completed;
@@ -906,7 +906,7 @@ public class CoreMessages extends NLS {
 	public static String tools_wizard_page_log_task_started_at;
 	
 	public static String ui_actions_context_search_name;
-    	public static String ui_actions_exit_emergency_question;
+    public static String ui_actions_exit_emergency_question;
 	public static String ui_common_button_help;
 	public static String ui_properties_category_information;
 	public static String ui_properties_category_structure;
@@ -925,7 +925,7 @@ public class CoreMessages extends NLS {
 	public static String editor_sql_preference;
 
 	public static String controls_resultset_edit_save;
-    	public static String controls_resultset_edit_cancel;
+    public static String controls_resultset_edit_cancel;
 	public static String controls_resultset_edit_script;
 	public static String controls_resultset_config_panels;
 	public static String controls_resultset_config_record;
@@ -1069,7 +1069,86 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_refresh_editor_on_open_tip;
 	public static String pref_page_ui_general_show_full_name_in_editor;
 	public static String pref_page_ui_general_show_preview_on_save;
-	//Preference/Properties
+	// Drivers
+	public static String pref_page_ui_general_group_settings;
+	public static String pref_page_ui_general_check_new_driver_versions;
+	public static String pref_page_drivers_local_folder;
+	public static String pref_page_drivers_group_file_repositories;
+	public static String pref_page_drivers_button_add;
+	public static String pref_page_drivers_label_enter_drivers_location_url;
+	public static String pref_page_drivers_button_remove;
+	// DriversMaven
+	public static String pref_page_drivers_maven_group_repositories;
+	public static String pref_page_drivers_maven_button_add;
+	public static String pref_page_drivers_maven_label_enter_maven_repository_url;
+	public static String pref_page_drivers_maven_label_bad_url;
+	public static String pref_page_drivers_maven_label_bad_url_tip;
+	public static String pref_page_drivers_maven_button_remove;
+	// public static String pref_page_drivers_maven_button_disable;
+	public static String pref_page_drivers_maven_button_up;
+	public static String pref_page_drivers_maven_button_down;
+	public static String pref_page_drivers_maven_group_properties;
+	public static String pref_page_drivers_maven_label_name;
+	public static String pref_page_drivers_maven_label_scope;
+	public static String pref_page_drivers_maven_group_authentication;
+	public static String pref_page_drivers_maven_label_user;
+	public static String pref_page_drivers_maven_label_password;
+	public static String pref_page_drivers_maven_label_enable;
+	public static String pref_page_drivers_maven_label_disable;
+	// DatabaseGeneral
+	public static String pref_page_ui_general_group_task_bar;
+	public static String pref_page_ui_general_label_enable_long_operations;
+	public static String pref_page_ui_general_label_enable_long_operations_tip;
+	public static String pref_page_ui_general_label_long_operation_timeout;
+	public static String pref_page_ui_general_group_resources;
+	public static String pref_page_ui_general_label_default_resource_encoding;
+	public static String pref_page_ui_general_label_set_default_resource_encoding_tip;
+	public static String pref_page_ui_general_group_debug_logs;
+	public static String pref_page_ui_general_label_enable_debug_logs;
+	public static String pref_page_ui_general_label_enable_debug_logs_tip;
+	public static String pref_page_ui_general_label_log_file_location;
+	public static String pref_page_ui_general_label_open_file_text;
+	public static String pref_page_ui_general_label_options_take_effect_after_restart;
+	public static String pref_page_ui_general_label_settings;
+	// DatabaseNavigator
+	public static String pref_page_database_general_label_expand_navigator_tree;
+	public static String pref_page_database_general_label_show_tips_in_tree;
+	public static String pref_page_database_general_label_show_tips_in_tree_tip;
+	public static String pref_page_database_general_label_order_elements_alphabetically;
+	public static String pref_page_database_general_label_folders_first;
+	public static String pref_page_database_general_label_folders_first_tip;
+	public static String pref_page_database_general_label_group_database_by_driver;
+	public static String pref_page_database_general_label_sync_editor_connection_with_navigator;
+	public static String pref_page_database_general_label_sync_editor_connection_with_navigator_tip;
+	public static String pref_page_database_general_label_double_click_node;
+	public static String pref_page_database_general_label_double_click_node_open_properties;
+	public static String pref_page_database_general_label_double_click_node_expand_collapse;
+	public static String pref_page_database_general_label_double_click_connection;
+	public static String pref_page_database_general_label_double_click_connection_open_properties;
+	public static String pref_page_database_general_label_double_click_connection_conn_disconn;
+	public static String pref_page_database_general_label_double_click_connection_open_sqleditor;
+	public static String pref_page_database_general_label_double_click_connection_expand_collapse;
+	// ConnectionTypes
+	public static String pref_page_connection_types_label_table_column_name;
+	public static String pref_page_connection_types_label_table_column_description;
+	public static String pref_page_connection_types_label_delete_connection_type;
+	public static String pref_page_connection_types_label_delete_connection_type_description;
+	public static String pref_page_connection_types_group_settings;
+	public static String pref_page_connection_types_label_name;
+	public static String pref_page_connection_types_label_description;
+	public static String pref_page_connection_types_label_color;
+	public static String pref_page_connection_types_label_auto_commit_by_default;
+	public static String pref_page_connection_types_label_confirm_sql_execution;
+	// ProjectSettings
+	public static String pref_page_projects_settings_label_resource_location;
+	public static String pref_page_projects_settings_label_resource;
+	public static String pref_page_projects_settings_label_folder;
+	public static String pref_page_projects_settings_label_select;
+	public static String pref_page_projects_settings_label_root_folder;
+	public static String pref_page_projects_settings_label_not_use_hidden_folders;
+	public static String pref_page_projects_settings_label_not_store_resources_in_another_project;
+	public static String pref_page_projects_settings_label_restart_require_refresh_global_settings;
+	// Preference/Properties
 	
 	
 	static {

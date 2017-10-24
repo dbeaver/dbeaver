@@ -22,6 +22,7 @@ import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
+import org.jkiss.dbeaver.core.CoreMessages;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,8 +75,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         {
             typeTable = new Table(composite, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
             typeTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-            UIUtils.createTableColumn(typeTable, SWT.LEFT, "Name");
-            UIUtils.createTableColumn(typeTable, SWT.LEFT, "Description");
+            UIUtils.createTableColumn(typeTable, SWT.LEFT, CoreMessages.pref_page_connection_types_label_table_column_name);
+            UIUtils.createTableColumn(typeTable, SWT.LEFT, CoreMessages.pref_page_connection_types_label_table_column_description);
             typeTable.setHeaderVisible(true);
             typeTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             typeTable.addSelectionListener(new SelectionAdapter() {
@@ -130,8 +132,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     DBPConnectionType connectionType = getSelectedType();
                     if (!UIUtils.confirmAction(
                         getShell(),
-                        "Delete connection type", "Are you sure you want to delete connection type '" + connectionType.getName() + "'?\n" +
-                            "All connections of this type will be reset to default type (" + DBPConnectionType.DEFAULT_TYPE.getName() + ")")) {
+                        CoreMessages.pref_page_connection_types_label_delete_connection_type, NLS.bind(CoreMessages.pref_page_connection_types_label_delete_connection_type_description, 
+                        		connectionType.getName() , DBPConnectionType.DEFAULT_TYPE.getName()))) {
                         return;
                     }
                     changedInfo.remove(connectionType);
@@ -145,10 +147,10 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         }
 
         {
-            Group groupSettings = UIUtils.createControlGroup(composite, "Settings", 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
+            Group groupSettings = UIUtils.createControlGroup(composite, CoreMessages.pref_page_connection_types_group_settings, 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
             groupSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            typeName = UIUtils.createLabelText(groupSettings, "Name", null);
+            typeName = UIUtils.createLabelText(groupSettings, CoreMessages.pref_page_connection_types_label_name, null);
             typeName.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e)
@@ -158,7 +160,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
 
                 }
             });
-            typeDescription = UIUtils.createLabelText(groupSettings, "Description", null);
+            typeDescription = UIUtils.createLabelText(groupSettings, CoreMessages.pref_page_connection_types_label_description, null);
             typeDescription.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e)
@@ -169,7 +171,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             });
 
             {
-                UIUtils.createControlLabel(groupSettings, "Color");
+                UIUtils.createControlLabel(groupSettings, CoreMessages.pref_page_connection_types_label_color);
 //                Composite colorGroup = UIUtils.createPlaceholder(groupSettings, 2, 5);
 //                colorGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -219,7 +221,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
 
-            autocommitCheck = UIUtils.createCheckbox(groupSettings, "Auto-commit by default", false);
+            autocommitCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_auto_commit_by_default, false);
             autocommitCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -228,7 +230,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 }
             });
             autocommitCheck.setLayoutData(gd);
-            confirmCheck = UIUtils.createCheckbox(groupSettings, "Confirm SQL execution", false);
+            confirmCheck = UIUtils.createCheckbox(groupSettings, CoreMessages. pref_page_connection_types_label_confirm_sql_execution, false);
             confirmCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)

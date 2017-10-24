@@ -33,9 +33,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -85,13 +83,13 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
 
         // Agent settings
         {
-            Group agentGroup = UIUtils.createControlGroup(composite, "Task Bar", 2, SWT.NONE, 0);
+            Group agentGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_task_bar, 2, SWT.NONE, 0);
 
             longOperationsCheck = UIUtils.createCheckbox(agentGroup,
-                    "Enable long-time operations notification",
-                    "Shows special notification in system taskbar after long-time operation (e.g. SQL query) finish.", false, 2);
+                    CoreMessages.pref_page_ui_general_label_enable_long_operations,
+                    CoreMessages.pref_page_ui_general_label_enable_long_operations_tip, false, 2);
 
-            longOperationsTimeout = UIUtils.createLabelSpinner(agentGroup, "Long-time operation timeout", 0, 0, Integer.MAX_VALUE);
+            longOperationsTimeout = UIUtils.createLabelSpinner(agentGroup, CoreMessages.pref_page_ui_general_label_long_operation_timeout, 0, 0, Integer.MAX_VALUE);
 
             if (RuntimeUtils.isPlatformMacOS()) {
                 ControlEnableState.disable(agentGroup);
@@ -100,23 +98,23 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
 
         {
             // Resources
-            Group groupResources = UIUtils.createControlGroup(composite, "Resources", 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group groupResources = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_resources, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            UIUtils.createControlLabel(groupResources, "Default resource encoding");
+            UIUtils.createControlLabel(groupResources, CoreMessages.pref_page_ui_general_label_default_resource_encoding);
             defaultResourceEncoding = UIUtils.createEncodingCombo(groupResources, GeneralUtils.DEFAULT_ENCODING);
-            defaultResourceEncoding.setToolTipText("Default encoding for scripts and text files. Change requires restart");
+            defaultResourceEncoding.setToolTipText(CoreMessages.pref_page_ui_general_label_set_default_resource_encoding_tip);
 
         }
 
         {
             // Logs
-            Group groupLogs = UIUtils.createControlGroup(composite, "Debug logs", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group groupLogs = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_debug_logs, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             logsDebugEnabled = UIUtils.createCheckbox(groupLogs,
-                    "Enable debug logs",
-                    "Debug logs can be used for DBeaver itself debugging. Also used to store all errors/warnings/messages", false, 2);
-            UIUtils.createControlLabel(groupLogs, "Log file location");
-            logsDebugLocation = new TextWithOpenFile(groupLogs, "Debug log file location", new String[] { "*.log", "*.txt" } );
+                   CoreMessages.pref_page_ui_general_label_enable_debug_logs,
+                    CoreMessages.pref_page_ui_general_label_enable_debug_logs_tip, false, 2);
+            UIUtils.createControlLabel(groupLogs, CoreMessages.pref_page_ui_general_label_log_file_location);
+            logsDebugLocation = new TextWithOpenFile(groupLogs, CoreMessages.pref_page_ui_general_label_open_file_text, new String[] { "*.log", "*.txt" } );
             UIUtils.installContentProposal(
                     logsDebugLocation.getTextControl(),
                     new TextContentAdapter(),
@@ -126,7 +124,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
                     }));
             logsDebugLocation.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            Label tipLabel = UIUtils.createLabel(groupLogs, "These options will take effect after DBeaver restart");
+            Label tipLabel = UIUtils.createLabel(groupLogs, CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart);
             tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false , 2, 1));
         }
 
@@ -134,12 +132,12 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
             // Link to secure storage config
             new PreferenceLinkArea(composite, SWT.NONE,
                 PrefPageEntityEditor.PAGE_ID,
-                "<a>''{0}''</a> settings",
+                "<a>''{0}''</a> "+CoreMessages.pref_page_ui_general_label_settings,
                 (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
 
             new PreferenceLinkArea(composite, SWT.NONE,
                 PrefPageSQLEditor.PAGE_ID,
-                "<a>''{0}''</a> settings",
+                "<a>''{0}''</a>"+CoreMessages.pref_page_ui_general_label_settings,
                 (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
 
         }
