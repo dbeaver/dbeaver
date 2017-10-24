@@ -78,15 +78,29 @@ public class MySQLCatalogManager extends SQLObjectEditor<MySQLCatalog, MySQLData
     {
         final MySQLCatalog catalog = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE SCHEMA `" + catalog.getName() + "`");
+        appendDatabaseModifiers(catalog, script);
+        actions.add(
+            new SQLDatabasePersistAction("Create schema", script.toString()) //$NON-NLS-2$
+        );
+    }
+
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
+    {
+        final MySQLCatalog catalog = command.getObject();
+        final StringBuilder script = new StringBuilder("ALTER DATABASE `" + catalog.getName() + "`");
+        appendDatabaseModifiers(catalog, script);
+        actionList.add(
+            new SQLDatabasePersistAction("Alter database", script.toString()) //$NON-NLS-2$
+        );
+    }
+
+    private void appendDatabaseModifiers(MySQLCatalog catalog, StringBuilder script) {
         if (catalog.getDefaultCharset() != null) {
             script.append("\nDEFAULT CHARACTER SET ").append(catalog.getDefaultCharset().getName());
         }
         if (catalog.getDefaultCollation() != null) {
             script.append("\nDEFAULT COLLATE ").append(catalog.getDefaultCollation().getName());
         }
-        actions.add(
-            new SQLDatabasePersistAction("Create schema", script.toString()) //$NON-NLS-2$
-        );
     }
 
     @Override

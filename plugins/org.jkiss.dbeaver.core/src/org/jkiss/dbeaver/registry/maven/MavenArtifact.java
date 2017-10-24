@@ -361,7 +361,12 @@ public class MavenArtifact implements IMavenIdentifier
 
         MavenArtifactVersion localVersion = getVersion(versionInfo);
         if (localVersion == null) {
-            localVersion = makeLocalVersion(monitor, versionInfo, lookupVersion);
+            try {
+                localVersion = makeLocalVersion(monitor, versionInfo, lookupVersion);
+            } catch (IOException e) {
+                // Some IO error - not fatal
+                log.debug("Error loading version info: " + e.getMessage());
+            }
         }
 
         return localVersion;
