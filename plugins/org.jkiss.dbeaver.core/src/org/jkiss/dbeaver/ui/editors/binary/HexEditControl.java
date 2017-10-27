@@ -75,6 +75,11 @@ public class HexEditControl extends Composite {
     static final int SHIFT_FORWARD = 1;  // frame
     static final int SHIFT_BACKWARD = 2;
 
+    static final int BYTE_WIDTH_16 = 16; 
+    static final int BYTE_WIDTH_8 = 8;
+    static final int BYTE_WIDTH_4 = 4;
+    static final int BYTE_WIDTH_2 = 2;
+
     static {
         // Compose header row
         StringBuilder rowChars = new StringBuilder();
@@ -322,7 +327,7 @@ public class HexEditControl extends Composite {
                 rightHalfWidth = (lineWidth + 1) / 2;  // line spans to both sides of its position
             }
             event.gc.setLineWidth(lineWidth);
-            for (int block = 8; block <= bytesPerLine; block += 8) {
+            for (int block = BYTE_WIDTH_16; block <= bytesPerLine; block += BYTE_WIDTH_16) {
                 int xPos = (charLen * block) * fontCharWidth - rightHalfWidth;
                 event.gc.drawLine(xPos, event.y, xPos, event.y + event.height);
             }
@@ -2024,12 +2029,30 @@ public class HexEditControl extends Composite {
     {
         int width = getClientArea().width - linesText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         int displayedNumberWidth = fontCharWidth * 4;  // hexText and previewText
-        bytesPerLine = (width / displayedNumberWidth) & 0xfffffff8;  // 0, 8, 16, 24, etc.
-        if (bytesPerLine <= 8) {
-            bytesPerLine = 8;
-        }
-//        if (bytesPerLine < 16)
-//            bytesPerLine = 16;
+        int commonWidth = width / displayedNumberWidth;
+        
+        if (commonWidth >= BYTE_WIDTH_16) {
+			bytesPerLine = 0;
+			int comPart = commonWidth / BYTE_WIDTH_16;
+			int remPart = commonWidth % BYTE_WIDTH_16;
+			if (remPart >= BYTE_WIDTH_8) {
+				bytesPerLine = BYTE_WIDTH_8;
+				remPart = remPart % BYTE_WIDTH_8;
+			} else if (remPart >= BYTE_WIDTH_4) {
+				bytesPerLine = BYTE_WIDTH_4;
+				remPart = remPart % BYTE_WIDTH_4;
+			} else if (remPart >= BYTE_WIDTH_2) {
+				bytesPerLine = BYTE_WIDTH_2;
+			}
+			bytesPerLine += comPart * BYTE_WIDTH_16;
+		} else if (commonWidth >= BYTE_WIDTH_8 && commonWidth < BYTE_WIDTH_16) {
+			bytesPerLine = BYTE_WIDTH_8;
+		} else if (commonWidth >= BYTE_WIDTH_4 && commonWidth < BYTE_WIDTH_8) {
+			bytesPerLine = BYTE_WIDTH_4;
+		} else {
+			bytesPerLine = BYTE_WIDTH_2;
+		}
+
         textGridData.widthHint = hexText.computeTrim(0, 0, bytesPerLine * 3 * fontCharWidth, 100).width;
         previewGridData.widthHint = previewText.computeTrim(0, 0, bytesPerLine * fontCharWidth, 100).width;
         updateNumberOfLines();
