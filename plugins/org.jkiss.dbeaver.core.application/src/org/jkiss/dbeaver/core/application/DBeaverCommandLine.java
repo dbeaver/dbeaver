@@ -31,6 +31,7 @@ public class DBeaverCommandLine
 
     public static final String PARAM_CLOSE_TABS = "closeTabs";
     public static final String PARAM_DISCONNECT_ALL = "disconnectAll";
+    public static final String PARAM_REUSE_WORKSPACE = "reuseWorkspace";
 
     public final static Options ALL_OPTIONS = new Options()
         .addOption(PARAM_HELP, false, "Help")
@@ -41,6 +42,7 @@ public class DBeaverCommandLine
         .addOption(PARAM_CONNECT, "connect", true, "Connects to a specified database")
         .addOption(PARAM_DISCONNECT_ALL, "disconnectAll", false, "Disconnect from all databases")
         .addOption(PARAM_CLOSE_TABS, "closeTabs", false, "Close all open editors")
+        .addOption(PARAM_REUSE_WORKSPACE, PARAM_REUSE_WORKSPACE, false, "Force workspace reuse (do not show warnings)")
 
         // Eclipse options
         .addOption("product", true, "Product id")
