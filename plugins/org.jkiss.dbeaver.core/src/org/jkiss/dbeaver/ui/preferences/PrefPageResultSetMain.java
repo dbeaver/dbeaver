@@ -21,7 +21,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -74,7 +73,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER) ||
             store.contains(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE) ||
             store.contains(DBeaverPreferences.KEEP_STATEMENT_OPEN) ||
-            store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||
+            store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||            
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE)
             ;
     }

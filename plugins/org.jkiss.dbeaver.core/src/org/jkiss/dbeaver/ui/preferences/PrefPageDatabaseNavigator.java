@@ -69,26 +69,26 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         {
             Group navigatorGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_navigator, 2, SWT.NONE, 0);
 
-            expandOnConnectCheck = UIUtils.createCheckbox(navigatorGroup, "Expand navigator tree on connect", "", false, 2);
-            showObjectTipsCheck = UIUtils.createCheckbox(navigatorGroup, "Show object tips in tree", "Show object tips (e.g. column data type) in the tree right after the name", false, 2);
-            sortCaseInsensitiveCheck = UIUtils.createCheckbox(navigatorGroup, "Order elements alphabetically", "", false, 2);
+            expandOnConnectCheck = UIUtils.createCheckbox(navigatorGroup, CoreMessages.pref_page_database_general_label_expand_navigator_tree, "", false, 2);
+            showObjectTipsCheck = UIUtils.createCheckbox(navigatorGroup, CoreMessages.pref_page_database_general_label_show_tips_in_tree, CoreMessages.pref_page_database_general_label_show_tips_in_tree_tip, false, 2);
+            sortCaseInsensitiveCheck = UIUtils.createCheckbox(navigatorGroup, CoreMessages.pref_page_database_general_label_order_elements_alphabetically, "", false, 2);
 
-            sortFoldersFirstCheck = UIUtils.createCheckbox(navigatorGroup, "Folders first", "Show folders before regular elements", false, 2);
+            sortFoldersFirstCheck = UIUtils.createCheckbox(navigatorGroup, CoreMessages.pref_page_database_general_label_folders_first, CoreMessages.pref_page_database_general_label_folders_first_tip, false, 2);
 
-            groupByDriverCheck = UIUtils.createCheckbox(navigatorGroup, "Group databases by driver", "", false, 2);
+            groupByDriverCheck = UIUtils.createCheckbox(navigatorGroup, CoreMessages.pref_page_database_general_label_group_database_by_driver, "", false, 2);
             groupByDriverCheck.setEnabled(false);
 
-            syncEditorDataSourceWithNavigator = UIUtils.createCheckbox(navigatorGroup, "Auto-sync editor connection with navigator selection", "Automatically sets editor (e.g. SQL editor) connection from selected navigator node.\nMakes sense if you need to change active connection/schema frequently.", false, 2);
+            syncEditorDataSourceWithNavigator = UIUtils.createCheckbox(navigatorGroup, CoreMessages.pref_page_database_general_label_sync_editor_connection_with_navigator, CoreMessages.pref_page_database_general_label_sync_editor_connection_with_navigator_tip, false, 2);
 
-            objDoubleClickBehavior = UIUtils.createLabelCombo(navigatorGroup, "Double-click on node", SWT.DROP_DOWN | SWT.READ_ONLY);
-            objDoubleClickBehavior.add("Open Properties", 0);
-            objDoubleClickBehavior.add("Expand / Collapse", 1);
+            objDoubleClickBehavior = UIUtils.createLabelCombo(navigatorGroup, CoreMessages.pref_page_database_general_label_double_click_node, SWT.DROP_DOWN | SWT.READ_ONLY);
+            objDoubleClickBehavior.add(CoreMessages.pref_page_database_general_label_double_click_node_open_properties, 0);
+            objDoubleClickBehavior.add(CoreMessages.pref_page_database_general_label_double_click_node_expand_collapse, 1);
 
-            dsDoubleClickBehavior = UIUtils.createLabelCombo(navigatorGroup, "Double-click on connection", SWT.DROP_DOWN | SWT.READ_ONLY);
-            dsDoubleClickBehavior.add("Open Properties", NavigatorViewBase.DoubleClickBehavior.EDIT.ordinal());
-            dsDoubleClickBehavior.add("Connect / Disconnect", NavigatorViewBase.DoubleClickBehavior.CONNECT.ordinal());
-            dsDoubleClickBehavior.add("Open SQL Editor", NavigatorViewBase.DoubleClickBehavior.SQL_EDITOR.ordinal());
-            dsDoubleClickBehavior.add("Expand / Collapse", NavigatorViewBase.DoubleClickBehavior.EXPAND.ordinal());
+            dsDoubleClickBehavior = UIUtils.createLabelCombo(navigatorGroup, CoreMessages.pref_page_database_general_label_double_click_connection, SWT.DROP_DOWN | SWT.READ_ONLY);
+            dsDoubleClickBehavior.add(CoreMessages.pref_page_database_general_label_double_click_connection_open_properties, NavigatorViewBase.DoubleClickBehavior.EDIT.ordinal());
+            dsDoubleClickBehavior.add(CoreMessages.pref_page_database_general_label_double_click_connection_conn_disconn, NavigatorViewBase.DoubleClickBehavior.CONNECT.ordinal());
+            dsDoubleClickBehavior.add(CoreMessages.pref_page_database_general_label_double_click_connection_open_sqleditor, NavigatorViewBase.DoubleClickBehavior.SQL_EDITOR.ordinal());
+            dsDoubleClickBehavior.add(CoreMessages.pref_page_database_general_label_double_click_connection_expand_collapse, NavigatorViewBase.DoubleClickBehavior.EXPAND.ordinal());
 
         }
 
