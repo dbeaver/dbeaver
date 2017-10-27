@@ -61,6 +61,7 @@ import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderListener;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.*;
+import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -219,6 +220,17 @@ public class EntityEditor extends MultiPageDatabaseEditor
         if (!isDirty()) {
             return;
         }
+        // Flush all nested object editors
+        for (IEditorPart editor : editorMap.values()) {
+            if (editor instanceof ObjectPropertiesEditor) {
+                editor.doSave(monitor);
+            }
+            if (monitor.isCanceled()) {
+                return;
+            }
+        }
+
+        // Show preview
         int previewResult = IDialogConstants.PROCEED_ID;
         if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW)) {
             monitor.beginTask(CoreMessages.editors_entity_monitor_preview_changes, 1);
