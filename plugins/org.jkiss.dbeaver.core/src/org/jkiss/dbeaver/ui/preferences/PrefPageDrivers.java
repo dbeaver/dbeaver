@@ -78,8 +78,8 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
-            Group settings = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 300);
-            versionUpdateCheck = UIUtils.createCheckbox(settings, "Check for new driver versions", false);
+            Group settings = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_settings, 2, GridData.FILL_HORIZONTAL, 300);
+            versionUpdateCheck = UIUtils.createCheckbox(settings, CoreMessages.pref_page_ui_general_check_new_driver_versions, false);
         }
 
         {
@@ -92,25 +92,25 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
 
         {
             Group drivers = UIUtils.createControlGroup(composite, CoreMessages.pref_page_drivers_group_location, 2, GridData.FILL_HORIZONTAL, 300);
-            customDriversHome = DialogUtils.createOutputFolderChooser(drivers, "Local folder", null);
+            customDriversHome = DialogUtils.createOutputFolderChooser(drivers, CoreMessages.pref_page_drivers_local_folder, null);
         }
 
         {
-            Group repoGroup = UIUtils.createControlGroup(composite, "File repositories", 2, GridData.FILL_HORIZONTAL, 300);
+            Group repoGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_drivers_group_file_repositories, 2, GridData.FILL_HORIZONTAL, 300);
             sourceList = new List(repoGroup, SWT.BORDER | SWT.SINGLE);
             sourceList.setLayoutData(new GridData(GridData.FILL_BOTH));
             Composite buttonsPH = UIUtils.createPlaceholder(repoGroup, 1);
-            UIUtils.createToolButton(buttonsPH, "Add", new SelectionAdapter() {
+            UIUtils.createToolButton(buttonsPH,CoreMessages.pref_page_drivers_button_add, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    String url = EnterNameDialog.chooseName(getShell(), "Enter drivers location URL", "http://");
+                    String url = EnterNameDialog.chooseName(getShell(), CoreMessages.pref_page_drivers_label_enter_drivers_location_url, "http://");
                     if (url != null) {
                         sourceList.add(url);
                     }
                 }
             });
-            final Button removeButton = UIUtils.createToolButton(buttonsPH, "Remove", new SelectionAdapter() {
+            final Button removeButton = UIUtils.createToolButton(buttonsPH, CoreMessages.pref_page_drivers_button_remove, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
