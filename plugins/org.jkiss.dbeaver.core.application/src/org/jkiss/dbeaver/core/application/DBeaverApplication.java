@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -88,6 +87,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     private OutputStream debugWriter;
     private PrintStream oldSystemOut;
     private PrintStream oldSystemErr;
+    private boolean reuseWorkspace = false;
 
     private Display display = null;
 
@@ -223,23 +223,28 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             boolean keepTrying = true;
             while (keepTrying) {
                 if (!instanceLoc.set(defaultHomeURL, true)) {
-                    // Can't lock specified path
-                    int msgResult = showMessageBox(
-                        "DBeaver - Can't lock workspace",
-                        "Can't lock workspace at " + defaultHomePath + ".\n" +
-                            "It seems that you have another DBeaver instance running.\n" +
-                            "You may ignore it and work without lock but it is recommended to shutdown previous instance otherwise you may corrupt workspace data.",
-                        SWT.ICON_WARNING | SWT.IGNORE | SWT.RETRY | SWT.ABORT);
+                    if (reuseWorkspace) {
+                        instanceLoc.set(defaultHomeURL, false);
+                        keepTrying = false;
+                    } else {
+                        // Can't lock specified path
+                        int msgResult = showMessageBox(
+                            "DBeaver - Can't lock workspace",
+                            "Can't lock workspace at " + defaultHomePath + ".\n" +
+                                "It seems that you have another DBeaver instance running.\n" +
+                                "You may ignore it and work without lock but it is recommended to shutdown previous instance otherwise you may corrupt workspace data.",
+                            SWT.ICON_WARNING | SWT.IGNORE | SWT.RETRY | SWT.ABORT);
 
-                    switch (msgResult) {
-                        case SWT.ABORT:
-                            return false;
-                        case SWT.IGNORE:
-                            instanceLoc.set(defaultHomeURL, false);
-                            keepTrying = false;
-                            break;
-                        case SWT.RETRY:
-                            break;
+                        switch (msgResult) {
+                            case SWT.ABORT:
+                                return false;
+                            case SWT.IGNORE:
+                                instanceLoc.set(defaultHomeURL, false);
+                                keepTrying = false;
+                                break;
+                            case SWT.RETRY:
+                                break;
+                        }
                     }
                 } else {
                     break;
@@ -441,6 +446,11 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         }
         if (commandLine.hasOption(DBeaverCommandLine.PARAM_DISCONNECT_ALL)) {
             executeWorkbenchCommand(CoreCommands.CMD_DISCONNECT_ALL);
+        }
+        if (commandLine.hasOption(DBeaverCommandLine.PARAM_REUSE_WORKSPACE)) {
+            if (instance != null) {
+                instance.reuseWorkspace = true;
+            }
         }
 
         return false;
