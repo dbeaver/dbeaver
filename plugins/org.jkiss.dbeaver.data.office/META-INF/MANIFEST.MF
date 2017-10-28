@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.data.office;singleton:=true
-Bundle-Version: 1.1.4
-Bundle-Release-Date: 20171016
+Bundle-Version: 1.1.5
+Bundle-Release-Date: 20171030
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.swt,
