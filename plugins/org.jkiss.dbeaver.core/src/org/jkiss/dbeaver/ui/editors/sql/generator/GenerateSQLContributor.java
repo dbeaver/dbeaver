@@ -131,7 +131,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 }
                 Map<String, Object> options = new HashMap<>();
                 options.put(DBPScriptObject.OPTION_REFRESH, true);
-                options.put(DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, isFullyQualifiedNames());
+                addOptions(options);
 
                 String definitionText = CommonUtils.notEmpty(object.getObjectDefinitionText(monitor, options)).trim();
                 sql.append(definitionText);
@@ -148,6 +148,12 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     }
                     sql.append("\n");
                 }
+            }
+
+            @Override
+            protected void addOptions(Map<String, Object> options) {
+                super.addOptions(options);
+                options.put(DBPScriptObject.OPTION_INCLUDE_OBJECT_DROP, true);
             }
         }));
     }
@@ -372,6 +378,10 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             } else {
                 return DBUtils.getQuotedIdentifier(entity);
             }
+        }
+
+        protected void addOptions(Map<String, Object> options) {
+            options.put(DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, isFullyQualifiedNames());
         }
 
         @Override
