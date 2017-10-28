@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
@@ -539,7 +540,13 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     {
         connectionFolderCombo.removeAll();
         connectionFolderCombo.addItem(null);
-        for (DBPDataSourceFolder folder : getWizard().getDataSourceRegistry().getRootFolders()) {
+        DBPDataSourceRegistry dataSourceRegistry = getWizard().getDataSourceRegistry();
+        if (dataSourceRegistry == null) {
+            //FIXME:AF: we need a solution for IDE mode
+            return;
+        }
+        List<? extends DBPDataSourceFolder> rootFolders = dataSourceRegistry.getRootFolders();
+        for (DBPDataSourceFolder folder : rootFolders) {
             loadConnectionFolder(0, folder);
         }
     }
