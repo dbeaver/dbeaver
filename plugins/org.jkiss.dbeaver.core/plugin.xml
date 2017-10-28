@@ -1654,10 +1654,6 @@
                 </or>
             </activeWhen>
         </handler>
-        <handler
-              class="org.jkiss.dbeaver.ui.actions.advance.AdvanceHandlerSqlConverter"
-              commandId="org.jkiss.dbeaver.core.sql.converter">
-        </handler>
 
     </extension>
 
