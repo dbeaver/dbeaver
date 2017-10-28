@@ -220,15 +220,20 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 return null;
             }
         }
-        if (isLazy()) {
+        Method getter = getGetter();
+        Object[] params = null;
+        if (getter.getParameterCount() > 0) {
+            params = new Object[getter.getParameterCount()];
+        }
+        if (isLazy() && params != null) {
             // Lazy (probably cached)
             if (isLazy(object, true) && progressMonitor == null && !supportsPreview()) {
                 throw new IllegalAccessException("Lazy property can't be read with null progress monitor");
             }
-            value = getGetter().invoke(object, progressMonitor);
-        } else {
-            value = getGetter().invoke(object);
+            params[0] = progressMonitor;
         }
+        value = getter.invoke(object, params);
+
         if (valueRenderer != null) {
             value = valueRenderer.transform(object, value);
         }

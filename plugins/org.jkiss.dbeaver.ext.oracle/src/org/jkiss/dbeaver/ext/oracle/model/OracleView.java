@@ -55,7 +55,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         private String typeName;
         private OracleView superView;
 
-        @Property(hidden = true, editable = true, updatable = true, order = -1)
+        //@Property(hidden = true, editable = true, updatable = true, order = -1)
         public String getText() { return text; }
         public void setText(String text) { this.text = text; }
 
