@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Oracle Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.oracle;singleton:=true
-Bundle-Version: 2.1.52
-Bundle-Release-Date: 20171016
+Bundle-Version: 2.1.53
+Bundle-Release-Date: 20171030
 Bundle-Activator: org.jkiss.dbeaver.ext.oracle.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
