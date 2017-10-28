@@ -149,8 +149,11 @@ class GridColumn {
         return false;
     }
 
-    int getHeaderHeight(boolean includeChildren)
+    int getHeaderHeight(boolean includeChildren, boolean forceRefresh)
     {
+        if (forceRefresh) {
+            height = -1;
+        }
         if (height < 0) {
             height = topMargin + grid.fontMetrics.getHeight() + bottomMargin;
             Image image = grid.getLabelProvider().getImage(element);
@@ -165,7 +168,7 @@ class GridColumn {
         int childHeight = 0;
         if (includeChildren && !CommonUtils.isEmpty(children)) {
             for (GridColumn child : children) {
-                childHeight = Math.max(childHeight, child.getHeaderHeight(true));
+                childHeight = Math.max(childHeight, child.getHeaderHeight(true, false));
             }
         }
         return height + childHeight;
