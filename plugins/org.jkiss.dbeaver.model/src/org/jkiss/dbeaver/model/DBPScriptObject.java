@@ -19,12 +19,25 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Object with DDL
  */
 public interface DBPScriptObject extends DBPObject {
 
-    String getObjectDefinitionText(DBRProgressMonitor monitor)
+    // If object definition was cached - refresh it
+    String OPTION_REFRESH = "refresh";
+    // Use fully qualified names. True by default
+    String OPTION_FULLY_QUALIFIED_NAMES = "useFQN";
+    String OPTION_INCLUDE_OBJECT_DROP = "script.includeDrop";
+    String OPTION_SCRIPT_FORMAT = "script.format";
+
+    Map<String, Object> EMPTY_OPTIONS = Collections.unmodifiableMap(new HashMap<>());
+
+    String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
         throws DBException;
 
 }

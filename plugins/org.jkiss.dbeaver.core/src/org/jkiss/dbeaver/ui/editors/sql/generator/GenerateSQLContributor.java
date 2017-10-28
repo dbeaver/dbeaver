@@ -129,7 +129,11 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 if (sql.length() > 0) {
                     sql.append("\n");
                 }
-                String definitionText = CommonUtils.notEmpty(object.getObjectDefinitionText(monitor)).trim();
+                Map<String, Object> options = new HashMap<>();
+                options.put(DBPScriptObject.OPTION_REFRESH, true);
+                options.put(DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, isFullyQualifiedNames());
+
+                String definitionText = CommonUtils.notEmpty(object.getObjectDefinitionText(monitor, options)).trim();
                 sql.append(definitionText);
                 if (!definitionText.endsWith(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
                     sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);

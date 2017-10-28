@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Postgre table manager
@@ -70,7 +71,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     }
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         final PostgreTableBase table = command.getObject();
         if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
@@ -83,7 +84,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     }
 
     @Override
-    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command) {
+    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command, Map<String, Object> options) {
         // Add comments
         if (command.getProperty("description") != null) {
             actions.add(new SQLDatabasePersistAction(
@@ -124,7 +125,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     }
 
     @Override
-    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command)
+    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(
@@ -148,7 +149,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(

@@ -56,7 +56,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
     }
 
     @Override
-    public DBEPersistAction[] getPersistActions()
+    public DBEPersistAction[] getPersistActions(Map<String, Object> options)
     {
         String privName = privilege.getName();
         String grantScript = "GRANT " + privName + //$NON-NLS-1$

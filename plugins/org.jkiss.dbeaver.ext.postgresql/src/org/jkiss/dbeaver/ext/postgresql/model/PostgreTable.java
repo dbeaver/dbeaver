@@ -40,10 +40,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * PostgreTable
@@ -111,8 +108,8 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
-        return JDBCUtils.generateTableDDL(monitor, this, false);
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        return JDBCUtils.generateTableDDL(monitor, this, options, false);
     }
 
     @Override

@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
+import java.util.Map;
 
 /**
  * Generic table column manager
@@ -61,9 +62,9 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(GenericTable owner, DBECommandAbstract<GenericTableColumn> command)
+    public StringBuilder getNestedDeclaration(GenericTable owner, DBECommandAbstract<GenericTableColumn> command, Map<String, Object> options)
     {
-        StringBuilder decl = super.getNestedDeclaration(owner, command);
+        StringBuilder decl = super.getNestedDeclaration(owner, command, options);
         final GenericTableColumn column = command.getObject();
         if (column.isAutoIncrement()) {
             final String autoIncrementClause = column.getDataSource().getMetaModel().getAutoIncrementClause(column);

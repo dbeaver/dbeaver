@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.impl.edit;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.Map;
+
 /**
  * Script command
  */
@@ -38,7 +40,7 @@ public class SQLScriptCommand<OBJECT_TYPE extends DBSObject> extends DBECommandA
     }
 
     @Override
-    public DBEPersistAction[] getPersistActions()
+    public DBEPersistAction[] getPersistActions(Map<String, Object> options)
     {
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction(

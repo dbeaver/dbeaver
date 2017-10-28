@@ -43,6 +43,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.Map;
 
 /**
  * DB2 Federated Nickname
@@ -140,7 +141,7 @@ public class DB2Nickname extends DB2TableBase implements DBPNamedObject2, DBPRef
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         return DB2Messages.no_ddl_for_nicknames;
     }

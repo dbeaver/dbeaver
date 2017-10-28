@@ -38,10 +38,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * MySQLTable base
@@ -128,11 +125,11 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         return getContainer().tableCache.refreshObject(monitor, getContainer(), this);
     }
 
-    public String getDDL(DBRProgressMonitor monitor)
+    public String getDDL(DBRProgressMonitor monitor, Map<String, Object> options)
         throws DBException
     {
         if (!isPersisted()) {
-            return JDBCUtils.generateTableDDL(monitor, this, false);
+            return JDBCUtils.generateTableDDL(monitor, this, options, false);
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Retrieve table DDL")) {
             try (PreparedStatement dbStat = session.prepareStatement(

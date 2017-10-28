@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -28,7 +29,6 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -113,14 +113,14 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
     
     @Override
     protected void addObjectCreateActions(List<DBEPersistAction> actions,
-    		SQLObjectEditor<OracleTableConstraint, OracleTableBase>.ObjectCreateCommand command)
+                                          ObjectCreateCommand command, Map<String, Object> options)
     {
     	OracleTableConstraint constraint = (OracleTableConstraint) command.getObject();
     	OracleTableBase table = constraint.getTable();
         actions.add(
                 new SQLDatabasePersistAction(
                     ModelMessages.model_jdbc_create_new_constraint,
-                    "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(table, command) + 
+                    "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(table, command, options) +
                     " "  + (constraint.getStatus() == OracleObjectStatus.ENABLED ? "ENABLE" : "DISABLE" )
                 	));
     }

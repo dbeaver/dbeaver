@@ -41,6 +41,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
 
@@ -174,7 +175,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         read();
         return SQLUtils.formatSQL(getDataSource(), this.text);
 
