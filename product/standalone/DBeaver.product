@@ -13,7 +13,7 @@
       </programArgsLin>
       <programArgsSol>--launcher.GTK_version 2
       </programArgsSol>
-      <vmArgs>--add-modules=ALL-SYSTEM -Duser.language=en -Xms64m -Xmx1024m
+      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Duser.language=en -Xms64m -Xmx1024m
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread
       </vmArgsMac>
