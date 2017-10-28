@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreDatabaseManager
@@ -71,7 +72,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         final PostgreDatabase database = command.getObject();
         StringBuilder sql = new StringBuilder();
@@ -99,7 +100,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistActionAtomic("Drop database", "DROP DATABASE " + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-2$

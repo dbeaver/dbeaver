@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * MySQLCatalogManager
@@ -74,7 +75,7 @@ public class MySQLCatalogManager extends SQLObjectEditor<MySQLCatalog, MySQLData
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         final MySQLCatalog catalog = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE SCHEMA `" + catalog.getName() + "`");
@@ -84,7 +85,7 @@ public class MySQLCatalogManager extends SQLObjectEditor<MySQLCatalog, MySQLData
         );
     }
 
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         final MySQLCatalog catalog = command.getObject();
         final StringBuilder script = new StringBuilder("ALTER DATABASE `" + catalog.getName() + "`");
@@ -104,7 +105,7 @@ public class MySQLCatalogManager extends SQLObjectEditor<MySQLCatalog, MySQLData
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(new SQLDatabasePersistAction("Drop schema", "DROP SCHEMA `" + command.getObject().getName() + "`")); //$NON-NLS-2$
     }

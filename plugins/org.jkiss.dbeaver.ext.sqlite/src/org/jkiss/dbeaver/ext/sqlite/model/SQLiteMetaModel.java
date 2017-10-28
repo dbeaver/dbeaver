@@ -39,6 +39,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * SQLiteMetaModel
@@ -50,12 +51,12 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
         super();
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
+    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         return SQLiteUtils.readMasterDefinition(monitor, sourceObject.getDataSource(), SQLiteObjectType.view, sourceObject.getName(), sourceObject);
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
+    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         String tableDDL = SQLiteUtils.readMasterDefinition(monitor, sourceObject.getDataSource(), SQLiteObjectType.table, sourceObject.getName(), sourceObject);
         String indexesDDL = SQLiteUtils.readMasterDefinition(monitor, sourceObject.getDataSource(), SQLiteObjectType.index, null, sourceObject);
         if (CommonUtils.isEmpty(indexesDDL)) {

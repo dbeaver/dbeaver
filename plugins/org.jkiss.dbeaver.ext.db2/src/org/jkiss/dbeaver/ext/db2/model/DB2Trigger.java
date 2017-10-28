@@ -44,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * DB2 Table Trigger
@@ -157,7 +158,7 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
     // -----------------
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         return SQLUtils.formatSQL(getDataSource(), text);
     }

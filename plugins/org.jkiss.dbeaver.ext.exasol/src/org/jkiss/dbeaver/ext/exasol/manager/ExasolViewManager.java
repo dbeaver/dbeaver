@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.exasol.manager;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
@@ -77,14 +78,14 @@ public class ExasolViewManager
 
     @Override
     protected void addObjectCreateActions(List<DBEPersistAction> actions,
-            SQLObjectEditor<ExasolView, ExasolSchema>.ObjectCreateCommand command) 
+                                          ObjectCreateCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actions, command.getObject(), false);
     }
 
     @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions,
-            SQLObjectEditor<ExasolView, ExasolSchema>.ObjectDeleteCommand command)
+                                          ObjectDeleteCommand command, Map<String, Object> options)
     {
         ExasolView view = (ExasolView) command.getObject();
         actions.add(
@@ -95,7 +96,7 @@ public class ExasolViewManager
     
     @Override
     protected void addObjectModifyActions(List<DBEPersistAction> actionList,
-            SQLObjectEditor<ExasolView, ExasolSchema>.ObjectChangeCommand command)  
+                                          ObjectChangeCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actionList, command.getObject(), true);
     }
@@ -123,7 +124,7 @@ public class ExasolViewManager
     
     @Override
     protected void addObjectRenameActions(List<DBEPersistAction> actions,
-            SQLObjectEditor<ExasolView, ExasolSchema>.ObjectRenameCommand command)
+                                          ObjectRenameCommand command, Map<String, Object> options)
     {
         ExasolView obj = command.getObject();
         actions.add(

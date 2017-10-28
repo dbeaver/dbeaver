@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * JDBC constraint manager
@@ -46,7 +48,7 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         final TABLE_TYPE table = command.getObject().getTable();
         final OBJECT_TYPE index = command.getObject();
@@ -55,12 +57,15 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
         final String indexName = DBUtils.getQuotedIdentifier(index.getDataSource(), index.getName());
         index.setName(indexName);
 
+        final String tableName = CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) ?
+            table.getFullyQualifiedName(DBPEvaluationContext.DDL) : DBUtils.getQuotedIdentifier(table);
+
         StringBuilder decl = new StringBuilder(40);
         decl.append("CREATE");
         appendIndexModifiers(index, decl);
         decl.append(" INDEX ").append(indexName); //$NON-NLS-1$
         appendIndexType(index, decl);
-        decl.append(" ON ").append(table.getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-1$
+        decl.append(" ON ").append(tableName) //$NON-NLS-1$
             .append(" ("); //$NON-NLS-1$
         try {
             // Get columns using void monitor
@@ -98,7 +103,7 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(

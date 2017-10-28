@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -40,6 +39,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * JDBC table manager
@@ -57,13 +57,13 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
     }
 
     @Override
-    protected final void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand objectChangeCommand)
+    protected final void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand objectChangeCommand, Map<String, Object> options)
     {
         throw new IllegalStateException("addObjectCreateActions should never be called in struct editor");
     }
 
     @Override
-    protected void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command)
+    protected void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options)
     {
         final OBJECT_TYPE table = command.getObject();
         final NestedObjectCommand tableProps = command.getObjectCommands().get(table);
@@ -71,7 +71,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
             log.warn("Object change command not found"); //$NON-NLS-1$
             return;
         }
-        final String tableName = table.getFullyQualifiedName(DBPEvaluationContext.DDL);
+        final String tableName = CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) ?
+            table.getFullyQualifiedName(DBPEvaluationContext.DDL) : DBUtils.getQuotedIdentifier(table);
 
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
@@ -85,7 +86,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
             if (excludeFromDDL(nestedCommand, orderedCommands)) {
                 continue;
             }
-            final String nestedDeclaration = nestedCommand.getNestedDeclaration(table);
+            final String nestedDeclaration = nestedCommand.getNestedDeclaration(table, options);
             if (!CommonUtils.isEmpty(nestedDeclaration)) {
                 // Insert nested declaration
                 if (hasNestedDeclarations) {
@@ -95,7 +96,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
                 hasNestedDeclarations = true;
             } else {
                 // This command should be executed separately
-                final DBEPersistAction[] nestedActions = nestedCommand.getPersistActions();
+                final DBEPersistAction[] nestedActions = nestedCommand.getPersistActions(options);
                 if (nestedActions != null) {
                     Collections.addAll(actions, nestedActions);
                 }
@@ -113,7 +114,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(
@@ -146,7 +147,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         }
     }
 
-    public DBEPersistAction[] getTableDDL(DBRProgressMonitor monitor, OBJECT_TYPE table) throws DBException
+    public DBEPersistAction[] getTableDDL(DBRProgressMonitor monitor, OBJECT_TYPE table, Map<String, Object> options) throws DBException
     {
         final DBERegistry editorsRegistry = table.getDataSource().getContainer().getPlatform().getEditorsRegistry();
         SQLObjectEditor<DBSEntityAttribute, OBJECT_TYPE> tcm = getObjectEditor(editorsRegistry, DBSEntityAttribute.class);
@@ -203,7 +204,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
                 log.debug(e);
             }
         }
-        return command.getPersistActions();
+        return command.getPersistActions(options);
     }
 
 }

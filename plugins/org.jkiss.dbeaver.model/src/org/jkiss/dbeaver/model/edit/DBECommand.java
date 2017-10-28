@@ -46,6 +46,6 @@ public interface DBECommand<OBJECT_TYPE extends DBPObject> {
         DBECommand<?> prevCommand,
         Map<Object, Object> userParams);
 
-    DBEPersistAction[] getPersistActions();
+    DBEPersistAction[] getPersistActions(Map<String, Object> options);
 
 }

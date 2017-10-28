@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * OracleMaterializedViewManager
@@ -52,7 +54,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("View name cannot be empty"); //$NON-NLS-1$
         }
-        if (CommonUtils.isEmpty(command.getObject().getObjectDefinitionText(null))) {
+        if (CommonUtils.isEmpty(command.getObject().getObjectDefinitionText(null, DBPScriptObject.EMPTY_OPTIONS))) {
             throw new DBException("View definition cannot be empty"); //$NON-NLS-1$
         }
     }
@@ -72,19 +74,19 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actions, command.getObject());
     }
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actionList, command.getObject());
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
@@ -96,7 +98,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         decl.append("CREATE MATERIALIZED VIEW ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(lineSeparator) //$NON-NLS-1$
-            .append("AS ").append(view.getObjectDefinitionText(null)); //$NON-NLS-1$
+            .append("AS ").append(view.getObjectDefinitionText(null, DBPScriptObject.EMPTY_OPTIONS)); //$NON-NLS-1$
         actions.add(
             new SQLDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL))); //$NON-NLS-2$
         actions.add(

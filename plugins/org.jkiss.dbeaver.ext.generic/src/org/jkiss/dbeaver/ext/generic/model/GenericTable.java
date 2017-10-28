@@ -278,14 +278,17 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
+            ddl = null;
+        }
         if (ddl == null) {
             if (isView()) {
-                ddl = getDataSource().getMetaModel().getViewDDL(monitor, this);
+                ddl = getDataSource().getMetaModel().getViewDDL(monitor, this, options);
             } else if (!isPersisted()) {
                 ddl = "";
             } else {
-                ddl = getDataSource().getMetaModel().getTableDDL(monitor, this);
+                ddl = getDataSource().getMetaModel().getTableDDL(monitor, this, options);
             }
         }
         return ddl;

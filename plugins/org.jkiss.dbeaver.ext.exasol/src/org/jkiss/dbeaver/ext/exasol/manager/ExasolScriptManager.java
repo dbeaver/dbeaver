@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Map;
 
 public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSchema> {
 
@@ -77,20 +78,20 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
     
     @Override
     protected void addObjectCreateActions(List<DBEPersistAction> actions,
-            SQLObjectEditor<ExasolScript, ExasolSchema>.ObjectCreateCommand command) {
+                                          ObjectCreateCommand command, Map<String, Object> options) {
         createOrReplaceScriptQuery(actions, command.getObject(), false);
     }
 
     @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions,
-            SQLObjectEditor<ExasolScript, ExasolSchema>.ObjectDeleteCommand command) {
+                                          ObjectDeleteCommand command, Map<String, Object> options) {
         actions.add(
                 new SQLDatabasePersistAction("Create Script", "DROP SCRIPT " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)));
     }
     
     @Override
     protected void addObjectModifyActions(List<DBEPersistAction> actionList,
-            SQLObjectEditor<ExasolScript, ExasolSchema>.ObjectChangeCommand command)
+                                          ObjectChangeCommand command, Map<String, Object> options)
     {
         if (command.getProperties().size() > 1 || command.getProperty("description") == null )
         {
@@ -100,7 +101,7 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
     
     @Override
     protected void addObjectExtraActions(List<DBEPersistAction> actions,
-            org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor.NestedObjectCommand<ExasolScript, SQLObjectEditor<ExasolScript, ExasolSchema>.PropertyHandler> command)
+                                         NestedObjectCommand<ExasolScript, PropertyHandler> command, Map<String, Object> options)
     {
         if (command.getProperty("description") != null) {
             actions.add(new SQLDatabasePersistAction("Comment on Script","COMMENT ON SCRIPT " + 

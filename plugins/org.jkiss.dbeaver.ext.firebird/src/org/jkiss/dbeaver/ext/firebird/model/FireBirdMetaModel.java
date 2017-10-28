@@ -35,6 +35,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,7 +61,7 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
+    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         return FireBirdUtils.getViewSource(monitor, sourceObject);
     }
 

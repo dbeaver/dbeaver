@@ -512,4 +512,25 @@ public class CommonUtils {
     public static int hashCode(@Nullable  Object obj) {
         return obj == null ? 0 : obj.hashCode();
     }
+
+    public static <T> T getOption(Map<String, ?> options, String name, T defValue) {
+        Object optionValue = options.get(name);
+        if (optionValue == null) {
+            return defValue;
+        }
+        return (T)optionValue;
+    }
+
+    public static boolean getOption(Map<String, ?> options, String name) {
+        return getOption(options, name, false);
+    }
+
+    public static boolean getOption(Map<String, ?> options, String name, boolean defValue) {
+        Object optionValue = options.get(name);
+        if (optionValue == null) {
+            return defValue;
+        }
+        return Boolean.TRUE.equals(optionValue);
+    }
+
 }

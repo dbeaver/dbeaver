@@ -98,7 +98,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     // Alter
     // -----
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         DB2TableColumn db2Column = command.getObject();
 
@@ -195,7 +195,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     }
 
     @Override
-    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command)
+    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         final DB2TableColumn column = command.getObject();
 
