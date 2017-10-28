@@ -20,14 +20,20 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.contexts.IContextActivation;
+import org.eclipse.ui.contexts.IContextService;
+import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -48,6 +54,8 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     @NotNull
     protected IResultSetController controller;
     private final List<ISelectionChangedListener> selectionChangedListenerList = new ArrayList<>();
+    protected IThemeManager themeManager;
+    private IPropertyChangeListener themeChangeListener;
 
     @Override
     @NotNull
@@ -58,6 +66,25 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
         this.controller = controller;
+
+        this.themeManager = controller.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
+        this.themeChangeListener = event -> {
+            if (event.getProperty().startsWith(ThemeConstants.RESULTS_PROP_PREFIX)) {
+                applyThemeSettings();
+            }
+        };
+        this.themeManager.addPropertyChangeListener(themeChangeListener);
+    }
+
+    public void dispose() {
+        if (themeChangeListener != null) {
+            themeManager.removePropertyChangeListener(themeChangeListener);
+            themeChangeListener = null;
+        }
+    }
+
+    protected void applyThemeSettings() {
+
     }
 
     @Override
@@ -173,6 +200,29 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         });
     }
 
+    protected void activateTextKeyBindings(@NotNull IResultSetController controller, Control control) {
+        final IContextService contextService = controller.getSite().getService(IContextService.class);
+        control.addFocusListener(new FocusListener() {
+            IContextActivation activation;
+            @Override
+            public void focusGained(FocusEvent e) {
+                controller.updateEditControls();
+                if (activation == null) {
+                    activation = contextService.activateContext("org.eclipse.ui.textEditorScope");
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                controller.updateEditControls();
+                if (activation != null) {
+                    contextService.deactivateContext(activation);
+                    activation = null;
+                }
+            }
+        });
+    }
+
     ///////////////////////////////////////////////////////////////////////
     // ISelectionProvider
 
@@ -202,4 +252,5 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     public void setSelection(ISelection selection) {
 
     }
+
 }
