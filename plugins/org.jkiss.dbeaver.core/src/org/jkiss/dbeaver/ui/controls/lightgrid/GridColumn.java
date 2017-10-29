@@ -179,19 +179,26 @@ class GridColumn {
         int x = leftMargin;
         final IGridLabelProvider labelProvider = grid.getLabelProvider();
         Image image = labelProvider.getImage(element);
-        String text = labelProvider.getText(element);
-        String description = labelProvider.getDescription(element);
         if (image != null) {
             x += image.getBounds().width + imageSpacing;
         }
-        int textWidth = grid.sizingGC.stringExtent(text).x;
-        if (!CommonUtils.isEmpty(description)) {
-            int descWidth = grid.sizingGC.stringExtent(description).x;
-            if (descWidth > textWidth) {
-                textWidth = descWidth;
+        {
+            int textWidth;
+            if (Boolean.TRUE.equals(labelProvider.getGridOption(IGridLabelProvider.OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC))) {
+                textWidth = grid.sizingGC.stringExtent("X").x;
+            } else {
+                String text = labelProvider.getText(element);
+                String description = labelProvider.getDescription(element);
+                textWidth = grid.sizingGC.stringExtent(text).x;
+                if (!CommonUtils.isEmpty(description)) {
+                    int descWidth = grid.sizingGC.stringExtent(description).x;
+                    if (descWidth > textWidth) {
+                        textWidth = descWidth;
+                    }
+                }
             }
+            x += textWidth + rightMargin;
         }
-        x += textWidth + rightMargin;
         if (isSortable()) {
             x += rightMargin + GridColumnRenderer.getSortControlBounds().width;
         }

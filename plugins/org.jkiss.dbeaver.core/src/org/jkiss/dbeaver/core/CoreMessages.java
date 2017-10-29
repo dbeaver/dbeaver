@@ -985,6 +985,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_group_common;
 	public static String pref_page_database_resultsets_label_switch_mode_on_rows;
 	public static String pref_page_database_resultsets_label_show_column_description;
+	public static String pref_page_database_resultsets_label_calc_column_width_by_values;
 	public static String pref_page_database_resultsets_label_show_connection_name;
 	public static String pref_page_database_resultsets_label_structurize_complex_types;
 	public static String pref_page_database_resultsets_label_structurize_complex_types_tip;

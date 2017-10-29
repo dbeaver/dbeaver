@@ -1667,6 +1667,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return null;
         }
 
+        @Override
+        public Object getGridOption(String option) {
+            if (OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC.equals(option)) {
+                return getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
+            }
+            return null;
+        }
+
         @Nullable
         @Override
         public Color getForeground(Object element) {
