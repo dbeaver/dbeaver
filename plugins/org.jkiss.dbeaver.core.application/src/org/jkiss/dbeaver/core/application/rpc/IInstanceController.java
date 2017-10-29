@@ -38,4 +38,7 @@ public interface IInstanceController extends Remote {
 
     void quit() throws RemoteException;
 
+    void closeAllEditors() throws RemoteException;
+
+    void executeWorkbenchCommand(String commandID) throws RemoteException;
 }
