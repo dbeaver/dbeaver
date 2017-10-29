@@ -93,7 +93,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             Group uiGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_common, 1, SWT.NONE, 0);
             autoSwitchMode = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_switch_mode_on_rows, false);
             showDescription = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_column_description, false);
-            columnWidthByValue = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_calc_column_width_by_values, false);
+            columnWidthByValue = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_calc_column_width_by_values, CoreMessages.pref_page_database_resultsets_label_calc_column_width_by_values_tip, false, 1);
             showConnectionName = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_connection_name, false);
             transformComplexTypes = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_structurize_complex_types, CoreMessages.pref_page_database_resultsets_label_structurize_complex_types_tip, false, 1);
         }
