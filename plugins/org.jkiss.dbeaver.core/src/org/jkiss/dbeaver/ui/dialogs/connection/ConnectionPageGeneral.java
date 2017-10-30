@@ -325,7 +325,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         });
 
         {
-            UIUtils.createControlLabel(group, "Connection type");
+            UIUtils.createControlLabel(group, CoreMessages.dialog_connection_wizard_final_label_connection_type);
 
             Composite ctGroup = UIUtils.createPlaceholder(group, 2, 5);
             connectionTypeCombo = new CSmartCombo<>(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionTypeLabelProvider());
@@ -341,7 +341,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             });
 
             Button pickerButton = new Button(ctGroup, SWT.PUSH);
-            pickerButton.setText("Edit");
+            pickerButton.setText(CoreMessages.dialog_connection_wizard_final_label_edit);
             pickerButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -359,7 +359,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         }
 
         {
-            UIUtils.createControlLabel(group, "Connection folder");
+            UIUtils.createControlLabel(group, CoreMessages.dialog_connection_wizard_final_label_connection_folder);
 
             connectionFolderCombo = new CSmartCombo<>(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionFolderLabelProvider());
             //connectionFolderCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -395,7 +395,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             }
 
             {
-                Group txnGroup = UIUtils.createControlGroup(rightSide, "Connection", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+                Group txnGroup = UIUtils.createControlGroup(rightSide, CoreMessages.dialog_connection_wizard_final_label_connection, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
                 autocommit = UIUtils.createLabelCheckbox(
                     txnGroup,
                     CoreMessages.dialog_connection_wizard_final_checkbox_auto_commit,
@@ -412,15 +412,15 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                     }
                 });
 
-                isolationLevel = UIUtils.createLabelCombo(txnGroup, "Isolation level", "Default transaction isolation level.", SWT.DROP_DOWN | SWT.READ_ONLY);
-                defaultSchema = UIUtils.createLabelCombo(txnGroup, "Default schema", "Name of schema or catalog which will be set as default.", SWT.DROP_DOWN);
-
-                keepAliveInterval = UIUtils.createLabelSpinner(txnGroup, "Keep-Alive", "Keep-alive interval (in seconds). Zero turns keep-alive off", 0, 0, Short.MAX_VALUE);
+                isolationLevel = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_isolation_level, CoreMessages.dialog_connection_wizard_final_label_isolation_level_tooltip, SWT.DROP_DOWN | SWT.READ_ONLY);
+                defaultSchema = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_default_schema, CoreMessages.dialog_connection_wizard_final_label_default_schema_tooltip, SWT.DROP_DOWN);
+                
+                keepAliveInterval = UIUtils.createLabelSpinner(txnGroup, CoreMessages.dialog_connection_wizard_final_label_keepalive, CoreMessages.dialog_connection_wizard_final_label_keepalive_tooltip, 0, 0, Short.MAX_VALUE);
 
                 {
-                    String bootstrapTooltip = "SQL queries to execute right after connection establishment";
-                    UIUtils.createControlLabel(txnGroup, "Bootstrap queries").setToolTipText(bootstrapTooltip);
-                    final Button queriesConfigButton = UIUtils.createPushButton(txnGroup, "Configure ...", DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
+                    String bootstrapTooltip = CoreMessages.dialog_connection_wizard_final_label_bootstrap_tooltip;
+                    UIUtils.createControlLabel(txnGroup, CoreMessages.dialog_connection_wizard_final_label_bootstrap_query).setToolTipText(bootstrapTooltip);
+                    final Button queriesConfigButton = UIUtils.createPushButton(txnGroup, CoreMessages.dialog_connection_wizard_configure, DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
                     queriesConfigButton.setToolTipText(bootstrapTooltip);
                     if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
                         queriesConfigButton.setFont(boldFont);
@@ -441,9 +441,9 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 }
 
                 if (getWizard().isNew()) {
-                    UIUtils.createControlLabel(txnGroup, "Shell Commands");
+                    UIUtils.createControlLabel(txnGroup, CoreMessages.dialog_connection_wizard_final_label_shell_command);
                     eventsButton = new Button(txnGroup, SWT.PUSH);
-                    eventsButton.setText("Configure ...");
+                    eventsButton.setText(CoreMessages.dialog_connection_wizard_configure);
                     eventsButton.setImage(DBeaverIcons.getImage(UIIcon.EVENT));
                     eventsButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                     eventsButton.addSelectionListener(new SelectionAdapter() {
@@ -515,7 +515,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         }
 
         {
-            final Group descGroup = UIUtils.createControlGroup(group, "Description", 1, GridData.FILL_HORIZONTAL, 0);
+            final Group descGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_connection_wizard_description, 1, GridData.FILL_HORIZONTAL, 0);
             ((GridData) descGroup.getLayoutData()).horizontalSpan = 2;
             descriptionText = new Text(descGroup, SWT.BORDER | SWT.V_SCROLL | SWT.WRAP | SWT.MULTI);
             final GridData gd = new GridData(GridData.FILL_BOTH);
