@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.exasol.model;
 
 import java.sql.Date;
 import java.sql.ResultSet;
+import java.util.Map;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -168,7 +169,7 @@ public class ExasolConnection
 	}
 
 	@Override
-	public String getObjectDefinitionText(DBRProgressMonitor monitor)
+	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
 			throws DBException
 	{
 		if (getDataSource().isAuthorizedForConnections()) {

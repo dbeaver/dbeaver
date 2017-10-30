@@ -72,7 +72,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
         return new PostgreGenericTypeCache(container);
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
+    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject.getDataSource(), "Read view definition")) {
             return JDBCUtils.queryString(session, "SELECT definition FROM PG_CATALOG.PG_VIEWS WHERE SchemaName=? and ViewName=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {

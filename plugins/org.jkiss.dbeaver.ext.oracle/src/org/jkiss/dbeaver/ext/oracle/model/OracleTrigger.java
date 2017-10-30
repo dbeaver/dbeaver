@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.util.List;
+import java.util.Map;
 
 /**
  * OracleTrigger
@@ -172,7 +172,7 @@ public abstract class OracleTrigger<PARENT extends DBSObject> extends OracleObje
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         if (sourceDeclaration == null && monitor != null) {
             sourceDeclaration = OracleUtils.getSource(monitor, this, false, false);

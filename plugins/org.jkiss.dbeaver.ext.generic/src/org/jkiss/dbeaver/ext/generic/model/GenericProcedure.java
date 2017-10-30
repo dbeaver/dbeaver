@@ -37,10 +37,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -265,7 +262,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (source == null) {
             source = getDataSource().getMetaModel().getProcedureDDL(monitor, this);
         }

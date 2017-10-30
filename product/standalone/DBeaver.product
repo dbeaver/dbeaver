@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="4.2.3" useFeatures="true" includeLaunchers="true">
+<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="4.2.4" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -13,7 +13,7 @@
       </programArgsLin>
       <programArgsSol>--launcher.GTK_version 2
       </programArgsSol>
-      <vmArgs>--add-modules=ALL-SYSTEM -Duser.language=en -Xms64m -Xmx1024m
+      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Duser.language=en -Xms64m -Xmx1024m
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread
       </vmArgsMac>
@@ -43,7 +43,7 @@
    <license>
         <url>https://dbeaver.jkiss.org/about/</url>
         <text>
-   DBeaver - Universal Database Manager
+    DBeaver - Universal Database Manager
     Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
 
   Licensed under the Apache License, Version 2.0 (the "License");

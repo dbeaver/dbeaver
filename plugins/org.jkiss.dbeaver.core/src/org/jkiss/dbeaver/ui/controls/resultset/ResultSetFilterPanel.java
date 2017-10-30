@@ -322,6 +322,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     }
 
     void enableFilters(boolean enableFilters) {
+        if (isDisposed()) {
+            return;
+        }
         enablePanelControls(enableFilters);
         if (enableFilters) {
             final boolean supportsDataFilter = viewer.supportsDataFilter();

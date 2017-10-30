@@ -1,6 +1,7 @@
 package org.jkiss.dbeaver.ext.exasol.manager;
 
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.DBException;
@@ -59,7 +60,7 @@ public class ExasolRoleManager extends SQLObjectEditor<ExasolRole, ExasolDataSou
 
 	@Override
 	protected void addObjectCreateActions(List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolRole, ExasolDataSource>.ObjectCreateCommand command)
+										  ObjectCreateCommand command, Map<String, Object> options)
 	{
 		ExasolRole obj = command.getObject();
 		
@@ -75,7 +76,7 @@ public class ExasolRoleManager extends SQLObjectEditor<ExasolRole, ExasolDataSou
 
 	@Override
 	protected void addObjectDeleteActions(List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolRole, ExasolDataSource>.ObjectDeleteCommand command)
+                                          ObjectDeleteCommand command, Map<String, Object> options)
 	{
 		ExasolRole obj = command.getObject();
 		actions.add(new SQLDatabasePersistAction("Drop Role", "DROP ROLE " + DBUtils.getQuotedIdentifier(obj)));
@@ -98,7 +99,7 @@ public class ExasolRoleManager extends SQLObjectEditor<ExasolRole, ExasolDataSou
 	
 	@Override
 	protected void addObjectRenameActions(List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolRole, ExasolDataSource>.ObjectRenameCommand command)
+                                          ObjectRenameCommand command, Map<String, Object> options)
 	{
 		ExasolRole obj = command.getObject();
         actions.add(
@@ -116,7 +117,7 @@ public class ExasolRoleManager extends SQLObjectEditor<ExasolRole, ExasolDataSou
 	
 	@Override
 	protected void addObjectModifyActions(List<DBEPersistAction> actionList,
-			SQLObjectEditor<ExasolRole, ExasolDataSource>.ObjectChangeCommand command)
+										  ObjectChangeCommand command, Map<String, Object> options)
 	{
 		ExasolRole obj = command.getObject();
 		

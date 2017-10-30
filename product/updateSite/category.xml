@@ -36,10 +36,6 @@
         <category name="org.jkiss.dbeaver"/>
     </feature>
 
-    <feature id="org.jkiss.dbeaver.ext.office.feature">
-        <category name="org.jkiss.dbeaver.external"/>
-    </feature>
-
     <feature id="org.jkiss.dbeaver.ext.ui.svg.feature">
         <category name="org.jkiss.dbeaver.external"/>
     </feature>

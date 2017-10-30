@@ -450,8 +450,8 @@ public class MySQLTable extends MySQLTableBase
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
-        return getDDL(monitor);
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        return getDDL(monitor, options);
     }
 
     @Override

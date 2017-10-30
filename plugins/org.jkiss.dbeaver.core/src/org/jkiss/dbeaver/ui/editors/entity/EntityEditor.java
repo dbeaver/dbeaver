@@ -61,6 +61,7 @@ import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderListener;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.*;
+import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -102,16 +103,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     public EntityEditor()
     {
-        folderListener = new ITabbedFolderListener() {
-            @Override
-            public void folderSelected(String folderId)
-            {
-                IEditorPart editor = getActiveEditor();
-                if (editor != null) {
-                    String editorPageId = getEditorPageId(editor);
-                    if (editorPageId != null) {
-                        updateEditorDefaults(editorPageId, folderId);
-                    }
+        folderListener = folderId -> {
+            IEditorPart editor = getActiveEditor();
+            if (editor != null) {
+                String editorPageId = getEditorPageId(editor);
+                if (editorPageId != null) {
+                    updateEditorDefaults(editorPageId, folderId);
                 }
             }
         };
@@ -219,6 +216,17 @@ public class EntityEditor extends MultiPageDatabaseEditor
         if (!isDirty()) {
             return;
         }
+        // Flush all nested object editors
+        for (IEditorPart editor : editorMap.values()) {
+            if (editor instanceof ObjectPropertiesEditor) {
+                editor.doSave(monitor);
+            }
+            if (monitor.isCanceled()) {
+                return;
+            }
+        }
+
+        // Show preview
         int previewResult = IDialogConstants.PROCEED_ID;
         if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW)) {
             monitor.beginTask(CoreMessages.editors_entity_monitor_preview_changes, 1);
@@ -285,15 +293,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
             // So we'll get actual data from database
             final DBNDatabaseNode treeNode = getEditorInput().getNavigatorNode();
             try {
-                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
-                        try {
-                            treeNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
-                        }
+                DBeaverUI.runInProgressService(monitor1 -> {
+                    try {
+                        treeNode.refreshNode(monitor1, DBNEvent.FORCE_REFRESH);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
                     }
                 });
             } catch (InvocationTargetException e) {
@@ -309,24 +313,17 @@ public class EntityEditor extends MultiPageDatabaseEditor
         } else {
             // Try to handle error in nested editors
             final Throwable vError = error;
-            DBeaverUI.syncExec(new Runnable() {
-                @Override
-                public void run() {
-                    final IErrorVisualizer errorVisualizer = getAdapter(IErrorVisualizer.class);
-                    if (errorVisualizer != null) {
-                        errorVisualizer.visualizeError(monitor, vError);
-                    }
+            DBeaverUI.syncExec(() -> {
+                final IErrorVisualizer errorVisualizer = getAdapter(IErrorVisualizer.class);
+                if (errorVisualizer != null) {
+                    errorVisualizer.visualizeError(monitor, vError);
                 }
             });
 
             // Show error dialog
 
-            DBeaverUI.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    DBUserInterface.getInstance().showError("Can't save '" + getDatabaseObject().getName() + "'", null, vError);
-                }
-            });
+            DBeaverUI.asyncExec(() ->
+                DBUserInterface.getInstance().showError("Can't save '" + getDatabaseObject().getName() + "'", null, vError));
             return false;
         }
     }
@@ -395,17 +392,13 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 command.validateCommand();
             } catch (final DBException e) {
                 log.debug(e);
-                DBeaverUI.syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        DBUserInterface.getInstance().showError("Validation", e.getMessage());
-                    }
-                });
+                DBeaverUI.syncExec(() -> DBUserInterface.getInstance().showError("Validation", e.getMessage()));
                 return IDialogConstants.CANCEL_ID;
             }
             script.append(SQLUtils.generateScript(
                 commandContext.getExecutionContext().getDataSource(),
-                command.getPersistActions(), false));
+                command.getPersistActions(DBPScriptObject.EMPTY_OPTIONS),
+                false));
         }
         if (script.length() == 0) {
             return IDialogConstants.PROCEED_ID;
@@ -446,12 +439,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             @Override
             public void onCommandChange(DBECommand command)
             {
-                DBeaverUI.syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        firePropertyChange(IEditorPart.PROP_DIRTY);
-                    }
-                });
+                DBeaverUI.syncExec(() -> firePropertyChange(IEditorPart.PROP_DIRTY));
             }
         };
         DBECommandContext commandContext = getCommandContext();
@@ -460,15 +448,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
 
         // Property listener
-        addPropertyListener(new IPropertyListener() {
-            @Override
-            public void propertyChanged(Object source, int propId)
-            {
-                if (propId == IEditorPart.PROP_DIRTY) {
-                    EntityEditorPropertyTester.firePropertyChange(EntityEditorPropertyTester.PROP_DIRTY);
-                    EntityEditorPropertyTester.firePropertyChange(EntityEditorPropertyTester.PROP_CAN_UNDO);
-                    EntityEditorPropertyTester.firePropertyChange(EntityEditorPropertyTester.PROP_CAN_REDO);
-                }
+        addPropertyListener((source, propId) -> {
+            if (propId == IEditorPart.PROP_DIRTY) {
+                EntityEditorPropertyTester.firePropertyChange(EntityEditorPropertyTester.PROP_DIRTY);
+                EntityEditorPropertyTester.firePropertyChange(EntityEditorPropertyTester.PROP_CAN_UNDO);
+                EntityEditorPropertyTester.firePropertyChange(EntityEditorPropertyTester.PROP_CAN_REDO);
             }
         });
 
@@ -878,7 +862,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         private final boolean allowSave;
         private int result;
 
-        public ChangesPreviewer(StringBuilder script, boolean allowSave)
+        ChangesPreviewer(StringBuilder script, boolean allowSave)
         {
             this.script = script;
             this.allowSave = allowSave;
@@ -906,7 +890,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     private class SaveJob extends AbstractJob {
         private transient Boolean success = null;
 
-        public SaveJob() {
+        SaveJob() {
             super("Save '" + getPartName() + "' changes...");
             setUser(true);
         }
