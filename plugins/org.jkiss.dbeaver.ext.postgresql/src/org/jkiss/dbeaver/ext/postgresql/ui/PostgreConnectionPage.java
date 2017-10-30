@@ -52,7 +52,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     private Button hideNonDefault;
     private boolean activated = false;
 
-    private static ImageDescriptor LOGO_IMG = PostgreActivator.getImageDescriptor("icons/hgdb_logo.png");//("icons/postgresql_logo.png");
+    private static ImageDescriptor LOGO_IMG = PostgreActivator.getImageDescriptor("icons/postgresql_logo.png");
 
 
     @Override
