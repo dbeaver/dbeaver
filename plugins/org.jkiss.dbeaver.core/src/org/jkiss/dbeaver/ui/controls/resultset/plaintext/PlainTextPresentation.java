@@ -23,10 +23,14 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.*;
+import org.eclipse.swt.custom.StyleRange;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.StyledTextPrintOptions;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
@@ -35,6 +39,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -71,6 +76,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     private StyleRange curLineRange;
     private int totalRows = 0;
     private String curSelection;
+    private Font monoFont;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
@@ -83,18 +89,16 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         text.setMargins(4, 4, 4, 4);
         text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
-        text.addCaretListener(new CaretListener() {
-            @Override
-            public void caretMoved(CaretEvent event) {
-                onCursorChange(event.caretOffset);
-            }
-        });
+        text.addCaretListener(event -> onCursorChange(event.caretOffset));
         text.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 curSelection = text.getSelectionText();
                 fireSelectionChanged(new PlainTextSelectionImpl());
             }
+        });
+        text.addDisposeListener(e -> {
+            dispose();
         });
 
         final ScrollBar verticalBar = text.getVerticalBar();
@@ -112,15 +116,46 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         });
         findReplaceTarget = new StyledTextFindReplaceTarget(text);
         UIUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), text);
+
         applyThemeSettings();
 
         registerContextMenu();
+        activateTextKeyBindings(controller, text);
         trackPresentationControl();
     }
 
-    private void applyThemeSettings() {
+    @Override
+    public void dispose() {
+        if (monoFont != null) {
+            UIUtils.dispose(monoFont);
+            monoFont = null;
+        }
+        super.dispose();
+    }
+
+    @Override
+    protected void applyThemeSettings() {
         IThemeManager themeManager = controller.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
         curLineColor = themeManager.getCurrentTheme().getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
+
+        ITheme currentTheme = themeManager.getCurrentTheme();
+        Font rsFont = currentTheme.getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
+        if (rsFont != null) {
+            int fontHeight = rsFont.getFontData()[0].getHeight();
+            Font font = JFaceResources.getFont(JFaceResources.TEXT_FONT);
+
+            FontData[] fontData = font.getFontData();
+            fontData[0].setHeight(fontHeight);
+            Font newFont = new Font(font.getDevice(), fontData[0]);
+
+            this.text.setFont(newFont);
+
+            if (monoFont != null) {
+                UIUtils.dispose(monoFont);
+            }
+            monoFont = newFont;
+
+        }
     }
 
     private void onCursorChange(int offset) {

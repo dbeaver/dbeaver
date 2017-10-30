@@ -9,6 +9,6 @@
     <relativePath>../../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.netezza</artifactId>
-  <version>1.0.32</version>
+  <version>1.0.33</version>
   <packaging>eclipse-plugin</packaging>
 </project>

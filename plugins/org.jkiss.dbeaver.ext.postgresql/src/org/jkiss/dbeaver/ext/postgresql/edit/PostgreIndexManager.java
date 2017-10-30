@@ -19,12 +19,12 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,6 +38,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Postgre index manager
@@ -117,11 +118,11 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command) {
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         PostgreIndex index = command.getObject();
         if (index.isPersisted()) {
             try {
-                String indexDDL = index.getObjectDefinitionText(new VoidProgressMonitor());
+                String indexDDL = index.getObjectDefinitionText(new VoidProgressMonitor(), DBPScriptObject.EMPTY_OPTIONS);
                 if (!CommonUtils.isEmpty(indexDDL)) {
                     actions.add(
                         new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_index, indexDDL)
@@ -132,6 +133,6 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
                 log.warn("Can't extract index DDL", e);
             }
         }
-        super.addObjectCreateActions(actions, command);
+        super.addObjectCreateActions(actions, command, options);
     }
 }

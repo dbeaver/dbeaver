@@ -71,7 +71,7 @@ public abstract class ObjectAttributeDescriptor {
         }
 
         declaringClass = parent == null ? getter.getDeclaringClass() : parent.getDeclaringClass();
-        if (this.getter.getParameterTypes().length == 1 && getter.getParameterTypes()[0] == DBRProgressMonitor.class) {
+        if (this.getter.getParameterTypes().length > 0 && getter.getParameterTypes()[0] == DBRProgressMonitor.class) {
             this.isLazy = true;
         }
 

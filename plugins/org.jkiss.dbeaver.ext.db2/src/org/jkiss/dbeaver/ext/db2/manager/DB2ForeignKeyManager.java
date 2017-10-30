@@ -36,6 +36,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DB2 Foreign key Manager
@@ -125,7 +126,7 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
     // ------
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         // DF: Throw exception for now
         // Will have to implement it for alter FK query optimisation + TRUST

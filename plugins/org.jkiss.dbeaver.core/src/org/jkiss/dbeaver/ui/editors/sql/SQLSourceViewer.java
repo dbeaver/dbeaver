@@ -28,6 +28,9 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * Display Source text (Read Only)
  */
@@ -50,7 +53,11 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException
     {
-        return getSourceObject().getObjectDefinitionText(monitor);
+        return getSourceObject().getObjectDefinitionText(monitor, getSourceOptions());
+    }
+
+    protected Map<String, Object> getSourceOptions() {
+        return DBPScriptObject.EMPTY_OPTIONS;
     }
 
     @Override

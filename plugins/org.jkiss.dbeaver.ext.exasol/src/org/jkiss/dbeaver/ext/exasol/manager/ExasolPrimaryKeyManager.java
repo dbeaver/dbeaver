@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.exasol.manager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
@@ -33,7 +34,6 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -106,7 +106,7 @@ public class ExasolPrimaryKeyManager
 	
 	@Override
 	protected void addObjectCreateActions(List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolTableUniqueKey, ExasolTable>.ObjectCreateCommand command)
+                                          ObjectCreateCommand command, Map<String, Object> options)
 	{
 		ExasolTableUniqueKey obj = (ExasolTableUniqueKey) command.getObject();
 		try {
@@ -126,7 +126,7 @@ public class ExasolPrimaryKeyManager
 	
 	@Override
 	protected void addObjectModifyActions(List<DBEPersistAction> actionList,
-			SQLObjectEditor<ExasolTableUniqueKey, ExasolTable>.ObjectChangeCommand command)
+										  ObjectChangeCommand command, Map<String, Object> options)
 	{
 		final ExasolTableUniqueKey constraint = command.getObject();
 		
@@ -145,7 +145,7 @@ public class ExasolPrimaryKeyManager
 	
 	@Override
 	protected void addObjectRenameActions(List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolTableUniqueKey, ExasolTable>.ObjectRenameCommand command)
+                                          ObjectRenameCommand command, Map<String, Object> options)
 	{
 		final ExasolTableUniqueKey key = command.getObject();
 		actions.add(

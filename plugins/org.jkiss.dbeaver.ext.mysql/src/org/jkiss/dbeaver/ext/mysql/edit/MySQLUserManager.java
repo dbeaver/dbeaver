@@ -115,7 +115,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
             super(user, MySQLMessages.edit_user_manager_command_drop_user);
         }
         @Override
-        public DBEPersistAction[] getPersistActions()
+        public DBEPersistAction[] getPersistActions(Map<String, Object> options)
         {
             return new DBEPersistAction[] {
                 new SQLDatabasePersistAction(MySQLMessages.edit_user_manager_command_drop_user, "DROP USER " + getObject().getFullName()) { //$NON-NLS-2$

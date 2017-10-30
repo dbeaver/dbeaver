@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Map;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -202,7 +203,7 @@ public class DB2Table extends DB2TableBase
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         return DB2Utils.generateDDLforTable(monitor, LINE_SEPARATOR, getDataSource(), this);
     }

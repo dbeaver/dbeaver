@@ -40,6 +40,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * SQLServerMetaModel
@@ -57,7 +58,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         return new SQLServerDataSource(monitor, container, this);
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
+    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         return extractSource(monitor, sourceObject.getDataSource(), sourceObject.getCatalog().getName(), sourceObject.getSchema().getName(), sourceObject.getName());
     }
 

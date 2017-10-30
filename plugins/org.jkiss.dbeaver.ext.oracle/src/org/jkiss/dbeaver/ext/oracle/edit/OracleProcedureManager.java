@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * OracleProcedureManager
@@ -63,13 +64,13 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand objectCreateCommand)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand objectCreateCommand, Map<String, Object> options)
     {
         createOrReplaceProcedureQuery(actions, objectCreateCommand.getObject());
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand, Map<String, Object> options)
     {
         final OracleProcedureStandalone object = objectDeleteCommand.getObject();
         actions.add(
@@ -79,7 +80,7 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
     }
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand objectChangeCommand)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand objectChangeCommand, Map<String, Object> options)
     {
         createOrReplaceProcedureQuery(actionList, objectChangeCommand.getObject());
     }

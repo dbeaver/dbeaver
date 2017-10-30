@@ -39,6 +39,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreProcedure
@@ -251,7 +252,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         if (body == null) {
             if (oid == 0 || isAggregate) {

@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * MySQLViewManager
@@ -74,19 +75,19 @@ public class MySQLViewManager extends SQLObjectEditor<MySQLTableBase, MySQLCatal
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actions, (MySQLView) command.getObject());
     }
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actionList, (MySQLView) command.getObject());
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$

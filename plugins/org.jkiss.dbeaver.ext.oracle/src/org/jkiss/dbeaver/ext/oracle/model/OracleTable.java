@@ -37,6 +37,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * OracleTable
@@ -229,8 +230,8 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
-        return getDDL(monitor, OracleDDLFormat.getCurrentFormat(getDataSource()));
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        return getDDL(monitor, OracleDDLFormat.getCurrentFormat(getDataSource()), options);
     }
 
 

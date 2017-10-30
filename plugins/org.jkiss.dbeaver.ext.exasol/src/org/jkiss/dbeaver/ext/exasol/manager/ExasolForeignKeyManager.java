@@ -2,6 +2,7 @@ package org.jkiss.dbeaver.ext.exasol.manager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
@@ -17,7 +18,6 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -83,7 +83,7 @@ public class ExasolForeignKeyManager
 	
 	@Override
 	protected void addObjectCreateActions(List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolTableForeignKey, ExasolTable>.ObjectCreateCommand command)
+                                          ObjectCreateCommand command, Map<String, Object> options)
 	{
 		final ExasolTableForeignKey key = command.getObject();
 		
@@ -100,7 +100,7 @@ public class ExasolForeignKeyManager
 	
 	@Override
 	protected void addObjectRenameActions(List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolTableForeignKey, ExasolTable>.ObjectRenameCommand command)
+                                          ObjectRenameCommand command, Map<String, Object> options)
 	{
 		final ExasolTableForeignKey key = command.getObject();
 		
@@ -116,7 +116,7 @@ public class ExasolForeignKeyManager
 
 	@Override
 	protected void addObjectModifyActions(List<DBEPersistAction> actionList,
-			SQLObjectEditor<ExasolTableForeignKey, ExasolTable>.ObjectChangeCommand command)
+										  ObjectChangeCommand command, Map<String, Object> options)
 	{
 		final ExasolTableForeignKey constraint = command.getObject();
 		

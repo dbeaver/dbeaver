@@ -96,10 +96,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
         }
 
-        this.propName = propInfo.hidden() ? getId() : getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_NAME, getId());
+        this.propName = getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_NAME, getId(), !propInfo.hidden());
         this.propDescription = CommonUtils.isEmpty(propInfo.description()) ?
                 propName :
-                getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_DESCRIPTION, propName);
+                getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_DESCRIPTION, propName, false);
     }
 
     @Override
@@ -220,15 +220,20 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 return null;
             }
         }
-        if (isLazy()) {
+        Method getter = getGetter();
+        Object[] params = null;
+        if (getter.getParameterCount() > 0) {
+            params = new Object[getter.getParameterCount()];
+        }
+        if (isLazy() && params != null) {
             // Lazy (probably cached)
             if (isLazy(object, true) && progressMonitor == null && !supportsPreview()) {
                 throw new IllegalAccessException("Lazy property can't be read with null progress monitor");
             }
-            value = getGetter().invoke(object, progressMonitor);
-        } else {
-            value = getGetter().invoke(object);
+            params[0] = progressMonitor;
         }
+        value = getter.invoke(object, params);
+
         if (valueRenderer != null) {
             value = valueRenderer.transform(object, value);
         }
@@ -351,7 +356,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             CommonUtils.equalObjects(getGetter(), ((ObjectPropertyDescriptor)obj).getGetter());
     }
 
-    private String getLocalizedString(String string, String type, String defaultValue) {
+    private String getLocalizedString(String string, String type, String defaultValue, boolean warnMissing) {
         if (Property.DEFAULT_LOCAL_STRING.equals(string)) {
             Method getter = getGetter();
             String propertyName = BeanUtils.getPropertyNameFromGetter(getter.getName());

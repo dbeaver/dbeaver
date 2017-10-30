@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
@@ -42,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * MySQLView
@@ -76,7 +76,8 @@ public class MySQLView extends MySQLTableBase
 
         public boolean isLoaded() { return loaded; }
 
-        @Property(hidden = true, editable = true, updatable = true, order = -1) public String getDefinition() { return definition; }
+        //@Property(hidden = true, editable = true, updatable = true, order = -1)
+        public String getDefinition() { return definition; }
         public void setDefinition(String definition) { this.definition = definition; }
 
         @Property(viewable = true, editable = true, updatable = true, order = 4) public CheckOption getCheckOption() { return checkOption; }
@@ -209,7 +210,7 @@ public class MySQLView extends MySQLTableBase
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         return getAdditionalInfo(monitor).getDefinition();
     }

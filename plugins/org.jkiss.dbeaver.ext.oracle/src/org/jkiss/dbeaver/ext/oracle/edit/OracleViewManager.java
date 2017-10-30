@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * OracleViewManager
@@ -73,19 +74,19 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actions, command);
     }
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actionList, command);
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$

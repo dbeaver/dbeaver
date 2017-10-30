@@ -44,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.Types;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * MySQL table column manager
@@ -90,9 +91,9 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(MySQLTableBase owner, DBECommandAbstract<MySQLTableColumn> command)
+    public StringBuilder getNestedDeclaration(MySQLTableBase owner, DBECommandAbstract<MySQLTableColumn> command, Map<String, Object> options)
     {
-        StringBuilder decl = super.getNestedDeclaration(owner, command);
+        StringBuilder decl = super.getNestedDeclaration(owner, command, options);
         final MySQLTableColumn column = command.getObject();
         if (!CommonUtils.isEmpty(column.getExtraInfo())) {
             decl.append(" ").append(column.getExtraInfo()); //$NON-NLS-1$
@@ -134,14 +135,14 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         final MySQLTableColumn column = command.getObject();
 
         actionList.add(
             new SQLDatabasePersistAction(
                 "Modify column",
-                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " MODIFY COLUMN " + getNestedDeclaration(column.getTable(), command))); //$NON-NLS-1$ //$NON-NLS-2$
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " MODIFY COLUMN " + getNestedDeclaration(column.getTable(), command, options))); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
@@ -150,7 +151,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command)
+    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         final MySQLTableColumn column = command.getObject();
 
@@ -159,11 +160,11 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
                 "Rename column",
                 "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " CHANGE " +
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " " +
-                    getNestedDeclaration(column.getTable(), command)));
+                    getNestedDeclaration(column.getTable(), command, options)));
     }
 
     @Override
-    protected void addObjectReorderActions(List<DBEPersistAction> actions, ObjectReorderCommand command) {
+    protected void addObjectReorderActions(List<DBEPersistAction> actions, ObjectReorderCommand command, Map<String, Object> options) {
         final MySQLTableColumn column = command.getObject();
         String order = "FIRST";
         if (column.getOrdinalPosition() > 0) {
@@ -179,7 +180,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
                 "Reorder column",
                 "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " CHANGE " +
                     DBUtils.getQuotedIdentifier(command.getObject()) + " " +
-                    getNestedDeclaration(column.getTable(), command) + " " + order));
+                    getNestedDeclaration(column.getTable(), command, options) + " " + order));
     }
 
     ///////////////////////////////////////////////

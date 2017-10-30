@@ -123,25 +123,25 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     //////////////////////////////////////////////////
     // Actions
 
-    protected abstract void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command);
+    protected abstract void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options);
 
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
 
     }
 
-    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<OBJECT_TYPE, PropertyHandler> command)
+    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<OBJECT_TYPE, PropertyHandler> command, Map<String, Object> options)
     {
 
     }
 
-    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command)
+    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         // Base SQL syntax do not support object properties change
         throw new IllegalStateException("Object rename is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
     }
 
-    protected void addObjectReorderActions(List<DBEPersistAction> actions, ObjectReorderCommand command)
+    protected void addObjectReorderActions(List<DBEPersistAction> actions, ObjectReorderCommand command, Map<String, Object> options)
     {
         if (command.getObject().isPersisted()) {
             // Not supported by implementation
@@ -149,12 +149,12 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
     }
 
-    protected abstract void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command);
+    protected abstract void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options);
 
     //////////////////////////////////////////////////
     // Properties
 
-    protected StringBuilder getNestedDeclaration(CONTAINER_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command)
+    protected StringBuilder getNestedDeclaration(CONTAINER_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options)
     {
         return null;
     }
@@ -241,7 +241,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             super(object, title);
         }
 
-        public abstract String getNestedDeclaration(DBSObject owner);
+        public abstract String getNestedDeclaration(DBSObject owner, Map<String, Object> options);
 
     }
 
@@ -261,11 +261,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public DBEPersistAction[] getPersistActions()
+        public DBEPersistAction[] getPersistActions(Map<String, Object> options)
         {
             List<DBEPersistAction> actions = new ArrayList<>();
-            addObjectModifyActions(actions, this);
-            addObjectExtraActions(actions, this);
+            addObjectModifyActions(actions, this, options);
+            addObjectExtraActions(actions, this, options);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 
@@ -276,12 +276,12 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public String getNestedDeclaration(DBSObject owner)
+        public String getNestedDeclaration(DBSObject owner, Map<String, Object> options)
         {
             // It is a trick
             // This method may be invoked from another Editor with different OBJECT_TYPE and CONTAINER_TYPE
             // TODO: May be we should make ObjectChangeCommand static
-            final StringBuilder decl = SQLObjectEditor.this.getNestedDeclaration((CONTAINER_TYPE) owner, this);
+            final StringBuilder decl = SQLObjectEditor.this.getNestedDeclaration((CONTAINER_TYPE) owner, this, options);
             return CommonUtils.isEmpty(decl) ? null : decl.toString();
         }
     }
@@ -294,11 +294,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public DBEPersistAction[] getPersistActions()
+        public DBEPersistAction[] getPersistActions(Map<String, Object> options)
         {
             List<DBEPersistAction> actions = new ArrayList<>();
-            addObjectCreateActions(actions, this);
-            addObjectExtraActions(actions, this);
+            addObjectCreateActions(actions, this, options);
+            addObjectExtraActions(actions, this, options);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 
@@ -316,12 +316,12 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public String getNestedDeclaration(DBSObject owner)
+        public String getNestedDeclaration(DBSObject owner, Map<String, Object> options)
         {
             // It is a trick
             // This method may be invoked from another Editor with different OBJECT_TYPE and CONTAINER_TYPE
             // TODO: May be we should make ObjectChangeCommand static
-            final StringBuilder decl = SQLObjectEditor.this.getNestedDeclaration((CONTAINER_TYPE) owner, this);
+            final StringBuilder decl = SQLObjectEditor.this.getNestedDeclaration((CONTAINER_TYPE) owner, this, options);
             return CommonUtils.isEmpty(decl) ? null : decl.toString();
         }
     }
@@ -333,10 +333,10 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public DBEPersistAction[] getPersistActions()
+        public DBEPersistAction[] getPersistActions(Map<String, Object> options)
         {
             List<DBEPersistAction> actions = new ArrayList<>();
-            addObjectDeleteActions(actions, this);
+            addObjectDeleteActions(actions, this, options);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 
@@ -373,10 +373,10 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public DBEPersistAction[] getPersistActions()
+        public DBEPersistAction[] getPersistActions(Map<String, Object> options)
         {
             List<DBEPersistAction> actions = new ArrayList<>();
-            addObjectRenameActions(actions, this);
+            addObjectRenameActions(actions, this, options);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 
@@ -444,10 +444,10 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public DBEPersistAction[] getPersistActions()
+        public DBEPersistAction[] getPersistActions(Map<String, Object> options)
         {
             List<DBEPersistAction> actions = new ArrayList<>();
-            addObjectReorderActions(actions, this);
+            addObjectReorderActions(actions, this, options);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 

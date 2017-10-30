@@ -43,6 +43,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author Karl
@@ -246,7 +247,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         return ExasolUtils.generateDDLforTable(monitor, this.getDataSource(), this);
     }
 

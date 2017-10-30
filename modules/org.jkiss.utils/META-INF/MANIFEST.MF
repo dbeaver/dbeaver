@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.utils
-Bundle-Version: 2.1.50
-Bundle-Release-Date: 20171016
+Bundle-Version: 2.1.51
+Bundle-Release-Date: 20171030
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: org.jkiss.code,
  org.jkiss.utils,
