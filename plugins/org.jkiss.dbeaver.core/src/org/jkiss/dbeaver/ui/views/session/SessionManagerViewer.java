@@ -105,6 +105,11 @@ public class SessionManagerViewer
                 public DBCExecutionContext getExecutionContext() {
                     return sessionManager.getDataSource().getDefaultContext(false);
                 }
+
+                @Override
+                public boolean isFoldingEnabled() {
+                    return false;
+                }
             };
             updateSQL();
             sqlViewer.createPartControl(infoSash);

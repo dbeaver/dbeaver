@@ -1090,4 +1090,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         }
     }
 
+    public boolean isFoldingEnabled() {
+        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+    }
+
 }
