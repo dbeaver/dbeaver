@@ -57,7 +57,7 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
     {
         try {
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
-                "SELECT s.*, sq.SQL_TEXT\n" +
+                "SELECT s.*, sq.SQL_FULLTEXT\n" +
                 "FROM V$SESSION s, V$SQL sq\n" +
                 "WHERE sq.ADDRESS(+) = s.SQL_ADDRESS AND s.TYPE = 'USER'"))
             {
