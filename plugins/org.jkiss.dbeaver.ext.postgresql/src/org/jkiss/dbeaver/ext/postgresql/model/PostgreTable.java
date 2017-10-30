@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
@@ -55,6 +56,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     private SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
 
     private boolean hasOids;
+    private boolean hasPartitions;
     private long tablespaceId;
     private List<PostgreTableInheritance> superTables;
     private List<PostgreTableInheritance> subTables;
@@ -278,4 +280,11 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         }
         return subTables;
     }
+    
+ public Collection<? extends DBSTable> getPartitions(DBRProgressMonitor monitor) throws DBException {
+	    return getSchema().tableCache.getCachedObjects();
+        //return getSchema().tableCache.get  Objects(monitor, getSchema(), this);
+    }
+
+  
 }
