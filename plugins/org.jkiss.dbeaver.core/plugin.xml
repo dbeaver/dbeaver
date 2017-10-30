@@ -1728,14 +1728,6 @@
                 <command
                       commandId="org.jkiss.dbeaver.ui.tools.menu"
                       label="%command.org.jkiss.dbeaver.ui.tools.menu.name"/>
-                <separator
-                      name="advance">
-                </separator>
-                <command
-                      commandId="org.jkiss.dbeaver.core.sql.converter"
-                      label="plsql Converter"
-                      style="push">
-                </command>
             </menu>
         </menuContribution>
 
