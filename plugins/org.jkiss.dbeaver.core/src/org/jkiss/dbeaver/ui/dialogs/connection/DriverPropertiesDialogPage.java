@@ -45,8 +45,8 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     public DriverPropertiesDialogPage(ConnectionPageAbstract hostPage)
     {
         this.hostPage = hostPage;
-        setTitle("Driver properties");
-        setDescription("JDBC driver properties");
+        setTitle(CoreMessages.dialog_setting_connection_driver_properties_title);
+        setDescription(CoreMessages.dialog_setting_connection_driver_properties_description);
     }
 
     @Override

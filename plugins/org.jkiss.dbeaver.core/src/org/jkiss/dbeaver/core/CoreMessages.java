@@ -1205,6 +1205,11 @@ public class CoreMessages extends NLS {
 	public static String dialog_edit_driver_type_label;
 	public static String dialog_edit_driver_embedded_label;
 	public static String dialog_edit_driver_description;
+	public static String dialog_edit_driver_edit_maven_title;
+	public static String dialog_edit_driver_edit_maven_group_id_label;
+	public static String dialog_edit_driver_edit_maven_artifact_id_label;
+	public static String dialog_edit_driver_edit_maven_classfier_label;
+	public static String dialog_edit_driver_edit_maven_version_label;
 	// Driver edit
 
 	
