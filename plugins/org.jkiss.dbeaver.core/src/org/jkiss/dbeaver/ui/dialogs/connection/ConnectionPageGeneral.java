@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
@@ -118,7 +117,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     {
         super("newConnectionFinal"); //$NON-NLS-1$
         this.wizard = wizard;
-        setTitle(wizard.isNew() ? CoreMessages.dialog_connection_wizard_final_header : "General");
+        setTitle(wizard.isNew() ? CoreMessages.dialog_connection_wizard_final_header : CoreMessages.dialog_connection_edit_wizard_general);
         setDescription(CoreMessages.dialog_connection_wizard_final_description);
 
         filters.add(new FilterInfo(DBSCatalog.class, CoreMessages.dialog_connection_wizard_final_filter_catalogs));
@@ -412,10 +411,12 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                     }
                 });
 
-                isolationLevel = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_isolation_level, CoreMessages.dialog_connection_wizard_final_label_isolation_level_tooltip, SWT.DROP_DOWN | SWT.READ_ONLY);
-                defaultSchema = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_default_schema, CoreMessages.dialog_connection_wizard_final_label_default_schema_tooltip, SWT.DROP_DOWN);
-                
-                keepAliveInterval = UIUtils.createLabelSpinner(txnGroup, CoreMessages.dialog_connection_wizard_final_label_keepalive, CoreMessages.dialog_connection_wizard_final_label_keepalive_tooltip, 0, 0, Short.MAX_VALUE);
+                isolationLevel = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_isolation_level, 
+                		CoreMessages.dialog_connection_wizard_final_label_isolation_level_tooltip, SWT.DROP_DOWN | SWT.READ_ONLY);
+                defaultSchema = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_default_schema, 
+                		CoreMessages.dialog_connection_wizard_final_label_default_schema_tooltip, SWT.DROP_DOWN);
+                keepAliveInterval = UIUtils.createLabelSpinner(txnGroup, CoreMessages.dialog_connection_wizard_final_label_keepalive,
+                		CoreMessages.dialog_connection_wizard_final_label_keepalive_tooltip, 0, 0, Short.MAX_VALUE);
 
                 {
                     String bootstrapTooltip = CoreMessages.dialog_connection_wizard_final_label_bootstrap_tooltip;
@@ -540,13 +541,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     {
         connectionFolderCombo.removeAll();
         connectionFolderCombo.addItem(null);
-        DBPDataSourceRegistry dataSourceRegistry = getWizard().getDataSourceRegistry();
-        if (dataSourceRegistry == null) {
-            //FIXME:AF: we need a solution for IDE mode
-            return;
-        }
-        List<? extends DBPDataSourceFolder> rootFolders = dataSourceRegistry.getRootFolders();
-        for (DBPDataSourceFolder folder : rootFolders) {
+        for (DBPDataSourceFolder folder : getWizard().getDataSourceRegistry().getRootFolders()) {
             loadConnectionFolder(0, folder);
         }
     }
