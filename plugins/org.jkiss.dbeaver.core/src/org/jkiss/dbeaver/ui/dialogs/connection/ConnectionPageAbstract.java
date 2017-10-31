@@ -104,7 +104,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
         if (!site.isNew() && !site.getDriver().isEmbedded()) {
             Link netConfigLink = new Link(panel, SWT.NONE);
-            netConfigLink.setText("<a>Network settings (SSH, SSL, Proxy, ...)</a>");
+            netConfigLink.setText("<a>" + CoreMessages.dialog_connection_edit_wizard_conn_conf_network_link + "</a>");
             netConfigLink.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {

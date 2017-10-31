@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -38,7 +39,7 @@ public class VariablesHintLabel
     {
         String varsText = GeneralUtils.generateVariablesLegend(vars);
 
-        CLabel infoLabel = UIUtils.createInfoLabel(parent, "You can use variables in commands. Click to see the list.");
+        CLabel infoLabel = UIUtils.createInfoLabel(parent, CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label);
         Layout layout = parent.getLayout();
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         if (layout instanceof GridLayout) {
@@ -49,7 +50,7 @@ public class VariablesHintLabel
         infoLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDown(MouseEvent e) {
-                new EditTextDialog(parent.getShell(), "Variables", varsText, true).open();
+                new EditTextDialog(parent.getShell(), CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title, varsText, true).open();
             }
         });
         infoLabel.setToolTipText(varsText);
