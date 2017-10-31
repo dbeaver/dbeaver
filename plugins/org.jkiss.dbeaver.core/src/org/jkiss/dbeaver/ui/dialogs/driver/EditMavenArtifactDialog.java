@@ -25,6 +25,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -59,7 +60,7 @@ class EditMavenArtifactDialog extends Dialog
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Edit Maven Artifact");
+        getShell().setText(CoreMessages.dialog_edit_driver_edit_maven_title);
 
         Composite composite = (Composite) super.createDialogArea(parent);
         ((GridLayout)composite.getLayout()).numColumns = 2;
@@ -67,14 +68,14 @@ class EditMavenArtifactDialog extends Dialog
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 200;
 
-        groupText = UIUtils.createLabelText(composite, "Group Id", artifact.getGroupId());
+        groupText = UIUtils.createLabelText(composite, CoreMessages.dialog_edit_driver_edit_maven_group_id_label, artifact.getGroupId());
         groupText.setLayoutData(gd);
-        artifactText = UIUtils.createLabelText(composite, "Artifact Id", artifact.getArtifactId());
+        artifactText = UIUtils.createLabelText(composite, CoreMessages.dialog_edit_driver_edit_maven_artifact_id_label, artifact.getArtifactId());
         artifactText.setLayoutData(gd);
-        classifierText = UIUtils.createLabelText(composite, "Classifier", CommonUtils.notEmpty(artifact.getClassifier()));
+        classifierText = UIUtils.createLabelText(composite, CoreMessages.dialog_edit_driver_edit_maven_classfier_label, CommonUtils.notEmpty(artifact.getClassifier()));
         classifierText.setLayoutData(gd);
 
-        versionText = UIUtils.createLabelCombo(composite, "Version", SWT.DROP_DOWN | SWT.BORDER);
+        versionText = UIUtils.createLabelCombo(composite, CoreMessages.dialog_edit_driver_edit_maven_version_label, SWT.DROP_DOWN | SWT.BORDER);
         versionText.setLayoutData(gd);
 
         versionText.setText(artifact.getVersion());
