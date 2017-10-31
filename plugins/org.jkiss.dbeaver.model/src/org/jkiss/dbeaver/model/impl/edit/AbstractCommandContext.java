@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.edit;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.*;
@@ -150,7 +151,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                     if (!cmd.executed) {
                         // Persist changes
                         //if (CommonUtils.isEmpty(cmd.persistActions)) {
-                            DBEPersistAction[] persistActions = cmd.command.getPersistActions();
+                            DBEPersistAction[] persistActions = cmd.command.getPersistActions(DBPScriptObject.EMPTY_OPTIONS);
                             if (!ArrayUtils.isEmpty(persistActions)) {
                                 cmd.persistActions = new ArrayList<>(persistActions.length);
                                 for (DBEPersistAction action : persistActions) {

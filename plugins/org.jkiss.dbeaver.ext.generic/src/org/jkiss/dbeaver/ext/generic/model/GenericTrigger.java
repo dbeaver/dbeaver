@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 
+import java.util.Map;
+
 /**
  * GenericProcedure
  */
@@ -98,7 +100,7 @@ public class GenericTrigger implements DBSTrigger, GenericScriptObject
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         if (source == null) {
             source = getDataSource().getMetaModel().getTriggerDDL(monitor, this);

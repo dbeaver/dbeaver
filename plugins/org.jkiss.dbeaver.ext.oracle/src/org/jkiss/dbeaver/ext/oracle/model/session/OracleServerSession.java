@@ -50,7 +50,7 @@ public class OracleServerSession implements DBAServerSession {
         this.schema = JDBCUtils.safeGetString(dbResult, "SCHEMANAME");
         this.status = JDBCUtils.safeGetString(dbResult, "STATUS");
         this.state = JDBCUtils.safeGetString(dbResult, "STATE");
-        this.sql = JDBCUtils.safeGetString(dbResult, "SQL_TEXT");
+        this.sql = JDBCUtils.safeGetString(dbResult, "SQL_FULLTEXT");
         this.event = JDBCUtils.safeGetString(dbResult, "EVENT");
         this.logonTime = JDBCUtils.safeGetTimestamp(dbResult, "LOGON_TIME");
         this.serviceName = JDBCUtils.safeGetString(dbResult, "SERVICE_NAME");

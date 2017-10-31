@@ -1487,6 +1487,14 @@
                 </with>
             </enabledWhen>
         </handler>
+        <!-- Zoom -->
+        <handler commandId="org.eclipse.ui.edit.text.zoomIn" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.text.zoomOut" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
+        </handler>
+
 
         <handler commandId="org.eclipse.ui.edit.text.smartEnter" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
             <!-- Smart enter works only if SS is active control. Otherwise we'll break traverse with Enter -->
@@ -1665,43 +1673,99 @@
                 <!--<visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>-->
 
                 <separator name="driverGroup" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
-                <command commandId="org.jkiss.dbeaver.core.new.connection"/>
-                <command commandId="org.jkiss.dbeaver.core.migrate.connection"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.driver.manager"
+                      label="%command.org.jkiss.dbeaver.core.driver.manager.name"
+                      tooltip="%command.org.jkiss.dbeaver.core.driver.manager.description"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.new.connection"
+                      label="%command.org.jkiss.dbeaver.core.new.connection.name"
+                      tooltip="%command.org.jkiss.dbeaver.core.new.connection.description"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.migrate.connection"
+                      label="%command.org.jkiss.dbeaver.core.migrate.connection.name"
+                      tooltip="%command.org.jkiss.dbeaver.core.migrate.connection.description"/>
                 <separator name="connection" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.connect"/>
-                <command commandId="org.jkiss.dbeaver.core.invalidate"/>
-                <command commandId="org.jkiss.dbeaver.core.disconnect"/>
-                <command commandId="org.jkiss.dbeaver.core.disconnectAll"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.connect"
+                      label="%command.org.jkiss.dbeaver.core.connect.name"
+                      tooltip="%command.org.jkiss.dbeaver.core.connect.description"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.invalidate"
+                      label="%command.org.jkiss.dbeaver.core.invalidate.name"
+                      tooltip="%command.org.jkiss.dbeaver.core.invalidate.description"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.disconnect"
+                      label="%command.org.jkiss.dbeaver.core.disconnect.name"
+                      tooltip="%command.org.jkiss.dbeaver.core.disconnect.description"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.disconnectAll"
+                      label="%command.org.jkiss.dbeaver.core.disconnectAll.name"
+                      tooltip="%command.org.jkiss.dbeaver.core.disconnectAll.description"/>
                 <separator name="session" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.commit"/>
-                <command commandId="org.jkiss.dbeaver.core.rollback"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.commit"
+                      label="%command.org.jkiss.dbeaver.core.commit.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.rollback"
+                      label="%command.org.jkiss.dbeaver.core.rollback.name"/>
                 <menu label="%command.org.jkiss.dbeaver.core.transaction_mode.name">
                     <dynamic id="org.jkiss.dbeaver.core.menu.txn" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeContributor"/>
                 </menu>
-                <command commandId="org.jkiss.dbeaver.core.txn.log"/>
-                <command commandId="org.jkiss.dbeaver.core.txn.pending"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.txn.log"
+                      label="%command.org.jkiss.dbeaver.core.txn.log.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.txn.pending"
+                      label="%command.org.jkiss.dbeaver.core.txn.pending.name"/>
                 <separator name="tools" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.compare.objects"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.compare.objects"
+                      label="%command.org.jkiss.dbeaver.core.compare.objects.name"/>
                 <menu label="%menu.database.tools" icon="icons/misc/tools.png">
                     <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolsContributor"/>
                 </menu>
-                <command commandId="org.jkiss.dbeaver.ui.tools.menu"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.tools.menu"
+                      label="%command.org.jkiss.dbeaver.ui.tools.menu.name"/>
+                <separator
+                      name="advance">
+                </separator>
+                <command
+                      commandId="org.jkiss.dbeaver.core.sql.converter"
+                      label="plsql Converter"
+                      style="push">
+                </command>
             </menu>
         </menuContribution>
 
         <!-- Database toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
             <toolbar id="dbeaver-general" label="%toolbar.dbeaver-general.label">
-                <command commandId="org.jkiss.dbeaver.core.new.connection"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.new.connection"
+                      label="%command.org.jkiss.dbeaver.core.new.connection.name"
+                      tooltip="%command.org.jkiss.dbeaver.core.new.connection.description"/>
                 <separator name="sql-tools" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.connect"/>
-                <command commandId="org.jkiss.dbeaver.core.invalidate"/>
-                <command commandId="org.jkiss.dbeaver.core.disconnect"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.connect"
+                      label="%command.org.jkiss.dbeaver.core.connect.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.invalidate"
+                      label="%command.org.jkiss.dbeaver.core.invalidate.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.disconnect"
+                      label="%command.org.jkiss.dbeaver.core.disconnect.name"/>
                 <separator name="sql-tools" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.recent"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.sql.editor.open"
+                      label="%command.org.jkiss.dbeaver.core.sql.editor.open.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.sql.editor.recent"
+                      label="%command.org.jkiss.dbeaver.core.sql.editor.recent.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.sql.editor.create"
+                      label="%command.org.jkiss.dbeaver.core.sql.editor.create.name"/>
                 <separator name="additions" visible="false"/>
             </toolbar>
             <toolbar id="dbeaver-transactions" label="%toolbar.dbeaver-transactions.label">
@@ -1712,7 +1776,13 @@
                 <command commandId="org.jkiss.dbeaver.core.rollback" label="%command.org.jkiss.dbeaver.core.rollbacklabel" style="push" mode="FORCE_TEXT">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
-                <command commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_auto.png" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn">
+                <command
+                      commandId="org.jkiss.dbeaver.core.txn.autocommit"
+                      icon="icons/sql/txn_auto.png"
+                      id="org.jkiss.dbeaver.core.menu.txn"
+                      label="%command.org.jkiss.dbeaver.core.txn.autocommit.name"
+                      style="pulldown"
+                      tooltip="%command.org.jkiss.dbeaver.core.txn.autocommit.description">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
             </toolbar>
@@ -1722,7 +1792,11 @@
                 <control class="org.jkiss.dbeaver.ui.controls.txn.TransactionMonitorToolbar$ToolbarContribution">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </control>
-                <command commandId="org.jkiss.dbeaver.core.txn.log" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn.log">
+                <command
+                      commandId="org.jkiss.dbeaver.core.txn.log"
+                      id="org.jkiss.dbeaver.core.menu.txn.log"
+                      label="%command.org.jkiss.dbeaver.core.txn.log.name"
+                      style="pulldown">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
             </toolbar>
@@ -1730,7 +1804,11 @@
                 <control class="org.jkiss.dbeaver.ui.perspective.DataSourceManagementToolbar$ToolbarContribution">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </control>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection" style="pulldown" id="org.jkiss.dbeaver.core.menu.sql.sync">
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection"
+                      id="org.jkiss.dbeaver.core.menu.sql.sync"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.sync.connection.name"
+                      style="pulldown">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
                 <separator name="additions" visible="false"/>
@@ -1750,16 +1828,26 @@
 
         <!-- Database Navigator menu & toolbar -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.databaseNavigator">
-            <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
-            <command commandId="org.jkiss.dbeaver.core.new.connection"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.driver.manager"
+                  label="%command.org.jkiss.dbeaver.core.driver.manager.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.driver.manager.description"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.new.connection"
+                  label="%command.org.jkiss.dbeaver.core.new.connection.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.new.connection.description"/>
             <separator name="projects" visible="true"/>
             <menu label="%menu.org.jkiss.dbeaver.core.project.select.label" commandId="org.jkiss.dbeaver.core.project.select">
                 <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorActiveProjectContributor"/>
             </menu>
-            <command commandId="org.jkiss.dbeaver.core.new.folder"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.new.folder"
+                  label="%command.org.jkiss.dbeaver.core.new.folder.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.new.folder.description"/>
             <separator name="additions" visible="true"/>
-            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll" label="%command.org.eclipse.ui.navigate.collapseAll.name"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor" label="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.databaseNavigator">
@@ -1773,31 +1861,61 @@
 
         <!-- Project Navigator menu & toolbar -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.projectNavigator">
-            <command commandId="org.jkiss.dbeaver.core.project.create"/>
-            <command commandId="org.jkiss.dbeaver.core.project.refresh"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.project.create"
+                  label="%command.org.jkiss.dbeaver.core.project.create.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.project.create.description"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.project.refresh"
+                  label="%command.org.jkiss.dbeaver.core.project.refresh.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.project.refresh.description"/>
             <separator name="additions" visible="true"/>
-            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+            <command
+                  commandId="org.eclipse.ui.navigate.collapseAll"
+                  label="%command.org.eclipse.ui.navigate.collapseAll.name"
+                  tooltip="%command.org.eclipse.ui.navigate.collapseAll.description"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.navigator.linkeditor"
+                  label="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectNavigator">
-            <command commandId="org.jkiss.dbeaver.core.project.create"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.project.create"
+                  label="%command.org.jkiss.dbeaver.core.project.create.name"/>
             <separator name="additions" visible="true"/>
-            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+            <command
+                  commandId="org.eclipse.ui.navigate.collapseAll"
+                  label="%command.org.eclipse.ui.navigate.collapseAll.name"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.navigator.linkeditor"
+                  label="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description"/>
         </menuContribution>
 
         <!-- Project explorer menu & toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectExplorer">
-            <command commandId="org.jkiss.dbeaver.core.navigator.view.configure"/>
-            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
-            <command commandId="org.eclipse.ui.navigate.expandAll"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.navigator.view.configure"
+                  label="%command.org.jkiss.dbeaver.core.navigator.view.configure.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.navigator.view.configure.description"/>
+            <command
+                  commandId="org.eclipse.ui.navigate.collapseAll"
+                  label="%command.org.eclipse.ui.navigate.collapseAll.name "/>
+            <command
+                  commandId="org.eclipse.ui.navigate.expandAll"
+                  label="%command.org.eclipse.ui.navigate.expandAll.name "/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.navigator.linkeditor"
+                  label="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name"/>
         </menuContribution>
 
         <!-- All Context menus -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions">
-            <command commandId="org.jkiss.dbeaver.core.connect">
+            <command
+                  commandId="org.jkiss.dbeaver.core.connect"
+                  label="%command.org.jkiss.dbeaver.core.connect.name">
                <visibleWhen>
                    <with variable="selection">
                        <count value="1"/>
@@ -1807,7 +1925,9 @@
                    </with>
                </visibleWhen>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.invalidate">
+            <command
+                  commandId="org.jkiss.dbeaver.core.invalidate"
+                  label="%command.org.jkiss.dbeaver.core.invalidate.name">
                 <visibleWhen>
                     <with variable="selection">
                         <count value="1"/>
@@ -1817,7 +1937,9 @@
                     </with>
                 </visibleWhen>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.disconnect">
+            <command
+                  commandId="org.jkiss.dbeaver.core.disconnect"
+                  label="%command.org.jkiss.dbeaver.core.disconnect.name">
                 <visibleWhen>
                     <with variable="selection">
                         <count value="1"/>
@@ -1830,7 +1952,9 @@
 
             <separator name="navigator_commands" visible="true"/>
 
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
+            <command
+                  commandId="org.jkiss.dbeaver.core.sql.editor.open"
+                  label="%command.org.jkiss.dbeaver.core.sql.editor.open.name">
                 <visibleWhen>
                     <with variable="selection">
                         <count value="1"/>
@@ -1840,7 +1964,9 @@
                     </with>
                 </visibleWhen>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.recent">
+            <command
+                  commandId="org.jkiss.dbeaver.core.sql.editor.recent"
+                  label="%command.org.jkiss.dbeaver.core.sql.editor.recent.name">
                 <visibleWhen>
                     <with variable="selection">
                         <count value="+"/>
@@ -1851,20 +1977,28 @@
                 </visibleWhen>
             </command>
 
-            <command commandId="org.jkiss.dbeaver.core.project.active">
+            <command
+                  commandId="org.jkiss.dbeaver.core.project.active"
+                  label="%command.org.jkiss.dbeaver.core.project.active.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.resource.create.folder">
+            <command commandId="org.jkiss.dbeaver.core.resource.create.folder"  label="%command.org.jkiss.dbeaver.core.resource.create.folder.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.resource.link.file">
+            <command
+                  commandId="org.jkiss.dbeaver.core.resource.link.file"
+                  label="%command.org.jkiss.dbeaver.core.resource.link.file.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.resource.link.file.description">
                <parameter
                      name="org.jkiss.dbeaver.core.resource.link.file.contenttype"
                      value="org.jkiss.dbeaver.sql">
                </parameter>
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.resource.link.folder">
+            <command
+                  commandId="org.jkiss.dbeaver.core.resource.link.folder"
+                  label="%command.org.jkiss.dbeaver.core.resource.link.folder.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.resource.link.folder.description">
                 <visibleWhen checkEnabled="true"/>
             </command>
 
@@ -1883,48 +2017,75 @@
 
             <separator name="create" visible="false"/>
 
-            <command commandId="org.jkiss.dbeaver.core.object.open">
+            <command
+                  commandId="org.jkiss.dbeaver.core.object.open"
+                  label="%command.org.jkiss.dbeaver.core.object.open.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.object.create">
+            <command
+                  commandId="org.jkiss.dbeaver.core.object.create"
+                  label="%command.org.jkiss.dbeaver.core.object.create.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.new.folder">
+            <command
+                  commandId="org.jkiss.dbeaver.core.new.folder"
+                  label="%command.org.jkiss.dbeaver.core.new.folder.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
 
             <separator name="copy" visible="true"/>
 
-            <command commandId="org.eclipse.ui.edit.copy">
+            <command
+                  commandId="org.eclipse.ui.edit.copy"
+                  label="%command.org.eclipse.ui.edit.copy.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.eclipse.ui.edit.paste">
+            <command
+                  commandId="org.eclipse.ui.edit.paste"
+                  label="%command.org.eclipse.ui.edit.paste.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="%command.org.jkiss.dbeaver.core.edit.copy.adv_info">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.eclipse.ui.edit.delete">
+            <command
+                  commandId="org.eclipse.ui.edit.delete"
+                  label="%command.org.eclipse.ui.edit.delete.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.eclipse.ui.edit.rename">
+            <command
+                  commandId="org.eclipse.ui.edit.rename"
+                  label="%command.org.eclipse.ui.edit.rename.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <menu label="%menu.filter.label" icon="icons/misc/filter.png">
-                <command commandId="org.jkiss.dbeaver.core.object.filter.add.exclude">
+            <menu
+                  icon="icons/misc/filter.png"
+                  label="%menu.filter.label">
+                <command
+                      commandId="org.jkiss.dbeaver.core.object.filter.add.exclude"
+                      label="%command.org.jkiss.dbeaver.core.object.filter.add.exclude.name"
+                      tooltip="%command.org.jkiss.dbeaver.core.object.filter.add.exclude.description">
                     <visibleWhen checkEnabled="true"/>
                 </command>
-                <command commandId="org.jkiss.dbeaver.core.object.filter.add.include">
+                <command
+                      commandId="org.jkiss.dbeaver.core.object.filter.add.include"
+                      label="%command.org.jkiss.dbeaver.core.object.filter.add.include.name">
                     <visibleWhen checkEnabled="true"/>
                 </command>
                 <separator name="filter_config" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.object.filter.config">
+                <command
+                      commandId="org.jkiss.dbeaver.core.object.filter.config"
+                      label="%command.org.jkiss.dbeaver.core.object.filter.config.name">
                     <visibleWhen checkEnabled="true"/>
                 </command>
-                <command commandId="org.jkiss.dbeaver.core.object.filter.toggle">
+                <command
+                      commandId="org.jkiss.dbeaver.core.object.filter.toggle"
+                      label="%command.org.jkiss.dbeaver.core.object.filter.toggle.name">
                     <visibleWhen checkEnabled="true"/>
                 </command>
-                <command commandId="org.jkiss.dbeaver.core.object.filter.clear">
+                <command
+                      commandId="org.jkiss.dbeaver.core.object.filter.clear"
+                      label="%command.org.jkiss.dbeaver.core.object.filter.clear.name">
                     <visibleWhen checkEnabled="true"/>
                 </command>
             </menu>
@@ -1938,7 +2099,9 @@
             </command>
 -->
 
-            <command commandId="org.jkiss.dbeaver.core.sql.script.associate">
+            <command
+                  commandId="org.jkiss.dbeaver.core.sql.script.associate"
+                  label="%command.org.jkiss.dbeaver.core.sql.script.associate.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>
@@ -1948,16 +2111,24 @@
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
             <separator name="data" visible="true"/>
 
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.forSelection">
+            <command
+                  commandId="org.jkiss.dbeaver.core.sql.editor.forSelection"
+                  label="%command.org.jkiss.dbeaver.core.sql.editor.forSelection.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.export.data">
+            <command
+                  commandId="org.jkiss.dbeaver.core.export.data"
+                  label="%command.org.jkiss.dbeaver.core.export.data.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.import.data">
+            <command
+                  commandId="org.jkiss.dbeaver.core.import.data"
+                  label="%command.org.jkiss.dbeaver.core.import.data.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.compare.objects">
+            <command
+                  commandId="org.jkiss.dbeaver.core.compare.objects"
+                  label="%command.org.jkiss.dbeaver.core.compare.objects.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
 
@@ -1982,8 +2153,16 @@
 
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="navigate" label="%menu.navigate">
-                <command commandId="org.jkiss.dbeaver.core.object.goto"><visibleWhen checkEnabled="true"/></command>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object"><visibleWhen checkEnabled="true"/></command>
+                <command
+                      commandId="org.jkiss.dbeaver.core.object.goto"
+                      label="%command.org.jkiss.dbeaver.core.object.goto.name"
+                      tooltip="%command.org.jkiss.dbeaver.core.object.goto.description"><visibleWhen checkEnabled="true"/></command>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.navigate.object.name"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.navigate.object.description">
+					  <visibleWhen checkEnabled="true"/>
+			    </command>
             </menu>
         </menuContribution>
 
@@ -1999,53 +2178,83 @@
         <!-- SQL editor menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="SQLEditorMenu" label="%menu.sqleditor">
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.recent"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.sql.editor.open"
+                      label="%command.org.jkiss.dbeaver.core.sql.editor.open.name"
+                      tooltip="%command.org.jkiss.dbeaver.core.sql.editor.open.description"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.sql.editor.recent"
+                      label="%command.org.jkiss.dbeaver.core.sql.editor.recent.name"
+                      tooltip="%command.org.jkiss.dbeaver.core.sql.editor.recent.description"/>
+                <command
+                      commandId="org.jkiss.dbeaver.core.sql.editor.create"
+                      label="%command.org.jkiss.dbeaver.core.sql.editor.create.name"
+                      tooltip="%command.org.jkiss.dbeaver.core.sql.editor.create.description"/>
                 <separator name="execute" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement">
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.name"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.description">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                         </with>
                     </visibleWhen>
                 </command>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew">
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.statementNew.name"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.run.statementNew.description">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                         </with>
                     </visibleWhen>
                 </command>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script">
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.script.name"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.run.script.description">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                         </with>
                     </visibleWhen>
                 </command>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew">
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.scriptNew.name"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.run.scriptNew.description">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                         </with>
                     </visibleWhen>
                 </command>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.count">
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.count.name"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.run.count.description">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                         </with>
                     </visibleWhen>
                 </command>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows">
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.all.rows.name"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.run.all.rows.description">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                         </with>
                     </visibleWhen>
                 </command>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression">
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.expression.name"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.run.expression.description">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
@@ -2053,7 +2262,10 @@
                     </visibleWhen>
                 </command>
                 <separator name="query" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain">
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.explain.name"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.run.explain.description">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
@@ -2061,14 +2273,20 @@
                     </visibleWhen>
                 </command>
                 <separator name="files" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file">
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.open.file.name"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.open.file.description">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                         </with>
                     </visibleWhen>
                 </command>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file">
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.name"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.description">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
@@ -2076,39 +2294,81 @@
                     </visibleWhen>
                 </command>
                 <separator name="misc" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel.name"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel.description"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel.name"
+                      style="push"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel.description">
+                </command>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.switch.panel.name"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.switch.panel.description"/>
             </menu>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.additions">
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute.label" icon="icons/sql/sql_exec.png">
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.name"
+                      tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.description"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.statementNew.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.script.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.scriptNew.name"/>
                 <separator name="additions_extra" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.count.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.all.rows.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.expression.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.run.explain.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.export.data.name"/>
             </menu>
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file.label">
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.rename"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.rename"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.rename.name"/>
                 <command commandId="org.eclipse.ui.file.revert"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.open.file.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.name"/>
             </menu>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.extras">
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.label">
                 <dynamic id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.resultSet.orientation" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor$ResultSetOrientationMenuContributor"/>
                 <separator name="layout_toggles" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel.name"/>
+                <command
+                      commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"
+                      label="%command.org.jkiss.dbeaver.ui.editors.sql.switch.panel.name"/>
             </menu>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=group.copy">
@@ -2118,36 +2378,67 @@
         <!-- QM menu & toolbar -->
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.queryManager">
-            <command commandId="org.jkiss.dbeaver.core.qm.filter"/>
-            <command commandId="org.jkiss.dbeaver.core.qm.clear"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.qm.filter"
+                  label="%command.org.jkiss.dbeaver.core.qm.filter.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.qm.filter.description"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.qm.clear"
+                  label="%command.org.jkiss.dbeaver.core.qm.clear.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.qm.clear.description"/>
             <separator name="additions" visible="true"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.queryManager">
-            <command commandId="org.jkiss.dbeaver.core.qm.filter"/>
-            <command commandId="org.jkiss.dbeaver.core.qm.clear"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.qm.filter"
+                  label="%command.org.jkiss.dbeaver.core.qm.filter.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.qm.filter.description"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.qm.clear"
+                  label="%command.org.jkiss.dbeaver.core.qm.clear.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.qm.clear.description"/>
             <separator name="additions" visible="true"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.shellProcess">
-            <command commandId="org.jkiss.dbeaver.core.process.stop"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.process.stop"
+                  label="%command.org.jkiss.dbeaver.core.process.stop.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.process.stop.description"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.shellProcess">
-            <command commandId="org.jkiss.dbeaver.core.process.stop"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.process.stop"
+                  label="%command.org.jkiss.dbeaver.core.process.stop.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.process.stop.description"/>
         </menuContribution>
 
         <!-- SQL editor connection sync drop-down menu -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.sql.sync">
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.auto" style="toggle"/>
+            <command
+                  commandId="org.jkiss.dbeaver.ui.editors.sql.sync.auto"
+                  label="%command.org.jkiss.dbeaver.ui.editors.sql.sync.auto.name"
+                  style="toggle"
+                  tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.sync.auto.description"/>
             <separator name="sync_additions" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.navigator.linkeditor"
+                  label="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description"/>
         </menuContribution>
 
         <!-- Transaction log menu -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.txn.log">
-            <command commandId="org.jkiss.dbeaver.core.txn.log"/>
-            <command commandId="org.jkiss.dbeaver.core.txn.pending"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.txn.log"
+                  label="%command.org.jkiss.dbeaver.core.txn.log.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.txn.log.description"/>
+            <command
+                  commandId="org.jkiss.dbeaver.core.txn.pending"
+                  label="%command.org.jkiss.dbeaver.core.txn.pending.name"
+                  tooltip="%command.org.jkiss.dbeaver.core.txn.pending.description"/>
             <command commandId="org.eclipse.ui.views.showView" icon="icons/misc/qm.png" label="%command.org.eclipse.ui.views.showView.label" style="push">
                 <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.core.queryManager"/>
             </command>
@@ -3176,7 +3467,6 @@
         <presentation
                 id="spreadsheet"
                 label="%presentation.spreadsheet.label"
-                description="Result set grid/spreadsheet"
                 icon="icons/sql/grid.png"
                 class="org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation"
                 order="100"
@@ -3186,7 +3476,6 @@
         <presentation
                 id="plaintext"
                 label="%presentation.plaintext.label"
-                description="Plain text presentation"
                 icon="icons/sql/sql_text.png"
                 class="org.jkiss.dbeaver.ui.controls.resultset.plaintext.PlainTextPresentation"
                 order="200"
@@ -3199,7 +3488,7 @@
         <panel
                 id="value-view"
                 label="%panel.value-view.label"
-                description="View/edit cell value"
+                description="%resultset.panel.valueview.description"
                 icon="icons/sql/panel_value.png"
                 default="true"
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel">
@@ -3208,7 +3497,7 @@
         <panel
                 id="column-aggregate"
                 label="%panel.column-aggregate.label"
-                description="Aggregate/calculate column values"
+                description="%resultset.panel.columnsaggregate.description"
                 icon="icons/sql/panel_aggregate.png"
                 default="false"
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.AggregateColumnsPanel">
@@ -3217,7 +3506,7 @@
         <panel
                 id="results-metadata"
                 label="%panel.results-metadata.label"
-                description="Resultset metadata"
+                description="%resultset.panel.metadata.description"
                 icon="icons/sql/panel_metadata.png"
                 default="false"
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.MetaDataPanel">
@@ -3237,31 +3526,31 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository id="maven-central" name="Central Repository" url="https://repo1.maven.org/maven2/" order="0"/>
+        <repository id="maven-central" name="%maven.respository.central" url="https://repo1.maven.org/maven2/" order="0"/>
 
-        <repository id="maven-central-unsecure" name="Central Repository (unsecure)" url="http://central.maven.org/maven2/" order="99999"/>
+        <repository id="maven-central-unsecure" name="%maven.respository.central.unsecure" url="http://central.maven.org/maven2/" order="99999"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sql.covert">
         <target id="unformatted"
-                label="Unformatted text"
-                description="Converts SQL text into unformatted single line plain text"
+                label="%sql.convert.unformatted.text.name"
+                description="%sql.convert.unformatted.text.description"
                 class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.UnformattedSQLConverter"/>
-        <target id="java" label="Java" description="Converts SQL text into Java source code" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.JavaSQLConverter">
+        <target id="java" label="Java" description="%sql.convert.java.description" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.JavaSQLConverter">
             <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
             <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually \n or space" required="false" defaultValue=" "/>
         </target>
-        <target id="cpp" label="C/C++" description="Converts SQL text into C/C++ source code" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.CPPSQLConverter">
+        <target id="cpp" label="C/C++" description="%sql.convert.c.description" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.CPPSQLConverter">
             <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
             <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually \n or space" required="false" defaultValue=" "/>
         </target>
-        <target id="delphi" label="Delphi" description="Converts SQL text into Delphi source code" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.DelphiSQLConverter">
+        <target id="delphi" label="Delphi" description="%sql.convert.delphi.description" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.DelphiSQLConverter">
             <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
             <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually #13#10 or space" required="false" defaultValue="#13#10"/>
         </target>
         <target id="html"
                 label="HTML"
-                description="Converts SQL text into colored HTML snippet"
+                description="%sql.convert.html.description"
                 class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.HTMLSQLConverter"/>
     </extension>
 
@@ -3288,14 +3577,14 @@
             class="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"
             icon="icons/databases.png"
             id="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"
-            label="Database Metadata Search Result"
+            label="%search.result.view.page.metadata.result.name"
             searchResultClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResult">
         </viewPage>
         <viewPage
             class="org.jkiss.dbeaver.ui.search.data.SearchDataResultsPage"
             icon="icons/sql/sql_text.png"
             id="org.jkiss.dbeaver.ui.search.data.SearchDataResultsPage"
-            label="Database Full-Text Search Result"
+            label="%search.result.view.page.data.result.name"
             searchResultClass="org.jkiss.dbeaver.ui.search.data.SearchDataResult">
         </viewPage>
     </extension>

@@ -816,7 +816,7 @@ public abstract class LightGrid extends Canvas {
             if (point.x >= x2 && point.x < x2 + column.getWidth()) {
                 for (GridColumn parent = column.getParent(); parent != null; parent = parent.getParent()) {
                     Point parentLoc = getOrigin(parent, -1);
-                    if (point.y >= parentLoc.y && point.y <= parentLoc.y + parent.getHeaderHeight(false)) {
+                    if (point.y >= parentLoc.y && point.y <= parentLoc.y + parent.getHeaderHeight(false, false)) {
                         column = parent;
                         break;
                     }
@@ -1785,7 +1785,7 @@ public abstract class LightGrid extends Canvas {
         // Column header height
         int colHeaderHeight = 0;
         for (GridColumn column : topColumns) {
-            colHeaderHeight = Math.max(column.getHeaderHeight(true), colHeaderHeight);
+            colHeaderHeight = Math.max(column.getHeaderHeight(true, true), colHeaderHeight);
         }
         headerHeight = colHeaderHeight;
 
@@ -2204,7 +2204,7 @@ public abstract class LightGrid extends Canvas {
             if (x > clientArea.width)
                 break;
 
-            int columnHeight = column.getHeaderHeight(false);
+            int columnHeight = column.getHeaderHeight(false, false);
             y = 0;
             if (x + column.getWidth() >= 0) {
                 paintColumnsHeader(gc, column, x, y, columnHeight, 0);
@@ -2839,8 +2839,12 @@ public abstract class LightGrid extends Canvas {
                 showItem(row);
                 redraw();
                 //return;
-            } else if (e.button == 1 || (e.button == 3 && col != null && !isSelectedCell)) {
-                if (col != null) {
+            } else if (e.button == 1 || (e.button == 3 && col != null)) {
+                if (isSelectedCell) {
+                    // Selection didn't change.
+                    // Fire event anyways - maybe it will be helpful. E.g. to refresh some cell viewer panel
+                    selectionEvent = new Event();
+                } else if (col != null) {
                     selectionEvent = updateCellSelection(new GridPos(col.getIndex(), row), e.stateMask, false, true, EventSource.MOUSE);
                     cellSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
 
@@ -3565,7 +3569,7 @@ public abstract class LightGrid extends Canvas {
             }
         } else if (columnHeadersVisible && column.getParent() != null) {
             for (GridColumn parent = column.getParent(); parent != null; parent = parent.getParent()) {
-                y += parent.getHeaderHeight(false);
+                y += parent.getHeaderHeight(false, false);
             }
         }
 

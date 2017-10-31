@@ -119,7 +119,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
                 executeTimeoutText.setIncrement(1);
                 executeTimeoutText.setMinimum(0);
                 executeTimeoutText.setMaximum(100000);
-                executeTimeoutText.setToolTipText("Query execute timeout (in seconds). 0 means no timeout");
+                executeTimeoutText.setToolTipText(CoreMessages.pref_page_sql_editor_label_sql_timeout_tip);
 
             }
         }
@@ -169,7 +169,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             anonymousParameterMarkText.setTextLimit(1);
             namedParameterPrefixText = UIUtils.createLabelText(paramsGroup, CoreMessages.pref_page_sql_editor_text_named_parameter_prefix, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
             namedParameterPrefixText.setTextLimit(1);
-            enableParametersInDDL = UIUtils.createCheckbox(paramsGroup, "Enable parameters in DDL", null, false, 2);
+            enableParametersInDDL = UIUtils.createCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_enable_parameters_in_ddl, null, false, 2);
         }
 
         // Delimiters

@@ -243,9 +243,10 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     }
 
     @Override
-    public Collection<DB2TableBase> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Collection<DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        List<DB2TableBase> allChildren = new ArrayList<>();
+        List<DBSObject> allChildren = new ArrayList<>();
+        allChildren.addAll(aliasCache.getAllObjects(monitor, this));
         allChildren.addAll(tableCache.getAllObjects(monitor, this));
         allChildren.addAll(viewCache.getAllObjects(monitor, this));
         allChildren.addAll(mqtCache.getAllObjects(monitor, this));
@@ -254,9 +255,12 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     }
 
     @Override
-    public DB2TableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException
     {
-        DB2TableBase child = tableCache.getObject(monitor, this, childName);
+        DBSObject child = tableCache.getObject(monitor, this, childName);
+        if (child == null) {
+            child = aliasCache.getObject(monitor, this, childName);
+        }
         if (child == null) {
             child = viewCache.getObject(monitor, this, childName);
         }

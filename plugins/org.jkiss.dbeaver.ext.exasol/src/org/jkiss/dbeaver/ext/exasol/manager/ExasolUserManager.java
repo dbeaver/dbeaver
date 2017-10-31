@@ -1,6 +1,7 @@
 package org.jkiss.dbeaver.ext.exasol.manager;
 
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.DBException;
@@ -60,7 +61,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
 
 	@Override
 	protected void addObjectCreateActions(List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolUser, ExasolDataSource>.ObjectCreateCommand command)
+										  ObjectCreateCommand command, Map<String, Object> options)
 	{
 		ExasolUser obj = command.getObject();
 		
@@ -83,7 +84,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
 
 	@Override
 	protected void addObjectDeleteActions(List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolUser, ExasolDataSource>.ObjectDeleteCommand command)
+                                          ObjectDeleteCommand command, Map<String, Object> options)
 	{
 		ExasolUser obj = command.getObject();
 		actions.add(new SQLDatabasePersistAction("Drop User", "DROP USER " + DBUtils.getQuotedIdentifier(obj)));
@@ -106,7 +107,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
 	
 	@Override
 	protected void addObjectRenameActions(List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolUser, ExasolDataSource>.ObjectRenameCommand command)
+                                          ObjectRenameCommand command, Map<String, Object> options)
 	{
 		ExasolUser obj = command.getObject();
         actions.add(
@@ -124,7 +125,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
 	
 	@Override
 	protected void addObjectModifyActions(List<DBEPersistAction> actionList,
-			SQLObjectEditor<ExasolUser, ExasolDataSource>.ObjectChangeCommand command)
+										  ObjectChangeCommand command, Map<String, Object> options)
 	{
 		ExasolUser obj = command.getObject();
 		

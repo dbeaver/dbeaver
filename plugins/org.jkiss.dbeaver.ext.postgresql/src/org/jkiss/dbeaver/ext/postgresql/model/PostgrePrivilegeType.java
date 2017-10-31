@@ -20,14 +20,25 @@ package org.jkiss.dbeaver.ext.postgresql.model;
  * PostgrePrivilegeType
  */
 public enum PostgrePrivilegeType {
-    SELECT,
-    INSERT,
-    UPDATE,
-    DELETE,
-    TRUNCATE,
-    REFERENCES,
-    TRIGGER,
-    UNKNOWN;
+    ALL(false),
+    SELECT(true),
+    INSERT(true),
+    UPDATE(true),
+    DELETE(true),
+    TRUNCATE(true),
+    REFERENCES(true),
+    TRIGGER(true),
+    UNKNOWN(false);
+
+    private final boolean valid;
+
+    PostgrePrivilegeType(boolean valid) {
+        this.valid = valid;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
 
     public static PostgrePrivilegeType fromString(String type) {
         try {

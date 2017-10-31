@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.dbeaver.core.CoreMessages;
 
 /**
  * PrefPageConnections
@@ -63,22 +64,21 @@ public class PrefPageConnections extends TargetPrefPage
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
         {
-            Group clientNameGroup = UIUtils.createControlGroup(composite, "Client Application Name", 2, GridData.FILL_HORIZONTAL, 0);
+            Group clientNameGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_client_name_group, 2, GridData.FILL_HORIZONTAL, 0);
 
             final Label label = UIUtils.createLabel(clientNameGroup,
-                "Client application name is passed to database server on connect to identify client connections.\n" +
-                "By default it is set to product name + product version. You can set it to any custom value.");
+                CoreMessages.pref_page_database_client_name_group_description);
             GridData gd = new GridData();
             gd.horizontalSpan = 2;
             label.setLayoutData(gd);
-            overrideClientApplicationNameCheck = UIUtils.createCheckbox(clientNameGroup, "Override client application name", null, false, 2);
+            overrideClientApplicationNameCheck = UIUtils.createCheckbox(clientNameGroup, CoreMessages.pref_page_database_label_override_client_application_name, null, false, 2);
             overrideClientApplicationNameCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     updateClientAppEnablement();
                 }
             });
-            clientApplicationNameText = UIUtils.createLabelText(clientNameGroup, "Client Application Name", "");
+            clientApplicationNameText = UIUtils.createLabelText(clientNameGroup, CoreMessages.pref_page_database_label_client_application_name, "");
         }
 
         return composite;

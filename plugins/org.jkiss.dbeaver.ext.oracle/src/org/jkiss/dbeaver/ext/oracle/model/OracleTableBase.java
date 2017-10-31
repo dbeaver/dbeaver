@@ -49,6 +49,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * OracleTable base
@@ -268,10 +269,10 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return null;
     }
 
-    public String getDDL(DBRProgressMonitor monitor, OracleDDLFormat ddlFormat)
+    public String getDDL(DBRProgressMonitor monitor, OracleDDLFormat ddlFormat, Map<String, Object> options)
         throws DBException
     {
-        return OracleUtils.getDDL(monitor, getTableTypeName(), this, ddlFormat);
+        return OracleUtils.getDDL(monitor, getTableTypeName(), this, ddlFormat, options);
     }
 
     @NotNull

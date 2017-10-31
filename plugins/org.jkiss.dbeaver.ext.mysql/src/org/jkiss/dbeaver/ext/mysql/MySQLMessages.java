@@ -87,6 +87,7 @@ public class MySQLMessages extends NLS {
 	public static String tools_db_export_wizard_page_settings_checkbox_addnl_comments;
 	public static String tools_db_export_wizard_page_settings_checkbox_remove_definer;
 	public static String tools_db_export_wizard_page_settings_checkbox_binary_hex;
+	public static String tools_db_export_wizard_page_settings_checkbox_no_data;
 	public static String tools_db_export_wizard_page_settings_checkbox_disable_keys;
 	public static String tools_db_export_wizard_page_settings_checkbox_dump_events;
 	public static String tools_db_export_wizard_page_settings_checkbox_ext_inserts;

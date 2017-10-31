@@ -16,8 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.meta.Property;
 
 public class SQLiteDataType extends JDBCDataType<SQLiteDataSource> {
 
@@ -28,12 +31,31 @@ public class SQLiteDataType extends JDBCDataType<SQLiteDataSource> {
         this.affinity = affinity;
     }
 
+    @NotNull
+    @Override
+    @Property(viewable = true, order = 1)
+    public String getName()
+    {
+        return super.getName();
+    }
+
+    @Property(order = 10)
     public SQLiteAffinity getAffinity() {
         return affinity;
     }
 
+    @Property(order = 20)
     @Override
     public DBPDataKind getDataKind() {
         return affinity.getDataKind();
     }
+
+    @Nullable
+    @Override
+    @Property(viewable = true, order = 100)
+    public String getDescription()
+    {
+        return super.getDescription();
+    }
+
 }

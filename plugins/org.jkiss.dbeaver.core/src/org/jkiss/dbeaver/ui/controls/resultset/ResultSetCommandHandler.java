@@ -25,9 +25,13 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.resource.FontDescriptor;
+import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -99,6 +103,9 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_COPY_COLUMN_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyColumnNames";
     public static final String CMD_COPY_ROW_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyRowNames";
     public static final String CMD_EXPORT = "org.jkiss.dbeaver.core.resultset.export";
+
+    public static final String CMD_ZOOM_IN = "org.eclipse.ui.edit.text.zoomIn";
+    public static final String CMD_ZOOM_OUT = "org.eclipse.ui.edit.text.zoomOut";
 
     public static IResultSetController getActiveResultSet(IWorkbenchPart activePart) {
         if (activePart instanceof IResultSetContainer) {
@@ -411,10 +418,33 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 dialog.open();
                 break;
             }
+            case CMD_ZOOM_IN:
+            case CMD_ZOOM_OUT: {
+                FontRegistry fontRegistry= rsv.getSite().getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getFontRegistry();
+                Font font = fontRegistry.get(ThemeConstants.FONT_SQL_RESULT_SET);
+                if (font != null) {
+                    FontData[] fondData= font.getFontData();
+                    if (fondData != null) {
+                        int zoomFactor = actionId.equals(CMD_ZOOM_IN) ? 1 : -1;
+                        FontDescriptor fd = createFontDescriptor(fondData, zoomFactor);
+                        fontRegistry.put(ThemeConstants.FONT_SQL_RESULT_SET, fd.getFontData());
+                    }
+                }
+
+                break;
+            }
         }
 
 
         return null;
+    }
+
+    private FontDescriptor createFontDescriptor(FontData[] initialFontData, int fFontSizeOffset) {
+        int destFontSize= initialFontData[0].getHeight() + fFontSizeOffset;
+        if (destFontSize <= 0) {
+            return FontDescriptor.createFrom(initialFontData);
+        }
+        return FontDescriptor.createFrom(initialFontData).setHeight(destFontSize);
     }
 
     static class GotoLineDialog extends InputDialog {
