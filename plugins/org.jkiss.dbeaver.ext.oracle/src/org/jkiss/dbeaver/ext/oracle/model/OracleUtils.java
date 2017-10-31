@@ -19,12 +19,8 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
-import org.jkiss.dbeaver.model.DBPScriptObjectExt;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -41,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,7 +52,8 @@ public class OracleUtils {
         DBRProgressMonitor monitor,
         String objectType,
         DBSEntity object,
-        OracleDDLFormat ddlFormat) throws DBException
+        OracleDDLFormat ddlFormat,
+        Map<String, Object> options) throws DBException
     {
         String objectFullName = DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
         OracleSchema schema = null;
@@ -115,7 +113,7 @@ public class OracleUtils {
         } catch (SQLException e) {
             if (object instanceof OracleTableBase) {
                 log.error("Error generating Oracle DDL. Generate default.", e);
-                return JDBCUtils.generateTableDDL(monitor, (OracleTableBase)object, true);
+                return JDBCUtils.generateTableDDL(monitor, (OracleTableBase)object, options, true);
             } else {
                 throw new DBException(e, dataSource);
             }
@@ -140,7 +138,7 @@ public class OracleUtils {
         try {
             String source = body ?
                 ((DBPScriptObjectExt)object).getExtendedDefinitionText(null) :
-                object.getObjectDefinitionText(null);
+                object.getObjectDefinitionText(null, DBPScriptObject.EMPTY_OPTIONS);
             if (source == null) {
                 return null;
             }

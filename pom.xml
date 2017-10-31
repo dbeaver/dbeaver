@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>4.2.3</dbeaver-version>
+        <dbeaver-version>4.2.4</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.0.0</tycho-version>
         <tycho-versions-version>0.26.0</tycho-versions-version>
@@ -69,6 +69,7 @@
         <module>features/org.jkiss.dbeaver.standalone.feature</module>
         <module>features/org.jkiss.dbeaver.ce.feature</module>		
 
+        <module>releng/org.jikss.dbeaver.office.repository</module>
         <module>product/updateSite</module>
         <module>product/standalone</module>
 

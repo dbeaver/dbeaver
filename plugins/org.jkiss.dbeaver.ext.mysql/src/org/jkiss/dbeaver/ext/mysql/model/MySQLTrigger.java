@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 
 import java.sql.ResultSet;
+import java.util.Map;
 
 /**
  * MySQLTrigger
@@ -123,7 +124,7 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         return getBody();
     }

@@ -92,7 +92,7 @@ public class ExasolConnectionManager
     
     @Override
     protected void addObjectCreateActions(List<DBEPersistAction> actions,
-            SQLObjectEditor<ExasolConnection, ExasolDataSource>.ObjectCreateCommand command)
+                                          ObjectCreateCommand command, Map<String, Object> options)
     {
         final ExasolConnection con = command.getObject();
         
@@ -123,7 +123,7 @@ public class ExasolConnectionManager
     
     @Override
     protected void addObjectRenameActions(List<DBEPersistAction> actions,
-            SQLObjectEditor<ExasolConnection, ExasolDataSource>.ObjectRenameCommand command)
+                                          ObjectRenameCommand command, Map<String, Object> options)
     {
         ExasolConnection obj = command.getObject();
         actions.add(
@@ -136,7 +136,7 @@ public class ExasolConnectionManager
     
     @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions,
-            SQLObjectEditor<ExasolConnection, ExasolDataSource>.ObjectDeleteCommand command)
+                                          ObjectDeleteCommand command, Map<String, Object> options)
     {
         final ExasolConnection con = command.getObject();
         actions.add(
@@ -146,7 +146,7 @@ public class ExasolConnectionManager
     
     @Override
     protected void addObjectModifyActions(List<DBEPersistAction> actionList,
-            SQLObjectEditor<ExasolConnection, ExasolDataSource>.ObjectChangeCommand command)
+                                          ObjectChangeCommand command, Map<String, Object> options)
     {
         ExasolConnection con = command.getObject();
         

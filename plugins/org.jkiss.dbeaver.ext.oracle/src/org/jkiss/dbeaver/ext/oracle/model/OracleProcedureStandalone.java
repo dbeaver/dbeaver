@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.sql.ResultSet;
+import java.util.Map;
 
 /**
  * GenericProcedure
@@ -102,7 +103,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBCException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBCException
     {
         if (sourceDeclaration == null && monitor != null) {
             sourceDeclaration = OracleUtils.getSource(monitor, this, false, true);

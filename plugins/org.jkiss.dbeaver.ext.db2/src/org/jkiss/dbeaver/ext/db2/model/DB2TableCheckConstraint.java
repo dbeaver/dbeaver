@@ -39,6 +39,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DB2 Table Check Constraint
@@ -142,7 +143,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         return SQLUtils.formatSQL(getDataSource(), text);
     }

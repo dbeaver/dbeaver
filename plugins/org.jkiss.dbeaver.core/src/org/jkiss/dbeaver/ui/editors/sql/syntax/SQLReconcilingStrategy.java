@@ -90,7 +90,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     protected void calculatePositions(IRegion partition)
     {
-        if (!editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED)) {
+        if (!editor.isFoldingEnabled()) {
             return;
         }
 

@@ -42,8 +42,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.IFindReplaceTarget;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -51,7 +49,10 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseWheelListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -61,7 +62,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.themes.ITheme;
-import org.eclipse.ui.themes.IThemeManager;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySourceProvider;
@@ -122,9 +122,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private SpreadsheetFindReplaceTarget findReplaceTarget;
 
     // UI modifiers
-    private IThemeManager themeManager;
-    private IPropertyChangeListener themeChangeListener;
-
     private Color backgroundAdded;
     private Color backgroundDeleted;
     private Color backgroundModified;
@@ -184,54 +181,34 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 fireSelectionChanged(new SpreadsheetSelectionImpl());
             }
         });
-
-        spreadsheet.addFocusListener(new FocusListener() {
+        this.spreadsheet.addMouseWheelListener(new MouseWheelListener() {
             @Override
-            public void focusGained(FocusEvent e) {
-                SpreadsheetPresentation.this.controller.updateEditControls();
-            }
+            public void mouseScrolled(MouseEvent e) {
 
-            @Override
-            public void focusLost(FocusEvent e) {
-                SpreadsheetPresentation.this.controller.updateEditControls();
             }
         });
 
-        this.themeManager = controller.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
-        this.themeChangeListener = new IPropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent event) {
-                if (event.getProperty().startsWith(ThemeConstants.RESULTS_PROP_PREFIX)) {
-                    applyThemeSettings();
-                }
-            }
-        };
-        this.themeManager.addPropertyChangeListener(themeChangeListener);
+        activateTextKeyBindings(controller, spreadsheet);
 
         applyThemeSettings();
 
-        this.spreadsheet.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                dispose();
-            }
-        });
+        this.spreadsheet.addDisposeListener(e -> dispose());
 
         trackPresentationControl();
         UIUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), spreadsheet);
     }
 
-    private void dispose()
+    @Override
+    public void dispose()
     {
         closeEditors();
         clearMetaData();
-
-        themeManager.removePropertyChangeListener(themeChangeListener);
 
         UIUtils.dispose(this.italicFont);
         UIUtils.dispose(this.boldFont);
 
         UIUtils.dispose(this.cellHeaderSelectionBackground);
+        super.dispose();
     }
 
     public void scrollToRow(@NotNull RowPosition position)
@@ -972,7 +949,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     ///////////////////////////////////////////////
     // Themes
 
-    private void applyThemeSettings()
+    @Override
+    protected void applyThemeSettings()
     {
         ITheme currentTheme = themeManager.getCurrentTheme();
         Font rsFont = currentTheme.getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
@@ -1685,6 +1663,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         {
             if (element instanceof DBDAttributeBinding/* && (!isRecordMode() || !model.isDynamicMetadata())*/) {
                 return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(((DBDAttributeBinding) element).getAttribute()));
+            }
+            return null;
+        }
+
+        @Override
+        public Object getGridOption(String option) {
+            if (OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC.equals(option)) {
+                return getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
             }
             return null;
         }

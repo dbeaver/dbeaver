@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * VerticaMetaModel
@@ -49,7 +50,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
+    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Vertica object definition")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT EXPORT_OBJECTS('','" + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DML) + "');")) {
@@ -66,8 +67,8 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
         }
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
-        return getTableDDL(monitor, sourceObject);
+    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
+        return getTableDDL(monitor, sourceObject, options);
     }
 
     @Override

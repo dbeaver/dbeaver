@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
@@ -37,6 +38,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * JDBC foreign key manager
@@ -52,18 +54,18 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         final TABLE_TYPE table = command.getObject().getTable();
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_foreign_key,
-                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(table, command)) //$NON-NLS-1$ //$NON-NLS-2$
+                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(table, command, options)) //$NON-NLS-1$ //$NON-NLS-2$
         );
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(
@@ -75,7 +77,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
     }
 
     @Override
-    protected StringBuilder getNestedDeclaration(TABLE_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command)
+    protected StringBuilder getNestedDeclaration(TABLE_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options)
     {
         OBJECT_TYPE foreignKey = command.getObject();
         boolean legacySyntax = isLegacyForeignKeySyntax(owner);
@@ -108,7 +110,13 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
             log.error("Can't obtain reference attributes", e);
         }
         final DBSEntityConstraint refConstraint = foreignKey.getReferencedConstraint();
-        decl.append(") REFERENCES ").append(refConstraint == null ? "<?>" : DBUtils.getObjectFullName(refConstraint.getParentObject(), DBPEvaluationContext.DDL)).append("("); //$NON-NLS-1$ //$NON-NLS-2$
+
+        final String refTableName =
+            refConstraint == null ? "<?>" :
+                (CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) ?
+                DBUtils.getObjectFullName(refConstraint.getParentObject(), DBPEvaluationContext.DDL) : DBUtils.getQuotedIdentifier(refConstraint.getParentObject()));
+
+        decl.append(") REFERENCES ").append(refTableName).append("("); //$NON-NLS-1$ //$NON-NLS-2$
         if (refConstraint instanceof DBSEntityReferrer) {
             try {
                 boolean firstColumn = true;

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * H2MetaModel
@@ -41,7 +42,7 @@ public class H2MetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
+    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read H2 view source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(

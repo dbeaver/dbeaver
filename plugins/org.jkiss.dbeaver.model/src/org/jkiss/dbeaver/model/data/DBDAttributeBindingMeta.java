@@ -203,9 +203,9 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
      * Sets entity attribute
      * @return true if attribute type differs from meta attribute type.
      */
-    public boolean setEntityAttribute(@Nullable DBSEntityAttribute entityAttribute) {
+    public boolean setEntityAttribute(@Nullable DBSEntityAttribute entityAttribute, boolean updateHandler) {
         this.entityAttribute = entityAttribute;
-        if (entityAttribute != null && !haveEqualsTypes(metaAttribute, entityAttribute)) {
+        if (updateHandler && entityAttribute != null && !haveEqualsTypes(metaAttribute, entityAttribute)) {
             valueHandler = DBUtils.findValueHandler(getDataSource(), entityAttribute);
             return true;
         }

@@ -184,6 +184,14 @@ public class UIIcon {
     public static final DBIcon PAGES = new DBIcon("pages", "misc/pages.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TEXTFIELD = new DBIcon("textfield", "misc/textfield.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon ACTION_USER = new DBIcon("action_user", "actions/user.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ACTION_USER_ADD = new DBIcon("action_user_add", "actions/user_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ACTION_USER_DELETE = new DBIcon("action_user_delete", "actions/user_delete.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon ACTION_OBJECT = new DBIcon("action_object", "actions/object.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ACTION_OBJECT_ADD = new DBIcon("action_object_add", "actions/object_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ACTION_OBJECT_DELETE = new DBIcon("action_object_delete", "actions/object_delete.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
     static  {
         DBIcon.loadIcons(UIIcon.class);
     }

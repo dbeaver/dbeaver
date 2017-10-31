@@ -21,7 +21,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -74,8 +73,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER) ||
             store.contains(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE) ||
             store.contains(DBeaverPreferences.KEEP_STATEMENT_OPEN) ||
-            store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||
-
+            store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||            
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE)
             ;
     }
@@ -100,9 +98,9 @@ public class PrefPageResultSetMain extends TargetPrefPage
             resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_use_sql, null, false, 2);
             serverSideOrderingCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, null, false, 2);
             readQueryMetadata = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_read_metadata,
-                "Disables metadata read. Executes query faster but disables results edit and foreign key navigation", false, 2);
+               CoreMessages.pref_page_database_resultsets_label_read_metadata_tip, false, 2);
             readQueryReferences = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_read_references,
-                "Disables references (foreign keys) information reading.", false, 2);
+                CoreMessages.pref_page_database_resultsets_label_read_references_tip, false, 2);
             queryCancelTimeout = UIUtils.createLabelSpinner(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout_tip, 0, 0, Integer.MAX_VALUE);
             queryCancelTimeout.setEnabled(false);
 
@@ -128,7 +126,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         {
             Group advGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_results_group_advanced, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            advUseFetchSize = UIUtils.createCheckbox(advGroup, CoreMessages.pref_page_database_resultsets_label_fetch_size, "Should DBeaver use explicit JDBC fetch size override?", false, 1);
+            advUseFetchSize = UIUtils.createCheckbox(advGroup, CoreMessages.pref_page_database_resultsets_label_fetch_size, CoreMessages.pref_page_database_resultsets_label_fetch_size_tip, false, 1);
         }
 
         return composite;

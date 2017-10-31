@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.bundle.ModelActivator;
+import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
+import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -80,7 +82,7 @@ public class GeneralUtils {
         }
     }
 
-    public static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)\\})", Pattern.CASE_INSENSITIVE);
+    private static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)\\})", Pattern.CASE_INSENSITIVE);
 
     /**
      * Default encoding (UTF-8)
@@ -275,16 +277,24 @@ public class GeneralUtils {
     @NotNull
     public static String getProductName()
     {
-        final IProduct product = Platform.getProduct();
-        if (product == null) {
-            return "DBeaver";
+        ApplicationDescriptor application = ApplicationRegistry.getInstance().getApplication();
+        if (application != null) {
+            return ApplicationRegistry.getInstance().getApplication().getName();
         }
-        return product.getName();
+        final IProduct product = Platform.getProduct();
+        if (product != null) {
+            return product.getName();
+        }
+        return "DBeaver";
     }
 
     @NotNull
     public static Version getProductVersion()
     {
+        ApplicationDescriptor application = ApplicationRegistry.getInstance().getApplication();
+        if (application != null) {
+            return application.getContributorBundle().getVersion();
+        }
         final IProduct product = Platform.getProduct();
         if (product == null) {
             return ModelActivator.getInstance().getBundle().getVersion();
@@ -294,27 +304,38 @@ public class GeneralUtils {
 
     @NotNull
     public static Date getProductReleaseDate() {
-        final IProduct product = Platform.getProduct();
-        if (product != null) {
-            Bundle definingBundle = product.getDefiningBundle();
-            final Dictionary<String, String> headers = definingBundle.getHeaders();
-            final String releaseDate = headers.get("Bundle-Release-Date");
-            if (releaseDate != null) {
-                try {
-                    return new SimpleDateFormat(DEFAULT_DATE_PATTERN).parse(releaseDate);
-                } catch (ParseException e) {
-                    log.debug(e);
-                }
-            }
-            final String buildTime = headers.get("Build-Time");
-            if (buildTime != null) {
-                try {
-                    return new SimpleDateFormat(DEFAULT_TIMESTAMP_PATTERN).parse(buildTime);
-                } catch (ParseException e) {
-                    log.debug(e);
-                }
+        Bundle definingBundle = null;
+        ApplicationDescriptor application = ApplicationRegistry.getInstance().getApplication();
+        if (application != null) {
+            definingBundle = application.getContributorBundle();
+        } else {
+            final IProduct product = Platform.getProduct();
+            if (product != null) {
+                definingBundle = product.getDefiningBundle();
             }
         }
+        if (definingBundle == null) {
+            return new Date();
+        }
+
+        final Dictionary<String, String> headers = definingBundle.getHeaders();
+        final String releaseDate = headers.get("Bundle-Release-Date");
+        if (releaseDate != null) {
+            try {
+                return new SimpleDateFormat(DEFAULT_DATE_PATTERN).parse(releaseDate);
+            } catch (ParseException e) {
+                log.debug(e);
+            }
+        }
+        final String buildTime = headers.get("Build-Time");
+        if (buildTime != null) {
+            try {
+                return new SimpleDateFormat(DEFAULT_TIMESTAMP_PATTERN).parse(buildTime);
+            } catch (ParseException e) {
+                log.debug(e);
+            }
+        }
+
         // Failed to get valid date from product bundle
         final Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, 2017);

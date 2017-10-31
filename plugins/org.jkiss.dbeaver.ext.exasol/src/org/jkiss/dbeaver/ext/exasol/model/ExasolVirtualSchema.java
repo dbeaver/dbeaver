@@ -30,6 +30,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class ExasolVirtualSchema extends ExasolSchema  {
 	
@@ -106,7 +107,7 @@ public class ExasolVirtualSchema extends ExasolSchema  {
 	}
 
 	@Override
-	public String getObjectDefinitionText(DBRProgressMonitor monitor)
+	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
 			throws DBException
 	{
 		return this.adapterNotes.replaceAll(",", ",\n");

@@ -322,6 +322,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     }
 
     void enableFilters(boolean enableFilters) {
+        if (isDisposed()) {
+            return;
+        }
         enablePanelControls(enableFilters);
         if (enableFilters) {
             final boolean supportsDataFilter = viewer.supportsDataFilter();
@@ -558,6 +561,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             public void createPartControl(Composite parent) {
                 super.createPartControl(parent);
                 getAction(ITextEditorActionConstants.CONTEXT_PREFERENCES).setEnabled(false);
+            }
+
+            @Override
+            public boolean isFoldingEnabled() {
+                return false;
             }
         };
         editor.setHasVerticalRuler(false);

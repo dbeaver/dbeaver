@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * InformixDataSource
@@ -45,7 +46,7 @@ public class InformixMetaModel extends GenericMetaModel
         super();
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
+    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         return InformixUtils.getViewSource(monitor, sourceObject);
     }
 
@@ -55,8 +56,8 @@ public class InformixMetaModel extends GenericMetaModel
     }
     
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
-    	String tableDDL = super.getTableDDL(monitor, sourceObject);
+    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
+    	String tableDDL = super.getTableDDL(monitor, sourceObject, options);
     	// Triggers, Serials
     	// 
     	return tableDDL + InformixUtils.getTriggerDDL(monitor, sourceObject);

@@ -10,7 +10,7 @@
         <relativePath>../../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.standalone.feature</artifactId>
-    <version>4.2.3</version>
+    <version>4.2.4</version>
     <packaging>eclipse-feature</packaging>
 
 </project>

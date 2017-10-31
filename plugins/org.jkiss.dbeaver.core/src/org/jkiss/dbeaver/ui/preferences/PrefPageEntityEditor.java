@@ -68,13 +68,13 @@ public class PrefPageEntityEditor extends AbstractPrefPage implements IWorkbench
             Group groupEditors = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_editors, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             keepEditorsOnRestart = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_keep_database_editors, false);
-            keepEditorsOnRestart.setToolTipText("Remembers open editors (e.g. table editors) and reopens them after DBeaver restart.");
+            keepEditorsOnRestart.setToolTipText(CoreMessages.pref_page_ui_general_keep_database_editors_tip);
 
             refreshEditorOnOpen = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_refresh_editor_on_open, false);
-            refreshEditorOnOpen.setToolTipText("Refreshes object from database every time you open this object's editor.\nYou may need this option if your database structure changes frequently (e.g. by SQL scripts).");
+            refreshEditorOnOpen.setToolTipText(CoreMessages.pref_page_ui_general_refresh_editor_on_open_tip);
 
-            editorFullName = UIUtils.createCheckbox(groupEditors, "Show fully qualified object names in editors title", false);
-            showPreviewOnSave = UIUtils.createCheckbox(groupEditors, "Show SQL preview dialog on editor save", false);
+            editorFullName = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_show_full_name_in_editor, false);
+            showPreviewOnSave = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_show_preview_on_save, false);
         }
 
         performDefaults();
