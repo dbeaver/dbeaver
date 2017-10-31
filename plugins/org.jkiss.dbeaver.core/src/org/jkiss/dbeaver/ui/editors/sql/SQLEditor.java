@@ -1057,7 +1057,7 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                     // Make a small pause to let all UI connection listeners to finish
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(500);
                     } catch (InterruptedException e) {
                         // it's ok
                     }
