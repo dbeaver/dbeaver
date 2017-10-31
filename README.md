@@ -7,6 +7,7 @@
 
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts. 
 Supports any database which has JDBC driver (which basically means - ANY database). EE version also supports non-JDBC datasources (WMI, MongoDB, Cassandra, Redis).
+
 * Has a lot of <a href="https://github.com/serge-rider/dbeaver/wiki">features</a> including metadata editor, SQL editor, rich data editor, ERD, data export/import/migration, SQL execution plans, etc. 
 * Based on <a href="http://www.eclipse.org/">Eclipse</a> platform.
 * Uses plugins architecture and provides additional functionality for the following databases: MySQL/MariaDB, PostgreSQL, Oracle, DB2 LUW, Exasol, SQL Server, SQLite, Firebird, H2, HSQLDB, Derby, Teradata, Vertica, Netezza, Informix.
@@ -21,6 +22,7 @@ You can download prebuilt binaries from <a href="https://dbeaver.jkiss.org/downl
 ## Running
 
 DBeaver requires Java (JRE) 1.8+ to run.
+
 * <b>Windows</b> installer includes JRE so just use it and don't think about internals.
 * On <b>Linux</b> you may need to install Java manually (usually by running `sudo apt-get install default-jre` or something similar).
 * On <b>MacOS X</b> you may need to download Java (JDK) from <a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">Oracle web site</a>. Or use <a href="http://stackoverflow.com/questions/24342886/how-to-install-java-8-on-mac">these instructions</a>.
@@ -33,11 +35,13 @@ DBeaver requires Java (JRE) 1.8+ to run.
 ## Building
 
 #### Prerequisites:
+
  1. Java (JDK) 1.8+
  2. Apache Maven 3+
  3. Internet access
 
 #### Build
+
 ```sh
 git clone https://github.com/serge-rider/dbeaver.git dbeaver
 cd dbeaver
