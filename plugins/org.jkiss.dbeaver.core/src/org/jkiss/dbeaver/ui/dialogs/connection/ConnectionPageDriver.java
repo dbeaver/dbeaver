@@ -40,6 +40,7 @@ import java.util.List;
 
 /**
  * Driver selection page
+ * step1
  */
 class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChangedListener, IDoubleClickListener {
     private NewConnectionWizard wizard;
@@ -64,7 +65,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         driverTreeControl.setLayoutData(gd);
         setControl(placeholder);
 
-        Group projectGroup = UIUtils.createControlGroup(placeholder, "Project", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Group projectGroup = UIUtils.createControlGroup(placeholder, CoreMessages.dialog_connection_driver_project, 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
         final Combo projectCombo = new Combo(projectGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
         projectCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 

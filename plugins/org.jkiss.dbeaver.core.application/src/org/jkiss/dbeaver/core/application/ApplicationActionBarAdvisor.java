@@ -196,7 +196,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             windowMenu.add(new ToggleViewAction(ProjectNavigatorView.VIEW_ID));
             windowMenu.add(new ToggleViewAction(ProjectExplorerView.VIEW_ID));
             {
-                MenuManager showViewMenuMgr = new MenuManager("Show View", "showView"); //$NON-NLS-1$
+                MenuManager showViewMenuMgr = new MenuManager(CoreMessages.actions_menu_window_showView, "showView"); //$NON-NLS-1$
                 IContributionItem showViewMenu = ContributionItemFactory.VIEWS_SHORTLIST.create(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                 showViewMenuMgr.add(showViewMenu);
                 windowMenu.add(showViewMenuMgr);
@@ -216,13 +216,14 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             if (showAltHelp) {
                 //helpMenu.add(searchHelpAction);
                 //helpMenu.add(dynamicHelpAction);
-                helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), IWorkbenchCommandConstants.WINDOW_SHOW_KEY_ASSIST));
-
+                helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), IWorkbenchCommandConstants.WINDOW_SHOW_KEY_ASSIST, CoreMessages.action_menu_showKeyAssist, null));
                 helpMenu.add(new Separator());
-                helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.equinox.p2.ui.sdk.install"));
-                helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.ui.help.installationDialog"));
+                helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.equinox.p2.ui.sdk.install", CoreMessages.action_menu_installNewSoftware, null));
+                helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.ui.help.installationDialog", CoreMessages.action_menu_installInfo, null));
+                
+                
                 helpMenu.add(checkUpdatesAction);
-                helpMenu.add(new ExternalPageAction("Enterprise Edition", UIIcon.DBEAVER_LOGO_SMALL, "https://dbeaver.com"));
+                helpMenu.add(new ExternalPageAction(CoreMessages.action_menu_enterpriseEdition, UIIcon.DBEAVER_LOGO_SMALL, "https://dbeaver.com"));
             } else {
                 helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
             }

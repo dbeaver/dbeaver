@@ -78,7 +78,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
     {
         super(PAGE_NAME);
         this.wizard = wizard;
-        setTitle("Network");
+        setTitle(CoreMessages.dialog_connection_network_title);
         setDescription(CoreMessages.dialog_tunnel_title);
     }
 

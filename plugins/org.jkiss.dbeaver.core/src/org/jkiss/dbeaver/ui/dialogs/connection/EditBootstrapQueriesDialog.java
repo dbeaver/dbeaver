@@ -54,11 +54,11 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
 
     @Override
     protected Control createDialogArea(Composite parent) {
-        getShell().setText("Bootstrap SQL queries");
+        getShell().setText(CoreMessages.dialog_connection_edit_wizard_general_bootstrap_query_title);
 
         Composite composite = (Composite) super.createDialogArea(parent);
 
-        Group group = UIUtils.createControlGroup(composite, "SQL Queries", 2, GridData.FILL_BOTH, 0);
+        Group group = UIUtils.createControlGroup(composite, CoreMessages.dialog_connection_edit_wizard_general_bootstrap_query_sql_label, 2, GridData.FILL_BOTH, 0);
 
         queriesTable = new Table(group, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         final GridData gd = new GridData(GridData.FILL_BOTH);
@@ -95,7 +95,7 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 tableEditor.closeEditor();
-                String sql = EditTextDialog.editText(getShell(), "Enter SQL", "");
+                String sql = EditTextDialog.editText(getShell(), CoreMessages.dialog_connection_edit_wizard_general_bootstrap_query_sql_title, "");
                 if (sql != null) {
                     TableItem newItem = new TableItem(queriesTable, SWT.LEFT);
                     newItem.setText(sql);
@@ -129,7 +129,7 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
             }
         });
 
-        ignoreErrorButton = UIUtils.createCheckbox(composite, "Ignore SQL errors", ignoreErrors);
+        ignoreErrorButton = UIUtils.createCheckbox(composite, CoreMessages.dialog_connection_edit_wizard_general_bootstrap_query_ignore_error_lable, ignoreErrors);
         new VariablesHintLabel(composite, DataSourceDescriptor.CONNECT_VARIABLES);
 
         UIUtils.packColumns(queriesTable, true);

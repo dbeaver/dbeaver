@@ -102,11 +102,11 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         includeTable = createEditableList(CoreMessages.dialog_filter_list_include, filter.getInclude());
         excludeTable = createEditableList(CoreMessages.dialog_filter_list_exclude, filter.getExclude());
 
-        UIUtils.createInfoLabel(blockControl, "You can use masks (%, _ and *) in filters");
+        UIUtils.createInfoLabel(blockControl, CoreMessages.dialog_connection_edit_wizard_general_filter_hint_text);
 
         {
-            Group sfGroup = UIUtils.createControlGroup(composite, "Saved filter", 4, GridData.FILL_HORIZONTAL, 0);
-            namesCombo = UIUtils.createLabelCombo(sfGroup, "Name", SWT.DROP_DOWN);
+            Group sfGroup = UIUtils.createControlGroup(composite, CoreMessages.dialog_connection_edit_wizard_general_filter_save_label, 4, GridData.FILL_HORIZONTAL, 0);
+            namesCombo = UIUtils.createLabelCombo(sfGroup, CoreMessages.dialog_connection_edit_wizard_general_filter_name_label, SWT.DROP_DOWN);
             namesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             namesCombo.add(NULL_FILTER_NAME);
@@ -126,14 +126,14 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
                 }
             });
 
-            Button saveButton = UIUtils.createPushButton(sfGroup, "Save", null);
+            Button saveButton = UIUtils.createPushButton(sfGroup, CoreMessages.dialog_connection_edit_wizard_general_filter_save_button, null);
             saveButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     saveConfigurations();
                 }
             });
-            Button removeButton = UIUtils.createPushButton(sfGroup, "Remove", null);
+            Button removeButton = UIUtils.createPushButton(sfGroup, CoreMessages.dialog_connection_edit_wizard_general_filter_remove_button, null);
             removeButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {

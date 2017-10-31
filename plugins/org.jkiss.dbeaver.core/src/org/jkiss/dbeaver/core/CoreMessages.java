@@ -1151,6 +1151,67 @@ public class CoreMessages extends NLS {
 	public static String pref_page_projects_settings_label_not_store_resources_in_another_project;
 	public static String pref_page_projects_settings_label_restart_require_refresh_global_settings;
 	// Preference/Properties
+
+	// Connection edit
+	public static String dialog_connection_edit_title;
+
+	public static String dialog_connection_edit_wizard_conn_conf_network_link;
+
+	public static String dialog_connection_edit_wizard_general;
+	public static String dialog_connection_edit_wizard_general_bootstrap_query_title;
+	public static String dialog_connection_edit_wizard_general_bootstrap_query_sql_label;
+	public static String dialog_connection_edit_wizard_general_bootstrap_query_sql_title;
+	public static String dialog_connection_edit_wizard_general_bootstrap_query_ignore_error_lable;
+	public static String dialog_connection_edit_wizard_general_filter_save_button;
+	public static String dialog_connection_edit_wizard_general_filter_remove_button;
+	public static String dialog_connection_edit_wizard_general_filter_save_label;
+	public static String dialog_connection_edit_wizard_general_filter_name_label;
+	public static String dialog_connection_edit_wizard_general_filter_hint_text;
+
+	public static String dialog_connection_edit_wizard_shell_cmd;
+	public static String dialog_connection_edit_wizard_shell_cmd_pause_label;
+	public static String dialog_connection_edit_wizard_shell_cmd_pause_tooltip;
+	public static String dialog_connection_edit_wizard_shell_cmd_directory_label;
+	public static String dialog_connection_edit_wizard_shell_cmd_directory_title;
+	public static String dialog_connection_edit_wizard_shell_cmd_variables_hint_label;
+	public static String dialog_connection_edit_wizard_shell_cmd_variables_hint_title;
+
+	public static String dialog_connection_edit_wizard_metadata;
+	public static String dialog_connection_edit_wizard_metadata_description;
+	public static String dialog_connection_edit_wizard_resultset;
+	public static String dialog_connection_edit_wizard_resultset_description;
+	public static String dialog_connection_edit_wizard_binary;
+	public static String dialog_connection_edit_wizard_binary_description;
+	public static String dialog_connection_edit_wizard_data_format;
+	public static String dialog_connection_edit_wizard_data_format_description;
+	public static String dialog_connection_edit_wizard_presentation;
+	public static String dialog_connection_edit_wizard_presentation_description;
+	public static String dialog_connection_edit_wizard_sql_editor;
+	public static String dialog_connection_edit_wizard_sql_editor_description;
+	public static String dialog_connection_edit_wizard_sql_processing;
+	public static String dialog_connection_edit_wizard_sql_processing_description;
+	
+	public static String dialog_connection_edit_wizard_conn_change_title;
+	public static String dialog_connection_edit_wizard_conn_change_question;
+	public static String dialog_connection_edit_wizard_lock_pwd_title;
+	public static String dialog_connection_edit_wizard_bad_pwd_title;
+	public static String dialog_connection_edit_wizard_bad_pwd_msg;
+	public static String dialog_connection_edit_wizard_error_md5_title;
+	public static String dialog_connection_edit_wizard_error_md5_msg;
+	// Connection edit
+
+	// Driver edit
+	public static String dialog_edit_driver_setting;
+	public static String dialog_edit_driver_type_label;
+	public static String dialog_edit_driver_embedded_label;
+	public static String dialog_edit_driver_description;
+	public static String dialog_edit_driver_edit_maven_title;
+	public static String dialog_edit_driver_edit_maven_group_id_label;
+	public static String dialog_edit_driver_edit_maven_artifact_id_label;
+	public static String dialog_edit_driver_edit_maven_classfier_label;
+	public static String dialog_edit_driver_edit_maven_version_label;
+	// Driver edit
+
 	
 	
 	static {
