@@ -912,13 +912,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         return lfCount;
     }
 
-    protected List<SQLQueryParameter> parseParameters(IDocument document, SQLQuery query) {
+    protected List<SQLQueryParameter> parseParameters(IDocument document, int queryOffset, int queryLength) {
         final SQLDialect sqlDialect = getSQLDialect();
         boolean supportParamsInDDL = getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED);
         boolean execQuery = false;
         List<SQLQueryParameter> parameters = null;
-        final int queryOffset = query.getOffset();
-        final int queryLength = query.getLength();
         ruleManager.setRange(document, queryOffset, queryLength);
 
         boolean firstKeyword = true;
@@ -988,6 +986,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             }
         }
         return parameters;
+    }
+
+    protected List<SQLQueryParameter> parseParameters(IDocument document, SQLQuery query) {
+        return parseParameters(document, query.getOffset(), query.getLength());
+    }
+
+    protected List<SQLQueryParameter> parseParameters(String query) {
+        return parseParameters(new Document(query), 0, query.length());
     }
 
     public boolean isDisposed()
