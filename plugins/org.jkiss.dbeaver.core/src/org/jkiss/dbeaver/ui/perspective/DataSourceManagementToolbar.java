@@ -300,6 +300,10 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (activeEditor != null && activeEditor.getEditorInput() instanceof IFileEditorInput) {
             final IFile curFile = ((IFileEditorInput) activeEditor.getEditorInput()).getFile();
             if (curFile != null) {
+                DBPDataSourceContainer fileDataSource = EditorUtils.getFileDataSource(curFile);
+                if (fileDataSource != null) {
+                    return fileDataSource.getRegistry().getDataSources();
+                }
                 final DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(curFile.getProject());
                 if (dsRegistry != null) {
                     return dsRegistry.getDataSources();
