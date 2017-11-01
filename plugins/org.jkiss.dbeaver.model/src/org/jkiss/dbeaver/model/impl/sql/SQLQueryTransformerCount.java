@@ -41,6 +41,9 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
 
     static protected final Log log = Log.getLog(SQLQueryTransformerCount.class);
 
+    private static final String COUNT_WRAP_PREFIX = "SELECT COUNT(*) FROM (";
+    private static final String COUNT_WRAP_POSTFIX = ") dbvrcnt";
+
     @Override
     public SQLQuery transformQuery(SQLDataSource dataSource, SQLQuery query) throws DBException {
         try {
@@ -54,7 +57,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
 
     private SQLQuery wrapSourceQuery(SQLDataSource dataSource, SQLQuery query) {
         String srcQuery = query.getText();
-        String countQuery = "SELECT COUNT(*) FROM (" + srcQuery + ") dbvrcnt";
+        String countQuery = COUNT_WRAP_PREFIX + srcQuery + COUNT_WRAP_POSTFIX;
         return new SQLQuery(dataSource, countQuery, query, false);
     }
 

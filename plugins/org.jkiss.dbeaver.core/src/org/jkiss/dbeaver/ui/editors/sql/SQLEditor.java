@@ -1008,9 +1008,10 @@ public class SQLEditor extends SQLEditorBase implements
                         SQLScriptElement element = elements.get(i);
                         if (element instanceof SQLQuery) {
                             SQLQuery query = transformer.transformQuery((SQLDataSource) dataSource, (SQLQuery) element);
-                            if (query != null) {
-                                xQueries.add(query);
+                            if (!CommonUtils.isEmpty(query.getParameters())) {
+                                query.setParameters(parseParameters(query.getText()));
                             }
+                            xQueries.add(query);
                         } else {
                             xQueries.add(element);
                         }
@@ -1996,6 +1997,10 @@ public class SQLEditor extends SQLEditorBase implements
             }
             try {
                 SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery((SQLDataSource) dataSource, (SQLQuery) query);
+                if (!CommonUtils.isEmpty(countQuery.getParameters())) {
+                    countQuery.setParameters(parseParameters(countQuery.getText()));
+                }
+
                 try (DBCStatement dbStatement = DBUtils.makeStatement(source, session, DBCStatementType.QUERY, countQuery, 0, 0)) {
                     if (dbStatement.executeStatement()) {
                         try (DBCResultSet rs = dbStatement.openResultSet()) {
