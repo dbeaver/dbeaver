@@ -101,11 +101,15 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         treeViewer.setLabelProvider(new DatabaseNavigatorLabelProvider(treeViewer));
         treeViewer.setContentProvider(new DatabaseNavigatorContentProvider(this, showRoot));
 
-        treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
+        setInput(rootNode);
 
         ColumnViewerToolTipSupport.enableFor(treeViewer);
 
         initEditor();
+    }
+
+    private void setInput(DBNNode rootNode) {
+        treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
     }
 
     private TreeViewer doCreateTreeViewer(Composite parent, int style) {
@@ -296,7 +300,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     public void reloadTree(final DBNNode rootNode)
     {
-        DatabaseNavigatorTree.this.treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
+        setInput(rootNode);
     }
 
     private class TreeSelectionAdapter implements MouseListener {
