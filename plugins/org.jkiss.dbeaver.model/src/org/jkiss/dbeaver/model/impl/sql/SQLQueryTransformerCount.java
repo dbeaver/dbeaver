@@ -24,9 +24,11 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +38,37 @@ import java.util.List;
  * Transforms SQL query into SELECT COUNT(*) query
 */
 public class SQLQueryTransformerCount implements SQLQueryTransformer {
+
+    static protected final Log log = Log.getLog(SQLQueryTransformerCount.class);
+
     @Override
     public SQLQuery transformQuery(SQLDataSource dataSource, SQLQuery query) throws DBException {
+        try {
+            return tryInjectCount(dataSource, query);
+        } catch (DBException e) {
+            log.debug("Error injecting count: " + e.getMessage());
+            // Inject failed (most likely parser error
+            return wrapSourceQuery(dataSource, query);
+        }
+    }
+
+    private SQLQuery wrapSourceQuery(SQLDataSource dataSource, SQLQuery query) {
+        String srcQuery = query.getText();
+        String countQuery = "SELECT COUNT(*) FROM (" + srcQuery + ") dbvrcnt";
+        return new SQLQuery(dataSource, countQuery, query, false);
+    }
+
+    private SQLQuery tryInjectCount(SQLDataSource dataSource, SQLQuery query) throws DBException {
         try {
             Statement statement = CCJSqlParserUtil.parse(query.getText());
             if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
                 PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
+                if (select.getHaving() != null) {
+                    throw new DBException("Can't inject COUNT into query with HAVING clause");
+                }
+                if (!CommonUtils.isEmpty(select.getGroupByColumnReferences())) {
+                    throw new DBException("Can't inject COUNT into query with GROUP BY clause");
+                }
 
                 Distinct selectDistinct = select.getDistinct();
                 if (selectDistinct != null) {
