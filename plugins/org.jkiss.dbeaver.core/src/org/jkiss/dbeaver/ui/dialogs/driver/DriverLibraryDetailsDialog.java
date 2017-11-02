@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -63,7 +64,7 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Driver '" + driver.getName() + "' library '" + library.getDisplayName() + "'"); //$NON-NLS-2$
+        getShell().setText(NLS.bind(CoreMessages.dialog_edit_driver_text_driver_library, driver.getName(), library.getDisplayName())); //$NON-NLS-2$
         getShell().setImage(DBeaverIcons.getImage(library.getIcon()));
 
         Composite group = (Composite) super.createDialogArea(parent);
@@ -71,14 +72,14 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         gd.widthHint = 500;
         group.setLayoutData(gd);
 
-        Group propsGroup = UIUtils.createControlGroup(group, "Information", 2, -1, -1);
+        Group propsGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_edit_driver_info, 2, -1, -1);
         propsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        UIUtils.createLabelText(propsGroup, "Driver", driver.getName(), SWT.BORDER | SWT.READ_ONLY);
-        UIUtils.createLabelText(propsGroup, "Library", library.getDisplayName(), SWT.BORDER | SWT.READ_ONLY);
-        UIUtils.createLabelText(propsGroup, "Path", library.getPath(), SWT.BORDER | SWT.READ_ONLY);
-        UIUtils.createLabelText(propsGroup, "Version", library.getVersion(), SWT.BORDER | SWT.READ_ONLY);
-        Text fileText = UIUtils.createLabelText(propsGroup, "File", "", SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_driver, driver.getName(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_library, library.getDisplayName(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_path, library.getPath(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_version, library.getVersion(), SWT.BORDER | SWT.READ_ONLY);
+        Text fileText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_file, "", SWT.BORDER | SWT.READ_ONLY);
 
         TabFolder tabs = new TabFolder(group, SWT.HORIZONTAL | SWT.FLAT);
         tabs.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -117,8 +118,8 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         });
 
         TabItem depsTab = new TabItem(tabs, SWT.NONE);
-        depsTab.setText("Dependencies");
-        depsTab.setToolTipText("Library dependencies");
+        depsTab.setText(CoreMessages.dialog_edit_driver_tab_depencencies);
+        depsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_depencencies_tooltip);
         depsTab.setControl(paramsGroup);
     }
 
@@ -126,7 +127,7 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         Composite detailsGroup = new Composite(tabs, SWT.NONE);
         detailsGroup.setLayout(new GridLayout(1, false));
 
-        UIUtils.createControlLabel(detailsGroup, "Description");
+        UIUtils.createControlLabel(detailsGroup, CoreMessages.dialog_edit_driver_label_description);
         Text descriptionText = new Text(detailsGroup, SWT.READ_ONLY | SWT.BORDER);
         descriptionText.setText(CommonUtils.notEmpty(library.getDescription()));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -134,8 +135,8 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         descriptionText.setLayoutData(gd);
 
         TabItem detailsTab = new TabItem(tabs, SWT.NONE);
-        detailsTab.setText("Details");
-        detailsTab.setToolTipText("Additional library information");
+        detailsTab.setText(CoreMessages.dialog_edit_driver_tab_detail);
+        detailsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_detail_tooltip);
         detailsTab.setControl(detailsGroup);
     }
 
@@ -193,7 +194,7 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         paramsGroup.setLayout(new GridLayout(1, false));
 
         Text licenseText = new Text(paramsGroup, SWT.BORDER | SWT.WRAP | SWT.MULTI | SWT.V_SCROLL);
-        licenseText.setText("License");
+        licenseText.setText(CoreMessages.dialog_edit_driver_text_license);
         licenseText.setEditable(false);
         licenseText.setMessage(CoreMessages.dialog_edit_driver_text_driver_license);
         final GridData gd = new GridData(GridData.FILL_BOTH);

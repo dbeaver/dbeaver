@@ -1198,20 +1198,60 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_edit_wizard_bad_pwd_msg;
 	public static String dialog_connection_edit_wizard_error_md5_title;
 	public static String dialog_connection_edit_wizard_error_md5_msg;
-	// Connection edit
 
-	// Driver edit
-	public static String dialog_edit_driver_setting;
-	public static String dialog_edit_driver_type_label;
-	public static String dialog_edit_driver_embedded_label;
-	public static String dialog_edit_driver_description;
-	public static String dialog_edit_driver_edit_maven_title;
-	public static String dialog_edit_driver_edit_maven_group_id_label;
-	public static String dialog_edit_driver_edit_maven_artifact_id_label;
-	public static String dialog_edit_driver_edit_maven_classfier_label;
-	public static String dialog_edit_driver_edit_maven_version_label;
+	public static String dialog_edit_driver_text_driver_library;
+	public static String dialog_edit_driver_info;
+	public static String dialog_edit_driver_driver;
+	public static String dialog_edit_driver_library;
+	public static String dialog_edit_driver_path;
+	public static String dialog_edit_driver_version;
+	public static String dialog_edit_driver_file;
+	public static String dialog_edit_driver_tab_depencencies;
+	public static String dialog_edit_driver_tab_depencencies_tooltip;
+	public static String dialog_edit_driver_text_license;
 	// Driver edit
 
+	// Driver download
+	public static String dialog_driver_download_button_edit_dirver;
+	public static String dialog_driver_download_button_add_jars;
+	
+	public static String dialog_driver_download_wizard_title_setting;
+	public static String dialog_driver_download_wizard_title_upload_files;
+	public static String dialog_driver_download_wizard_title_setup_files;
+	public static String dialog_driver_download_wizard_download;
+	public static String dialog_driver_download_wizard_open_download;
+
+	public static String dialog_driver_download_page_vendor_link;
+	public static String dialog_driver_download_page_download_conf_link;
+
+	public static String dialog_driver_download_manual_page_config_driver_file;
+	public static String dialog_driver_download_manual_page_download_driver_file;
+	public static String dialog_driver_download_manual_page_download_config_driver_file;
+	public static String dialog_driver_download_manual_page_driver_file_missing_text;
+	public static String dialog_driver_download_manual_page_driver_file;
+	public static String dialog_driver_download_manual_page_column_file;
+	public static String dialog_driver_download_manual_page_column_required;
+	public static String dialog_driver_download_manual_page_column_description;
+	public static String dialog_driver_download_manual_page_yes;
+	public static String dialog_driver_download_manual_page_no;
+	
+	public static String dialog_driver_download_auto_page_auto_download;
+	public static String dialog_driver_download_auto_page_download_driver_files;
+	public static String dialog_driver_download_auto_page_download_specific_driver_files;
+	public static String dialog_driver_download_auto_page_driver_file_missing_text;
+	public static String dialog_driver_download_auto_page_force_download;
+	public static String dialog_driver_download_auto_page_force_download_tooltip;
+	public static String dialog_driver_download_auto_page_required_files;
+	public static String dialog_driver_download_auto_page_change_driver_version_text;
+	public static String dialog_driver_download_auto_page_obtain_driver_files_text;
+	public static String dialog_driver_download_auto_page_cannot_resolve_libraries_text;
+	public static String dialog_driver_download_auto_page_driver_download_error;
+	public static String dialog_driver_download_auto_page_driver_download_error_msg;
+	public static String dialog_driver_download_auto_page_driver_security_warning;
+	public static String dialog_driver_download_auto_page_driver_security_warning_msg;
+	public static String dialog_driver_download_auto_page_download_rate;
+	public static String dialog_driver_download_auto_page_download_failed_msg;
+	// Driver download
 	
 	
 	static {

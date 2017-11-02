@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.registry.driver.DriverDependencies;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -93,7 +94,7 @@ public class DriverDownloadDialog extends WizardDialog
         DriverDownloadWizard wizard = getWizard();
         if (!wizard.isForceDownload() && DriverEditDialog.getDialogCount() == 0) {
             createButton(parent, EDIT_DRIVER_BUTTON_ID,
-                wizard.isAutoDownloadWizard() ? "Edit Driver" : "Add JARs",
+                wizard.isAutoDownloadWizard() ? CoreMessages.dialog_driver_download_button_edit_dirver : CoreMessages.dialog_driver_download_button_add_jars,
                 false);
         }
 
