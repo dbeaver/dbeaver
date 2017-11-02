@@ -1198,8 +1198,20 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_edit_wizard_bad_pwd_msg;
 	public static String dialog_connection_edit_wizard_error_md5_title;
 	public static String dialog_connection_edit_wizard_error_md5_msg;
+	//Connection edit
 
-	public static String dialog_edit_driver_text_driver_library;
+    // Driver edit
+	public static String dialog_edit_driver_setting;
+	public static String dialog_edit_driver_type_label;
+	public static String dialog_edit_driver_embedded_label;
+	public static String dialog_edit_driver_description;
+	public static String dialog_edit_driver_edit_maven_title;
+	public static String dialog_edit_driver_edit_maven_group_id_label;
+	public static String dialog_edit_driver_edit_maven_artifact_id_label;
+	public static String dialog_edit_driver_edit_maven_classfier_label;
+	public static String dialog_edit_driver_edit_maven_version_label;
+	
+	public static String dialog_edit_driver_text_driver_library;	
 	public static String dialog_edit_driver_info;
 	public static String dialog_edit_driver_driver;
 	public static String dialog_edit_driver_library;
@@ -1208,6 +1220,8 @@ public class CoreMessages extends NLS {
 	public static String dialog_edit_driver_file;
 	public static String dialog_edit_driver_tab_depencencies;
 	public static String dialog_edit_driver_tab_depencencies_tooltip;
+	public static String dialog_edit_driver_tab_detail;
+	public static String dialog_edit_driver_tab_detail_tooltip;
 	public static String dialog_edit_driver_text_license;
 	// Driver edit
 
