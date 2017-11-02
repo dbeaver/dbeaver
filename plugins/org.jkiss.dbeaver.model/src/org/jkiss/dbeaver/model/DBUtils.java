@@ -520,30 +520,30 @@ public final class DBUtils {
     @NotNull
     public static DBDValueHandler findValueHandler(@NotNull DBPDataSource dataSource, @Nullable DBDPreferences preferences, @NotNull DBSTypedObject column)
     {
-        DBDValueHandler typeHandler = null;
+        DBDValueHandler valueHandler = null;
         // Get handler provider from datasource
-        DBDValueHandlerProvider typeProvider = getAdapter(DBDValueHandlerProvider.class, dataSource);
-        if (typeProvider != null) {
-            typeHandler = typeProvider.getValueHandler(dataSource, preferences, column);
-            if (typeHandler != null) {
-                return typeHandler;
+        DBDValueHandlerProvider handlerProvider = getAdapter(DBDValueHandlerProvider.class, dataSource);
+        if (handlerProvider != null) {
+            valueHandler = handlerProvider.getValueHandler(dataSource, preferences, column);
+            if (valueHandler != null) {
+                return valueHandler;
             }
         }
         // Get handler provider from registry
-        typeProvider = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getDataTypeProvider(
+        handlerProvider = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getValueHandlerProvider(
             dataSource, column);
-        if (typeProvider != null) {
-            typeHandler = typeProvider.getValueHandler(dataSource, preferences, column);
+        if (handlerProvider != null) {
+            valueHandler = handlerProvider.getValueHandler(dataSource, preferences, column);
         }
         // Use default handler
-        if (typeHandler == null) {
+        if (valueHandler == null) {
             if (preferences == null) {
-                typeHandler = DefaultValueHandler.INSTANCE;
+                valueHandler = DefaultValueHandler.INSTANCE;
             } else {
-                typeHandler = preferences.getDefaultValueHandler();
+                valueHandler = preferences.getDefaultValueHandler();
             }
         }
-        return typeHandler;
+        return valueHandler;
     }
 
     /**
