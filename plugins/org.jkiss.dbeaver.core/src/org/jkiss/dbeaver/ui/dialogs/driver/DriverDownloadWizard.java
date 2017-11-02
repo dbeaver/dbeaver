@@ -22,6 +22,7 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.driver.DriverDependencies;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -42,7 +43,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
         this.dependencies = dependencies;
         this.updateVersion = updateVersion;
         this.forceDownload = forceDownload;
-        setWindowTitle(updateVersion ? "Update driver files" : "Setup driver files");
+        setWindowTitle(updateVersion ? CoreMessages.dialog_driver_download_wizard_title_upload_files : CoreMessages.dialog_driver_download_wizard_title_setup_files);
         setNeedsProgressMonitor(isAutoDownloadWizard());
         loadSettings();
     }
@@ -94,7 +95,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
-        setWindowTitle("Driver settings");
+        setWindowTitle(CoreMessages.dialog_driver_download_wizard_title_setting);
         setNeedsProgressMonitor(isAutoDownloadWizard());
         setHelpAvailable(false);
     }
@@ -112,9 +113,9 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
 
     public String getFinishText() {
         if (isAutoDownloadWizard()) {
-            return "Download";
+            return CoreMessages.dialog_driver_download_wizard_download;
         } else {
-            return "Open Download Page";
+            return CoreMessages.dialog_driver_download_wizard_open_download;
         }
     }
 
