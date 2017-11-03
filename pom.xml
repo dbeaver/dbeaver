@@ -32,42 +32,42 @@
         <module>plugins/org.jkiss.dbeaver.ext.derby</module>
         <module>plugins/org.jkiss.dbeaver.ext.erd</module>
 		<module>plugins/org.jkiss.dbeaver.ext.ui.locks</module>
--        <module>plugins/org.jkiss.dbeaver.ext.firebird</module>
--        <module>plugins/org.jkiss.dbeaver.ext.generic</module>
--        <module>plugins/org.jkiss.dbeaver.ext.import-config</module>
--        <module>plugins/org.jkiss.dbeaver.ext.h2</module>
--        <module>plugins/org.jkiss.dbeaver.ext.hsqldb</module>
--        <module>plugins/org.jkiss.dbeaver.ext.informix</module>
--        <module>plugins/org.jkiss.dbeaver.ext.mssql</module>
--        <module>plugins/org.jkiss.dbeaver.ext.mysql</module>
--        <module>plugins/org.jkiss.dbeaver.ext.netezza</module>
--        <module>plugins/org.jkiss.dbeaver.ext.oracle</module>
--        <module>plugins/org.jkiss.dbeaver.ext.phoenix</module>
--        <module>plugins/org.jkiss.dbeaver.ext.postgresql</module>
--        <module>plugins/org.jkiss.dbeaver.ext.sqlite</module>
--        <module>plugins/org.jkiss.dbeaver.ext.vertica</module>
--        <module>plugins/org.jkiss.dbeaver.ext.teradata</module>
--        <module>plugins/org.jkiss.dbeaver.ext.exasol</module>
--        <module>plugins/org.jkiss.dbeaver.ext.wmi</module>
--        <module>plugins/org.jkiss.dbeaver.ext.sample.database</module>
--        <module>plugins/org.jkiss.dbeaver.ext.ui.svg</module>
--		<module>plugins/org.jkiss.dbeaver.data.office</module>
--        <module>plugins/org.jkiss.dbeaver.model</module>
--        <module>plugins/org.jkiss.dbeaver.test</module>
--
--        <module>features/org.jkiss.dbeaver.core.feature</module>
--        <module>features/org.jkiss.dbeaver.ext.db2.feature</module>
--        <module>features/org.jkiss.dbeaver.ext.generic.feature</module>
--        <module>features/org.jkiss.dbeaver.ext.mysql.feature</module>
--        <module>features/org.jkiss.dbeaver.ext.oracle.feature</module>
--        <module>features/org.jkiss.dbeaver.ext.wmi.feature</module>
--        <module>features/org.jkiss.dbeaver.ext.exasol.feature</module>
--		<module>features/org.jkiss.dbeaver.ext.office.feature</module>
--        <module>features/org.jkiss.dbeaver.ext.ui.svg.feature</module>
--        <module>features/org.jkiss.dbeaver.rcp.feature</module>
--        <module>features/org.jkiss.dbeaver.runtime.feature</module>
--        <module>features/org.jkiss.dbeaver.standalone.feature</module>
--        <module>features/org.jkiss.dbeaver.ce.feature</module>		
+        <module>plugins/org.jkiss.dbeaver.ext.firebird</module>
+        <module>plugins/org.jkiss.dbeaver.ext.generic</module>
+        <module>plugins/org.jkiss.dbeaver.ext.import-config</module>
+        <module>plugins/org.jkiss.dbeaver.ext.h2</module>
+        <module>plugins/org.jkiss.dbeaver.ext.hsqldb</module>
+        <module>plugins/org.jkiss.dbeaver.ext.informix</module>
+        <module>plugins/org.jkiss.dbeaver.ext.mssql</module>
+        <module>plugins/org.jkiss.dbeaver.ext.mysql</module>
+        <module>plugins/org.jkiss.dbeaver.ext.netezza</module>
+        <module>plugins/org.jkiss.dbeaver.ext.oracle</module>
+        <module>plugins/org.jkiss.dbeaver.ext.phoenix</module>
+        <module>plugins/org.jkiss.dbeaver.ext.postgresql</module>
+        <module>plugins/org.jkiss.dbeaver.ext.sqlite</module>
+        <module>plugins/org.jkiss.dbeaver.ext.vertica</module>
+        <module>plugins/org.jkiss.dbeaver.ext.teradata</module>
+        <module>plugins/org.jkiss.dbeaver.ext.exasol</module>
+        <module>plugins/org.jkiss.dbeaver.ext.wmi</module>
+        <module>plugins/org.jkiss.dbeaver.ext.sample.database</module>
+        <module>plugins/org.jkiss.dbeaver.ext.ui.svg</module>
+		<module>plugins/org.jkiss.dbeaver.data.office</module>
+        <module>plugins/org.jkiss.dbeaver.model</module>
+        <module>plugins/org.jkiss.dbeaver.test</module>
+
+        <module>features/org.jkiss.dbeaver.core.feature</module>
+        <module>features/org.jkiss.dbeaver.ext.db2.feature</module>
+        <module>features/org.jkiss.dbeaver.ext.generic.feature</module>
+        <module>features/org.jkiss.dbeaver.ext.mysql.feature</module>
+        <module>features/org.jkiss.dbeaver.ext.oracle.feature</module>
+        <module>features/org.jkiss.dbeaver.ext.wmi.feature</module>
+        <module>features/org.jkiss.dbeaver.ext.exasol.feature</module>
+		<module>features/org.jkiss.dbeaver.ext.office.feature</module>
+        <module>features/org.jkiss.dbeaver.ext.ui.svg.feature</module>
+        <module>features/org.jkiss.dbeaver.rcp.feature</module>
+        <module>features/org.jkiss.dbeaver.runtime.feature</module>
+        <module>features/org.jkiss.dbeaver.standalone.feature</module>
+        <module>features/org.jkiss.dbeaver.ce.feature</module>		
 
         <module>releng/org.jikss.dbeaver.office.repository</module>
         <module>product/updateSite</module>
