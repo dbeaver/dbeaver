@@ -86,7 +86,7 @@ public class DataTypeProviderRegistry implements DBDRegistry
     // DataType providers
 
     @Nullable
-    public DBDValueHandlerProvider getDataTypeProvider(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject typedObject)
+    public DBDValueHandlerProvider getValueHandlerProvider(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject typedObject)
     {
         DBPDriver driver = dataSource.getContainer().getDriver();
         if (!(driver instanceof DriverDescriptor)) {

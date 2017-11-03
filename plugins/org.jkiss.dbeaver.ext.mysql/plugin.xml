@@ -269,8 +269,8 @@
 
     <extension point="org.jkiss.dbeaver.dataManager">
         <manager class="org.jkiss.dbeaver.ext.mysql.data.MySQLEnumValueManager" id="org.jkiss.dbeaver.ext.mysql.data.MySQLEnumValueManager">
-            <supports datasource="mysql" typeName="ENUM"/>
-            <supports datasource="mysql" typeName="SET"/>
+            <supports dataSource="mysql" typeName="ENUM"/>
+            <supports dataSource="mysql" typeName="SET"/>
         </manager>
     </extension>
 

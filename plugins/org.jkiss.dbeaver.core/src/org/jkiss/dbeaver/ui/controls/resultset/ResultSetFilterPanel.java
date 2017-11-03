@@ -562,6 +562,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 super.createPartControl(parent);
                 getAction(ITextEditorActionConstants.CONTEXT_PREFERENCES).setEnabled(false);
             }
+
+            @Override
+            public boolean isFoldingEnabled() {
+                return false;
+            }
         };
         editor.setHasVerticalRuler(false);
         editor.init(new SubEditorSite(viewer.getSite()), new StringEditorInput(DEFAULT_QUERY_TEXT, getActiveQueryText(), true, GeneralUtils.getDefaultFileEncoding()));
