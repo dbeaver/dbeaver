@@ -17,16 +17,20 @@
 package org.jkiss.dbeaver.ext.oracle.model.plan;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.utils.IntKeyMap;
 import org.jkiss.utils.SecurityUtils;
 
+import java.sql.ParameterMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -35,6 +39,8 @@ import java.util.List;
  * Oracle execution plan analyser
  */
 public class OraclePlanAnalyser implements DBCPlan {
+
+    private static final Log log = Log.getLog(OraclePlanAnalyser.class);
 
     private OracleDataSource dataSource;
     private JDBCSession session;
@@ -104,6 +110,17 @@ public class OraclePlanAnalyser implements DBCPlan {
             // Explain plan
             dbStat = session.prepareStatement(planQuery);
             try {
+                try {
+                    // Bind parameters if any
+                    ParameterMetaData parameterMetaData = dbStat.getParameterMetaData();
+                    if (parameterMetaData != null && parameterMetaData.getParameterCount() > 0) {
+                        for (int i = 0; i < parameterMetaData.getParameterCount(); i++) {
+                            dbStat.setNull(i + 1, Types.VARCHAR);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error(e);
+                }
                 dbStat.execute();
             } finally {
                 dbStat.close();

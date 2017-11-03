@@ -45,7 +45,10 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.*;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
@@ -216,6 +219,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
         if (!isDirty()) {
             return;
         }
+        if (EditorUtils.isInAutoSaveJob()) {
+            // Do not save entity editors in auto-save job (#2408)
+            return;
+        }
+
         // Flush all nested object editors
         for (IEditorPart editor : editorMap.values()) {
             if (editor instanceof ObjectPropertiesEditor) {
