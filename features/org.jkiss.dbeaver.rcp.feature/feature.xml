@@ -17,8 +17,7 @@
       %license
    </license>
 
-   		<includes id="org.jkiss.dbeaver.eclipse.nl.feature" version="0.0.0"/>
-   		
+  		
         <plugin id="com.ibm.icu.base" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
         <plugin id="javax.annotation" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
         <plugin id="javax.inject" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
