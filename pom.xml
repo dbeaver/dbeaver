@@ -68,7 +68,6 @@
         <module>features/org.jkiss.dbeaver.runtime.feature</module>
         <module>features/org.jkiss.dbeaver.standalone.feature</module>
         <module>features/org.jkiss.dbeaver.ce.feature</module>	
-        <module>features/org.jkiss.dbeaver.eclipse.nl.feature</module>
 
         <module>releng/org.jikss.dbeaver.office.repository</module>
         <module>product/updateSite</module>
