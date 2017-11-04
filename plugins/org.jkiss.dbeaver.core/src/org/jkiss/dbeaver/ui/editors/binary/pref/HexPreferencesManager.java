@@ -16,7 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.editors.binary.pref;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -27,14 +36,17 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
-
-import java.util.*;
 
 /**
  * Manager of all preferences-editing widgets, with an optional standalone dialog.
@@ -71,7 +83,10 @@ public class HexPreferencesManager {
     private List list2 = null;
     private Font sampleFont = null;
     private Text sampleText = null;
-
+    private Combo cmbByteWidth = null;
+    private String defWidthValue; 
+	private static String[] arrDefValuetoIndex = new String[] { "4", "8", "16" };
+    
     static int fontStyleToInt(String styleString)
     {
         int style = SWT.NORMAL;
@@ -101,10 +116,10 @@ public class HexPreferencesManager {
     }
 
 
-    public HexPreferencesManager(FontData aFontData)
-    {
+    public HexPreferencesManager(FontData aFontData,String defWidth) {
         sampleFontData = aFontData;
         fontsSorted = new TreeMap<>();
+        defWidthValue = defWidth;      
     }
 
 
@@ -212,7 +227,29 @@ public class HexPreferencesManager {
                 }
             }
         });
+        
+        Composite cmpByteSettings = new Composite(parent, SWT.BORDER);
+        cmpByteSettings.setLayout(new GridLayout(4, false));
+        cmpByteSettings.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        
+        GridData gdLabel = new GridData(SWT.FILL, SWT.FILL, false, false,1,1);
+        gdLabel.heightHint = 26;
+        gdLabel.widthHint = 120;
+        
+        CLabel lbl = new CLabel(cmpByteSettings, SWT.NONE);
+        lbl.setText("Default width");
+        lbl.setLayoutData(gdLabel);
+        
+		cmbByteWidth = new Combo(cmpByteSettings, SWT.BORDER);
+		cmbByteWidth.setItems(arrDefValuetoIndex);
+		int index = Arrays.asList(arrDefValuetoIndex).indexOf(defWidthValue);
+		cmbByteWidth.select(index);
+		cmbByteWidth.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
     }
+    
+	public String getDefWidth() {
+		return cmbByteWidth.getText();
+	}
 
 
     /**
@@ -406,7 +443,8 @@ public class HexPreferencesManager {
         sampleFontData = aFontData;
         refreshWidgets();
     }
-
+    
+   
 
     static void showSelected(List aList, String item)
     {
