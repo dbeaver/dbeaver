@@ -2840,7 +2840,7 @@ public abstract class LightGrid extends Canvas {
                 redraw();
                 //return;
             } else if (e.button == 1 || (e.button == 3 && col != null)) {
-                if (isSelectedCell) {
+                if (isSelectedCell && selectedCells.size() < 2) {
                     // Selection didn't change.
                     // Fire event anyways - maybe it will be helpful. E.g. to refresh some cell viewer panel
                     selectionEvent = new Event();
@@ -3005,7 +3005,7 @@ public abstract class LightGrid extends Canvas {
      */
     private void onMouseUp(MouseEvent e)
     {
-        if (cellSelectedOnLastMouseDown && focusColumn != null && focusItem >= 0) {
+        if (focusColumn != null && focusItem >= 0) {
             if (e.button == 1 && cellRenderer.isOverLink(focusColumn, focusItem, e.x, e.y)) {
                 // Navigate link
                 Event event = new Event();
