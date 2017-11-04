@@ -69,13 +69,9 @@
         <module>features/org.jkiss.dbeaver.standalone.feature</module>
         <module>features/org.jkiss.dbeaver.ce.feature</module>		
 
-        <module>releng/org.jikss.dbeaver.office.repository</module>
-
         <module>bundles/org.jkiss.dbeaver.core.nls</module>
         <module>features/org.jkiss.dbeaver.runtime.nls.feature</module>
-        <module>releng/org.jkiss.dbeaver.nls.repository</module>
 
-        <module>product/updateSite</module>
         <module>product/standalone</module>
 
         <module>tests/org.jkiss.dbeaver.runtime.ide.core.tests</module>
