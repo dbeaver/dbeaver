@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.*;
 
@@ -65,7 +66,11 @@ public class ExternalContentStorage implements DBDContentStorage {
     public Reader getContentReader()
         throws IOException
     {
-        return new InputStreamReader(new FileInputStream(file), charset);
+        if (charset == null) {
+            return new InputStreamReader(new FileInputStream(file), GeneralUtils.DEFAULT_ENCODING);
+        } else {
+            return new InputStreamReader(new FileInputStream(file), charset);
+        }
     }
 
     @Override
