@@ -19,14 +19,19 @@ package org.jkiss.dbeaver.ui.data.managers.stream;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.FontData;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.BytesContentStorage;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener.PreferenceChangeEvent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -34,6 +39,7 @@ import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
+import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -50,9 +56,22 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
     private static final Log log = Log.getLog(BinaryPanelEditor.class);
 
     @Override
-    public HexEditControl createControl(IValueController valueController)
-    {
-        return new HexEditControl(valueController.getEditPlaceholder(), SWT.BORDER);
+    public HexEditControl createControl(IValueController valueController){
+    	
+    	HexEditControl hControl = new HexEditControl(valueController.getEditPlaceholder(), SWT.BORDER);
+		DBPPreferenceListener preferencesChangeListener = new DBPPreferenceListener() {
+			@Override
+			public void preferenceChange(PreferenceChangeEvent event) {
+
+				if (HexPreferencesPage.PROP_DEF_WIDTH.equals(event.getProperty())) {
+					String defValue = (String) event.getNewValue();
+					hControl.setDefWidth(Integer.valueOf(defValue));
+				}
+			}
+		};
+		DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+		store.addPropertyChangeListener(preferencesChangeListener);
+        return hControl;
     }
 
     @Override
