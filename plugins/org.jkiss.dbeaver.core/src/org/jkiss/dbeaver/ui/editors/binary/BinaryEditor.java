@@ -123,6 +123,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
 
         manager = new HexManager();
         manager.setTextFont(HexPreferencesPage.getPrefFontData());
+        manager.setDefWidth(HexPreferencesPage.getDefaultWidth());
         manager.setMenuListener(this);
         int editorStyle = SWT.NONE;
         if (storage != null && storage.isReadOnly()) {
@@ -162,13 +163,19 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             @Override
             public void preferenceChange(PreferenceChangeEvent event)
             {
-                if (HexPreferencesPage.PROP_FONT_DATA.equals(event.getProperty()))
+                if (HexPreferencesPage.PROP_FONT_DATA.equals(event.getProperty())) {
                     manager.setTextFont((FontData) event.getNewValue());
+                }
+                if (HexPreferencesPage.PROP_DEF_WIDTH.equals(event.getProperty())) {
+                		manager.setDefWidth((String) event.getNewValue());
+                }
+                    
             }
+            
         };
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         store.addPropertyChangeListener(preferencesChangeListener);
-
+      
         manager.addLongSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
