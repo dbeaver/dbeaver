@@ -200,14 +200,9 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
                 }
             }
         });
-        objectList.setDoubleClickHandler(new IDoubleClickListener()
-        {
-            @Override
-            public void doubleClick(DoubleClickEvent event)
-            {
-                if (modeless || getButton(IDialogConstants.OK_ID).isEnabled()) {
-                    okPressed();
-                }
+        objectList.setDoubleClickHandler(event -> {
+            if (modeless || getButton(IDialogConstants.OK_ID).isEnabled()) {
+                okPressed();
             }
         });
 
@@ -218,7 +213,7 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
         listControl.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                okPressed();
+                cancelPressed();
             }
         });
 
