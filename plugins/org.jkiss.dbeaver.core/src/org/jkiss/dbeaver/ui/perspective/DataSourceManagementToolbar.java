@@ -767,6 +767,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                     "SchemaSelector" + (curDS == null ? "": "_" + curDS.getDriver().getId()),
                     items,
                     selectedDB == null ? null : Collections.singletonList(selectedDB));
+                dialog.setModeless(true);
                 if (dialog.open() == IDialogConstants.CANCEL_ID) {
                     return;
                 }
