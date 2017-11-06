@@ -22,6 +22,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.*;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
@@ -290,7 +291,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBCException {
         Connection db2Connection = super.openConnection(monitor, purpose);
 
-        {
+        if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Provide client info
             try {
                 db2Connection.setClientInfo("ApplicationName",
