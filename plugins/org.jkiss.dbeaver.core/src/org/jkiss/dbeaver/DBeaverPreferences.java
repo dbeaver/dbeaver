@@ -139,5 +139,7 @@ public final class DBeaverPreferences
 
     public static final String LOGS_DEBUG_ENABLED = "logs.debug.enabled";
     public static final String LOGS_DEBUG_LOCATION = "logs.debug.location";
+    
+    public static final String HEX_DEF_WIDTH ="default.hex.width";
 
 }
