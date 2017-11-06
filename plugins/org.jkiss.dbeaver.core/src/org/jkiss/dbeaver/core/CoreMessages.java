@@ -1003,6 +1003,7 @@ public class CoreMessages extends NLS {
 	// Connections
 	public static String pref_page_database_client_name_group;
 	public static String pref_page_database_client_name_group_description;
+	public static String pref_page_database_label_disable_client_application_name;
 	public static String pref_page_database_label_override_client_application_name;
 	public static String pref_page_database_label_client_application_name;
 	// SQLEditor
