@@ -38,6 +38,7 @@ import org.jkiss.utils.CommonUtils;
 public class HexPreferencesPage extends AbstractPrefPage implements IWorkbenchPreferencePage {
 
     public static final String PROP_FONT_DATA = "prop.hex.font.data";
+    public static final String PROP_DEF_WIDTH = "default.hex.width";
 
     private HexPreferencesManager preferences = null;
 
@@ -59,7 +60,10 @@ public class HexPreferencesPage extends AbstractPrefPage implements IWorkbenchPr
         return null;
     }
 
-
+	public static String getDefaultWidth() {
+		DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+    		return store.getString(DBeaverPreferences.HEX_DEF_WIDTH);
+    	}
     /**
      * @see org.eclipse.jface.preference.PreferencePage#createContents(org.eclipse.swt.widgets.Composite)
      */
@@ -67,7 +71,8 @@ public class HexPreferencesPage extends AbstractPrefPage implements IWorkbenchPr
     protected Control createContents(Composite parent)
     {
         FontData fontData = getPrefFontData();
-        preferences = new HexPreferencesManager(fontData);
+        String defWidth = getDefaultWidth();
+        preferences = new HexPreferencesManager(fontData, defWidth);
 
         return preferences.createPreferencesPart(parent);
     }
@@ -106,6 +111,9 @@ public class HexPreferencesPage extends AbstractPrefPage implements IWorkbenchPr
         store.setValue(DBeaverPreferences.HEX_FONT_SIZE, fontData.getHeight());
         store.firePropertyChangeEvent(PROP_FONT_DATA, null, fontData);
 
+        store.setValue(DBeaverPreferences.HEX_DEF_WIDTH, preferences.getDefWidth());
+        store.firePropertyChangeEvent(PROP_DEF_WIDTH, 0, preferences.getDefWidth());
+        
         PrefUtils.savePreferenceStore(store);
 
         return true;
