@@ -894,6 +894,18 @@
                     <file type="jar" path="maven:/com.facebook.presto:presto-jdbc:RELEASE"/>
                 </driver>
 
+                <!-- CUBRID -->
+                <driver
+                        id="cubrid_jdbc"
+                        label="CUBRID"
+                        class="cubrid.jdbc.driver.CUBRIDDriver"
+                        sampleURL="jdbc:CUBRID:{host}:{port}:{server}:{database}::"
+                        defaultPort="33000"
+                        description="CUBRID JDBC driver (beta)"
+                        webURL="https://www.cubrid.org/">
+                    <file type="jar" path="http://ftp.cubrid.org/CUBRID_Drivers/JDBC_Driver/JDBC-10.1.0.7663-cubrid.jar"/>
+                </driver>
+
             </drivers>
 
             <views>
