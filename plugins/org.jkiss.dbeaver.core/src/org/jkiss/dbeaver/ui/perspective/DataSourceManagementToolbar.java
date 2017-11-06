@@ -764,7 +764,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 SelectObjectDialog<DBNDatabaseNode> dialog = new SelectObjectDialog<>(getShell(),
                     "Choose catalog/schema",
                     true,
-                    "SchemaSelector" + (curDS == null ? "": "_" + curDS.getDriver().getId()),
+                    "SchemaSelector",
                     items,
                     selectedDB == null ? null : Collections.singletonList(selectedDB));
                 dialog.setModeless(true);

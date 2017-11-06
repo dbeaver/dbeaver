@@ -164,7 +164,7 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
             protected void setListData(Collection<T> items, boolean append) {
                 super.setListData(items, append);
                 if (selectedObjects != null) {
-                    getItemsViewer().setSelection(new StructuredSelection(selectedObjects));
+                    getItemsViewer().setSelection(new StructuredSelection(selectedObjects), true);
                 }
             }
 
