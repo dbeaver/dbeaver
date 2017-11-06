@@ -2146,7 +2146,9 @@ public class SQLEditor extends SQLEditorBase implements
                     if (isDisposed()) {
                         return;
                     }
-                    sashForm.setMaximizedControl(editorControl);
+                    if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)) {
+                        sashForm.setMaximizedControl(editorControl);
+                    }
                 });
             } finally {
                 if (extListener != null) extListener.onStartScript();
