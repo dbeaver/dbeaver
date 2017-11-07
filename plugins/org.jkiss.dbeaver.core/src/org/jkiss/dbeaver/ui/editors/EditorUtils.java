@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.*;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
@@ -247,4 +248,11 @@ public class EditorUtils {
         }
     }
 
+    public static boolean isInAutoSaveJob() {
+        Job currentJob = Job.getJobManager().currentJob();
+        if (currentJob == null) {
+            return false;
+        }
+        return "Auto save all editors".equals(currentJob.getName());
+    }
 }

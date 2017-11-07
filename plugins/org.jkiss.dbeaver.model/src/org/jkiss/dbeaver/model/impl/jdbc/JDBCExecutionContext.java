@@ -195,15 +195,17 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             return InvalidateResult.CONNECTED;
         }
 
+/*
         DBRRunnableWithResult<Boolean> checkTask = new DBRRunnableWithResult<Boolean>() {
             @Override
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 result = JDBCUtils.isConnectionAlive(getDataSource(), getConnection());
             }
         };
-        boolean checkOk = RuntimeUtils.runTask(checkTask, "Check connection is alive", 10000);
+*/
+        boolean checkOk = JDBCUtils.isConnectionAlive(getDataSource(), getConnection());
 
-        if (!checkOk || checkTask.getResult() == null || !checkTask.getResult()) {
+        if (!checkOk) {
             Boolean prevAutocommit = autoCommit;
             Integer txnLevel = transactionIsolationLevel;
             boolean addNewContext = false;
