@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<site>
-   <feature url="features/org.jkiss.dbeaver.ext.office.feature_1.1.5.jar" id="org.jkiss.dbeaver.ext.office.feature" version="1.1.5">
-      <category name="org.jikss.dbeaver.office.category"/>
-   </feature>
-   <category-def name="org.jikss.dbeaver.office.category" label="DBeaver Office Support"/>
-</site>

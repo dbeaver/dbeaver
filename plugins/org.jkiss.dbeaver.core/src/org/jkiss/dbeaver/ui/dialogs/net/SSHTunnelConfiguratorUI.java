@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.impl.net.SSHConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -48,7 +49,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private Text passwordText;
     private Button savePasswordCheckbox;
     private Label privateKeyLabel;
-    private Composite pkControlGroup;
     private Spinner keepAliveText;
     private Spinner tunnelTimeout;
 
@@ -57,9 +57,10 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     {
         final Composite composite = new Composite(parent, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.minimumHeight = 200;
+        //gd.minimumHeight = 200;
         composite.setLayoutData(gd);
         composite.setLayout(new GridLayout(2, false));
+
         hostText = UIUtils.createLabelText(composite, CoreMessages.model_ssh_configurator_label_host_ip, null); //$NON-NLS-2$
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         portText = UIUtils.createLabelSpinner(composite, CoreMessages.model_ssh_configurator_label_port, SSHConstants.DEFAULT_SSH_PORT, 0, 65535);
@@ -67,35 +68,32 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         userNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         authMethodCombo = UIUtils.createLabelCombo(composite, CoreMessages.model_ssh_configurator_combo_auth_method, SWT.DROP_DOWN | SWT.READ_ONLY);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 130;
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        //gd.minimumWidth = 130;
         authMethodCombo.setLayoutData(gd);
         authMethodCombo.add(CoreMessages.model_ssh_configurator_combo_password);
         authMethodCombo.add(CoreMessages.model_ssh_configurator_combo_pub_key);
 
-        privateKeyLabel = UIUtils.createControlLabel(composite, CoreMessages.model_ssh_configurator_label_private_key);
-        privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        pkControlGroup = UIUtils.createPlaceholder(composite, 1);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 130;
-        pkControlGroup.setLayoutData(gd);
-        privateKeyText = new TextWithOpenFile(
-            pkControlGroup,
-            CoreMessages.model_ssh_configurator_dialog_choose_private_key,
-            new String[] {"*", "*.ssh", "*.pem", "*.*"});
-        privateKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        {
+            privateKeyLabel = UIUtils.createControlLabel(composite, CoreMessages.model_ssh_configurator_label_private_key);
+            privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-        pwdLabel = UIUtils.createControlLabel(composite, CoreMessages.model_ssh_configurator_label_password);
-        pwdControlGroup = UIUtils.createPlaceholder(composite, 3);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 200;
-        pwdControlGroup.setLayoutData(gd);
+            privateKeyText = new TextWithOpenFile(
+                composite,
+                CoreMessages.model_ssh_configurator_dialog_choose_private_key,
+                new String[]{"*", "*.ssh", "*.pem", "*.*"});
+            privateKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        }
+        {
+            pwdLabel = UIUtils.createControlLabel(composite, CoreMessages.model_ssh_configurator_label_password);
+            pwdControlGroup = UIUtils.createPlaceholder(composite, 2, 5);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            pwdControlGroup.setLayoutData(gd);
 
-        passwordText = new Text(pwdControlGroup, SWT.BORDER | SWT.PASSWORD);
-        passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        new Label(pwdControlGroup, SWT.NONE).setText("   ");
-        savePasswordCheckbox = UIUtils.createCheckbox(pwdControlGroup, CoreMessages.model_ssh_configurator_checkbox_save_pass, false);
+            passwordText = new Text(pwdControlGroup, SWT.BORDER | SWT.PASSWORD);
+            passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            savePasswordCheckbox = UIUtils.createCheckbox(pwdControlGroup, CoreMessages.model_ssh_configurator_checkbox_save_pass, false);
+        }
 
         keepAliveText = UIUtils.createLabelSpinner(composite, CoreMessages.model_ssh_configurator_label_keep_alive, 0, 0, Integer.MAX_VALUE);
         tunnelTimeout = UIUtils.createLabelSpinner(composite, CoreMessages.model_ssh_configurator_label_tunnel_timeout, SSHConstants.DEFAULT_CONNECT_TIMEOUT, 0, 300000);
@@ -105,7 +103,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             public void widgetSelected(SelectionEvent e)
             {
                 updatePrivateKeyVisibility();
-                composite.layout();
             }
         });
 
@@ -169,10 +166,11 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private void updatePrivateKeyVisibility()
     {
         boolean isPassword = authMethodCombo.getSelectionIndex() == 0;
-        ((GridData)pkControlGroup.getLayoutData()).exclude = isPassword;
-        pkControlGroup.setVisible(!isPassword);
+
         ((GridData)privateKeyLabel.getLayoutData()).exclude = isPassword;
         privateKeyLabel.setVisible(!isPassword);
+        ((GridData)privateKeyText.getLayoutData()).exclude = isPassword;
+        privateKeyText.setVisible(!isPassword);
 
 //        pwdControlGroup.setVisible(isPassword);
 //        ((GridData)pwdControlGroup.getLayoutData()).exclude = !isPassword;
@@ -183,6 +181,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 //            savePasswordCheckbox.setSelection(true);
 //        }
         pwdLabel.setText(isPassword ? CoreMessages.model_ssh_configurator_label_password : CoreMessages.model_ssh_configurator_label_passphrase);
+
+        DBeaverUI.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                hostText.getParent().layout(true, true);
+            }
+        });
     }
 
     @Override
