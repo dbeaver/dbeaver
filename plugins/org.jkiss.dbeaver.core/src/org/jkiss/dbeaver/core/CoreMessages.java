@@ -1268,6 +1268,28 @@ public class CoreMessages extends NLS {
 	// Driver download
 	
 	
+	// SQL editor resultset filter panel
+	public static String sql_editor_resultset_tool_item_log;
+	public static String sql_editor_resultset_tool_item_output;
+	public static String sql_editor_resultset_filter_panel_text_enter_sql_to_filter;
+	public static String sql_editor_resultset_filter_panel_text_enter_filter_not_support;
+	public static String sql_editor_resultset_filter_panel_btn_apply;
+	public static String sql_editor_resultset_filter_panel_btn_remove;
+	public static String sql_editor_resultset_filter_panel_btn_save;
+	public static String sql_editor_resultset_filter_panel_btn_custom;
+	public static String sql_editor_resultset_filter_panel_btn_config_refresh;
+	public static String sql_editor_resultset_filter_panel_btn_stop_refresh;
+	public static String sql_editor_resultset_filter_panel_label;
+	public static String sql_editor_resultset_filter_panel_btn_open_console;
+	public static String sql_editor_resultset_filter_panel_menu_refresh_interval;
+	public static String sql_editor_resultset_filter_panel_menu_stop;
+	public static String sql_editor_resultset_filter_panel_menu_customize;
+	public static String sql_editor_resultset_filter_panel_control_no_data;
+	public static String sql_editor_resultset_filter_panel_control_execute_to_see_reslut;
+	// SQL editor resultset filter panel
+	
+	
+	
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);
