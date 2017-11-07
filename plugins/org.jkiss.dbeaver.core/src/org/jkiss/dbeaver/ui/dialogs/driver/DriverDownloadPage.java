@@ -23,6 +23,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -58,7 +59,7 @@ abstract class DriverDownloadPage extends WizardPage {
         if (!CommonUtils.isEmpty(driver.getWebURL())) {
             Link link = UIUtils.createLink(
                 linksGroup,
-                "<a>Vendor's website</a>",
+                CoreMessages.dialog_driver_download_page_vendor_link,
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -73,7 +74,7 @@ abstract class DriverDownloadPage extends WizardPage {
 
         Link link = UIUtils.createLink(
             linksGroup,
-            "<a>Download configuration</a>",
+            CoreMessages.dialog_driver_download_page_download_conf_link,
             new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
