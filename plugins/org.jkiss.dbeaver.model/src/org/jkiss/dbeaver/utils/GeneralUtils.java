@@ -430,10 +430,6 @@ public class GeneralUtils {
                 getExceptionMessage(ex),
                 ex);
         } else {
-            if (ex instanceof DBException && !((DBException) ex).hasMessage()) {
-                // Skip empty duplicate DBException
-                return makeExceptionStatus(severity, cause);
-            }
             if (nextError != null) {
                 List<IStatus> errorChain = new ArrayList<>();
                 if (cause != null) {
