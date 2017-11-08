@@ -526,6 +526,9 @@ public class CommonUtils {
     }
 
     public static boolean getOption(Map<String, ?> options, String name, boolean defValue) {
+        if (options == null) {
+            return false;
+        }
         Object optionValue = options.get(name);
         if (optionValue == null) {
             return defValue;

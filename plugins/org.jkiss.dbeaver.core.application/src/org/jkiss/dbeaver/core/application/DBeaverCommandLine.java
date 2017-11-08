@@ -59,6 +59,7 @@ public class DBeaverCommandLine
     public static final String PARAM_CLOSE_TABS = "closeTabs";
     public static final String PARAM_DISCONNECT_ALL = "disconnectAll";
     public static final String PARAM_REUSE_WORKSPACE = "reuseWorkspace";
+    public static final String PARAM_NEW_INSTANCE = "newInstance";
 
     public final static Options ALL_OPTIONS = new Options()
         .addOption(PARAM_HELP, false, "Help")
@@ -70,6 +71,7 @@ public class DBeaverCommandLine
         .addOption(PARAM_DISCONNECT_ALL, "disconnectAll", false, "Disconnect from all databases")
         .addOption(PARAM_CLOSE_TABS, "closeTabs", false, "Close all open editors")
         .addOption(PARAM_REUSE_WORKSPACE, PARAM_REUSE_WORKSPACE, false, "Force workspace reuse (do not show warnings)")
+        .addOption(PARAM_NEW_INSTANCE, PARAM_NEW_INSTANCE, false, "Force creating new application instance (do not try to activate already running)")
 
         // Eclipse options
         .addOption("product", true, "Product id")
@@ -171,6 +173,10 @@ public class DBeaverCommandLine
             helpFormatter.setOptionComparator((o1, o2) -> 0);
             helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), ALL_OPTIONS, "(C) 2017 JKISS", true);
             return true;
+        }
+        if (commandLine.hasOption(PARAM_NEW_INSTANCE)) {
+            // Do not try to execute commands in running instance
+            return false;
         }
 
         IInstanceController controller = null;

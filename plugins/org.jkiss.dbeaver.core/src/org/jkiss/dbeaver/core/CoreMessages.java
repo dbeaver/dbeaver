@@ -821,6 +821,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_editor_checkbox_put_new_scripts;
 	public static String pref_page_sql_editor_checkbox_create_script_folders;
 	public static String pref_page_sql_editor_checkbox_reset_cursor;
+	public static String pref_page_sql_editor_checkbox_max_editor_on_script_exec;
 	public static String pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters;
 	public static String pref_page_sql_editor_text_anonymous_parameter_mark;
 	public static String pref_page_sql_editor_text_named_parameter_prefix;
@@ -1002,6 +1003,7 @@ public class CoreMessages extends NLS {
 	// Connections
 	public static String pref_page_database_client_name_group;
 	public static String pref_page_database_client_name_group_description;
+	public static String pref_page_database_label_disable_client_application_name;
 	public static String pref_page_database_label_override_client_application_name;
 	public static String pref_page_database_label_client_application_name;
 	// SQLEditor

@@ -49,6 +49,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Spinner commitLinesText;
     private Button fetchResultSetsCheck;
     private Button resetCursorCheck;
+    private Button maxEditorCheck;
 
     private Text statementDelimiterText;
     private Button ignoreNativeDelimiter;
@@ -87,6 +88,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK) ||
             store.contains(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX) ||
             store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE) ||
+            store.contains(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE) ||
             store.contains(SQLPreferenceConstants.BEEP_ON_QUERY_END) ||
             store.contains(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
         ;
@@ -106,7 +108,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
         // General settings
         {
             Composite commonGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_common, 2, GridData.FILL_HORIZONTAL, 0);
-            UIUtils.setGridSpan(commonGroup, 2, 1);
             {
                 invalidateBeforeExecuteCheck = UIUtils.createCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_invalidate_before_execute, null, false, 2);
                 soundOnQueryEnd = UIUtils.createCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_sound_on_query_end, null, false, 2);
@@ -127,7 +128,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
         // Scripts
         {
             Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_scripts, 2, GridData.FILL_HORIZONTAL, 0);
-            UIUtils.setGridSpan(scriptsGroup, 2, 1);
             {
                 UIUtils.createControlLabel(scriptsGroup, CoreMessages.pref_page_sql_editor_label_commit_type);
 
@@ -159,6 +159,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
             fetchResultSetsCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_fetch_resultsets, null, false, 2);
             resetCursorCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_reset_cursor, null, false, 2);
+            maxEditorCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_max_editor_on_script_exec, null, false, 2);
         }
         // Parameters
         {
@@ -198,6 +199,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             commitLinesText.setSelection(store.getInt(DBeaverPreferences.SCRIPT_COMMIT_LINES));
             fetchResultSetsCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS));
             resetCursorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE));
+            maxEditorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE));
 
             statementDelimiterText.setText(store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
             ignoreNativeDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
@@ -227,6 +229,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(DBeaverPreferences.SCRIPT_ERROR_HANDLING, CommonUtils.fromOrdinal(SQLScriptErrorHandling.class, errorHandlingCombo.getSelectionIndex()).name());
             store.setValue(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
             store.setValue(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, resetCursorCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE, maxEditorCheck.getSelection());
 
             store.setValue(ModelPreferences.SCRIPT_STATEMENT_DELIMITER, statementDelimiterText.getText());
             store.setValue(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER, ignoreNativeDelimiter.getSelection());
@@ -255,6 +258,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS);
 
         store.setToDefault(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE);
+        store.setToDefault(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE);
 
         store.setToDefault(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
         store.setToDefault(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER);
