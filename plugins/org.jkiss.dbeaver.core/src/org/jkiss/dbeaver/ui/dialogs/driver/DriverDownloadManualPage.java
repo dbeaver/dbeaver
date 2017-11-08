@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverFileSource;
@@ -35,7 +37,7 @@ class DriverDownloadManualPage extends DriverDownloadPage {
     private Table filesTable;
 
     DriverDownloadManualPage() {
-        super("Configure driver files", "Download driver files", null);
+        super(CoreMessages.dialog_driver_download_manual_page_config_driver_file, CoreMessages.dialog_driver_download_manual_page_download_driver_file, null);
         setPageComplete(false);
     }
 
@@ -43,15 +45,13 @@ class DriverDownloadManualPage extends DriverDownloadPage {
     public void createControl(Composite parent) {
         final DriverDescriptor driver = getWizard().getDriver();
 
-        setMessage("Download & configure " + driver.getFullName() + " driver files");
+        setMessage(NLS.bind(CoreMessages.dialog_driver_download_manual_page_download_config_driver_file, driver.getFullName()));
 
         Composite composite = UIUtils.createPlaceholder(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Link infoText = new Link(composite, SWT.NONE);
-        infoText.setText(driver.getFullName() + " driver files missing.\n\n" +
-            "According to vendor policy this driver isn't publicly available\nand you have to download it manually from vendor's web site.\n\n" +
-            "After successful driver download you will need to <a>add JAR files</a> in DBeaver libraries list.");
+        infoText.setText(NLS.bind(CoreMessages.dialog_driver_download_manual_page_driver_file_missing_text, driver.getFullName()));
         infoText.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -61,7 +61,7 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         infoText.setLayoutData(gd);
 
-        Group filesGroup = UIUtils.createControlGroup(composite, "Driver files", 1, -1, -1);
+        Group filesGroup = UIUtils.createControlGroup(composite, CoreMessages.dialog_driver_download_manual_page_driver_file, 1, -1, -1);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 10;
         filesGroup.setLayoutData(gd);
@@ -83,9 +83,9 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         filesTable = new Table(filesGroup, SWT.BORDER | SWT.FULL_SELECTION);
         filesTable.setHeaderVisible(true);
         filesTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        UIUtils.createTableColumn(filesTable, SWT.LEFT, "File");
-        UIUtils.createTableColumn(filesTable, SWT.LEFT, "Required");
-        UIUtils.createTableColumn(filesTable, SWT.LEFT, "Description");
+        UIUtils.createTableColumn(filesTable, SWT.LEFT, CoreMessages.dialog_driver_download_manual_page_column_file);
+        UIUtils.createTableColumn(filesTable, SWT.LEFT, CoreMessages.dialog_driver_download_manual_page_column_required);
+        UIUtils.createTableColumn(filesTable, SWT.LEFT, CoreMessages.dialog_driver_download_manual_page_column_description);
 
         sourceCombo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -112,7 +112,7 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         for (DriverFileSource.FileInfo file : fileSource.getFiles()) {
             new TableItem(filesTable, SWT.NONE).setText(new String[] {
                 file.getName(),
-                !file.isOptional() ? "Yes" : "No",
+                !file.isOptional() ? CoreMessages.dialog_driver_download_manual_page_yes : CoreMessages.dialog_driver_download_manual_page_no,
                 CommonUtils.notEmpty(file.getDescription()) });
         }
     }
