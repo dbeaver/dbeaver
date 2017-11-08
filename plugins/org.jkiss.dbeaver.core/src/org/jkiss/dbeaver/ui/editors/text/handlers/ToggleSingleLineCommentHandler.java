@@ -41,7 +41,7 @@ public final class ToggleSingleLineCommentHandler extends AbstractCommentHandler
         int startLine = textSelection.getStartLine();
 
         boolean forceComment = true;
-        String firstLineText = document.get(document.getLineOffset(startLine), document.getLineLength(startLine));
+        String firstLineText = document.get(document.getLineOffset(startLine), document.getLineLength(startLine)).trim();
         for (String commentString : singleLineComments) {
             if (firstLineText.startsWith(commentString)) {
                 forceComment = false;
@@ -58,16 +58,24 @@ public final class ToggleSingleLineCommentHandler extends AbstractCommentHandler
             } else {
                 String lineComment = null;
                 String lineText = document.get(lineOffset, lineLength);
+                int checkOffset = 0;
+                for (int i = 0; i < lineText.length(); i++) {
+                    if (Character.isWhitespace(lineText.charAt(i))) {
+                        checkOffset++;
+                    } else {
+                        break;
+                    }
+                }
                 for (String commentString : singleLineComments) {
-                    if (lineText.startsWith(commentString)) {
+                    if (lineText.startsWith(commentString, checkOffset)) {
                         lineComment = commentString;
                         break;
                     }
                 }
                 if (lineComment != null) {
                     // Remove comment
-                    document.replace(lineOffset, lineComment.length(), "");
-                    selLength -= lineComment.length();
+                    document.replace(lineOffset, checkOffset + lineComment.length(), "");
+                    selLength -= checkOffset + lineComment.length();
                 }
             }
         }
