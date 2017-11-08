@@ -1200,9 +1200,9 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_edit_wizard_bad_pwd_msg;
 	public static String dialog_connection_edit_wizard_error_md5_title;
 	public static String dialog_connection_edit_wizard_error_md5_msg;
-	// Connection edit
+	//Connection edit
 
-	// Driver edit
+    // Driver edit
 	public static String dialog_edit_driver_setting;
 	public static String dialog_edit_driver_type_label;
 	public static String dialog_edit_driver_embedded_label;
@@ -1212,8 +1212,84 @@ public class CoreMessages extends NLS {
 	public static String dialog_edit_driver_edit_maven_artifact_id_label;
 	public static String dialog_edit_driver_edit_maven_classfier_label;
 	public static String dialog_edit_driver_edit_maven_version_label;
+	
+	public static String dialog_edit_driver_text_driver_library;	
+	public static String dialog_edit_driver_info;
+	public static String dialog_edit_driver_driver;
+	public static String dialog_edit_driver_library;
+	public static String dialog_edit_driver_path;
+	public static String dialog_edit_driver_version;
+	public static String dialog_edit_driver_file;
+	public static String dialog_edit_driver_tab_depencencies;
+	public static String dialog_edit_driver_tab_depencencies_tooltip;
+	public static String dialog_edit_driver_tab_detail;
+	public static String dialog_edit_driver_tab_detail_tooltip;
+	public static String dialog_edit_driver_text_license;
 	// Driver edit
 
+	// Driver download
+	public static String dialog_driver_download_button_edit_dirver;
+	public static String dialog_driver_download_button_add_jars;
+	
+	public static String dialog_driver_download_wizard_title_setting;
+	public static String dialog_driver_download_wizard_title_upload_files;
+	public static String dialog_driver_download_wizard_title_setup_files;
+	public static String dialog_driver_download_wizard_download;
+	public static String dialog_driver_download_wizard_open_download;
+
+	public static String dialog_driver_download_page_vendor_link;
+	public static String dialog_driver_download_page_download_conf_link;
+
+	public static String dialog_driver_download_manual_page_config_driver_file;
+	public static String dialog_driver_download_manual_page_download_driver_file;
+	public static String dialog_driver_download_manual_page_download_config_driver_file;
+	public static String dialog_driver_download_manual_page_driver_file_missing_text;
+	public static String dialog_driver_download_manual_page_driver_file;
+	public static String dialog_driver_download_manual_page_column_file;
+	public static String dialog_driver_download_manual_page_column_required;
+	public static String dialog_driver_download_manual_page_column_description;
+	public static String dialog_driver_download_manual_page_yes;
+	public static String dialog_driver_download_manual_page_no;
+	
+	public static String dialog_driver_download_auto_page_auto_download;
+	public static String dialog_driver_download_auto_page_download_driver_files;
+	public static String dialog_driver_download_auto_page_download_specific_driver_files;
+	public static String dialog_driver_download_auto_page_driver_file_missing_text;
+	public static String dialog_driver_download_auto_page_force_download;
+	public static String dialog_driver_download_auto_page_force_download_tooltip;
+	public static String dialog_driver_download_auto_page_required_files;
+	public static String dialog_driver_download_auto_page_change_driver_version_text;
+	public static String dialog_driver_download_auto_page_obtain_driver_files_text;
+	public static String dialog_driver_download_auto_page_cannot_resolve_libraries_text;
+	public static String dialog_driver_download_auto_page_driver_download_error;
+	public static String dialog_driver_download_auto_page_driver_download_error_msg;
+	public static String dialog_driver_download_auto_page_driver_security_warning;
+	public static String dialog_driver_download_auto_page_driver_security_warning_msg;
+	public static String dialog_driver_download_auto_page_download_rate;
+	public static String dialog_driver_download_auto_page_download_failed_msg;
+	// Driver download
+	
+	
+	// SQL editor resultset filter panel
+	public static String sql_editor_resultset_tool_item_log;
+	public static String sql_editor_resultset_tool_item_output;
+	public static String sql_editor_resultset_filter_panel_text_enter_sql_to_filter;
+	public static String sql_editor_resultset_filter_panel_text_enter_filter_not_support;
+	public static String sql_editor_resultset_filter_panel_btn_apply;
+	public static String sql_editor_resultset_filter_panel_btn_remove;
+	public static String sql_editor_resultset_filter_panel_btn_save;
+	public static String sql_editor_resultset_filter_panel_btn_custom;
+	public static String sql_editor_resultset_filter_panel_btn_config_refresh;
+	public static String sql_editor_resultset_filter_panel_btn_stop_refresh;
+	public static String sql_editor_resultset_filter_panel_label;
+	public static String sql_editor_resultset_filter_panel_btn_open_console;
+	public static String sql_editor_resultset_filter_panel_menu_refresh_interval;
+	public static String sql_editor_resultset_filter_panel_menu_stop;
+	public static String sql_editor_resultset_filter_panel_menu_customize;
+	public static String sql_editor_resultset_filter_panel_control_no_data;
+	public static String sql_editor_resultset_filter_panel_control_execute_to_see_reslut;
+	// SQL editor resultset filter panel
+	
 	
 	
 	static {

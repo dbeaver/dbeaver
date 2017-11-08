@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset.view;
 
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -33,6 +34,7 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -78,12 +80,12 @@ public class EmptyPresentation extends AbstractPresentation {
                 }
                 e.gc.setFont(largeFont);
                 int fontSize = largeFont.getFontData()[0].getHeight();
-                UIUtils.drawMessageOverControl(placeholder, e, "No Data", -(fontSize / 2));
+                UIUtils.drawMessageOverControl(placeholder, e, CoreMessages.sql_editor_resultset_filter_panel_control_no_data, -(fontSize / 2));
                 e.gc.setFont(normalFont);
                 if (controller.getDataContainer() instanceof SQLEditor.QueryResultsContainer) {
                     String execQuery = ActionUtils.findCommandDescription(CoreCommands.CMD_EXECUTE_STATEMENT, controller.getSite(), true);
                     String execScript = ActionUtils.findCommandDescription(CoreCommands.CMD_EXECUTE_SCRIPT, controller.getSite(), true);
-                    UIUtils.drawMessageOverControl(placeholder, e, "Execute query (" + execQuery + ") or script (" + execScript + ") to see results", fontSize + fontSize / 3);
+                    UIUtils.drawMessageOverControl(placeholder, e, NLS.bind(CoreMessages.sql_editor_resultset_filter_panel_control_execute_to_see_reslut, execQuery, execScript), fontSize + fontSize / 3);
                 }
             }
 
