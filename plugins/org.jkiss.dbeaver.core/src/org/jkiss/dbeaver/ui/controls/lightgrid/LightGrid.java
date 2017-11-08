@@ -2842,6 +2842,9 @@ public abstract class LightGrid extends Canvas {
             } else if (e.button == 1 || (e.button == 3 && col != null && !isSelectedCell)) {
                 if (col != null) {
                     selectionEvent = updateCellSelection(new GridPos(col.getIndex(), row), e.stateMask, false, true, EventSource.MOUSE);
+                    // Trigger selection event always!
+                    // It makes sense if grid content was changed but selection remains the same
+                    // If user clicks on the same selected cell value - selection event will trigger value redraw in panels
                     selectionEvent = new Event();
                     cellSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
 
