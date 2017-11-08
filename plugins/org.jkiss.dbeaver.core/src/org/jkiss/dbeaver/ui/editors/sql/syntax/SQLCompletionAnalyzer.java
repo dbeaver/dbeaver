@@ -612,9 +612,14 @@ class SQLCompletionAnalyzer
                 default:
                     // Do not convert case if we got it directly from object
                     if (!isObject) {
-                        DBPIdentifierCase convertCase = dataSource instanceof SQLDataSource ?
-                            ((SQLDataSource) dataSource).getSQLDialect().storesUnquotedCase() : DBPIdentifierCase.MIXED;
-                        replaceString = convertCase.transform(replaceString);
+                        DBPKeywordType keywordType = request.editor.getSyntaxManager().getDialect().getKeywordType(replaceString);
+                        if (keywordType == DBPKeywordType.KEYWORD) {
+                            replaceString = request.editor.getSyntaxManager().getKeywordCase().transform(replaceString);
+                        } else {
+                            DBPIdentifierCase convertCase = dataSource instanceof SQLDataSource ?
+                                ((SQLDataSource) dataSource).getSQLDialect().storesUnquotedCase() : DBPIdentifierCase.MIXED;
+                            replaceString = convertCase.transform(replaceString);
+                        }
                     }
                     break;
             }

@@ -192,7 +192,7 @@ public class SelectDataSourceDialog extends Dialog {
             }
         });
         DBeaverUI.asyncExec(() -> {
-            dataSourceTree.setFocus();
+            dataSourceTree.getViewer().getControl().setFocus();
             if (showConnected) {
                 dataSourceTree.getViewer().expandAll();
             }
