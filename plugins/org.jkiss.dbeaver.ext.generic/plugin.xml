@@ -823,11 +823,11 @@
                 <!-- Cloudera -->
                 <driver
                     id="cloudera_impala"
-                    label="Impala"
+                    label="Cloudera Impala"
                     class="com.cloudera.impala.jdbc41.Driver"
                     sampleURL="jdbc:impala://{host}:{port}/{database}"
                     defaultPort="21050"
-                    description="Cloudera Impala"
+                    description="Cloudera Impala. You can download JDBC driver files from https://www.cloudera.com/"
                     webURL="https://www.cloudera.com/downloads/connectors/impala/jdbc/2-5-41.html"
                     category="Hadoop">
 
