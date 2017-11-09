@@ -48,11 +48,13 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 {
     private long oid;
     private long ownerId;
+    private long[] parents;
     private String description;
 
     protected PostgreTableBase(PostgreSchema catalog)
     {
         super(catalog, false);
+        this.parents = new long[0];
     }
 
     protected PostgreTableBase(
@@ -63,6 +65,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "relowner");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
+        this.parents = JDBCUtils.safeGetArray(dbResult, "parents");
     }
 
     // Copy constructor
@@ -70,6 +73,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         super(container, source, persisted);
         if (source instanceof PostgreTableBase) {
             this.description = ((PostgreTableBase) source).description;
+            this.parents = ((PostgreTableBase) source).parents;
         }
     }
 
@@ -219,5 +223,16 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
                 throw new DBException(e, getDataSource());
             }
         }
+    }
+
+	public long[] getParents() {
+		return parents;
+	}
+    
+    public boolean isParentOf(long oid){
+    	for (long l : parents) {
+			if (l == oid) return true;
+		}
+    	return false;
     }
 }

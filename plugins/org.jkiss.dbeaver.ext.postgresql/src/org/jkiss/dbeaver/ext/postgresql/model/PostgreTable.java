@@ -51,6 +51,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     private static final Log log = Log.getLog(PostgreTable.class);
 
     private SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
+    private SimpleObjectCache<PostgreTable, PostgreTablePartition>  partitions  = new SimpleObjectCache<>();
 
     private boolean hasOids;
     private boolean hasPartitions;
@@ -279,7 +280,14 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     }
     
  public Collection<? extends DBSTable> getPartitions(DBRProgressMonitor monitor) throws DBException {
-	    return getSchema().tableCache.getCachedObjects();
+	    List<PostgreTableBase> result = new ArrayList<>();
+	    for(PostgreTableBase t : getSchema().tableCache.getCachedObjects())
+	    {
+	    	if (t.isParentOf(this.getObjectId())) {
+	    		result.add(t);	
+	    	}
+	    }
+	    return result;
         //return getSchema().tableCache.get  Objects(monitor, getSchema(), this);
     }
 
