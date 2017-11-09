@@ -439,8 +439,7 @@ public class GeneralUtils {
                     errorChain.add(new Status(
                         severity,
                         ModelPreferences.PLUGIN_ID,
-                        getExceptionMessage(error),
-                        error));
+                        getExceptionMessage(error)));
                 }
                 return new MultiStatus(
                     ModelPreferences.PLUGIN_ID,
@@ -449,12 +448,14 @@ public class GeneralUtils {
                     getExceptionMessage(ex),
                     ex);
             } else {
+                // Pass null exception to avoid dups in error message.
+                // Real exception stacktrace will be passed in the root cause
                 return new MultiStatus(
                     ModelPreferences.PLUGIN_ID,
                     0,
                     new IStatus[]{makeExceptionStatus(severity, cause)},
                     getExceptionMessage(ex),
-                    ex);
+                    null);
             }
         }
     }
