@@ -674,17 +674,6 @@
                     <parameter name="supports-scroll" value="false"/>
                 </driver>
                 <driver
-                    id="phoenix_hbase"
-                    label="Apache Phoenix"
-                    class="org.apache.phoenix.jdbc.PhoenixDriver"
-                    sampleURL="jdbc:phoenix:{host}"
-                    webURL="http://phoenix.apache.org/"
-                    description="Driver for Apache Phoenix HBase Database"
-                    category="Hadoop">
-                    <parameter name="omit-type-cache" value="true"/>
-                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-core:RELEASE"/>
-                </driver>
-                <driver
                     id="csvjdbc"
                     label="CSV/DBF"
                     category="Flat files (CSV)"
@@ -761,6 +750,17 @@
 
                 <!-- Hadoop -->
                 <driver
+                    id="phoenix_hbase"
+                    label="Apache Phoenix"
+                    class="org.apache.phoenix.jdbc.PhoenixDriver"
+                    sampleURL="jdbc:phoenix:{host}"
+                    webURL="http://phoenix.apache.org/"
+                    description="Driver for Apache Phoenix HBase Database"
+                    category="Hadoop">
+                    <parameter name="omit-type-cache" value="true"/>
+                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-core:RELEASE"/>
+                </driver>
+                <driver
                     id="gemfire_xd"
                     label="Gemfire XD"
                     class="com.pivotal.gemfirexd.jdbc.ClientDriver"
@@ -821,6 +821,19 @@
                 </driver>
 
                 <!-- Cloudera -->
+                <driver
+                    id="cloudera_impala"
+                    label="Impala"
+                    class="com.cloudera.impala.jdbc41.Driver"
+                    sampleURL="jdbc:impala://{host}:{port}/{database}"
+                    defaultPort="21050"
+                    description="Cloudera Impala"
+                    webURL="https://www.cloudera.com/downloads/connectors/impala/jdbc/2-5-41.html"
+                    category="Hadoop">
+
+                    <parameter name="query-get-active-db" value="select current_database()"/>
+                    <parameter name="query-set-active-db" value="use [?]"/>
+                </driver>
 
                 <!-- AWS -->
                 <driver
