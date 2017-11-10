@@ -125,8 +125,9 @@
         <module>features/org.jkiss.dbeaver.standalone.nls.feature</module>
 
         <module>features/org.jkiss.dbeaver.ce.nls.feature</module>
-
+        -->
         <module>bundles/org.jkiss.dbeaver.core.eclipse.nls</module>
+        <!-- 
         <module>features/org.jkiss.dbeaver.ide.nls.feature</module>
 
         <module>bundles/org.jkiss.dbeaver.data.office.nls</module>
