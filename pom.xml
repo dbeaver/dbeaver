@@ -119,7 +119,9 @@
         <module>features/org.jkiss.dbeaver.ext.wmi.nls.feature</module>
 
         <module>bundles/org.jkiss.dbeaver.ext.sample.database.nls</module>
+        -->
         <module>bundles/org.jkiss.dbeaver.core.application.nls</module>
+        <!-- 
         <module>features/org.jkiss.dbeaver.standalone.nls.feature</module>
 
         <module>features/org.jkiss.dbeaver.ce.nls.feature</module>
@@ -134,9 +136,11 @@
         <module>features/org.jkiss.dbeaver.ext.ui.svg.nls.feature</module>
          -->
 
+<!--  FIXME: AF: temporary disabled
         <module>product/standalone</module>
 
         <module>tests/org.jkiss.dbeaver.runtime.ide.core.tests</module>
+-->
     </modules>
 
     <repositories>
