@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -110,7 +111,7 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        DatabaseObjectListControl<T> objectList = new DatabaseObjectListControl<T>(
+        final DatabaseObjectListControl<T> objectList = new DatabaseObjectListControl<T>(
             group,
             (singleSelection ? SWT.SINGLE : SWT.MULTI),
             null,
@@ -210,12 +211,18 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
 
         Control listControl = objectList.getItemsViewer().getControl();
         listControl.setFocus();
-        listControl.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                cancelPressed();
-            }
-        });
+        if (modeless) {
+            listControl.addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusLost(FocusEvent e) {
+                    DBeaverUI.asyncExec(() -> {
+                        if (!UIUtils.isParent(getShell(), getShell().getDisplay().getFocusControl())) {
+                            cancelPressed();
+                        }
+                    });
+                }
+            });
+        }
 
         return group;
     }
