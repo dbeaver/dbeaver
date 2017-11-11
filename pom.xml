@@ -97,9 +97,9 @@
         <module>bundles/org.jkiss.dbeaver.ext.sqlite.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.teradata.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.vertica.nls</module>
-<!--  
         <module>features/org.jkiss.dbeaver.ext.generic.nls.feature</module>
--->
+
+        <!-- DBeaver Ext DB2 NLS -->
         <module>bundles/org.jkiss.dbeaver.ext.db2.nls</module>
 <!-- 
         <module>features/org.jkiss.dbeaver.ext.db2.nls.feature</module>
