@@ -65,6 +65,7 @@
 
    <features>
       <feature id="org.jkiss.dbeaver.ce.feature"/>
+      <feature id="org.jkiss.dbeaver.ce.nls.feature"/>
    </features>
 
    <configurations>
