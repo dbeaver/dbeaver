@@ -84,6 +84,10 @@ public abstract class PostgreViewBase extends PostgreTableReal
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read view definition")) {
                     String definition = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(?, true)", getObjectId());
                     this.source = PostgreUtils.getViewDDL(this, definition);
+                    String extDefinition = readExtraDefinition(session, options);
+                    if (extDefinition != null) {
+                        this.source += "\n" + extDefinition;
+                    }
                 } catch (SQLException e) {
                     throw new DBException("Error reading view definition", e);
                 }
@@ -92,6 +96,10 @@ public abstract class PostgreViewBase extends PostgreTableReal
             }
         }
         return source;
+    }
+
+    protected String readExtraDefinition(JDBCSession session, Map<String, Object> options) throws DBException {
+        return null;
     }
 
     @Override
