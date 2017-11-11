@@ -110,7 +110,9 @@
 <!-- 
         <module>features/org.jkiss.dbeaver.ext.db2.nls.feature</module>
 
+        -->
         <module>bundles/org.jkiss.dbeaver.ext.exasol.nls</module>
+        <!-- 
         <module>features/org.jkiss.dbeaver.ext.exasol.nls.feature</module>
 
         <module>bundles/org.jkiss.dbeaver.ext.mysql.nls</module>
@@ -124,7 +126,7 @@
         <module>features/org.jkiss.dbeaver.ext.wmi.nls.feature</module>
 
         <module>bundles/org.jkiss.dbeaver.ext.sample.database.nls</module>
-        -->
+         -->
         <module>bundles/org.jkiss.dbeaver.core.application.nls</module>
         <!-- 
         <module>features/org.jkiss.dbeaver.standalone.nls.feature</module>
