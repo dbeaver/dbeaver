@@ -123,11 +123,13 @@
         <!-- DBeaver Standalone NLS -->
         <module>bundles/org.jkiss.dbeaver.ext.sample.database.nls</module>
         <module>bundles/org.jkiss.dbeaver.core.application.nls</module>
-        <!-- 
         <module>features/org.jkiss.dbeaver.standalone.nls.feature</module>
 
+        <!-- DBeaver CE NLS -->
+        <!-- 
         <module>features/org.jkiss.dbeaver.ce.nls.feature</module>
         -->
+
         <module>bundles/org.jkiss.dbeaver.core.eclipse.nls</module>
         <!-- 
         <module>features/org.jkiss.dbeaver.ide.nls.feature</module>
