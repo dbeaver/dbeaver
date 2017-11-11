@@ -130,9 +130,7 @@
 
         <!-- DBeaver IDE NLS -->
         <module>bundles/org.jkiss.dbeaver.core.eclipse.nls</module>
-        <!-- 
         <module>features/org.jkiss.dbeaver.ide.nls.feature</module>
-         -->
 
         <!-- DBeaver Office NLS -->
         <module>bundles/org.jkiss.dbeaver.data.office.nls</module>
