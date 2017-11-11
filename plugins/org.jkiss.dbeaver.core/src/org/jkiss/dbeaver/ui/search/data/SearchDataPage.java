@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -32,8 +32,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -91,13 +89,9 @@ public class SearchDataPage extends AbstractSearchPage {
         for (String history : searchHistory) {
             searchText.add(history);
         }
-        searchText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                params.searchString = searchText.getText();
-                updateEnablement();
-            }
+        searchText.addModifyListener(e -> {
+            params.searchString = searchText.getText();
+            updateEnablement();
         });
 
         Composite optionsGroup = new SashForm(searchGroup, SWT.NONE);
@@ -158,12 +152,7 @@ public class SearchDataPage extends AbstractSearchPage {
             });
             checkboxTreeManager = new CheckboxTreeManager(viewer,
                 new Class[]{DBSDataContainer.class});
-            viewer.addCheckStateListener(new ICheckStateListener() {
-                @Override
-                public void checkStateChanged(CheckStateChangedEvent event) {
-                    updateEnablement();
-                }
-            });
+            viewer.addCheckStateListener(event -> updateEnablement());
         }
         {
             //new Label(searchGroup, SWT.NONE);
@@ -176,13 +165,7 @@ public class SearchDataPage extends AbstractSearchPage {
 
             final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, "Sample rows", params.maxResults, 1, Integer.MAX_VALUE);
             maxResultsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            maxResultsSpinner.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e)
-                {
-                    params.maxResults = maxResultsSpinner.getSelection();
-                }
-            });
+            maxResultsSpinner.addModifyListener(e -> params.maxResults = maxResultsSpinner.getSelection());
 
             final Button caseCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, CoreMessages.dialog_search_objects_case_sensitive, params.caseSensitive);
             caseCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -225,20 +208,23 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
         }
+        //restoreCheckedNodes();
+        updateEnablement();
+        dataSourceTree.setEnabled(true);
+    }
+
+    private void restoreCheckedNodes() {
         final List<DBNNode> checkedNodes = new ArrayList<>();
         dataSourceTree.setEnabled(false);
         try {
-            DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    monitor.beginTask("Load database nodes", 1);
-                    try {
-                        monitor.subTask("Load tree state");
-                        checkedNodes.addAll(
-                            loadTreeState(monitor, store, PROP_SOURCES));
-                    } finally {
-                        monitor.done();
-                    }
+            DBeaverUI.runInProgressDialog(monitor -> {
+                monitor.beginTask("Load database nodes", 1);
+                try {
+                    monitor.subTask("Load tree state");
+                    checkedNodes.addAll(
+                        loadTreeState(monitor, store, PROP_SOURCES));
+                } finally {
+                    monitor.done();
                 }
             });
         } catch (InvocationTargetException e) {
@@ -249,14 +235,15 @@ public class SearchDataPage extends AbstractSearchPage {
             for (DBNNode node : checkedNodes) {
                 ((CheckboxTreeViewer) dataSourceTree.getViewer()).setChecked(node, true);
                 if (first) {
-                    dataSourceTree.getViewer().reveal(NavigatorUtils.getDataSourceNode(node));
+                    DBNDataSource dsNode = NavigatorUtils.getDataSourceNode(node);
+                    if (dsNode != null) {
+                        dataSourceTree.getViewer().reveal(dsNode);
+                    }
                     first = false;
                 }
             }
             checkboxTreeManager.updateCheckStates();
         }
-        updateEnablement();
-        dataSourceTree.setEnabled(true);
     }
 
     @Override
@@ -317,7 +304,7 @@ public class SearchDataPage extends AbstractSearchPage {
         }
     }
 
-    protected static void saveTreeState(DBPPreferenceStore store, String propName, DatabaseNavigatorTree tree)
+    private static void saveTreeState(DBPPreferenceStore store, String propName, DatabaseNavigatorTree tree)
     {
         // Object sources
         StringBuilder sourcesString = new StringBuilder();
@@ -333,7 +320,7 @@ public class SearchDataPage extends AbstractSearchPage {
         store.setValue(propName, sourcesString.toString());
     }
 
-    protected List<DBSDataContainer> getCheckedSources()
+    private List<DBSDataContainer> getCheckedSources()
     {
         List<DBSDataContainer> result = new ArrayList<>();
         for (Object sel : ((CheckboxTreeViewer)dataSourceTree.getViewer()).getCheckedElements()) {
