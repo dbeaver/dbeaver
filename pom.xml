@@ -100,8 +100,8 @@
         <module>bundles/org.jkiss.dbeaver.ext.phoenix.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.postgresql.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.sqlite.nls</module>
-<!--  
         <module>bundles/org.jkiss.dbeaver.ext.teradata.nls</module>
+<!--  
         <module>bundles/org.jkiss.dbeaver.ext.vertica.nls</module>
         <module>features/org.jkiss.dbeaver.ext.generic.nls.feature</module>
 -->
