@@ -118,8 +118,10 @@
         <module>bundles/org.jkiss.dbeaver.ext.mysql.nls</module>
         <!-- 
         <module>features/org.jkiss.dbeaver.ext.mysql.nls.feature</module>
+        -->
 
         <module>bundles/org.jkiss.dbeaver.ext.oracle.nls</module>
+        <!-- 
         <module>features/org.jkiss.dbeaver.ext.oracle.nls.feature</module>
 
         <module>bundles/org.jkiss.wmi.nls</module>
