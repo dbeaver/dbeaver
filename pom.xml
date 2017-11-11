@@ -113,10 +113,9 @@
 
         <!-- DBeaver Ext Oracle NLS -->
         <module>bundles/org.jkiss.dbeaver.ext.oracle.nls</module>
-        <!-- 
         <module>features/org.jkiss.dbeaver.ext.oracle.nls.feature</module>
-         -->
 
+        <!-- DBeaver Ext WMI NLS -->
         <module>bundles/org.jkiss.wmi.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.wmi.nls</module>
         <!-- 
