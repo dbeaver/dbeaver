@@ -9,7 +9,7 @@
         <version>1.0.0</version>
         <relativePath>../../</relativePath>
     </parent>
-    <artifactId>org.jkiss.dbeaver.ext.generic.nls.feature</artifactId>
+    <artifactId>org.jkiss.dbeaver.ext.db2.nls.feature</artifactId>
     <version>4.2.4</version>
     <packaging>eclipse-feature</packaging>
 
