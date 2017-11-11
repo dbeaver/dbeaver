@@ -118,10 +118,9 @@
         <!-- DBeaver Ext WMI NLS -->
         <module>bundles/org.jkiss.wmi.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.wmi.nls</module>
-        <!-- 
         <module>features/org.jkiss.dbeaver.ext.wmi.nls.feature</module>
-         -->
 
+        <!-- DBeaver Standalone NLS -->
         <module>bundles/org.jkiss.dbeaver.ext.sample.database.nls</module>
         <module>bundles/org.jkiss.dbeaver.core.application.nls</module>
         <!-- 
