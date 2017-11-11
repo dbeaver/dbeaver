@@ -16,4 +16,3 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: Bert Herngreen
 Bundle-ClassPath: .
-Bundle-Localization: plugin
