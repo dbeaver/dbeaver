@@ -88,7 +88,9 @@
         
         <!-- 
         <module>bundles/org.jkiss.dbeaver.ext.generic.nls</module>
+         -->
         <module>bundles/org.jkiss.dbeaver.ext.derby.nls</module>
+        <!-- 
         <module>bundles/org.jkiss.dbeaver.ext.firebird.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.h2.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.hsqldb.nls</module>
