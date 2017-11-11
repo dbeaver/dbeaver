@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.jkiss.dbeaver.rcp.nls.feature"
+      label="%featureName"
+      version="4.2.4"
+      provider-name="%providerName">
+
+   <description>
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
+
+   <url>
+      <update label="DBeaver Universal Database Manager" url="https://dbeaver.jkiss.org/"/>
+   </url>
+   
+   <!-- Babel fragments for plugins included to org.jkiss.dbeaver.rcp.feature should be here -->
+
+</feature>
