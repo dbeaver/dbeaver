@@ -69,7 +69,7 @@
         <module>features/org.jkiss.dbeaver.standalone.feature</module>
         <module>features/org.jkiss.dbeaver.ce.feature</module>		
         
-        <!-- NLS -->
+        <!-- DBeaver RCP NLS -->
         <!-- 
         <module>features/org.jkiss.dbeaver.rcp.nls.feature</module>
 
@@ -88,15 +88,14 @@
          -->
         <module>features/org.jkiss.dbeaver.runtime.nls.feature</module>
         
+        <!-- DBeaver Ext Generic NLS -->
         <module>bundles/org.jkiss.dbeaver.ext.generic.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.derby.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.firebird.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.h2.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.hsqldb.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.informix.nls</module>
-        <!-- 
         <module>bundles/org.jkiss.dbeaver.ext.mssql.nls</module>
--->
         <module>bundles/org.jkiss.dbeaver.ext.netezza.nls</module>
 <!--  
         <module>bundles/org.jkiss.dbeaver.ext.phoenix.nls</module>
