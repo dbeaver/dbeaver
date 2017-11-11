@@ -138,9 +138,7 @@
 
         <!-- DBeaver SVG NLS -->
         <module>bundles/org.jkiss.dbeaver.ext.ui.svg.nls</module>
-        <!-- 
         <module>features/org.jkiss.dbeaver.ext.ui.svg.nls.feature</module>
-         -->
 
 <!--  FIXME: AF: temporary disabled
         <module>product/standalone</module>
