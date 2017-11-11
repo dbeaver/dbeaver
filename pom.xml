@@ -134,9 +134,7 @@
 
         <!-- DBeaver Office NLS -->
         <module>bundles/org.jkiss.dbeaver.data.office.nls</module>
-        <!-- 
         <module>features/org.jkiss.dbeaver.ext.office.nls.feature</module>
-         -->
 
         <!-- DBeaver SVG NLS -->
         <module>bundles/org.jkiss.dbeaver.ext.ui.svg.nls</module>
