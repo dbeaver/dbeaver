@@ -82,8 +82,8 @@
         <module>bundles/org.jkiss.dbeaver.ui.nls</module>
         -->
         <module>bundles/org.jkiss.dbeaver.ext.erd.nls</module>
+        <module>bundles/org.jkiss.dbeaver.ext.import_config.nls</module>
         <!--
-        <module>bundles/org.jkiss.dbeaver.ext.import-config.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.ui.locks.nls</module>
          -->
         <module>features/org.jkiss.dbeaver.runtime.nls.feature</module>
