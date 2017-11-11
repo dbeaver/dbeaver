@@ -70,9 +70,7 @@
         <module>features/org.jkiss.dbeaver.ce.feature</module>		
         
         <!-- DBeaver RCP NLS -->
-        <!-- 
         <module>features/org.jkiss.dbeaver.rcp.nls.feature</module>
-         -->
 
         <!-- DBeaver Runtime NLS -->
         <module>bundles/org.jkiss.utils.nls</module>
