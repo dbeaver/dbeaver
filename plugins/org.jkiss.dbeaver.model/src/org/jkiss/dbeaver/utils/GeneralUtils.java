@@ -416,7 +416,11 @@ public class GeneralUtils {
         return makeExceptionStatus(IStatus.ERROR, ex);
     }
 
-    public static IStatus makeExceptionStatus(int severity, Throwable ex)
+    public static IStatus makeExceptionStatus(int severity, Throwable ex) {
+        return makeExceptionStatus(severity, ex, false);
+    }
+
+    private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested)
     {
         Throwable cause = ex.getCause();
         SQLException nextError = null;
@@ -433,7 +437,7 @@ public class GeneralUtils {
             if (nextError != null) {
                 List<IStatus> errorChain = new ArrayList<>();
                 if (cause != null) {
-                    errorChain.add(makeExceptionStatus(severity, cause));
+                    errorChain.add(makeExceptionStatus(severity, cause, true));
                 }
                 for (SQLException error = nextError; error != null; error = error.getNextException()) {
                     errorChain.add(new Status(
@@ -453,9 +457,9 @@ public class GeneralUtils {
                 return new MultiStatus(
                     ModelPreferences.PLUGIN_ID,
                     0,
-                    new IStatus[]{makeExceptionStatus(severity, cause)},
+                    new IStatus[]{makeExceptionStatus(severity, cause, true)},
                     getExceptionMessage(ex),
-                    null);
+                    nested ? null : ex);
             }
         }
     }
