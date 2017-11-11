@@ -101,10 +101,9 @@
 
         <!-- DBeaver Ext DB2 NLS -->
         <module>bundles/org.jkiss.dbeaver.ext.db2.nls</module>
-<!-- 
         <module>features/org.jkiss.dbeaver.ext.db2.nls.feature</module>
 
-        -->
+        <!-- DBeaver Ext Exasol NLS -->
         <module>bundles/org.jkiss.dbeaver.ext.exasol.nls</module>
         <!-- 
         <module>features/org.jkiss.dbeaver.ext.exasol.nls.feature</module>
