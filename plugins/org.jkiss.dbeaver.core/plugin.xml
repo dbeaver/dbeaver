@@ -3174,6 +3174,19 @@
             <type kind="BINARY"/>
             <type kind="CONTENT"/>
         </transformer>
+        <transformer
+                class="org.jkiss.dbeaver.model.impl.data.transformers.BinaryAttributeTransformer"
+                id="org.jkiss.dbeaver.core.BinaryAttributeTransformer"
+                name="Binary"
+                description="Represents string value as binary data."
+                applyByDefault="false"
+                custom="true">
+            <type kind="STRING"/>
+            <propertyGroup label="Properties">
+                <property id="format" label="Binary format" type="string" description="Binary value format." defaultValue="Hex" required="false" validValues="hex,native,base64,string"/>
+                <property id="encoding" label="Character encoding" type="string" description="Character encoding used to decode string value into bytes." defaultValue="utf-8" required="false"/>
+            </propertyGroup>
+        </transformer>
 
     </extension>
 
