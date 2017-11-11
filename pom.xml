@@ -92,8 +92,8 @@
         <module>bundles/org.jkiss.dbeaver.ext.derby.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.firebird.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.h2.nls</module>
-        <!-- 
         <module>bundles/org.jkiss.dbeaver.ext.hsqldb.nls</module>
+        <!-- 
         <module>bundles/org.jkiss.dbeaver.ext.informix.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.mssql.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.netezza.nls</module>
