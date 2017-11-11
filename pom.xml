@@ -75,8 +75,8 @@
 
         <module>bundles/org.jkiss.utils.nls</module>
         <module>bundles/org.jkiss.dbeaver.model.nls</module>
-        <module>bundles/org.jkiss.dbeaver.runtime.ide.core</module>
          -->
+        <module>bundles/org.jkiss.dbeaver.runtime.ide.core</module>
         <module>bundles/org.jkiss.dbeaver.core.nls</module>
         <module>bundles/org.jkiss.dbeaver.ui.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.erd.nls</module>
