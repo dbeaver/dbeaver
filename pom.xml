@@ -72,11 +72,12 @@
         <!-- DBeaver RCP NLS -->
         <!-- 
         <module>features/org.jkiss.dbeaver.rcp.nls.feature</module>
-
-        <module>bundles/org.jkiss.utils.nls</module>
          -->
+
+        <!-- DBeaver Runtime NLS -->
+        <module>bundles/org.jkiss.utils.nls</module>
         <module>bundles/org.jkiss.dbeaver.model.nls</module>
-        <module>bundles/org.jkiss.dbeaver.runtime.ide.core</module>
+        <module>bundles/org.jkiss.dbeaver.runtime.ide.core.nls</module>
         <module>bundles/org.jkiss.dbeaver.core.nls</module>
         <module>bundles/org.jkiss.dbeaver.ui.nls</module>
         <module>bundles/org.jkiss.dbeaver.ext.erd.nls</module>
