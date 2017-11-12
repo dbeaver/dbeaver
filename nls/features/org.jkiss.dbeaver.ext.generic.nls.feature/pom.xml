@@ -7,7 +7,7 @@
         <groupId>org.jkiss.dbeaver</groupId>
         <artifactId>dbeaver</artifactId>
         <version>1.0.0</version>
-        <relativePath>../../</relativePath>
+        <relativePath>../../../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.ext.generic.nls.feature</artifactId>
     <version>1.0.1</version>
