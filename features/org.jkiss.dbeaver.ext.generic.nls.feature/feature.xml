@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ext.generic.nls.feature"
       label="%featureName"
-      version="4.2.4"
+      version="2.1.54"
       provider-name="%providerName">
 
    <description>

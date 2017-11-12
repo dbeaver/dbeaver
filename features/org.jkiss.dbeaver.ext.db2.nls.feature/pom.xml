@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.jkiss.dbeaver</groupId>
         <artifactId>dbeaver</artifactId>
-        <version>1.0.0</version>
+        <version>2.1.53</version>
         <relativePath>../../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.ext.db2.nls.feature</artifactId>
