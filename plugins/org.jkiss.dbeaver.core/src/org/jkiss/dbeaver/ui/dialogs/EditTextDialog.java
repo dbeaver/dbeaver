@@ -33,7 +33,7 @@ public class EditTextDialog extends BaseDialog {
 
     public EditTextDialog(Shell parentShell, String title, String text)
     {
-        this(parentShell, title, null, false);
+        this(parentShell, title, text, false);
     }
 
     public EditTextDialog(Shell parentShell, String title, String text, boolean readOnly)
