@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Teradata Plug-in
+Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.teradata;singleton:=true
 Bundle-Version: 1.0.36
 Bundle-Release-Date: 20171030
@@ -14,6 +14,5 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Vendor: JKISS
+Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
-Bundle-Localization: plugin

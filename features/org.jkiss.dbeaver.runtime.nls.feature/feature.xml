@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.runtime.nls.feature"
       label="%featureName"
-      version="4.2.4"
+      version="1.0.0"
       provider-name="%providerName">
 
    <description>
@@ -22,7 +22,63 @@
    </url>
 
    <plugin
+         id="org.jkiss.utils.nls"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.model.nls"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.runtime.ide.core.nls"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
          id="org.jkiss.dbeaver.core.nls"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.ui.nls"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.ext.erd.nls"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.ext.import_config.nls"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.ext.ui.locks.nls"
          download-size="0"
          install-size="0"
          version="0.0.0"
