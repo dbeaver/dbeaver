@@ -134,7 +134,8 @@ public class CustomSashForm extends SashForm {
 	 */
 	public CustomSashForm(Composite parent, int style, int customStyle) {	
 		super(parent, style);
-		
+
+        // FIXME: Do we need extra re-layout?
 		// Need listener to force a layout
 		this.addListener(SWT.Resize, new Listener() {
 			public void handleEvent(Event e) {
