@@ -17,11 +17,13 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * PostgreMaterializedView
@@ -40,9 +42,23 @@ public class PostgreMaterializedView extends PostgreViewBase
     }
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
+    public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
         return getSchema().indexCache.getObjects(monitor, getSchema(), this);
+    }
+
+    @Override
+    protected String readExtraDefinition(JDBCSession session, Map<String, Object> options) throws DBException {
+        Collection<PostgreIndex> indexes = getIndexes(session.getProgressMonitor());
+        if (!CommonUtils.isEmpty(indexes)) {
+            StringBuilder indexDefs = new StringBuilder("\n-- View indexes:\n");
+            for (PostgreIndex index : indexes) {
+                String indexDefinition = index.getObjectDefinitionText(session.getProgressMonitor(), options);
+                indexDefs.append(indexDefinition).append(";\n");
+            }
+            return indexDefs.toString();
+        }
+        return null;
     }
 
     public String getViewType() {

@@ -23,12 +23,14 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorInput;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -43,11 +45,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 
 /**
- * Bookmarks handler
+ * ERD resource handler
  */
 public class ERDResourceHandler extends AbstractResourceHandler {
+
+    private static final Log log = Log.getLog(ERDResourceHandler.class);
 
     private static final String ERD_EXT = "erd"; //$NON-NLS-1$
 
@@ -170,5 +175,16 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         return file;
     }
 
-
+    @Override
+    public Collection<DBPDataSourceContainer> getAssociatedDataSources(IResource resource) {
+        if (resource instanceof IFile) {
+            try {
+                return DiagramLoader.extractContainers((IFile)resource);
+            } catch (Exception e) {
+                log.error(e);
+                return null;
+            }
+        }
+        return super.getAssociatedDataSources(resource);
+    }
 }

@@ -2437,7 +2437,7 @@
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
         <key commandId="org.jkiss.dbeaver.core.edit.paste.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+V"/>
-        <key commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+D"/>
+        <key commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+D"/>
         <key commandId="org.jkiss.dbeaver.core.navigator.linkeditor" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+,"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+."/>
         <!--<key commandId="org.jkiss.dbeaver.core.object.create" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+INSERT"/>-->
@@ -3173,6 +3173,19 @@
                 custom="true">
             <type kind="BINARY"/>
             <type kind="CONTENT"/>
+        </transformer>
+        <transformer
+                class="org.jkiss.dbeaver.model.impl.data.transformers.BinaryAttributeTransformer"
+                id="org.jkiss.dbeaver.core.BinaryAttributeTransformer"
+                name="Binary"
+                description="Represents string value as binary data."
+                applyByDefault="false"
+                custom="true">
+            <type kind="STRING"/>
+            <propertyGroup label="Properties">
+                <property id="format" label="Binary format" type="string" description="Binary value format." defaultValue="Hex" required="false" validValues="hex,native,base64,string"/>
+                <property id="encoding" label="Character encoding" type="string" description="Character encoding used to decode string value into bytes." defaultValue="utf-8" required="false"/>
+            </propertyGroup>
         </transformer>
 
     </extension>

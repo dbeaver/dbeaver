@@ -29,8 +29,6 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -102,7 +100,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             }
         }
         File dbFile = new File(dbFolder, SAMPLE_DB_FILE_NAME);
-        try (InputStream is = Activator.class.getClassLoader().getResourceAsStream(SAMPLE_DB_SOURCE_PATH)) {
+        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(SAMPLE_DB_SOURCE_PATH)) {
             try (OutputStream os = new FileOutputStream(dbFile)) {
                 IOUtils.copyStream(is, os);
             }

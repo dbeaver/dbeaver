@@ -70,6 +70,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         String sshAuthType = properties.get(SSHConstants.PROP_AUTH_TYPE);
         String sshHost = properties.get(SSHConstants.PROP_HOST);
         String sshPort = properties.get(SSHConstants.PROP_PORT);
+        String sshLocalPort = properties.get(SSHConstants.PROP_LOCAL_PORT);
         String sshUser = configuration.getUserName();
         String aliveInterval = properties.get(SSHConstants.PROP_ALIVE_INTERVAL);
         String connectTimeoutString = properties.get(SSHConstants.PROP_CONNECT_TIMEOUT);
@@ -124,6 +125,16 @@ public class SSHTunnelImpl implements DBWTunnel {
         int localPort = savedLocalPort;
         if (platform != null) {
             localPort = findFreePort(platform);
+        }
+        if (!CommonUtils.isEmpty(sshLocalPort)) {
+            try {
+                int forceLocalPort = Integer.parseInt(sshLocalPort);
+                if (forceLocalPort > 0) {
+                    localPort = forceLocalPort;
+                }
+            } catch (NumberFormatException e) {
+                log.warn("Bad local port specified", e);
+            }
         }
         try {
             if (jsch == null) {

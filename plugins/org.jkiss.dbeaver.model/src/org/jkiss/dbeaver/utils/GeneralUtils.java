@@ -416,7 +416,11 @@ public class GeneralUtils {
         return makeExceptionStatus(IStatus.ERROR, ex);
     }
 
-    public static IStatus makeExceptionStatus(int severity, Throwable ex)
+    public static IStatus makeExceptionStatus(int severity, Throwable ex) {
+        return makeExceptionStatus(severity, ex, false);
+    }
+
+    private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested)
     {
         Throwable cause = ex.getCause();
         SQLException nextError = null;
@@ -430,21 +434,16 @@ public class GeneralUtils {
                 getExceptionMessage(ex),
                 ex);
         } else {
-            if (ex instanceof DBException && !((DBException) ex).hasMessage()) {
-                // Skip empty duplicate DBException
-                return makeExceptionStatus(severity, cause);
-            }
             if (nextError != null) {
                 List<IStatus> errorChain = new ArrayList<>();
                 if (cause != null) {
-                    errorChain.add(makeExceptionStatus(severity, cause));
+                    errorChain.add(makeExceptionStatus(severity, cause, true));
                 }
                 for (SQLException error = nextError; error != null; error = error.getNextException()) {
                     errorChain.add(new Status(
                         severity,
                         ModelPreferences.PLUGIN_ID,
-                        getExceptionMessage(error),
-                        error));
+                        getExceptionMessage(error)));
                 }
                 return new MultiStatus(
                     ModelPreferences.PLUGIN_ID,
@@ -453,12 +452,14 @@ public class GeneralUtils {
                     getExceptionMessage(ex),
                     ex);
             } else {
+                // Pass null exception to avoid dups in error message.
+                // Real exception stacktrace will be passed in the root cause
                 return new MultiStatus(
                     ModelPreferences.PLUGIN_ID,
                     0,
-                    new IStatus[]{makeExceptionStatus(severity, cause)},
+                    new IStatus[]{makeExceptionStatus(severity, cause, true)},
                     getExceptionMessage(ex),
-                    ex);
+                    nested ? null : ex);
             }
         }
     }
