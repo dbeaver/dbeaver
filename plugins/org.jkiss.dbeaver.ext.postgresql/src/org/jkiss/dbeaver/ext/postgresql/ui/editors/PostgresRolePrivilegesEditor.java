@@ -209,7 +209,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     }
 
     private void updateCurrentPrivileges() {
-        System.out.println("Privs changed");
+        //System.out.println("Privs changed");
     }
 
     private void registerContextMenu()

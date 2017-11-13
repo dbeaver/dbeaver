@@ -297,9 +297,11 @@ class SQLCompletionAnalyzer
 
             String[][] quoteStrings = sqlDialect.getIdentifierQuoteStrings();
             StringBuilder quotes = new StringBuilder();
-            for (String[] quotePair : quoteStrings) {
-                if (quotes.indexOf(quotePair[0]) == -1) quotes.append('\\').append(quotePair[0]);
-                if (quotes.indexOf(quotePair[1]) == -1) quotes.append('\\').append(quotePair[1]);
+            if (quoteStrings != null) {
+                for (String[] quotePair : quoteStrings) {
+                    if (quotes.indexOf(quotePair[0]) == -1) quotes.append('\\').append(quotePair[0]);
+                    if (quotes.indexOf(quotePair[1]) == -1) quotes.append('\\').append(quotePair[1]);
+                }
             }
             String tableNamePattern = "([\\p{L}0-9_$\\.\\-" + quotes.toString() + "]+)";
             String structNamePattern;

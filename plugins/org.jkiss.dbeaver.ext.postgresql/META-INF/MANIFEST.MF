@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: PostgreSQL Plug-in
+Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.postgresql;singleton:=true
-Bundle-Version: 2.1.41
-Bundle-Release-Date: 20171030
+Bundle-Version: 2.1.42
+Bundle-Release-Date: 20171113
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.views,
@@ -18,8 +18,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.gef
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Vendor: JKISS
+Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
-Bundle-Localization: plugin
 Bundle-Activator: org.jkiss.dbeaver.ext.postgresql.PostgreActivator
 

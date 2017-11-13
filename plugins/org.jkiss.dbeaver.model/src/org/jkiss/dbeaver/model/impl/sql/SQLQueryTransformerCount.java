@@ -47,12 +47,14 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     @Override
     public SQLQuery transformQuery(SQLDataSource dataSource, SQLQuery query) throws DBException {
         try {
-            return tryInjectCount(dataSource, query);
+            if (!dataSource.getSQLDialect().supportsSubqueries()) {
+                return tryInjectCount(dataSource, query);
+            }
         } catch (DBException e) {
             log.debug("Error injecting count: " + e.getMessage());
-            // Inject failed (most likely parser error
-            return wrapSourceQuery(dataSource, query);
+            // Inject failed (most likely parser error)
         }
+        return wrapSourceQuery(dataSource, query);
     }
 
     private SQLQuery wrapSourceQuery(SQLDataSource dataSource, SQLQuery query) {

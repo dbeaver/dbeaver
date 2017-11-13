@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: MSSQL Plug-in
+Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.mssql;singleton:=true
-Bundle-Version: 1.0.62
-Bundle-Release-Date: 20171030
+Bundle-Version: 1.0.63
+Bundle-Release-Date: 20171113
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.views,
@@ -15,6 +15,5 @@ Require-Bundle: org.eclipse.ui,
  com.github.jsqlparser
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Vendor: JKISS
+Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
-Bundle-Localization: plugin

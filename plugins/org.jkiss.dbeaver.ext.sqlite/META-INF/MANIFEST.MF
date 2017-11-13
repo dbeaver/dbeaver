@@ -1,15 +1,14 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: SQLite Plug-in
+Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.sqlite;singleton:=true
-Bundle-Version: 1.0.17
-Bundle-Release-Date: 20171030
+Bundle-Version: 1.0.18
+Bundle-Release-Date: 20171113
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Vendor: JKISS
+Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
-Bundle-Localization: plugin

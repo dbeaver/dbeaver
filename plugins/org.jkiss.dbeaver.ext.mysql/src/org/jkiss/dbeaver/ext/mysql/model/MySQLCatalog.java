@@ -363,7 +363,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 }
             } else {
                 sql.append("SHOW FULL TABLES FROM ").append(DBUtils.getQuotedIdentifier(owner));
-                String tableNameCol = "Tables_in_" + DBUtils.getQuotedIdentifier(owner);
+                String tableNameCol = DBUtils.getQuotedIdentifier(owner.getDataSource(), "Tables_in_" + owner.getName());
                 if (object != null || objectName != null) {
                     sql.append(" WHERE ").append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
                 } else {

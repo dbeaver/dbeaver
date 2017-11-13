@@ -722,6 +722,8 @@ public class CoreMessages extends NLS {
 	public static String model_project_Script;
 	public static String model_project_Scripts;
 
+	public static String model_ssh_configurator_group_settings;
+	public static String model_ssh_configurator_group_advanced;
 	public static String model_ssh_configurator_checkbox_save_pass;
 	public static String model_ssh_configurator_combo_auth_method;
 	public static String model_ssh_configurator_combo_password;
@@ -733,6 +735,8 @@ public class CoreMessages extends NLS {
 	public static String model_ssh_configurator_label_port;
 	public static String model_ssh_configurator_label_private_key;
 	public static String model_ssh_configurator_label_user_name;
+	public static String model_ssh_configurator_label_local_port;
+	public static String model_ssh_configurator_label_local_port_description;
     public static String model_ssh_configurator_label_keep_alive;
 	public static String model_ssh_configurator_label_tunnel_timeout;
 
