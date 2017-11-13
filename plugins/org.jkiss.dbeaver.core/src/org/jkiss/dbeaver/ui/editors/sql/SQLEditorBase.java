@@ -726,7 +726,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     } catch (BadLocationException e) {
                         log.debug(e);
                     }
-                } else if (useBlankLines && token.isWhitespace() && tokenLength >= 2) {
+                } else if (useBlankLines && token.isWhitespace() && tokenLength >= 1) {
                     // Check for blank line delimiter
                     if (lastTokenLineFeeds + countLineFeeds(document, tokenOffset, tokenLength) >= 2) {
                         isDelimiter = true;
