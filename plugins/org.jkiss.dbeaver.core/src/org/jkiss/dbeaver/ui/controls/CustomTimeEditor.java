@@ -63,8 +63,8 @@ public class CustomTimeEditor {
     }
 
 
-    public void setEnabled(boolean enabled) {
-        timeEditor.setEnabled(enabled);
+    public void setEditable(boolean editable) {
+        timeEditor.setEditable(editable);
     }
 
     public Text getControl() {
