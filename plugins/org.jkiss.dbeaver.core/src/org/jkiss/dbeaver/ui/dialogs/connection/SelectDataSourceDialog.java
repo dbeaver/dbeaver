@@ -102,6 +102,8 @@ public class SelectDataSourceDialog extends Dialog {
         DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, getTreeRootNode(), SWT.SINGLE | SWT.BORDER, false, dsFilter);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 500;
+        gd.minimumHeight = 100;
+        gd.minimumWidth = 100;
         dataSourceTree.setLayoutData(gd);
 
         final Text descriptionText = new Text(group, SWT.READ_ONLY);
