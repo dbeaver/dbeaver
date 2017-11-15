@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * PostgreSchema
@@ -205,7 +206,10 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     public Collection<PostgreTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getTypedObjects(monitor, this, PostgreTable.class);
+        return tableCache.getTypedObjects(monitor, this, PostgreTable.class)
+        		.stream()
+        		.filter(table -> table.getParents() == null)
+        		.collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Association
@@ -427,9 +431,9 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         {
             final String kindString = JDBCUtils.safeGetString(dbResult, "relkind");
             final Long[] parents = JDBCUtils.safeGetArray(dbResult, "parents");
-            if (parents != null) {
+            /*if (parents != null) {
             	return null;
-            }
+            }*/
             PostgreClass.RelKind kind;
             try {
                 kind = PostgreClass.RelKind.valueOf(kindString);
