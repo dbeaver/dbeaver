@@ -33,7 +33,7 @@ public class PostgreTablePartition extends PostgreTableConstraintBase implements
 {
     private final PostgreTableBase partitionTable;
     private int sequenceNum;
-
+//select * from  pg_partitioned_table where partrelid = ? 
     public PostgreTablePartition(
         @NotNull PostgreTableBase table,
         @NotNull PostgreTableBase partitionTable,
