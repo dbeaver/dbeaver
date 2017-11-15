@@ -56,6 +56,8 @@ class PostgreDialect extends JDBCSQLDialect {
         addSQLKeyword("COMMENT");
         addSQLKeyword("MATERIALIZED");
         addSQLKeyword("ILIKE");
+        addSQLKeyword("ELSIF");
+        addSQLKeyword("ELSEIF");
 
         addFunctions(Collections.singleton("CURRENT_DATABASE"));
 
