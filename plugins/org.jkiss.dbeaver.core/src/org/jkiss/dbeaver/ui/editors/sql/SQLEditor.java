@@ -566,7 +566,7 @@ public class SQLEditor extends SQLEditorBase implements
             ToolBar rsToolbar = new ToolBar(resultTabs, SWT.HORIZONTAL | SWT.RIGHT | SWT.WRAP);
 
             toolLogItem = new ToolItem(rsToolbar, SWT.CHECK);
-            toolLogItem.setText("Log");
+            toolLogItem.setText(CoreMessages.sql_editor_resultset_tool_item_log);
             toolLogItem.setToolTipText(ActionUtils.findCommandDescription(CoreCommands.CMD_SQL_SHOW_LOG, getSite(), false));
             toolLogItem.setImage(IMG_LOG);
             toolLogItem.addSelectionListener(new SelectionAdapter() {
@@ -577,7 +577,7 @@ public class SQLEditor extends SQLEditorBase implements
             });
 
             toolOutputItem = new ToolItem(rsToolbar, SWT.CHECK);
-            toolOutputItem.setText("Output");
+            toolOutputItem.setText(CoreMessages.sql_editor_resultset_tool_item_output);
             toolOutputItem.setToolTipText(ActionUtils.findCommandDescription(CoreCommands.CMD_SQL_SHOW_OUTPUT, getSite(), false));
             toolOutputItem.setImage(IMG_OUTPUT);
             toolOutputItem.addSelectionListener(new SelectionAdapter() {
