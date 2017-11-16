@@ -22,8 +22,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.graphics.Point;
@@ -47,7 +45,7 @@ import java.util.List;
 public abstract class AbstractPresentation implements IResultSetPresentation, ISelectionProvider {
 
     private static final String PRESENTATION_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.presentation";
-    //public static final String RESULTS_CONTROL_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset.focused";
+    public static final String RESULTS_CONTROL_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset.focused";
     public static final StructuredSelection EMPTY_SELECTION = new StructuredSelection();
     public static final String RESULT_SET_PRESENTATION_CONTEXT_MENU = "org.jkiss.dbeaver.ui.controls.resultset.conext.menu";
 
@@ -174,7 +172,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         final IWorkbenchPartSite site = controller.getSite();
         UIUtils.addFocusTracker(site, PRESENTATION_CONTROL_ID, control);
 
-/*
+        // RSV control context
         final IContextService contextService = site.getService(IContextService.class);
         if (contextService != null) {
             control.addFocusListener(new FocusListener() {
@@ -191,13 +189,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
                 }
             });
         }
-*/
-        control.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                UIUtils.removeFocusTracker(site, control);
-            }
-        });
+        control.addDisposeListener(e -> UIUtils.removeFocusTracker(site, control));
     }
 
     protected void activateTextKeyBindings(@NotNull IResultSetController controller, Control control) {
