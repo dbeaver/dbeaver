@@ -925,7 +925,7 @@
                         label="Solr"
                         icon="icons/solr_icon.png"
                         class="org.apache.solr.client.solrj.io.sql.DriverImpl"
-                        sampleURL="jdbc:solr://{host}:{port}/?collection={database}"
+                        sampleURL="jdbc:solr://{host}:{port}/[?collection={database}]"
                         defaultPort="9983"
                         description="Apache SolrJ JDBC driver"
                         webURL="https://lucene.apache.org/solr/">
