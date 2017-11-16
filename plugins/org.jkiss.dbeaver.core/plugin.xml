@@ -1349,7 +1349,7 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.row.first" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
              <enabledWhen>
                  <with variable="activePart">
                      <test property="org.jkiss.dbeaver.core.resultset.canMove" value="back"/>
@@ -1357,7 +1357,7 @@
              </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.row.previous" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
              <enabledWhen>
                   <with variable="activePart">
                       <test property="org.jkiss.dbeaver.core.resultset.canMove" value="back"/>
@@ -1365,7 +1365,7 @@
              </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.row.next" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
              <enabledWhen>
                   <with variable="activePart">
                       <test property="org.jkiss.dbeaver.core.resultset.canMove" value="forward"/>
@@ -1373,7 +1373,7 @@
              </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.row.last" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
              <enabledWhen>
                   <with variable="activePart">
                       <test property="org.jkiss.dbeaver.core.resultset.canMove" value="forward"/>
@@ -2417,18 +2417,18 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.switchPresentation" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+`"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.navigateLink" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+SPACE"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.filterMenu" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F11"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.first" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_LEFT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.previous" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_LEFT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.next" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_RIGHT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.last" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_RIGHT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.fetch.page" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+PAGE_DOWN"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.fetch.all" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+END"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+ENTER"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.edit.inline" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ENTER"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.add" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+INSERT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.copy" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+INSERT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.delete" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+DELETE"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.cell.reset" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ESC"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.first" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_LEFT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.previous" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_LEFT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.next" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_RIGHT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.last" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_RIGHT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.fetch.page" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+PAGE_DOWN"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.fetch.all" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+END"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.edit" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+ENTER"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.edit.inline" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ENTER"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.add" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+INSERT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.copy" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+INSERT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.delete" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+DELETE"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.cell.reset" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ESC"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.applyChanges" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+S"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+R"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F7"/>
@@ -2492,6 +2492,11 @@
                 id="org.jkiss.dbeaver.ui.context.resultset"
                 parentId="org.eclipse.ui.contexts.window"
                 name="%context.org.jkiss.dbeaver.ui.context.resultset.name"
+                description="%context.org.jkiss.dbeaver.ui.context.resultset.description"/>
+        <context
+                id="org.jkiss.dbeaver.ui.context.resultset.focused"
+                parentId="org.jkiss.dbeaver.ui.context.resultset"
+                name="%context.org.jkiss.dbeaver.ui.context.resultset.name focused"
                 description="%context.org.jkiss.dbeaver.ui.context.resultset.description"/>
         <context
                 id="org.jkiss.dbeaver.ui.context.resultset.edit"

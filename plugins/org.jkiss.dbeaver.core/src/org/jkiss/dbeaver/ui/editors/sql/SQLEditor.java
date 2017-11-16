@@ -1360,20 +1360,22 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public void doSave(IProgressMonitor monitor) {
-        monitor.beginTask("Save data changes...", 1);
-        try {
-            monitor.subTask("Save '" + getPartName() + "' changes...");
-            SaveJob saveJob = new SaveJob();
-            saveJob.schedule();
+        if (!EditorUtils.isInAutoSaveJob()) {
+            monitor.beginTask("Save data changes...", 1);
+            try {
+                monitor.subTask("Save '" + getPartName() + "' changes...");
+                SaveJob saveJob = new SaveJob();
+                saveJob.schedule();
 
-            // Wait until job finished
-            UIUtils.waitJobCompletion(saveJob);
-            if (!saveJob.success) {
-                monitor.setCanceled(true);
-                return;
+                // Wait until job finished
+                UIUtils.waitJobCompletion(saveJob);
+                if (!saveJob.success) {
+                    monitor.setCanceled(true);
+                    return;
+                }
+            } finally {
+                monitor.done();
             }
-        } finally {
-            monitor.done();
         }
 
         super.doSave(monitor);

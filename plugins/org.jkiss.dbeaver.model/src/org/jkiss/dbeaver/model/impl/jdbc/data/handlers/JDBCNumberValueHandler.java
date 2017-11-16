@@ -244,6 +244,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     }
                     break;
                 case Types.NUMERIC:
+                case Types.DECIMAL:
                     if (number instanceof Long) {
                         statement.setLong(paramIndex, number.longValue());
                     } else if (number instanceof Integer) {
@@ -263,7 +264,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     }
                     break;
                 default:
-                    if (CommonUtils.toInt(paramType.getScale()) >= 0) {
+                    if (CommonUtils.toInt(paramType.getScale()) > 0) {
                         statement.setDouble(paramIndex, number.doubleValue());
                     } else {
                         statement.setLong(paramIndex, number.longValue());
