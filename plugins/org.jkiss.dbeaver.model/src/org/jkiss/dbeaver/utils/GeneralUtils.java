@@ -269,6 +269,24 @@ public class GeneralUtils {
     }
 
     @NotNull
+    public static IStatus makeErrorStatus(String message) {
+        return new Status(
+            IStatus.ERROR,
+            ModelPreferences.PLUGIN_ID,
+            message,
+            null);
+    }
+
+    @NotNull
+    public static IStatus makeErrorStatus(String message, Throwable e) {
+        return new Status(
+            IStatus.ERROR,
+            ModelPreferences.PLUGIN_ID,
+            message,
+            e);
+    }
+
+    @NotNull
     public static String getProductTitle()
     {
         return getProductName() + " " + getProductVersion();
