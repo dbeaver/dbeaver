@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.IFontProvider;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -82,7 +79,8 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements ILaz
                 }
                 if (actionBars != null) {
                     String statusText = null;
-                    Object selection = propertyTree.getStructuredSelection().getFirstElement();
+                    ISelection propsSelection = propertyTree.getSelection();
+                    Object selection = (propsSelection instanceof IStructuredSelection ? ((IStructuredSelection) propsSelection).getFirstElement() : null);
                     DBPPropertyDescriptor prop = propertyTree.getPropertyFromElement(selection);
                     if (prop != null) {
                         statusText = prop.getDescription();
