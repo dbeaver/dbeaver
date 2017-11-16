@@ -919,6 +919,19 @@
                     <file type="jar" path="http://ftp.cubrid.org/CUBRID_Drivers/JDBC_Driver/JDBC-10.1.0.7663-cubrid.jar"/>
                 </driver>
 
+                <!-- Solr -->
+                <driver
+                        id="apache_solrj"
+                        label="Solr"
+                        icon="icons/solr_icon.png"
+                        class="org.apache.solr.client.solrj.io.sql.DriverImpl"
+                        sampleURL="jdbc:solr://{host}:{port}/?collection={database}"
+                        defaultPort="9983"
+                        description="Apache SolrJ JDBC driver"
+                        webURL="https://lucene.apache.org/solr/">
+                    <file type="jar" path="maven:/org.apache.solr:solr-solrj:RELEASE"/>
+                </driver>
+
             </drivers>
 
             <views>
