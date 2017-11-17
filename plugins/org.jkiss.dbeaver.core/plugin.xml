@@ -2423,7 +2423,7 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.row.last" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_RIGHT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.fetch.page" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+PAGE_DOWN"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.fetch.all" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+END"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.edit" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+ENTER"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.edit" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+ENTER"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.edit.inline" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ENTER"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.add" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+INSERT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.copy" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+INSERT"/>
@@ -2488,9 +2488,10 @@
               parentId="org.eclipse.ui.contexts.window"
               name="%context.org.jkiss.dbeaver.ui.context.navigator.name"
               description="%context.org.jkiss.dbeaver.ui.context.navigator.description"/>
+        <!-- RSV context. It extends SQL editor because RSV can be embedded in editor and thus must overrride it's bindings -->
         <context
                 id="org.jkiss.dbeaver.ui.context.resultset"
-                parentId="org.eclipse.ui.contexts.window"
+                parentId="org.jkiss.dbeaver.ui.editors.sql"
                 name="%context.org.jkiss.dbeaver.ui.context.resultset.name"
                 description="%context.org.jkiss.dbeaver.ui.context.resultset.description"/>
         <context
