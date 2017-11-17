@@ -49,6 +49,7 @@ public abstract class StandardConstants {
     public static final String ENV_USER_HOME = "user.home";
     public static final String ENV_USER_NAME = "user.name";
     public static final String ENV_OS_NAME = "os.name";
+    public static final String ENV_OS_ARCH = "os.arch";
 
     public static final String ENV_JAVA_VERSION = "java.version";
     public static final String ENV_JAVA_CLASSPATH = "java.class.path";
