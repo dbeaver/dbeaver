@@ -38,7 +38,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.ide.ui.IdeUi;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
 public abstract class CreateLinkHandler extends AbstractHandler {
@@ -88,7 +88,7 @@ public abstract class CreateLinkHandler extends AbstractHandler {
             return Status.OK_STATUS;
         }
         String message = NLS.bind("Unable to create link inside {0}" , resource);
-        return new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), message);
+        return IdeUi.createError(message);
     }
 
     protected abstract List<Path> selectTarget(ExecutionEvent event);
