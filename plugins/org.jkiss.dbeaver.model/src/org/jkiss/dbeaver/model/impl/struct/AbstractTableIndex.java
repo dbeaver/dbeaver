@@ -38,4 +38,8 @@ public abstract class AbstractTableIndex implements DBSTableIndex
         return DBSEntityConstraintType.INDEX;
     }
 
+    @Override
+    public boolean isPrimary() {
+        return false;
+    }
 }
