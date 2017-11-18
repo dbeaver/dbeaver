@@ -24,6 +24,7 @@
         <module>bundles/org.jkiss.wmi</module>
 
         <module>plugins/org.jkiss.dbeaver.runtime.ide.core</module>
+        <module>plugins/org.jkiss.dbeaver.runtime.ide.ui</module>
         <module>plugins/org.jkiss.dbeaver.core</module>
         <module>plugins/org.jkiss.dbeaver.ui</module>
         <module>plugins/org.jkiss.dbeaver.core.application</module>

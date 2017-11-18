@@ -15,28 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.internal.ide.core;
+package org.jkiss.dbeaver.runtime.ide.ui;
 
-import org.eclipse.osgi.util.NLS;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
-public class IdeCoreMessages extends NLS {
+public class IdeUi {
 
-	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.runtime.internal.ide.core.ide_core_messages"; //$NON-NLS-1$
-
-	public static String CreateLinkedFileRunnable_e_cancelled_link;
-
-    public static String CreateLinkedFileRunnable_e_unable_to_link;
+    public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.runtime.ide.ui"; //$NON-NLS-1$
     
-	public static String CreateLinkedFolderRunnable_e_cancelled_link;
+    public static IStatus createError(String message) {
+        return new Status(IStatus.ERROR, BUNDLE_SYMBOLIC_NAME, message);
+    }
 
-    public static String CreateLinkedFolderRunnable_e_unable_to_link;
-	
-	static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, IdeCoreMessages.class);
-	}
-
-	private IdeCoreMessages()
-	{
-	}
+    public static IStatus createError(String message, Throwable t) {
+        return new Status(IStatus.ERROR, BUNDLE_SYMBOLIC_NAME, message, t);
+    }
 }
