@@ -42,6 +42,7 @@ import org.eclipse.ui.statushandlers.IStatusAdapterConstants;
 import org.eclipse.ui.statushandlers.StatusAdapter;
 import org.eclipse.ui.statushandlers.StatusManager;
 import org.jkiss.dbeaver.runtime.ide.ui.IdeUi;
+import org.jkiss.dbeaver.runtime.internal.ide.ui.IdeMessages;
 
 public abstract class CreateLinkHandler extends AbstractHandler {
 
@@ -57,7 +58,7 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         IStatus validation = validateSelected(resource);
         if (!validation.isOK()) {
             StatusAdapter statusAdapter = new StatusAdapter(validation);
-            statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY, "Create link");
+            statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY, IdeMessages.CreateLinkHandler_e_create_link_title);
             StatusManager.getManager().handle(statusAdapter, StatusManager.SHOW);
             return null;
         }
@@ -79,9 +80,9 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         try {
             context.run(true, true, operation);
         } catch (InvocationTargetException e) {
-            IStatus error = IdeUi.createError("Unable to create link", e.getTargetException());
+            IStatus error = IdeUi.createError(IdeMessages.CreateLinkHandler_e_create_link_message, e.getTargetException());
             StatusAdapter statusAdapter = new StatusAdapter(error);
-            statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY, "Create link");
+            statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY, IdeMessages.CreateLinkHandler_e_create_link_title);
             StatusManager.getManager().handle(statusAdapter, StatusManager.LOG | StatusManager.SHOW);
         } catch (InterruptedException e) {
             // skip
@@ -94,7 +95,7 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         if (resource instanceof IContainer) {
             return Status.OK_STATUS;
         }
-        String message = NLS.bind("Unable to create link inside {0}", resource);
+        String message = NLS.bind(IdeMessages.CreateLinkHandler_e_create_link_validation, resource);
         return IdeUi.createError(message);
     }
 
