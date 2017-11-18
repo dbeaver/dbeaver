@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.actions.navigator;
+package org.jkiss.dbeaver.runtime.internal.ide.ui.handlers;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,8 +35,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.runtime.ide.ui.handlers.CreateLinkHandler;
 
-public class NavigatorHandlerLinkFile extends NavigatorHandlerCreateLink {
+public class LinkFileHandler extends CreateLinkHandler {
 
     private static final String COMMAND_PARAMETER_LINK_FILE_CONTENTTYPE = "org.jkiss.dbeaver.core.resource.link.file.contenttype"; //$NON-NLS-1$
 

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.actions.navigator;
+package org.jkiss.dbeaver.runtime.ide.ui.handlers;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
@@ -41,7 +41,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
-public abstract class NavigatorHandlerCreateLink extends AbstractHandler {
+public abstract class CreateLinkHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException

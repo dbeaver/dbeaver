@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.actions.navigator;
+package org.jkiss.dbeaver.runtime.internal.ide.ui.handlers;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,8 +31,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.runtime.ide.ui.handlers.CreateLinkHandler;
 
-public class NavigatorHandlerLinkFolder extends NavigatorHandlerCreateLink {
+public class LinkFolderHandler extends CreateLinkHandler {
 
     @Override
     protected List<Path> selectTarget(ExecutionEvent event)
