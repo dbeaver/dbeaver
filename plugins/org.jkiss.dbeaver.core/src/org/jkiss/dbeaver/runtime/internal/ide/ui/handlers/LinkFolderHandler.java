@@ -19,44 +19,37 @@ package org.jkiss.dbeaver.runtime.internal.ide.ui.handlers;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.List;
 
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.runtime.ide.core.WorkspaceResources;
 import org.jkiss.dbeaver.runtime.ide.ui.handlers.CreateLinkHandler;
 
 public class LinkFolderHandler extends CreateLinkHandler {
 
     @Override
-    protected List<Path> selectTarget(ExecutionEvent event)
+    protected Path[] selectTargets(ExecutionEvent event)
     {
         Shell shell = HandlerUtil.getActiveShell(event);
         DirectoryDialog dialog = new DirectoryDialog(shell, SWT.OPEN);
         String folder = dialog.open();
         if (folder == null) {
-            return Collections.emptyList();
+            return NO_TARGETS;
         }
         Path folderPath = Paths.get(folder);
-        return Collections.singletonList(folderPath);
+        return new Path[] {folderPath};
     }
 
     @Override
-    protected void createLink(IResource resource, List<Path> paths, IProgressMonitor monitor) throws CoreException
+    protected IStatus createLink(IContainer container, IProgressMonitor monitor, Path... targets)
     {
-        IFolder container = (IFolder) resource;
-        for (Path path : paths) {
-            String folderName = path.getFileName().toString();
-            final IFolder linkedFolder = container.getFolder(folderName);
-            linkedFolder.createLink(path.toUri(), IResource.NONE, monitor);
-        }
+        return WorkspaceResources.createLinkedFolders(container, monitor, targets);
     }
 
 }

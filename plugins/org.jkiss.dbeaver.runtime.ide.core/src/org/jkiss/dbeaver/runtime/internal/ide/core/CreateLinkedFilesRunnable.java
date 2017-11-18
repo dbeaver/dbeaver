@@ -17,39 +17,42 @@
  */
 package org.jkiss.dbeaver.runtime.internal.ide.core;
 
-import java.net.URI;
+import java.nio.file.Path;
 
-import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.osgi.util.NLS;
 
-public class CreateLinkedFolderRunnable extends CreateLinkedResourceRunnable<IFolder> {
+public class CreateLinkedFilesRunnable extends CreateLinkedResourcesRunnable {
 
-    public CreateLinkedFolderRunnable(IFolder folder, URI... locations)
+    public CreateLinkedFilesRunnable(IContainer container, Path... paths)
     {
-        super(folder, IResource.NONE, locations);
+        super(container, IResource.NONE, paths);
     }
 
-    public String composeErrorMessage(IFolder folder, URI... location)
+    public String composeErrorMessage(IResource resource, Path... paths)
     {
-        String message = NLS.bind(IdeCoreMessages.CreateLinkedFolderRunnable_e_unable_to_link, folder, location);
+        String message = NLS.bind(IdeCoreMessages.CreateLinkedFileRunnable_e_unable_to_link, resource, paths);
+        return message;
+    }
+
+    public String composeCancelMessage(IResource resource, Path path)
+    {
+        String message = NLS.bind(IdeCoreMessages.CreateLinkedFileRunnable_e_cancelled_link, resource, path);
         return message;
     }
 
     @Override
-    public String composeCancelMessage(IFolder resource, URI location)
-    {
-        String message = NLS.bind(IdeCoreMessages.CreateLinkedFolderRunnable_e_cancelled_link, resource, location);
-        return message;
-    }
-
-    @Override
-    protected void createLink(IFolder resource, URI location, int flags, IProgressMonitor monitor)
+    protected void createLink(IContainer container, Path path, int flags, IProgressMonitor monitor)
             throws CoreException
     {
-        resource.createLink(location, flags, monitor);
+        String memberName = path.getFileName().toString();
+        org.eclipse.core.runtime.Path memberPath = new org.eclipse.core.runtime.Path(memberName);
+        final IFile linked = container.getFile(memberPath);
+        linked.createLink(path.toUri(), IResource.NONE, monitor);
     }
 
 }
