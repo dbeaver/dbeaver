@@ -1007,7 +1007,7 @@ public class SQLEditor extends SQLEditorBase implements
                     for (int i = 0; i < elements.size(); i++) {
                         SQLScriptElement element = elements.get(i);
                         if (element instanceof SQLQuery) {
-                            SQLQuery query = transformer.transformQuery((SQLDataSource) dataSource, (SQLQuery) element);
+                            SQLQuery query = transformer.transformQuery((SQLDataSource) dataSource, getSyntaxManager(), (SQLQuery) element);
                             if (!CommonUtils.isEmpty(query.getParameters())) {
                                 query.setParameters(parseParameters(query.getText()));
                             }
@@ -1998,7 +1998,7 @@ public class SQLEditor extends SQLEditorBase implements
                 throw new DBCException("Can't count rows for control command");
             }
             try {
-                SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery((SQLDataSource) dataSource, (SQLQuery) query);
+                SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery((SQLDataSource) dataSource, getSyntaxManager(), (SQLQuery) query);
                 if (!CommonUtils.isEmpty(countQuery.getParameters())) {
                     countQuery.setParameters(parseParameters(countQuery.getText()));
                 }

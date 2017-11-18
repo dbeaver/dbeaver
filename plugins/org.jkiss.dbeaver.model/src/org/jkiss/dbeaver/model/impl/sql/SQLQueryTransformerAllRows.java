@@ -20,13 +20,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 
 /**
  * SQLQueryTransformerAllRows.
 */
 public class SQLQueryTransformerAllRows implements SQLQueryTransformer {
     @Override
-    public SQLQuery transformQuery(SQLDataSource dataSource, SQLQuery query) throws DBException {
+    public SQLQuery transformQuery(SQLDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
         SQLQuery allRowsQuery = new SQLQuery(dataSource, query.getText(), query);
         allRowsQuery.setResultSetLimit(0, 0);
         return allRowsQuery;
