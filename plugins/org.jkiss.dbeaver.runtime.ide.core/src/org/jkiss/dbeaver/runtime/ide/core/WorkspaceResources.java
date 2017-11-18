@@ -17,44 +17,57 @@
  */
 package org.jkiss.dbeaver.runtime.ide.core;
 
-import java.net.URI;
+import java.nio.file.Path;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.runtime.internal.ide.core.CreateLinkedFileRunnable;
-import org.jkiss.dbeaver.runtime.internal.ide.core.CreateLinkedFolderRunnable;
+import org.jkiss.dbeaver.runtime.internal.ide.core.CreateLinkedFilesRunnable;
+import org.jkiss.dbeaver.runtime.internal.ide.core.CreateLinkedFoldersRunnable;
 
 public class WorkspaceResources {
 
-	public static IStatus linkFile(IFile file, IProgressMonitor monitor, URI... locations) {
+    /**
+     * Bulk operation to create several linked files
+     * @param container
+     * @param monitor
+     * @param paths
+     * @return
+     */
+	public static IStatus createLinkedFiles(IContainer container, IProgressMonitor monitor, Path... paths) {
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		CreateLinkedFileRunnable action = new CreateLinkedFileRunnable(file, locations);
+		CreateLinkedFilesRunnable action = new CreateLinkedFilesRunnable(container, paths);
 		try {
             workspace.run(action, monitor);
 		} catch (CoreException e) {
 			return e.getStatus();
 		} catch (Throwable e) {
-			String message = action.composeErrorMessage(file, locations);
+			String message = action.composeErrorMessage(container, paths);
 			return IdeCore.createError(message, e);
 		}
 		return Status.OK_STATUS;
 	}
 	
-	public static IStatus linkFolder(IFolder folder, IProgressMonitor monitor, URI... locations) {
+	/**
+     * Bulk operation to create several linked folders
+	 * @param container
+	 * @param monitor
+	 * @param paths
+	 * @return
+	 */
+	public static IStatus createLinkedFolders(IContainer container, IProgressMonitor monitor, Path... paths) {
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		CreateLinkedFolderRunnable action = new CreateLinkedFolderRunnable(folder, locations);
+		CreateLinkedFoldersRunnable action = new CreateLinkedFoldersRunnable(container, paths);
 		try {
             workspace.run(action, monitor);
 		} catch (CoreException e) {
 			return e.getStatus();
 		} catch (Throwable e) {
-			String message = action.composeErrorMessage(folder, locations);
+			String message = action.composeErrorMessage(container, paths);
 			return IdeCore.createError(message, e);
 		}
 		return Status.OK_STATUS;

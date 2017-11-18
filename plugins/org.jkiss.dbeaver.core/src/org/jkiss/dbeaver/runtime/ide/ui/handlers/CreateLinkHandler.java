@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.runtime.ide.ui.handlers;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -30,7 +29,7 @@ import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
@@ -45,6 +44,8 @@ import org.jkiss.dbeaver.runtime.ide.ui.IdeUi;
 import org.jkiss.dbeaver.runtime.internal.ide.ui.IdeMessages;
 
 public abstract class CreateLinkHandler extends AbstractHandler {
+    
+    protected static final Path[] NO_TARGETS = new Path[0];
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
@@ -55,16 +56,18 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         }
         Object first = structured.getFirstElement();
         IResource resource = Adapters.adapt(first, IResource.class);
-        IStatus validation = validateSelected(resource);
-        if (!validation.isOK()) {
-            StatusAdapter statusAdapter = new StatusAdapter(validation);
+        IContainer container = extractContainer(resource);
+        if (container == null) {
+            String message = NLS.bind(IdeMessages.CreateLinkHandler_e_create_link_validation, resource);
+            IStatus error = IdeUi.createError(message);
+            StatusAdapter statusAdapter = new StatusAdapter(error);
             statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY, IdeMessages.CreateLinkHandler_e_create_link_title);
             StatusManager.getManager().handle(statusAdapter, StatusManager.SHOW);
             return null;
         }
 
-        List<Path> paths = selectTarget(event);
-        if (paths == null || paths.isEmpty()) {
+        Path[] locations = selectTargets(event);
+        if (locations == null || locations.length == 0) {
             return null;
         }
         WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
@@ -73,7 +76,16 @@ public abstract class CreateLinkHandler extends AbstractHandler {
             protected void execute(IProgressMonitor monitor)
                     throws CoreException, InvocationTargetException, InterruptedException
             {
-                createLink(resource, paths, monitor);
+                IStatus linked = createLink(container, monitor, locations);
+                int severity = linked.getSeverity();
+                switch (severity) {
+                case IStatus.CANCEL:
+                    throw new OperationCanceledException(linked.getMessage());
+                case IStatus.ERROR:
+                    throw new CoreException(linked);
+                default:
+                    break;
+                }
             }
         };
         IRunnableContext context = getRunnableContext(event);
@@ -90,16 +102,16 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         return null;
     }
 
-    protected IStatus validateSelected(IResource resource)
+    protected IContainer extractContainer(IResource resource)
     {
         if (resource instanceof IContainer) {
-            return Status.OK_STATUS;
+            IContainer container = (IContainer) resource;
+            return container;
         }
-        String message = NLS.bind(IdeMessages.CreateLinkHandler_e_create_link_validation, resource);
-        return IdeUi.createError(message);
+        return null;
     }
 
-    protected abstract List<Path> selectTarget(ExecutionEvent event);
+    protected abstract Path[] selectTargets(ExecutionEvent event);
 
     protected IRunnableContext getRunnableContext(ExecutionEvent event)
     {
@@ -110,7 +122,6 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         return PlatformUI.getWorkbench().getProgressService();
     }
 
-    protected abstract void createLink(IResource resource, List<Path> paths, IProgressMonitor monitor)
-            throws CoreException;
+    protected abstract IStatus createLink(IContainer container, IProgressMonitor monitor, Path...targets);
 
 }
