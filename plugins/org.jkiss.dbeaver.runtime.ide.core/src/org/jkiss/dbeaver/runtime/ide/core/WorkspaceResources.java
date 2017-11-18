@@ -32,27 +32,29 @@ import org.jkiss.dbeaver.runtime.internal.ide.core.CreateLinkedFolderRunnable;
 
 public class WorkspaceResources {
 
-	public static IStatus linkFile(IFile file, URI location, IProgressMonitor monitor) {
+	public static IStatus linkFile(IFile file, IProgressMonitor monitor, URI... locations) {
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		CreateLinkedFileRunnable action = new CreateLinkedFileRunnable(file, locations);
 		try {
-			workspace.run(new CreateLinkedFileRunnable(file, location), monitor);
+            workspace.run(action, monitor);
 		} catch (CoreException e) {
 			return e.getStatus();
 		} catch (Throwable e) {
-			String message = CreateLinkedFileRunnable.composeErrorMessage(file, location);
+			String message = action.composeErrorMessage(file, locations);
 			return IdeCore.createError(message, e);
 		}
 		return Status.OK_STATUS;
 	}
 	
-	public static IStatus linkFolder(IFolder folder, URI location, IProgressMonitor monitor) {
+	public static IStatus linkFolder(IFolder folder, IProgressMonitor monitor, URI... locations) {
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		CreateLinkedFolderRunnable action = new CreateLinkedFolderRunnable(folder, locations);
 		try {
-			workspace.run(new CreateLinkedFolderRunnable(folder, location), monitor);
+            workspace.run(action, monitor);
 		} catch (CoreException e) {
 			return e.getStatus();
 		} catch (Throwable e) {
-			String message = CreateLinkedFolderRunnable.composeErrorMessage(folder, location);
+			String message = action.composeErrorMessage(folder, locations);
 			return IdeCore.createError(message, e);
 		}
 		return Status.OK_STATUS;

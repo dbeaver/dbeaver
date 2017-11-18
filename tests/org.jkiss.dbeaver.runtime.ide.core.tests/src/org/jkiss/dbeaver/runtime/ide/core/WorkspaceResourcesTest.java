@@ -61,16 +61,16 @@ public class WorkspaceResourcesTest {
 	@Test
 	public void testLinkFileNegative()
 	{
-		Assert.assertFalse(WorkspaceResources.linkFile(null, fileLocation, null).isOK());
-		Assert.assertFalse(WorkspaceResources.linkFile(file, null, null).isOK());
-		Assert.assertFalse(WorkspaceResources.linkFile(file, fileLocation, null).isOK());
+		Assert.assertFalse(WorkspaceResources.linkFile(null, null, fileLocation).isOK());
+		Assert.assertFalse(WorkspaceResources.linkFile(file, null, (URI)null).isOK());
+		Assert.assertFalse(WorkspaceResources.linkFile(file, null, fileLocation).isOK());
 	}
 
 	@Test
 	public void testLinkFilePositive()
 	{
 		IFile another = folder.getFile("another");
-		IStatus linkFile = WorkspaceResources.linkFile(another, fileLocation, null);
+		IStatus linkFile = WorkspaceResources.linkFile(another, null, fileLocation);
 		Assert.assertTrue(linkFile.isOK());
 		Assert.assertTrue(another.isLinked());
 		URI locationURI = another.getLocationURI();
@@ -80,16 +80,16 @@ public class WorkspaceResourcesTest {
 	@Test
 	public void testLinkFolderNegative()
 	{
-		Assert.assertFalse(WorkspaceResources.linkFolder(null, folderLocation, null).isOK());
-		Assert.assertFalse(WorkspaceResources.linkFolder(folder, null, null).isOK());
-		Assert.assertFalse(WorkspaceResources.linkFolder(folder, folderLocation, null).isOK());
+		Assert.assertFalse(WorkspaceResources.linkFolder(null, null, folderLocation).isOK());
+		Assert.assertFalse(WorkspaceResources.linkFolder(folder, null, (URI)null).isOK());
+		Assert.assertFalse(WorkspaceResources.linkFolder(folder, null, folderLocation).isOK());
 	}
 
 	@Test
 	public void testLinkFolderPositive()
 	{
 		IFolder another = folder.getFolder("another");
-		IStatus linkFolder = WorkspaceResources.linkFolder(another, folderLocation, null);
+		IStatus linkFolder = WorkspaceResources.linkFolder(another, null, folderLocation);
 		Assert.assertTrue(linkFolder.isOK());
 		Assert.assertTrue(another.isLinked());
 		URI locationURI = another.getLocationURI();
