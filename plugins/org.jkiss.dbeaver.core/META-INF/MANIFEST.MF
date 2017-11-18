@@ -134,5 +134,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.eclipse.e4.ui.css.core,
- org.eclipse.e4.ui.css.swt
+ org.eclipse.e4.ui.css.swt,
+ org.jkiss.dbeaver.runtime.ide.core
 Bundle-Localization: OSGI-INF/l10n/bundle
