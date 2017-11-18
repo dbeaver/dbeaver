@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +18,8 @@
 package org.jkiss.dbeaver.ui.actions.navigator;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
+import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -55,8 +58,8 @@ public abstract class NavigatorHandlerCreateLink extends AbstractHandler {
             return null;
         }
 
-        String path = selectTarget(event);
-        if (path == null) {
+        List<Path> paths = selectTarget(event);
+        if (paths == null || paths.isEmpty()) {
             return null;
         }
         WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
@@ -65,7 +68,7 @@ public abstract class NavigatorHandlerCreateLink extends AbstractHandler {
             protected void execute(IProgressMonitor monitor)
                     throws CoreException, InvocationTargetException, InterruptedException
             {
-                createLink(resource, path, monitor);
+                createLink(resource, paths, monitor);
             }
         };
         IRunnableContext context = getRunnableContext(event);
@@ -88,7 +91,7 @@ public abstract class NavigatorHandlerCreateLink extends AbstractHandler {
         return new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), message);
     }
 
-    protected abstract String selectTarget(ExecutionEvent event);
+    protected abstract List<Path> selectTarget(ExecutionEvent event);
 
     protected IRunnableContext getRunnableContext(ExecutionEvent event)
     {
@@ -99,6 +102,6 @@ public abstract class NavigatorHandlerCreateLink extends AbstractHandler {
         return PlatformUI.getWorkbench().getProgressService();
     }
 
-    protected abstract void createLink(IResource resource, String path, IProgressMonitor monitor) throws CoreException;
+    protected abstract void createLink(IResource resource, List<Path> paths, IProgressMonitor monitor) throws CoreException;
 
 }

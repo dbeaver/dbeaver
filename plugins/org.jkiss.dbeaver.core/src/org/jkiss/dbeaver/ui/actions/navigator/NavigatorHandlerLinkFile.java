@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +17,11 @@
  */
 package org.jkiss.dbeaver.ui.actions.navigator;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IFile;
@@ -36,10 +41,10 @@ public class NavigatorHandlerLinkFile extends NavigatorHandlerCreateLink {
     private static final String COMMAND_PARAMETER_LINK_FILE_CONTENTTYPE = "org.jkiss.dbeaver.core.resource.link.file.contenttype"; //$NON-NLS-1$
 
     @Override
-    protected String selectTarget(ExecutionEvent event)
+    protected List<Path> selectTarget(ExecutionEvent event)
     {
         Shell shell = HandlerUtil.getActiveShell(event);
-        FileDialog dialog = new FileDialog(shell, SWT.NONE);
+        FileDialog dialog = new FileDialog(shell, SWT.MULTI);
         String contentTypeId = event.getParameter(COMMAND_PARAMETER_LINK_FILE_CONTENTTYPE);
         if (contentTypeId != null) {
             IContentType contentType = Platform.getContentTypeManager().getContentType(contentTypeId);
@@ -53,25 +58,38 @@ public class NavigatorHandlerLinkFile extends NavigatorHandlerCreateLink {
                     sb.append('*').append('.').append(extension);
                 }
                 if (sb.length() > 0) {
-                    String[] names = new String[] {contentType.getName()};
-                    String[] extensions = new String[] {sb.toString()};
+                    String[] names = new String[] { contentType.getName() };
+                    String[] extensions = new String[] { sb.toString() };
                     dialog.setFilterNames(names);
                     dialog.setFilterExtensions(extensions);
                 }
-                
+
             }
         }
         String file = dialog.open();
-        return file;
+        if (file == null) {
+            return Collections.emptyList();
+        }
+        List<Path> paths = new ArrayList<>();
+        String filterPath = dialog.getFilterPath();
+        String[] fileNames = dialog.getFileNames();
+        for (int i = 0; i < fileNames.length; i++) {
+            String fileName = fileNames[i];
+            Path filePath = Paths.get(filterPath, fileName);
+            paths.add(filePath);
+        }
+        return paths;
     }
 
     @Override
-    protected void createLink(IResource resource, String path, IProgressMonitor monitor) throws CoreException
+    protected void createLink(IResource resource, List<Path> paths, IProgressMonitor monitor) throws CoreException
     {
-        IFolder container = (IFolder)resource;
-        final File externalFolder = new File(path);
-        final IFile linked = container.getFile(externalFolder.getName());
-        linked.createLink(externalFolder.toURI(), IResource.NONE, monitor);
+        IFolder container = (IFolder) resource;
+        for (Path path : paths) {
+            String fileName = path.getFileName().toString();
+            final IFile linked = container.getFile(fileName);
+            linked.createLink(path.toUri(), IResource.NONE, monitor);
+        }
     }
 
 }
