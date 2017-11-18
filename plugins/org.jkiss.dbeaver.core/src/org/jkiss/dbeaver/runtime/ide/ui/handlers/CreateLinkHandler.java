@@ -38,8 +38,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.statushandlers.IStatusAdapterConstants;
+import org.eclipse.ui.statushandlers.StatusAdapter;
+import org.eclipse.ui.statushandlers.StatusManager;
 import org.jkiss.dbeaver.runtime.ide.ui.IdeUi;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
 public abstract class CreateLinkHandler extends AbstractHandler {
 
@@ -54,7 +56,9 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         IResource resource = Adapters.adapt(first, IResource.class);
         IStatus validation = validateSelected(resource);
         if (!validation.isOK()) {
-            DBUserInterface.getInstance().showError("Create link", validation.getMessage());
+            StatusAdapter statusAdapter = new StatusAdapter(validation);
+            statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY, "Create link");
+            StatusManager.getManager().handle(statusAdapter, StatusManager.SHOW);
             return null;
         }
 
@@ -75,7 +79,10 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         try {
             context.run(true, true, operation);
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Create link", "Unable to create link", e);
+            IStatus error = IdeUi.createError("Unable to create link", e.getTargetException());
+            StatusAdapter statusAdapter = new StatusAdapter(error);
+            statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY, "Create link");
+            StatusManager.getManager().handle(statusAdapter, StatusManager.LOG | StatusManager.SHOW);
         } catch (InterruptedException e) {
             // skip
         }
@@ -87,7 +94,7 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         if (resource instanceof IContainer) {
             return Status.OK_STATUS;
         }
-        String message = NLS.bind("Unable to create link inside {0}" , resource);
+        String message = NLS.bind("Unable to create link inside {0}", resource);
         return IdeUi.createError(message);
     }
 
@@ -102,6 +109,7 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         return PlatformUI.getWorkbench().getProgressService();
     }
 
-    protected abstract void createLink(IResource resource, List<Path> paths, IProgressMonitor monitor) throws CoreException;
+    protected abstract void createLink(IResource resource, List<Path> paths, IProgressMonitor monitor)
+            throws CoreException;
 
 }
