@@ -154,4 +154,9 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> im
             getTable().getContainer(),
             this);
     }
+
+    @Override
+    public boolean isPrimary() {
+        return MySQLConstants.INDEX_PRIMARY.equals(getName());
+    }
 }

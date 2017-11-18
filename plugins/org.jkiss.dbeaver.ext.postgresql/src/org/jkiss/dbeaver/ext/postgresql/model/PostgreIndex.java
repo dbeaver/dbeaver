@@ -111,6 +111,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         return isUnique;
     }
 
+    @Override
     @Property(viewable = false, order = 20)
     public boolean isPrimary() {
         return isPrimary;
