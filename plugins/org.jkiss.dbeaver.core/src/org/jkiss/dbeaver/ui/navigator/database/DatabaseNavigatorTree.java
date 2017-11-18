@@ -313,7 +313,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
 
         public void handleEvent(Event event) {
-            if ((event.detail & SWT.SELECTED) == 0) {
+            if ((event.detail & SWT.SELECTED) == 0 && (event.detail & SWT.HOT) == 0) {
                 return; /// item not selected
             }
 
