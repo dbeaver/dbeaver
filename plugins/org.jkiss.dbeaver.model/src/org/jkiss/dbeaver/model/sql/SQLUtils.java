@@ -303,10 +303,10 @@ public final class SQLUtils {
         return false;
     }
 
-    public static String trimQueryStatement(SQLSyntaxManager syntaxManager, String sql)
+    public static String trimQueryStatement(SQLSyntaxManager syntaxManager, String sql, boolean trimDelimiter)
     {
         sql = sql.trim();
-        if (syntaxManager.getDialect().isDelimiterAfterQuery()) {
+        if (!trimDelimiter) {
             // Do not trim delimiter
             return sql;
         }
