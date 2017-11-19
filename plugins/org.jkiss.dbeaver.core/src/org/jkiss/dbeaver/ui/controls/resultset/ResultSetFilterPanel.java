@@ -953,7 +953,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                             item = historyTable.getItem(selectionIndex);
                         }
                     }
-                    if (item != null) {
+                    if (item != null && !item.isDisposed()) {
                         if (e.keyCode == SWT.DEL) {
                             final String filterValue = item.getText();
                             try {
