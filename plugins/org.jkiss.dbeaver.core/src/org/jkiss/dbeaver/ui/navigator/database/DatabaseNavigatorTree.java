@@ -334,7 +334,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private class TreeSelectionAdapter implements MouseListener {
 
         private volatile TreeItem curSelection;
-        private volatile RenameJob renameJob = new RenameJob();
+        private volatile RenameJob renameJob;
 
         private volatile boolean doubleClick = false;
 
@@ -342,7 +342,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         public synchronized void mouseDoubleClick(MouseEvent e)
         {
             curSelection = null;
-            renameJob.canceled = true;
+            if (renameJob != null) {
+                renameJob.canceled = true;
+            }
         }
 
         @Override
@@ -372,7 +374,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 curSelection = null;
                 return;
             }
-            if (curSelection != null && curSelection == newSelection && renameJob.selection == null) {
+            if (curSelection != null && curSelection == newSelection && (renameJob == null || renameJob.selection == null)) {
+                if (renameJob == null) {
+                    renameJob = new RenameJob();
+                }
                 renameJob.selection = curSelection;
                 renameJob.schedule(1000);
             }
