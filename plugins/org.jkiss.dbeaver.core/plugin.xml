@@ -1784,14 +1784,8 @@
 
         <!-- Database Navigator menu & toolbar -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.databaseNavigator">
-            <command
-                  commandId="org.jkiss.dbeaver.core.driver.manager"
-                  label="%command.org.jkiss.dbeaver.core.driver.manager.name"
-                  tooltip="%command.org.jkiss.dbeaver.core.driver.manager.description"/>
-            <command
-                  commandId="org.jkiss.dbeaver.core.new.connection"
-                  label="%command.org.jkiss.dbeaver.core.new.connection.name"
-                  tooltip="%command.org.jkiss.dbeaver.core.new.connection.description"/>
+            <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection"/>
             <separator name="projects" visible="true"/>
             <menu label="%menu.org.jkiss.dbeaver.core.project.select.label" commandId="org.jkiss.dbeaver.core.project.select">
                 <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorActiveProjectContributor"/>
