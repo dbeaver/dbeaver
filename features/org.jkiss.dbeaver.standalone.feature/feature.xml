@@ -54,6 +54,7 @@
     <plugin id="org.eclipse.ui.ide.application" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- EGit and other requirements -->
+    <import plugin="org.eclipse.ui.net"/>
     <import plugin="org.eclipse.jsch.core"/>
     <import plugin="org.eclipse.jsch.ui"/>
     <import plugin="org.eclipse.core.variables"/>
