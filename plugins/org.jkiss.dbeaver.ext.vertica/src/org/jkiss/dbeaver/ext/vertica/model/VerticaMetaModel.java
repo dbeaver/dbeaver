@@ -52,7 +52,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public GenericDataSource createDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         return new VerticaDataSource(monitor, container, this);
     }
 

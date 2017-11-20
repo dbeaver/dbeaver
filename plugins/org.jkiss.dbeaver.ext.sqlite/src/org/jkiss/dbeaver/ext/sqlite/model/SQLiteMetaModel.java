@@ -112,7 +112,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     }
     
     @Override
-    public GenericDataSource createDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         return new SQLiteDataSource(monitor, container, this);
     }
 
