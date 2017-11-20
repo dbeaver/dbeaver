@@ -20,9 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -32,10 +30,13 @@ import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -88,6 +89,46 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
             }
         } catch (SQLException e) {
             throw new DBException(e, dataSource);
+        }
+    }
+
+    @Override
+    public boolean supportsSequences(GenericDataSource dataSource) {
+        return true;
+    }
+
+    @Override
+    public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read system sequences")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM v_catalog.sequences WHERE sequence_schema=? ORDER BY sequence_name")) {
+                dbStat.setString(1, container.getSchema().getName());
+                List<GenericSequence> result = new ArrayList<>();
+
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String name = JDBCUtils.safeGetString(dbResult, "sequence_name");
+                        if (name == null) {
+                            continue;
+                        }
+                        name = name.trim();
+                        GenericSequence sequence = new GenericSequence(
+                            container,
+                            name,
+                            null,
+                            JDBCUtils.safeGetLong(dbResult, "current_value"),
+                            JDBCUtils.safeGetLong(dbResult, "minimum"),
+                            JDBCUtils.safeGetLong(dbResult, "maximum"),
+                            JDBCUtils.safeGetLong(dbResult, "increment_by")
+                        );
+                        result.add(sequence);
+                    }
+                }
+                return result;
+
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, container.getDataSource());
         }
     }
 
