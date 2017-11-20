@@ -73,7 +73,22 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
-        return super.getProcedureDDL(monitor, sourceObject);
+        GenericDataSource dataSource = sourceObject.getDataSource();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Vertica procedure source")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT function_definition FROM v_catalog.user_functions WHERE schema_name=? AND function_name=?")) {
+                dbStat.setString(1, sourceObject.getSchema().getName());
+                dbStat.setString(2, sourceObject.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    StringBuilder sql = new StringBuilder();
+                    while (dbResult.nextRow()) {
+                        sql.append(dbResult.getString(1));
+                    }
+                    return sql.toString();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, dataSource);
+        }
     }
 
     @Nullable
