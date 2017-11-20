@@ -43,7 +43,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     private List<GenericSchema> schemas;
     private boolean isInitialized = false;
 
-    public GenericCatalog(GenericDataSource dataSource, String catalogName)
+    public GenericCatalog(@NotNull GenericDataSource dataSource, @NotNull String catalogName)
     {
         super(dataSource);
         this.catalogName = catalogName;

@@ -7,4 +7,25 @@
         <meta id="vertica" class="org.jkiss.dbeaver.ext.vertica.model.VerticaMetaModel" driverClass="com.vertica.jdbc.Driver"/>
     </extension>
 
+<!--
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+            class="org.jkiss.dbeaver.ext.vertica.VerticaDataSourceProvider"
+            description="Vertica JDBC connector"
+            id="vertica"
+            label="Vertica"
+            icon="icons/vertica.png">
+
+            <treeInjection path="generic/catalog/schema" metaModel="vertica">
+                <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaProjection" label="%tree.projections.node.name" icon="#folder_projection" description="Projections">
+                    <items label="%tree.projection.node.name" path="projection" property="projections" icon="#projection">
+
+                    </items>
+                </folder>
+            </treeInjection>
+
+        </datasource>
+    </extension>
+-->
+
 </plugin>
