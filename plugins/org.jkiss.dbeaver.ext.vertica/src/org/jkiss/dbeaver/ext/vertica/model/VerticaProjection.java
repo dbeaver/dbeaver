@@ -19,11 +19,8 @@ package org.jkiss.dbeaver.ext.vertica.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,17 +35,17 @@ import java.util.Collection;
 /**
  * VerticaMetaModel
  */
-public class VerticaProjection extends JDBCTable<GenericDataSource, GenericSchema>
+public class VerticaProjection extends JDBCTable<GenericDataSource, VerticaSchema>
 {
     private static final Log log = Log.getLog(VerticaProjection.class);
 
-    public VerticaProjection(GenericSchema schema, String tableName) {
+    public VerticaProjection(VerticaSchema schema, String tableName) {
         super(schema, tableName, true);
     }
 
     @Override
-    public JDBCStructCache<GenericSchema, ? extends DBSEntity, ? extends DBSEntityAttribute> getCache() {
-        return null;
+    public JDBCStructCache<VerticaSchema, ? extends DBSEntity, ? extends DBSEntityAttribute> getCache() {
+        return getContainer().projectionCache;
     }
 
     @Override
@@ -63,12 +60,12 @@ public class VerticaProjection extends JDBCTable<GenericDataSource, GenericSchem
 
     @Override
     public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException {
-        return null;
+        return getContainer().projectionCache.getChildren(monitor, getContainer(), this);
     }
 
     @Override
     public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
-        return null;
+        return getContainer().projectionCache.getChild(monitor, getContainer(), this, attributeName);
     }
 
     @Override
