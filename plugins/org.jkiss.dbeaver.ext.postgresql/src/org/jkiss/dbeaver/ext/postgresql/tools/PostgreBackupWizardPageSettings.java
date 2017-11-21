@@ -43,7 +43,7 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
 
     protected PostgreBackupWizardPageSettings(PostgreBackupWizard wizard)
     {
-        super(wizard, "Settings");
+        super(wizard, PostgresMessages.wizard_backup_page_setting_title_setting);
         setTitle(PostgresMessages.wizard_backup_page_setting_title);
         setDescription(PostgresMessages.wizard_backup_page_setting_description);
     }
@@ -89,7 +89,7 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
         encodingCombo.addSelectionListener(changeListener);
 
         useInsertsCheck = UIUtils.createCheckbox(formatGroup,
-            PostgresMessages.wizard_backup_page_setting_checkbox_use_insert,
+        	PostgresMessages.wizard_backup_page_setting_checkbox_use_insert,
             false
         );
         useInsertsCheck.addSelectionListener(changeListener);

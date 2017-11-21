@@ -45,11 +45,11 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreWizardPageSet
     public PostgreScriptExecuteWizardPageSettings(PostgreScriptExecuteWizard wizard)
     {
         super(wizard, wizard.isImport() ?
-                "Import configuration" : //$NON-NLS-1$
-                "Script execute configuration"); //$NON-NLS-1$
+        		PostgresMessages.tool_script_title_import :
+        		PostgresMessages.tool_script_title_execute);
         setTitle(wizard.isImport() ?
         	PostgresMessages.tool_script_title_import :
-            PostgresMessages.tool_script_title_execute);
+        	PostgresMessages.tool_script_title_execute);
         setDescription(wizard.isImport() ?
         	PostgresMessages.tool_script_description_import :
         	PostgresMessages.tool_script_description_execute);

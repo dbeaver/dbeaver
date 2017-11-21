@@ -61,7 +61,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
 
     PostgreBackupWizardPageObjects(PostgreBackupWizard wizard)
     {
-        super(wizard, "Schemas/tables");
+        super(wizard, PostgresMessages.wizard_backup_page_object_title_schema_table);
         setTitle(PostgresMessages.wizard_backup_page_object_title);
         setDescription(PostgresMessages.wizard_backup_page_object_description);
     }
