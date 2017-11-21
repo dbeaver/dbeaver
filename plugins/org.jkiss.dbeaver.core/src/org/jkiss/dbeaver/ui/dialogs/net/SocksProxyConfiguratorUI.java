@@ -51,13 +51,13 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBW
         gd.minimumHeight = 200;
         composite.setLayoutData(gd);
         composite.setLayout(new GridLayout(2, false));
-        hostText = UIUtils.createLabelText(composite, "Host", null); //$NON-NLS-2$
+        hostText = UIUtils.createLabelText(composite, CoreMessages.dialog_connection_network_socket_label_host, null); //$NON-NLS-2$
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        portText = UIUtils.createLabelSpinner(composite, "Port", SocksConstants.DEFAULT_SOCKS_PORT, 0, 65535);
-        userNameText = UIUtils.createLabelText(composite, "User name", null); //$NON-NLS-2$
+        portText = UIUtils.createLabelSpinner(composite, CoreMessages.dialog_connection_network_socket_label_port, SocksConstants.DEFAULT_SOCKS_PORT, 0, 65535);
+        userNameText = UIUtils.createLabelText(composite, CoreMessages.dialog_connection_network_socket_label_username, null); //$NON-NLS-2$
         userNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        passwordText = UIUtils.createLabelText(composite, "Password", "", SWT.BORDER | SWT.PASSWORD); //$NON-NLS-2$
+        passwordText = UIUtils.createLabelText(composite, CoreMessages.dialog_connection_network_socket_label_password, "", SWT.BORDER | SWT.PASSWORD); //$NON-NLS-2$
         UIUtils.createPlaceholder(composite,1);
         savePasswordCheckbox = UIUtils.createCheckbox(composite, CoreMessages.dialog_connection_auth_checkbox_save_password, false);
     }
