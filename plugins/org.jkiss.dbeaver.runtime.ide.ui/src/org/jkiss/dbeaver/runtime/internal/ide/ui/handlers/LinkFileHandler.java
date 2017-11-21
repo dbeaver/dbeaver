@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,32 +15,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.actions.navigator;
+package org.jkiss.dbeaver.runtime.internal.ide.ui.handlers;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.runtime.ide.core.WorkspaceResources;
+import org.jkiss.dbeaver.runtime.ide.ui.handlers.CreateLinkHandler;
 
-public class NavigatorHandlerLinkFile extends NavigatorHandlerCreateLink {
+public class LinkFileHandler extends CreateLinkHandler {
 
     private static final String COMMAND_PARAMETER_LINK_FILE_CONTENTTYPE = "org.jkiss.dbeaver.core.resource.link.file.contenttype"; //$NON-NLS-1$
 
     @Override
-    protected String selectTarget(ExecutionEvent event)
+    protected Path[] selectTargets(ExecutionEvent event)
     {
         Shell shell = HandlerUtil.getActiveShell(event);
-        FileDialog dialog = new FileDialog(shell, SWT.NONE);
+        FileDialog dialog = new FileDialog(shell, SWT.MULTI);
         String contentTypeId = event.getParameter(COMMAND_PARAMETER_LINK_FILE_CONTENTTYPE);
         if (contentTypeId != null) {
             IContentType contentType = Platform.getContentTypeManager().getContentType(contentTypeId);
@@ -53,25 +57,33 @@ public class NavigatorHandlerLinkFile extends NavigatorHandlerCreateLink {
                     sb.append('*').append('.').append(extension);
                 }
                 if (sb.length() > 0) {
-                    String[] names = new String[] {contentType.getName()};
-                    String[] extensions = new String[] {sb.toString()};
+                    String[] names = new String[] { contentType.getName() };
+                    String[] extensions = new String[] { sb.toString() };
                     dialog.setFilterNames(names);
                     dialog.setFilterExtensions(extensions);
                 }
-                
+
             }
         }
         String file = dialog.open();
-        return file;
+        if (file == null) {
+            return NO_TARGETS;
+        }
+        List<Path> paths = new ArrayList<>();
+        String filterPath = dialog.getFilterPath();
+        String[] fileNames = dialog.getFileNames();
+        for (int i = 0; i < fileNames.length; i++) {
+            String fileName = fileNames[i];
+            Path filePath = Paths.get(filterPath, fileName);
+            paths.add(filePath);
+        }
+        return (Path[]) paths.toArray(new Path[paths.size()]);
     }
 
     @Override
-    protected void createLink(IResource resource, String path, IProgressMonitor monitor) throws CoreException
+    protected IStatus createLink(IContainer container, IProgressMonitor monitor, Path... targets) 
     {
-        IFolder container = (IFolder)resource;
-        final File externalFolder = new File(path);
-        final IFile linked = container.getFile(externalFolder.getName());
-        linked.createLink(externalFolder.toURI(), IResource.NONE, monitor);
+        return WorkspaceResources.createLinkedFiles(container, monitor, targets);
     }
 
 }

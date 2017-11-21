@@ -48,6 +48,25 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
     public static final int UNBOUND = -2;
 
     /**
+     * Stops at any delimiter or non-whitespace character
+     */
+    private class DelimiterCondition implements StopCondition {
+        @Override
+        public boolean stop(char ch, int position, boolean forward) {
+            return isDelimiterChar(ch) || !Character.isWhitespace(ch);
+        }
+
+        private boolean isDelimiterChar(char ch) {
+            for (String delim : syntaxManager.getStatementDelimiters()) {
+                if (delim.length() == 1 && delim.charAt(0) == ch) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    /**
      * Stops upon a non-whitespace (as defined by {@link Character#isWhitespace(char)}) character.
      */
     private static class NonWhitespace implements StopCondition {
@@ -119,6 +138,7 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
     private final StopCondition _nonWSDefaultPart = new NonWhitespaceDefaultPartition();
     private final static StopCondition _nonWS = new NonWhitespace();
     private final StopCondition _nonIdent = new NonSQLIdentifierPartDefaultPartition();
+    private final DelimiterCondition DELIMITER_CONDITION = new DelimiterCondition();
 
     public SQLHeuristicScanner(IDocument document, String partitioning, String partition, SQLSyntaxManager syntaxManager) {
         assert (document != null);
@@ -281,6 +301,14 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
         return scanForward(position, bound, _nonWS);
     }
 
+    public boolean endsWithDelimiter(int position, int bound) {
+        int endPos = scanBackward(bound, position, DELIMITER_CONDITION);
+        try {
+            return endPos > position && DELIMITER_CONDITION.isDelimiterChar(_document.getChar(endPos));
+        } catch (BadLocationException e) {
+            return false;
+        }
+    }
     /**
      * Finds the lowest position <code>p</code> in <code>fDocument</code> such that <code>start</code> &lt;= p
      * &lt; <code>bound</code> and <code>condition.stop(fDocument.getChar(p), p)</code> evaluates to
@@ -468,5 +496,6 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
             (firstToken == TokenEND && secondToken == Tokenend) ||
             (firstToken == Tokenend && secondToken == TokenEND);
     }
+
 }
 

@@ -94,7 +94,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         this.replacementString = replacementString;
         this.replacementFull = this.dataSource == null ?
                 replacementString :
-                DBUtils.getUnQuotedIdentifier(this.dataSource, replacementString.toLowerCase(Locale.ENGLISH));
+                DBUtils.getUnQuotedIdentifier(this.dataSource, replacementString);
         int divPos = this.replacementFull.lastIndexOf(syntaxManager.getStructSeparator());
         if (divPos == -1) {
             this.replacementLast = null;
@@ -133,9 +133,16 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
             startOffset = wordDetector.getStartOffset();
         }
         if (endOffset != -1) {
+            // Replace from identifier start till next struct separator
             endOffset += wordDetector.getStartOffset();
         } else {
-            endOffset = wordDetector.getCursorOffset();//wordDetector.getEndOffset();
+            // Replace from identifier start to the end of current identifier
+            if (wordDetector.getWordPart().isEmpty()) {
+                endOffset = wordDetector.getCursorOffset();
+            } else {
+                // Replace from identifier start to the end of current identifier
+                endOffset = wordDetector.getEndOffset();
+            }
         }
         replacementOffset = startOffset;
         replacementLength = endOffset - startOffset;
