@@ -16,7 +16,7 @@
             label="Vertica"
             icon="icons/vertica_icon.png">
 
-            <treeInjection path="generic/catalog/schema" metaModel="vertica">
+            <treeInjection path="generic/catalog/schema">
                 <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaProjection" label="%tree.projections.node.name" icon="#folder_projection" description="Projections">
                     <items label="%tree.projection.node.name" path="projection" property="projections" icon="#projection">
 
