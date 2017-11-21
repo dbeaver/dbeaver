@@ -65,7 +65,7 @@ public class VerticaSchema extends GenericSchema
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull VerticaSchema schema, @Nullable VerticaProjection object, @Nullable String objectName) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM v_catalog.projections WHERE projections_schema=?" +
+                "SELECT * FROM v_catalog.projections WHERE projection_schema=?" +
                     (object == null && objectName == null ? "" : " AND projection_name=?")
             );
             dbStat.setString(1, schema.getName());
