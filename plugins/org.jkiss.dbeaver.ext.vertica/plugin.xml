@@ -50,6 +50,23 @@
                 </driver>
             </drivers>
 
+            <views>
+                <view
+                        id="org.jkiss.dbeaver.ext.vertica.dataSourceWizardView"
+                        targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                        label="%dialog.connection.header"
+                        class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                        icon="icons/vertica_icon.png">
+                </view>
+                <view
+                        class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                        icon="icons/vertica_icon.png"
+                        id="org.jkiss.dbeaver.ext.vertica.dataSourceEditorView"
+                        label="%dialog.connection.header"
+                        targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+                </view>
+            </views>
+
         </datasource>
     </extension>
 
