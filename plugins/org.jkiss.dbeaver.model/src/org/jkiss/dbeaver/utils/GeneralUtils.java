@@ -380,6 +380,15 @@ public class GeneralUtils {
         }
     }
 
+    public static String replaceSystemEnvironmentVariables(String string) {
+        return replaceVariables(string, new GeneralUtils.IVariableResolver() {
+            @Override
+            public String get(String name) {
+                return System.getenv(name);
+            }
+        });
+    }
+
     @NotNull
     public static String variablePattern(String name) {
         return "${" + name + "}";

@@ -150,14 +150,16 @@ public abstract class JDBCDataSource
             connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
         }
         if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, getConnectionUserName(connectionInfo));
+            String user = GeneralUtils.replaceSystemEnvironmentVariables(getConnectionUserName(connectionInfo));
+            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, user);
         }
         if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, getConnectionUserPassword(connectionInfo));
+            String pass = GeneralUtils.replaceSystemEnvironmentVariables(getConnectionUserPassword(connectionInfo));
+            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, pass);
         }
         // Obtain connection
         try {
-            final String url = getConnectionURL(connectionInfo);
+            final String url = GeneralUtils.replaceSystemEnvironmentVariables(getConnectionURL(connectionInfo));
             if (driverInstance != null) {
                 try {
                     if (!driverInstance.acceptsURL(url)) {
