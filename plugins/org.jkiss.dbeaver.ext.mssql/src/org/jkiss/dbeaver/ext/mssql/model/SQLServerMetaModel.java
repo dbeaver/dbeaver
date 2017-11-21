@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 import java.sql.Connection;
@@ -54,7 +55,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public GenericDataSource createDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         return new SQLServerDataSource(monitor, container, this);
     }
 
@@ -76,7 +77,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         assert table != null;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
-            String schema = getSystemSchema(getServerType(monitor, container.getDataSource()));
+            String schema = getSystemSchema(getServerType(container.getDataSource()));
             String catalog = DBUtils.getQuotedIdentifier(table.getCatalog());
             String query =
                 "SELECT triggers.name FROM " + catalog + "." + schema + ".sysobjects tables, " + catalog + "." + schema + ".sysobjects triggers\n" +
@@ -129,7 +130,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, String catalog, String schema, String name) throws DBException {
-        ServerType serverType = getServerType(monitor, dataSource);
+        ServerType serverType = getServerType(dataSource);
         String systemSchema = getSystemSchema(serverType);
         catalog = DBUtils.getQuotedIdentifier(dataSource, catalog);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
@@ -158,10 +159,10 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         }
     }
 
-    public static ServerType getServerType(DBRProgressMonitor monitor, DBPDataSource dataSource) {
+    public static ServerType getServerType(DBPDataSource dataSource) {
         JDBCExecutionContext context = (JDBCExecutionContext) dataSource.getDefaultContext(true);
         try {
-            Connection connection = context.getConnection(monitor);
+            Connection connection = context.getConnection(new VoidProgressMonitor());
             String connectionClass = connection.getClass().getName();
             if (connectionClass.contains("jtds")) {
                 try {
@@ -198,5 +199,45 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     @Override
     public boolean useCatalogInObjectNames() {
         return false;
+    }
+
+    @Override
+    public boolean supportsSequences(GenericDataSource dataSource) {
+        return getServerType(dataSource) == ServerType.SQL_SERVER;
+    }
+
+    @Override
+    public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read system sequences")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM "+ DBUtils.getQuotedIdentifier(container.getCatalog()) + ".sys.sequences WHERE schema_name(schema_id)=?")) {
+                dbStat.setString(1, container.getSchema().getName());
+                List<GenericSequence> result = new ArrayList<>();
+
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String name = JDBCUtils.safeGetString(dbResult, "name");
+                        if (name == null) {
+                            continue;
+                        }
+                        name = name.trim();
+                        GenericSequence sequence = new GenericSequence(
+                            container,
+                            name,
+                            null,
+                            JDBCUtils.safeGetLong(dbResult, "current_value"),
+                            JDBCUtils.safeGetLong(dbResult, "minimum_value"),
+                            JDBCUtils.safeGetLong(dbResult, "maximum_value"),
+                            JDBCUtils.safeGetLong(dbResult, "increment")
+                        );
+                        result.add(sequence);
+                    }
+                }
+                return result;
+
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, container.getDataSource());
+        }
     }
 }

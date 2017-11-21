@@ -222,7 +222,7 @@
                  id="org.jkiss.dbeaver.core.resource.link.file.contenttype"
                  name="%commandParameter.org.jkiss.dbeaver.core.resource.link.file.contenttype.name"
                  optional="true"
-                 values="org.jkiss.dbeaver.runtime.ContentTypeParameterValues">
+                 values="org.jkiss.dbeaver.runtime.core.ContentTypeParameterValues">
            </commandParameter>
         </command>
         <command id="org.jkiss.dbeaver.core.resource.link.folder" name="%command.org.jkiss.dbeaver.core.resource.link.folder.name" description="%command.org.jkiss.dbeaver.core.resource.link.folder.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
@@ -587,7 +587,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resource.link.file" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerLinkFile">
+        <handler commandId="org.jkiss.dbeaver.core.resource.link.file" class="org.jkiss.dbeaver.runtime.internal.ide.ui.handlers.LinkFileHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -599,7 +599,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resource.link.folder" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerLinkFolder">
+        <handler commandId="org.jkiss.dbeaver.core.resource.link.folder" class="org.jkiss.dbeaver.runtime.internal.ide.ui.handlers.LinkFolderHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -1784,14 +1784,8 @@
 
         <!-- Database Navigator menu & toolbar -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.databaseNavigator">
-            <command
-                  commandId="org.jkiss.dbeaver.core.driver.manager"
-                  label="%command.org.jkiss.dbeaver.core.driver.manager.name"
-                  tooltip="%command.org.jkiss.dbeaver.core.driver.manager.description"/>
-            <command
-                  commandId="org.jkiss.dbeaver.core.new.connection"
-                  label="%command.org.jkiss.dbeaver.core.new.connection.name"
-                  tooltip="%command.org.jkiss.dbeaver.core.new.connection.description"/>
+            <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection"/>
             <separator name="projects" visible="true"/>
             <menu label="%menu.org.jkiss.dbeaver.core.project.select.label" commandId="org.jkiss.dbeaver.core.project.select">
                 <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorActiveProjectContributor"/>

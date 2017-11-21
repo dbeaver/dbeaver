@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +23,13 @@ public class IdeCoreMessages extends NLS {
 
 	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.runtime.internal.ide.core.ide_core_messages"; //$NON-NLS-1$
 
-	public static String CreateLinkedFileRunnable_e_unable_to_link;
-	public static String CreateLinkedFolderRunnable_e_unable_to_link;
+	public static String CreateLinkedFileRunnable_e_cancelled_link;
+
+    public static String CreateLinkedFileRunnable_e_unable_to_link;
+    
+	public static String CreateLinkedFolderRunnable_e_cancelled_link;
+
+    public static String CreateLinkedFolderRunnable_e_unable_to_link;
 	
 	static {
 		// initialize resource bundle
