@@ -116,6 +116,7 @@ public class RegistryConstants {
     public static final String TAG_OBJECT = "object"; //$NON-NLS-1$
 
     static final String TAG_TREE = "tree"; //$NON-NLS-1$
+    static final String TAG_TREE_INJECTION = "treeInjection"; //$NON-NLS-1$
     static final String TAG_DRIVER_PROPERTIES = "driver-properties"; //$NON-NLS-1$
     static final String TAG_VIEWS = "views"; //$NON-NLS-1$
     static final String TAG_VIEW = "view"; //$NON-NLS-1$

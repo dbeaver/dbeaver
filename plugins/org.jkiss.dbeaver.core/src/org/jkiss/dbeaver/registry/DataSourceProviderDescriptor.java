@@ -57,20 +57,25 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private final String description;
     private DBPImage icon;
     private DBPDataSourceProvider instance;
-    private DBXTreeNode treeDescriptor;
+    private DBXTreeItem treeDescriptor;
     private final Map<String, DBXTreeNode> treeNodeMap = new HashMap<>();
     private boolean driversManagable;
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
     private final List<DriverDescriptor> drivers = new ArrayList<>();
     private final List<DataSourceViewDescriptor> views = new ArrayList<>();
-    private final String parentId;
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
     {
         super(config);
         this.registry = registry;
 
-        parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
+        String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
+        if (!CommonUtils.isEmpty(parentId)) {
+            this.parentProvider = registry.getDataSourceProvider(parentId);
+            if (this.parentProvider == null) {
+                log.error("Provider '" + parentId + "' not found");
+            }
+        }
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
@@ -81,14 +86,28 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             this.icon = UIIcon.GEN_DATABASE_TYPE;
         }
 
-        // Load tree structure
-        IConfigurationElement[] trees = config.getChildren(RegistryConstants.TAG_TREE);
-        if (!ArrayUtils.isEmpty(trees)) {
-            this.treeDescriptor = this.loadTreeInfo(trees[0]);
+        {
+            // Load tree structure
+            IConfigurationElement[] trees = config.getChildren(RegistryConstants.TAG_TREE);
+            if (!ArrayUtils.isEmpty(trees)) {
+                this.treeDescriptor = this.loadTreeInfo(trees[0]);
+            } else if (parentProvider != null) {
+                // Use parent's tree
+                this.treeDescriptor = new DBXTreeItem(this, null, parentProvider.treeDescriptor);
+            }
+
+            // Load tree injections
+            IConfigurationElement[] injections = config.getChildren(RegistryConstants.TAG_TREE_INJECTION);
+            if (!ArrayUtils.isEmpty(injections)) {
+
+            }
         }
 
         // Load driver properties
         {
+            if (parentProvider != null) {
+                driverProperties.addAll(parentProvider.driverProperties);
+            }
             for (IConfigurationElement propsElement : config.getChildren(RegistryConstants.TAG_DRIVER_PROPERTIES)) {
                 for (IConfigurationElement prop : propsElement.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
                     driverProperties.addAll(PropertyDescriptor.extractProperties(prop));
@@ -117,6 +136,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 for (IConfigurationElement viewElement : viewsElement.getChildren(RegistryConstants.TAG_VIEW)) {
                     this.views.add(
                         new DataSourceViewDescriptor(this, viewElement));
+                }
+            }
+            if (this.views.isEmpty()) {
+                if (parentProvider != null) {
+                    this.views.addAll(parentProvider.views);
                 }
             }
         }
@@ -176,26 +200,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     {
     }
 
-    public DataSourceProviderDescriptor getParentProvider() {
-        if (parentProvider == null && !CommonUtils.isEmpty(parentId)) {
-            this.parentProvider = registry.getDataSourceProvider(parentId);
-            if (this.parentProvider == null) {
-                log.warn("Provider '" + parentId + "' not found");
-            }
-        }
-        return parentProvider;
-    }
-
     public DBXTreeNode getTreeDescriptor()
     {
-        if (treeDescriptor != null) {
-            return treeDescriptor;
-        }
-        DataSourceProviderDescriptor parentProvider = getParentProvider();
-        if (parentProvider != null) {
-            return parentProvider.getTreeDescriptor();
-        }
-        return null;
+        return treeDescriptor;
     }
 
     public boolean isDriversManagable()
@@ -283,7 +290,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return null;
     }
 
-    private DBXTreeNode loadTreeInfo(IConfigurationElement config)
+    private DBXTreeItem loadTreeInfo(IConfigurationElement config)
     {
         DBXTreeItem treeRoot = new DBXTreeItem(
             this,
