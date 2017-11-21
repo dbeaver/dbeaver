@@ -188,6 +188,10 @@ public abstract class DBXTreeNode
         return false;
     }
 
+    protected List<DBXTreeNode> getChildren() {
+        return children;
+    }
+
     public List<DBXTreeNode> getChildren(DBNNode context)
     {
         if (context != null && !CommonUtils.isEmpty(children)) {
