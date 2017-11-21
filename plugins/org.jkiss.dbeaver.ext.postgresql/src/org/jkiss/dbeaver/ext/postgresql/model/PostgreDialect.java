@@ -91,6 +91,11 @@ class PostgreDialect extends JDBCSQLDialect {
     }
 
     @Override
+    public MultiValueInsertMode getMultiValueInsertMode() {
+        return MultiValueInsertMode.GROUP_ROWS;
+    }
+
+    @Override
     public String[][] getBlockBoundStrings() {
         // PostgreSQL-specific blocks ($$) should be used everywhere
         return null;//super.getBlockBoundStrings();
