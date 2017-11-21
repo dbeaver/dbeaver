@@ -55,6 +55,15 @@ public class DBXTreeItem extends DBXTreeNode
         this.optional = optional;
     }
 
+    public DBXTreeItem(AbstractDescriptor source, DBXTreeNode parent, DBXTreeItem item) {
+        super(source, parent, item);
+        this.label = item.label;
+        this.itemLabel = item.itemLabel;
+        this.path = item.path;
+        this.propertyName = item.propertyName;
+        this.optional = item.optional;
+    }
+
     public String getPath()
     {
         return path;
@@ -78,6 +87,11 @@ public class DBXTreeItem extends DBXTreeNode
             return term;
         }
         return label;
+    }
+
+    @Override
+    public String toString() {
+        return "Item " + label;
     }
 
     @Override
