@@ -99,7 +99,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             // Load tree injections
             IConfigurationElement[] injections = config.getChildren(RegistryConstants.TAG_TREE_INJECTION);
             if (!ArrayUtils.isEmpty(injections)) {
-
+                for (IConfigurationElement treeInject : injections) {
+                    this.injectTreeNodes(treeInject);
+                }
             }
         }
 
@@ -307,6 +309,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         loadTreeChildren(config, treeRoot);
         loadTreeIcon(treeRoot, config);
         return treeRoot;
+    }
+
+    private void injectTreeNodes(IConfigurationElement config) {
+        String injectPath = config.getAttribute(RegistryConstants.ATTR_PATH);
     }
 
     private void loadTreeChildren(IConfigurationElement config, DBXTreeNode parent)
