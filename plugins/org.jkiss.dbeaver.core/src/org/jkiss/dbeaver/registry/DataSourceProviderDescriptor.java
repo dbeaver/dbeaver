@@ -313,6 +313,25 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
     private void injectTreeNodes(IConfigurationElement config) {
         String injectPath = config.getAttribute(RegistryConstants.ATTR_PATH);
+        if (CommonUtils.isEmpty(injectPath)) {
+            return;
+        }
+        String[] path = injectPath.split("/");
+        if (path.length <= 1) {
+            return;
+        }
+        if (!path[0].equals(treeDescriptor.getPath())) {
+            return;
+        }
+        DBXTreeItem baseItem = treeDescriptor;
+        for (int i = 1; i < path.length; i++) {
+            baseItem = baseItem.findChildItemByPath(path[i]);
+            if (baseItem == null) {
+                return;
+            }
+        }
+        // Inject nodes into tree item
+        loadTreeChildren(config, baseItem);
     }
 
     private void loadTreeChildren(IConfigurationElement config, DBXTreeNode parent)
