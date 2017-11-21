@@ -73,7 +73,7 @@ public abstract class PostgreWizardPageSettings<WIZARD extends AbstractToolWizar
                 parent, PostgresMessages.wizard_backup_page_setting_group_security, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
             Label infoLabel = new Label(securityGroup, SWT.NONE);
             infoLabel.setText(NLS.bind(PostgresMessages.wizard_backup_page_setting_group_security_label_info, wizard.getConnectionInfo().getUserName(),
-            		 wizard.getObjectsName()));
+           		 wizard.getObjectsName()));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             infoLabel.setLayoutData(gd);

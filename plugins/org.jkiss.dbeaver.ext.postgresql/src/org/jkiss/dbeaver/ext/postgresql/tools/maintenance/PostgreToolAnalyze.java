@@ -70,9 +70,9 @@ public class PostgreToolAnalyze implements IExternalTool
         @Override
         protected void generateObjectCommand(List<String> lines, PostgreObject object) {
             if (object instanceof PostgreTableBase) {
-                lines.add("ANALYZE VERBOSE " + ((PostgreTableBase)object).getFullyQualifiedName(DBPEvaluationContext.DDL)); //$NON-NLS-1$
+                lines.add("ANALYZE VERBOSE " + ((PostgreTableBase)object).getFullyQualifiedName(DBPEvaluationContext.DDL));
             } else if (object instanceof PostgreDatabase) {
-                lines.add("ANALYZE VERBOSE"); //$NON-NLS-1$
+                lines.add("ANALYZE VERBOSE");
             }
         }
 

@@ -66,17 +66,17 @@ public class PostgreToolTruncate implements IExternalTool
         @Override
         protected void generateObjectCommand(List<String> lines, PostgreObject object) {
             if (object instanceof PostgreTableBase) {
-                String sql = "TRUNCATE TABLE"; //$NON-NLS-1$
-                if (onlyCheck.getSelection()) sql += " ONLY"; //$NON-NLS-1$
-                sql += " " + ((PostgreTableBase) object).getFullyQualifiedName(DBPEvaluationContext.DDL); //$NON-NLS-1$
+                String sql = "TRUNCATE TABLE";
+                if (onlyCheck.getSelection()) sql += " ONLY";
+                sql += " " + ((PostgreTableBase) object).getFullyQualifiedName(DBPEvaluationContext.DDL);
                 if (restartIdentityCheck.getSelection())
-                    sql += " RESTART IDENTITY"; //$NON-NLS-1$
+                    sql += " RESTART IDENTITY";
                 else
-                    sql += " CONTINUE IDENTITY"; //$NON-NLS-1$
+                    sql += " CONTINUE IDENTITY";
                 if (cascadeCheck.getSelection())
-                    sql += " CASCADE"; //$NON-NLS-1$
+                    sql += " CASCADE";
                 else
-                    sql += " RESTRICT"; //$NON-NLS-1$
+                    sql += " RESTRICT";
                 lines.add(sql);
             }
         }
@@ -85,9 +85,9 @@ public class PostgreToolTruncate implements IExternalTool
         protected void createControls(Composite parent) {
             Group optionsGroup = UIUtils.createControlGroup(parent, PostgresMessages.tool_truncate_group_option, 1, 0, 0);
             optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            onlyCheck = UIUtils.createCheckbox(optionsGroup, PostgresMessages.tool_truncate_checkbox_only, PostgresMessages.tool_truncate_checkbox_only_tooltip, false, 0);
+            onlyCheck = UIUtils.createCheckbox(optionsGroup,  PostgresMessages.tool_truncate_checkbox_only, PostgresMessages.tool_truncate_checkbox_only_tooltip, false, 0);
             onlyCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            restartIdentityCheck = UIUtils.createCheckbox(optionsGroup, PostgresMessages.tool_truncate_checkbox_restart, PostgresMessages.tool_truncate_checkbox_restart_tooltip, false, 0);
+            restartIdentityCheck = UIUtils.createCheckbox(optionsGroup,  PostgresMessages.tool_truncate_checkbox_restart, PostgresMessages.tool_truncate_checkbox_restart_tooltip, false, 0);
             restartIdentityCheck.addSelectionListener(SQL_CHANGE_LISTENER);
             cascadeCheck = UIUtils.createCheckbox(optionsGroup, PostgresMessages.tool_truncate_checkbox_cascade, PostgresMessages.tool_truncate_checkbox_cascade_tooltip, false, 0);
             cascadeCheck.addSelectionListener(SQL_CHANGE_LISTENER);

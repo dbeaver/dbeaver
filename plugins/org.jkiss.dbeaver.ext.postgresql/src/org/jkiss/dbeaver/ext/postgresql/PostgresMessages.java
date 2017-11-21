@@ -9,10 +9,12 @@ public class PostgresMessages extends NLS {
 	public static String wizard_backup_title;
 	public static String wizard_backup_msgbox_success_title;
 	public static String wizard_backup_msgbox_success_description;	
+	public static String wizard_backup_page_object_title_schema_table;
 	public static String wizard_backup_page_object_title;
 	public static String wizard_backup_page_object_description;
 	public static String wizard_backup_page_object_group_object;
 	public static String wizard_backup_page_object_checkbox_show_view;	
+	public static String wizard_backup_page_setting_title_setting;
 	public static String wizard_backup_page_setting_title;
 	public static String wizard_backup_page_setting_description;
 	public static String wizard_backup_page_setting_group_setting;
@@ -38,6 +40,7 @@ public class PostgresMessages extends NLS {
 	public static String wizard_restore_page_setting_label_input;
 	public static String wizard_restore_page_setting_label_setting;
 	public static String wizard_restore_page_setting_title;	
+	public static String wizard_restore_page_setting_title_setting;
 	
 	/* tool script */
 	public static String wizard_script_title_import_db;

@@ -78,14 +78,14 @@ public class PostgreToolVacuum implements IExternalTool
 
         @Override
         protected void generateObjectCommand(List<String> lines, PostgreObject object) {
-            String sql = "VACUUM (VERBOSE"; //$NON-NLS-1$
-            if (fullCheck.getSelection()) sql += ",FULL"; //$NON-NLS-1$
-            if (freezeCheck.getSelection()) sql += ",FREEZE"; //$NON-NLS-1$
-            if (analyzeCheck.getSelection()) sql += ",ANALYZE"; //$NON-NLS-1$
-            if (dpsCheck.getSelection()) sql += ",DISABLE_PAGE_SKIPPING"; //$NON-NLS-1$
-            sql += ")"; //$NON-NLS-1$
+            String sql = "VACUUM (VERBOSE";
+            if (fullCheck.getSelection()) sql += ",FULL";
+            if (freezeCheck.getSelection()) sql += ",FREEZE";
+            if (analyzeCheck.getSelection()) sql += ",ANALYZE";
+            if (dpsCheck.getSelection()) sql += ",DISABLE_PAGE_SKIPPING";
+            sql += ")";
             if (object instanceof PostgreTableBase) {
-                sql += " " + ((PostgreTableBase)object).getFullyQualifiedName(DBPEvaluationContext.DDL); //$NON-NLS-1$
+                sql += " " + ((PostgreTableBase)object).getFullyQualifiedName(DBPEvaluationContext.DDL);
             }
             lines.add(sql);
         }
@@ -94,13 +94,13 @@ public class PostgreToolVacuum implements IExternalTool
         protected void createControls(Composite parent) {
             Group optionsGroup = UIUtils.createControlGroup(parent, PostgresMessages.tool_vacuum_group_option, 1, 0, 0);
             optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            fullCheck = UIUtils.createCheckbox(optionsGroup, "Full", PostgresMessages.tool_vacuum_full_check_tooltip, false, 0); //$NON-NLS-1$
+            fullCheck = UIUtils.createCheckbox(optionsGroup, "Full", PostgresMessages.tool_vacuum_full_check_tooltip, false, 0);
             fullCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            freezeCheck = UIUtils.createCheckbox(optionsGroup, "Freeze", PostgresMessages.tool_vacuum_freeze_check_tooltip, false, 0); //$NON-NLS-1$
+            freezeCheck = UIUtils.createCheckbox(optionsGroup, "Freeze", PostgresMessages.tool_vacuum_freeze_check_tooltip, false, 0);
             freezeCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            analyzeCheck = UIUtils.createCheckbox(optionsGroup, "Analyze", PostgresMessages.tool_vacuum_analyze_check_tooltip, false, 0); //$NON-NLS-1$
+            analyzeCheck = UIUtils.createCheckbox(optionsGroup, "Analyze", PostgresMessages.tool_vacuum_analyze_check_tooltip, false, 0);
             analyzeCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            dpsCheck = UIUtils.createCheckbox(optionsGroup, "Disable page skipping", PostgresMessages.tool_vacuum_dps_check_tooltip, false, 0); //$NON-NLS-1$
+            dpsCheck = UIUtils.createCheckbox(optionsGroup, "Disable page skipping", PostgresMessages.tool_vacuum_dps_check_tooltip, false, 0);
             dpsCheck.addSelectionListener(SQL_CHANGE_LISTENER);
 
             createObjectsSelector(parent);
