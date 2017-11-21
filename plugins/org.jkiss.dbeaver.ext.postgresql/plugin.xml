@@ -398,5 +398,44 @@
             </tool>
         </tools>
     </extension>
+    
+<!-- org.jkiss.dbeaver.postgresql.debug.core begins -->
+    <extension
+          point="org.eclipse.debug.core.launchConfigurationTypes">
+       <launchConfigurationType
+             delegate="org.jkiss.dbeaver.postgresql.internal.debug.core.PgSqlLaunchDelegate"
+             delegateDescription="%launchConfigurationTypes.launchConfigurationType.pgSQL.delegateDescription"
+             delegateName="%launchConfigurationTypes.launchConfigurationType.pgSQL.delegateName"
+             id="org.jkiss.dbeaver.postgresql.debug.core.pgSQL"
+             modes="debug"
+             name="%launchConfigurationTypes.launchConfigurationType.pgSQL.name">
+       </launchConfigurationType>
+    </extension>
+<!-- org.jkiss.dbeaver.postgresql.debug.core ends -->
+
+<!-- org.jkiss.dbeaver.postgresql.debug.ui begins -->
+    <extension
+          point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+       <launchConfigurationTypeImage
+             configTypeID="org.jkiss.dbeaver.postgresql.debug.core.pgSQL"
+             icon="icons/postgresql_icon.png"
+             id="org.jkiss.dbeaver.postgresql.debug.ui.launchConfigurationTypeImages.launchConfigurationTypeImage.pgSQL">
+       </launchConfigurationTypeImage>
+    </extension>
+    <extension
+          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+       <launchConfigurationTabGroup
+             class="org.jkiss.dbeaver.postgresql.internal.debug.ui.PgSqlLaunchConfigurationTabGroup"
+             description="%launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL.description"
+             id="org.jkiss.dbeaver.postgresql.debug.ui.launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL"
+             type="org.jkiss.dbeaver.postgresql.debug.core.pgSQL">
+          <launchMode
+                description="%launchConfigurationTabGroups.launchConfigurationTabGroup.launchMode.pgSQL.debug.description"
+                mode="debug"
+                perspective="org.eclipse.debug.ui.DebugPerspective">
+          </launchMode>
+       </launchConfigurationTabGroup>
+    </extension>
+<!-- org.jkiss.dbeaver.postgresql.debug.ui ends -->
 
 </plugin>
