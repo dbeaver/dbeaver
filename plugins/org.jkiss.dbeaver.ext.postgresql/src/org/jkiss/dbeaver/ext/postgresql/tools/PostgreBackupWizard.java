@@ -19,10 +19,12 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -52,7 +54,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
     private PostgreBackupWizardPageSettings settingsPage;
 
     public PostgreBackupWizard(Collection<DBSObject> objects) {
-        super(objects, "Database backup");
+        super(objects, PostgresMessages.wizard_backup_title);
 
         final DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         this.outputFilePattern = store.getString("Postgre.export.outputFilePattern");
@@ -96,8 +98,8 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
 	public void onSuccess(long workTime) {
         UIUtils.showMessageBox(
             getShell(),
-            "Database export",
-            "Export of '" + CommonUtils.truncateString(getObjectsName(), 255) + "' completed",
+            PostgresMessages.wizard_backup_msgbox_success_title,
+            NLS.bind(PostgresMessages.wizard_backup_msgbox_success_description, CommonUtils.truncateString(getObjectsName(), 255)),
             SWT.ICON_INFORMATION);
         UIUtils.launchProgram(outputFolder.getAbsolutePath());
 	}
