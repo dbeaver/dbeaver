@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -67,39 +68,39 @@ public class PostgreToolVacuum implements IExternalTool
 
         public SQLDialog(IWorkbenchPartSite partSite, Collection<PostgreTableBase> selectedTables)
         {
-            super(partSite, "Vacuum table(s)", selectedTables);
+            super(partSite, PostgresMessages.tool_vacuum_title_table, selectedTables);
         }
 
         public SQLDialog(IWorkbenchPartSite partSite, PostgreDatabase database)
         {
-            super(partSite, "Vacuum database", database);
+            super(partSite, PostgresMessages.tool_vacuum_title_database, database);
         }
 
         @Override
         protected void generateObjectCommand(List<String> lines, PostgreObject object) {
-            String sql = "VACUUM (VERBOSE";
-            if (fullCheck.getSelection()) sql += ",FULL";
-            if (freezeCheck.getSelection()) sql += ",FREEZE";
-            if (analyzeCheck.getSelection()) sql += ",ANALYZE";
-            if (dpsCheck.getSelection()) sql += ",DISABLE_PAGE_SKIPPING";
-            sql += ")";
+            String sql = "VACUUM (VERBOSE"; //$NON-NLS-1$
+            if (fullCheck.getSelection()) sql += ",FULL"; //$NON-NLS-1$
+            if (freezeCheck.getSelection()) sql += ",FREEZE"; //$NON-NLS-1$
+            if (analyzeCheck.getSelection()) sql += ",ANALYZE"; //$NON-NLS-1$
+            if (dpsCheck.getSelection()) sql += ",DISABLE_PAGE_SKIPPING"; //$NON-NLS-1$
+            sql += ")"; //$NON-NLS-1$
             if (object instanceof PostgreTableBase) {
-                sql += " " + ((PostgreTableBase)object).getFullyQualifiedName(DBPEvaluationContext.DDL);
+                sql += " " + ((PostgreTableBase)object).getFullyQualifiedName(DBPEvaluationContext.DDL); //$NON-NLS-1$
             }
             lines.add(sql);
         }
 
         @Override
         protected void createControls(Composite parent) {
-            Group optionsGroup = UIUtils.createControlGroup(parent, "Options", 1, 0, 0);
+            Group optionsGroup = UIUtils.createControlGroup(parent, PostgresMessages.tool_vacuum_group_option, 1, 0, 0);
             optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            fullCheck = UIUtils.createCheckbox(optionsGroup, "Full", "Selects \"full\" vacuum, which can reclaim more space, but takes much longer and exclusively locks the table.\nThis method also requires extra disk space, since it writes a new copy of the table and doesn't release the old copy until the operation is complete.\nUsually this should only be used when a significant amount of space needs to be reclaimed from within the table.", false, 0);
+            fullCheck = UIUtils.createCheckbox(optionsGroup, "Full", PostgresMessages.tool_vacuum_full_check_tooltip, false, 0); //$NON-NLS-1$
             fullCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            freezeCheck = UIUtils.createCheckbox(optionsGroup, "Freeze", "Selects aggressive \"freezing\" of tuples. Specifying FREEZE is equivalent to performing VACUUM with the vacuum_freeze_min_age and vacuum_freeze_table_age parameters set to zero.\nAggressive freezing is always performed when the table is rewritten, so this option is redundant when FULL is specified.", false, 0);
+            freezeCheck = UIUtils.createCheckbox(optionsGroup, "Freeze", PostgresMessages.tool_vacuum_freeze_check_tooltip, false, 0); //$NON-NLS-1$
             freezeCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            analyzeCheck = UIUtils.createCheckbox(optionsGroup, "Analyze", "Updates statistics used by the planner to determine the most efficient way to execute a query.", false, 0);
+            analyzeCheck = UIUtils.createCheckbox(optionsGroup, "Analyze", PostgresMessages.tool_vacuum_analyze_check_tooltip, false, 0); //$NON-NLS-1$
             analyzeCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            dpsCheck = UIUtils.createCheckbox(optionsGroup, "Disable page skipping", "Normally, VACUUM will skip pages based on the visibility map.\nPages where all tuples are known to be frozen can always be skipped, and those where all tuples are known to be visible to all transactions may be skipped except when performing an aggressive vacuum.\nFurthermore, except when performing an aggressive vacuum, some pages may be skipped in order to avoid waiting for other sessions to finish using them.\nThis option disables all page-skipping behavior, and is intended to be used only the contents of the visibility map are thought to be suspect, which should happen only if there is a hardware or software issue causing database corruption.", false, 0);
+            dpsCheck = UIUtils.createCheckbox(optionsGroup, "Disable page skipping", PostgresMessages.tool_vacuum_dps_check_tooltip, false, 0); //$NON-NLS-1$
             dpsCheck.addSelectionListener(SQL_CHANGE_LISTENER);
 
             createObjectsSelector(parent);
