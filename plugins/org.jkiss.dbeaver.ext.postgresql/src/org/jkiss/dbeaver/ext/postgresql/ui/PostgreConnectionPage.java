@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.ext.postgresql.ui;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreActivator;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
@@ -131,6 +133,12 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         gd.grabExcessHorizontalSpace = true;
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
+
+        CLabel infoLabel = UIUtils.createInfoLabel(addrGroup, CoreMessages.dialog_connection_edit_connection_settings_variables_hint_label);
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.horizontalSpan = 4;
+        gd.verticalSpan = 3;
+        infoLabel.setLayoutData(gd);
 
         {
             Composite buttonsGroup = new Composite(addrGroup, SWT.NONE);

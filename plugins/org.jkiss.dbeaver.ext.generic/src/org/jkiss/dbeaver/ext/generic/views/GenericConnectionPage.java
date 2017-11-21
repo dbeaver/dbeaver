@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.views;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -27,6 +28,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.GenericMessages;
@@ -300,11 +302,18 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
+            CLabel infoLabel = UIUtils.createInfoLabel(settingsGroup, CoreMessages.dialog_connection_edit_connection_settings_variables_hint_label);
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.horizontalSpan = 2;
+            gd.verticalSpan = 10;
+            infoLabel.setLayoutData(gd);
+
             addControlToGroup(GROUP_LOGIN, userNameLabel);
             addControlToGroup(GROUP_LOGIN, userNameText);
             addControlToGroup(GROUP_LOGIN, emptyLabel);
             addControlToGroup(GROUP_LOGIN, passwordLabel);
             addControlToGroup(GROUP_LOGIN, passwordText);
+            addControlToGroup(GROUP_LOGIN, infoLabel);
         }
 
         createDriverPanel(settingsGroup);
