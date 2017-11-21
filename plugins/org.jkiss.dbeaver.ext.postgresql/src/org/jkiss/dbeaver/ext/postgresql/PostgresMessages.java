@@ -75,6 +75,21 @@ public class PostgresMessages extends NLS {
 	public static String tool_truncate_group_option;
 	public static String tool_truncate_title_table;
 	
+	/* dialog create db */
+	public static String dialog_create_db_group_definition;
+	public static String dialog_create_db_group_general;
+	public static String dialog_create_db_label_db_name;
+	public static String dialog_create_db_label_encoding;
+	public static String dialog_create_db_label_owner;
+	public static String dialog_create_db_label_tablesapce;
+	public static String dialog_create_db_label_template_db;
+	public static String dialog_create_db_title;
+	
+	/* dialog create schema */
+	public static String dialog_create_schema_name;
+	public static String dialog_create_schema_owner;
+	public static String dialog_create_schema_title;
+	
 	
 	static {
 		// initialize resource bundle
