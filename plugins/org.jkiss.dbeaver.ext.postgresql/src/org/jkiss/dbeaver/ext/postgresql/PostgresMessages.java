@@ -90,6 +90,27 @@ public class PostgresMessages extends NLS {
 	public static String dialog_create_schema_owner;
 	public static String dialog_create_schema_title;
 	
+	/* PostgresSSLConfigurator */
+	public static String dialog_connection_network_postgres_ssl_certificates;
+	public static String dialog_connection_network_postgres_ssl_certificates_root;
+	public static String dialog_connection_network_postgres_ssl_certificates_ca;
+	public static String dialog_connection_network_postgres_ssl_certificates_ssl;
+	public static String dialog_connection_network_postgres_ssl_certificates_ssl_key;
+	public static String dialog_connection_network_postgres_ssl_advanced;
+	public static String dialog_connection_network_postgres_ssl_advanced_ssl_mode;
+	public static String dialog_connection_network_postgres_ssl_advanced_ssl_factory;
+	
+	/* PostgreConnectionPage */
+	public static String dialog_setting_connection_host;
+	public static String dialog_setting_connection_port;
+	public static String dialog_setting_connection_database;
+	public static String dialog_setting_connection_user;
+	public static String dialog_setting_connection_password;
+	public static String dialog_setting_connection_settings;
+	public static String dialog_setting_connection_localClient;
+	public static String dialog_setting_connection_nondefaultDatabase;
+	
+	
 	
 	static {
 		// initialize resource bundle
