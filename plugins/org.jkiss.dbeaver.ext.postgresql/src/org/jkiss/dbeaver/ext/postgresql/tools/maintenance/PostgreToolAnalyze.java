@@ -22,6 +22,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -58,20 +59,20 @@ public class PostgreToolAnalyze implements IExternalTool
 
         public SQLDialog(IWorkbenchPartSite partSite, List<PostgreTableBase> selectedTables)
         {
-            super(partSite, "Analyse table(s)", selectedTables);
+            super(partSite, PostgresMessages.tool_analyze_title_table, selectedTables);
         }
 
         public SQLDialog(IWorkbenchPartSite partSite, PostgreDatabase database)
         {
-            super(partSite, "Analyse database", database);
+            super(partSite, PostgresMessages.tool_analyze_title_database, database);
         }
 
         @Override
         protected void generateObjectCommand(List<String> lines, PostgreObject object) {
             if (object instanceof PostgreTableBase) {
-                lines.add("ANALYZE VERBOSE " + ((PostgreTableBase)object).getFullyQualifiedName(DBPEvaluationContext.DDL));
+                lines.add("ANALYZE VERBOSE " + ((PostgreTableBase)object).getFullyQualifiedName(DBPEvaluationContext.DDL)); //$NON-NLS-1$
             } else if (object instanceof PostgreDatabase) {
-                lines.add("ANALYZE VERBOSE");
+                lines.add("ANALYZE VERBOSE"); //$NON-NLS-1$
             }
         }
 

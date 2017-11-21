@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -59,36 +60,36 @@ public class PostgreToolTruncate implements IExternalTool
 
         public SQLDialog(IWorkbenchPartSite partSite, Collection<PostgreTableBase> selectedTables)
         {
-            super(partSite, "Truncate table(s)", selectedTables);
+            super(partSite, PostgresMessages.tool_truncate_title_table, selectedTables);
         }
 
         @Override
         protected void generateObjectCommand(List<String> lines, PostgreObject object) {
             if (object instanceof PostgreTableBase) {
-                String sql = "TRUNCATE TABLE";
-                if (onlyCheck.getSelection()) sql += " ONLY";
-                sql += " " + ((PostgreTableBase) object).getFullyQualifiedName(DBPEvaluationContext.DDL);
+                String sql = "TRUNCATE TABLE"; //$NON-NLS-1$
+                if (onlyCheck.getSelection()) sql += " ONLY"; //$NON-NLS-1$
+                sql += " " + ((PostgreTableBase) object).getFullyQualifiedName(DBPEvaluationContext.DDL); //$NON-NLS-1$
                 if (restartIdentityCheck.getSelection())
-                    sql += " RESTART IDENTITY";
+                    sql += " RESTART IDENTITY"; //$NON-NLS-1$
                 else
-                    sql += " CONTINUE IDENTITY";
+                    sql += " CONTINUE IDENTITY"; //$NON-NLS-1$
                 if (cascadeCheck.getSelection())
-                    sql += " CASCADE";
+                    sql += " CASCADE"; //$NON-NLS-1$
                 else
-                    sql += " RESTRICT";
+                    sql += " RESTRICT"; //$NON-NLS-1$
                 lines.add(sql);
             }
         }
 
         @Override
         protected void createControls(Composite parent) {
-            Group optionsGroup = UIUtils.createControlGroup(parent, "Options", 1, 0, 0);
+            Group optionsGroup = UIUtils.createControlGroup(parent, PostgresMessages.tool_truncate_group_option, 1, 0, 0);
             optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            onlyCheck = UIUtils.createCheckbox(optionsGroup, "Only", "If ONLY is not specified, the table and all its descendant tables (if any) are truncated.", false, 0);
+            onlyCheck = UIUtils.createCheckbox(optionsGroup, PostgresMessages.tool_truncate_checkbox_only, PostgresMessages.tool_truncate_checkbox_only_tooltip, false, 0);
             onlyCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            restartIdentityCheck = UIUtils.createCheckbox(optionsGroup, "Restart identity", "Automatically restart sequences owned by columns of the truncated table(s).", false, 0);
+            restartIdentityCheck = UIUtils.createCheckbox(optionsGroup, PostgresMessages.tool_truncate_checkbox_restart, PostgresMessages.tool_truncate_checkbox_restart_tooltip, false, 0);
             restartIdentityCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            cascadeCheck = UIUtils.createCheckbox(optionsGroup, "Cascade", "Automatically truncate all tables that have foreign-key references to any of the named tables, or to any tables added to the group due to CASCADE.", false, 0);
+            cascadeCheck = UIUtils.createCheckbox(optionsGroup, PostgresMessages.tool_truncate_checkbox_cascade, PostgresMessages.tool_truncate_checkbox_cascade_tooltip, false, 0);
             cascadeCheck.addSelectionListener(SQL_CHANGE_LISTENER);
 
             createObjectsSelector(parent);
