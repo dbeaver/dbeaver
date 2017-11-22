@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.navigator.meta;
 import org.jkiss.dbeaver.model.DBPTermProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * DBXTreeItem
@@ -55,6 +56,15 @@ public class DBXTreeItem extends DBXTreeNode
         this.optional = optional;
     }
 
+    public DBXTreeItem(AbstractDescriptor source, DBXTreeNode parent, DBXTreeItem item) {
+        super(source, parent, item);
+        this.label = item.label;
+        this.itemLabel = item.itemLabel;
+        this.path = item.path;
+        this.propertyName = item.propertyName;
+        this.optional = item.optional;
+    }
+
     public String getPath()
     {
         return path;
@@ -81,6 +91,11 @@ public class DBXTreeItem extends DBXTreeNode
     }
 
     @Override
+    public String toString() {
+        return "Item " + label;
+    }
+
+    @Override
     public String getNodeType(DBPDataSource dataSource)
     {
         final String term = getNodeTerm(dataSource, itemLabel, false);
@@ -101,4 +116,28 @@ public class DBXTreeItem extends DBXTreeNode
         return null;
     }
 
+    public DBXTreeItem findChildItemByPath(String path) {
+        for (DBXTreeNode node : getChildren()) {
+            DBXTreeItem subItem = findChildItemByPath(node, path);
+            if (subItem != null) {
+                return subItem;
+            }
+        }
+        return null;
+    }
+
+    private DBXTreeItem findChildItemByPath(DBXTreeNode node, String path) {
+        if (node instanceof DBXTreeItem && CommonUtils.equalObjects(((DBXTreeItem) node).getPath(), path)) {
+            return (DBXTreeItem) node;
+        }
+        if (node instanceof DBXTreeFolder) {
+            for (DBXTreeNode subFolder : node.getChildren()) {
+                DBXTreeItem subItem = findChildItemByPath(subFolder, path);
+                if (subItem != null) {
+                    return subItem;
+                }
+            }
+        }
+        return null;
+    }
 }

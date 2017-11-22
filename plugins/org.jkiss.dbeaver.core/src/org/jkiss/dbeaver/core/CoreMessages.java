@@ -493,6 +493,10 @@ public class CoreMessages extends NLS {
 	public static String dialog_migrate_wizard_start_description;
 	public static String dialog_migrate_wizard_start_title;
 	public static String dialog_migrate_wizard_window_title;
+	public static String dialog_connection_network_socket_label_host;
+	public static String dialog_connection_network_socket_label_port;
+	public static String dialog_connection_network_socket_label_username;
+	public static String dialog_connection_network_socket_label_password;
 	public static String dialog_new_connection_wizard_monitor_load_data_sources;
 	public static String dialog_new_connection_wizard_start_description;
 	public static String dialog_new_connection_wizard_start_title;
@@ -938,14 +942,6 @@ public class CoreMessages extends NLS {
 	// New Connection Wizard
 	public static String dialog_setting_connection_wizard_title;
 	public static String dialog_setting_connection_general;
-	public static String dialog_setting_connection_host;
-	public static String dialog_setting_connection_port;
-	public static String dialog_setting_connection_database;
-	public static String dialog_setting_connection_user;
-	public static String dialog_setting_connection_password;
-	public static String dialog_setting_connection_settings;
-	public static String dialog_setting_connection_localClient;
-	public static String dialog_setting_connection_nondefaultDatabase;
 	public static String dialog_setting_connection_driver_properties_title;
 	public static String dialog_setting_connection_driver_properties_description;
 	public static String dialog_connection_network_title;
@@ -970,16 +966,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_socksproxy_password;
 	public static String dialog_connection_driver_treecontrol_initialText;
 	public static String dialog_connection_driver_project;
-	//public static String dialog_connection_driver_general;
-	public static String dialog_connection_network_postgres_ssl_certificates;
-	public static String dialog_connection_network_postgres_ssl_certificates_root;
-	public static String dialog_connection_network_postgres_ssl_certificates_ca;
-	public static String dialog_connection_network_postgres_ssl_certificates_ssl;
-	public static String dialog_connection_network_postgres_ssl_certificates_ssl_key;
-	public static String dialog_connection_network_postgres_ssl_advanced;
-	public static String dialog_connection_network_postgres_ssl_advanced_ssl_mode;
-	public static String dialog_connection_network_postgres_ssl_advanced_ssl_factory;
-
+	
 
 	//Preference/Properties
 	// ResultSetsMain

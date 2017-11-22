@@ -7,25 +7,70 @@
         <meta id="vertica" class="org.jkiss.dbeaver.ext.vertica.model.VerticaMetaModel" driverClass="com.vertica.jdbc.Driver"/>
     </extension>
 
-<!--
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
             class="org.jkiss.dbeaver.ext.vertica.VerticaDataSourceProvider"
             description="Vertica JDBC connector"
             id="vertica"
+            parent="generic"
             label="Vertica"
-            icon="icons/vertica.png">
+            icon="icons/vertica_icon.png">
 
-            <treeInjection path="generic/catalog/schema" metaModel="vertica">
+            <treeInjection path="generic/catalog/schema">
                 <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaProjection" label="%tree.projections.node.name" icon="#folder_projection" description="Projections">
-                    <items label="%tree.projection.node.name" path="projection" property="projections" icon="#projection">
-
+                    <items label="%tree.projection.node.name" path="projection" property="projections" icon="#table_index">
+                        <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaProjectionColumn" label="%tree.columns.node.name" icon="#columns" description="Projection columns">
+                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                            </items>
+                        </folder>
                     </items>
                 </folder>
             </treeInjection>
 
+            <drivers manageable="true">
+                <driver
+                    id="vertica-jdbc"
+                    label="Vertica"
+                    icon="icons/vertica_icon.png"
+                    class="com.vertica.jdbc.Driver"
+                    sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
+                    defaultPort="5433"
+                    webURL="http://www.vertica.com/"
+                    description="Driver for Vertica Database">
+                    <replace provider="generic" driver="vertica"/>
+
+                    <file type="license" path="drivers/vertica/LICENSE.txt" bundle="drivers.vertica"/>
+                    <file type="jar" path="drivers/vertica/vertica.jar" bundle="drivers.vertica"/>
+
+                    <file type="jar" path="repo:/drivers/vertica/vertica-jdk5-6.1.2-0.jar" bundle="!drivers.vertica"/>
+
+                    <parameter name="query-get-active-db" value="select current_schema()"/>
+                    <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
+                    <parameter name="active-entity-type" value="schema"/>
+
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="supports-scroll" value="false"/>
+                </driver>
+            </drivers>
+
+            <views>
+                <view
+                        id="org.jkiss.dbeaver.ext.vertica.dataSourceWizardView"
+                        targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                        label="%dialog.connection.header"
+                        class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                        icon="icons/vertica_icon.png">
+                </view>
+                <view
+                        class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                        icon="icons/vertica_icon.png"
+                        id="org.jkiss.dbeaver.ext.vertica.dataSourceEditorView"
+                        label="%dialog.connection.header"
+                        targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+                </view>
+            </views>
+
         </datasource>
     </extension>
--->
 
 </plugin>
