@@ -44,7 +44,7 @@ public class DiagramRefreshAction extends Action
     public void run()
 	{
         //editor.get
-        editor.refreshDiagram(true);
+        editor.refreshDiagram(true, true);
 	}
 
 }
