@@ -18,7 +18,8 @@ package org.jkiss.dbeaver.ext.vertica.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericScriptObject;
+import org.jkiss.dbeaver.ext.vertica.VerticaUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
@@ -31,11 +32,12 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * VerticaMetaModel
  */
-public class VerticaProjection extends JDBCTable<GenericDataSource, VerticaSchema>
+public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchema> implements GenericScriptObject
 {
     private static final Log log = Log.getLog(VerticaProjection.class);
 
@@ -96,4 +98,12 @@ public class VerticaProjection extends JDBCTable<GenericDataSource, VerticaSchem
         return null;
     }
 
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (isPersisted()) {
+            return VerticaUtils.getObjectDDL(monitor, getDataSource(), this);
+        } else {
+            return null;
+        }
+    }
 }
