@@ -57,8 +57,6 @@ public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
         }
 
         setRequired(false);
-        setScale(-1);
-        setPrecision(-1);
     }
 
     @Override
@@ -84,5 +82,15 @@ public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
     @Override
     public String getDefaultValue() {
         return super.getDefaultValue();
+    }
+
+    @Override
+    public Integer getScale() {
+        return super.getScale();
+    }
+
+    @Override
+    public Integer getPrecision() {
+        return super.getPrecision();
     }
 }

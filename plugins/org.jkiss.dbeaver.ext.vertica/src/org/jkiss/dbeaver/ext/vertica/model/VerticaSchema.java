@@ -77,7 +77,7 @@ public class VerticaSchema extends GenericSchema
         protected VerticaProjection fetchObject(@NotNull JDBCSession session, @NotNull VerticaSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new VerticaProjection(VerticaSchema.this, dbResult.getString("projection_name"));
+            return new VerticaProjection(VerticaSchema.this, dbResult);
         }
 
         @Override
