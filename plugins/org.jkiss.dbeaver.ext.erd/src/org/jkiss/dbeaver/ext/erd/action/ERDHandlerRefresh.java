@@ -36,7 +36,7 @@ public class ERDHandlerRefresh extends AbstractHandler {
         if (control != null) {
             ERDEditorPart editor = ERDEditorAdapter.getEditor(control);
             if (editor != null) {
-                editor.refreshDiagram(true);
+                editor.refreshDiagram(true, true);
             }
         }
         return null;
