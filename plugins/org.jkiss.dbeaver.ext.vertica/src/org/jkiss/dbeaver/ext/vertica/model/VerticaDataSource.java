@@ -16,11 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.vertica.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.sql.Types;
+import java.util.Locale;
 
 public class VerticaDataSource extends GenericDataSource {
 
@@ -28,6 +33,64 @@ public class VerticaDataSource extends GenericDataSource {
         throws DBException
     {
         super(monitor, container, metaModel, new VerticaSQLDialect());
+    }
+
+    @NotNull
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType)
+    {
+        int divPos = typeName.indexOf('(');
+        if (divPos != -1) {
+            typeName = typeName.substring(0, divPos);
+        }
+        typeName = typeName.trim().toLowerCase(Locale.ENGLISH);
+        switch (typeName) {
+            case "binary":
+            case "varbinary":
+            case "long varbinary":
+            case "bytea":
+            case "raw":
+                return DBPDataKind.BINARY;
+
+            case "boolean":
+                return DBPDataKind.BOOLEAN;
+
+            case "char":
+            case "varchar":
+            case "long varchar":
+                return DBPDataKind.STRING;
+
+            case "date":
+            case "datetime":
+            case "smalldatetime":
+            case "time":
+            case "time with timezone":
+            case "timetz":
+            case "timestamp": case "timestamptz":
+            case "timestamp with timezone":
+            case "interval":
+            case "interval day":
+                return DBPDataKind.DATETIME;
+
+            case "double precision":
+            case "float":
+            case "float8":
+            case "real":
+
+            case "integer":
+            case "int":
+            case "bigint":
+            case "int8":
+            case "smallint":
+            case "tinyint":
+            case "decimal":
+            case "numeric":
+            case "number":
+            case "money":
+                return DBPDataKind.NUMERIC;
+
+            default:
+                return DBPDataKind.OBJECT;
+        }
     }
 
 }
