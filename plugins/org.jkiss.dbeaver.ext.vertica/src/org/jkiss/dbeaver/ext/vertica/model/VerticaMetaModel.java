@@ -57,6 +57,11 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
+    public GenericSchema createSchemaImpl(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) throws DBException {
+        return new VerticaSchema(dataSource, catalog, schemaName);
+    }
+
+    @Override
     public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Vertica object definition")) {

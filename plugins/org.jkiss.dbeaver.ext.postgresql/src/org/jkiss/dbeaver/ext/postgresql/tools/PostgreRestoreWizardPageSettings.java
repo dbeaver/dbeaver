@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +22,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.utils.CommonUtils;
@@ -37,9 +37,9 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
 
     protected PostgreRestoreWizardPageSettings(PostgreRestoreWizard wizard)
     {
-        super(wizard, "Settings");
-        setTitle("Restore settings");
-        setDescription("Database restore settings");
+        super(wizard, PostgresMessages.wizard_restore_page_setting_title_setting);
+        setTitle(PostgresMessages.wizard_restore_page_setting_title);
+        setDescription(PostgresMessages.wizard_restore_page_setting_description);
     }
 
     @Override
@@ -60,8 +60,8 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
             }
         };
 
-        Group formatGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
-        formatCombo = UIUtils.createLabelCombo(formatGroup, "Format", SWT.DROP_DOWN | SWT.READ_ONLY);
+        Group formatGroup = UIUtils.createControlGroup(composite, PostgresMessages.wizard_restore_page_setting_label_setting, 2, GridData.FILL_HORIZONTAL, 0);
+        formatCombo = UIUtils.createLabelCombo(formatGroup, PostgresMessages.wizard_restore_page_setting_label_format, SWT.DROP_DOWN | SWT.READ_ONLY);
         formatCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         for (PostgreBackupWizard.ExportFormat format : PostgreBackupWizard.ExportFormat.values()) {
             formatCombo.add(format.getTitle());
@@ -70,14 +70,14 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
         formatCombo.addListener(SWT.Selection, updateListener);
 
         cleanFirstButton = UIUtils.createCheckbox(formatGroup,
-            "Clean (drop) database objects before recreating them",
+        	PostgresMessages.wizard_restore_page_setting_btn_clean_first,
             false
         );
         cleanFirstButton.addListener(SWT.Selection, updateListener);
 
-        Group inputGroup = UIUtils.createControlGroup(composite, "Input", 2, GridData.FILL_HORIZONTAL, 0);
-        UIUtils.createControlLabel(inputGroup, "Backup file");
-        inputFileText = new TextWithOpenFile(inputGroup, "Choose backup file", new String[] {"*.backup","*"});
+        Group inputGroup = UIUtils.createControlGroup(composite, PostgresMessages.wizard_restore_page_setting_label_input, 2, GridData.FILL_HORIZONTAL, 0);
+        UIUtils.createControlLabel(inputGroup, PostgresMessages.wizard_restore_page_setting_label_backup_file);
+        inputFileText = new TextWithOpenFile(inputGroup, PostgresMessages.wizard_restore_page_setting_label_choose_backup_file, new String[] {"*.backup","*"});
         inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         inputFileText.getTextControl().addListener(SWT.Modify, updateListener);
 

@@ -14,21 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.tools;
+package org.jkiss.dbeaver.ext.vertica;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 
-import java.util.Collection;
+public class VerticaDataSourceProvider extends GenericDataSourceProvider {
 
-/**
-* PostgreDatabaseRestoreInfo
-*/
-public class PostgreDatabaseRestoreInfo extends PostgreDatabaseBackupRestoreInfo {
-    public PostgreDatabaseRestoreInfo(@NotNull PostgreDatabase database) {
-        super(database);
-    }
 }

@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
+import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -53,7 +54,7 @@ public class PostgreCreateSchemaDialog extends BaseDialog
     private PostgreRole owner;
 
     public PostgreCreateSchemaDialog(Shell parentShell, PostgreDatabase database) {
-        super(parentShell, "Create schema", null);
+        super(parentShell, PostgresMessages.dialog_create_schema_title, null);
         this.database = database;
     }
 
@@ -64,7 +65,7 @@ public class PostgreCreateSchemaDialog extends BaseDialog
         final Composite group = new Composite(composite, SWT.NONE);
         group.setLayout(new GridLayout(2, false));
 
-        final Text nameText = UIUtils.createLabelText(group, "Schema name", "");
+        final Text nameText = UIUtils.createLabelText(group, PostgresMessages.dialog_create_schema_name, ""); //$NON-NLS-2$
         nameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
@@ -73,7 +74,7 @@ public class PostgreCreateSchemaDialog extends BaseDialog
             }
         });
 
-        final Combo userCombo = UIUtils.createLabelCombo(group, "Owner", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        final Combo userCombo = UIUtils.createLabelCombo(group, PostgresMessages.dialog_create_schema_owner, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
 
         userCombo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -90,7 +91,7 @@ public class PostgreCreateSchemaDialog extends BaseDialog
                     final List<String> userNames = new ArrayList<>();
                     allUsers = new ArrayList<>(database.getUsers(monitor));
                     final PostgreRole dba = database.getDBA(monitor);
-                    final String defUserName = dba == null ? "" : dba.getName();
+                    final String defUserName = dba == null ? "" : dba.getName(); //$NON-NLS-1$
 
                     DBeaverUI.syncExec(new Runnable() {
                         @Override

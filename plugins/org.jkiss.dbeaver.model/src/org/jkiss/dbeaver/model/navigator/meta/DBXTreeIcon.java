@@ -30,8 +30,8 @@ public class DBXTreeIcon
 {
     private static final Log log = Log.getLog(DBXTreeIcon.class);
 
-    private String exprString;
-    private DBPImage icon;
+    private final String exprString;
+    private final DBPImage icon;
     private Expression expression;
 
     public DBXTreeIcon(String exprString, DBPImage icon)
