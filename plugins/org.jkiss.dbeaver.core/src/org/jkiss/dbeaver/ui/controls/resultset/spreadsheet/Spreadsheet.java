@@ -258,10 +258,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                         if (!editorControl.isDisposed()) {
                             // We used to forward key even to control but it worked poorly.
                             // So let's just insert first letter (it will remove old value which must be selected for inline controls)
-                            String strValue = String.valueOf((char)event.keyCode);
-                            if ((event.stateMask & SWT.SHIFT) != 0) {
-                                strValue = strValue.toUpperCase();
-                            }
+                            String strValue = String.valueOf(event.character);
                             if (editorControl instanceof Text) {
                                 ((Text) editorControl).insert(strValue);
                             } else if (editorControl instanceof StyledText) {
