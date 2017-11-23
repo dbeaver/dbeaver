@@ -305,10 +305,25 @@ public final class SQLUtils {
 
     public static String trimQueryStatement(SQLSyntaxManager syntaxManager, String sql, boolean trimDelimiter)
     {
-        sql = sql.trim();
+        //sql = sql.trim();
         if (!trimDelimiter) {
             // Do not trim delimiter
             return sql;
+        }
+
+        String trailingSpaces = "";
+        {
+            int trailingSpacesCount = 0;
+            for (int i = sql.length() - 1; i >= 0; i--) {
+                if (!Character.isWhitespace(sql.charAt(i))) {
+                    break;
+                }
+                trailingSpacesCount++;
+            }
+            if (trailingSpacesCount > 0) {
+                trailingSpaces = sql.substring(sql.length() - trailingSpacesCount);
+                sql = sql.substring(0, sql.length() - trailingSpacesCount);
+            }
         }
         for (String statementDelimiter : syntaxManager.getStatementDelimiters()) {
             if (sql.endsWith(statementDelimiter) && sql.length() > statementDelimiter.length()) {
@@ -316,7 +331,7 @@ public final class SQLUtils {
                     // Delimiter is alphabetic (e.g. "GO") so it must be prefixed with whitespace
                     char lastChar = sql.charAt(sql.length() - statementDelimiter.length() - 1);
                     if (Character.isUnicodeIdentifierPart(lastChar)) {
-                        return sql;
+                        return sql + trailingSpaces;
                     }
                 }
                 // Remove trailing delimiter only if it is not block end
@@ -327,7 +342,7 @@ public final class SQLUtils {
                 }
             }
         }
-        return sql;
+        return sql + trailingSpaces;
     }
 
     @NotNull
