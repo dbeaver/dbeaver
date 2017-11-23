@@ -22,12 +22,20 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.sql.Types;
+import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Locale;
 
 public class VerticaDataSource extends GenericDataSource {
+
+    private NodeCache nodeCache = new NodeCache();
 
     public VerticaDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
@@ -91,6 +99,27 @@ public class VerticaDataSource extends GenericDataSource {
             default:
                 return DBPDataKind.OBJECT;
         }
+    }
+
+    @Association
+    public Collection<VerticaNode> getClusterNodes(DBRProgressMonitor monitor) throws DBException {
+        return nodeCache.getAllObjects(monitor, this);
+    }
+
+    class NodeCache extends JDBCObjectCache<VerticaDataSource, VerticaNode> {
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull VerticaDataSource mySQLTable) throws SQLException
+        {
+            return session.prepareStatement(
+                "SELECT * FROM v_catalog.nodes ORDER BY nodE_name");
+        }
+
+        @Override
+        protected VerticaNode fetchObject(@NotNull JDBCSession session, @NotNull VerticaDataSource dataSource, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
+        {
+            return new VerticaNode(dataSource, dbResult);
+        }
+
     }
 
 }

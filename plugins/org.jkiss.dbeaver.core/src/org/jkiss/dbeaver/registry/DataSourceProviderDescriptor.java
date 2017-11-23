@@ -317,7 +317,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             return;
         }
         String[] path = injectPath.split("/");
-        if (path.length <= 1) {
+        if (path.length <= 0) {
             return;
         }
         if (!path[0].equals(treeDescriptor.getPath())) {
