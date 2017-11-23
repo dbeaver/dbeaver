@@ -504,7 +504,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     {
         SQLScriptElement element;
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
-        String selText = selection.getText().trim();
+        String selText = selection.getText();
 
         selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText, !syntaxManager.getDialect().isDelimiterAfterQuery());
         if (!CommonUtils.isEmpty(selText)) {
