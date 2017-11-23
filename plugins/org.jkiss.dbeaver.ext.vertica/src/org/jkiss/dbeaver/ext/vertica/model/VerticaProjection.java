@@ -43,9 +43,11 @@ import java.util.Map;
 public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchema> implements GenericScriptObject
 {
     private static final Log log = Log.getLog(VerticaProjection.class);
+
     private final String baseName;
     private final String ownerName;
     private final String anchorTableName;
+    private final String nodeName;
     private final boolean isPreJoin;
     private final String createType;
     private final String segmentExpression;
@@ -62,6 +64,7 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
         this.baseName = JDBCUtils.safeGetString(dbResult, "projection_basename");
         this.ownerName = JDBCUtils.safeGetString(dbResult, "owner_name");
         this.anchorTableName = JDBCUtils.safeGetString(dbResult, "anchor_table_name");
+        this.nodeName = JDBCUtils.safeGetString(dbResult, "node_name");
         this.isPreJoin = JDBCUtils.safeGetBoolean(dbResult, "is_prejoin");
         this.createType = JDBCUtils.safeGetString(dbResult, "create_type");
         this.segmentExpression = JDBCUtils.safeGetString(dbResult, "segment_expression");
@@ -86,6 +89,11 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
     @Property(viewable = true, order = 12)
     public String getAnchorTableName() {
         return anchorTableName;
+    }
+
+    @Property(viewable = true, order = 13)
+    public String getNodeName() {
+        return nodeName;
     }
 
     @Property(order = 50)

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.ArrayUtils;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -38,11 +40,18 @@ import java.util.Collection;
 /**
  * VerticaSchema
  */
-public class VerticaSchema extends GenericSchema
+public class VerticaSchema extends GenericSchema implements DBPSystemObject
 {
     private static final Log log = Log.getLog(VerticaSchema.class);
 
-    ProjectionCache projectionCache = new ProjectionCache();
+    private static final String SYSTEM_SCHEMAS[] = {
+        "v_catalog",
+        "v_internal",
+        "v_monitor",
+        "v_txtindex",
+    };
+
+    final ProjectionCache projectionCache = new ProjectionCache();
 
     public VerticaSchema(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) {
         super(dataSource, catalog, schemaName);
@@ -51,6 +60,11 @@ public class VerticaSchema extends GenericSchema
     @Association
     public Collection<VerticaProjection> getProjections(DBRProgressMonitor monitor) throws DBException {
         return projectionCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    public boolean isSystem() {
+        return ArrayUtils.contains(SYSTEM_SCHEMAS, getName());
     }
 
     public class ProjectionCache extends JDBCStructLookupCache<VerticaSchema, VerticaProjection, VerticaProjectionColumn> {
