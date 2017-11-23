@@ -77,7 +77,7 @@ public class VerticaSchema extends GenericSchema
         protected VerticaProjection fetchObject(@NotNull JDBCSession session, @NotNull VerticaSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new VerticaProjection(VerticaSchema.this, dbResult.getString("projection_name"));
+            return new VerticaProjection(VerticaSchema.this, dbResult);
         }
 
         @Override
@@ -85,25 +85,12 @@ public class VerticaSchema extends GenericSchema
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
-                "\nFROM pg_catalog.pg_attribute a" +
-                "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
-                "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
-                "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
-                "\nWHERE NOT a.attisdropped");
-            if (forTable != null) {
-                sql.append(" AND c.oid=?");
-            } else {
-                sql.append(" AND c.relnamespace=? AND c.relkind not in ('i','c')");
-            }
-            sql.append(" ORDER BY a.attnum");
+            sql.append("SELECT * FROM v_catalog.projection_columns pc\n" +
+                "\nWHERE projection_name=? " +
+                "\nORDER BY column_position");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            if (forTable != null) {
-                dbStat.setString(1, forTable.getName());
-            } else {
-                dbStat.setString(1, VerticaSchema.this.getName());
-            }
+            dbStat.setString(1, forTable.getName());
             return dbStat;
         }
 
@@ -111,7 +98,7 @@ public class VerticaSchema extends GenericSchema
         protected VerticaProjectionColumn fetchChild(@NotNull JDBCSession session, @NotNull VerticaSchema owner, @NotNull VerticaProjection table, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new VerticaProjectionColumn(table, true);
+            return new VerticaProjectionColumn(table, dbResult);
         }
 
     }

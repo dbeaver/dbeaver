@@ -1259,8 +1259,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_driver_download_auto_page_download_rate;
 	public static String dialog_driver_download_auto_page_download_failed_msg;
 	// Driver download
-	
-	
+		
 	// SQL editor resultset filter panel
 	public static String sql_editor_resultset_tool_item_log;
 	public static String sql_editor_resultset_tool_item_output;
@@ -1280,6 +1279,12 @@ public class CoreMessages extends NLS {
 	public static String sql_editor_resultset_filter_panel_control_no_data;
 	public static String sql_editor_resultset_filter_panel_control_execute_to_see_reslut;
 	// SQL editor resultset filter panel
+	
+	//object properties editor
+	public static String obj_editor_properties_control_action_filter_setting;
+	public static String obj_editor_properties_control_action_configure_columns;
+	public static String obj_editor_properties_control_action_configure_columns_description;
+	//object properties editor
 	
 	
 	

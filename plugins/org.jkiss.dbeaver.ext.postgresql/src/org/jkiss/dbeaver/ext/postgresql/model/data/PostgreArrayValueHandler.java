@@ -92,6 +92,9 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
         if (!DBUtils.isNullValue(value)) {
             DBDValueHandler valueHandler = collection.getComponentValueHandler();
             StringBuilder str = new StringBuilder();
+            if (format == DBDDisplayFormat.NATIVE) {
+                str.append("'");
+            }
             str.append("{");
             for (int i = 0; i < collection.getItemCount(); i++) {
                 if (i > 0) {
@@ -108,6 +111,9 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 str.append(itemString);
             }
             str.append("}");
+            if (format == DBDDisplayFormat.NATIVE) {
+                str.append("'");
+            }
 
             return str.toString();
         }
