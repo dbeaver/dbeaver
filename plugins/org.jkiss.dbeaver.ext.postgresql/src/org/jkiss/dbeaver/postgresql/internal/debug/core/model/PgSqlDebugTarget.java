@@ -12,12 +12,16 @@ import org.eclipse.debug.core.model.IThread;
 public class PgSqlDebugTarget extends PgSqlDebugElement implements IDebugTarget {
     
     private final ILaunch launch;
+    private final IThread thread;
+    private final IThread[] threads;
 
 //FIXME: AF: pass PgDebugSession here to use as controller
     public PgSqlDebugTarget(ILaunch launch)
     {
         super(null);
         this.launch = launch;
+        this.thread = new PgSqlThread(this);
+        this.threads = new IThread[] {thread};
     }
 
     @Override
@@ -139,8 +143,7 @@ public class PgSqlDebugTarget extends PgSqlDebugElement implements IDebugTarget 
     @Override
     public IThread[] getThreads() throws DebugException
     {
-      //FIXME: AF: implement PgSqlThread
-        return new IThread[0];
+        return threads;
     }
 
     @Override
