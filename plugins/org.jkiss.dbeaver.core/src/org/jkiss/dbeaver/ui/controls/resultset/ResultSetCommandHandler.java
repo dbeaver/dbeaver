@@ -108,6 +108,8 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_ZOOM_IN = "org.eclipse.ui.edit.text.zoomIn";
     public static final String CMD_ZOOM_OUT = "org.eclipse.ui.edit.text.zoomOut";
 
+    public static final String CMD_TOGGLE_ORDER = "org.jkiss.dbeaver.core.resultset.toggleOrder";
+
     public static IResultSetController getActiveResultSet(IWorkbenchPart activePart) {
         if (activePart instanceof IResultSetContainer) {
             return ((IResultSetContainer) activePart).getResultSetController();
@@ -335,7 +337,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     rsv.getAdapter(IFindReplaceTarget.class));
                 action.run();
                 break;
-            case CMD_NAVIGATE_LINK:
+            case CMD_NAVIGATE_LINK: {
                 final ResultSetRow row = rsv.getCurrentRow();
                 final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
                 if (row != null && attr != null) {
@@ -352,6 +354,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     }.schedule();
                 }
                 break;
+            }
             case CMD_COUNT:
                 rsv.updateRowCount();
                 break;
@@ -436,6 +439,14 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     }
                 }
 
+                break;
+            }
+
+            case CMD_TOGGLE_ORDER: {
+                final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
+                if (attr != null) {
+                    rsv.toggleSortOrder(attr, false, false);
+                }
                 break;
             }
         }
