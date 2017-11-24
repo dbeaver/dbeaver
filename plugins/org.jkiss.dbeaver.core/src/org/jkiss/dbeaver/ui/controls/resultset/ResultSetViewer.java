@@ -1364,6 +1364,63 @@ public class ResultSetViewer extends Viewer
     }
 
     ///////////////////////////////////////
+    // Ordering
+
+    @Override
+    public void toggleSortOrder(DBDAttributeBinding columnElement, boolean forceAscending, boolean forceDescending) {
+        DBDDataFilter dataFilter = getModel().getDataFilter();
+        if (forceAscending) {
+            dataFilter.resetOrderBy();
+        }
+        DBDAttributeBinding metaColumn = columnElement;
+        DBDAttributeConstraint constraint = dataFilter.getConstraint(metaColumn);
+        assert constraint != null;
+        //int newSort;
+        if (constraint.getOrderPosition() == 0) {
+            if (ResultSetUtils.isServerSideFiltering(this) && supportsDataFilter()) {
+                if (ConfirmationDialog.showConfirmDialogEx(
+                    viewerPanel.getShell(),
+                    DBeaverPreferences.CONFIRM_ORDER_RESULTSET,
+                    ConfirmationDialog.QUESTION,
+                    ConfirmationDialog.WARNING,
+                    metaColumn.getName()) != IDialogConstants.YES_ID)
+                {
+                    return;
+                }
+            }
+            constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
+            constraint.setOrderDescending(forceDescending);
+        } else if (!constraint.isOrderDescending()) {
+            constraint.setOrderDescending(true);
+        } else {
+            for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
+                if (con2.getOrderPosition() > constraint.getOrderPosition()) {
+                    con2.setOrderPosition(con2.getOrderPosition() - 1);
+                }
+            }
+            constraint.setOrderPosition(0);
+            constraint.setOrderDescending(false);
+        }
+
+        if (!ResultSetUtils.isServerSideFiltering(this) || !this.isHasMoreData()) {
+            if (!this.checkForChanges()) {
+                return;
+            }
+            reorderLocally();
+        } else {
+            this.refreshData(null);
+        }
+    }
+
+    private void reorderLocally()
+    {
+        this.rejectChanges();
+        this.getModel().resetOrdering();
+        this.getActivePresentation().refreshData(false, false, true);
+    }
+
+
+    ///////////////////////////////////////
     // Data & metadata
 
     /**
@@ -1762,11 +1819,7 @@ public class ResultSetViewer extends Viewer
         if (singleSource == null) {
             return null;
         }
-        String refsShortcut = ActionUtils.findCommandDescription(ResultSetCommandHandler.CMD_REFERENCES_MENU, getSite(), true);
-        String menuName = CoreMessages.controls_resultset_viewer_action_referencing_tables;
-        if (!CommonUtils.isEmpty(refsShortcut)) {
-            menuName += " (" + refsShortcut + ")";
-        }
+        String menuName = ActionUtils.findCommandDescription(ResultSetCommandHandler.CMD_REFERENCES_MENU, getSite(), false);
 
         MenuManager refTablesMenu = new MenuManager(menuName, null, "ref-tables");
         refTablesMenu.add(NOREFS_ACTION);
@@ -2007,6 +2060,7 @@ public class ResultSetViewer extends Viewer
             }
         }
         filtersMenu.add(new Separator());
+        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_ORDER));
         filtersMenu.add(new ToggleServerSideOrderingAction());
         filtersMenu.add(new ShowFiltersAction(true));
     }
