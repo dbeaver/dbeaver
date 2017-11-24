@@ -300,8 +300,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         GridPos focusPos = spreadsheet.getFocusPos();
         Rectangle columnBounds = spreadsheet.getColumnBounds(focusPos.col);
         if (columnBounds != null) {
-            columnBounds.y += spreadsheet.getHeaderHeight();
-            return new Point(columnBounds.x, columnBounds.y);
+            columnBounds.y += spreadsheet.getHeaderHeight() + focusPos.row * (spreadsheet.getItemHeight() + 1) + spreadsheet.getItemHeight() / 2;
+            return new Point(columnBounds.x + 20, columnBounds.y);
         }
         return super.getCursorLocation();
     }
