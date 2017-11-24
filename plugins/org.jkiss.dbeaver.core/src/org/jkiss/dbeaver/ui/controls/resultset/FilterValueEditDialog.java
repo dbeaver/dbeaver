@@ -273,7 +273,7 @@ class FilterValueEditDialog extends BaseDialog {
                 } else {
                     return null;
                 }
-                final DBSEntityAttribute refColumn = DBUtils.getReferenceAttribute(session.getProgressMonitor(), association, tableColumn);
+                final DBSEntityAttribute refColumn = DBUtils.getReferenceAttribute(session.getProgressMonitor(), association, tableColumn, false);
                 if (refColumn == null) {
                     return null;
                 }
