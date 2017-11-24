@@ -1523,15 +1523,27 @@ public class ResultSetViewer extends Viewer
         if (curAttribute == null) {
             return;
         }
+        MenuManager menuManager = new MenuManager();
+        fillFiltersMenu(curAttribute, menuManager);
+        showContextMenuAtCursor(menuManager);
+    }
+
+    void showReferencesMenu() {
+        DBDAttributeBinding curAttribute = getActivePresentation().getCurrentAttribute();
+        if (curAttribute == null) {
+            return;
+        }
+        MenuManager menuManager = createRefTablesMenu(curAttribute, getCurrentRow());
+        showContextMenuAtCursor(menuManager);
+    }
+
+    private void showContextMenuAtCursor(MenuManager menuManager) {
         Control control = getActivePresentation().getControl();
         Point cursorLocation = getActivePresentation().getCursorLocation();
         if (cursorLocation == null) {
             return;
         }
         Point location = control.getDisplay().map(control, null, cursorLocation);
-
-        MenuManager menuManager = new MenuManager();
-        fillFiltersMenu(curAttribute, menuManager);
 
         final Menu contextMenu = menuManager.createContextMenu(control);
         contextMenu.setLocation(location);
