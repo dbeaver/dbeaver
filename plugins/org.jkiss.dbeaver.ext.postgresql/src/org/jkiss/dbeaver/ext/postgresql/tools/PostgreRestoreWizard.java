@@ -98,7 +98,9 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     @Override
     protected List<String> getCommandLine(PostgreDatabaseRestoreInfo arg) throws IOException {
         List<String> cmd = super.getCommandLine(arg);
-        cmd.add("--format=" + format.getId());
+        if (format != ExportFormat.PLAIN) {
+            cmd.add("--format=" + format.getId());
+        }
         cmd.add("--dbname=" + arg.getDatabase().getName());
 
         return cmd;
