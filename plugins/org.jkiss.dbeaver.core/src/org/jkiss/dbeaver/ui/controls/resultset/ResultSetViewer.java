@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
@@ -33,7 +35,10 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -68,10 +73,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -87,6 +89,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -174,11 +177,13 @@ public class ResultSetViewer extends Viewer
 
     private boolean actionsDisabled;
 
-    private static Action NOREFS_ACTION;
+    private static Action NOREFS_ACTION, REFS_TITLE_ACTION;
 
     static {
         NOREFS_ACTION = new Action("<No References>") {};
         NOREFS_ACTION.setEnabled(false);
+        REFS_TITLE_ACTION = new Action("<Table References>") {};
+        REFS_TITLE_ACTION.setEnabled(false);
     }
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
@@ -736,11 +741,8 @@ public class ResultSetViewer extends Viewer
 
     private void activateDefaultPanels(PresentationSettings settings) {
         // Cleanup unavailable panels
-        for (Iterator<String> iter = settings.enabledPanelIds.iterator(); iter.hasNext(); ) {
-            if (CommonUtils.isEmpty(iter.next())) {
-                iter.remove();
-            }
-        }
+        settings.enabledPanelIds.removeIf(CommonUtils::isEmpty);
+
         // Add default panels if needed
         if (settings.enabledPanelIds.isEmpty()) {
             for (ResultSetPanelDescriptor pd : availablePanels) {
@@ -1529,11 +1531,11 @@ public class ResultSetViewer extends Viewer
     }
 
     void showReferencesMenu() {
-        DBDAttributeBinding curAttribute = getActivePresentation().getCurrentAttribute();
-        if (curAttribute == null) {
+        ResultSetRow currentRow = getCurrentRow();
+        if (currentRow == null || currentRow.getRowNumber() < 0) {
             return;
         }
-        MenuManager menuManager = createRefTablesMenu(curAttribute, getCurrentRow());
+        MenuManager menuManager = createRefTablesMenu(currentRow);
         showContextMenuAtCursor(menuManager);
     }
 
@@ -1691,7 +1693,7 @@ public class ResultSetViewer extends Viewer
                 }
                 if (model.isSingleSource()) {
                     // Add menu for referencing tables
-                    MenuManager refTablesMenu = createRefTablesMenu(attr, row);
+                    MenuManager refTablesMenu = createRefTablesMenu(row);
                     if (refTablesMenu != null) {
                         navigateMenu.add(refTablesMenu);
                         hasNavTables = true;
@@ -1755,20 +1757,25 @@ public class ResultSetViewer extends Viewer
     }
 
     @Nullable
-    private MenuManager createRefTablesMenu(DBDAttributeBinding attr, ResultSetRow row) {
+    private MenuManager createRefTablesMenu(ResultSetRow row) {
         DBSEntity singleSource = model.getSingleSource();
         if (singleSource == null) {
             return null;
         }
-        MenuManager refTablesMenu = new MenuManager("Referencing tables", null, "ref-tables");
+        String refsShortcut = ActionUtils.findCommandDescription(ResultSetCommandHandler.CMD_REFERENCES_MENU, getSite(), true);
+        String menuName = CoreMessages.controls_resultset_viewer_action_referencing_tables;
+        if (!CommonUtils.isEmpty(refsShortcut)) {
+            menuName += " (" + refsShortcut + ")";
+        }
+
+        MenuManager refTablesMenu = new MenuManager(menuName, null, "ref-tables");
         refTablesMenu.add(NOREFS_ACTION);
-        refTablesMenu.addMenuListener(manager -> fillRefTablesActions(attr, row, singleSource, manager));
+        refTablesMenu.addMenuListener(manager -> fillRefTablesActions(row, singleSource, manager));
 
         return refTablesMenu;
     }
 
-    private void fillRefTablesActions(DBDAttributeBinding attr, ResultSetRow row, DBSEntity singleSource, IMenuManager manager) {
-        DBSEntityAttribute tableAttr = attr.getEntityAttribute();
+    private void fillRefTablesActions(ResultSetRow row, DBSEntity singleSource, IMenuManager manager) {
 
         DBRRunnableWithResult<List<DBSEntityAssociation>> refCollector = new DBRRunnableWithResult<List<DBSEntityAssociation>>() {
             @Override
@@ -1776,9 +1783,20 @@ public class ResultSetViewer extends Viewer
                 try {
                     result = new ArrayList<>();
                     Collection<? extends DBSEntityAssociation> refs = singleSource.getReferences(monitor);
-                    if (refs != null && tableAttr != null) {
+                    if (refs != null) {
                         for (DBSEntityAssociation ref : refs) {
-                            if (DBUtils.getReferenceAttribute(monitor, ref, tableAttr, true) != null) {
+                            boolean allMatch = true;
+                            DBSEntityConstraint ownConstraint = ref.getReferencedConstraint();
+                            if (ownConstraint instanceof DBSEntityReferrer) {
+                                for (DBSEntityAttributeRef ownAttrRef : ((DBSEntityReferrer) ownConstraint).getAttributeReferences(monitor)) {
+                                    if (model.getAttributeBinding(ownAttrRef.getAttribute()) == null) {
+                                        // Attribute is not in the list - skip this association
+                                        allMatch = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (allMatch) {
                                 result.add(ref);
                             }
                         }
@@ -1801,6 +1819,8 @@ public class ResultSetViewer extends Viewer
             return;
         }
 
+        manager.add(REFS_TITLE_ACTION);
+        manager.add(new Separator());
         for (DBSEntityAssociation refAssociation : refCollector.getResult()) {
             DBSEntity refTable = refAssociation.getParentObject();
             manager.add(new Action(
@@ -1809,11 +1829,17 @@ public class ResultSetViewer extends Viewer
             {
                 @Override
                 public void run() {
-                    try {
-                        navigateReference(new VoidProgressMonitor(), refAssociation, attr, row, false);
-                    } catch (DBException e) {
-                        e.printStackTrace();
-                    }
+                    new AbstractJob("Navigate reference") {
+                        @Override
+                        protected IStatus run(DBRProgressMonitor monitor) {
+                            try {
+                                navigateReference(new VoidProgressMonitor(), refAssociation, row, false);
+                            } catch (DBException e) {
+                                return GeneralUtils.makeExceptionStatus(e);
+                            }
+                            return Status.OK_STATUS;
+                        }
+                    }.schedule();
                 }
             });
         }
@@ -1989,9 +2015,7 @@ public class ResultSetViewer extends Viewer
     public void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, boolean newWindow)
         throws DBException
     {
-        if (!new UIConfirmation() { @Override public Boolean runTask() { return checkForChanges(); } }
-            .confirm())
-        {
+        if (!confirmProceed()) {
             return;
         }
 
@@ -2053,26 +2077,14 @@ public class ResultSetViewer extends Viewer
             constraint.setOperator(DBCLogicalOperator.EQUALS);
             constraint.setValue(keyValue);
         }
-        DBDDataFilter newFilter = new DBDDataFilter(constraints);
-
-        if (newWindow) {
-            openResultsInNewWindow(monitor, targetEntity, newFilter);
-        } else {
-            // Workaround for script results
-            // In script mode history state isn't updated so we check for it here
-            if (curState == null) {
-                setNewState(getDataContainer(), model.getDataFilter());
-            }
-            runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, false, null);
-        }
+        navigateEntity(monitor, newWindow, targetEntity, constraints);
     }
 
-    public void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, boolean newWindow)
+    @Override
+    public void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull ResultSetRow row, boolean newWindow)
         throws DBException
     {
-        if (!new UIConfirmation() { @Override public Boolean runTask() { return checkForChanges(); } }
-            .confirm())
-        {
+        if (!confirmProceed()) {
             return;
         }
 
@@ -2101,18 +2113,25 @@ public class ResultSetViewer extends Viewer
                     "] columns differs from referenced constraint [" + refConstraint.getName() + "] (" + ownAttrs.size() + "<>" + refAttrs.size() + ")");
         }
         // Add association constraints
-        for (int i = 0; i < ownAttrs.size(); i++) {
-            DBSEntityAttributeRef ownAttr = ownAttrs.get(i);
-            DBSEntityAttributeRef refAttr = refAttrs.get(i);
+        for (DBSEntityAttributeRef ownAttr : ownAttrs) {
 
-            DBDAttributeConstraint constraint = new DBDAttributeConstraint(ownAttr.getAttribute(), visualPosition++);
-            constraint.setVisible(true);
-            constraints.add(constraint);
+            DBDAttributeBinding attrBinding = model.getAttributeBinding(ownAttr.getAttribute());
+            if (attrBinding == null) {
+                log.error("Can't find attribute binding for ref attribute '" + ownAttr.getAttribute().getName() + "'");
+            } else {
+                DBDAttributeConstraint constraint = new DBDAttributeConstraint(ownAttr.getAttribute(), visualPosition++);
+                constraint.setVisible(true);
+                constraints.add(constraint);
 
-            Object keyValue = model.getCellValue(attr, row);
-            constraint.setOperator(DBCLogicalOperator.EQUALS);
-            constraint.setValue(keyValue);
+                Object keyValue = model.getCellValue(attrBinding, row);
+                constraint.setOperator(DBCLogicalOperator.EQUALS);
+                constraint.setValue(keyValue);
+            }
         }
+        navigateEntity(monitor, newWindow, targetEntity, constraints);
+    }
+
+    private void navigateEntity(@NotNull DBRProgressMonitor monitor, boolean newWindow, DBSEntity targetEntity, List<DBDAttributeConstraint> constraints) {
         DBDDataFilter newFilter = new DBDDataFilter(constraints);
 
         if (newWindow) {
@@ -2125,6 +2144,10 @@ public class ResultSetViewer extends Viewer
             }
             runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, false, null);
         }
+    }
+
+    private boolean confirmProceed() {
+        return new UIConfirmation() { @Override public Boolean runTask() { return checkForChanges(); } }.confirm();
     }
 
     private void openResultsInNewWindow(DBRProgressMonitor monitor, DBSEntity targetEntity, final DBDDataFilter newFilter) {
@@ -2571,7 +2594,6 @@ public class ResultSetViewer extends Viewer
                             if (control.isDisposed()) {
                                 return;
                             }
-                            final Shell shell = control.getShell();
                             final boolean metadataChanged = model.isMetadataChanged();
                             if (error != null) {
                                 setStatus(error.getMessage(), DBPMessageType.ERROR);
@@ -2655,23 +2677,20 @@ public class ResultSetViewer extends Viewer
      * @param monitor monitor. If null then save will be executed in async job
      * @param listener finish listener (may be null)
      */
-    public boolean applyChanges(@Nullable final DBRProgressMonitor monitor, @Nullable final ResultSetPersister.DataUpdateListener listener)
+    private boolean applyChanges(@Nullable final DBRProgressMonitor monitor, @Nullable final ResultSetPersister.DataUpdateListener listener)
     {
         try {
             final ResultSetPersister persister = createDataPersister(false);
-            final ResultSetPersister.DataUpdateListener applyListener = new ResultSetPersister.DataUpdateListener() {
-                @Override
-                public void onUpdate(boolean success) {
-                    if (listener != null) {
-                        listener.onUpdate(success);
-                    }
-                    if (success && getPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE)) {
-                        // Refresh updated rows
-                        try {
-                            persister.refreshInsertedRows();
-                        } catch (Throwable e) {
-                            log.error("Error refreshing rows after update", e);
-                        }
+            final ResultSetPersister.DataUpdateListener applyListener = success -> {
+                if (listener != null) {
+                    listener.onUpdate(success);
+                }
+                if (success && getPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE)) {
+                    // Refresh updated rows
+                    try {
+                        persister.refreshInsertedRows();
+                    } catch (Throwable e) {
+                        log.error("Error refreshing rows after update", e);
                     }
                 }
             };
@@ -2978,7 +2997,7 @@ public class ResultSetViewer extends Viewer
         DBDRowIdentifier rowIdentifier = firstAttribute.getRowIdentifier();
         if (rowIdentifier != null) {
             DBVEntityConstraint virtualKey = (DBVEntityConstraint) rowIdentifier.getUniqueKey();
-            virtualKey.setAttributes(Collections.<DBSEntityAttribute>emptyList());
+            virtualKey.setAttributes(Collections.emptyList());
             rowIdentifier.reloadAttributes(monitor, model.getAttributes());
             virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
         }
@@ -3518,18 +3537,15 @@ public class ResultSetViewer extends Viewer
         @Override
         public void run()
         {
-            DBeaverUI.runUIJob("Edit virtual key", new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        if (define) {
-                            editEntityIdentifier(monitor);
-                        } else {
-                            clearEntityIdentifier(monitor);
-                        }
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
+            DBeaverUI.runUIJob("Edit virtual key", monitor -> {
+                try {
+                    if (define) {
+                        editEntityIdentifier(monitor);
+                    } else {
+                        clearEntityIdentifier(monitor);
                     }
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
                 }
             });
         }
