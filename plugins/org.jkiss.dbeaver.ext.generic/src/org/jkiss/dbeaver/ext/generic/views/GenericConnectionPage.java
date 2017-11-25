@@ -302,11 +302,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
-            CLabel infoLabel = UIUtils.createInfoLabel(settingsGroup, CoreMessages.dialog_connection_edit_connection_settings_variables_hint_label);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 2;
-            gd.verticalSpan = 10;
-            infoLabel.setLayoutData(gd);
+            CLabel infoLabel = createSettingsVariablesHintLabel(settingsGroup, null, null);
 
             addControlToGroup(GROUP_LOGIN, userNameLabel);
             addControlToGroup(GROUP_LOGIN, userNameText);

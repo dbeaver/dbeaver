@@ -248,7 +248,10 @@ public class DataSourceDescriptor
     @Override
     public DBPConnectionConfiguration getActualConnectionConfiguration()
     {
-        return tunnelConnectionInfo != null ? tunnelConnectionInfo : connectionInfo;
+        DBPConnectionConfiguration connectionConfiguration = new DBPConnectionConfiguration(
+                tunnelConnectionInfo != null ? tunnelConnectionInfo : connectionInfo);
+        connectionConfiguration.resolveSystemEnvironmentVariables();
+        return connectionConfiguration;
     }
 
     @NotNull
