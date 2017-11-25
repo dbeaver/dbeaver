@@ -134,11 +134,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
 
-        CLabel infoLabel = UIUtils.createInfoLabel(addrGroup, CoreMessages.dialog_connection_edit_connection_settings_variables_hint_label);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.horizontalSpan = 4;
-        gd.verticalSpan = 3;
-        infoLabel.setLayoutData(gd);
+        CLabel infoLabel = createSettingsVariablesHintLabel(addrGroup, 4, 3);
 
         {
             Composite buttonsGroup = new Composite(addrGroup, SWT.NONE);
