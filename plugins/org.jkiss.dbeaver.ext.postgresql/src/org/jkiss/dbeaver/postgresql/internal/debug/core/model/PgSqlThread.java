@@ -159,4 +159,16 @@ public class PgSqlThread extends PgSqlDebugElement implements IThread {
         return null;
     }
 
+    public void resumedByTarget()
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void setStepping(boolean b)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
 }

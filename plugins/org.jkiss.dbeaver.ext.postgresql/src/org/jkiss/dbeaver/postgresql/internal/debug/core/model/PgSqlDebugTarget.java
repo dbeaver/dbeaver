@@ -1,6 +1,7 @@
 package org.jkiss.dbeaver.postgresql.internal.debug.core.model;
 
 import org.eclipse.core.resources.IMarkerDelta;
+import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IBreakpoint;
@@ -8,18 +9,23 @@ import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IThread;
+import org.jkiss.dbeaver.postgresql.debug.core.IPgSqlDebugController;
 
 public class PgSqlDebugTarget extends PgSqlDebugElement implements IDebugTarget {
     
     private final ILaunch launch;
-    private final IThread thread;
+    private final IPgSqlDebugController controller;
+    private final PgSqlThread thread;
     private final IThread[] threads;
 
-//FIXME: AF: pass PgDebugSession here to use as controller
-    public PgSqlDebugTarget(ILaunch launch)
+    private boolean fSuspended = false;
+    private boolean fTerminated = false;
+
+    public PgSqlDebugTarget(ILaunch launch, IPgSqlDebugController controller)
     {
         super(null);
         this.launch = launch;
+        this.controller = controller;
         this.thread = new PgSqlThread(this);
         this.threads = new IThread[] {thread};
     }
@@ -39,13 +45,13 @@ public class PgSqlDebugTarget extends PgSqlDebugElement implements IDebugTarget 
     @Override
     public boolean canTerminate()
     {
-        return true;
+        return !fTerminated;
     }
 
     @Override
     public boolean isTerminated()
     {
-        return false;
+        return fTerminated;
     }
 
     @Override
@@ -57,31 +63,50 @@ public class PgSqlDebugTarget extends PgSqlDebugElement implements IDebugTarget 
     @Override
     public boolean canResume()
     {
-        return false;
+        return !fTerminated && fSuspended;
     }
 
     @Override
     public boolean canSuspend()
     {
-        return false;
+        return !fTerminated && !fSuspended;
     }
 
     @Override
     public boolean isSuspended()
     {
-        return false;
+        return fSuspended;
     }
 
     @Override
     public void resume() throws DebugException
     {
-        //FIXME:AF:delegare to controller
+        fSuspended = false;
+        controller.resume();
+        if (thread.isSuspended()) {
+            thread.resumedByTarget();
+        }
+        fireResumeEvent(DebugEvent.CLIENT_REQUEST);
+    }
+
+    public void suspended(int detail) {
+        fSuspended = true;
+        thread.setStepping(false);
+        thread.fireSuspendEvent(detail);
     }
 
     @Override
     public void suspend() throws DebugException
     {
-        //FIXME:AF:delegare to controller
+        controller.suspend();
+    }
+
+    public synchronized void terminated() {
+        if (!fTerminated) {
+            fTerminated = true;
+            fSuspended = false;
+            controller.terminate();
+        }
     }
 
     @Override
@@ -149,7 +174,7 @@ public class PgSqlDebugTarget extends PgSqlDebugElement implements IDebugTarget 
     @Override
     public boolean hasThreads() throws DebugException
     {
-        return false;
+        return !fTerminated && threads.length > 0;
     }
 
     @Override
