@@ -111,7 +111,25 @@
                     defaultPort="5433"
                     webURL="http://www.vertica.com/"
                     description="Driver for Vertica Database">
+                    <parameter name="query-get-active-db" value="select current_schema()"/>
+                    <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
+                    <parameter name="active-entity-type" value="schema"/>
+
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="supports-scroll" value="false"/>
+                </driver>
+
+                <driver
+                    id="vertica-jdbc-6"
+                    label="Vertica"
+                    icon="icons/vertica_icon.png"
+                    class="com.vertica.jdbc.Driver"
+                    sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
+                    defaultPort="5433"
+                    webURL="http://www.vertica.com/"
+                    description="Driver for Vertica Database">
                     <replace provider="generic" driver="vertica"/>
+                    <replace provider="vertica" driver="vertica-jdbc"/>
 
                     <file type="license" path="drivers/vertica/LICENSE.txt" bundle="drivers.vertica"/>
                     <file type="jar" path="drivers/vertica/vertica.jar" bundle="drivers.vertica"/>
