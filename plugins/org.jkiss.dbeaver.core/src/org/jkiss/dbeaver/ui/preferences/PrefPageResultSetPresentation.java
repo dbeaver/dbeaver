@@ -105,7 +105,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         }
 
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_grid, 2, SWT.NONE, 0);
+            Group uiGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_grid, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             gridShowOddRows = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_mark_odd_rows, null, false, 2);
             rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 2);
@@ -118,7 +118,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         }
 
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_plain_text, 2, SWT.NONE, 0);
+            Group uiGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_plain_text, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             textMaxColumnSize = UIUtils.createLabelSpinner(uiGroup, CoreMessages.pref_page_database_resultsets_label_maximum_column_length, 0, 10, Integer.MAX_VALUE);
             textValueFormat = new ValueFormatSelector(uiGroup);
