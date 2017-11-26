@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -52,6 +53,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
     private Spinner textMaxColumnSize;
     private ValueFormatSelector textValueFormat;
+    private Button textDelimiterLeading;
+    private Button textDelimiterTrailing;
 
     public PrefPageResultSetPresentation()
     {
@@ -74,7 +77,9 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.contains(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK) ||
             store.contains(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE) ||
             store.contains(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE) ||
-            store.contains(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT)
+            store.contains(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT) ||
+            store.contains(DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING) ||
+            store.contains(DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING)
             ;
     }
 
@@ -87,10 +92,11 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     @Override
     protected Control createPreferenceContent(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         {
             Group uiGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_common, 1, SWT.NONE, 0);
+            ((GridData)uiGroup.getLayoutData()).horizontalSpan = 2;
             autoSwitchMode = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_switch_mode_on_rows, false);
             showDescription = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_column_description, false);
             columnWidthByValue = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_calc_column_width_by_values, CoreMessages.pref_page_database_resultsets_label_calc_column_width_by_values_tip, false, 1);
@@ -116,6 +122,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
             textMaxColumnSize = UIUtils.createLabelSpinner(uiGroup, CoreMessages.pref_page_database_resultsets_label_maximum_column_length, 0, 10, Integer.MAX_VALUE);
             textValueFormat = new ValueFormatSelector(uiGroup);
+            textDelimiterLeading = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_text_delimiter_leading, null, false, 2);
+            textDelimiterTrailing = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_text_delimiter_trailing, null, false, 2);
         }
 
         return composite;
@@ -140,6 +148,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
             textMaxColumnSize.setSelection(store.getInt(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE));
             textValueFormat.select(DBDDisplayFormat.safeValueOf(store.getString(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT)));
+            textDelimiterLeading.setSelection(store.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING));
+            textDelimiterTrailing.setSelection(store.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -161,6 +171,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME, showConnectionName.getSelection());
             store.setValue(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, textMaxColumnSize.getSelection());
             store.setValue(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT, textValueFormat.getSelection().name());
+            store.setValue(DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING, textDelimiterLeading.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING, textDelimiterLeading.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -183,6 +195,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME);
         store.setToDefault(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
         store.setToDefault(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT);
+        store.setToDefault(DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING);
+        store.setToDefault(DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING);
     }
 
     @Override
