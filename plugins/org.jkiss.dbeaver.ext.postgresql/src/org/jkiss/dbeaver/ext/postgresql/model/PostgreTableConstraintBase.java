@@ -94,7 +94,6 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
             } catch (SQLException e) {
                 throw new DBException(e, getDataSource());
             }
-            constrDDL = SQLUtils.formatSQL(getDataSource(), constrDDL);
         }
         return constrDDL;
     }
