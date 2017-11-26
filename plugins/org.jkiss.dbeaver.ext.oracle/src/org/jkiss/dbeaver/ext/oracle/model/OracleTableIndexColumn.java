@@ -30,17 +30,20 @@ public class OracleTableIndexColumn extends AbstractTableIndexColumn
     private OracleTableColumn tableColumn;
     private int ordinalPosition;
     private boolean ascending;
+    private String columnExpression;
 
     public OracleTableIndexColumn(
         OracleTableIndex index,
         OracleTableColumn tableColumn,
         int ordinalPosition,
-        boolean ascending)
+        boolean ascending,
+        String columnExpression)
     {
         this.index = index;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
         this.ascending = ascending;
+        this.columnExpression = columnExpression;
     }
 
     OracleTableIndexColumn(OracleTableIndex toIndex, OracleTableIndexColumn source)
@@ -49,6 +52,7 @@ public class OracleTableIndexColumn extends AbstractTableIndexColumn
         this.tableColumn = source.tableColumn;
         this.ordinalPosition = source.ordinalPosition;
         this.ascending = source.ascending;
+        this.columnExpression = source.columnExpression;
     }
 
     @NotNull
@@ -86,6 +90,11 @@ public class OracleTableIndexColumn extends AbstractTableIndexColumn
     public boolean isAscending()
     {
         return ascending;
+    }
+
+    @Property(viewable = true, order = 4)
+    public String getColumnExpression() {
+        return columnExpression;
     }
 
     @Nullable
