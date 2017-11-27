@@ -381,6 +381,9 @@ public class GeneralUtils {
     }
 
     public static String replaceSystemEnvironmentVariables(String string) {
+        if (string == null) {
+            return null;
+        }
         return replaceVariables(string, new GeneralUtils.IVariableResolver() {
             @Override
             public String get(String name) {

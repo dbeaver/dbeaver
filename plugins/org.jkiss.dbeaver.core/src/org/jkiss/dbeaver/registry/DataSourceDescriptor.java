@@ -134,6 +134,9 @@ public class DataSourceDescriptor
     @NotNull
     private final DBVModel virtualModel;
 
+    private DBPConnectionConfiguration resolvedConnectionInfo = null;
+    private DBPConnectionConfiguration resolvedTunnelConnectionInfo = null;
+
     public DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
         @NotNull String id,
@@ -242,16 +245,27 @@ public class DataSourceDescriptor
     public void setConnectionInfo(@NotNull DBPConnectionConfiguration connectionInfo)
     {
         this.connectionInfo = connectionInfo;
+        this.resolvedConnectionInfo = null;
     }
 
     @NotNull
     @Override
     public DBPConnectionConfiguration getActualConnectionConfiguration()
     {
-        DBPConnectionConfiguration connectionConfiguration = new DBPConnectionConfiguration(
-                tunnelConnectionInfo != null ? tunnelConnectionInfo : connectionInfo);
-        connectionConfiguration.resolveSystemEnvironmentVariables();
-        return connectionConfiguration;
+        if (tunnelConnectionInfo != null) {
+            if (resolvedTunnelConnectionInfo == null) {
+                resolvedTunnelConnectionInfo = new DBPConnectionConfiguration(tunnelConnectionInfo);
+                resolvedTunnelConnectionInfo.resolveSystemEnvironmentVariables();
+            }
+            return resolvedTunnelConnectionInfo;
+        }
+        {
+            if (resolvedConnectionInfo == null) {
+                resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
+                resolvedConnectionInfo.resolveSystemEnvironmentVariables();
+            }
+            return resolvedConnectionInfo;
+        }
     }
 
     @NotNull
@@ -669,6 +683,7 @@ public class DataSourceDescriptor
 
         connecting = true;
         tunnelConnectionInfo = null;
+        resolvedTunnelConnectionInfo = null;
         try {
             // Handle tunnel
             // Open tunnel and replace connection info with new one
