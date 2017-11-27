@@ -339,10 +339,13 @@ public class SQLQueryJob extends DataSourceJob
         }
 
         // Modify query (filters + parameters)
+        String queryText = originalQuery.getText().trim();
         if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
             String filteredQueryText = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(
-                dataSource, originalQuery.getText(), dataFilter);
+                dataSource, queryText, dataFilter);
             sqlQuery = new SQLQuery(executionContext.getDataSource(), filteredQueryText, sqlQuery);
+        } else {
+            sqlQuery = new SQLQuery(executionContext.getDataSource(), queryText, sqlQuery);
         }
 
         final SQLQueryResult curResult = new SQLQueryResult(sqlQuery);
@@ -360,7 +363,7 @@ public class SQLQueryJob extends DataSourceJob
                 connectionInvalidated = true;
             }
 
-            statistics.setQueryText(originalQuery.getText());
+            statistics.setQueryText(sqlQuery.getText());
 
             // Notify query start
             if (fireEvents && listener != null) {

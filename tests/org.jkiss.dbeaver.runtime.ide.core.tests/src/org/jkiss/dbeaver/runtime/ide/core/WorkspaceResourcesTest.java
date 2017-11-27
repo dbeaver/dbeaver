@@ -2,6 +2,8 @@ package org.jkiss.dbeaver.runtime.ide.core;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -24,8 +26,8 @@ public class WorkspaceResourcesTest {
 	private static IProject project;
 	private static IFolder folder;
 	private static IFile file;
-	private static URI folderLocation;
-	private static URI fileLocation;
+	private static Path folderLocation;
+	private static Path fileLocation;
 
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();
@@ -46,8 +48,8 @@ public class WorkspaceResourcesTest {
 		} catch (CoreException e) {
 			System.out.println(e);
 		}
-		folderLocation = tempFolder.newFolder().toURI();
-		fileLocation = tempFolder.newFile().toURI();
+		folderLocation = Paths.get(tempFolder.newFolder().toURI());
+		fileLocation = Paths.get(tempFolder.newFile().toURI());
 	}
 
 	@After
@@ -59,40 +61,38 @@ public class WorkspaceResourcesTest {
 	}
 
 	@Test
-	public void testLinkFileNegative()
+	public void testLinkFilesNegative()
 	{
-		Assert.assertFalse(WorkspaceResources.linkFile(null, fileLocation, null).isOK());
-		Assert.assertFalse(WorkspaceResources.linkFile(file, null, null).isOK());
-		Assert.assertFalse(WorkspaceResources.linkFile(file, fileLocation, null).isOK());
+		Assert.assertFalse(WorkspaceResources.createLinkedFiles(null, null, fileLocation).isOK());
+		Assert.assertFalse(WorkspaceResources.createLinkedFiles(file.getParent(), null, (Path)null).isOK());
 	}
 
 	@Test
-	public void testLinkFilePositive()
+	public void testLinkFilesPositive()
 	{
-		IFile another = folder.getFile("another");
-		IStatus linkFile = WorkspaceResources.linkFile(another, fileLocation, null);
+		IStatus linkFile = WorkspaceResources.createLinkedFiles(folder, null, fileLocation);
+		IFile another = folder.getFile(new org.eclipse.core.runtime.Path(fileLocation.getFileName().toString()));
 		Assert.assertTrue(linkFile.isOK());
 		Assert.assertTrue(another.isLinked());
 		URI locationURI = another.getLocationURI();
-		Assert.assertTrue(fileLocation.equals(locationURI));
+		Assert.assertTrue(fileLocation.equals(Paths.get(locationURI)));
 	}
 
 	@Test
-	public void testLinkFolderNegative()
+	public void testLinkFoldersNegative()
 	{
-		Assert.assertFalse(WorkspaceResources.linkFolder(null, folderLocation, null).isOK());
-		Assert.assertFalse(WorkspaceResources.linkFolder(folder, null, null).isOK());
-		Assert.assertFalse(WorkspaceResources.linkFolder(folder, folderLocation, null).isOK());
+		Assert.assertFalse(WorkspaceResources.createLinkedFolders(null, null, folderLocation).isOK());
+		Assert.assertFalse(WorkspaceResources.createLinkedFolders(folder.getParent(), null, (Path)null).isOK());
 	}
 
 	@Test
-	public void testLinkFolderPositive()
+	public void testLinkFoldersPositive()
 	{
-		IFolder another = folder.getFolder("another");
-		IStatus linkFolder = WorkspaceResources.linkFolder(another, folderLocation, null);
+		IStatus linkFolder = WorkspaceResources.createLinkedFolders(folder, null, folderLocation);
+		IFolder another = folder.getFolder(new org.eclipse.core.runtime.Path(folderLocation.getFileName().toString()));
 		Assert.assertTrue(linkFolder.isOK());
 		Assert.assertTrue(another.isLinked());
 		URI locationURI = another.getLocationURI();
-		Assert.assertTrue(folderLocation.equals(locationURI));
+		Assert.assertTrue(folderLocation.equals(Paths.get(locationURI)));
 	}
 }

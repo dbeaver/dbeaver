@@ -7,4 +7,162 @@
         <meta id="vertica" class="org.jkiss.dbeaver.ext.vertica.model.VerticaMetaModel" driverClass="com.vertica.jdbc.Driver"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+            class="org.jkiss.dbeaver.ext.vertica.VerticaDataSourceProvider"
+            description="Vertica JDBC connector"
+            id="vertica"
+            parent="generic"
+            label="Vertica"
+            icon="icons/vertica_icon.png">
+
+            <tree path="vertica" label="Vertica data source">
+                <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaSchema" label="%tree.schemas.node.name" icon="#folder_database" description="Schemas">
+                    <items label="#schema" path="schema" property="schemas" icon="#schema" optional="true">
+                        <icon if="object.system" icon="#schema_system"/>
+                        <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
+                            <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view">
+                                    <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                        <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+                                        <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes" visibleIf="object.dataSource.info.supportsIndexes()">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                        <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey" label="%tree.references.node.name" icon="#references" description="Table references" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()" virtual="true">
+                                    <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
+                                        <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaTable" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
+                            <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaProjection" label="%tree.projections.node.name" icon="#folder_projection" description="Projections">
+                            <items label="%tree.projection.node.name" path="projection" property="projections" icon="#table_index">
+                                <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaProjectionColumn" label="%tree.columns.node.name" icon="#columns" description="Projection columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                            <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
+                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                    <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"/>
+                                </items>
+                            </items>
+                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" >
+                            <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
+                        </folder>
+                        <!--<folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Global triggers" visibleIf="object.dataSource.metaModel.supportsDatabaseTriggers(object.dataSource)">
+                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                        </folder>-->
+                    </items>
+                </folder>
+                <folder label="%tree.admin.node.name" icon="#folder_admin" description="%tree.admin.node.description">
+                    <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
+                        <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaNode" label="%tree.nodes.node.name" icon="#folder_server" description="Nodes">
+                        <items label="%tree.node.node.name" path="clusterNodes" property="clusterNodes" icon="#server">
+                        </items>
+                    </folder>
+                </folder>
+            </tree>
+
+            <drivers manageable="true">
+                <driver
+                    id="vertica-jdbc"
+                    label="Vertica"
+                    icon="icons/vertica_icon.png"
+                    class="com.vertica.jdbc.Driver"
+                    sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
+                    defaultPort="5433"
+                    webURL="http://www.vertica.com/"
+                    description="Driver for Vertica Database">
+                    <parameter name="query-get-active-db" value="select current_schema()"/>
+                    <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
+                    <parameter name="active-entity-type" value="schema"/>
+
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="supports-scroll" value="false"/>
+                </driver>
+
+                <driver
+                    id="vertica-jdbc-6"
+                    label="Vertica"
+                    icon="icons/vertica_icon.png"
+                    class="com.vertica.jdbc.Driver"
+                    sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
+                    defaultPort="5433"
+                    webURL="http://www.vertica.com/"
+                    description="Driver for Vertica Database">
+                    <replace provider="generic" driver="vertica"/>
+                    <replace provider="vertica" driver="vertica-jdbc"/>
+
+                    <file type="license" path="drivers/vertica/LICENSE.txt" bundle="drivers.vertica"/>
+                    <file type="jar" path="drivers/vertica/vertica.jar" bundle="drivers.vertica"/>
+
+                    <file type="jar" path="repo:/drivers/vertica/vertica-jdk5-6.1.2-0.jar" bundle="!drivers.vertica"/>
+
+                    <parameter name="query-get-active-db" value="select current_schema()"/>
+                    <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
+                    <parameter name="active-entity-type" value="schema"/>
+
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="supports-scroll" value="false"/>
+                </driver>
+            </drivers>
+
+            <views>
+                <view
+                        id="org.jkiss.dbeaver.ext.vertica.dataSourceWizardView"
+                        targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                        label="%dialog.connection.header"
+                        class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                        icon="icons/vertica_icon.png">
+                </view>
+                <view
+                        class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                        icon="icons/vertica_icon.png"
+                        id="org.jkiss.dbeaver.ext.vertica.dataSourceEditorView"
+                        label="%dialog.connection.header"
+                        targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+                </view>
+            </views>
+
+        </datasource>
+    </extension>
+
 </plugin>

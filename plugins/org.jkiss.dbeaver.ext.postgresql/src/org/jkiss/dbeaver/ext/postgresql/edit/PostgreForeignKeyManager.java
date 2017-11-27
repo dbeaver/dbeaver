@@ -17,17 +17,23 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 /**
  * Postgre foreign key manager
@@ -83,6 +89,22 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
                 return foreignKey;
             }
         }.execute();
+    }
+
+    @Override
+    public StringBuilder getNestedDeclaration(PostgreTableBase owner, DBECommandAbstract<PostgreTableForeignKey> command, Map<String, Object> options) {
+        PostgreTableForeignKey fk = command.getObject();
+        if (fk.isPersisted()) {
+            try {
+                String constrDDL = fk.getObjectDefinitionText(new VoidProgressMonitor(), DBPScriptObject.EMPTY_OPTIONS);
+                if (!CommonUtils.isEmpty(constrDDL)) {
+                    return new StringBuilder(constrDDL);
+                }
+            } catch (DBException e) {
+                log.warn("Can't extract FK DDL", e);
+            }
+        }
+        return super.getNestedDeclaration(owner, command, options);
     }
 
     @Override

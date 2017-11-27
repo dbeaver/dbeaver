@@ -925,7 +925,7 @@
                         label="Solr"
                         icon="icons/solr_icon.png"
                         class="org.apache.solr.client.solrj.io.sql.DriverImpl"
-                        sampleURL="jdbc:solr://{host}:{port}/?collection={database}"
+                        sampleURL="jdbc:solr://{host}:{port}/[?collection={database}]"
                         defaultPort="9983"
                         description="Apache SolrJ JDBC driver"
                         webURL="https://lucene.apache.org/solr/">
@@ -981,16 +981,16 @@
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
                 main="false"
                 label="Definition"
-                description="Table DDL"
+                description="View definition"
                 position="additions_end"
                 icon="#sql_text"
                 type="folder"
-                embeddable="true">
+                embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTable" if="object.view"/>
         </editor>
         <editor id="generic.source.view" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
                 label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="true">
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject"/>
         </editor>
 

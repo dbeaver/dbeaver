@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,38 +15,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.actions.navigator;
+package org.jkiss.dbeaver.runtime.internal.ide.ui.handlers;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.runtime.ide.core.WorkspaceResources;
+import org.jkiss.dbeaver.runtime.ide.ui.handlers.CreateLinkHandler;
 
-public class NavigatorHandlerLinkFolder extends NavigatorHandlerCreateLink {
+public class LinkFolderHandler extends CreateLinkHandler {
 
     @Override
-    protected String selectTarget(ExecutionEvent event)
+    protected Path[] selectTargets(ExecutionEvent event)
     {
         Shell shell = HandlerUtil.getActiveShell(event);
-        DirectoryDialog dialog = new DirectoryDialog(shell, SWT.NONE);
+        DirectoryDialog dialog = new DirectoryDialog(shell, SWT.OPEN);
         String folder = dialog.open();
-        return folder;
+        if (folder == null) {
+            return NO_TARGETS;
+        }
+        Path folderPath = Paths.get(folder);
+        return new Path[] {folderPath};
     }
 
     @Override
-    protected void createLink(IResource resource, String path, IProgressMonitor monitor) throws CoreException
+    protected IStatus createLink(IContainer container, IProgressMonitor monitor, Path... targets)
     {
-        IFolder container = (IFolder)resource;
-        final File externalFolder = new File(path);
-        final IFolder linkedFolder = container.getFolder(externalFolder.getName());
-        linkedFolder.createLink(externalFolder.toURI(), IResource.NONE, monitor);
+        return WorkspaceResources.createLinkedFolders(container, monitor, targets);
     }
 
 }

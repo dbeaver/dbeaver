@@ -31,4 +31,8 @@ public class IdeCore {
 		return new Status(IStatus.ERROR, BUNDLE_SYMBOLIC_NAME, message, t);
 	}
 
+    public static IStatus createCancel(String message) {
+        return new Status(IStatus.CANCEL, BUNDLE_SYMBOLIC_NAME, message);
+    }
+
 }
