@@ -452,7 +452,7 @@ public class GenericDataSource extends JDBCDataSource
                 if (!catalogNames.isEmpty() || catalogsFiltered) {
                     this.catalogs = new ArrayList<>();
                     for (String catalogName : catalogNames) {
-                        GenericCatalog catalog = new GenericCatalog(this, catalogName);
+                        GenericCatalog catalog = metaModel.createCatalogImpl(this, catalogName);
                         this.catalogs.add(catalog);
                     }
                 }
@@ -538,12 +538,7 @@ public class GenericDataSource extends JDBCDataSource
 
                     session.getProgressMonitor().subTask("Schema " + schemaName);
 
-                    GenericSchema schema;
-                    if (catalog == null) {
-                        schema = new GenericSchema(this, schemaName);
-                    } else {
-                        schema = new GenericSchema(catalog, schemaName);
-                    }
+                    GenericSchema schema = metaModel.createSchemaImpl(this, catalog, schemaName);
                     tmpSchemas.add(schema);
                 }
             } finally {

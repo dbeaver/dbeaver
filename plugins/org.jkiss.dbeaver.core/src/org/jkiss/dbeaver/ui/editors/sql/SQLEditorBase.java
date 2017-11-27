@@ -504,8 +504,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     {
         SQLScriptElement element;
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
-        String selText = selection.getText().trim();
-        selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText);
+        String selText = selection.getText();
+
+        selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText, !syntaxManager.getDialect().isDelimiterAfterQuery());
         if (!CommonUtils.isEmpty(selText)) {
             SQLScriptElement parsedElement = parseQuery(getDocument(), selection.getOffset(), selection.getOffset() + selection.getLength(), selection.getOffset(), false, false);
             if (parsedElement instanceof SQLControlCommand) {
@@ -553,8 +554,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         try {
             int currentLine = document.getLineOfOffset(currentPos);
             int lineOffset = document.getLineOffset(currentLine);
-            if (TextUtils.isEmptyLine(document, currentLine)) {
-                return null;
+            if (useBlankLines) {
+                if (TextUtils.isEmptyLine(document, currentLine)) {
+                    return null;
+                }
             }
 
             int firstLine = currentLine;

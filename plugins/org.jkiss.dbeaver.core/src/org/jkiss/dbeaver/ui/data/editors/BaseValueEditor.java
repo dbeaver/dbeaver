@@ -161,7 +161,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         });
     }
 
-    private void saveValue()
+    protected void saveValue()
     {
         try {
             Object newValue = extractEditorValue();

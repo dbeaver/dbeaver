@@ -36,6 +36,14 @@ public class DBXTreeObject extends DBXTreeNode
         this.editorId = editorId;
     }
 
+    DBXTreeObject(AbstractDescriptor source, DBXTreeNode parent, DBXTreeObject object)
+    {
+        super(source, parent, object);
+        this.label = object.label;
+        this.description = object.description;
+        this.editorId = object.editorId;
+    }
+
     @Override
     public String getNodeType(DBPDataSource dataSource)
     {
@@ -46,6 +54,11 @@ public class DBXTreeObject extends DBXTreeNode
     public String getChildrenType(DBPDataSource dataSource)
     {
         return label;
+    }
+
+    @Override
+    public String toString() {
+        return "Object " + label;
     }
 
     public String getDescription()

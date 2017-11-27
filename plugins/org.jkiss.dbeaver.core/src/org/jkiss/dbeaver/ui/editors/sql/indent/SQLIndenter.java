@@ -137,6 +137,9 @@ public class SQLIndenter {
         try {
             IRegion line = document.getLineInformationOfOffset(offset);
             int lineOffset = line.getOffset();
+            if (scanner.endsWithDelimiter(lineOffset, lineOffset + line.getLength())) {
+                return "";
+            }
             int nonWS = scanner.findNonWhitespaceForwardInAnyPartition(lineOffset, lineOffset + line.getLength());
             if (nonWS < 0) {
                 return "";

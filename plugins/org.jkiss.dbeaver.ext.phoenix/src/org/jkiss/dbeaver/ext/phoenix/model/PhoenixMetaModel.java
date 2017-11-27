@@ -59,7 +59,7 @@ public class PhoenixMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
     
     @Override
-    public GenericDataSource createDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         return new PhoenixDataSource(monitor, container, this);
     }
     

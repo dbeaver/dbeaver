@@ -136,7 +136,7 @@ public class MySQLTable extends MySQLTableBase
         if (source instanceof DBSTable) {
             // Copy indexes
             for (DBSTableIndex srcIndex : CommonUtils.safeCollection(((DBSTable)source).getIndexes(monitor))) {
-                if (srcIndex instanceof MySQLTableIndex && srcIndex.getName().equals(MySQLConstants.INDEX_PRIMARY)) {
+                if (srcIndex instanceof MySQLTableIndex && srcIndex.isPrimary()) {
                     // Skip primary key index (it will be created implicitly)
                     continue;
                 }

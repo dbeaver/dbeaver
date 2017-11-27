@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -347,15 +348,12 @@ public class SQLEditor extends SQLEditorBase implements
     private class OutputLogWriter extends Writer {
         @Override
         public void write(@NotNull final char[] cbuf, final int off, final int len) throws IOException {
-            DBeaverUI.syncExec(new Runnable() {
-                @Override
-                public void run() {
-                    if (!outputViewer.isDisposed()) {
-                        outputViewer.getOutputWriter().write(cbuf, off, len);
-                        outputViewer.scrollToEnd();
-                        if (!outputViewer.isVisible()) {
-                            updateOutputViewerIcon(true);
-                        }
+            DBeaverUI.syncExec(() -> {
+                if (!outputViewer.isDisposed()) {
+                    outputViewer.getOutputWriter().write(cbuf, off, len);
+                    outputViewer.scrollToEnd();
+                    if (!outputViewer.isVisible()) {
+                        updateOutputViewerIcon(true);
                     }
                 }
             });
@@ -505,13 +503,8 @@ public class SQLEditor extends SQLEditorBase implements
         // Start output reader
         new ServerOutputReader().schedule();
 
-        DBeaverUI.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                // Update controls
-                onDataSourceChange();
-            }
-        });
+        // Update controls
+        DBeaverUI.asyncExec(this::onDataSourceChange);
     }
 
     private void createResultTabs()
@@ -527,13 +520,12 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         });
-        this.resultTabs.addListener(SWT.Resize, new Listener() {
-            @Override
-            public void handleEvent(Event event)
-            {
-                if (!sashForm.isDisposed()) {
-                    int[] weights = sashForm.getWeights();
-                    getPreferenceStore().setValue(SQLPreferenceConstants.RESULTS_PANEL_RATIO, weights[0] + "-" + weights[1]);
+        this.resultTabs.addListener(SWT.Resize, event -> {
+            if (!sashForm.isDisposed()) {
+                int[] weights = sashForm.getWeights();
+                IPreferenceStore prefs = getPreferenceStore();
+                if (prefs != null) {
+                    prefs.setValue(SQLPreferenceConstants.RESULTS_PANEL_RATIO, weights[0] + "-" + weights[1]);
                 }
             }
         });
@@ -1007,7 +999,7 @@ public class SQLEditor extends SQLEditorBase implements
                     for (int i = 0; i < elements.size(); i++) {
                         SQLScriptElement element = elements.get(i);
                         if (element instanceof SQLQuery) {
-                            SQLQuery query = transformer.transformQuery((SQLDataSource) dataSource, (SQLQuery) element);
+                            SQLQuery query = transformer.transformQuery((SQLDataSource) dataSource, getSyntaxManager(), (SQLQuery) element);
                             if (!CommonUtils.isEmpty(query.getParameters())) {
                                 query.setParameters(parseParameters(query.getText()));
                             }
@@ -1998,7 +1990,7 @@ public class SQLEditor extends SQLEditorBase implements
                 throw new DBCException("Can't count rows for control command");
             }
             try {
-                SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery((SQLDataSource) dataSource, (SQLQuery) query);
+                SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery((SQLDataSource) dataSource, getSyntaxManager(), (SQLQuery) query);
                 if (!CommonUtils.isEmpty(countQuery.getParameters())) {
                     countQuery.setParameters(parseParameters(countQuery.getText()));
                 }

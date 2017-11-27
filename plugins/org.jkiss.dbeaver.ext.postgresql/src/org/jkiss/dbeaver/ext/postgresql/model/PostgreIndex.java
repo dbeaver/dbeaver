@@ -111,6 +111,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         return isUnique;
     }
 
+    @Override
     @Property(viewable = false, order = 20)
     public boolean isPrimary() {
         return isPrimary;
@@ -216,7 +217,6 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
             } catch (SQLException e) {
                 throw new DBException(e, getDataSource());
             }
-            indexDDL = SQLUtils.formatSQL(getDataSource(), indexDDL);
         }
         return indexDDL;
     }

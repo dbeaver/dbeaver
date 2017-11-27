@@ -130,7 +130,7 @@ class SQLTokensParser {
             return new FormatterToken(TokenType.SYMBOL, ";", start_pos);
         } else if (isDigit(fChar)) {
             StringBuilder s = new StringBuilder();
-            while (isDigit(fChar) || fChar == '.') {
+            while (isDigit(fChar) || fChar == '.' || fChar == 'e' || fChar == 'E') {
                 // if (ch == '.') type = Token.REAL;
                 s.append(fChar);
                 fPos++;

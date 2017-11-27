@@ -641,17 +641,17 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return isLoaded;
     }
 
-    public void refreshDiagram(boolean force)
+    public void refreshDiagram(boolean force, boolean refreshMetadata)
     {
         if (isLoaded && force) {
-            loadDiagram(true);
+            loadDiagram(refreshMetadata);
         }
     }
 
     @Override
     public void refreshPart(Object source, boolean force)
     {
-        refreshDiagram(false);
+        refreshDiagram(force, true);
     }
 
     public void saveDiagramAs()
@@ -811,7 +811,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         public void run()
         {
             getDiagram().setAttributeStyle(style, !isChecked());
-            refreshDiagram(true);
+            refreshDiagram(true, false);
         }
     }
 
@@ -834,7 +834,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         public void run()
         {
             getDiagram().setAttributeVisibility(visibility);
-            refreshDiagram(true);
+            refreshDiagram(true, false);
         }
     }
 

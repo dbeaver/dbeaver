@@ -25,9 +25,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -45,7 +43,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     private static final String COUNT_WRAP_POSTFIX = ") dbvrcnt";
 
     @Override
-    public SQLQuery transformQuery(SQLDataSource dataSource, SQLQuery query) throws DBException {
+    public SQLQuery transformQuery(SQLDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
         try {
             if (!dataSource.getSQLDialect().supportsSubqueries()) {
                 return tryInjectCount(dataSource, query);
@@ -54,11 +52,12 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
             log.debug("Error injecting count: " + e.getMessage());
             // Inject failed (most likely parser error)
         }
-        return wrapSourceQuery(dataSource, query);
+        return wrapSourceQuery(dataSource, syntaxManager, query);
     }
 
-    private SQLQuery wrapSourceQuery(SQLDataSource dataSource, SQLQuery query) {
-        String srcQuery = query.getText();
+    private SQLQuery wrapSourceQuery(SQLDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) {
+        // Trim query delimiters (#2541)
+        String srcQuery = SQLUtils.trimQueryStatement(syntaxManager, query.getText(), true);
         String countQuery = COUNT_WRAP_PREFIX + srcQuery + COUNT_WRAP_POSTFIX;
         return new SQLQuery(dataSource, countQuery, query, false);
     }

@@ -83,6 +83,47 @@ public abstract class DBXTreeNode
         }
     }
 
+    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, DBXTreeNode node)
+    {
+        this.source = source;
+        this.parent = parent;
+        if (parent != null) {
+            parent.addChild(this);
+        }
+        this.id = node.id;
+        this.navigable = node.navigable;
+        this.inline = node.inline;
+        this.virtual = node.virtual;
+        this.standaloneNode = node.standaloneNode;
+        this.visibleIf = node.visibleIf;
+        if (node.recursiveLink != null) {
+/*
+            recursiveLink = this;
+            for (String path : recursive.split("/")) {
+                if (path.equals("..")) {
+                    recursiveLink = recursiveLink.parent;
+                }
+            }
+*/
+        }
+        this.defaultIcon = node.defaultIcon;
+        if (node.icons != null) {
+            this.icons = new ArrayList<>(node.icons);
+        }
+
+        if (node.children != null) {
+            this.children = new ArrayList<>(node.children.size());
+            for (DBXTreeNode child : node.children) {
+                if (child instanceof DBXTreeObject) new DBXTreeObject(source, this, (DBXTreeObject)child);
+                else if (child instanceof DBXTreeFolder) new DBXTreeFolder(source, this, (DBXTreeFolder)child);
+                else new DBXTreeItem(source, this, (DBXTreeItem)child);
+            }
+        }
+        if (node.handlers != null) {
+            this.handlers = new ArrayList<>(node.handlers);
+        }
+    }
+
     public AbstractDescriptor getSource()
     {
         return source;
@@ -145,6 +186,10 @@ public abstract class DBXTreeNode
             }
         }
         return false;
+    }
+
+    protected List<DBXTreeNode> getChildren() {
+        return children;
     }
 
     public List<DBXTreeNode> getChildren(DBNNode context)
