@@ -302,14 +302,11 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
-            CLabel infoLabel = createSettingsVariablesHintLabel(settingsGroup, null, null);
-
             addControlToGroup(GROUP_LOGIN, userNameLabel);
             addControlToGroup(GROUP_LOGIN, userNameText);
             addControlToGroup(GROUP_LOGIN, emptyLabel);
             addControlToGroup(GROUP_LOGIN, passwordLabel);
             addControlToGroup(GROUP_LOGIN, passwordText);
-            addControlToGroup(GROUP_LOGIN, infoLabel);
         }
 
         createDriverPanel(settingsGroup);

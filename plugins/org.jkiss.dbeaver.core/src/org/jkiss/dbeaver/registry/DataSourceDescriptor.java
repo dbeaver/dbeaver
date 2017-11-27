@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -100,6 +101,9 @@ public class DataSourceDescriptor
     @NotNull
     private DBPConnectionConfiguration connectionInfo;
     private DBPConnectionConfiguration tunnelConnectionInfo;
+    // Copy of connection info with resolved params (cache)
+    private DBPConnectionConfiguration resolvedConnectionInfo;
+
     @NotNull
     private String id;
     private String name;
@@ -133,9 +137,6 @@ public class DataSourceDescriptor
     private DBWTunnel tunnel;
     @NotNull
     private final DBVModel virtualModel;
-
-    private DBPConnectionConfiguration resolvedConnectionInfo = null;
-    private DBPConnectionConfiguration resolvedTunnelConnectionInfo = null;
 
     public DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
@@ -245,27 +246,16 @@ public class DataSourceDescriptor
     public void setConnectionInfo(@NotNull DBPConnectionConfiguration connectionInfo)
     {
         this.connectionInfo = connectionInfo;
-        this.resolvedConnectionInfo = null;
     }
 
     @NotNull
     @Override
     public DBPConnectionConfiguration getActualConnectionConfiguration()
     {
-        if (tunnelConnectionInfo != null) {
-            if (resolvedTunnelConnectionInfo == null) {
-                resolvedTunnelConnectionInfo = new DBPConnectionConfiguration(tunnelConnectionInfo);
-                resolvedTunnelConnectionInfo.resolveSystemEnvironmentVariables();
-            }
-            return resolvedTunnelConnectionInfo;
-        }
-        {
-            if (resolvedConnectionInfo == null) {
-                resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
-                resolvedConnectionInfo.resolveSystemEnvironmentVariables();
-            }
-            return resolvedConnectionInfo;
-        }
+        return
+            this.resolvedConnectionInfo != null ?
+                this.resolvedConnectionInfo :
+                (this.tunnelConnectionInfo != null ? tunnelConnectionInfo : connectionInfo);
     }
 
     @NotNull
@@ -683,7 +673,7 @@ public class DataSourceDescriptor
 
         connecting = true;
         tunnelConnectionInfo = null;
-        resolvedTunnelConnectionInfo = null;
+        resolvedConnectionInfo = null;
         try {
             // Handle tunnel
             // Open tunnel and replace connection info with new one
@@ -729,7 +719,13 @@ public class DataSourceDescriptor
             }
 
             monitor.subTask("Connect to data source");
-            dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
+
+            if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+                this.resolvedConnectionInfo = new DBPConnectionConfiguration(this.tunnelConnectionInfo != null ? tunnelConnectionInfo : connectionInfo);
+                this.resolvedConnectionInfo.resolveSystemEnvironmentVariables();
+            }
+
+            this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
             monitor.worked(1);
 
             if (initialize) {
@@ -919,8 +915,10 @@ public class DataSourceDescriptor
                 }
             }
 
-            dataSource = null;
-            connectTime = null;
+            this.dataSource = null;
+            this.tunnelConnectionInfo = null;
+            this.resolvedConnectionInfo = null;
+            this.connectTime = null;
 
             if (reflect) {
                 // Reflect UI
