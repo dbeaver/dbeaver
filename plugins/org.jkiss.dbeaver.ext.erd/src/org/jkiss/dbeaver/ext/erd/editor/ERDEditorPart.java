@@ -610,13 +610,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
             CombinedTemplateCreationEntry tableEntry = new CombinedTemplateCreationEntry("New Table", "Create a new table",
                 ERDEntity.class, new DataElementFactory(ERDEntity.class),
-                ERDActivator.getImageDescriptor("icons/table.gif"),
-                ERDActivator.getImageDescriptor("icons/table.gif"));
+                ERDActivator.getImageDescriptor("icons/table.png"),
+                ERDActivator.getImageDescriptor("icons/table.png"));
 
             CombinedTemplateCreationEntry columnEntry = new CombinedTemplateCreationEntry("New Column", "Add a new column",
                 ERDEntityAttribute.class, new DataElementFactory(ERDEntityAttribute.class),
-                ERDActivator.getImageDescriptor("icons/column.gif"),
-                ERDActivator.getImageDescriptor("icons/column.gif"));
+                ERDActivator.getImageDescriptor("icons/column.png"),
+                ERDActivator.getImageDescriptor("icons/column.png"));
 
             entries.add(tableEntry);
             entries.add(columnEntry);
