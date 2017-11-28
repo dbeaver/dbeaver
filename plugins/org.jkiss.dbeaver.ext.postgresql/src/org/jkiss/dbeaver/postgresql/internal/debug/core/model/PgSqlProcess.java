@@ -3,7 +3,8 @@ package org.jkiss.dbeaver.postgresql.internal.debug.core.model;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.core.runtime.Adapters;
+import org.eclipse.core.runtime.IAdapterManager;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IProcess;
@@ -22,12 +23,14 @@ public class PgSqlProcess implements IProcess {
     {
         this.launch = launch;
         this.name = name;
+        launch.addProcess(this);
     }
 
     @Override
     public <T> T getAdapter(Class<T> adapter)
     {
-        return Adapters.adapt(this, adapter);
+        IAdapterManager adapterManager = Platform.getAdapterManager();
+        return adapterManager.getAdapter(this, adapter);
     }
 
     @Override
@@ -57,7 +60,7 @@ public class PgSqlProcess implements IProcess {
     {
         return name;
     }
-    
+
     @Override
     public ILaunch getLaunch()
     {
