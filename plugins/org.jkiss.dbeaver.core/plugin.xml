@@ -1789,6 +1789,7 @@
             </toolbar>
         </menuContribution>
 
+<!--
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
             <toolbar id="dbeaver-edit" label="%toolbar.dbeaver-edit.label">
                 <command commandId="org.eclipse.ui.file.save"/>
@@ -1799,6 +1800,7 @@
             </toolbar>
 
         </menuContribution>
+-->
 
         <!-- Database Navigator menu & toolbar -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.databaseNavigator">
