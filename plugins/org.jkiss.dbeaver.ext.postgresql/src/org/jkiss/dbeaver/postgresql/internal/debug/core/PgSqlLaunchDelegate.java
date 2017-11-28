@@ -7,6 +7,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.jkiss.dbeaver.postgresql.debug.core.IPgSqlDebugController;
 import org.jkiss.dbeaver.postgresql.internal.debug.core.model.PgSqlDebugTarget;
+import org.jkiss.dbeaver.postgresql.internal.debug.core.model.PgSqlProcess;
 
 public class PgSqlLaunchDelegate implements ILaunchConfigurationDelegate {
 
@@ -14,9 +15,10 @@ public class PgSqlLaunchDelegate implements ILaunchConfigurationDelegate {
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
             throws CoreException
     {
-        //FIXME:AF: extract attributes from configuration and create controller here
+        //FIXME:AF: extract attributes from configuration
         IPgSqlDebugController controller = new PgSqlDebugController();
-        PgSqlDebugTarget target = new PgSqlDebugTarget(launch, controller);
+        PgSqlProcess process = new PgSqlProcess(launch, configuration.getName());
+        PgSqlDebugTarget target = new PgSqlDebugTarget(launch, process, controller);
         launch.addDebugTarget(target);
     }
 
