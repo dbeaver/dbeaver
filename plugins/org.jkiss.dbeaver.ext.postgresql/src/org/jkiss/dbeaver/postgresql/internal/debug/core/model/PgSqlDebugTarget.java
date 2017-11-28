@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.postgresql.debug.core.IPgSqlDebugController;
 public class PgSqlDebugTarget extends PgSqlDebugElement implements IDebugTarget {
     
     private final ILaunch launch;
+    private final IProcess process;
     private final IPgSqlDebugController controller;
     private final PgSqlThread thread;
     private final IThread[] threads;
@@ -21,10 +22,11 @@ public class PgSqlDebugTarget extends PgSqlDebugElement implements IDebugTarget 
     private boolean fSuspended = false;
     private boolean fTerminated = false;
 
-    public PgSqlDebugTarget(ILaunch launch, IPgSqlDebugController controller)
+    public PgSqlDebugTarget(ILaunch launch, IProcess process, IPgSqlDebugController controller)
     {
         super(null);
         this.launch = launch;
+        this.process = process;
         this.controller = controller;
         this.thread = new PgSqlThread(this);
         this.threads = new IThread[] {thread};
@@ -161,8 +163,7 @@ public class PgSqlDebugTarget extends PgSqlDebugElement implements IDebugTarget 
     @Override
     public IProcess getProcess()
     {
-        //FIXME:AF: implement PgProcess
-        return null;
+        return process;
     }
 
     @Override
