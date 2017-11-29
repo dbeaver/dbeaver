@@ -399,6 +399,17 @@
         </tools>
     </extension>
     
+<!-- org.jkiss.dbeaver.launch.ui begins -->
+    <extension
+          point="org.eclipse.ui.menus">
+       <menuContribution
+             allPopups="false"
+             class="org.jkiss.dbeaver.internal.launch.ui.DebugContributionFactory"
+             locationURI="popup:org.eclipse.ui.popup.any?before=additions">
+       </menuContribution>
+    </extension>
+<!-- org.jkiss.dbeaver.launch.ui ends -->
+
 <!-- org.jkiss.dbeaver.postgresql.debug.core begins -->
     <extension
           point="org.eclipse.debug.core.launchConfigurationTypes">
@@ -435,6 +446,39 @@
                 perspective="org.eclipse.debug.ui.DebugPerspective">
           </launchMode>
        </launchConfigurationTabGroup>
+    </extension>
+    <extension
+          point="org.eclipse.debug.ui.launchShortcuts">
+       <shortcut
+             class="org.jkiss.dbeaver.postgresql.internal.debug.ui.PgSqlLaunchShortcut"
+             description="%launchShortcuts.shortcut.pgSQL.description"
+             icon="icons/postgresql_icon.png"
+             id="org.jkiss.dbeaver.postgresql.debug.ui.launchShortcuts.shortcut.pgSQL"
+             label="%launchShortcuts.shortcut.pgSQL.label"
+             modes="debug">
+          <contextualLaunch>
+             <contextLabel
+                   label="%launchShortcuts.shortcut.pgSQL.label"
+                   mode="debug">
+             </contextLabel>
+             <enablement>
+                <with
+                      variable="selection">
+                   <count
+                         value="1">
+                   </count>
+                   <iterate
+                         ifEmpty="false"
+                         operator="and">
+                      <instanceof
+                            value="org.jkiss.dbeaver.model.navigator.DBNDatabaseItem">
+                      </instanceof>
+                   </iterate>
+                </with></enablement></contextualLaunch>
+          <configurationType
+                id="org.jkiss.dbeaver.postgresql.debug.core.pgSQL">
+          </configurationType>
+       </shortcut>
     </extension>
     <extension
           point="org.eclipse.debug.ui.debugModelPresentations">
