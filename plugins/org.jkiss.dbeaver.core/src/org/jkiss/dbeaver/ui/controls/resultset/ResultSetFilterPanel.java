@@ -17,19 +17,64 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.text.Document;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseMoveListener;
+import org.eclipse.swt.events.MouseTrackAdapter;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.ScrollBar;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
@@ -39,7 +84,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPImageProvider;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -54,7 +103,11 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextContentAdapter;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
@@ -64,12 +117,6 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLContextInformer;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordPartDetector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * ResultSetFilterPanel
@@ -161,8 +208,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                             e.gc.setForeground(shadowColor);
                             e.gc.setFont(hintFont);
                             e.gc.drawText(supportsDataFilter ?
-                                    "Enter a SQL expression to filter results (use Ctrl+Space)" :
-                                    "Data filter is not supported",
+                                    CoreMessages.sql_editor_resultset_filter_panel_text_enter_sql_to_filter:
+                                    CoreMessages.sql_editor_resultset_filter_panel_text_enter_filter_not_support,
                                 2, 0, true);
                             e.gc.setFont(null);
                         }
@@ -216,7 +263,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             filtersApplyButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersApplyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_APPLY));
             //filtersApplyButton.setText("Apply");
-            filtersApplyButton.setToolTipText("Apply filter criteria");
+            filtersApplyButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_apply);
             filtersApplyButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -227,7 +274,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             filtersClearButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersClearButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_RESET));
-            filtersClearButton.setToolTipText("Remove all filters/orderings");
+            filtersClearButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_remove);
             filtersClearButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -238,7 +285,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             filtersSaveButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersSaveButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_SAVE));
-            filtersSaveButton.setToolTipText("Save filter settings for current object");
+            filtersSaveButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_save);
             filtersSaveButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -249,7 +296,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             ToolItem filtersCustomButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
-            filtersCustomButton.setToolTipText("Custom Filters");
+            filtersCustomButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_custom);
             filtersCustomButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -383,10 +430,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     void updateAutoRefreshToolbar() {
         if (viewer.isAutoRefreshEnabled()) {
             autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.RS_SCHED_STOP));
-            autoRefreshButton.setToolTipText("Stop auto-refresh");
+            autoRefreshButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_stop_refresh);
         } else {
             autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.RS_SCHED_START));
-            autoRefreshButton.setToolTipText("Configure auto-refresh");
+            autoRefreshButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_config_refresh);
         }
     }
 
@@ -537,7 +584,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         if (activeObjectImage != null) {
             iconLabel.setImage(DBeaverIcons.getImage(activeObjectImage));
         }
-        iconLabel.setToolTipText("Click to open query in editor");
+        iconLabel.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_label);
         iconLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         iconLabel.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
         iconLabel.addMouseListener(new MouseAdapter() {
@@ -677,7 +724,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         ActiveObjectPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
             setLayoutData(new GridData(GridData.FILL_VERTICAL));
-            setToolTipText("Ctrl+click to open SQL console");
+            setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_open_console);
 
             this.addMouseListener(new MouseAdapter() {
                 @Override
@@ -906,7 +953,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                             item = historyTable.getItem(selectionIndex);
                         }
                     }
-                    if (item != null) {
+                    if (item != null && !item.isDisposed()) {
                         if (e.keyCode == SWT.DEL) {
                             final String filterValue = item.getText();
                             try {
@@ -1060,7 +1107,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 schedulerMenu = new Menu(dropdown.getParent().getShell());
                 {
                     MenuItem mi = new MenuItem(schedulerMenu, SWT.NONE);
-                    mi.setText("Customize ...");
+                    mi.setText(CoreMessages.sql_editor_resultset_filter_panel_menu_customize);
                     mi.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
@@ -1069,7 +1116,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     });
 
                     mi = new MenuItem(schedulerMenu, SWT.NONE);
-                    mi.setText("Stop");
+                    mi.setText(CoreMessages.sql_editor_resultset_filter_panel_menu_stop);
                     mi.setEnabled(viewer.isAutoRefreshEnabled());
                     mi.addSelectionListener(new SelectionAdapter() {
                         @Override
@@ -1088,7 +1135,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     }
                     for (final Integer timeout : presetList) {
                         mi = new MenuItem(schedulerMenu, SWT.PUSH);
-                        mi.setText("Refresh each " + String.valueOf(timeout) + " seconds");
+                        mi.setText(NLS.bind(CoreMessages.sql_editor_resultset_filter_panel_menu_refresh_interval , String.valueOf(timeout)));
                         if (viewer.isAutoRefreshEnabled() && timeout == defaultInterval) {
                             schedulerMenu.setDefaultItem(mi);
                         }

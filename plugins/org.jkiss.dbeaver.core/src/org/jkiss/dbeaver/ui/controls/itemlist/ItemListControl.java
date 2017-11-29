@@ -29,6 +29,7 @@ import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -88,7 +89,7 @@ public class ItemListControl extends NodeListControl
         final DBNNode rootNode = getRootNode();
         if (rootNode instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) rootNode).getItemsMeta() != null) {
             contributionManager.add(new Action(
-                "Filter settings",
+                CoreMessages.obj_editor_properties_control_action_filter_setting,
                 DBeaverIcons.getImageDescriptor(UIIcon.FILTER))
             {
                 @Override
@@ -100,14 +101,14 @@ public class ItemListControl extends NodeListControl
         }
         {
             Action configColumnsAction = new Action(
-                    "Configure columns",
+                    CoreMessages.obj_editor_properties_control_action_configure_columns,
                     DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
                 @Override
                 public void run() {
                     columnController.configureColumns();
                 }
             };
-            configColumnsAction.setDescription("Configure columns visibility");
+            configColumnsAction.setDescription(CoreMessages.obj_editor_properties_control_action_configure_columns_description);
             contributionManager.add(configColumnsAction);
         }
         IWorkbenchSite workbenchSite = getWorkbenchSite();

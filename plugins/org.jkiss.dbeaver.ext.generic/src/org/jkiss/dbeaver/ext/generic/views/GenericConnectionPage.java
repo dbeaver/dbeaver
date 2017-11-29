@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.views;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -27,6 +28,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.GenericMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -411,6 +414,27 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
         }
 
         activated = true;
+
+        DBeaverUI.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                // Set first control
+                if (CommonUtils.isEmpty(site.getDriver().getSampleURL())) {
+                    urlText.setFocus();
+                } else  if (hostText != null && hostText.isVisible()) {
+                    hostText.setFocus();
+                } else  if (serverText != null && serverText.isVisible()) {
+                    serverText.setFocus();
+                } else  if (dbText != null && dbText.isVisible()) {
+                    dbText.setFocus();
+                } else  if (pathText != null && pathText.isVisible()) {
+                    pathText.setFocus();
+                } else  if (userNameText != null && userNameText.isVisible()) {
+                    userNameText.setFocus();
+                }
+            }
+        });
+
     }
 
     @Override

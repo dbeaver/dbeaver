@@ -45,7 +45,8 @@ import java.util.Map;
  */
 public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWizard> {
 
-    private Text commandText;
+    private static final String CoreMessagesdialog_connection_edit_wizard_shell_cmd_directory_title = null;
+	private Text commandText;
     private Button showProcessCheck;
     private Button waitFinishCheck;
     private Spinner waitFinishTimeoutMs;
@@ -60,7 +61,7 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
     protected EditShellCommandsDialogPage(DataSourceDescriptor dataSource)
     {
         super(CoreMessages.dialog_connection_events_title);
-        setTitle("Shell Commands");
+        setTitle(CoreMessages.dialog_connection_edit_wizard_shell_cmd);
         setDescription(CoreMessages.dialog_connection_events_title);
         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.EVENT));
         for (DBPConnectionEventType eventType : DBPConnectionEventType.values()) {
@@ -154,11 +155,11 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
                 Composite pauseComposite = UIUtils.createPlaceholder(detailsGroup, 2, 5);
                 pauseComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-                pauseAfterExecute = UIUtils.createLabelSpinner(pauseComposite, "Pause after execute (ms)", "Wait for specified amount of milliseconds after process spawn", 0, 0, Integer.MAX_VALUE);
+                pauseAfterExecute = UIUtils.createLabelSpinner(pauseComposite, CoreMessages.dialog_connection_edit_wizard_shell_cmd_pause_label, CoreMessages.dialog_connection_edit_wizard_shell_cmd_pause_tooltip, 0, 0, Integer.MAX_VALUE);
                 pauseAfterExecute.addSelectionListener(eventEditAdapter);
 
-                UIUtils.createControlLabel(pauseComposite, "Working directory");
-                workingDirectory = new TextWithOpenFolder(pauseComposite, "Working directory");
+                UIUtils.createControlLabel(pauseComposite, CoreMessages.dialog_connection_edit_wizard_shell_cmd_directory_label);
+                workingDirectory = new TextWithOpenFolder(pauseComposite, CoreMessagesdialog_connection_edit_wizard_shell_cmd_directory_title);
                 workingDirectory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 workingDirectory.getTextControl().addModifyListener(new ModifyListener() {
                     @Override

@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
@@ -45,13 +44,18 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
  */
 public class SelectDataSourceDialog extends Dialog {
 
-    public static final String PARAM_SHOW_CONNECTED = "showConnected";
+    private static final String PARAM_SHOW_CONNECTED = "showConnected";
+    private static final String PARAM_SHOW_ALL_PROJECTS = "showAllProjects";
+
     @Nullable
     private final IProject project;
     private DBPDataSourceContainer dataSource = null;
 
     private static final String DIALOG_ID = "DBeaver.SelectDataSourceDialog";//$NON-NLS-1$
     private boolean showConnected;
+    private boolean showAllProjects;
+    private DBNNode projectNode;
+    private DBNNode rootNode;
 
     public SelectDataSourceDialog(@NotNull Shell parentShell, @Nullable IProject project, DBPDataSourceContainer selection)
     {
@@ -77,37 +81,34 @@ public class SelectDataSourceDialog extends Dialog {
     {
         getShell().setText(CoreMessages.dialog_select_datasource_title);
 
+        showConnected = getDialogBoundsSettings().getBoolean(PARAM_SHOW_CONNECTED);
+        showAllProjects = getDialogBoundsSettings().getBoolean(PARAM_SHOW_ALL_PROJECTS);
+
         Composite group = (Composite) super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
         DBeaverCore core = DBeaverCore.getInstance();
-        DBNNode rootNode = null;
+        rootNode = core.getNavigatorModel().getRoot();
+        projectNode = null;
         if (project != null) {
-            DBNProject projectNode = core.getNavigatorModel().getRoot().getProject(project);
-            if (projectNode != null) {
-                rootNode = projectNode.getDatabases();
+            DBNProject projectBaseNode = core.getNavigatorModel().getRoot().getProject(project);
+            if (projectBaseNode != null) {
+                projectNode = projectBaseNode.getDatabases();
             }
-        }
-        if (rootNode == null) {
-            rootNode = core.getNavigatorModel().getRoot();
         }
 
-        IFilter dsFilter = new IFilter() {
-            @Override
-            public boolean select(Object element) {
-                return element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder;
-            }
-        };
-        DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, rootNode, SWT.SINGLE | SWT.BORDER, false, dsFilter);
+        IFilter dsFilter = element -> element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder;
+        DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, getTreeRootNode(), SWT.SINGLE | SWT.BORDER, false, dsFilter);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 500;
+        gd.minimumHeight = 100;
+        gd.minimumWidth = 100;
         dataSourceTree.setLayoutData(gd);
 
         final Text descriptionText = new Text(group, SWT.READ_ONLY);
         descriptionText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        showConnected = getDialogBoundsSettings().getBoolean(PARAM_SHOW_CONNECTED);
         final Button showConnectedCheck = new Button(group, SWT.CHECK);
         showConnectedCheck.setText("Show connected databases only");
         showConnectedCheck.setSelection(showConnected);
@@ -115,11 +116,35 @@ public class SelectDataSourceDialog extends Dialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 showConnected = showConnectedCheck.getSelection();
-                dataSourceTree.getViewer().refresh();
-                if (showConnected) {
-                    dataSourceTree.getViewer().expandAll();
+                dataSourceTree.getViewer().getControl().setRedraw(false);
+                try {
+                    dataSourceTree.getViewer().refresh();
+                    if (showConnected) {
+                        dataSourceTree.getViewer().expandAll();
+                    }
+                } finally {
+                    dataSourceTree.getViewer().getControl().setRedraw(true);
                 }
                 getDialogBoundsSettings().put(PARAM_SHOW_CONNECTED, showConnected);
+            }
+        });
+        final Button showAllProjectsCheck = new Button(group, SWT.CHECK);
+        showAllProjectsCheck.setText("Show all projects");
+        showAllProjectsCheck.setSelection(showAllProjects);
+        showAllProjectsCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showAllProjects = showAllProjectsCheck.getSelection();
+                dataSourceTree.getViewer().getControl().setRedraw(false);
+                try {
+                    dataSourceTree.reloadTree(getTreeRootNode());
+                    if (showAllProjects) {
+                        dataSourceTree.getViewer().expandToLevel(3);
+                    }
+                } finally {
+                    dataSourceTree.getViewer().getControl().setRedraw(true);
+                }
+                getDialogBoundsSettings().put(PARAM_SHOW_ALL_PROJECTS, showAllProjects);
             }
         });
 
@@ -168,17 +193,18 @@ public class SelectDataSourceDialog extends Dialog {
                 okPressed();
             }
         });
-        DBeaverUI.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                dataSourceTree.setFocus();
-                if (showConnected) {
-                    dataSourceTree.getViewer().expandAll();
-                }
+        DBeaverUI.asyncExec(() -> {
+            dataSourceTree.getViewer().getControl().setFocus();
+            if (showConnected) {
+                dataSourceTree.getViewer().expandAll();
             }
         });
 
         return group;
+    }
+
+    private DBNNode getTreeRootNode() {
+        return showAllProjects || projectNode == null ? rootNode : projectNode;
     }
 
     @Override

@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -354,5 +355,15 @@ public class DBPConnectionConfiguration implements DBPObject
             CommonUtils.equalObjects(this.handlers, source.handlers) &&
             CommonUtils.equalObjects(this.bootstrap, source.bootstrap) &&
             this.keepAliveInterval == source.keepAliveInterval;
+    }
+
+    public void resolveSystemEnvironmentVariables() {
+        hostName = GeneralUtils.replaceSystemEnvironmentVariables(hostName);
+        hostPort = GeneralUtils.replaceSystemEnvironmentVariables(hostPort);
+        serverName = GeneralUtils.replaceSystemEnvironmentVariables(serverName);
+        databaseName = GeneralUtils.replaceSystemEnvironmentVariables(databaseName);
+        userName = GeneralUtils.replaceSystemEnvironmentVariables(userName);
+        userPassword = GeneralUtils.replaceSystemEnvironmentVariables(userPassword);
+        url = GeneralUtils.replaceSystemEnvironmentVariables(url);
     }
 }

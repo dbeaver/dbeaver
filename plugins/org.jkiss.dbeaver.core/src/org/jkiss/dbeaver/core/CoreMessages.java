@@ -493,6 +493,10 @@ public class CoreMessages extends NLS {
 	public static String dialog_migrate_wizard_start_description;
 	public static String dialog_migrate_wizard_start_title;
 	public static String dialog_migrate_wizard_window_title;
+	public static String dialog_connection_network_socket_label_host;
+	public static String dialog_connection_network_socket_label_port;
+	public static String dialog_connection_network_socket_label_username;
+	public static String dialog_connection_network_socket_label_password;
 	public static String dialog_new_connection_wizard_monitor_load_data_sources;
 	public static String dialog_new_connection_wizard_start_description;
 	public static String dialog_new_connection_wizard_start_title;
@@ -722,6 +726,8 @@ public class CoreMessages extends NLS {
 	public static String model_project_Script;
 	public static String model_project_Scripts;
 
+	public static String model_ssh_configurator_group_settings;
+	public static String model_ssh_configurator_group_advanced;
 	public static String model_ssh_configurator_checkbox_save_pass;
 	public static String model_ssh_configurator_combo_auth_method;
 	public static String model_ssh_configurator_combo_password;
@@ -733,6 +739,8 @@ public class CoreMessages extends NLS {
 	public static String model_ssh_configurator_label_port;
 	public static String model_ssh_configurator_label_private_key;
 	public static String model_ssh_configurator_label_user_name;
+	public static String model_ssh_configurator_label_local_port;
+	public static String model_ssh_configurator_label_local_port_description;
     public static String model_ssh_configurator_label_keep_alive;
 	public static String model_ssh_configurator_label_tunnel_timeout;
 
@@ -821,6 +829,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_editor_checkbox_put_new_scripts;
 	public static String pref_page_sql_editor_checkbox_create_script_folders;
 	public static String pref_page_sql_editor_checkbox_reset_cursor;
+	public static String pref_page_sql_editor_checkbox_max_editor_on_script_exec;
 	public static String pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters;
 	public static String pref_page_sql_editor_text_anonymous_parameter_mark;
 	public static String pref_page_sql_editor_text_named_parameter_prefix;
@@ -933,14 +942,6 @@ public class CoreMessages extends NLS {
 	// New Connection Wizard
 	public static String dialog_setting_connection_wizard_title;
 	public static String dialog_setting_connection_general;
-	public static String dialog_setting_connection_host;
-	public static String dialog_setting_connection_port;
-	public static String dialog_setting_connection_database;
-	public static String dialog_setting_connection_user;
-	public static String dialog_setting_connection_password;
-	public static String dialog_setting_connection_settings;
-	public static String dialog_setting_connection_localClient;
-	public static String dialog_setting_connection_nondefaultDatabase;
 	public static String dialog_setting_connection_driver_properties_title;
 	public static String dialog_setting_connection_driver_properties_description;
 	public static String dialog_connection_network_title;
@@ -965,16 +966,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_socksproxy_password;
 	public static String dialog_connection_driver_treecontrol_initialText;
 	public static String dialog_connection_driver_project;
-	public static String dialog_connection_driver_general;
-	public static String dialog_connection_network_postgres_ssl_certificates;
-	public static String dialog_connection_network_postgres_ssl_certificates_root;
-	public static String dialog_connection_network_postgres_ssl_certificates_ca;
-	public static String dialog_connection_network_postgres_ssl_certificates_ssl;
-	public static String dialog_connection_network_postgres_ssl_certificates_ssl_key;
-	public static String dialog_connection_network_postgres_ssl_advanced;
-	public static String dialog_connection_network_postgres_ssl_advanced_ssl_mode;
-	public static String dialog_connection_network_postgres_ssl_advanced_ssl_factory;
-
+	
 
 	//Preference/Properties
 	// ResultSetsMain
@@ -985,9 +977,9 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_group_common;
 	public static String pref_page_database_resultsets_label_switch_mode_on_rows;
 	public static String pref_page_database_resultsets_label_show_column_description;
-	public static String pref_page_database_resultsets_label_calc_column_width_by_values;
-    public static String pref_page_database_resultsets_label_calc_column_width_by_values_tip;
 	public static String pref_page_database_resultsets_label_show_connection_name;
+	public static String pref_page_database_resultsets_label_calc_column_width_by_values;
+    public static String pref_page_database_resultsets_label_calc_column_width_by_values_tip;	
 	public static String pref_page_database_resultsets_label_structurize_complex_types;
 	public static String pref_page_database_resultsets_label_structurize_complex_types_tip;
 	public static String pref_page_database_resultsets_group_grid;
@@ -999,9 +991,12 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_group_plain_text;
 	public static String pref_page_database_resultsets_lable_value_format;
 	public static String pref_page_database_resultsets_label_maximum_column_length;
+	public static String pref_page_database_resultsets_label_text_delimiter_leading;
+	public static String pref_page_database_resultsets_label_text_delimiter_trailing;
 	// Connections
 	public static String pref_page_database_client_name_group;
 	public static String pref_page_database_client_name_group_description;
+	public static String pref_page_database_label_disable_client_application_name;
 	public static String pref_page_database_label_override_client_application_name;
 	public static String pref_page_database_label_client_application_name;
 	// SQLEditor
@@ -1151,6 +1146,149 @@ public class CoreMessages extends NLS {
 	public static String pref_page_projects_settings_label_not_store_resources_in_another_project;
 	public static String pref_page_projects_settings_label_restart_require_refresh_global_settings;
 	// Preference/Properties
+
+	// Connection edit
+	public static String dialog_connection_edit_title;
+	public static String dialog_connection_edit_connection_settings_variables_hint_label;
+
+	public static String dialog_connection_edit_wizard_conn_conf_network_link;
+
+	public static String dialog_connection_edit_wizard_general;
+	public static String dialog_connection_edit_wizard_general_bootstrap_query_title;
+	public static String dialog_connection_edit_wizard_general_bootstrap_query_sql_label;
+	public static String dialog_connection_edit_wizard_general_bootstrap_query_sql_title;
+	public static String dialog_connection_edit_wizard_general_bootstrap_query_ignore_error_lable;
+	public static String dialog_connection_edit_wizard_general_filter_save_button;
+	public static String dialog_connection_edit_wizard_general_filter_remove_button;
+	public static String dialog_connection_edit_wizard_general_filter_save_label;
+	public static String dialog_connection_edit_wizard_general_filter_name_label;
+	public static String dialog_connection_edit_wizard_general_filter_hint_text;
+
+	public static String dialog_connection_edit_wizard_shell_cmd;
+	public static String dialog_connection_edit_wizard_shell_cmd_pause_label;
+	public static String dialog_connection_edit_wizard_shell_cmd_pause_tooltip;
+	public static String dialog_connection_edit_wizard_shell_cmd_directory_label;
+	public static String dialog_connection_edit_wizard_shell_cmd_directory_title;
+	public static String dialog_connection_edit_wizard_shell_cmd_variables_hint_label;
+	public static String dialog_connection_edit_wizard_shell_cmd_variables_hint_title;
+
+	public static String dialog_connection_edit_wizard_metadata;
+	public static String dialog_connection_edit_wizard_metadata_description;
+	public static String dialog_connection_edit_wizard_resultset;
+	public static String dialog_connection_edit_wizard_resultset_description;
+	public static String dialog_connection_edit_wizard_binary;
+	public static String dialog_connection_edit_wizard_binary_description;
+	public static String dialog_connection_edit_wizard_data_format;
+	public static String dialog_connection_edit_wizard_data_format_description;
+	public static String dialog_connection_edit_wizard_presentation;
+	public static String dialog_connection_edit_wizard_presentation_description;
+	public static String dialog_connection_edit_wizard_sql_editor;
+	public static String dialog_connection_edit_wizard_sql_editor_description;
+	public static String dialog_connection_edit_wizard_sql_processing;
+	public static String dialog_connection_edit_wizard_sql_processing_description;
+	
+	public static String dialog_connection_edit_wizard_conn_change_title;
+	public static String dialog_connection_edit_wizard_conn_change_question;
+	public static String dialog_connection_edit_wizard_lock_pwd_title;
+	public static String dialog_connection_edit_wizard_bad_pwd_title;
+	public static String dialog_connection_edit_wizard_bad_pwd_msg;
+	public static String dialog_connection_edit_wizard_error_md5_title;
+	public static String dialog_connection_edit_wizard_error_md5_msg;
+	//Connection edit
+
+    // Driver edit
+	public static String dialog_edit_driver_setting;
+	public static String dialog_edit_driver_type_label;
+	public static String dialog_edit_driver_embedded_label;
+	public static String dialog_edit_driver_description;
+	public static String dialog_edit_driver_edit_maven_title;
+	public static String dialog_edit_driver_edit_maven_group_id_label;
+	public static String dialog_edit_driver_edit_maven_artifact_id_label;
+	public static String dialog_edit_driver_edit_maven_classfier_label;
+	public static String dialog_edit_driver_edit_maven_version_label;
+	
+	public static String dialog_edit_driver_text_driver_library;	
+	public static String dialog_edit_driver_info;
+	public static String dialog_edit_driver_driver;
+	public static String dialog_edit_driver_library;
+	public static String dialog_edit_driver_path;
+	public static String dialog_edit_driver_version;
+	public static String dialog_edit_driver_file;
+	public static String dialog_edit_driver_tab_depencencies;
+	public static String dialog_edit_driver_tab_depencencies_tooltip;
+	public static String dialog_edit_driver_tab_detail;
+	public static String dialog_edit_driver_tab_detail_tooltip;
+	public static String dialog_edit_driver_text_license;
+	// Driver edit
+
+	// Driver download
+	public static String dialog_driver_download_button_edit_dirver;
+	public static String dialog_driver_download_button_add_jars;
+	
+	public static String dialog_driver_download_wizard_title_setting;
+	public static String dialog_driver_download_wizard_title_upload_files;
+	public static String dialog_driver_download_wizard_title_setup_files;
+	public static String dialog_driver_download_wizard_download;
+	public static String dialog_driver_download_wizard_open_download;
+
+	public static String dialog_driver_download_page_vendor_link;
+	public static String dialog_driver_download_page_download_conf_link;
+
+	public static String dialog_driver_download_manual_page_config_driver_file;
+	public static String dialog_driver_download_manual_page_download_driver_file;
+	public static String dialog_driver_download_manual_page_download_config_driver_file;
+	public static String dialog_driver_download_manual_page_driver_file_missing_text;
+	public static String dialog_driver_download_manual_page_driver_file;
+	public static String dialog_driver_download_manual_page_column_file;
+	public static String dialog_driver_download_manual_page_column_required;
+	public static String dialog_driver_download_manual_page_column_description;
+	public static String dialog_driver_download_manual_page_yes;
+	public static String dialog_driver_download_manual_page_no;
+	
+	public static String dialog_driver_download_auto_page_auto_download;
+	public static String dialog_driver_download_auto_page_download_driver_files;
+	public static String dialog_driver_download_auto_page_download_specific_driver_files;
+	public static String dialog_driver_download_auto_page_driver_file_missing_text;
+	public static String dialog_driver_download_auto_page_force_download;
+	public static String dialog_driver_download_auto_page_force_download_tooltip;
+	public static String dialog_driver_download_auto_page_required_files;
+	public static String dialog_driver_download_auto_page_change_driver_version_text;
+	public static String dialog_driver_download_auto_page_obtain_driver_files_text;
+	public static String dialog_driver_download_auto_page_cannot_resolve_libraries_text;
+	public static String dialog_driver_download_auto_page_driver_download_error;
+	public static String dialog_driver_download_auto_page_driver_download_error_msg;
+	public static String dialog_driver_download_auto_page_driver_security_warning;
+	public static String dialog_driver_download_auto_page_driver_security_warning_msg;
+	public static String dialog_driver_download_auto_page_download_rate;
+	public static String dialog_driver_download_auto_page_download_failed_msg;
+	// Driver download
+		
+	// SQL editor resultset filter panel
+	public static String sql_editor_resultset_tool_item_log;
+	public static String sql_editor_resultset_tool_item_output;
+	public static String sql_editor_resultset_filter_panel_text_enter_sql_to_filter;
+	public static String sql_editor_resultset_filter_panel_text_enter_filter_not_support;
+	public static String sql_editor_resultset_filter_panel_btn_apply;
+	public static String sql_editor_resultset_filter_panel_btn_remove;
+	public static String sql_editor_resultset_filter_panel_btn_save;
+	public static String sql_editor_resultset_filter_panel_btn_custom;
+	public static String sql_editor_resultset_filter_panel_btn_config_refresh;
+	public static String sql_editor_resultset_filter_panel_btn_stop_refresh;
+	public static String sql_editor_resultset_filter_panel_label;
+	public static String sql_editor_resultset_filter_panel_btn_open_console;
+	public static String sql_editor_resultset_filter_panel_menu_refresh_interval;
+	public static String sql_editor_resultset_filter_panel_menu_stop;
+	public static String sql_editor_resultset_filter_panel_menu_customize;
+	public static String sql_editor_resultset_filter_panel_control_no_data;
+	public static String sql_editor_resultset_filter_panel_control_execute_to_see_reslut;
+	// SQL editor resultset filter panel
+	
+	//object properties editor
+	public static String obj_editor_properties_control_action_filter_setting;
+	public static String obj_editor_properties_control_action_configure_columns;
+	public static String obj_editor_properties_control_action_configure_columns_description;
+	//object properties editor
+	
 	
 	
 	static {

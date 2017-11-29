@@ -69,22 +69,27 @@ public class DataSourceProviderRegistry
         // Load datasource providers from external plugins
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID);
+            // Sort - parse providers with parent in the end
+            Arrays.sort(extElements, (o1, o2) -> {
+                String p1 = o1.getAttribute(RegistryConstants.ATTR_PARENT);
+                String p2 = o2.getAttribute(RegistryConstants.ATTR_PARENT);
+                if (CommonUtils.equalObjects(p1, p2)) return 0;
+                if (p1 == null) return -1;
+                if (p2 == null) return 1;
+                return 0;
+            });
             for (IConfigurationElement ext : extElements) {
                 DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, ext);
                 dataSourceProviders.add(provider);
             }
-            Collections.sort(dataSourceProviders, new Comparator<DataSourceProviderDescriptor>() {
-                @Override
-                public int compare(DataSourceProviderDescriptor o1, DataSourceProviderDescriptor o2)
-                {
-                    if (o1.isDriversManagable() && !o2.isDriversManagable()) {
-                        return 1;
-                    }
-                    if (o2.isDriversManagable() && !o1.isDriversManagable()) {
-                        return -1;
-                    }
-                    return o1.getName().compareToIgnoreCase(o2.getName());
+            dataSourceProviders.sort((o1, o2) -> {
+                if (o1.isDriversManagable() && !o2.isDriversManagable()) {
+                    return 1;
                 }
+                if (o2.isDriversManagable() && !o1.isDriversManagable()) {
+                    return -1;
+                }
+                return o1.getName().compareToIgnoreCase(o2.getName());
             });
         }
 

@@ -21,7 +21,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.text.source.ISharedTextColors;
@@ -32,8 +35,6 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -84,7 +85,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final Log log = Log.getLog(QueryLogViewer.class);
 
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log"; //$NON-NLS-1$
-    private static final String VIEWER_ID = "DBeaver.QM.LoigViewer";
+    private static final String VIEWER_ID = "DBeaver.QM.LogViewer";
     private static final int MIN_ENTRIES_PER_PAGE = 1;
 
     public static final RGB COLOR_LIGHT_GREEN = new RGB(0xBD, 0xFE, 0xBF);
@@ -367,14 +368,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             // Register control in focus service (to provide handlers binding)
             UIUtils.addFocusTracker(site, QUERY_LOG_CONTROL_ID, logTable);
 
-            logTable.addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e)
-                {
-                    // Unregister from focus service
-                    UIUtils.removeFocusTracker(QueryLogViewer.this.site, logTable);
-                    dispose();
-                }
+            logTable.addDisposeListener(e -> {
+                // Unregister from focus service
+                UIUtils.removeFocusTracker(QueryLogViewer.this.site, logTable);
+                dispose();
             });
         }
 
@@ -393,6 +390,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         reloadEvents();
 
+        // Make sure app is initialized
+        DBeaverCore.getInstance();
+        // Register QM listener
         QMUtils.registerMetaListener(this);
 
         DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(this);
@@ -440,12 +440,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             columns.add(cd);
 
             tableColumn.addListener(SWT.Selection, new TableColumnSortListener(logTable, colIndex));
-            tableColumn.addListener(SWT.Resize, new Listener() {
-                @Override
-                public void handleEvent(Event event) {
-                    final int width = tableColumn.getWidth();
-                    dialogSettings.put("column-" + logColumn.id, String.valueOf(width));
-                }
+            tableColumn.addListener(SWT.Resize, event -> {
+                final int width = tableColumn.getWidth();
+                dialogSettings.put("column-" + logColumn.id, String.valueOf(width));
             });
 
             colIndex++;
@@ -595,12 +592,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             return;
         }
         // Run in UI thread
-        DBeaverUI.syncExec(new Runnable() {
-            @Override
-            public void run() {
-                updateMetaInfo(events);
-            }
-        });
+        DBeaverUI.syncExec(() -> updateMetaInfo(events));
     }
 
     private synchronized void updateMetaInfo(final java.util.List<QMMetaEvent> events)
@@ -709,71 +701,67 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     {
         MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(logTable);
-        menuMgr.addMenuListener(new IMenuListener() {
-            @Override
-            public void menuAboutToShow(IMenuManager manager)
-            {
-                IAction editorAction = new Action("Open in SQL console", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
-                    @Override
-                    public void run()
-                    {
-                        openSelectionInEditor();
-                    }
-                };
-                IAction copyAction = new Action(CoreMessages.controls_querylog_action_copy) {
-                    @Override
-                    public void run()
-                    {
-                        copySelectionToClipboard(false);
-                    }
-                };
-                copyAction.setEnabled(logTable.getSelectionCount() > 0);
-                copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
-
-                IAction copyAllAction = new Action(CoreMessages.controls_querylog_action_copy_all_fields) {
-                    @Override
-                    public void run()
-                    {
-                        copySelectionToClipboard(true);
-                    }
-                };
-                copyAllAction.setEnabled(logTable.getSelectionCount() > 0);
-                copyAllAction.setActionDefinitionId(CoreCommands.CMD_COPY_SPECIAL);
-
-                IAction selectAllAction = new Action(CoreMessages.controls_querylog_action_select_all) {
-                    @Override
-                    public void run()
-                    {
-                        selectAll();
-                    }
-                };
-                selectAllAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_SELECT_ALL);
-
-                IAction clearLogAction = new Action(CoreMessages.controls_querylog_action_clear_log) {
-                    @Override
-                    public void run()
-                    {
-                        clearLog();
-                    }
-                };
-
-                boolean hasStatements = false;
-                for (TableItem item : logTable.getSelection()) {
-                    if (((QMMetaEvent)item.getData()).getObject() instanceof QMMStatementExecuteInfo) {
-                        hasStatements = true;
-                        break;
-                    }
+        menuMgr.addMenuListener(manager -> {
+            IAction editorAction = new Action("Open in SQL console", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
+                @Override
+                public void run()
+                {
+                    openSelectionInEditor();
                 }
-                if (hasStatements) {
-                    manager.add(editorAction);
-                    manager.add(new Separator());
+            };
+            IAction copyAction = new Action(CoreMessages.controls_querylog_action_copy) {
+                @Override
+                public void run()
+                {
+                    copySelectionToClipboard(false);
                 }
-                manager.add(copyAction);
-                manager.add(copyAllAction);
-                manager.add(selectAllAction);
-                manager.add(clearLogAction);
-                //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+            };
+            copyAction.setEnabled(logTable.getSelectionCount() > 0);
+            copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
+
+            IAction copyAllAction = new Action(CoreMessages.controls_querylog_action_copy_all_fields) {
+                @Override
+                public void run()
+                {
+                    copySelectionToClipboard(true);
+                }
+            };
+            copyAllAction.setEnabled(logTable.getSelectionCount() > 0);
+            copyAllAction.setActionDefinitionId(CoreCommands.CMD_COPY_SPECIAL);
+
+            IAction selectAllAction = new Action(CoreMessages.controls_querylog_action_select_all) {
+                @Override
+                public void run()
+                {
+                    selectAll();
+                }
+            };
+            selectAllAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_SELECT_ALL);
+
+            IAction clearLogAction = new Action(CoreMessages.controls_querylog_action_clear_log) {
+                @Override
+                public void run()
+                {
+                    clearLog();
+                }
+            };
+
+            boolean hasStatements = false;
+            for (TableItem item : logTable.getSelection()) {
+                if (((QMMetaEvent)item.getData()).getObject() instanceof QMMStatementExecuteInfo) {
+                    hasStatements = true;
+                    break;
+                }
             }
+            if (hasStatements) {
+                manager.add(editorAction);
+                manager.add(new Separator());
+            }
+            manager.add(copyAction);
+            manager.add(copyAllAction);
+            manager.add(selectAllAction);
+            manager.add(clearLogAction);
+            //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         });
         menuMgr.setRemoveAllWhenShown(true);
         logTable.setMenu(menu);

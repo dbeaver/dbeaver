@@ -112,7 +112,9 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                     @Override
                     public void keyTraversed(TraverseEvent e) {
                         if (e.detail == SWT.TRAVERSE_RETURN) {
-                            saveValue();
+                            if (!valueController.isReadOnly()) {
+                                saveValue();
+                            }
                             ((IMultiController) valueController).closeInlineEditor();
                             e.doit = false;
                             e.detail = SWT.TRAVERSE_NONE;
@@ -159,7 +161,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         });
     }
 
-    private void saveValue()
+    protected void saveValue()
     {
         try {
             Object newValue = extractEditorValue();

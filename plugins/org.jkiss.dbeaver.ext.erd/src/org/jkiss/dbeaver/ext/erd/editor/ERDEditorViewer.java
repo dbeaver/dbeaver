@@ -73,7 +73,7 @@ public class ERDEditorViewer extends Viewer
 
     @Override
     public void refresh() {
-        editorPart.refreshDiagram(true);
+        editorPart.refreshDiagram(true, true);
     }
 
     @Override

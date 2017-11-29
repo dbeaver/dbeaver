@@ -33,6 +33,8 @@ import java.util.StringTokenizer;
  * MySQL ENUM value manager
  */
 public class MySQLEnumValueManager extends EnumValueManager {
+    public MySQLEnumValueManager() {
+    }
 
     @Override
     protected boolean isMultiValue(IValueController valueController) {

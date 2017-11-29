@@ -19,7 +19,9 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.draw2d.AbsoluteBendpoint;
 import org.eclipse.draw2d.Bendpoint;
 import org.eclipse.draw2d.RelativeBendpoint;
@@ -27,12 +29,10 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.part.*;
 import org.jkiss.dbeaver.model.*;
@@ -141,6 +141,39 @@ public class DiagramLoader
 
     private static class DataSourceObjects {
         List<ERDEntity> entities = new ArrayList<>();
+    }
+
+    public static List<DBPDataSourceContainer> extractContainers(IFile resource)
+        throws IOException, XMLException, DBException
+    {
+        List<DBPDataSourceContainer> containers = new ArrayList<>();
+
+        final DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(resource.getProject());
+        if (dsRegistry == null) {
+            return containers;
+        }
+        try (InputStream is = resource.getContents()) {
+            final Document document = XMLUtils.parseDocument(is);
+            final Element diagramElem = document.getDocumentElement();
+
+            final Element entitiesElem = XMLUtils.getChildElement(diagramElem, TAG_ENTITIES);
+            if (entitiesElem != null) {
+                // Parse data source
+                for (Element dsElem : XMLUtils.getChildElementList(entitiesElem, TAG_DATA_SOURCE)) {
+                    String dsId = dsElem.getAttribute(ATTR_ID);
+                    if (!CommonUtils.isEmpty(dsId)) {
+                        // Get connected datasource
+                        final DataSourceDescriptor dataSourceContainer = dsRegistry.getDataSource(dsId);
+                        if (dataSourceContainer != null) {
+                            containers.add(dataSourceContainer);
+                        }
+                    }
+                }
+            }
+        } catch (CoreException e) {
+            throw new DBException("Error reading resource contents", e);
+        }
+        return containers;
     }
 
     public static void load(DBRProgressMonitor monitor, IProject project, DiagramPart diagramPart, InputStream in)
@@ -524,7 +557,7 @@ public class DiagramLoader
                             xml.startElement(TAG_COLUMN);
                             xml.addAttribute(ATTR_NAME, column.getAttribute().getName());
                             try {
-                                DBSEntityAttribute referenceAttribute = DBUtils.getReferenceAttribute(monitor, association, column.getAttribute());
+                                DBSEntityAttribute referenceAttribute = DBUtils.getReferenceAttribute(monitor, association, column.getAttribute(), false);
                                 if (referenceAttribute != null) {
                                     xml.addAttribute(ATTR_REF_NAME, referenceAttribute.getName());
                                 }

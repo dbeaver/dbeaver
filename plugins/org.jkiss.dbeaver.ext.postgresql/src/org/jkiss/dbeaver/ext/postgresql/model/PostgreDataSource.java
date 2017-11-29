@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -364,7 +365,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             pgConnection = super.openConnection(monitor, purpose);
         }
 
-        {
+        if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Provide client info
             try {
                 pgConnection.setClientInfo("ApplicationName", DBUtils.getClientApplicationName(getContainer(), purpose));

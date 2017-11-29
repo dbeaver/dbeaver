@@ -57,6 +57,8 @@ public class HexManager {
     private HexStatusLine statusLine = null;
     private Composite textsParent = null;
     private IMenuListener menuListener;
+    
+    private String defWidth;
 
     public HexEditControl getControl()
     {
@@ -143,6 +145,9 @@ public class HexManager {
             fontText = new Font(Display.getCurrent(), fontData);
             hexEditControl.setFont(fontText);
         }
+		if (defWidth != null) {
+			hexEditControl.setDefWidth(Integer.valueOf(defWidth));
+		}
 
         //hexEditControl.addLongSelectionListener(new ControlSelectionAdapter(ControlSelectionAdapter.UPDATE_POSITION_TEXT));
         hexEditControl.addListener(SWT.Modify, new Listener() {
@@ -505,5 +510,14 @@ public class HexManager {
     {
         this.menuListener = menuListener;
     }
+
+	public void setDefWidth(String defValue) {
+		this.defWidth = defValue;
+		
+	}
+	public String getDefaultWidth() {
+		return defWidth;
+	}
+	
 
 }

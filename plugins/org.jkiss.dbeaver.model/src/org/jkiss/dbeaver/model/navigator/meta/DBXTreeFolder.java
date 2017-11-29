@@ -35,6 +35,14 @@ public class DBXTreeFolder extends DBXTreeNode
         this.label = label;
     }
 
+    DBXTreeFolder(AbstractDescriptor source, DBXTreeNode parent, DBXTreeFolder folder)
+    {
+        super(source, parent, folder);
+        this.type = folder.type;
+        this.label = folder.label;
+        this.description = folder.description;
+    }
+
     public String getType()
     {
         return type;
@@ -50,6 +58,11 @@ public class DBXTreeFolder extends DBXTreeNode
     public String getChildrenType(DBPDataSource dataSource)
     {
         return label;
+    }
+
+    @Override
+    public String toString() {
+        return "Folder " + label;
     }
 
     public String getDescription()

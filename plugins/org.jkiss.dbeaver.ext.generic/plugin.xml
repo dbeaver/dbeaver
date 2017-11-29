@@ -326,7 +326,7 @@
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>
 
-                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
+                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.fff'''}'"/>
                     <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
 
                     <parameter name="script-delimiter-after-query" value="true"/>
@@ -356,7 +356,7 @@
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="supports-multiple-results" value="true"/>
 
-                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
+                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.fff'''}'"/>
                     <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
                     <parameter name="script-delimiter-after-query" value="true"/>
 
@@ -674,17 +674,6 @@
                     <parameter name="supports-scroll" value="false"/>
                 </driver>
                 <driver
-                    id="phoenix_hbase"
-                    label="Apache Phoenix"
-                    class="org.apache.phoenix.jdbc.PhoenixDriver"
-                    sampleURL="jdbc:phoenix:{host}"
-                    webURL="http://phoenix.apache.org/"
-                    description="Driver for Apache Phoenix HBase Database"
-                    category="Hadoop">
-                    <parameter name="omit-type-cache" value="true"/>
-                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-core:RELEASE"/>
-                </driver>
-                <driver
                     id="csvjdbc"
                     label="CSV/DBF"
                     category="Flat files (CSV)"
@@ -761,6 +750,17 @@
 
                 <!-- Hadoop -->
                 <driver
+                    id="phoenix_hbase"
+                    label="Apache Phoenix"
+                    class="org.apache.phoenix.jdbc.PhoenixDriver"
+                    sampleURL="jdbc:phoenix:{host}"
+                    webURL="http://phoenix.apache.org/"
+                    description="Driver for Apache Phoenix HBase Database"
+                    category="Hadoop">
+                    <parameter name="omit-type-cache" value="true"/>
+                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-core:RELEASE"/>
+                </driver>
+                <driver
                     id="gemfire_xd"
                     label="Gemfire XD"
                     class="com.pivotal.gemfirexd.jdbc.ClientDriver"
@@ -821,6 +821,19 @@
                 </driver>
 
                 <!-- Cloudera -->
+                <driver
+                    id="cloudera_impala"
+                    label="Cloudera Impala"
+                    class="com.cloudera.impala.jdbc41.Driver"
+                    sampleURL="jdbc:impala://{host}:{port}/{database}"
+                    defaultPort="21050"
+                    description="Cloudera Impala. You can download JDBC driver files from https://www.cloudera.com/"
+                    webURL="https://www.cloudera.com/downloads/connectors/impala/jdbc/2-5-41.html"
+                    category="Hadoop">
+
+                    <parameter name="query-get-active-db" value="select current_database()"/>
+                    <parameter name="query-set-active-db" value="use [?]"/>
+                </driver>
 
                 <!-- AWS -->
                 <driver
@@ -894,6 +907,31 @@
                     <file type="jar" path="maven:/com.facebook.presto:presto-jdbc:RELEASE"/>
                 </driver>
 
+                <!-- CUBRID -->
+                <driver
+                        id="cubrid_jdbc"
+                        label="CUBRID"
+                        class="cubrid.jdbc.driver.CUBRIDDriver"
+                        sampleURL="jdbc:CUBRID:{host}:{port}:{server}:{database}::"
+                        defaultPort="33000"
+                        description="CUBRID JDBC driver (beta)"
+                        webURL="https://www.cubrid.org/">
+                    <file type="jar" path="http://ftp.cubrid.org/CUBRID_Drivers/JDBC_Driver/JDBC-10.1.0.7663-cubrid.jar"/>
+                </driver>
+
+                <!-- Solr -->
+                <driver
+                        id="apache_solrj"
+                        label="Solr"
+                        icon="icons/solr_icon.png"
+                        class="org.apache.solr.client.solrj.io.sql.DriverImpl"
+                        sampleURL="jdbc:solr://{host}:{port}/[?collection={database}]"
+                        defaultPort="9983"
+                        description="Apache SolrJ JDBC driver"
+                        webURL="https://lucene.apache.org/solr/">
+                    <file type="jar" path="maven:/org.apache.solr:solr-solrj:RELEASE"/>
+                </driver>
+
             </drivers>
 
             <views>
@@ -943,16 +981,16 @@
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
                 main="false"
                 label="Definition"
-                description="Table DDL"
+                description="View definition"
                 position="additions_end"
                 icon="#sql_text"
                 type="folder"
-                embeddable="true">
+                embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTable" if="object.view"/>
         </editor>
         <editor id="generic.source.view" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
                 label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="true">
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject"/>
         </editor>
 

@@ -132,7 +132,7 @@ public class ImageUtils {
     }
 
     private static Image makeDisableImage(Image image) {
-        return new Image(image.getDevice(), image, SWT.IMAGE_DISABLE);
+        return new Image(image.getDevice(), image, SWT.IMAGE_GRAY);
     }
 
     public static Image removeImageBorder(Image srcImage, Color borderColor)

@@ -137,6 +137,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         }
 
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE, true);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.BEEP_ON_QUERY_END, false);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, false);
 
@@ -148,6 +149,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.HEX_FONT_NAME, HexEditControl.DEFAULT_FONT_NAME);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.HEX_FONT_SIZE, 10);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.HEX_DEF_WIDTH, 8);
 
         // General UI
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_AUTO_UPDATE_CHECK, true);
@@ -180,6 +182,8 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE, 1);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, 255);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT, DBDDisplayFormat.EDIT.name());
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING, true);
 
         // QM
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);

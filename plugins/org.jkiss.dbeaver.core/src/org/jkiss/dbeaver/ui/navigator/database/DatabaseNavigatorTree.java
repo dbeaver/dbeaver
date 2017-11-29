@@ -23,6 +23,8 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -80,14 +82,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         this.defaultSelection = new StructuredSelection(rootNode);
         this.model = DBeaverCore.getInstance().getNavigatorModel();
         this.model.addListener(this);
-        addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e)
-            {
-                if (model != null) {
-                    model.removeListener(DatabaseNavigatorTree.this);
-                    model = null;
-                }
+        addDisposeListener(e -> {
+            if (model != null) {
+                model.removeListener(DatabaseNavigatorTree.this);
+                model = null;
             }
         });
 
@@ -98,14 +96,23 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         if (rootNode.getParentNode() == null) {
             //this.treeViewer.setAutoExpandLevel(2);
         }
-        treeViewer.setLabelProvider(new DatabaseNavigatorLabelProvider(treeViewer));
+        DatabaseNavigatorLabelProvider labelProvider = new DatabaseNavigatorLabelProvider(treeViewer);
+        treeViewer.setLabelProvider(labelProvider);
         treeViewer.setContentProvider(new DatabaseNavigatorContentProvider(this, showRoot));
+        // FIXME: can't add MeasureItem handler. It breaks zoomed tree/table renderers.
+        // FIXME: Although it shouldn't - see ObjectListControl trees.
+        //treeViewer.getTree().addListener(SWT.MeasureItem, event -> measureItem(event));
+        treeViewer.getTree().addListener(SWT.PaintItem, new TreeBackgroundColorPainter(labelProvider));
 
-        treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
+        setInput(rootNode);
 
         ColumnViewerToolTipSupport.enableFor(treeViewer);
 
         initEditor();
+    }
+
+    private void setInput(DBNNode rootNode) {
+        treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
     }
 
     private TreeViewer doCreateTreeViewer(Composite parent, int style) {
@@ -296,13 +303,38 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     public void reloadTree(final DBNNode rootNode)
     {
-        DatabaseNavigatorTree.this.treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
+        setInput(rootNode);
+    }
+
+    private static class TreeBackgroundColorPainter implements Listener {
+        private DatabaseNavigatorLabelProvider labelProvider;
+        TreeBackgroundColorPainter(DatabaseNavigatorLabelProvider labelProvider) {
+            this.labelProvider = labelProvider;
+        }
+
+        public void handleEvent(Event event) {
+            if ((event.detail & SWT.SELECTED) == 0 && (event.detail & SWT.HOT) == 0) {
+                return; /// item not selected
+            }
+
+            TreeItem item = (TreeItem)event.item;
+            Color colorBackground = labelProvider.getBackground(item.getData());
+            if (colorBackground != null) {
+                GC gc = event.gc;
+                Color oldBackground = gc.getForeground();
+
+                gc.setForeground(colorBackground);
+                gc.drawRoundRectangle(event.x, event.y, event.width, event.height - 1, 3, 3);
+
+                gc.setForeground(oldBackground);
+            }
+        }
     }
 
     private class TreeSelectionAdapter implements MouseListener {
 
         private volatile TreeItem curSelection;
-        private volatile RenameJob renameJob = new RenameJob();
+        private volatile RenameJob renameJob;
 
         private volatile boolean doubleClick = false;
 
@@ -310,7 +342,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         public synchronized void mouseDoubleClick(MouseEvent e)
         {
             curSelection = null;
-            renameJob.canceled = true;
+            if (renameJob != null) {
+                renameJob.canceled = true;
+            }
         }
 
         @Override
@@ -328,7 +362,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             changeSelection(e);
         }
 
-        public void changeSelection(MouseEvent e) {
+        void changeSelection(MouseEvent e) {
             disposeOldEditor();
             final TreeItem newSelection = treeViewer.getTree().getItem(new Point(e.x, e.y));
             if (newSelection == null) {
@@ -340,7 +374,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 curSelection = null;
                 return;
             }
-            if (curSelection != null && curSelection == newSelection && renameJob.selection == null) {
+            if (curSelection != null && curSelection == newSelection && (renameJob == null || renameJob.selection == null)) {
+                if (renameJob == null) {
+                    renameJob = new RenameJob();
+                }
                 renameJob.selection = curSelection;
                 renameJob.schedule(1000);
             }
@@ -351,7 +388,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             private volatile boolean canceled = false;
             public TreeItem selection;
 
-            public RenameJob()
+            RenameJob()
             {
                 super("Rename ");
             }
@@ -362,12 +399,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 try {
                     if (!treeViewer.getTree().isDisposed() && treeViewer.getTree().isFocusControl() && curSelection == selection && !canceled) {
                         final TreeItem itemToRename = selection;
-                        DBeaverUI.asyncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                renameItem(itemToRename);
-                            }
-                        });
+                        DBeaverUI.asyncExec(() -> renameItem(itemToRename));
                     }
                 } finally {
                     canceled = false;

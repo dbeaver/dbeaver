@@ -298,10 +298,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     @Override
     public Point getCursorLocation() {
         GridPos focusPos = spreadsheet.getFocusPos();
-        Rectangle columnBounds = spreadsheet.getColumnBounds(focusPos.col);
-        if (columnBounds != null) {
-            columnBounds.y += spreadsheet.getHeaderHeight();
-            return new Point(columnBounds.x, columnBounds.y);
+        if (focusPos.col >= 0) {
+            Rectangle columnBounds = spreadsheet.getColumnBounds(focusPos.col);
+            if (columnBounds != null) {
+                columnBounds.y += spreadsheet.getHeaderHeight() +
+                    (focusPos.row - spreadsheet.getTopIndex()) * (spreadsheet.getItemHeight() + 1) + spreadsheet.getItemHeight() / 2;
+                return new Point(columnBounds.x + 20, columnBounds.y);
+            }
         }
         return super.getCursorLocation();
     }
@@ -658,7 +661,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     @Override
     public void formatData(boolean refreshData) {
-        reorderLocally();
         spreadsheet.refreshData(false, true);
     }
 
@@ -1008,13 +1010,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
     }
 
-    private void reorderLocally()
-    {
-        controller.rejectChanges();
-        controller.getModel().resetOrdering();
-        refreshData(false, false, true);
-    }
-
     public void changeSorting(Object columnElement, final int state)
     {
         if (columnElement == null) {
@@ -1023,52 +1018,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             spreadsheet.redrawGrid();
             return;
         }
-        DBDDataFilter dataFilter = controller.getModel().getDataFilter();
         boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
         boolean altPressed = (state & SWT.ALT) == SWT.ALT;
-        if (ctrlPressed) {
-            dataFilter.resetOrderBy();
-        }
-        DBDAttributeBinding metaColumn = (DBDAttributeBinding)columnElement;
-        DBDAttributeConstraint constraint = dataFilter.getConstraint(metaColumn);
-        assert constraint != null;
-        //int newSort;
-        if (constraint.getOrderPosition() == 0) {
-            if (ResultSetUtils.isServerSideFiltering(controller) && supportsDataFilter()) {
-                if (ConfirmationDialog.showConfirmDialogEx(
-                    spreadsheet.getShell(),
-                    DBeaverPreferences.CONFIRM_ORDER_RESULTSET,
-                    ConfirmationDialog.QUESTION,
-                    ConfirmationDialog.WARNING,
-                    metaColumn.getName()) != IDialogConstants.YES_ID)
-                {
-                    return;
-                }
-            }
-            constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
-            constraint.setOrderDescending(altPressed);
-        } else if (!constraint.isOrderDescending()) {
-            constraint.setOrderDescending(true);
-        } else {
-            for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
-                if (con2.getOrderPosition() > constraint.getOrderPosition()) {
-                    con2.setOrderPosition(con2.getOrderPosition() - 1);
-                }
-            }
-            constraint.setOrderPosition(0);
-            constraint.setOrderDescending(false);
-        }
-
-        if (!ResultSetUtils.isServerSideFiltering(controller) || !controller.isHasMoreData()) {
-            if (!controller.checkForChanges()) {
-                return;
-            }
-            reorderLocally();
-        } else {
-            controller.refreshData(null);
-        }
+        controller.toggleSortOrder((DBDAttributeBinding) columnElement, ctrlPressed, altPressed);
     }
-
 
     ///////////////////////////////////////////////
     // Misc

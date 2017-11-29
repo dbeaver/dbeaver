@@ -290,6 +290,14 @@ public class ResultSetUtils
                 try {
                     Collection<? extends DBSTableIndex> indexes = ((DBSTable)table).getIndexes(monitor);
                     if (!CommonUtils.isEmpty(indexes)) {
+                        // First search for primary index
+                        for (DBSTableIndex index : indexes) {
+                            if (index.isPrimary() && DBUtils.isIdentifierIndex(monitor, index)) {
+                                identifiers.add(index);
+                                break;
+                            }
+                        }
+                        // Then search for unique index
                         for (DBSTableIndex index : indexes) {
                             if (DBUtils.isIdentifierIndex(monitor, index)) {
                                 identifiers.add(index);
@@ -329,8 +337,9 @@ public class ResultSetUtils
                 if (isGoodReferrer(monitor, bindings, referrer)) {
                     if (referrer.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                         return referrer;
-                    } else if (referrer.getConstraintType().isUnique() ||
-                        (referrer instanceof DBSTableIndex && ((DBSTableIndex) referrer).isUnique()))
+                    } else if (uniqueId == null &&
+                        (referrer.getConstraintType().isUnique() ||
+                        (referrer instanceof DBSTableIndex && ((DBSTableIndex) referrer).isUnique())))
                     {
                         uniqueId = referrer;
                     }

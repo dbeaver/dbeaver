@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
@@ -237,8 +238,11 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     }
 
     private void printGrid(boolean append) {
-        int maxColumnSize = getController().getPreferenceStore().getInt(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
-        DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(getController().getPreferenceStore().getString(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT));
+        DBPPreferenceStore prefs = getController().getPreferenceStore();
+        int maxColumnSize = prefs.getInt(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
+        boolean delimLeading = prefs.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING);
+        boolean delimTrailing = prefs.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING);
+        DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT));
 
         StringBuilder grid = new StringBuilder(512);
         ResultSetModel model = controller.getModel();
@@ -267,25 +271,29 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
         if (!append) {
             // Print header
+            if (delimLeading) grid.append("|");
             for (int i = 0; i < attrs.size(); i++) {
+                if (i > 0) grid.append("|");
                 DBDAttributeBinding attr = attrs.get(i);
                 String attrName = getAttributeName(attr);
                 grid.append(attrName);
                 for (int k = colWidths[i] - attrName.length(); k > 0; k--) {
                     grid.append(" ");
                 }
-                grid.append("|");
             }
+            if (delimTrailing) grid.append("|");
             grid.append("\n");
 
             // Print divider
             // Print header
+            if (delimLeading) grid.append("|");
             for (int i = 0; i < attrs.size(); i++) {
+                if (i > 0) grid.append("|");
                 for (int k = colWidths[i]; k > 0; k--) {
                     grid.append("-");
                 }
-                grid.append("|");
             }
+            if (delimTrailing) grid.append("|");
             grid.append("\n");
         }
 
@@ -296,7 +304,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         }
         for (int i = firstRow; i < allRows.size(); i++) {
             ResultSetRow row = allRows.get(i);
+            if (delimLeading) grid.append("|");
             for (int k = 0; k < attrs.size(); k++) {
+                if (k > 0) grid.append("|");
                 DBDAttributeBinding attr = attrs.get(k);
                 String displayString = getCellString(model, attr, row, displayFormat);
                 if (displayString.length() >= colWidths[k] - 1) {
@@ -306,8 +316,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 for (int j = colWidths[k] - displayString.length(); j > 0; j--) {
                     grid.append(" ");
                 }
-                grid.append("|");
             }
+            if (delimTrailing) grid.append("|");
             grid.append("\n");
         }
         grid.setLength(grid.length() - 1); // cut last line feed
@@ -335,7 +345,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     }
 
     private void printRecord() {
-        DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(getController().getPreferenceStore().getString(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT));
+        DBPPreferenceStore prefs = getController().getPreferenceStore();
+        boolean delimLeading = prefs.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING);
+        boolean delimTrailing = prefs.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING);
+        DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT));
 
         StringBuilder grid = new StringBuilder(512);
         ResultSetModel model = controller.getModel();
@@ -353,26 +366,39 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         }
 
         // Header
+        if (delimLeading) grid.append("|");
         grid.append("Name");
         for (int j = nameWidth - 4; j > 0; j--) {
             grid.append(" ");
         }
-        grid.append("|Value\n");
+        grid.append("|Value");
+        for (int j = valueWidth - 5; j > 0; j--) {
+            grid.append(" ");
+        }
+        if (delimTrailing) grid.append("|");
+        grid.append("\n");
         for (int j = 0; j < nameWidth; j++) grid.append("-");
         grid.append("|");
         for (int j = 0; j < valueWidth; j++) grid.append("-");
+        if (delimTrailing) grid.append("|");
         grid.append("\n");
 
         // Values
         for (int i = 0; i < attrs.size(); i++) {
             DBDAttributeBinding attr = attrs.get(i);
             String name = getAttributeName(attr);
+            if (delimLeading) grid.append("|");
             grid.append(name);
             for (int j = nameWidth - name.length(); j > 0; j--) {
                 grid.append(" ");
             }
             grid.append("|");
             grid.append(values[i]);
+            for (int j = valueWidth - values[i].length(); j > 0; j--) {
+                grid.append(" ");
+            }
+
+            if (delimTrailing) grid.append("|");
             grid.append("\n");
         }
         grid.setLength(grid.length() - 1); // cut last line feed

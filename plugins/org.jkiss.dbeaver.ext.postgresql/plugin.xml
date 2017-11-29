@@ -31,7 +31,7 @@
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
                 class="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"
-                description="PostgreSQL JDBC connector"
+                description="%datasource.postgresql.description"
                 id="postgresql"
                 label="PostgreSQL"
                 icon="icons/postgresql_icon.png">
@@ -209,7 +209,7 @@
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     defaultPort="5432"
                     webURL="http://jdbc.postgresql.org/"
-                    description="PostgreSQL standard driver">
+                    description="%driver.postgresql.description">
                     <replace provider="generic" driver="postgresql"/>
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[9.4.1212.jre7]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
@@ -242,9 +242,9 @@
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
                 class="org.jkiss.dbeaver.ext.postgresql.model.data.PostgreValueHandlerProvider"
-                description="PostgreSQL data types provider"
+                description="%provider.data.type.postgresql.description"
                 id="org.jkiss.dbeaver.ext.postgresql.model.data.PostgreValueHandlerProvider"
-                label="PostgreSQL data types provider">
+                label="%provider.data.type.postgresql.name">
 
             <datasource id="postgresql"/>
 
@@ -294,24 +294,25 @@
             objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
 
         <editor id="postgresql.role.permissions" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgresRolePrivilegesEditor"
-                label="Permissions" description="Permissions" icon="#permissions" position="additions_middle" type="folder">
+                label="%db.editor.role.permission.name" description="%db.editor.role.permission.description" icon="#permissions" position="additions_middle" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole"/>
         </editor>
         <editor id="postgresql.table.permissions" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgresRolePrivilegesEditor"
-                label="Permissions" description="Permissions" icon="#permissions" position="additions_middle" type="folder">
+                label="%db.editor.table.permission.name" description="%db.editor.table.permission.description" icon="#permissions" position="additions_middle" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
         </editor>
         <editor id="postgresql.source.view" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSourceViewEditor"
-                label="Source" description="Source code" icon="#sql_text" position="additions_middle"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="true">
+                label="%db.editor.source.name" description="%db.editor.source.description" icon="#sql_text" position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreView"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraintBase"/>
         </editor>
         <editor id="postgresql.source.ddl" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                label="DDL" description="DDL" icon="#sql_text" position="additions_middle"
+                label="%db.editor.ddl.name" description="%db.editor.ddl.description" icon="#sql_text" position="additions_middle"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
         </editor>
@@ -343,8 +344,8 @@
         <handler
                 type="config"
                 id="postgre_ssl"
-                label="SSL"
-                description="Secure socket layer"
+                label="%handler.ssl.name"
+                description="%handler.ssl.description"
                 secured="false"
                 uiClass="org.jkiss.dbeaver.ext.postgresql.ui.PostgreSSLConfigurator"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
@@ -360,9 +361,9 @@
                     icon="#tools"/>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolBackup"
-                    description="Export database"
+                    description="%tools.backup.db.description"
                     id="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolBackup"
-                    label="Backup database"
+                    label="%tools.backup.db.name"
                     icon="#export"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
@@ -371,9 +372,9 @@
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolRestore"
-                    description="Import database"
+                    description="%tools.restore.db.description"
                     id="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolRestore"
-                    label="Restore database"
+                    label="%tools.restore.db.name"
                     icon="#import"
                     singleton="true">
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
@@ -381,36 +382,36 @@
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolScript"
-                    description="Execute script with native client"
+                    description="%tools.execute.script.description"
                     id="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolScript"
-                    label="Execute script"
+                    label="%tools.execute.script.name"
                     singleton="true">
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
                 <!--<objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>-->
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolAnalyze"
-                    description="Analyze table(s)"
+                    description="%tools.analyze.description"
                     id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolAnalyze"
-                    label="Analyze"
+                    label="%tools.analyze.name"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolVacuum"
-                    description="Vacuum table(s)"
+                    description="%tools.vacuum.description"
                     id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolVacuum"
-                    label="Vacuum"
+                    label="%tools.vacuum.name"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTruncate"
-                    description="Truncate table(s)"
+                    description="%tools.truncate.description"
                     id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTruncate"
-                    label="Truncate"
+                    label="%tools.truncate.name"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
             </tool>
