@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.ext.erd.action;
 
 import org.eclipse.jface.action.Action;
+import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -35,7 +36,7 @@ public class DiagramRefreshAction extends Action
 
 	public DiagramRefreshAction(ERDEditorPart editor)
 	{
-		super("Refresh Diagram", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH));
+		super(ERDMessages.erd_editor_control_action_refresh_diagram, DBeaverIcons.getImageDescriptor(UIIcon.REFRESH));
 		this.editor = editor;
 	}
 
@@ -43,7 +44,7 @@ public class DiagramRefreshAction extends Action
     public void run()
 	{
         //editor.get
-        editor.refreshDiagram(true);
+        editor.refreshDiagram(true, true);
 	}
 
 }

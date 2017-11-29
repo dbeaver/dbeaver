@@ -30,18 +30,14 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
  */
 public class GenericSchema extends GenericObjectContainer implements DBSSchema
 {
+    @Nullable
     private GenericCatalog catalog;
+    @NotNull
     private String schemaName;
 
-    public GenericSchema(GenericDataSource dataSource, String schemaName)
+    public GenericSchema(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName)
     {
         super(dataSource);
-        this.schemaName = schemaName;
-    }
-
-    public GenericSchema(GenericCatalog catalog, String schemaName)
-    {
-        super(catalog.getDataSource());
         this.catalog = catalog;
         this.schemaName = schemaName;
     }

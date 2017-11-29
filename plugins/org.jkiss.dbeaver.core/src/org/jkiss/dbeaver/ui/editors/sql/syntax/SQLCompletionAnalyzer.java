@@ -297,9 +297,11 @@ class SQLCompletionAnalyzer
 
             String[][] quoteStrings = sqlDialect.getIdentifierQuoteStrings();
             StringBuilder quotes = new StringBuilder();
-            for (String[] quotePair : quoteStrings) {
-                if (quotes.indexOf(quotePair[0]) == -1) quotes.append('\\').append(quotePair[0]);
-                if (quotes.indexOf(quotePair[1]) == -1) quotes.append('\\').append(quotePair[1]);
+            if (quoteStrings != null) {
+                for (String[] quotePair : quoteStrings) {
+                    if (quotes.indexOf(quotePair[0]) == -1) quotes.append('\\').append(quotePair[0]);
+                    if (quotes.indexOf(quotePair[1]) == -1) quotes.append('\\').append(quotePair[1]);
+                }
             }
             String tableNamePattern = "([\\p{L}0-9_$\\.\\-" + quotes.toString() + "]+)";
             String structNamePattern;
@@ -612,9 +614,14 @@ class SQLCompletionAnalyzer
                 default:
                     // Do not convert case if we got it directly from object
                     if (!isObject) {
-                        DBPIdentifierCase convertCase = dataSource instanceof SQLDataSource ?
-                            ((SQLDataSource) dataSource).getSQLDialect().storesUnquotedCase() : DBPIdentifierCase.MIXED;
-                        replaceString = convertCase.transform(replaceString);
+                        DBPKeywordType keywordType = request.editor.getSyntaxManager().getDialect().getKeywordType(replaceString);
+                        if (keywordType == DBPKeywordType.KEYWORD) {
+                            replaceString = request.editor.getSyntaxManager().getKeywordCase().transform(replaceString);
+                        } else {
+                            DBPIdentifierCase convertCase = dataSource instanceof SQLDataSource ?
+                                ((SQLDataSource) dataSource).getSQLDialect().storesUnquotedCase() : DBPIdentifierCase.MIXED;
+                            replaceString = convertCase.transform(replaceString);
+                        }
                     }
                     break;
             }

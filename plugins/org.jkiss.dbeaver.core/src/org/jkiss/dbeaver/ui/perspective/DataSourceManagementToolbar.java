@@ -91,6 +91,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     public static final String EMPTY_SELECTION_TEXT = CoreMessages.toolbar_datasource_selector_empty;
 
+    private static DataSourceManagementToolbar toolBarInstance;
+
     private IWorkbenchWindow workbenchWindow;
     private IWorkbenchPart activePart;
     private IPageListener pageListener;
@@ -165,7 +167,12 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
     }
 
+    public static DataSourceManagementToolbar getInstance() {
+        return toolBarInstance;
+    }
+
     public DataSourceManagementToolbar(IWorkbenchWindow workbenchWindow) {
+        toolBarInstance = this;
         this.workbenchWindow = workbenchWindow;
         DBeaverCore.getInstance().getNavigatorModel().addListener(this);
 
@@ -300,6 +307,10 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (activeEditor != null && activeEditor.getEditorInput() instanceof IFileEditorInput) {
             final IFile curFile = ((IFileEditorInput) activeEditor.getEditorInput()).getFile();
             if (curFile != null) {
+                DBPDataSourceContainer fileDataSource = EditorUtils.getFileDataSource(curFile);
+                if (fileDataSource != null) {
+                    return fileDataSource.getRegistry().getDataSources();
+                }
                 final DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(curFile.getProject());
                 if (dsRegistry != null) {
                     return dsRegistry.getDataSources();
@@ -724,14 +735,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 if (!drop) {
                     return;
                 }
-
-                SelectDataSourceDialog dialog = new SelectDataSourceDialog(getShell(), getActiveProject(), getSelectedItem());
-                if (dialog.open() == IDialogConstants.CANCEL_ID) {
-                    return;
-                }
-                DBPDataSourceContainer dataSource = dialog.getDataSource();
-                super.select(dataSource);
-                changeDataSourceSelection(dataSource);
+                showConnectionSelector();
             }
         };
         RowData rd = new RowData();
@@ -750,27 +754,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 if (!drop) {
                     return;
                 }
-                DBPDataSourceContainer curDS = getDataSourceContainer();
-                DBNDatabaseNode selectedDB = getSelectedItem();
-                List<DBNDatabaseNode> items = new ArrayList<>(getItems());
-                items.removeIf(Objects::isNull);
-                if (items.isEmpty()) {
-                    return;
-                }
-                SelectObjectDialog<DBNDatabaseNode> dialog = new SelectObjectDialog<>(getShell(),
-                    "Choose catalog/schema",
-                    true,
-                    "SchemaSelector" + (curDS == null ? "": "_" + curDS.getDriver().getId()),
-                    items,
-                    selectedDB == null ? null : Collections.singletonList(selectedDB));
-                if (dialog.open() == IDialogConstants.CANCEL_ID) {
-                    return;
-                }
-                DBNDatabaseNode node = dialog.getSelectedObject();
-                if (node != null) {
-                    super.select(node);
-                }
-                changeDataBaseSelection(node);
+                showDatabaseSelector();
             }
         };
         rd = new RowData();
@@ -822,6 +806,40 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         });
 
         return comboGroup;
+    }
+
+    void showConnectionSelector() {
+        SelectDataSourceDialog dialog = new SelectDataSourceDialog(connectionCombo.getShell(), getActiveProject(), connectionCombo.getSelectedItem());
+        if (dialog.open() == IDialogConstants.CANCEL_ID) {
+            return;
+        }
+        DBPDataSourceContainer dataSource = dialog.getDataSource();
+        connectionCombo.select(dataSource);
+        changeDataSourceSelection(dataSource);
+    }
+
+    void showDatabaseSelector() {
+        DBNDatabaseNode selectedDB = databaseCombo.getSelectedItem();
+        List<DBNDatabaseNode> items = new ArrayList<>(databaseCombo.getItems());
+        items.removeIf(Objects::isNull);
+        if (items.isEmpty()) {
+            return;
+        }
+        SelectObjectDialog<DBNDatabaseNode> dialog = new SelectObjectDialog<>(databaseCombo.getShell(),
+            "Choose catalog/schema",
+            true,
+            "SchemaSelector",
+            items,
+            selectedDB == null ? null : Collections.singletonList(selectedDB));
+        dialog.setModeless(true);
+        if (dialog.open() == IDialogConstants.CANCEL_ID) {
+            return;
+        }
+        DBNDatabaseNode node = dialog.getSelectedObject();
+        if (node != null) {
+            databaseCombo.select(node);
+        }
+        changeDataBaseSelection(node);
     }
 
     @Override

@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -124,7 +125,7 @@ public class GenericDataSource extends JDBCDataSource
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBCException {
         Connection jdbcConnection = super.openConnection(monitor, purpose);
 
-        if (populateClientAppName) {
+        if (populateClientAppName && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Provide client info
             // "ApplicationName" property seems to be pretty standard
             try {
@@ -451,7 +452,7 @@ public class GenericDataSource extends JDBCDataSource
                 if (!catalogNames.isEmpty() || catalogsFiltered) {
                     this.catalogs = new ArrayList<>();
                     for (String catalogName : catalogNames) {
-                        GenericCatalog catalog = new GenericCatalog(this, catalogName);
+                        GenericCatalog catalog = metaModel.createCatalogImpl(this, catalogName);
                         this.catalogs.add(catalog);
                     }
                 }
@@ -537,12 +538,7 @@ public class GenericDataSource extends JDBCDataSource
 
                     session.getProgressMonitor().subTask("Schema " + schemaName);
 
-                    GenericSchema schema;
-                    if (catalog == null) {
-                        schema = new GenericSchema(this, schemaName);
-                    } else {
-                        schema = new GenericSchema(catalog, schemaName);
-                    }
+                    GenericSchema schema = metaModel.createSchemaImpl(this, catalog, schemaName);
                     tmpSchemas.add(schema);
                 }
             } finally {

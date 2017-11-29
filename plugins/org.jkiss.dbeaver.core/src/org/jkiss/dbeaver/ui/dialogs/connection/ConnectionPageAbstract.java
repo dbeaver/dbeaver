@@ -18,13 +18,16 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -87,6 +90,19 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         }
     }
 
+    /**
+     * @param horizontalSpan can be null, default is 2
+     * @param verticalSpan can be null, default is 10
+     */
+    protected CLabel createSettingsVariablesHintLabel(Composite parent, Integer horizontalSpan, Integer verticalSpan) {
+        CLabel infoLabel = UIUtils.createInfoLabel(parent, CoreMessages.dialog_connection_edit_connection_settings_variables_hint_label);
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.horizontalSpan = horizontalSpan == null ? 2 : horizontalSpan;
+        gd.verticalSpan = verticalSpan == null ? 10 : verticalSpan;
+        infoLabel.setLayoutData(gd);
+        return infoLabel;
+    }
+
     protected void createDriverPanel(Composite parent) {
         int numColumns = ((GridLayout) parent.getLayout()).numColumns;
 
@@ -95,25 +111,31 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         gd.horizontalSpan = numColumns;
         panel.setLayoutData(gd);
 
-        Composite placeholder = UIUtils.createPlaceholder(panel, 1);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
-        gd.horizontalSpan = 4;
-        gd.grabExcessHorizontalSpace = true;
-        gd.grabExcessVerticalSpace = true;
-        placeholder.setLayoutData(gd);
-
-        if (!site.isNew() && !site.getDriver().isEmbedded()) {
-            Link netConfigLink = new Link(panel, SWT.NONE);
-            netConfigLink.setText("<a>Network settings (SSH, SSL, Proxy, ...)</a>");
-            netConfigLink.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    site.openSettingsPage(ConnectionPageNetwork.PAGE_NAME);
-                }
-            });
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        {
+            Composite placeholder = UIUtils.createPlaceholder(panel, 1);
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
             gd.horizontalSpan = 4;
-            netConfigLink.setLayoutData(gd);
+            gd.grabExcessHorizontalSpace = true;
+            gd.grabExcessVerticalSpace = true;
+            placeholder.setLayoutData(gd);
+
+            if (DBeaverCore.getGlobalPreferenceStore().getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+                //createSettingsVariablesHintLabel(placeholder, null, null);
+            }
+
+            if (!site.isNew() && !site.getDriver().isEmbedded()) {
+                Link netConfigLink = new Link(panel, SWT.NONE);
+                netConfigLink.setText("<a>" + CoreMessages.dialog_connection_edit_wizard_conn_conf_network_link + "</a>");
+                netConfigLink.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        site.openSettingsPage(ConnectionPageNetwork.PAGE_NAME);
+                    }
+                });
+                gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+                gd.horizontalSpan = 4;
+                netConfigLink.setLayoutData(gd);
+            }
         }
 
         Label divLabel = new Label(panel, SWT.SEPARATOR | SWT.HORIZONTAL);

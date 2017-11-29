@@ -504,8 +504,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     {
         SQLScriptElement element;
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
-        String selText = selection.getText().trim();
-        selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText);
+        String selText = selection.getText();
+
+        selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText, !syntaxManager.getDialect().isDelimiterAfterQuery());
         if (!CommonUtils.isEmpty(selText)) {
             SQLScriptElement parsedElement = parseQuery(getDocument(), selection.getOffset(), selection.getOffset() + selection.getLength(), selection.getOffset(), false, false);
             if (parsedElement instanceof SQLControlCommand) {
@@ -553,8 +554,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         try {
             int currentLine = document.getLineOfOffset(currentPos);
             int lineOffset = document.getLineOffset(currentLine);
-            if (TextUtils.isEmptyLine(document, currentLine)) {
-                return null;
+            if (useBlankLines) {
+                if (TextUtils.isEmptyLine(document, currentLine)) {
+                    return null;
+                }
             }
 
             int firstLine = currentLine;
@@ -726,7 +729,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     } catch (BadLocationException e) {
                         log.debug(e);
                     }
-                } else if (useBlankLines && token.isWhitespace() && tokenLength >= 2) {
+                } else if (useBlankLines && token.isWhitespace() && tokenLength >= 1) {
                     // Check for blank line delimiter
                     if (lastTokenLineFeeds + countLineFeeds(document, tokenOffset, tokenLength) >= 2) {
                         isDelimiter = true;
@@ -912,13 +915,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         return lfCount;
     }
 
-    protected List<SQLQueryParameter> parseParameters(IDocument document, SQLQuery query) {
+    protected List<SQLQueryParameter> parseParameters(IDocument document, int queryOffset, int queryLength) {
         final SQLDialect sqlDialect = getSQLDialect();
         boolean supportParamsInDDL = getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED);
         boolean execQuery = false;
         List<SQLQueryParameter> parameters = null;
-        final int queryOffset = query.getOffset();
-        final int queryLength = query.getLength();
         ruleManager.setRange(document, queryOffset, queryLength);
 
         boolean firstKeyword = true;
@@ -988,6 +989,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             }
         }
         return parameters;
+    }
+
+    protected List<SQLQueryParameter> parseParameters(IDocument document, SQLQuery query) {
+        return parseParameters(document, query.getOffset(), query.getLength());
+    }
+
+    protected List<SQLQueryParameter> parseParameters(String query) {
+        return parseParameters(new Document(query), 0, query.length());
     }
 
     public boolean isDisposed()

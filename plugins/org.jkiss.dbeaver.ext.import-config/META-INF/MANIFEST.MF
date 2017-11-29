@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Import Config Plug-in
+Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.import_config;singleton:=true
-Bundle-Version: 2.1.31
-Bundle-Release-Date: 20171030
+Bundle-Version: 2.1.33
+Bundle-Release-Date: 20171127
 Bundle-Activator: org.jkiss.dbeaver.ext.import_config.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -12,5 +12,5 @@ Require-Bundle: org.eclipse.ui,
  net.sf.opencsv
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Vendor: JKISS
+Bundle-Vendor: %Bundle-Vendor
 Export-Package: org.jkiss.dbeaver.ext.import_config.wizards

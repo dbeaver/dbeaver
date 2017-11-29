@@ -24,6 +24,6 @@ import org.jkiss.dbeaver.DBException;
  */
 public interface SQLQueryTransformer {
 
-    SQLQuery transformQuery(SQLDataSource dataSource, SQLQuery query) throws DBException;
+    SQLQuery transformQuery(SQLDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException;
 
 }

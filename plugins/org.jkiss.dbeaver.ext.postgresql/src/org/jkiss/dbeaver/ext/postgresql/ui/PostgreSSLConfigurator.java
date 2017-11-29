@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.driver.DriverClassFindJob;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -57,35 +58,35 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
         composite.setLayoutData(gd);
 
         {
-            Group certGroup = UIUtils.createControlGroup(composite, "Certificates", 2, GridData.FILL_HORIZONTAL, -1);
-            UIUtils.createControlLabel(certGroup, "Root certificate");
+            Group certGroup = UIUtils.createControlGroup(composite, PostgresMessages.dialog_connection_network_postgres_ssl_certificates, 2, GridData.FILL_HORIZONTAL, -1);
+            UIUtils.createControlLabel(certGroup, PostgresMessages.dialog_connection_network_postgres_ssl_certificates_root);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.minimumWidth = 130;
-            rootCertText = new TextWithOpenFile(certGroup, "CA Certificate", new String[]{"*.*", "*.crt", "*.cert", "*.pem", "*"});
+            rootCertText = new TextWithOpenFile(certGroup, PostgresMessages.dialog_connection_network_postgres_ssl_certificates_ca, new String[]{"*.*", "*.crt", "*.cert", "*.pem", "*"});
             rootCertText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createControlLabel(certGroup, "SSL certificate");
+            UIUtils.createControlLabel(certGroup, PostgresMessages.dialog_connection_network_postgres_ssl_certificates_ssl);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.minimumWidth = 130;
-            clientCertText = new TextWithOpenFile(certGroup, "SSL Certificate", new String[]{"*.*", "*.cert", "*.pem", "*"});
+            clientCertText = new TextWithOpenFile(certGroup, PostgresMessages.dialog_connection_network_postgres_ssl_certificates_ssl, new String[]{"*.*", "*.cert", "*.pem", "*"});
             clientCertText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createControlLabel(certGroup, "SSL certificate key");
+            UIUtils.createControlLabel(certGroup, PostgresMessages.dialog_connection_network_postgres_ssl_certificates_ssl_key);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.minimumWidth = 130;
-            clientKeyText = new TextWithOpenFile(certGroup, "SSL Certificate", new String[]{"*.*", "*.cert", "*.pem", "*"});
+            clientKeyText = new TextWithOpenFile(certGroup, PostgresMessages.dialog_connection_network_postgres_ssl_certificates_ssl, new String[]{"*.*", "*.cert", "*.pem", "*"});
             clientKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
 
 
         {
-            Group advGroup = UIUtils.createControlGroup(composite, "Advanced", 2, GridData.FILL_HORIZONTAL, -1);
-            sslModeCombo = UIUtils.createLabelCombo(advGroup, "SSL mode", SWT.READ_ONLY | SWT.DROP_DOWN);
+            Group advGroup = UIUtils.createControlGroup(composite, PostgresMessages.dialog_connection_network_postgres_ssl_advanced, 2, GridData.FILL_HORIZONTAL, -1);
+            sslModeCombo = UIUtils.createLabelCombo(advGroup, PostgresMessages.dialog_connection_network_postgres_ssl_advanced_ssl_mode, SWT.READ_ONLY | SWT.DROP_DOWN);
             sslModeCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             for (String mode : SSL_MODES) {
                 sslModeCombo.add(mode);
             }
-            sslFactoryCombo = UIUtils.createLabelCombo(advGroup, "SSL Factory", SWT.DROP_DOWN);
+            sslFactoryCombo = UIUtils.createLabelCombo(advGroup, PostgresMessages.dialog_connection_network_postgres_ssl_advanced_ssl_factory, SWT.DROP_DOWN);
         }
     }
 

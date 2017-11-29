@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.postgresql.PostgreActivator;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
@@ -83,7 +84,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
 
-        Label hostLabel = UIUtils.createControlLabel(addrGroup, "Host");
+        Label hostLabel = UIUtils.createControlLabel(addrGroup, PostgresMessages.dialog_setting_connection_host);
         hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         hostText = new Text(addrGroup, SWT.BORDER);
@@ -92,7 +93,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         hostText.setLayoutData(gd);
         hostText.addModifyListener(textListener);
 
-        Label portLabel = UIUtils.createControlLabel(addrGroup, "Port");
+        Label portLabel = UIUtils.createControlLabel(addrGroup, PostgresMessages.dialog_setting_connection_port);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
         portLabel.setLayoutData(gd);
 
@@ -103,7 +104,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         portText.addModifyListener(textListener);
 
-        Label dbLabel = UIUtils.createControlLabel(addrGroup, "Database");
+        Label dbLabel = UIUtils.createControlLabel(addrGroup, PostgresMessages.dialog_setting_connection_database);
         dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         dbText = new Text(addrGroup, SWT.BORDER);
@@ -113,7 +114,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
 
-        Label usernameLabel = UIUtils.createControlLabel(addrGroup, "User");
+        Label usernameLabel = UIUtils.createControlLabel(addrGroup, PostgresMessages.dialog_setting_connection_user);
         usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         usernameText = new Text(addrGroup, SWT.BORDER);
@@ -122,7 +123,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         usernameText.setLayoutData(gd);
         usernameText.addModifyListener(textListener);
 
-        Label passwordLabel = UIUtils.createControlLabel(addrGroup, "Password");
+        Label passwordLabel = UIUtils.createControlLabel(addrGroup, PostgresMessages.dialog_setting_connection_password);
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
@@ -137,20 +138,20 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             gd.horizontalSpan = 2;
             buttonsGroup.setLayoutData(gd);
             buttonsGroup.setLayout(new GridLayout(2, false));
-            homesSelector = new ClientHomesSelector(buttonsGroup, SWT.NONE, "Local Client");
+            homesSelector = new ClientHomesSelector(buttonsGroup, SWT.NONE, PostgresMessages.dialog_setting_connection_localClient);
             gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
             homesSelector.getPanel().setLayoutData(gd);
         }
 
         {
             Group secureGroup = new Group(addrGroup, SWT.NONE);
-            secureGroup.setText("Settings");
+            secureGroup.setText(PostgresMessages.dialog_setting_connection_settings);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
             secureGroup.setLayoutData(gd);
             secureGroup.setLayout(new GridLayout(2, false));
 
-            hideNonDefault = UIUtils.createLabelCheckbox(secureGroup, "Show non-default databases", true);
+            hideNonDefault = UIUtils.createLabelCheckbox(secureGroup, PostgresMessages.dialog_setting_connection_nondefaultDatabase, true);
         }
 
         createDriverPanel(addrGroup);

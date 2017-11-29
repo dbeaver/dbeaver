@@ -160,10 +160,16 @@ class GridCellRenderer extends AbstractRenderer
             } else {
                 gc.setForeground(grid.getLineColor());
             }
-            gc.drawLine(bounds.x, bounds.y + bounds.height, bounds.x + bounds.width - 1,
+            gc.drawLine(
+                bounds.x,
+                bounds.y + bounds.height,
+                bounds.x + bounds.width,
                 bounds.y + bounds.height);
-            gc.drawLine(bounds.x + bounds.width - 1, bounds.y,
-                bounds.x + bounds.width - 1, bounds.y + bounds.height);
+            gc.drawLine(
+                bounds.x + bounds.width - 1,
+                bounds.y,
+                bounds.x + bounds.width - 1,
+                bounds.y + bounds.height);
         }
 
         if (focus) {

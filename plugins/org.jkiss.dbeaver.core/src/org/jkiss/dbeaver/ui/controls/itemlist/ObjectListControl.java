@@ -359,9 +359,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         Object object = getObjectValue(item);
                         if (object != null && !classList.contains(object.getClass())) {
                             // Remove all base classes if we have sub class
+                            // But keep interfaces because we may have multiple implementations of e.g. DBPNamedObject
+                            // and we need to show "Name" instead of particular name props
                             for (int i = 0; i < classList.size(); i++) {
                                 Class<?> c = classList.get(i);
-                                if (c.isAssignableFrom(object.getClass())) {
+                                if (!c.isInterface() && c.isAssignableFrom(object.getClass())) {
                                     classList.remove(i);
                                 } else {
                                     i++;

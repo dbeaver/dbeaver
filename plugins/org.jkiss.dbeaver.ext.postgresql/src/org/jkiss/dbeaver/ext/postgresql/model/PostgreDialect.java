@@ -55,6 +55,9 @@ class PostgreDialect extends JDBCSQLDialect {
         addSQLKeyword("USER");
         addSQLKeyword("COMMENT");
         addSQLKeyword("MATERIALIZED");
+        addSQLKeyword("ILIKE");
+        addSQLKeyword("ELSIF");
+        addSQLKeyword("ELSEIF");
 
         addFunctions(Collections.singleton("CURRENT_DATABASE"));
 
@@ -85,6 +88,11 @@ class PostgreDialect extends JDBCSQLDialect {
     @Override
     public String getBlockToggleString() {
         return "$" + SQLConstants.KEYWORD_PATTERN_CHARS + "$";
+    }
+
+    @Override
+    public MultiValueInsertMode getMultiValueInsertMode() {
+        return MultiValueInsertMode.GROUP_ROWS;
     }
 
     @Override

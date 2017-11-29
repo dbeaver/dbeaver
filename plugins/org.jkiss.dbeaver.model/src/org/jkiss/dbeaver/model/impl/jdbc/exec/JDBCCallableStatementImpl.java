@@ -109,7 +109,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                     }
                 }
             } catch (DBException e) {
-                log.warn("Error extracting callable results", e);
+                log.debug("Error extracting callable results", e);
             }
         } else {
             // Try to make columns from parameters meta
@@ -132,7 +132,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                     }
                 }
             } catch (Throwable e) {
-                log.error("Error extracting parameters meta data", e);
+                log.debug("Error extracting parameters meta data", e);
             }
         }
         procResults.addRow();
@@ -149,7 +149,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                     divChar = ((SQLDataSource) dataSource).getSQLDialect().getStructSeparator();
                 }
                 if (procName.indexOf(divChar) != -1) {
-                    return findProcedureByNames(session, procName.split("\\" + divChar));
+                    return findProcedureByNames(session, procName.split(String.valueOf(divChar)));
                 } else {
                     return findProcedureByNames(session, procName);
                 }
