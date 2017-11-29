@@ -553,13 +553,20 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
         try {
             int currentLine = document.getLineOfOffset(currentPos);
-            int lineOffset = document.getLineOffset(currentLine);
             if (useBlankLines) {
                 if (TextUtils.isEmptyLine(document, currentLine)) {
-                    return null;
+                    if (currentLine == 0) {
+                        return null;
+                    }
+                    currentLine--;
+                    if (TextUtils.isEmptyLine(document, currentLine)) {
+                        // Prev line empty too. No chance.
+                        return null;
+                    }
                 }
             }
 
+            int lineOffset = document.getLineOffset(currentLine);
             int firstLine = currentLine;
             while (firstLine > 0) {
                 if (useBlankLines) {
