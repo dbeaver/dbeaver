@@ -130,6 +130,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color backgroundReadOnly;
     private Color foregroundDefault;
     private Color foregroundNull;
+    private Color foregroundBoolean;
+    private Color foregroundDatetime;
+    private Color foregroundNumeric;
+    private Color foregroundString;
     private Color foregroundSelected, backgroundSelected;
     private Color backgroundMatched;
     private Color cellHeaderForeground, cellHeaderBackground, cellHeaderSelectionBackground;
@@ -137,6 +141,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
+    private boolean colorizeDataTypes = true;
     private boolean rightJustifyNumbers = true;
 
     public SpreadsheetPresentation() {
@@ -649,6 +654,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         DBPPreferenceStore preferenceStore = getPreferenceStore();
         showOddRows = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
         showCelIcons = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
+        colorizeDataTypes = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
         rightJustifyNumbers = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
 
         spreadsheet.setRedraw(false);
@@ -992,6 +998,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             this.cellHeaderSelectionBackground = new Color(getSpreadsheet().getDisplay(), cellSel);
         }
         this.foregroundNull = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND);
+        this.foregroundBoolean = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_BOOLEAN_FOREGROUND);
+        this.foregroundDatetime = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_DATETIME_FOREGROUND);
+        this.foregroundNumeric = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NUMERIC_FOREGROUND);
+        this.foregroundString = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_STRING_FOREGROUND);
 
 
         this.spreadsheet.setLineColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_NORMAL));
@@ -1522,6 +1532,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (DBUtils.isNullValue(value)) {
                 return foregroundNull;
             } else {
+                if (colorizeDataTypes) {
+                    DBDAttributeBinding attr = (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
+                    switch (attr.getDataKind()) {
+                        case BOOLEAN: return foregroundBoolean;
+                        case DATETIME: return foregroundDatetime;
+                        case NUMERIC: return foregroundNumeric;
+                        case STRING: return foregroundString;
+                    }
+                }
                 if (foregroundDefault == null) {
                     foregroundDefault = controller.getDefaultForeground();
                 }

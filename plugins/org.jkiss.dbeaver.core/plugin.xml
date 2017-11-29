@@ -2864,6 +2864,36 @@
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.null.foreground.description</description>
         </colorDefinition>
 
+        <!-- Colors for data types -->
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.boolean.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.boolean.foreground"
+                value="0, 255, 0">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.boolean.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.datetime.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.datetime.foreground"
+                value="255, 100, 0">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.datetime.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.numeric.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.numeric.foreground"
+                value="0, 0, 255">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.numeric.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.string.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.string.foreground"
+                value="0, 0, 0">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.string.foreground.description</description>
+        </colorDefinition>
+
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.keyword.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
