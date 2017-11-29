@@ -2154,7 +2154,9 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 boolean isInExecute = getTotalQueryRunning() > 0;
                 if (!isInExecute) {
-                    setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
+                    DBeaverUI.asyncExec(() -> {
+                        setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
+                    });
                 }
                 queryProcessor.curJobRunning.incrementAndGet();
                 synchronized (runningQueries) {
@@ -2186,7 +2188,9 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 queryProcessor.curJobRunning.decrementAndGet();
                 if (getTotalQueryRunning() <= 0) {
-                    setTitleImage(editorImage);
+                    DBeaverUI.asyncExec(() -> {
+                        setTitleImage(editorImage);
+                    });
                 }
 
                 if (isDisposed()) {
