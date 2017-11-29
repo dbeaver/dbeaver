@@ -17,20 +17,37 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import java.util.List;
+import java.sql.ResultSet;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
-public class PostgreTablePartition extends PostgreTableConstraintBase implements DBSEntityAssociation
+public class PostgreTablePartition extends PostgreTable
 {
+	
+	public static final String CAT_PARTITIONING = "Partitioning";
+
+	public PostgreTablePartition(PostgreSchema catalog) {
+		super(catalog);
+	}
+
+	public PostgreTablePartition(PostgreSchema catalog, ResultSet dbResult) {
+		super(catalog, dbResult);
+	}
+	
+	
+	
+	 public PostgreTablePartition(PostgreSchema container, DBSEntity source, boolean persisted) {
+		super(container, source, persisted);
+	}
+
+	@Property(category = CAT_PARTITIONING, editable = false, viewable = true, order = 50)
+     public String getPartKeys() {
+	        return "this.oid";
+	    }
+
+	
+	/*
     private final PostgreTableBase partitionTable;
     private int sequenceNum;
 //select * from  pg_partitioned_table where partrelid = ? 
@@ -75,4 +92,5 @@ public class PostgreTablePartition extends PostgreTableConstraintBase implements
     void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children, boolean secondPass) {
 
     }
+    */
 }

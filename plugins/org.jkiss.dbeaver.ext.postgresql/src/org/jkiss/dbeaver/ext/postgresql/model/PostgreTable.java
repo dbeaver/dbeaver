@@ -51,7 +51,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     private static final Log log = Log.getLog(PostgreTable.class);
 
     private SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
-    private List<PostgreTableBase>  partitions  = null;
+    private List<PostgreTablePartition>  partitions  = null;
     private List<PostgreTableBase>  children  = null;
 
     private boolean hasOids;
@@ -288,7 +288,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
 		    for(PostgreTableBase t : getSchema().tableCache.getCachedObjects())
 		    {
 		    	if (t.isParentOf(this.getObjectId()) && t.isPartition()) {
-		    		partitions.add(t);	
+		    		partitions.add(new PostgreTablePartition(t.getContainer(),t,t.isPersisted()));	
 		    	}
 		    }
 	    }
