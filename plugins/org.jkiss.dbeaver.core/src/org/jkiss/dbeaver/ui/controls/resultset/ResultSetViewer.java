@@ -1711,6 +1711,7 @@ public class ResultSetViewer extends Viewer
                     viewMenu.add(customizeAction);
                 }
                 viewMenu.add(new TransformComplexTypesToggleAction());
+                viewMenu.add(new ColorizeDataTypesToggleAction());
                 if (getModel().isSingleSource()) {
                     if (valueController != null) {
                         viewMenu.add(new SetRowColorAction(attr, valueController.getValue()));
@@ -3446,6 +3447,35 @@ public class ResultSetViewer extends Viewer
             DBPPreferenceStore preferenceStore = dataSource.getContainer().getPreferenceStore();
             boolean curValue = preferenceStore.getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);
             preferenceStore.setValue(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES, !curValue);
+            refreshData(null);
+        }
+
+    }
+
+    private class ColorizeDataTypesToggleAction extends Action {
+        ColorizeDataTypesToggleAction()
+        {
+            super("Colorize Data Types", AS_CHECK_BOX);
+            setToolTipText("Set different foreground color for data types");
+        }
+
+        @Override
+        public boolean isChecked() {
+            DBPDataSource dataSource = getDataContainer().getDataSource();
+            return dataSource != null &&
+                dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
+        }
+
+        @Override
+        public void run()
+        {
+            DBPDataSource dataSource = getDataContainer().getDataSource();
+            if (dataSource == null) {
+                return;
+            }
+            DBPPreferenceStore preferenceStore = dataSource.getContainer().getPreferenceStore();
+            boolean curValue = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
+            preferenceStore.setValue(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES, !curValue);
             refreshData(null);
         }
 
