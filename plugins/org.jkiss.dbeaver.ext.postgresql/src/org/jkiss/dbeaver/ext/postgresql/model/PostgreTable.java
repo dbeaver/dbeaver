@@ -51,8 +51,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     private static final Log log = Log.getLog(PostgreTable.class);
 
     private SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
-    private List<PostgreTablePartition>  partitions  = null;
-    private List<PostgreTableBase>  children  = null;
+    //private List<PostgreTablePartition>  partitions  = null;
 
     private boolean hasOids;
     private long tablespaceId;
@@ -80,8 +79,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         super(container, source, persisted);
         if (source instanceof PostgreTable) {
             this.hasOids = ((PostgreTable) source).hasOids;
-            this.partitions = ((PostgreTable) source).partitions == null ? null : new ArrayList<>(((PostgreTable) source).partitions);
-            this.children = ((PostgreTable) source).children == null ? null : new ArrayList<>(((PostgreTable) source).children);
+            //this.partitions = ((PostgreTable) source).partitions == null ? null : new ArrayList<>(((PostgreTable) source).partitions);
         }
     }
 
@@ -244,7 +242,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT i.*,c.relnamespace " +
                     "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
-                    "WHERE i.inhparent=? AND c.oid=i.inhrelid")) {
+                    "WHERE i.inhparent=? AND c.oid=i.inhrelid AND c.relispartition=false")) {
                     dbStat.setLong(1, getObjectId());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
@@ -281,32 +279,16 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         }
         return subTables;
     }
-    
-    public Collection<? extends DBSTable> getPartitions(DBRProgressMonitor monitor) throws DBException {
-	    if (partitions == null) {
-	    	partitions = new ArrayList<>();
-		    for(PostgreTableBase t : getSchema().tableCache.getCachedObjects())
-		    {
-		    	if (t.isParentOf(this.getObjectId()) && t.isPartition()) {
-		    		partitions.add(new PostgreTablePartition(t.getContainer(),t,t.isPersisted()));	
-		    	}
-		    }
-	    }
+
+    @Association
+    public Collection<PostgreTableBase> getPartitions(DBRProgressMonitor monitor) throws DBException {
+        List<PostgreTableBase> partitions = new ArrayList<>();
+        for(PostgreTableBase t : getSchema().tableCache.getCachedObjects()) {
+            if (t.isParentOf(this.getObjectId()) && t.isPartition()) {
+                partitions.add(t);
+            }
+        }
 	    return partitions;
     }
 
-    public Collection<? extends DBSTable> getTablechildren(DBRProgressMonitor monitor) throws DBException {
-	    if (children == null) {
-	    	children = new ArrayList<>();
-		    for(PostgreTableBase t : getSchema().tableCache.getCachedObjects())
-		    {
-		    	if (t.isParentOf(this.getObjectId()) && !t.isPartition()) {
-		    		children.add(t);	
-		    	}
-		    }
-	    }
-	    return children;
-    }
-
-  
 }
