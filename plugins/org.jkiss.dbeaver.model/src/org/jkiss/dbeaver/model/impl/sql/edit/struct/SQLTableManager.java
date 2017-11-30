@@ -130,14 +130,14 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
     }
 
     protected void setTableName(DBRProgressMonitor monitor, CONTAINER_TYPE container, OBJECT_TYPE table) throws DBException {
-        table.setName(getTableName(monitor, container));
+        table.setName(getNewChildName(monitor, container));
     }
 
-    protected String getTableName(DBRProgressMonitor monitor, CONTAINER_TYPE container) throws DBException {
-        return getTableName(monitor, container, BASE_TABLE_NAME);
+    protected String getNewChildName(DBRProgressMonitor monitor, CONTAINER_TYPE container) throws DBException {
+        return getNewChildName(monitor, container, BASE_TABLE_NAME);
     }
 
-    protected String getTableName(DBRProgressMonitor monitor, CONTAINER_TYPE container, String baseName) throws DBException {
+    protected String getNewChildName(DBRProgressMonitor monitor, CONTAINER_TYPE container, String baseName) throws DBException {
         for (int i = 0; ; i++) {
             String tableName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), i == 0 ? baseName : (baseName + "_" + i));
             DBSObject child = container.getChild(monitor, tableName);
