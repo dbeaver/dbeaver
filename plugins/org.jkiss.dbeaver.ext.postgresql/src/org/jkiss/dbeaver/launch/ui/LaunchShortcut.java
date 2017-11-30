@@ -8,6 +8,7 @@ import org.eclipse.debug.ui.ILaunchShortcut2;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public abstract class LaunchShortcut implements ILaunchShortcut2 {
 
@@ -15,7 +16,8 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
     public void launch(ISelection selection, String mode)
     {
         if (selection instanceof IStructuredSelection) {
-            searchAndLaunch(((IStructuredSelection) selection).toArray(), mode, getSelectionEmptyMessage());
+            Object[] array = ((IStructuredSelection) selection).toArray();
+            searchAndLaunch(array, mode, getSelectionEmptyMessage());
         }
     }
 
@@ -24,8 +26,16 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
     {
         ISelection selection = editor.getEditorSite().getSelectionProvider().getSelection();
         if (selection instanceof IStructuredSelection) {
-            searchAndLaunch(((IStructuredSelection) selection).toArray(), mode, getEditorEmptyMessage());
+            Object[] array = ((IStructuredSelection) selection).toArray();
+            searchAndLaunch(array, mode, getEditorEmptyMessage());
+        } else {
+            DBSObject databaseObject = LaunchUi.extractDatabaseObject(editor);
+            if (databaseObject != null) {
+                Object[] array = new Object[] {databaseObject};
+                searchAndLaunch(array, mode, getEditorEmptyMessage());
+            }
         }
+        
     }
 
     protected abstract String getSelectionEmptyMessage();
