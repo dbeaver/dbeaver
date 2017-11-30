@@ -35,8 +35,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -107,7 +105,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     }
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
         return getSchema().indexCache.getObjects(monitor, getSchema(), this);
     }
 
@@ -280,6 +278,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         return subTables;
     }
 
+    // TODO: fix partitions lookup (similar to getSubInheritance). Partitions may reside in different schema.
     @Association
     public Collection<PostgreTableBase> getPartitions(DBRProgressMonitor monitor) throws DBException {
         List<PostgreTableBase> partitions = new ArrayList<>();
