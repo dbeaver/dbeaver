@@ -32,8 +32,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCPreparedStatementCachedImpl;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCPreparedStatementImpl;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -62,15 +60,16 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     
     private static final String TABLE_CHILD_ID = "PostgreSchema.TABLE_CHILD";
     
-    private static final String sqlTableChild = "SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
-            "\nFROM pg_catalog.pg_attribute a" +
-            "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
-            "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
-            "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
-            "\nWHERE NOT a.attisdropped AND c.oid=? ORDER BY a.attnum";
+    private static final String SQL_CHILDTABLE_QUERY =
+        "SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
+        "\nFROM pg_catalog.pg_attribute a" +
+        "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
+        "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
+        "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
+        "\nWHERE NOT a.attisdropped AND c.oid=? ORDER BY a.attnum";
 
 
-    private PostgreDatabase database;
+    private final PostgreDatabase database;
     private long oid;
     private String name;
     private String description;
@@ -484,19 +483,20 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @Nullable PostgreTableBase forTable)
             throws SQLException
         {
-        	
-        	if (forTable == null) {        		
+        	if (forTable == null) {
         		return prepareChildrenStatement(session,owner);
         	}
         	
+/*
         	JDBCPreparedStatementCachedImpl dbStat;
         	
         	dbStat = database.statmentCache.get(TABLE_CHILD_ID);
         	if (dbStat == null) {
-        		dbStat = new JDBCPreparedStatementCachedImpl((JDBCPreparedStatementImpl) session.prepareStatement(sqlTableChild));
+        		dbStat = new JDBCPreparedStatementCachedImpl((JDBCPreparedStatementImpl) session.prepareStatement(SQL_CHILDTABLE_QUERY));
         		database.statmentCache.put(TABLE_CHILD_ID, dbStat);
         	}
-        	
+*/
+            JDBCPreparedStatement dbStat = session.prepareStatement(SQL_CHILDTABLE_QUERY);
         	dbStat.setLong(1, forTable.getObjectId());
             return dbStat;
         }
