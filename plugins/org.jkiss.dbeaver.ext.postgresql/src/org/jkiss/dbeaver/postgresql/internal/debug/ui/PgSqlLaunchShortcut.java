@@ -21,6 +21,8 @@ public class PgSqlLaunchShortcut extends LaunchShortcut {
     @Override
     protected void searchAndLaunch(Object[] scope, String mode, String emptyMessage)
     {
+        System.out.println(
+                "PgSqlLaunchShortcut.searchAndLaunch()");
         // TODO Auto-generated method stub
         
     }

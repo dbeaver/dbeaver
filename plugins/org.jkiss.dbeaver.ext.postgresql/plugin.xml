@@ -470,9 +470,9 @@
                    <iterate
                          ifEmpty="false"
                          operator="and">
-                      <instanceof
-                            value="org.jkiss.dbeaver.model.navigator.DBNDatabaseItem">
-                      </instanceof>
+                      <adapt
+                            type="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure">
+                      </adapt>
                    </iterate>
                 </with></enablement></contextualLaunch>
           <configurationType
