@@ -139,10 +139,12 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             openConnectionEditor(workbenchWindow, dataSourceContainer);
             return null;
         }
+/*
         if (!selectedNode.isPersisted()) {
             log.debug("Node '" + selectedNode.getNodeName() + "' s not persisted. Open not possible.");
             return null;
         }
+*/
         try {
             String defaultFolderId = null;
             if (selectedNode instanceof DBNDatabaseFolder && !(selectedNode.getParentNode() instanceof DBNDatabaseFolder) && selectedNode.getParentNode() instanceof DBNDatabaseNode) {
