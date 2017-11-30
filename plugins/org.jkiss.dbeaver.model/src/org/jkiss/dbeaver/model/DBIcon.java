@@ -225,4 +225,6 @@ public class DBIcon implements DBPImage
     public String toString() {
         return token + ":" + path;
     }
+
+
 }

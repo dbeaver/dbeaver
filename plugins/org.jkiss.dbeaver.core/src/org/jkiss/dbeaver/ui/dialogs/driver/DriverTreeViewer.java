@@ -89,6 +89,22 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         {
             return name.hashCode();
         }
+
+        public DBPImage getImage() {
+            DBPImage driverImage = null;
+            for (DriverDescriptor driver : getDrivers()) {
+                if (driverImage == null) {
+                    driverImage = driver.getPlainIcon();
+                } else if (!driverImage.equals(driver.getPlainIcon())) {
+                    driverImage = null;
+                    break;
+                }
+            }
+            if (driverImage != null) {
+                return driverImage;
+            }
+            return DBIcon.TREE_DATABASE_CATEGORY;
+        }
     }
 
     public DriverTreeViewer(Composite parent, int style) {
@@ -336,19 +352,17 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
                 return null;
             }
             DBPImage defImage = DBIcon.TREE_PAGE;
+            DBPImage icon = null;
 			if (obj instanceof DataSourceProviderDescriptor) {
-                DBPImage icon = ((DataSourceProviderDescriptor) obj).getIcon();
-                if (icon != null) {
-                    return icon;
-                }
+                icon = ((DataSourceProviderDescriptor) obj).getIcon();
 			    defImage = DBIcon.TREE_FOLDER;
             } else if (obj instanceof DriverCategory) {
-                return DBIcon.TREE_DATABASE_CATEGORY;
+                icon = ((DriverCategory)obj).getImage();
             } else if (obj instanceof DriverDescriptor) {
-                DBPImage icon = ((DriverDescriptor) obj).getIcon();
-                if (icon != null) {
-                    return icon;
-                }
+                icon = ((DriverDescriptor) obj).getIcon();
+            }
+            if (icon != null) {
+                return icon;
             }
 
             return defImage;
