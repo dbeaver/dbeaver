@@ -3473,7 +3473,7 @@ public class ResultSetViewer extends Viewer
             if (dataSource == null) {
                 return;
             }
-            DBPPreferenceStore preferenceStore = dataSource.getContainer().getPreferenceStore();
+            DBPPreferenceStore preferenceStore = DBeaverCore.getGlobalPreferenceStore();
             boolean curValue = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
             preferenceStore.setValue(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES, !curValue);
             refreshData(null);
