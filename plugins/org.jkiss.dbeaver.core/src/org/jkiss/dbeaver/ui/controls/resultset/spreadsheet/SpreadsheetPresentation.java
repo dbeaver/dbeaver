@@ -130,10 +130,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color backgroundReadOnly;
     private Color foregroundDefault;
     private Color foregroundNull;
-    private Color foregroundBoolean;
-    private Color foregroundDatetime;
-    private Color foregroundNumeric;
-    private Color foregroundString;
+    private Map<DBPDataKind, Color> dataTypesForegrounds;
     private Color foregroundSelected, backgroundSelected;
     private Color backgroundMatched;
     private Color cellHeaderForeground, cellHeaderBackground, cellHeaderSelectionBackground;
@@ -998,10 +995,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             this.cellHeaderSelectionBackground = new Color(getSpreadsheet().getDisplay(), cellSel);
         }
         this.foregroundNull = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND);
-        this.foregroundBoolean = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_BOOLEAN_FOREGROUND);
-        this.foregroundDatetime = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_DATETIME_FOREGROUND);
-        this.foregroundNumeric = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NUMERIC_FOREGROUND);
-        this.foregroundString = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_STRING_FOREGROUND);
+        this.dataTypesForegrounds = new HashMap<>();
+        this.dataTypesForegrounds.put(DBPDataKind.BINARY, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_BINARY_FOREGROUND));
+        this.dataTypesForegrounds.put(DBPDataKind.BOOLEAN, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_BOOLEAN_FOREGROUND));
+        this.dataTypesForegrounds.put(DBPDataKind.BOOLEAN, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_BOOLEAN_FOREGROUND));
+        this.dataTypesForegrounds.put(DBPDataKind.DATETIME, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_DATETIME_FOREGROUND));
+        this.dataTypesForegrounds.put(DBPDataKind.NUMERIC, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NUMERIC_FOREGROUND));
+        this.dataTypesForegrounds.put(DBPDataKind.STRING, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_STRING_FOREGROUND));
 
 
         this.spreadsheet.setLineColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_NORMAL));
@@ -1533,12 +1533,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 return foregroundNull;
             } else {
                 if (colorizeDataTypes) {
-                    DBDAttributeBinding attr = (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
-                    switch (attr.getDataKind()) {
-                        case BOOLEAN: return foregroundBoolean;
-                        case DATETIME: return foregroundDatetime;
-                        case NUMERIC: return foregroundNumeric;
-                        case STRING: return foregroundString;
+                    DBDAttributeBinding attr =
+                            (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
+                    Color color = dataTypesForegrounds.get(attr.getDataKind());
+                    if (color != null) {
+                        return color;
                     }
                 }
                 if (foregroundDefault == null) {
