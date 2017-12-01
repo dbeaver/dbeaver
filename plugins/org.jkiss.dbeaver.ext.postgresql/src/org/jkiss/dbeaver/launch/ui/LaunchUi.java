@@ -1,7 +1,10 @@
 package org.jkiss.dbeaver.launch.ui;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.launch.core.LaunchCore;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
@@ -11,6 +14,8 @@ public class LaunchUi {
     public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.launch.ui"; //$NON-NLS-1$
 
     public static final String DEBUG_AS_MENU_ID = "org.jkiss.dbeaver.launch.ui.menus.menuContribution.debug"; //$NON-NLS-1$
+    
+    private static final Log log = Log.getLog(LaunchUi.class);
     
     public static DBSObject extractDatabaseObject(IEditorPart editor) {
         if (editor != null) {
@@ -24,6 +29,10 @@ public class LaunchUi {
             }
         }
         return null;
+    }
+    
+    public static void log(IStatus status) {
+        LaunchCore.log(log, status);
     }
 
 }
