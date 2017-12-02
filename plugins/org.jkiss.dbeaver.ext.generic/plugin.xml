@@ -492,7 +492,11 @@
                     webURL="http://db.apache.org/"
                     embedded="true"
                     description="Derby (Java DB) embedded driver">
+
                     <file type="jar" path="maven:/org.apache.derby:derby:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="drivers/derby/derby.jar" bundle="drivers.derby"/>
+                    <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
+
                     <parameter name="create-url-param" value=";create=true"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
@@ -509,7 +513,11 @@
                     defaultPort="1527"
                     webURL="http://db.apache.org/"
                     description="Derby (Java DB) server driver">
+
                     <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="drivers/derby/derbyclient.jar" bundle="drivers.derby"/>
+                    <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
+
                     <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                     <parameter name="supports-scroll" value="true"/>
@@ -793,8 +801,10 @@
                     description="Apache Hive JDBC"
                     webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
                     category="Hadoop">
-                    <file type="jar" path="maven:/org.apache.hive:hive-jdbc:RELEASE"/>
-                    <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
+                    <file type="jar" path="drivers/hive/hive-jdbc-uber.jar" bundle="drivers.hive"/>
+
+                    <file type="jar" path="maven:/org.apache.hive:hive-jdbc:RELEASE" bundle="!drivers.hive"/>
+                    <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE" bundle="!drivers.hive"/>
                     <parameter name="supports-limits" value="false"/>
                 </driver>
                 <driver
