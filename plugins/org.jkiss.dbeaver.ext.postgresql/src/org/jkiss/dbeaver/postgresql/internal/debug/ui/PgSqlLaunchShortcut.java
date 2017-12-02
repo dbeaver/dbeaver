@@ -57,6 +57,11 @@ public class PgSqlLaunchShortcut extends LaunchShortcut {
             if (!datasource.equals(id)) {
                 return false;
             }
+            String database = config.getAttribute(PgSqlDebugCore.ATTR_DATABASE, ""); //$NON-NLS-1$
+            String databaseName = launchable.getDataSource().getName();
+            if (!database.equals(databaseName)) {
+                return false;
+            }
             String oid = config.getAttribute(PgSqlDebugCore.ATTR_OID, String.valueOf(0));
             long objectId = procedure.getObjectId();
             if (!(Long.parseLong(oid)==objectId)) {

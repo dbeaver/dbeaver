@@ -24,6 +24,7 @@ public class PgSqlDebugCore {
     public static final String CONFIGURATION_TYPE = MODEL_IDENTIFIER + '.' + "pgSQL";//$NON-NLS-1$
 
     public static final String ATTR_DATASOURCE = MODEL_IDENTIFIER + '.' + "ATTR_DATASOURCE"; //$NON-NLS-1$
+    public static final String ATTR_DATABASE = MODEL_IDENTIFIER + '.' + "ATTR_DATABASE"; //$NON-NLS-1$
     public static final String ATTR_OID = MODEL_IDENTIFIER + '.' + "ATTR_OID"; //$NON-NLS-1$
 
     public static final String BUNDLE_SYMBOLIC_NAME = PostgreActivator.PLUGIN_ID;
@@ -56,16 +57,16 @@ public class PgSqlDebugCore {
         PostgreDatabase database = procedure.getDatabase();
         PostgreSchema schema = procedure.getContainer();
         
-        Object[] bindings = new Object[] {dataSourceContainer.getName(), database.getName(),
+        String databaseName = database.getName();
+        Object[] bindings = new Object[] {dataSourceContainer.getName(), databaseName,
                 procedure.getName(), schema.getName()};
         String name = NLS.bind("{0}({1}) - {2}({3})", bindings);
         //Let's use metadata area for storage
         IContainer container = null;
         ILaunchConfigurationWorkingCopy workingCopy = createConfiguration(container, name);
-        String id = dataSourceContainer.getId();
-        workingCopy.setAttribute(ATTR_DATASOURCE, id);
-        long objectId = procedure.getObjectId();
-        workingCopy.setAttribute(ATTR_OID, String.valueOf(objectId));
+        workingCopy.setAttribute(ATTR_DATASOURCE, dataSourceContainer.getId());
+        workingCopy.setAttribute(ATTR_DATABASE, databaseName);
+        workingCopy.setAttribute(ATTR_OID, String.valueOf(procedure.getObjectId()));
         return workingCopy;
     }
 
