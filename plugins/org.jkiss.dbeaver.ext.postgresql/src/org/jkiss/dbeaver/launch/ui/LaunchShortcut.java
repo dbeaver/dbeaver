@@ -108,7 +108,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
             }
             if (config == null) {
                 try {
-                    config = createConfiguration(launchable, mode);
+                    config = createConfiguration(launchable);
                 } catch (CoreException e) {
                     IStatus status = e.getStatus();
                     LaunchUi.log(status);
@@ -182,7 +182,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
         return null;
     }
 
-    protected abstract ILaunchConfiguration createConfiguration(DBSObject launchable, String mode) throws CoreException;
+    protected abstract ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException;
 
     @Override
     public ILaunchConfiguration[] getLaunchConfigurations(ISelection selection)
