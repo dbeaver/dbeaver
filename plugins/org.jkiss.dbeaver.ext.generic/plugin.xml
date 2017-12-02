@@ -486,6 +486,7 @@
                 <driver
                     id="derby"
                     label="Embedded"
+                    icon="icons/apache_icon.png"
                     category="Derby"
                     class="org.apache.derby.jdbc.EmbeddedDriver"
                     sampleURL="jdbc:derby:{folder}"
@@ -507,6 +508,7 @@
                 <driver
                     id="derby_server"
                     label="Server"
+                    icon="icons/apache_icon.png"
                     category="Derby"
                     class="org.apache.derby.jdbc.ClientDriver"
                     sampleURL="jdbc:derby://{host}:{port}/{database};create=false"
@@ -897,6 +899,7 @@
                 <driver
                     id="orientdb_jdbc"
                     label="OrientDB"
+                    icon="icons/orientdb_icon.png"
                     class="com.orientechnologies.orient.jdbc.OrientJdbcDriver"
                     sampleURL="jdbc:orient:remote:{host}/{database}"
                     defaultPort=""
