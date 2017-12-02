@@ -27,6 +27,10 @@ public class PgSqlDebugCore {
     public static final String ATTR_DATABASE = MODEL_IDENTIFIER + '.' + "ATTR_DATABASE"; //$NON-NLS-1$
     public static final String ATTR_OID = MODEL_IDENTIFIER + '.' + "ATTR_OID"; //$NON-NLS-1$
 
+    public static final String ATTR_DATASOURCE_DEFAULT = ""; //$NON-NLS-1$
+    public static final String ATTR_DATABASE_DEFAULT = ""; //$NON-NLS-1$
+    public static final String ATTR_OID_DEFAULT = ""; //$NON-NLS-1$
+
     public static final String BUNDLE_SYMBOLIC_NAME = PostgreActivator.PLUGIN_ID;
     
     public static CoreException abort(String message) {
