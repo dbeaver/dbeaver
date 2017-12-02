@@ -9,14 +9,15 @@ public class PgSqlLaunchConfigurationTabGroup extends AbstractLaunchConfiguratio
 
     public PgSqlLaunchConfigurationTabGroup()
     {
-        // TODO Auto-generated constructor stub
     }
 
     @Override
     public void createTabs(ILaunchConfigurationDialog dialog, String mode)
     {
+        PgSqlTab pgSqlTab = new PgSqlTab();
         CommonTab commonTab = new CommonTab();
         ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
+                pgSqlTab,
                 commonTab
             };
             setTabs(tabs);
