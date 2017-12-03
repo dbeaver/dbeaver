@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.internal.debug.ui;
+package org.jkiss.dbeaver.debug.internal.ui;
 
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugUIConstants;

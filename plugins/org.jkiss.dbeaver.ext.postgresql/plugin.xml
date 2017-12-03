@@ -404,7 +404,7 @@
           point="org.eclipse.ui.menus">
        <menuContribution
              allPopups="false"
-             class="org.jkiss.dbeaver.internal.debug.ui.DebugContributionFactory"
+             class="org.jkiss.dbeaver.debug.internal.ui.DebugContributionFactory"
              locationURI="popup:org.eclipse.ui.popup.any?before=additions">
        </menuContribution>
     </extension>
