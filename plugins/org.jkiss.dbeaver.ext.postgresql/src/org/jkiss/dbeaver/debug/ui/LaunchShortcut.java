@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.launch.ui;
+package org.jkiss.dbeaver.debug.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +49,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
             Object[] array = ((IStructuredSelection) selection).toArray();
             searchAndLaunch(array, mode, getEditorEmptyMessage());
         } else {
-            DBSObject databaseObject = LaunchUi.extractDatabaseObject(editor);
+            DBSObject databaseObject = DebugUi.extractDatabaseObject(editor);
             if (databaseObject != null) {
                 Object[] array = new Object[] {databaseObject};
                 searchAndLaunch(array, mode, getEditorEmptyMessage());
@@ -111,7 +111,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
                     config = createConfiguration(launchable);
                 } catch (CoreException e) {
                     IStatus status = e.getStatus();
-                    LaunchUi.log(status);
+                    DebugUi.log(status);
                     MessageDialog.openError(getShell(), "Launch error", status.getMessage());
                     return;
                 }
@@ -160,7 +160,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
                 }
             }
         } catch (CoreException e) {
-            LaunchUi.log(e.getStatus());
+            DebugUi.log(e.getStatus());
         }
         return candidateConfigs;
     }

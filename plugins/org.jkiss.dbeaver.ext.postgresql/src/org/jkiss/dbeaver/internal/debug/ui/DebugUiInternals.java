@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.internal.launch.ui;
+package org.jkiss.dbeaver.internal.debug.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;

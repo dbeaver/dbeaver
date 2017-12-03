@@ -399,16 +399,16 @@
         </tools>
     </extension>
     
-<!-- org.jkiss.dbeaver.launch.ui begins -->
+<!-- org.jkiss.dbeaver.debug.ui begins -->
     <extension
           point="org.eclipse.ui.menus">
        <menuContribution
              allPopups="false"
-             class="org.jkiss.dbeaver.internal.launch.ui.DebugContributionFactory"
+             class="org.jkiss.dbeaver.internal.debug.ui.DebugContributionFactory"
              locationURI="popup:org.eclipse.ui.popup.any?before=additions">
        </menuContribution>
     </extension>
-<!-- org.jkiss.dbeaver.launch.ui ends -->
+<!-- org.jkiss.dbeaver.debug.ui ends -->
 
 <!-- org.jkiss.dbeaver.postgresql.debug.core begins -->
     <extension

@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.launch.ui;
+package org.jkiss.dbeaver.debug.ui;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +25,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.internal.launch.ui.DebugUiInternals;
+import org.jkiss.dbeaver.internal.debug.ui.DebugUiInternals;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class LaunchContributionItem extends ContributionItem {
@@ -155,7 +155,7 @@ public class LaunchContributionItem extends ContributionItem {
             IWorkbenchPage activePage = window.getActivePage();
             if (activePage != null) {
                 IEditorPart activeEditor = activePage.getActiveEditor();
-                DBSObject databaseObject = LaunchUi.extractDatabaseObject(activeEditor);
+                DBSObject databaseObject = DebugUi.extractDatabaseObject(activeEditor);
                 if (databaseObject != null) {
                     return new Object[] {databaseObject};
                 }
