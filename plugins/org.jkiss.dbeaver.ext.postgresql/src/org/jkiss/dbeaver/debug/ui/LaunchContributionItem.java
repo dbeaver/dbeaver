@@ -25,7 +25,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.internal.debug.ui.DebugUiInternals;
+import org.jkiss.dbeaver.debug.internal.ui.DebugUiInternals;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class LaunchContributionItem extends ContributionItem {
