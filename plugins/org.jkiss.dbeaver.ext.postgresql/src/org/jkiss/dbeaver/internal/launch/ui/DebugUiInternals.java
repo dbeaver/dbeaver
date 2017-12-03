@@ -23,7 +23,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.activities.WorkbenchActivityHelper;
-import org.jkiss.dbeaver.launch.core.LaunchCore;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 
 @SuppressWarnings("restriction")
 public class DebugUiInternals {
@@ -37,7 +37,7 @@ public class DebugUiInternals {
 
     public static IAction createConfigurationAction(ILaunchConfiguration config, String mode, int accelerator)
     {
-        if (LaunchCore.canLaunch(config, mode)) {
+        if (DebugCore.canLaunch(config, mode)) {
             String configName = config.getName();
             ImageDescriptor imageDescriptor = DebugUITools.getDefaultImageDescriptor(config);
             IAction action = new LaunchConfigurationAction(config, mode, configName, imageDescriptor, accelerator);

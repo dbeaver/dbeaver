@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.launch.core;
+package org.jkiss.dbeaver.debug.core;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +10,9 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public class LaunchCore {
+public class DebugCore {
 
-    public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.launch.core"; //$NON-NLS-1$
+    public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.debug.core"; //$NON-NLS-1$
 
     public static boolean canLaunch(ILaunchConfiguration configuration, String mode) {
         if (configuration == null || !configuration.exists()) {
