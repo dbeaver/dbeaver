@@ -9,6 +9,7 @@ import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.ext.postgresql.PostgreActivator;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
@@ -23,12 +24,8 @@ public class PgSqlDebugCore {
 
     public static final String CONFIGURATION_TYPE = MODEL_IDENTIFIER + '.' + "pgSQL";//$NON-NLS-1$
 
-    public static final String ATTR_DATASOURCE = MODEL_IDENTIFIER + '.' + "ATTR_DATASOURCE"; //$NON-NLS-1$
-    public static final String ATTR_DATABASE = MODEL_IDENTIFIER + '.' + "ATTR_DATABASE"; //$NON-NLS-1$
     public static final String ATTR_OID = MODEL_IDENTIFIER + '.' + "ATTR_OID"; //$NON-NLS-1$
 
-    public static final String ATTR_DATASOURCE_DEFAULT = ""; //$NON-NLS-1$
-    public static final String ATTR_DATABASE_DEFAULT = ""; //$NON-NLS-1$
     public static final String ATTR_OID_DEFAULT = ""; //$NON-NLS-1$
 
     public static final String BUNDLE_SYMBOLIC_NAME = PostgreActivator.PLUGIN_ID;
@@ -68,8 +65,8 @@ public class PgSqlDebugCore {
         //Let's use metadata area for storage
         IContainer container = null;
         ILaunchConfigurationWorkingCopy workingCopy = createConfiguration(container, name);
-        workingCopy.setAttribute(ATTR_DATASOURCE, dataSourceContainer.getId());
-        workingCopy.setAttribute(ATTR_DATABASE, databaseName);
+        workingCopy.setAttribute(DebugCore.ATTR_DATASOURCE, dataSourceContainer.getId());
+        workingCopy.setAttribute(DebugCore.ATTR_DATABASE, databaseName);
         workingCopy.setAttribute(ATTR_OID, String.valueOf(procedure.getObjectId()));
         return workingCopy;
     }
