@@ -27,7 +27,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
-import org.jkiss.dbeaver.launch.core.LaunchCore;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public abstract class LaunchShortcut implements ILaunchShortcut2 {
@@ -79,7 +79,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
     }
 
     protected void searchAndLaunch(Object[] scope, String mode, String emptyMessage) {
-        List<DBSObject> extracted = LaunchCore.extractLaunchable(scope);
+        List<DBSObject> extracted = DebugCore.extractLaunchable(scope);
         DBSObject launchable = null;
         if (extracted.size() == 0) {
             MessageDialog.openError(getShell(), "Launch error", emptyMessage);

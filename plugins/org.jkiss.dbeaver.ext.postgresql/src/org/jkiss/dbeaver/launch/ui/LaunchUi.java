@@ -4,7 +4,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.launch.core.LaunchCore;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
@@ -32,7 +32,7 @@ public class LaunchUi {
     }
     
     public static void log(IStatus status) {
-        LaunchCore.log(log, status);
+        DebugCore.log(log, status);
     }
 
 }
