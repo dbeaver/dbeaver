@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.format.external.SQLExternalFormatter;
-import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -110,14 +108,6 @@ public class SQLFormatterConfiguration {
 
     public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
-    }
-
-    public SQLFormatter createFormatter() {
-        if (SQLExternalFormatter.FORMATTER_ID.equals(formatterId)) {
-            return new SQLExternalFormatter();
-        } else {
-            return new SQLTokenizedFormatter();
-        }
     }
 
     public DBPPreferenceStore getPreferenceStore() {
