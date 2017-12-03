@@ -609,6 +609,14 @@
                     webURL=""
                     description="Firebird JayBird driver">
                     <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE" bundle="!drivers.firebird"/>
+
+                    <file type="license" path="drivers/firebird/LICENSE.txt" bundle="drivers.firebird"/>
+                    <file type="jar" path="drivers/firebird/jaybird-full.jar" bundle="drivers.firebird"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/firebird/jaybird.dll" bundle="drivers.firebird"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/firebird/jaybird_x64.dll" bundle="drivers.firebird"/>
+                    <file type="lib" os="linux" arch="x86" path="drivers/firebird/libjaybird.so" bundle="drivers.firebird"/>
+                    <file type="lib" os="linux" arch="x86_64" path="drivers/firebird/libjaybird_x64.so" bundle="drivers.firebird"/>
+
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="script-delimiter-redefiner" value="SET TERM"/>
