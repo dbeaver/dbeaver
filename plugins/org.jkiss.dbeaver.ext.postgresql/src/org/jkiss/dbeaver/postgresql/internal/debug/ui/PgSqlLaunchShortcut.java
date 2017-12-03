@@ -3,8 +3,8 @@ package org.jkiss.dbeaver.postgresql.internal.debug.ui;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.jkiss.dbeaver.debug.ui.LaunchShortcut;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
-import org.jkiss.dbeaver.launch.ui.LaunchShortcut;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.postgresql.debug.core.PgSqlDebugCore;
 

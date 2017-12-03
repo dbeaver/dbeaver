@@ -1,7 +1,7 @@
-package org.jkiss.dbeaver.internal.launch.ui;
+package org.jkiss.dbeaver.internal.debug.ui;
 
 import org.eclipse.debug.core.ILaunchManager;
-import org.jkiss.dbeaver.launch.ui.LaunchContributionItem;
+import org.jkiss.dbeaver.debug.ui.LaunchContributionItem;
 
 public class DebugContributionItem extends LaunchContributionItem {
 

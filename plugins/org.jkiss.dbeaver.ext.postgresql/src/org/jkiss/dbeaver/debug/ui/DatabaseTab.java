@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.launch.ui;
+package org.jkiss.dbeaver.debug.ui;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;

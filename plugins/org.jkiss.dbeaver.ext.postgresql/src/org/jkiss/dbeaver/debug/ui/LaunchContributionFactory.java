@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.launch.ui;
+package org.jkiss.dbeaver.debug.ui;
 
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -57,7 +57,7 @@ public abstract class LaunchContributionFactory extends ExtensionContributionFac
 
     protected String createContributionIdentifier()
     {
-        return LaunchUi.BUNDLE_SYMBOLIC_NAME + '/' + id;
+        return DebugUi.BUNDLE_SYMBOLIC_NAME + '/' + id;
     }
 
     protected abstract LaunchContributionItem createContributionItem();
