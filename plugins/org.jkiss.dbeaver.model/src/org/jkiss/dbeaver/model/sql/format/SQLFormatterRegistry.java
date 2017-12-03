@@ -16,17 +16,13 @@
  */
 package org.jkiss.dbeaver.model.sql.format;
 
-/**
- * SQL Formatter
- */
-public interface SQLFormatter {
+import org.jkiss.dbeaver.DBException;
 
-    /**
-     * Format the source SQL string.
-     *
-     * @param source original SQL string
-     * @return formatted version
-     */
-    String format(String source, SQLFormatterConfiguration configuration);
+/**
+ * SQL Formatter registry
+ */
+public interface SQLFormatterRegistry {
+
+    SQLFormatter createAndConfigureFormatter(SQLFormatterConfiguration configuration) throws DBException;
 
 }
