@@ -28,6 +28,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.internal.ui.DebugUiMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public abstract class LaunchShortcut implements ILaunchShortcut2 {
@@ -82,7 +83,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
         List<DBSObject> extracted = DebugCore.extractLaunchable(scope);
         DBSObject launchable = null;
         if (extracted.size() == 0) {
-            MessageDialog.openError(getShell(), "Launch error", emptyMessage);
+            MessageDialog.openError(getShell(), DebugUiMessages.LaunchShortcut_e_launch, emptyMessage);
         } else if (extracted.size() > 1) {
             launchable = selectLaunchable(getShell(), extracted, mode);
         } else {
@@ -112,7 +113,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
                 } catch (CoreException e) {
                     IStatus status = e.getStatus();
                     DebugUi.log(status);
-                    MessageDialog.openError(getShell(), "Launch error", status.getMessage());
+                    MessageDialog.openError(getShell(), DebugUiMessages.LaunchShortcut_e_launch, status.getMessage());
                     return;
                 }
             }
@@ -172,7 +173,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
         ElementListSelectionDialog dialog = new ElementListSelectionDialog(getShell(), labelProvider);
         dialog.setElements(configList.toArray());
         dialog.setTitle(getLaunchableSelectionTitle(mode));
-        dialog.setMessage("&Select existing configuration:");
+        dialog.setMessage(DebugUiMessages.LaunchShortcut_select_cobfiguration_title);
         dialog.setMultipleSelection(false);
         int result = dialog.open();
         labelProvider.dispose();

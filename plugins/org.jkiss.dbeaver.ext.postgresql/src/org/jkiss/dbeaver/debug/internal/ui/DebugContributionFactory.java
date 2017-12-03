@@ -10,7 +10,7 @@ public class DebugContributionFactory extends LaunchContributionFactory {
 
     public DebugContributionFactory() {
         super(DebugUi.DEBUG_AS_MENU_ID);
-        setText("Debug As");
+        setText(DebugUiMessages.DebugContributionFactory_text);
         setImageDescriptor(DebugUITools.getImageDescriptor(IDebugUIConstants.IMG_ACT_DEBUG));
     }
 
