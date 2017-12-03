@@ -1,13 +1,14 @@
 package org.jkiss.dbeaver.postgresql.internal.debug.core.model;
 
-import org.eclipse.debug.core.model.DebugElement;
+import org.jkiss.dbeaver.debug.core.model.DatabaseDebugElement;
+import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugTarget;
 import org.jkiss.dbeaver.postgresql.debug.core.PgSqlDebugCore;
 
-public class PgSqlDebugElement extends DebugElement {
+public class PgSqlDebugElement extends DatabaseDebugElement {
 
-    public PgSqlDebugElement(PgSqlDebugTarget target)
+    public PgSqlDebugElement(IDatabaseDebugTarget target)
     {
-        super(target);
+        super(PgSqlDebugCore.MODEL_IDENTIFIER, target);
     }
 
     @Override
@@ -16,8 +17,4 @@ public class PgSqlDebugElement extends DebugElement {
         return PgSqlDebugCore.MODEL_IDENTIFIER;
     }
     
-    public PgSqlDebugTarget gePgSqlDebugTarget() {
-        return (PgSqlDebugTarget) getDebugTarget();
-    }
-
 }

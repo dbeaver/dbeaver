@@ -10,8 +10,9 @@ import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IThread;
 import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugController;
+import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugTarget;
 
-public class PgSqlDebugTarget extends PgSqlDebugElement implements IDebugTarget {
+public class PgSqlDebugTarget extends PgSqlDebugElement implements IDatabaseDebugTarget {
     
     private final ILaunch launch;
     private final IProcess process;
