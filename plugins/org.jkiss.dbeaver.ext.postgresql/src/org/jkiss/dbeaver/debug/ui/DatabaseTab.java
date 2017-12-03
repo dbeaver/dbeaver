@@ -1,6 +1,5 @@
 package org.jkiss.dbeaver.debug.ui;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
@@ -13,20 +12,22 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.postgresql.debug.core.PgSqlDebugCore;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class DatabaseTab extends AbstractLaunchConfigurationTab {
-    
+
     private Text datasourceText;
     private Text databaseText;
 
     /**
-     * Modify listener that simply updates the owning launch configuration dialog.
+     * Modify listener that simply updates the owning launch configuration
+     * dialog.
      */
     protected ModifyListener modifyListener = new ModifyListener() {
         @Override
-        public void modifyText(ModifyEvent evt) {
+        public void modifyText(ModifyEvent evt)
+        {
             scheduleUpdateJob();
         }
     };
@@ -51,7 +52,8 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
     protected void createDatasourceComponent(Composite comp)
     {
-        Group datasourceGroup = UIUtils.createControlGroup(comp, "Connection", 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Group datasourceGroup = UIUtils.createControlGroup(comp, "Connection", 2, GridData.FILL_HORIZONTAL,
+                SWT.DEFAULT);
 
         datasourceText = UIUtils.createLabelText(datasourceGroup, "Connection", "");
         datasourceText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -71,8 +73,8 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
     @Override
     public void setDefaults(ILaunchConfigurationWorkingCopy configuration)
     {
-        configuration.setAttribute(PgSqlDebugCore.ATTR_DATASOURCE, PgSqlDebugCore.ATTR_DATASOURCE_DEFAULT);
-        configuration.setAttribute(PgSqlDebugCore.ATTR_DATABASE, PgSqlDebugCore.ATTR_DATABASE_DEFAULT);
+        configuration.setAttribute(DebugCore.ATTR_DATASOURCE, DebugCore.ATTR_DATASOURCE_DEFAULT);
+        configuration.setAttribute(DebugCore.ATTR_DATABASE, DebugCore.ATTR_DATABASE_DEFAULT);
     }
 
     @Override
@@ -84,35 +86,21 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
     protected void initializeDatasource(ILaunchConfiguration configuration)
     {
-        String datasourceId = null;
-        try {
-            datasourceId = configuration.getAttribute(PgSqlDebugCore.ATTR_DATASOURCE, (String)null);
-        } catch (CoreException e) {
-        }
-        if (datasourceId == null) {
-            datasourceId = PgSqlDebugCore.ATTR_DATASOURCE_DEFAULT;
-        }
-        datasourceText.setText(datasourceId);
+        String extracted = DebugCore.extractDatasource(configuration);
+        datasourceText.setText(extracted);
     }
 
     protected void initializeDatabase(ILaunchConfiguration configuration)
     {
-        String database = null;
-        try {
-            database = configuration.getAttribute(PgSqlDebugCore.ATTR_DATABASE, (String)null);
-        } catch (CoreException e) {
-        }
-        if (database == null) {
-            database = PgSqlDebugCore.ATTR_DATABASE_DEFAULT;
-        }
-        databaseText.setText(database);
+        String extracted = DebugCore.extractDatabase(configuration);
+        databaseText.setText(extracted);
     }
 
     @Override
     public void performApply(ILaunchConfigurationWorkingCopy configuration)
     {
-        configuration.setAttribute(PgSqlDebugCore.ATTR_DATASOURCE, datasourceText.getText());
-        configuration.setAttribute(PgSqlDebugCore.ATTR_DATABASE, databaseText.getText());
+        configuration.setAttribute(DebugCore.ATTR_DATASOURCE, datasourceText.getText());
+        configuration.setAttribute(DebugCore.ATTR_DATABASE, databaseText.getText());
     }
 
     @Override
