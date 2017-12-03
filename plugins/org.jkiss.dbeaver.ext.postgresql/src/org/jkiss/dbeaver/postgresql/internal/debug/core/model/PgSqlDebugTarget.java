@@ -9,20 +9,20 @@ import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IThread;
-import org.jkiss.dbeaver.postgresql.debug.core.IPgSqlDebugController;
+import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugController;
 
 public class PgSqlDebugTarget extends PgSqlDebugElement implements IDebugTarget {
     
     private final ILaunch launch;
     private final IProcess process;
-    private final IPgSqlDebugController controller;
+    private final IDatabaseDebugController controller;
     private final PgSqlThread thread;
     private final IThread[] threads;
 
     private boolean fSuspended = false;
     private boolean fTerminated = false;
 
-    public PgSqlDebugTarget(ILaunch launch, IProcess process, IPgSqlDebugController controller)
+    public PgSqlDebugTarget(ILaunch launch, IProcess process, IDatabaseDebugController controller)
     {
         super(null);
         this.launch = launch;
