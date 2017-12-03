@@ -851,6 +851,12 @@ public class UIUtils {
     @NotNull
     public static Button createPushButton(@NotNull Composite parent, @Nullable String label, @Nullable Image image)
     {
+        return createPushButton(parent, label, image, null);
+    }
+
+    @NotNull
+    public static Button createPushButton(@NotNull Composite parent, @Nullable String label, @Nullable Image image, @Nullable SelectionListener selectionListener)
+    {
         Button button = new Button(parent, SWT.PUSH);
         if (label != null) {
             button.setText(label);
@@ -858,8 +864,12 @@ public class UIUtils {
         if (image != null) {
             button.setImage(image);
         }
+        if (selectionListener != null) {
+            button.addSelectionListener(selectionListener);
+        }
         return button;
     }
+
 
     public static void setHelp(Control control, String pluginId, String helpContextID)
     {

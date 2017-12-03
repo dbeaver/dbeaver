@@ -111,8 +111,7 @@ public class ExasolImportTableToolDialog extends ExasolBaseTableToolDialog {
 
 		// Directory select Button
 		btSelectDirectory = UIUtils.createPushButton(composite,
-				ExasolMessages.dialog_table_open_output_directory, null);
-		btSelectDirectory.addSelectionListener(new SelectionAdapter() {
+				ExasolMessages.dialog_table_open_output_directory, null, new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e)
 			{
