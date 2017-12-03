@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.registry.sql.SQLFormatterConfigurationRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewerConfiguration;
 
 /**
@@ -55,7 +57,11 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
         SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(sqlSyntax);
         configuration.setIndentString(indentPrefixes[0]);
 
-        SQLFormatter formatter = configuration.createFormatter();
+        SQLFormatter formatter = SQLFormatterConfigurationRegistry.getInstance().createAndConfigureFormatter(configuration);
+        if (formatter == null) {
+            DBeaverUI.getInstance().showError("SQL Format", "Can't create SQL formatter. See error log.");
+            return content;
+        }
         return formatter.format(content, configuration);
     }
 

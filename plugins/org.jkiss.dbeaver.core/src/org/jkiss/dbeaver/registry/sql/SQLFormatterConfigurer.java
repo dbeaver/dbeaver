@@ -14,26 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.format;
+package org.jkiss.dbeaver.registry.sql;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 
 /**
- * SQL Formatter registry
+ * SQL Formatter configurer
  */
-public interface SQLFormatterRegistry {
+public interface SQLFormatterConfigurer {
 
-    /**
-     * Creates new formatter. Uses default config and doesn't interact with user for any configuration.
-     */
-    @Nullable
-    SQLFormatter createFormatter(@NotNull SQLFormatterConfiguration configuration);
-
-    /**
-     * Creates and configures new formatter. Interacts with user in needed.
-     */
-    @Nullable
-    SQLFormatter createAndConfigureFormatter(@NotNull SQLFormatterConfiguration configuration);
+    void configure(SQLFormatter formatter, SQLFormatterConfiguration configuration);
 
 }
