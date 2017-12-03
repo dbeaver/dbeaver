@@ -1011,7 +1011,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_editor_group_result_view;
 	public static String pref_page_sql_editor_label_close_results_tab_on_error;
 	public static String pref_page_sql_editor_label_results_orientation;
-	public static String pref_page_sql_editor_label_results_orientation_tip;	
+	public static String pref_page_sql_editor_label_results_orientation_tip;
+	public static String pref_page_sql_editor_link_text_editor;
 	// SQLExecute
 	public static String pref_page_sql_editor_label_sql_timeout_tip;
 	public static String pref_page_sql_editor_enable_parameters_in_ddl;
