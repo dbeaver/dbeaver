@@ -208,7 +208,7 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
         }
-        //restoreCheckedNodes();
+        restoreCheckedNodes();
         updateEnablement();
         dataSourceTree.setEnabled(true);
     }
@@ -289,7 +289,7 @@ public class SearchDataPage extends AbstractSearchPage {
         store.setValue(PROP_FAST_SEARCH, params.fastSearch);
         store.setValue(PROP_SEARCH_NUMBERS, params.searchNumbers);
         store.setValue(PROP_SEARCH_LOBS, params.searchLOBs);
-        //saveTreeState(store, PROP_SOURCES, dataSourceTree);
+        saveTreeState(store, PROP_SOURCES, dataSourceTree);
 
         {
             // Search history
