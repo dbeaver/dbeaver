@@ -24,6 +24,10 @@ import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
  */
 public interface SQLFormatterConfigurer {
 
-    void configure(SQLFormatter formatter, SQLFormatterConfiguration configuration);
+    /**
+     * Sets configuration parameters
+     * @return false if formatting was canceled by user
+     */
+    boolean configure(String formatName, SQLFormatter formatter, SQLFormatterConfiguration configuration);
 
 }

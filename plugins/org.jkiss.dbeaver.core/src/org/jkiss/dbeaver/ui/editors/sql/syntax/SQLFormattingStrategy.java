@@ -59,7 +59,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
 
         SQLFormatter formatter = SQLFormatterConfigurationRegistry.getInstance().createAndConfigureFormatter(configuration);
         if (formatter == null) {
-            DBeaverUI.getInstance().showError("SQL Format", "Can't create SQL formatter. See error log.");
+            //DBeaverUI.getInstance().showError("SQL Format", "Can't create SQL formatter. See error log.");
             return content;
         }
         return formatter.format(content, configuration);

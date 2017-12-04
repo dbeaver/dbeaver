@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterRegistry;
@@ -113,7 +112,9 @@ public class SQLFormatterConfigurationRegistry implements SQLFormatterRegistry
             SQLFormatter formatter = formatterDesc.createFormatter();
             SQLFormatterConfigurer configurer = formatterDesc.createConfigurer();
             if (configurer != null) {
-                configurer.configure(formatter, configuration);
+                if (!configurer.configure(formatterDesc.getLabel(), formatter, configuration)) {
+                    return null;
+                }
             }
             return formatter;
         } catch (DBException e) {

@@ -3302,7 +3302,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlFormatter">
-        <formatter id="default" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter" label="Default SQL formatter" description="Default tokenized SQL formatter"/>
+        <formatter id="default" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.tokenized.ConfigurationPage" label="Default SQL formatter" description="Default tokenized SQL formatter"/>
         <formatter id="external" class="org.jkiss.dbeaver.model.sql.format.external.SQLExternalFormatter" label="External formatter" description="External formatter. Uses configurable command-line executable to format SQL queries"/>
     </extension>
 
