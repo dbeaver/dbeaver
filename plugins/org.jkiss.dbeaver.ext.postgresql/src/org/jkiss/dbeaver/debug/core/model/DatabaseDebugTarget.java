@@ -12,6 +12,8 @@ import org.eclipse.debug.core.model.IThread;
 
 public class DatabaseDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget {
 
+    private final String modelIdentifier;
+
     private final ILaunch launch;
     private final IProcess process;
     private final IDatabaseDebugController controller;
@@ -23,11 +25,12 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
 
     public DatabaseDebugTarget(String modelIdentifier, ILaunch launch, IProcess process, IDatabaseDebugController controller)
     {
-        super(modelIdentifier, null);
+        super(null);
+        this.modelIdentifier = modelIdentifier;
         this.launch = launch;
         this.process = process;
         this.controller = controller;
-        this.thread = new DatabaseThread(modelIdentifier, this);
+        this.thread = new DatabaseThread(this);
         this.threads = new IThread[] {thread};
     }
     
@@ -35,6 +38,12 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     public IDebugTarget getDebugTarget()
     {
         return this;
+    }
+    
+    @Override
+    public String getModelIdentifier()
+    {
+        return modelIdentifier;
     }
     
     @Override
