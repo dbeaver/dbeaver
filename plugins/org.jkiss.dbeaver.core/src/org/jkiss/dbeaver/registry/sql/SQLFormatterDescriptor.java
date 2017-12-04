@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.registry.sql;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.jgit.annotations.Nullable;
+import org.jkiss.code.Nullable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
