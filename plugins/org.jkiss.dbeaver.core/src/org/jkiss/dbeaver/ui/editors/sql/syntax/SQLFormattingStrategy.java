@@ -57,9 +57,8 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
         SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(sqlSyntax);
         configuration.setIndentString(indentPrefixes[0]);
 
-        SQLFormatter formatter = SQLFormatterConfigurationRegistry.getInstance().createAndConfigureFormatter(configuration);
+        SQLFormatter formatter = SQLFormatterConfigurationRegistry.getInstance().createFormatter(configuration);
         if (formatter == null) {
-            //DBeaverUI.getInstance().showError("SQL Format", "Can't create SQL formatter. See error log.");
             return content;
         }
         return formatter.format(content, configuration);

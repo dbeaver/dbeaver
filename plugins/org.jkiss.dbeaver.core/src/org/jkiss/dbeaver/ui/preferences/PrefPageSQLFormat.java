@@ -153,7 +153,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
             formatterSelector = UIUtils.createLabelCombo(formatterPanel, CoreMessages.pref_page_sql_format_label_formatter, SWT.DROP_DOWN | SWT.READ_ONLY);
             formatters = SQLFormatterConfigurationRegistry.getInstance().getFormatters();
             for (SQLFormatterDescriptor formatterDesc : formatters) {
-                formatterSelector.add(capitalizeCaseName(formatterDesc.getLabel()));
+                formatterSelector.add(DBPIdentifierCase.capitalizeCaseName(formatterDesc.getLabel()));
             }
             formatterSelector.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -172,7 +172,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
             keywordCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             keywordCaseCombo.add("Database");
             for (DBPIdentifierCase c :DBPIdentifierCase.values()) {
-                keywordCaseCombo.add(capitalizeCaseName(c.name()));
+                keywordCaseCombo.add(DBPIdentifierCase.capitalizeCaseName(c.name()));
             }
             keywordCaseCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -277,7 +277,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
         if (CommonUtils.isEmpty(caseName)) {
             keywordCaseCombo.select(0);
         } else {
-            UIUtils.setComboSelection(keywordCaseCombo, capitalizeCaseName(caseName));
+            UIUtils.setComboSelection(keywordCaseCombo, DBPIdentifierCase.capitalizeCaseName(caseName));
         }
 
         externalCmdText.setText(store.getString(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD));
@@ -350,10 +350,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
         ((GridData)defaultGroup.getLayoutData()).exclude = isExternal;
         ((GridData)externalGroup.getLayoutData()).exclude = !isExternal;
         defaultGroup.getParent().layout();
-    }
-
-    private static String capitalizeCaseName(String name) {
-        return CommonUtils.capitalizeWord(name.toLowerCase(Locale.ENGLISH));
     }
 
     private void formatSQL() {

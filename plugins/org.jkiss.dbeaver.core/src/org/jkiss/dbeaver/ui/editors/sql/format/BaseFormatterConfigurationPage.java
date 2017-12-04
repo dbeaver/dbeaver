@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.format;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.layout.GridLayout;
@@ -44,7 +45,7 @@ public abstract class BaseFormatterConfigurationPage extends ActiveWizardPage im
     public final void createControl(Composite parent) {
         setTitle("SQL Format Configuration");
         setDescription(getWizard().getFormaterName());
-        Composite composite = createFormatSettings(parent);
+        Composite composite = createFormatSettings(parent, getWizard().getConfiguration());
 
 
 
@@ -56,7 +57,9 @@ public abstract class BaseFormatterConfigurationPage extends ActiveWizardPage im
         return (ConfigWizard)super.getWizard();
     }
 
-    protected abstract Composite createFormatSettings(Composite parent);
+    protected abstract Composite createFormatSettings(Composite parent, SQLFormatterConfiguration configuration);
+
+    protected abstract void saveFormatSettings(SQLFormatterConfiguration configuration);
 
     @Override
     public boolean configure(String formatName, SQLFormatter formatter, SQLFormatterConfiguration configuration) {
@@ -89,6 +92,11 @@ public abstract class BaseFormatterConfigurationPage extends ActiveWizardPage im
 
         @Override
         public boolean performFinish() {
+            for (IWizardPage page : getPages()) {
+                if (page instanceof BaseFormatterConfigurationPage) {
+                    ((BaseFormatterConfigurationPage) page).saveFormatSettings(this.configuration);
+                }
+            }
             return true;
         }
 
