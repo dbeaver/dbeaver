@@ -94,7 +94,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         this.replacementString = replacementString;
         this.replacementFull = this.dataSource == null ?
                 replacementString :
-                DBUtils.getUnQuotedIdentifier(this.dataSource, replacementString);
+                DBUtils.getUnQuotedIdentifier(this.dataSource, replacementString.toLowerCase(Locale.ENGLISH)); // Convert to lower to compare IN VALIDATE FUNCTION
         int divPos = this.replacementFull.lastIndexOf(syntaxManager.getStructSeparator());
         if (divPos == -1) {
             this.replacementLast = null;
