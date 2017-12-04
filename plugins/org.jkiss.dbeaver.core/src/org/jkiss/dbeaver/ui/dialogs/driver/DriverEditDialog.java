@@ -127,6 +127,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
         this.provider = provider;
         this.driver = provider.createDriver(driver);
+        this.driver.setName(this.driver.getName() + " Copy");
 
         this.defaultCategory = driver.getCategory();
         this.newDriver = true;

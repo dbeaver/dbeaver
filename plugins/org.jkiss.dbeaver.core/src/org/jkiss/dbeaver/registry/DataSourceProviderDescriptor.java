@@ -489,6 +489,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
 
     public DriverDescriptor getDriverByName(String category, String name) {
+        if (category != null && category.isEmpty()) {
+            category = null;
+        }
         for (DriverDescriptor driver : drivers) {
             if (CommonUtils.equalObjects(category, driver.getCategory()) && CommonUtils.equalObjects(name, driver.getName())) {
                 return driver;
