@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.sql.format.external.SQLExternalFormatter;
+import org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal;
 import org.jkiss.dbeaver.registry.sql.SQLFormatterConfigurationRegistry;
 import org.jkiss.dbeaver.registry.sql.SQLFormatterDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -159,6 +159,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     showFormatterSettings();
+                    performApply();
                 }
             });
             formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -193,13 +194,13 @@ public class PrefPageSQLFormat extends TargetPrefPage
                     externalCmdText,
                     new TextContentAdapter(),
                     new SimpleContentProposalProvider(new String[] {
-                            GeneralUtils.variablePattern(SQLExternalFormatter.VAR_FILE)
+                            GeneralUtils.variablePattern(SQLFormatterExternal.VAR_FILE)
                     }));
-            UIUtils.setContentProposalToolTip(externalCmdText, CoreMessages.pref_page_sql_format_label_external_set_content_tool_tip, SQLExternalFormatter.VAR_FILE);
+            UIUtils.setContentProposalToolTip(externalCmdText, CoreMessages.pref_page_sql_format_label_external_set_content_tool_tip, SQLFormatterExternal.VAR_FILE);
 
             externalUseFile = UIUtils.createLabelCheckbox(externalGroup,
                 CoreMessages.pref_page_sql_format_label_external_use_temp_file,
-                CoreMessages.pref_page_sql_format_label_external_use_temp_file_tip + GeneralUtils.variablePattern(SQLExternalFormatter.VAR_FILE),
+                CoreMessages.pref_page_sql_format_label_external_use_temp_file_tip + GeneralUtils.variablePattern(SQLFormatterExternal.VAR_FILE),
                 false);
             externalTimeout = UIUtils.createLabelSpinner(externalGroup,
                 CoreMessages.pref_page_sql_format_label_external_exec_timeout,
@@ -344,7 +345,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
     private void showFormatterSettings() {
         SQLFormatterDescriptor selFormatter = formatters.get(formatterSelector.getSelectionIndex());
-        boolean isExternal = selFormatter.getId().equalsIgnoreCase(SQLExternalFormatter.FORMATTER_ID);
+        boolean isExternal = selFormatter.getId().equalsIgnoreCase(SQLFormatterExternal.FORMATTER_ID);
         defaultGroup.setVisible(!isExternal);
         externalGroup.setVisible(isExternal);
         ((GridData)defaultGroup.getLayoutData()).exclude = isExternal;

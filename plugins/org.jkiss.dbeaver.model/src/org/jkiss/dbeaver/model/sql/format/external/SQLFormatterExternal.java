@@ -37,11 +37,11 @@ import java.util.List;
 /**
  * External SQL formatter
  */
-public class SQLExternalFormatter implements SQLFormatter {
+public class SQLFormatterExternal implements SQLFormatter {
 
     public static final String FORMATTER_ID = "EXTERNAL";
 
-    private static final Log log = Log.getLog(SQLExternalFormatter.class);
+    private static final Log log = Log.getLog(SQLFormatterExternal.class);
     public static final String VAR_FILE = "file";
 
     @Override
@@ -50,6 +50,11 @@ public class SQLExternalFormatter implements SQLFormatter {
         final String command = store.getString(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD);
         int timeout = store.getInt(ModelPreferences.SQL_FORMAT_EXTERNAL_TIMEOUT);
         boolean useFile = store.getBoolean(ModelPreferences.SQL_FORMAT_EXTERNAL_FILE);
+        if (CommonUtils.isEmpty(command)) {
+            // Nothing to format
+            return source;
+        }
+
         try {
             final FormatJob formatJob = new FormatJob(configuration, command, source, useFile);
             formatJob.schedule();
@@ -79,7 +84,7 @@ public class SQLExternalFormatter implements SQLFormatter {
         public boolean finished;
 
         public FormatJob(SQLFormatterConfiguration configuration, String command, String source, boolean useFile) {
-            super("External format: " + command);
+            super("External format - " + command);
             this.command = command;
             this.configuration = configuration;
             this.source = source;
