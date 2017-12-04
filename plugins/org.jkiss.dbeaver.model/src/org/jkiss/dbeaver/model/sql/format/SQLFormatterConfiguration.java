@@ -46,12 +46,20 @@ public class SQLFormatterConfiguration {
 
     private Map<String, Object> properties = new HashMap<>();
 
+    /**
+     * Create formatter config with default (set in properties) formatter
+     */
     public SQLFormatterConfiguration(SQLSyntaxManager syntaxManager)
+    {
+        this(syntaxManager, CommonUtils.notEmpty(syntaxManager.getPreferenceStore().getString(ModelPreferences.SQL_FORMAT_FORMATTER)).toUpperCase(Locale.ENGLISH));
+    }
+
+    public SQLFormatterConfiguration(SQLSyntaxManager syntaxManager, String formatterId)
     {
         this.syntaxManager = syntaxManager;
         this.keywordCase = syntaxManager.getKeywordCase();
 
-        this.formatterId = CommonUtils.notEmpty(syntaxManager.getPreferenceStore().getString(ModelPreferences.SQL_FORMAT_FORMATTER)).toUpperCase(Locale.ENGLISH);
+        this.formatterId = formatterId;
     }
 
     public SQLSyntaxManager getSyntaxManager()
@@ -113,4 +121,13 @@ public class SQLFormatterConfiguration {
     public DBPPreferenceStore getPreferenceStore() {
         return syntaxManager.getPreferenceStore();
     }
+
+    public void loadSettings() {
+
+    }
+
+    public void saveSettings() {
+
+    }
+
 }
