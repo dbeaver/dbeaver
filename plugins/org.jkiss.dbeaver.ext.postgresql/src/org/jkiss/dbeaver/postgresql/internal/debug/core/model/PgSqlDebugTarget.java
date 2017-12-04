@@ -10,6 +10,7 @@ import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IThread;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugElement;
+import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
 import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugController;
 import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugTarget;
 import org.jkiss.dbeaver.postgresql.debug.core.PgSqlDebugCore;
@@ -19,7 +20,7 @@ public class PgSqlDebugTarget extends DatabaseDebugElement implements IDatabaseD
     private final ILaunch launch;
     private final IProcess process;
     private final IDatabaseDebugController controller;
-    private final PgSqlThread thread;
+    private final DatabaseThread thread;
     private final IThread[] threads;
 
     private boolean fSuspended = false;
@@ -31,7 +32,7 @@ public class PgSqlDebugTarget extends DatabaseDebugElement implements IDatabaseD
         this.launch = launch;
         this.process = process;
         this.controller = controller;
-        this.thread = new PgSqlThread(this);
+        this.thread = new DatabaseThread(PgSqlDebugCore.MODEL_IDENTIFIER, this);
         this.threads = new IThread[] {thread};
     }
 
