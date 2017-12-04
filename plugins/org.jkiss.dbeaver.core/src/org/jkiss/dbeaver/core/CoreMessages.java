@@ -348,6 +348,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_driver_manager_button_delete;
 	public static String dialog_driver_manager_button_edit;
 	public static String dialog_driver_manager_button_new;
+	public static String dialog_driver_manager_button_copy;
 	public static String dialog_driver_manager_label_unavailable;
 	public static String dialog_driver_manager_label_user_defined;
 	public static String dialog_driver_manager_message_cant_delete_text;

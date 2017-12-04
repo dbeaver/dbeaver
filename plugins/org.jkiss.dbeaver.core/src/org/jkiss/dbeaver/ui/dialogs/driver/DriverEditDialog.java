@@ -123,6 +123,20 @@ public class DriverEditDialog extends HelpEnabledDialog {
         this.origLibList = new ArrayList<>();
     }
 
+    public DriverEditDialog(Shell shell, DataSourceProviderDescriptor provider, DriverDescriptor driver) {
+        super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
+        this.provider = provider;
+        this.driver = provider.createDriver(driver);
+
+        this.defaultCategory = driver.getCategory();
+        this.newDriver = true;
+        this.origLibList = new ArrayList<>();
+    }
+
+    public DriverDescriptor getDriver() {
+        return driver;
+    }
+
     public int open(boolean addFiles) {
         this.showAddFiles = addFiles;
         return open();
@@ -766,6 +780,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     @Override
     protected void okPressed() {
+
         // Set props
         driver.setName(driverNameText.getText());
         driver.setCategory(driverCategoryCombo.getText());
@@ -783,6 +798,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
         // Store client homes
         if (clientHomesPanel != null) {
             driver.setClientHomeIds(clientHomesPanel.getHomeIds());
+        }
+
+        DriverDescriptor oldDriver = provider.getDriverByName(driver.getCategory(), driver.getName());
+        if (oldDriver != null && oldDriver != driver) {
+            UIUtils.showMessageBox(getShell(), "Driver create", "Driver '" + driver.getName() + "' already exists. Change driver name", SWT.ICON_ERROR);
+            return;
         }
 
         // Finish
