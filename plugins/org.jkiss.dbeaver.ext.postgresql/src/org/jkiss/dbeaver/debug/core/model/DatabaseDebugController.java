@@ -1,8 +1,6 @@
-package org.jkiss.dbeaver.postgresql.internal.debug.core;
+package org.jkiss.dbeaver.debug.core.model;
 
-import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugController;
-
-public class PgSqlDebugController implements IDatabaseDebugController {
+public class DatabaseDebugController implements IDatabaseDebugController {
 
     @Override
     public void resume()
