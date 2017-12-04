@@ -290,7 +290,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     {
         boolean useKeystrokes = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION);
         return useKeystrokes ?
-            ".abcdefghijklmnopqrstuvwxyz_$".toCharArray() :
+            ".abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$".toCharArray() :
             new char[] {'.', };
     }
 
