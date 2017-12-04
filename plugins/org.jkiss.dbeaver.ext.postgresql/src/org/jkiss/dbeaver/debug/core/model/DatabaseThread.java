@@ -7,9 +7,9 @@ import org.eclipse.debug.core.model.IThread;
 
 public class DatabaseThread extends DatabaseDebugElement implements IThread {
 
-    public DatabaseThread(String modelIdentifier, IDatabaseDebugTarget target)
+    public DatabaseThread(IDatabaseDebugTarget target)
     {
-        super(modelIdentifier, target);
+        super(target);
     }
 
     @Override

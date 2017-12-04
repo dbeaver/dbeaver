@@ -4,12 +4,9 @@ import org.eclipse.debug.core.model.DebugElement;
 
 public class DatabaseDebugElement extends DebugElement {
     
-    private final String modelIdentifier;
-
-    public DatabaseDebugElement(String modelIdentifier, IDatabaseDebugTarget target)
+    public DatabaseDebugElement(IDatabaseDebugTarget target)
     {
         super(target);
-        this.modelIdentifier = modelIdentifier;
     }
 
     public IDatabaseDebugTarget geDatabaseDebugTarget() {
@@ -19,7 +16,7 @@ public class DatabaseDebugElement extends DebugElement {
     @Override
     public String getModelIdentifier()
     {
-        return modelIdentifier;
+        return getDebugTarget().getModelIdentifier();
     }
 
 }
