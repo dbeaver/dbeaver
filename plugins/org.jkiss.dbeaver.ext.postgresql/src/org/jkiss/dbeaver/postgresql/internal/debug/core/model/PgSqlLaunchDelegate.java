@@ -15,7 +15,7 @@ public class PgSqlLaunchDelegate extends DatabaseLaunchDelegate {
     protected DatabaseDebugController createController(String datasourceId, String databaseName,
             Map<String, Object> attributes)
     {
-        return new DatabaseDebugController();
+        return new PgSqlDebugController(datasourceId, databaseName, attributes);
     }
 
     @Override

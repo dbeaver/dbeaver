@@ -11,7 +11,7 @@ import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 
 public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
-
+    
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
             throws CoreException
@@ -23,6 +23,7 @@ public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate
         DatabaseProcess process = createProcess(launch, configuration.getName());
         DatabaseDebugTarget target = createDebugTarget(launch, controller, process);
         launch.addDebugTarget(target);
+        controller.connect(monitor);
     }
 
     protected Map<String, Object> extractAttributes(ILaunchConfiguration configuration)
