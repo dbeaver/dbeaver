@@ -4,13 +4,15 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
+import org.jkiss.dbeaver.debug.core.model.DatabaseDebugElement;
 import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugTarget;
+import org.jkiss.dbeaver.postgresql.debug.core.PgSqlDebugCore;
 
-public class PgSqlThread extends PgSqlDebugElement implements IThread {
+public class PgSqlThread extends DatabaseDebugElement implements IThread {
 
     public PgSqlThread(IDatabaseDebugTarget target)
     {
-        super(target);
+        super(PgSqlDebugCore.MODEL_IDENTIFIER, target);
     }
 
     @Override

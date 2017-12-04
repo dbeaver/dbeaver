@@ -9,10 +9,12 @@ import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IThread;
+import org.jkiss.dbeaver.debug.core.model.DatabaseDebugElement;
 import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugController;
 import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugTarget;
+import org.jkiss.dbeaver.postgresql.debug.core.PgSqlDebugCore;
 
-public class PgSqlDebugTarget extends PgSqlDebugElement implements IDatabaseDebugTarget {
+public class PgSqlDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget {
     
     private final ILaunch launch;
     private final IProcess process;
@@ -25,7 +27,7 @@ public class PgSqlDebugTarget extends PgSqlDebugElement implements IDatabaseDebu
 
     public PgSqlDebugTarget(ILaunch launch, IProcess process, IDatabaseDebugController controller)
     {
-        super(null);
+        super(PgSqlDebugCore.MODEL_IDENTIFIER, null);
         this.launch = launch;
         this.process = process;
         this.controller = controller;
