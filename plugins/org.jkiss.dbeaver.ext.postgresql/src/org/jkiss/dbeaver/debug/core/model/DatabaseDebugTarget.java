@@ -78,9 +78,14 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     }
 
     @Override
-    public boolean supportsBreakpoint(IBreakpoint breakpoint)
+    public void handleDebugEvents(DebugEvent[] events)
     {
-        return false;
+        for (int i = 0; i < events.length; i++) {
+            DebugEvent event = events[i];
+            if (event.getKind() == DebugEvent.TERMINATE && event.getSource().equals(process)) {
+                terminated();
+            }
+        }
     }
 
     @Override
@@ -98,7 +103,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     @Override
     public void terminate() throws DebugException
     {
-        //FIXME:AF:delegare to controller
+        terminated();
     }
 
     public synchronized void terminated() {
@@ -151,6 +156,12 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     }
 
     @Override
+    public boolean supportsBreakpoint(IBreakpoint breakpoint)
+    {
+        return false;
+    }
+
+    @Override
     public void breakpointAdded(IBreakpoint breakpoint)
     {
         //FIXME:AF:delegare to controller
@@ -166,6 +177,13 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     public void breakpointChanged(IBreakpoint breakpoint, IMarkerDelta delta)
     {
         //FIXME:AF:delegare to controller
+    }
+
+    @Override
+    public void breakpointManagerEnablementChanged(boolean enabled)
+    {
+        // TODO Auto-generated method stub
+        
     }
 
     @Override
