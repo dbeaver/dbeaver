@@ -151,7 +151,7 @@ public class StyledTextFindReplaceTarget implements IFindReplaceTarget, IFindRep
         }
         String searchIn = text.getText();
         Matcher matcher = findPattern.matcher(searchIn);
-        if (matcher.find(offset)) {
+        if (matcher.find(searchForward ? offset : 0)) {
             text.setSelection(matcher.start(), matcher.end());
             return matcher.start();
         }
