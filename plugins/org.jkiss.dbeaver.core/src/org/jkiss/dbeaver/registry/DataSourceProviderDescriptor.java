@@ -266,6 +266,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return new DriverDescriptor(this, id);
     }
 
+    public DriverDescriptor createDriver(DriverDescriptor copyFrom)
+    {
+        return new DriverDescriptor(this, SecurityUtils.generateGUID(false), copyFrom);
+    }
+
     public void addDriver(DriverDescriptor driver)
     {
         this.drivers.add(driver);
@@ -483,4 +488,12 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     }
 
 
+    public DriverDescriptor getDriverByName(String category, String name) {
+        for (DriverDescriptor driver : drivers) {
+            if (CommonUtils.equalObjects(category, driver.getCategory()) && CommonUtils.equalObjects(name, driver.getName())) {
+                return driver;
+            }
+        }
+        return null;
+    }
 }
