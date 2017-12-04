@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.postgresql.internal.debug.core.model;
+package org.jkiss.dbeaver.debug.core.model;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamsProxy;
 import org.jkiss.dbeaver.debug.core.DebugEvents;
 
-public class PgSqlProcess implements IProcess {
+public class DatabaseProcess implements IProcess {
 
     private final ILaunch launch;
     private final String name;
@@ -19,7 +19,7 @@ public class PgSqlProcess implements IProcess {
 
     private boolean terminated = false;
 
-    public PgSqlProcess(ILaunch launch, String name)
+    public DatabaseProcess(ILaunch launch, String name)
     {
         this.launch = launch;
         this.name = name;
