@@ -5,6 +5,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
+import org.jkiss.dbeaver.debug.core.model.DatabaseDebugController;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
 import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugController;
 import org.jkiss.dbeaver.postgresql.internal.debug.core.model.PgSqlDebugTarget;
@@ -16,7 +17,7 @@ public class PgSqlLaunchDelegate implements ILaunchConfigurationDelegate {
             throws CoreException
     {
         //FIXME:AF: extract attributes from configuration
-        IDatabaseDebugController controller = new PgSqlDebugController();
+        IDatabaseDebugController controller = new DatabaseDebugController();
         DatabaseProcess process = new DatabaseProcess(launch, configuration.getName());
         PgSqlDebugTarget target = new PgSqlDebugTarget(launch, process, controller);
         launch.addDebugTarget(target);
