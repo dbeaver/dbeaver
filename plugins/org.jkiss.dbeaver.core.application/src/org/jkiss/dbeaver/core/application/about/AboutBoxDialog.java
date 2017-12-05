@@ -36,7 +36,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.application.DBeaverApplication;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.InformationDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -54,7 +53,9 @@ public class AboutBoxDialog extends InformationDialog
     public static final String PRODUCT_PROP_EMAIL = "email"; //$NON-NLS-1$
     private final Font NAME_FONT,TITLE_FONT;
 
-    private Image ABOUT_IMAGE = AbstractUIPlugin.imageDescriptorFromPlugin(DBeaverApplication.APPLICATION_PLUGIN_ID, "icons/dbeaver_about.png").createImage();
+    private Image ABOUT_IMAGE = AbstractUIPlugin.imageDescriptorFromPlugin(
+        Platform.getProduct().getDefiningBundle().getSymbolicName(),
+        "icons/dbeaver_about.png").createImage();
 
     public AboutBoxDialog(Shell shell)
     {
@@ -150,7 +151,7 @@ public class AboutBoxDialog extends InformationDialog
         gd = new GridData();
         gd.verticalAlignment = GridData.BEGINNING;
         gd.horizontalAlignment = GridData.CENTER;
-        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessHorizontalSpace = false;
         imageLabel.setLayoutData(gd);
         imageLabel.setImage(ABOUT_IMAGE);
 
