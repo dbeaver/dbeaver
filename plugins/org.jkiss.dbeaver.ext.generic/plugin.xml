@@ -681,6 +681,11 @@
                     defaultPort="1025"
                     webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
                     description="Teradata JDBC Type 4 driver">
+
+                    <file type="jar" path="repo:/drivers/teradata/terajdbc4.jar" bundle="!drivers.teradata"/>
+                    <file type="jar" path="repo:/drivers/teradata/tdgssconfig.jar" bundle="!drivers.teradata"/>
+                    <file type="license" path="repo:/drivers/teradata/LICENSE.txt" bundle="!drivers.teradata"/>
+
                     <file type="jar" path="drivers/teradata/terajdbc4.jar" bundle="drivers.teradata"/>
                     <file type="jar" path="drivers/teradata/tdgssconfig.jar" bundle="drivers.teradata"/>
                     <file type="license" path="drivers/teradata/LICENSE.txt" bundle="drivers.teradata"/>
@@ -852,7 +857,6 @@
                     description="Apache Hive JDBC"
                     webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
                     category="Hadoop">
-                    <file type="jar" path="drivers/hive/hive-jdbc-uber.jar" bundle="drivers.hive"/>
 
                     <file type="jar" path="maven:/org.apache.hive:hive-jdbc:RELEASE" bundle="!drivers.hive"/>
                     <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE" bundle="!drivers.hive"/>
