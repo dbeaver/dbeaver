@@ -5,7 +5,7 @@ import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 
-public class DatabaseThread extends DatabaseDebugElement implements IThread {
+public abstract class DatabaseThread extends DatabaseDebugElement implements IThread {
 
     public DatabaseThread(IDatabaseDebugTarget target)
     {
@@ -140,13 +140,6 @@ public class DatabaseThread extends DatabaseDebugElement implements IThread {
 
     @Override
     public IStackFrame getTopStackFrame() throws DebugException
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getName() throws DebugException
     {
         // TODO Auto-generated method stub
         return null;

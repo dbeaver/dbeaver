@@ -29,6 +29,11 @@ public class PgSqlDebugController extends DatabaseDebugController {
         super(datasourceId, databaseName, attributes);
     }
     
+    public Integer getSessionId()
+    {
+        return sessionId;
+    }
+    
     @Override
     protected void afterSessionOpen(DBCSession session)
     {
