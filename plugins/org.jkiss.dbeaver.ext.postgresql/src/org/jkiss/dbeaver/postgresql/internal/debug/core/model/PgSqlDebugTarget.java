@@ -1,21 +1,34 @@
 package org.jkiss.dbeaver.postgresql.internal.debug.core.model;
 
-import org.eclipse.debug.core.DebugException;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IProcess;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
-import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugController;
+import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
 import org.jkiss.dbeaver.postgresql.debug.core.PgSqlDebugCore;
 
-public class PgSqlDebugTarget extends DatabaseDebugTarget {
+public class PgSqlDebugTarget extends DatabaseDebugTarget<PgSqlDebugController> {
     
-    public PgSqlDebugTarget(ILaunch launch, IProcess process, IDatabaseDebugController controller)
+    public PgSqlDebugTarget(ILaunch launch, IProcess process, PgSqlDebugController controller)
     {
         super(PgSqlDebugCore.MODEL_IDENTIFIER, launch, process, controller);
     }
 
     @Override
-    public String getName() throws DebugException
+    protected DatabaseThread newThread(PgSqlDebugController controller)
+    {
+        return new PgSqlThread(this, controller);
+    }
+
+    @Override
+    protected String getConfiguredName(ILaunchConfiguration configuration) throws CoreException
+    {
+        return configuration.getName();
+    }
+
+    @Override
+    protected String getDefaultName()
     {
         return "PL/pgSQL Debug";
     }

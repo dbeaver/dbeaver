@@ -1,39 +1,45 @@
 package org.jkiss.dbeaver.debug.core.model;
 
 import org.eclipse.core.resources.IMarkerDelta;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IThread;
 
-public class DatabaseDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget {
+public abstract class DatabaseDebugTarget<C extends IDatabaseDebugController> extends DatabaseDebugElement implements IDatabaseDebugTarget {
 
     private final String modelIdentifier;
 
     private final ILaunch launch;
     private final IProcess process;
-    private final IDatabaseDebugController controller;
+    private final C controller;
     private final DatabaseThread thread;
     private final IThread[] threads;
+
+    private String name;
 
     private boolean suspended = false;
     private boolean terminated = false;
 
-    public DatabaseDebugTarget(String modelIdentifier, ILaunch launch, IProcess process, IDatabaseDebugController controller)
+    public DatabaseDebugTarget(String modelIdentifier, ILaunch launch, IProcess process, C controller)
     {
         super(null);
         this.modelIdentifier = modelIdentifier;
         this.launch = launch;
         this.process = process;
         this.controller = controller;
-        this.thread = new DatabaseThread(this);
+        this.thread = newThread(controller);
         this.threads = new IThread[] {thread};
     }
     
+    protected abstract DatabaseThread newThread(C controller);
+
     @Override
     public IDebugTarget getDebugTarget()
     {
@@ -73,9 +79,24 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     @Override
     public String getName() throws DebugException
     {
-        // TODO Auto-generated method stub
-        return null;
+        if (name == null) {
+            try {
+                ILaunchConfiguration configuration = getLaunch().getLaunchConfiguration();
+                name = getConfiguredName(configuration);
+                if (name == null) {
+                    name = getDefaultName();
+                }
+            }
+            catch (CoreException e) {
+                name = getDefaultName();
+            }
+            
+        }
+        return name;
     }
+    
+    protected abstract String getConfiguredName(ILaunchConfiguration configuration) throws CoreException;
+    protected abstract String getDefaultName();
 
     @Override
     public void handleDebugEvents(DebugEvent[] events)
@@ -117,13 +138,13 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     @Override
     public boolean canResume()
     {
-        return !terminated && suspended;
+        return thread!= null && !terminated && suspended;
     }
 
     @Override
     public boolean canSuspend()
     {
-        return !terminated && !suspended;
+        return thread!= null && !terminated && !suspended;
     }
 
     @Override

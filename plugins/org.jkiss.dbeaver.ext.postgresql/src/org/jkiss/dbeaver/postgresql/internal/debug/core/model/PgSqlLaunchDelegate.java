@@ -3,16 +3,13 @@ package org.jkiss.dbeaver.postgresql.internal.debug.core.model;
 import java.util.Map;
 
 import org.eclipse.debug.core.ILaunch;
-import org.jkiss.dbeaver.debug.core.model.DatabaseDebugController;
-import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseLaunchDelegate;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
-import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugController;
 
-public class PgSqlLaunchDelegate extends DatabaseLaunchDelegate {
+public class PgSqlLaunchDelegate extends DatabaseLaunchDelegate<PgSqlDebugController> {
 
     @Override
-    protected DatabaseDebugController createController(String datasourceId, String databaseName,
+    protected PgSqlDebugController createController(String datasourceId, String databaseName,
             Map<String, Object> attributes)
     {
         return new PgSqlDebugController(datasourceId, databaseName, attributes);
@@ -25,7 +22,7 @@ public class PgSqlLaunchDelegate extends DatabaseLaunchDelegate {
     }
 
     @Override
-    protected DatabaseDebugTarget createDebugTarget(ILaunch launch, IDatabaseDebugController controller,
+    protected PgSqlDebugTarget createDebugTarget(ILaunch launch, PgSqlDebugController controller,
             DatabaseProcess process)
     {
         return new PgSqlDebugTarget(launch, process, controller);

@@ -10,8 +10,8 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 
-public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
-    
+public abstract class DatabaseLaunchDelegate<C extends IDatabaseDebugController> extends LaunchConfigurationDelegate {
+
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
             throws CoreException
@@ -19,9 +19,9 @@ public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate
         String datasourceId = DebugCore.extractDatasource(configuration);
         String databaseName = DebugCore.extractDatabase(configuration);
         Map<String, Object> attributes = extractAttributes(configuration);
-        IDatabaseDebugController controller = createController(datasourceId, databaseName, attributes);
+        C controller = createController(datasourceId, databaseName, attributes);
         DatabaseProcess process = createProcess(launch, configuration.getName());
-        DatabaseDebugTarget target = createDebugTarget(launch, controller, process);
+        DatabaseDebugTarget<C> target = createDebugTarget(launch, controller, process);
         launch.addDebugTarget(target);
         controller.connect(monitor);
     }
@@ -32,11 +32,10 @@ public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate
         return attributes;
     }
 
-    protected abstract DatabaseDebugController createController(String datasourceId, String databaseName, Map<String, Object> attributes);
+    protected abstract C createController(String datasourceId, String databaseName, Map<String, Object> attributes);
 
     protected abstract DatabaseProcess createProcess(ILaunch launch, String name);
 
-    protected abstract DatabaseDebugTarget createDebugTarget(ILaunch launch, IDatabaseDebugController controller,
-            DatabaseProcess process);
+    protected abstract DatabaseDebugTarget<C> createDebugTarget(ILaunch launch, C controller, DatabaseProcess process);
 
 }
