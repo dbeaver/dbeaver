@@ -168,11 +168,15 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 if (tokenString.equals("(")) { //$NON-NLS-1$
                     functionBracket.add(formatterCfg.isFunction(prev.getString()) ? Boolean.TRUE : Boolean.FALSE);
                     bracketIndent.add(indent);
-                    indent++;
-                    index += insertReturnAndIndent(argList, index + 1, indent);
+                    if (!isCompact) {
+                        indent++;
+                        index += insertReturnAndIndent(argList, index + 1, indent);
+                    }
                 } else if (tokenString.equals(")") && !bracketIndent.isEmpty() && !functionBracket.isEmpty()) { //$NON-NLS-1$
                     indent = bracketIndent.remove(bracketIndent.size() - 1);
-                    index += insertReturnAndIndent(argList, index, indent);
+                    if (!isCompact) {
+                        index += insertReturnAndIndent(argList, index, indent);
+                    }
                     functionBracket.remove(functionBracket.size() - 1);
                 } else if (tokenString.equals(",")) { //$NON-NLS-1$
                     if (!isCompact) {
@@ -383,16 +387,16 @@ public class SQLFormatterTokenized implements SQLFormatter {
         // And we must be in the beginning of sequence
 
         // check current token
-        if (!ArrayUtils.contains(JOIN_BEGIN, argList.get(index).getString())) {
+        if (!ArrayUtils.contains(JOIN_BEGIN, argList.get(index).getString().toUpperCase(Locale.ENGLISH))) {
             return false;
         }
         // check previous token
         for (int i = index - 1; i >= 0; i--) {
             FormatterToken token = argList.get(i);
-            if (token.getType() == TokenType.SPACE) {
+            if (token.getType() == TokenType.SPACE || token.getType() == TokenType.SYMBOL) {
                 continue;
             }
-            if (ArrayUtils.contains(JOIN_BEGIN, token.getString())) {
+            if (ArrayUtils.contains(JOIN_BEGIN, token.getString().toUpperCase(Locale.ENGLISH))) {
                 // It is not the begin of sequence
                 return false;
             } else {
@@ -402,13 +406,13 @@ public class SQLFormatterTokenized implements SQLFormatter {
         // check last token
         for (int i = index; i < argList.size(); i++) {
             FormatterToken token = argList.get(i);
-            if (token.getType() == TokenType.SPACE) {
+            if (token.getType() == TokenType.SPACE || token.getType() == TokenType.SYMBOL) {
                 continue;
             }
-            if (token.getString().equals("JOIN")) {
+            if (token.getString().toUpperCase(Locale.ENGLISH).equals("JOIN")) {
                 return true;
             }
-            if (!ArrayUtils.contains(JOIN_BEGIN, token.getString())) {
+            if (!ArrayUtils.contains(JOIN_BEGIN, token.getString().toUpperCase(Locale.ENGLISH))) {
                 // It is not the begin of sequence
                 return false;
             }
