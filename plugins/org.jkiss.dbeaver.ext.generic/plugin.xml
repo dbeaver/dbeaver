@@ -300,7 +300,11 @@
                     sampleURL="jdbc:as400://{host};[libraries={database};]"
                     defaultPort=""
                     description="DB2 iSeries/AS 400 driver">
+
                     <file type="jar" path="maven:/net.sf.jt400:jt400:RELEASE" bundle="!drivers.jt400"/>
+
+                    <file type="license" path="drivers/db2-jt400/LICENSE.txt" bundle="drivers.jt400"/>
+                    <file type="jar" path="drivers/db2-jt400/jt400.jar" bundle="drivers.jt400"/>
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
@@ -417,8 +421,10 @@
                     defaultPort="7200"
                     webURL="http://www.sdn.sap.com/irj/sdn/maxdb"
                     description="SAP MaxDB - The SAP Database System">
-                    <file type="jar" path="repo:/drivers/maxdb/sapdbc.jar" bundle="!drivers.maxdb"/>
-                    <file type="license" path="repo:/drivers/maxdb/LICENSE.txt" bundle="!drivers.maxdb"/>
+
+                    <file type="jar" path="drivers/maxdb/sapdbc.jar" bundle="drivers.maxdb"/>
+                    <file type="license" path="drivers/maxdb/LICENSE.txt" bundle="drivers.maxdb"/>
+
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUAL"/>
                     <parameter name="query-set-active-db" value="SET CURRENT_SCHEMA = ?"/>
                 </driver>
@@ -430,9 +436,11 @@
                     defaultPort="1533"
                     webURL="http://www.developers.net/ibmshowcase/focus/Informix"
                     description="IBM Informix Dynamic Server">
-                    <file type="jar" path="repo:/drivers/informix/ifxjdbc.jar" bundle="!drivers.informix"/>
-                    <file type="jar" path="repo:/drivers/informix/ifxlang.jar" bundle="!drivers.informix"/>
-                    <file type="license" path="repo:/drivers/informix/LICENSE.txt" bundle="!drivers.informix"/>
+
+                    <file type="jar" path="drivers/informix/ifxjdbc.jar" bundle="drivers.informix"/>
+                    <file type="jar" path="drivers/informix/ifxlang.jar" bundle="drivers.informix"/>
+                    <file type="license" path="drivers/informix/LICENSE.txt" bundle="drivers.informix"/>
+
                     <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
                     <parameter name="query-set-active-db" value="DATABASE ?"/>
                     <parameter name="legacy-sql-dialect" value="true"/>
@@ -449,7 +457,11 @@
                     defaultPort="9092"
                     webURL="http://www.h2database.com/"
                     description="H2 Server">
+
                     <file type="jar" path="maven:/com.h2database:h2:RELEASE" bundle="!drivers.h2"/>
+
+                    <file type="jar" path="drivers/h2/h2.jar" bundle="drivers.h2"/>
+
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
                 </driver>
@@ -463,7 +475,11 @@
                     webURL="http://www.h2database.com/"
                     embedded="true"
                     description="H2 Embedded">
+
                     <file type="jar" path="maven:/com.h2database:h2:RELEASE" bundle="!drivers.h2"/>
+
+                    <file type="jar" path="drivers/h2/h2.jar" bundle="drivers.h2"/>
+
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
                 </driver>
@@ -495,6 +511,7 @@
                     description="Derby (Java DB) embedded driver">
 
                     <file type="jar" path="maven:/org.apache.derby:derby:RELEASE" bundle="!drivers.derby"/>
+
                     <file type="jar" path="drivers/derby/derby.jar" bundle="drivers.derby"/>
                     <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
 
@@ -517,6 +534,7 @@
                     description="Derby (Java DB) server driver">
 
                     <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE" bundle="!drivers.derby"/>
+
                     <file type="jar" path="drivers/derby/derbyclient.jar" bundle="drivers.derby"/>
                     <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
 
@@ -545,7 +563,12 @@
                     defaultPort="9001"
                     webURL="http://hsqldb.org/"
                     description="HyperSQL DataBase - Server Mode">
+
                     <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE" bundle="!drivers.hsqldb"/>
+
+                    <file type="license" path="drivers/hsqldb/LICENSE.txt" bundle="drivers.hsqldb"/>
+                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" bundle="drivers.hsqldb"/>
+
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="supports-limits" value="true"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
@@ -562,7 +585,12 @@
                     webURL="http://hsqldb.org/"
                     embedded="true"
                     description="HyperSQL DataBase - Embedded Mode">
+
                     <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE" bundle="!drivers.hsqldb"/>
+
+                    <file type="license" path="drivers/hsqldb/LICENSE.txt" bundle="drivers.hsqldb"/>
+                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" bundle="drivers.hsqldb"/>
+
                     <property name="shutdown" value="true"/>
                     <parameter name="create-url-param" value=";create=true"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
@@ -653,9 +681,9 @@
                     defaultPort="1025"
                     webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
                     description="Teradata JDBC Type 4 driver">
-                    <file type="jar" path="repo:/drivers/teradata/terajdbc4.jar" bundle="!drivers.teradata"/>
-                    <file type="jar" path="repo:/drivers/teradata/tdgssconfig.jar" bundle="!drivers.teradata"/>
-                    <file type="license" path="repo:/drivers/teradata/LICENSE.txt" bundle="!drivers.teradata"/>
+                    <file type="jar" path="drivers/teradata/terajdbc4.jar" bundle="drivers.teradata"/>
+                    <file type="jar" path="drivers/teradata/tdgssconfig.jar" bundle="drivers.teradata"/>
+                    <file type="license" path="drivers/teradata/LICENSE.txt" bundle="drivers.teradata"/>
                 </driver>
                 <driver
                     id="mysql3"
@@ -679,10 +707,10 @@
                     webURL="http://www.vertica.com/"
                     description="Driver for Vertica Database">
 
+                    <file type="jar" path="repo:/drivers/vertica/vertica-jdk5-6.1.2-0.jar" bundle="!drivers.vertica"/>
+
                     <file type="license" path="drivers/vertica/LICENSE.txt" bundle="drivers.vertica"/>
                     <file type="jar" path="drivers/vertica/vertica.jar" bundle="drivers.vertica"/>
-
-                    <file type="jar" path="repo:/drivers/vertica/vertica-jdk5-6.1.2-0.jar" bundle="!drivers.vertica"/>
 
                     <parameter name="query-get-active-db" value="select current_schema()"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
@@ -707,8 +735,10 @@
                     <property name="suppressHeaders" value="false"/>
                     <property name="charset" value="UTF-8"/>
                     <parameter name="supports-stored-code" value="false"/>
-                    <!--<file type="jar" path="repo:/drivers/csvjdbc/csvjdbc-1.0-23.jar"/>-->
+
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
+
+                    <file type="jar" path="drivers/csvjdbc/csvjdbc.jar" bundle="drivers.csvjdbc"/>
                 </driver>
                 <driver
                     id="msaccess_ucanaccess"
@@ -722,6 +752,17 @@
                     description="Microsoft Access driver">
 
                     <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE" bundle="!drivers.ucanaccess"/>
+
+                    <file type="license" path="drivers/ucanaccess/LICENSE.txt" bundle="drivers.ucanaccess"/>
+                    <file type="jar" path="drivers/ucanaccess/ucanaccess.jar" bundle="drivers.ucanaccess"/>
+                    <file type="jar" path="drivers/ucanaccess/byte-buddy.jar" bundle="drivers.ucanaccess"/>
+                    <file type="jar" path="drivers/ucanaccess/byte-buddy-agent.jar" bundle="drivers.ucanaccess"/>
+                    <file type="jar" path="drivers/ucanaccess/commons-lang.jar" bundle="drivers.ucanaccess"/>
+                    <file type="jar" path="drivers/ucanaccess/commons-logging.jar" bundle="drivers.ucanaccess"/>
+                    <file type="jar" path="drivers/ucanaccess/hsqldb.jar" bundle="drivers.ucanaccess"/>
+                    <file type="jar" path="drivers/ucanaccess/jackcess.jar" bundle="drivers.ucanaccess"/>
+                    <file type="jar" path="drivers/ucanaccess/mockito-core.jar" bundle="drivers.ucanaccess"/>
+                    <file type="jar" path="drivers/ucanaccess/objenesis.jar" bundle="drivers.ucanaccess"/>
                 </driver>
                 <driver
                     id="netezza"
@@ -815,6 +856,9 @@
 
                     <file type="jar" path="maven:/org.apache.hive:hive-jdbc:RELEASE" bundle="!drivers.hive"/>
                     <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE" bundle="!drivers.hive"/>
+
+                    <file type="jar" path="drivers/hive/hive-jdbc-uber.jar" bundle="drivers.hive"/>
+
                     <parameter name="supports-limits" value="false"/>
                 </driver>
                 <driver
