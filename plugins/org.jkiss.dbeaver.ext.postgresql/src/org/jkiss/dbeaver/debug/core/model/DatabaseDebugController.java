@@ -5,10 +5,13 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -33,33 +36,45 @@ public class DatabaseDebugController implements IDatabaseDebugController {
     @Override
     public IStatus connect(IProgressMonitor monitor)
     {
-        DataSourceDescriptor dataSource = DataSourceRegistry.findDataSource(datasourceId);
-        if (dataSource == null) {
+        DataSourceDescriptor dataSourceDescriptor = DataSourceRegistry.findDataSource(datasourceId);
+        if (dataSourceDescriptor == null) {
             //FIXME:AF: provide error status
             return Status.CANCEL_STATUS;
         }
         DefaultProgressMonitor dbrMonitor = new DefaultProgressMonitor(monitor);
-        if (!dataSource.isConnected()) {
+        if (!dataSourceDescriptor.isConnected()) {
             
             try {
-                dataSource.connect(dbrMonitor, true, true);
+                dataSourceDescriptor.connect(dbrMonitor, true, true);
             } catch (DBException e) {
-                String message = NLS.bind("Unable to connect to {0}", dataSource);
+                String message = NLS.bind("Unable to connect to {0}", dataSourceDescriptor);
                 IStatus error = new Status(IStatus.ERROR, DebugCore.BUNDLE_SYMBOLIC_NAME, message, e);
                 log.error(message, e);
                 return error;
             }
         }
         try {
-            this.debugContext = dataSource.getDataSource().openIsolatedContext(dbrMonitor, "Debug");
-            debugSession = this.debugContext.openSession(dbrMonitor, DBCExecutionPurpose.UTIL, "Debug queries");
+            DBPDataSource dataSource = dataSourceDescriptor.getDataSource();
+            this.debugContext = dataSource.openIsolatedContext(dbrMonitor, "Debug");
+            this.debugSession = debugContext.openSession(dbrMonitor, DBCExecutionPurpose.UTIL, "Debug queries");
+            afterSessionOpen(debugSession);
         } catch (DBException e) {
-            String message = NLS.bind("Unable to open debug context for {0}", dataSource);
+            String message = NLS.bind("Unable to open debug context for {0}", dataSourceDescriptor);
             IStatus error = new Status(IStatus.ERROR, DebugCore.BUNDLE_SYMBOLIC_NAME, message, e);
             log.error(message, e);
             return error;
         }
         return Status.OK_STATUS;
+    }
+
+    protected void afterSessionOpen(DBCSession session)
+    {
+        //do nothing by default
+    }
+
+    protected void beforeSessionClose(DBCSession session)
+    {
+        //do nothing by default
     }
 
     @Override
@@ -79,6 +94,7 @@ public class DatabaseDebugController implements IDatabaseDebugController {
     @Override
     public void terminate()
     {
+        beforeSessionClose(this.debugSession);
         if (this.debugSession != null) {
             this.debugSession.close();
             this.debugSession = null;
@@ -89,5 +105,5 @@ public class DatabaseDebugController implements IDatabaseDebugController {
             this.debugContext = null;
         }
     }
-
+    
 }
