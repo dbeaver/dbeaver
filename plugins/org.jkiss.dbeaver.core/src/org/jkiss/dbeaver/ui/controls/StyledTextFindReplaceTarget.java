@@ -60,7 +60,10 @@ public class StyledTextFindReplaceTarget implements IFindReplaceTarget, IFindRep
     @Override
     public Point getSelection()
     {
-        return text.getSelection();
+        Point selection = text.getSelection();
+        // fix selection
+        selection.y = selection.y - selection.x;
+        return selection;
     }
 
     @Override
