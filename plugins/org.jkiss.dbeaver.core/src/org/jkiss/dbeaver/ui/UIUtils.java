@@ -338,33 +338,6 @@ public class UIUtils {
         return -1;
     }
 
-    public static void sortTable(Table table, Comparator<TableItem> comparator)
-    {
-        int columnCount = table.getColumnCount();
-        String[] values = new String[columnCount];
-        TableItem[] items = table.getItems();
-        for (int i = 1; i < items.length; i++) {
-            for (int j = 0; j < i; j++) {
-                TableItem item = items[i];
-                if (comparator.compare(item, items[j]) < 0) {
-                    for (int k = 0; k < columnCount; k++) {
-                        values[k] = item.getText(k);
-                    }
-                    Object data = item.getData();
-                    boolean checked = item.getChecked();
-                    item.dispose();
-
-                    item = new TableItem(table, SWT.NONE, j);
-                    item.setText(values);
-                    item.setData(data);
-                    item.setChecked(checked);
-                    items = table.getItems();
-                    break;
-                }
-            }
-        }
-    }
-
     public static TableItem getNextTableItem(Table table, TableItem item) {
         TableItem[] items = table.getItems();
         for (int i = 0; i < items.length - 1; i++) {
