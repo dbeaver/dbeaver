@@ -14,25 +14,25 @@ public class PgSqlLaunchShortcut extends LaunchShortcut {
     @Override
     protected String getSelectionEmptyMessage()
     {
-        return "Selection does not containt PostgreSQL procedure";
+        return PostgreSqlDebugUiMessages.PgSqlLaunchShortcut_e_selection_empty;
     }
 
     @Override
     protected String getEditorEmptyMessage()
     {
-        return "Editor does not containt PostgreSQL procedure";
+        return PostgreSqlDebugUiMessages.PgSqlLaunchShortcut_e_editor_empty;
     }
 
     @Override
     protected String getLaunchableSelectionTitle(String mode)
     {
-        return "Select PostgreSQL Procedure";
+        return PostgreSqlDebugUiMessages.PgSqlLaunchShortcut_select_procedure_title;
     }
 
     @Override
     protected String getLaunchableSelectionMessage(String mode)
     {
-        return "Select &PostgreSQL Procedure (? = any character, * = any String):";
+        return PostgreSqlDebugUiMessages.PgSqlLaunchShortcut_select_procedure_message;
     }
 
     @Override
