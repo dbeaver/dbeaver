@@ -217,7 +217,6 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
             } catch (SQLException e) {
                 throw new DBException(e, getDataSource());
             }
-            indexDDL = SQLUtils.formatSQL(getDataSource(), indexDDL);
         }
         return indexDDL;
     }

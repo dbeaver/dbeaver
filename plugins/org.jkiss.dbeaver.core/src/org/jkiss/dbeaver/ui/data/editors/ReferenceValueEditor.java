@@ -344,7 +344,7 @@ public class ReferenceValueEditor {
                 } else {
                     return Status.OK_STATUS;
                 }
-                final DBSEntityAttribute refColumn = DBUtils.getReferenceAttribute(monitor, association, tableColumn);
+                final DBSEntityAttribute refColumn = DBUtils.getReferenceAttribute(monitor, association, tableColumn, false);
                 if (refColumn == null) {
                     return Status.OK_STATUS;
                 }

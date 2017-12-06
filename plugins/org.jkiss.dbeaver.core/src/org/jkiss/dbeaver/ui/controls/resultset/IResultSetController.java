@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 
 import java.util.List;
 
@@ -84,6 +85,8 @@ public interface IResultSetController extends DBPContextProvider {
 
     List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor);
 
+    void toggleSortOrder(DBDAttributeBinding columnElement, boolean forceAscending, boolean forceDescending);
+
     boolean checkForChanges();
 
     /**
@@ -130,6 +133,9 @@ public interface IResultSetController extends DBPContextProvider {
     // Navigation & history
 
     void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, boolean newWindow)
+        throws DBException;
+
+    void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull ResultSetRow row, boolean newWindow)
         throws DBException;
 
     int getHistoryPosition();

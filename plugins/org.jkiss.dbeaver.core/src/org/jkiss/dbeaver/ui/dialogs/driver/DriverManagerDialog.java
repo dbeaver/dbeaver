@@ -21,6 +21,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -55,6 +56,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private DriverDescriptor selectedDriver;
 
     private Button newButton;
+    private Button copyButton;
     private Button editButton;
     private Button deleteButton;
     private DriverTreeControl treeControl;
@@ -115,65 +117,39 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             Composite buttonBar = new Composite(group, SWT.TOP);
             buttonBar.setLayout(new GridLayout(1, false));
             GridData gd = new GridData(GridData.FILL_VERTICAL);
-            gd.minimumWidth = 100;
             buttonBar.setLayoutData(gd);
 
-            newButton = new Button(buttonBar, SWT.FLAT | SWT.PUSH);
-            newButton.setText(CoreMessages.dialog_driver_manager_button_new);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.widthHint = 100;
-            newButton.setLayoutData(gd);
-            newButton.addSelectionListener(new SelectionListener()
-            {
+            newButton = UIUtils.createPushButton(buttonBar, CoreMessages.dialog_driver_manager_button_new, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     createDriver();
                 }
+            });
+            newButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+            copyButton = UIUtils.createPushButton(buttonBar, CoreMessages.dialog_driver_manager_button_copy, null, new SelectionAdapter() {
                 @Override
-                public void widgetDefaultSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
+                    copyDriver();
                 }
             });
+            copyButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            editButton = new Button(buttonBar, SWT.FLAT | SWT.PUSH);
-            editButton.setText(CoreMessages.dialog_driver_manager_button_edit);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.widthHint = 100;
-            editButton.setLayoutData(gd);
-            editButton.addSelectionListener(new SelectionListener()
-            {
+            editButton = UIUtils.createPushButton(buttonBar, CoreMessages.dialog_driver_manager_button_edit, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     editDriver();
                 }
-
-                @Override
-                public void widgetDefaultSelected(SelectionEvent e)
-                {
-                }
             });
+            editButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            deleteButton = new Button(buttonBar, SWT.FLAT | SWT.PUSH);
-            deleteButton.setText(CoreMessages.dialog_driver_manager_button_delete);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.widthHint = 100;
-            deleteButton.setLayoutData(gd);
-            deleteButton.addSelectionListener(new SelectionListener()
-            {
+            deleteButton = UIUtils.createPushButton(buttonBar, CoreMessages.dialog_driver_manager_button_delete, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     deleteDriver();
                 }
-
-                @Override
-                public void widgetDefaultSelected(SelectionEvent e)
-                {
-                }
             });
+            deleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             {
                 final Composite legend = UIUtils.createPlaceholder(buttonBar, 2, 5);
@@ -271,6 +247,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private void updateButtons()
     {
         newButton.setEnabled(onlyManagableProvider != null || (selectedProvider != null && selectedProvider.isDriversManagable()));
+        copyButton.setEnabled(selectedDriver != null && selectedDriver.isManagable());
         editButton.setEnabled(selectedDriver != null);
         deleteButton.setEnabled(selectedDriver != null && selectedDriver.getProviderDescriptor().isDriversManagable());
 
@@ -307,6 +284,18 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             DriverEditDialog dialog = new DriverEditDialog(getShell(), provider, selectedCategory);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 treeControl.getViewer().refresh();
+                treeControl.getViewer().setSelection(new StructuredSelection(dialog.getDriver()));
+            }
+        }
+    }
+
+    private void copyDriver()
+    {
+        if (selectedDriver != null) {
+            DriverEditDialog dialog = new DriverEditDialog(getShell(), selectedDriver.getProviderDescriptor(), selectedDriver);
+            if (dialog.open() == IDialogConstants.OK_ID) {
+                treeControl.getViewer().refresh();
+                treeControl.getViewer().setSelection(new StructuredSelection(dialog.getDriver()));
             }
         }
     }

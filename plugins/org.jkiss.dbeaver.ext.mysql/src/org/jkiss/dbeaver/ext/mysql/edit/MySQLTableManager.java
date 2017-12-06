@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -65,12 +64,12 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
-    protected MySQLTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom) throws DBException
+    protected MySQLTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom) throws DBException
     {
         final MySQLTable table;
         if (copyFrom instanceof DBSEntity) {
             table = new MySQLTable(monitor, parent, (DBSEntity)copyFrom);
-            table.setName(getTableName(monitor, parent, ((DBSEntity) copyFrom).getName()));
+            table.setName(getNewChildName(monitor, parent, ((DBSEntity) copyFrom).getName()));
         } else if (copyFrom == null) {
             table = new MySQLTable(parent);
             setTableName(monitor, parent, table);

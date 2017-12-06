@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="4.2.5" useFeatures="true" includeLaunchers="true">
+<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="4.2.6" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -13,7 +13,7 @@
       </programArgsLin>
       <programArgsSol>--launcher.GTK_version 2
       </programArgsSol>
-      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Duser.language=en -Xms64m -Xmx1024m
+      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread
       </vmArgsMac>

@@ -17,10 +17,18 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -37,7 +45,12 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DriverTreeViewer
@@ -51,12 +64,13 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
     private Font boldFont;
     private final Map<String,DriverCategory> categories = new HashMap<>();
     private final List<Object> driverList = new ArrayList<>();
+    private boolean sortByName = false;
 
     public static class DriverCategory {
         final String name;
         final List<DriverDescriptor> drivers = new ArrayList<>();
 
-        public DriverCategory(String name)
+        DriverCategory(String name)
         {
             this.name = name;
         }
@@ -89,22 +103,33 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         {
             return name.hashCode();
         }
+
+        public DBPImage getImage() {
+            DBPImage driverImage = null;
+            for (DriverDescriptor driver : getDrivers()) {
+                if (driverImage == null) {
+                    driverImage = driver.getPlainIcon();
+                } else if (!driverImage.equals(driver.getPlainIcon())) {
+                    driverImage = null;
+                    break;
+                }
+            }
+            if (driverImage != null) {
+                return driverImage;
+            }
+            return DBIcon.TREE_DATABASE_CATEGORY;
+        }
     }
 
     public DriverTreeViewer(Composite parent, int style) {
         super(parent, style);
         boldFont = UIUtils.makeBoldFont(parent.getFont());
-        parent.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                UIUtils.dispose(boldFont);
-            }
-        });
+        parent.addDisposeListener(e -> UIUtils.dispose(boldFont));
     }
 
     public void initDrivers(Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent)
     {
-//        getTree().setHeaderVisible(true);
+        getTree().setHeaderVisible(true);
         this.site = site;
         this.providers = providers;
         if (this.providers == null) {
@@ -113,9 +138,11 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
 
         TreeColumn nameColumn = new TreeColumn(getTree(), SWT.LEFT);
         nameColumn.setText("Name");
+        nameColumn.addListener(SWT.Selection, new DriversSortListener(nameColumn, true));
 
         TreeColumn usersColumn = new TreeColumn(getTree(), SWT.LEFT);
         usersColumn.setText("#");
+        usersColumn.addListener(SWT.Selection, new DriversSortListener(usersColumn, false));
 
         this.setContentProvider(new ViewContentProvider());
         this.setLabelProvider(new ViewLabelProvider());
@@ -191,29 +218,19 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
                 }
             }
         }
-        Collections.sort(driverList, new Comparator<Object>() {
-            @Override
-            public int compare(Object o1, Object o2)
-            {
-                int count1 = getConnectionCount(o1);
-                int count2 = getConnectionCount(o2);
-                if (count1 == count2) {
-                    String name1 = o1 instanceof DriverDescriptor ? ((DriverDescriptor) o1).getName() : ((DriverCategory)o1).getName();
-                    String name2 = o2 instanceof DriverDescriptor ? ((DriverDescriptor) o2).getName() : ((DriverCategory)o2).getName();
-                    return name1.compareToIgnoreCase(name2);
-                } else {
-                    return count2 - count1;
-                }
+        Collections.sort(driverList, (o1, o2) -> {
+            int count1 = getConnectionCount(o1);
+            int count2 = getConnectionCount(o2);
+            if (sortByName || count1 == count2) {
+                String name1 = o1 instanceof DriverDescriptor ? ((DriverDescriptor) o1).getName() : ((DriverCategory)o1).getName();
+                String name2 = o2 instanceof DriverDescriptor ? ((DriverDescriptor) o2).getName() : ((DriverCategory)o2).getName();
+                return name1.compareToIgnoreCase(name2);
+            } else {
+                return count2 - count1;
             }
         });
         for (DriverCategory category : categories.values()) {
-            Collections.sort(category.drivers, new Comparator<DriverDescriptor>() {
-                @Override
-                public int compare(DriverDescriptor o1, DriverDescriptor o2)
-                {
-                    return o1.getName().compareToIgnoreCase(o2.getName());
-                }
-            });
+            category.drivers.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
         }
         return driverList;
     }
@@ -336,19 +353,17 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
                 return null;
             }
             DBPImage defImage = DBIcon.TREE_PAGE;
+            DBPImage icon = null;
 			if (obj instanceof DataSourceProviderDescriptor) {
-                DBPImage icon = ((DataSourceProviderDescriptor) obj).getIcon();
-                if (icon != null) {
-                    return icon;
-                }
+                icon = ((DataSourceProviderDescriptor) obj).getIcon();
 			    defImage = DBIcon.TREE_FOLDER;
             } else if (obj instanceof DriverCategory) {
-                return DBIcon.TREE_DATABASE_CATEGORY;
+                icon = ((DriverCategory)obj).getImage();
             } else if (obj instanceof DriverDescriptor) {
-                DBPImage icon = ((DriverDescriptor) obj).getIcon();
-                if (icon != null) {
-                    return icon;
-                }
+                icon = ((DriverDescriptor) obj).getIcon();
+            }
+            if (icon != null) {
+                return icon;
             }
 
             return defImage;
@@ -401,4 +416,20 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         }
     }
 
+    private class DriversSortListener implements Listener {
+        private final TreeColumn column;
+        private final boolean sortByName;
+        DriversSortListener(TreeColumn column, boolean sortByName) {
+            this.column = column;
+            this.sortByName = sortByName;
+        }
+
+        @Override
+        public void handleEvent(Event event) {
+            getTree().setSortColumn(this.column);
+            getTree().setSortDirection(SWT.DOWN);
+            DriverTreeViewer.this.sortByName = this.sortByName;
+            DriverTreeViewer.this.refresh();
+        }
+    }
 }

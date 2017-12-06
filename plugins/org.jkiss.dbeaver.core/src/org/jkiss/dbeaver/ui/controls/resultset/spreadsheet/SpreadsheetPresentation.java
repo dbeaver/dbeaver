@@ -130,6 +130,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color backgroundReadOnly;
     private Color foregroundDefault;
     private Color foregroundNull;
+    private final Map<DBPDataKind, Color> dataTypesForegrounds = new HashMap<>();
     private Color foregroundSelected, backgroundSelected;
     private Color backgroundMatched;
     private Color cellHeaderForeground, cellHeaderBackground, cellHeaderSelectionBackground;
@@ -137,6 +138,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
+    private boolean colorizeDataTypes = true;
     private boolean rightJustifyNumbers = true;
 
     public SpreadsheetPresentation() {
@@ -298,10 +300,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     @Override
     public Point getCursorLocation() {
         GridPos focusPos = spreadsheet.getFocusPos();
-        Rectangle columnBounds = spreadsheet.getColumnBounds(focusPos.col);
-        if (columnBounds != null) {
-            columnBounds.y += spreadsheet.getHeaderHeight();
-            return new Point(columnBounds.x, columnBounds.y);
+        if (focusPos.col >= 0) {
+            Rectangle columnBounds = spreadsheet.getColumnBounds(focusPos.col);
+            if (columnBounds != null) {
+                columnBounds.y += spreadsheet.getHeaderHeight() +
+                    (focusPos.row - spreadsheet.getTopIndex()) * (spreadsheet.getItemHeight() + 1) + spreadsheet.getItemHeight() / 2;
+                return new Point(columnBounds.x + 20, columnBounds.y);
+            }
         }
         return super.getCursorLocation();
     }
@@ -646,6 +651,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         DBPPreferenceStore preferenceStore = getPreferenceStore();
         showOddRows = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
         showCelIcons = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
+        colorizeDataTypes = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
         rightJustifyNumbers = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
 
         spreadsheet.setRedraw(false);
@@ -658,7 +664,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     @Override
     public void formatData(boolean refreshData) {
-        reorderLocally();
         spreadsheet.refreshData(false, true);
     }
 
@@ -990,6 +995,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             this.cellHeaderSelectionBackground = new Color(getSpreadsheet().getDisplay(), cellSel);
         }
         this.foregroundNull = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND);
+        this.dataTypesForegrounds.put(DBPDataKind.BINARY, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_BINARY_FOREGROUND));
+        this.dataTypesForegrounds.put(DBPDataKind.BOOLEAN, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_BOOLEAN_FOREGROUND));
+        this.dataTypesForegrounds.put(DBPDataKind.DATETIME, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_DATETIME_FOREGROUND));
+        this.dataTypesForegrounds.put(DBPDataKind.NUMERIC, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NUMERIC_FOREGROUND));
+        this.dataTypesForegrounds.put(DBPDataKind.STRING, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_STRING_FOREGROUND));
 
 
         this.spreadsheet.setLineColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_NORMAL));
@@ -1008,13 +1018,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
     }
 
-    private void reorderLocally()
-    {
-        controller.rejectChanges();
-        controller.getModel().resetOrdering();
-        refreshData(false, false, true);
-    }
-
     public void changeSorting(Object columnElement, final int state)
     {
         if (columnElement == null) {
@@ -1023,52 +1026,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             spreadsheet.redrawGrid();
             return;
         }
-        DBDDataFilter dataFilter = controller.getModel().getDataFilter();
         boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
         boolean altPressed = (state & SWT.ALT) == SWT.ALT;
-        if (ctrlPressed) {
-            dataFilter.resetOrderBy();
-        }
-        DBDAttributeBinding metaColumn = (DBDAttributeBinding)columnElement;
-        DBDAttributeConstraint constraint = dataFilter.getConstraint(metaColumn);
-        assert constraint != null;
-        //int newSort;
-        if (constraint.getOrderPosition() == 0) {
-            if (ResultSetUtils.isServerSideFiltering(controller) && supportsDataFilter()) {
-                if (ConfirmationDialog.showConfirmDialogEx(
-                    spreadsheet.getShell(),
-                    DBeaverPreferences.CONFIRM_ORDER_RESULTSET,
-                    ConfirmationDialog.QUESTION,
-                    ConfirmationDialog.WARNING,
-                    metaColumn.getName()) != IDialogConstants.YES_ID)
-                {
-                    return;
-                }
-            }
-            constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
-            constraint.setOrderDescending(altPressed);
-        } else if (!constraint.isOrderDescending()) {
-            constraint.setOrderDescending(true);
-        } else {
-            for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
-                if (con2.getOrderPosition() > constraint.getOrderPosition()) {
-                    con2.setOrderPosition(con2.getOrderPosition() - 1);
-                }
-            }
-            constraint.setOrderPosition(0);
-            constraint.setOrderDescending(false);
-        }
-
-        if (!ResultSetUtils.isServerSideFiltering(controller) || !controller.isHasMoreData()) {
-            if (!controller.checkForChanges()) {
-                return;
-            }
-            reorderLocally();
-        } else {
-            controller.refreshData(null);
-        }
+        controller.toggleSortOrder((DBDAttributeBinding) columnElement, ctrlPressed, altPressed);
     }
-
 
     ///////////////////////////////////////////////
     // Misc
@@ -1569,6 +1530,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (DBUtils.isNullValue(value)) {
                 return foregroundNull;
             } else {
+                if (colorizeDataTypes) {
+                    DBDAttributeBinding attr =
+                            (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
+                    Color color = dataTypesForegrounds.get(attr.getDataKind());
+                    if (color != null) {
+                        return color;
+                    }
+                }
                 if (foregroundDefault == null) {
                     foregroundDefault = controller.getDefaultForeground();
                 }

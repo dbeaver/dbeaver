@@ -18,16 +18,27 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Postgre constraint manager
@@ -79,6 +90,22 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
                 return constraint;
             }
         }.execute();
+    }
+
+    @Override
+    public StringBuilder getNestedDeclaration(PostgreTableBase owner, DBECommandAbstract<PostgreTableConstraintBase> command, Map<String, Object> options) {
+        PostgreTableConstraintBase constr = command.getObject();
+        if (constr.isPersisted()) {
+            try {
+                String constrDDL = constr.getObjectDefinitionText(new VoidProgressMonitor(), DBPScriptObject.EMPTY_OPTIONS);
+                if (!CommonUtils.isEmpty(constrDDL)) {
+                    return new StringBuilder(constrDDL);
+                }
+            } catch (DBException e) {
+                log.warn("Can't extract constraint DDL", e);
+            }
+        }
+        return super.getNestedDeclaration(owner, command, options);
     }
 
     @NotNull

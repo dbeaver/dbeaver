@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 import org.jkiss.dbeaver.ext.erd.action.DiagramRefreshAction;
 import org.jkiss.dbeaver.ext.erd.action.DiagramToggleGridAction;
@@ -609,13 +610,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
             CombinedTemplateCreationEntry tableEntry = new CombinedTemplateCreationEntry("New Table", "Create a new table",
                 ERDEntity.class, new DataElementFactory(ERDEntity.class),
-                ERDActivator.getImageDescriptor("icons/table.gif"),
-                ERDActivator.getImageDescriptor("icons/table.gif"));
+                ERDActivator.getImageDescriptor("icons/table.png"),
+                ERDActivator.getImageDescriptor("icons/table.png"));
 
             CombinedTemplateCreationEntry columnEntry = new CombinedTemplateCreationEntry("New Column", "Add a new column",
                 ERDEntityAttribute.class, new DataElementFactory(ERDEntityAttribute.class),
-                ERDActivator.getImageDescriptor("icons/column.gif"),
-                ERDActivator.getImageDescriptor("icons/column.gif"));
+                ERDActivator.getImageDescriptor("icons/column.png"),
+                ERDActivator.getImageDescriptor("icons/column.png"));
 
             entries.add(tableEntry);
             entries.add(columnEntry);
@@ -640,17 +641,17 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return isLoaded;
     }
 
-    public void refreshDiagram(boolean force)
+    public void refreshDiagram(boolean force, boolean refreshMetadata)
     {
         if (isLoaded && force) {
-            loadDiagram(true);
+            loadDiagram(refreshMetadata);
         }
     }
 
     @Override
     public void refreshPart(Object source, boolean force)
     {
-        refreshDiagram(false);
+        refreshDiagram(force, true);
     }
 
     public void saveDiagramAs()
@@ -810,7 +811,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         public void run()
         {
             getDiagram().setAttributeStyle(style, !isChecked());
-            refreshDiagram(true);
+            refreshDiagram(true, false);
         }
     }
 
@@ -833,7 +834,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         public void run()
         {
             getDiagram().setAttributeVisibility(visibility);
-            refreshDiagram(true);
+            refreshDiagram(true, false);
         }
     }
 
@@ -949,16 +950,16 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 toolBarManager.add(ActionUtils.makeCommandContribution(
                         getSite(),
                         IWorkbenchCommandConstants.FILE_SAVE_AS,
-                        "Save diagram in external format",
+                        ERDMessages.erd_editor_control_action_save_external_format,
                         UIIcon.PICTURE_SAVE));
                 toolBarManager.add(ActionUtils.makeCommandContribution(
                         getSite(),
                         IWorkbenchCommandConstants.FILE_PRINT,
-                        "Print Diagram",
+                        ERDMessages.erd_editor_control_action_print_diagram,
                         UIIcon.PRINT));
             }
             {
-                Action configAction = new Action("Configuration") {
+                Action configAction = new Action(ERDMessages.erd_editor_control_action_configuration) {
                     @Override
                     public void run()
                     {

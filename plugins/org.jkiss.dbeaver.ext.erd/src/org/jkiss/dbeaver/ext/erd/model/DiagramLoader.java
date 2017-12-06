@@ -557,7 +557,7 @@ public class DiagramLoader
                             xml.startElement(TAG_COLUMN);
                             xml.addAttribute(ATTR_NAME, column.getAttribute().getName());
                             try {
-                                DBSEntityAttribute referenceAttribute = DBUtils.getReferenceAttribute(monitor, association, column.getAttribute());
+                                DBSEntityAttribute referenceAttribute = DBUtils.getReferenceAttribute(monitor, association, column.getAttribute(), false);
                                 if (referenceAttribute != null) {
                                     xml.addAttribute(ATTR_REF_NAME, referenceAttribute.getName());
                                 }

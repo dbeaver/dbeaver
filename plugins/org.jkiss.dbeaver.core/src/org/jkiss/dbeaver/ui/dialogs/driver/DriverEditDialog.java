@@ -123,6 +123,21 @@ public class DriverEditDialog extends HelpEnabledDialog {
         this.origLibList = new ArrayList<>();
     }
 
+    public DriverEditDialog(Shell shell, DataSourceProviderDescriptor provider, DriverDescriptor driver) {
+        super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
+        this.provider = provider;
+        this.driver = provider.createDriver(driver);
+        this.driver.setName(this.driver.getName() + " Copy");
+
+        this.defaultCategory = driver.getCategory();
+        this.newDriver = true;
+        this.origLibList = new ArrayList<>();
+    }
+
+    public DriverDescriptor getDriver() {
+        return driver;
+    }
+
     public int open(boolean addFiles) {
         this.showAddFiles = addFiles;
         return open();
@@ -168,7 +183,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         group.setLayoutData(gd);
 
         {
-            Group propsGroup = UIUtils.createControlGroup(group, "Settings", 4, -1, -1);
+            Group propsGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_edit_driver_setting, 4, -1, -1);
             propsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -180,7 +195,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 }
             });
 
-            UIUtils.createControlLabel(propsGroup, "Driver Type");
+            UIUtils.createControlLabel(propsGroup, CoreMessages.dialog_edit_driver_type_label);
             final CSmartCombo<DataSourceProviderDescriptor> providerCombo = new CSmartCombo<>(propsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN, new LabelProvider() {
                 @Override
                 public Image getImage(Object element) {
@@ -242,12 +257,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
-            embeddedDriverCheck = UIUtils.createCheckbox(propsGroup, "Embedded", driver.isEmbedded());
+            embeddedDriverCheck = UIUtils.createCheckbox(propsGroup, CoreMessages.dialog_edit_driver_embedded_label, driver.isEmbedded());
             embeddedDriverCheck.setLayoutData(gd);
         }
 
         {
-            Group infoGroup = UIUtils.createControlGroup(group, "Description", 2, -1, -1);
+            Group infoGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_edit_driver_description, 2, -1, -1);
             infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             driverCategoryCombo = UIUtils.createLabelCombo(infoGroup, CoreMessages.dialog_edit_driver_label_category, SWT.BORDER | SWT.DROP_DOWN | advStyle);
@@ -766,6 +781,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     @Override
     protected void okPressed() {
+
         // Set props
         driver.setName(driverNameText.getText());
         driver.setCategory(driverCategoryCombo.getText());
@@ -783,6 +799,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
         // Store client homes
         if (clientHomesPanel != null) {
             driver.setClientHomeIds(clientHomesPanel.getHomeIds());
+        }
+
+        DriverDescriptor oldDriver = provider.getDriverByName(driver.getCategory(), driver.getName());
+        if (oldDriver != null && oldDriver != driver) {
+            UIUtils.showMessageBox(getShell(), "Driver create", "Driver '" + driver.getName() + "' already exists. Change driver name", SWT.ICON_ERROR);
+            return;
         }
 
         // Finish

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.vertica.VerticaUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -57,20 +58,22 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
+    public GenericSchema createSchemaImpl(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) throws DBException {
+        return new VerticaSchema(dataSource, catalog, schemaName);
+    }
+
+    @Override
+    public GenericTable createTableImpl(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
+        return new VerticaTable(container, tableName, tableType, dbResult);
+    }
+
+    @Override
     public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Vertica object definition")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT EXPORT_OBJECTS('','" + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DML) + "');")) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    StringBuilder sql = new StringBuilder();
-                    while (dbResult.nextRow()) {
-                        sql.append(dbResult.getString(1));
-                    }
-                    return sql.toString();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+        if (sourceObject.isPersisted()) {
+            return VerticaUtils.getObjectDDL(monitor, dataSource, sourceObject);
+        } else {
+            return super.getTableDDL(monitor, sourceObject, options);
         }
     }
 

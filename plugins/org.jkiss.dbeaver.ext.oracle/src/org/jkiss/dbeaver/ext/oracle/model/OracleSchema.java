@@ -638,9 +638,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append(" " +
                     "i.OWNER,i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,\n" +
-                    "ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND\n" +
-                    "FROM SYS.ALL_INDEXES i, SYS.ALL_IND_COLUMNS ic\n" +
-                    "WHERE ic.INDEX_OWNER=i.OWNER AND ic.INDEX_NAME=i.INDEX_NAME AND ");
+                    "ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND,iex.COLUMN_EXPRESSION\n" +
+                    "FROM SYS.ALL_INDEXES i\n" +
+                    "JOIN SYS.ALL_IND_COLUMNS ic ON ic.INDEX_OWNER=i.OWNER AND ic.INDEX_NAME=i.INDEX_NAME \n" +
+                    "LEFT OUTER JOIN SYS.ALL_IND_EXPRESSIONS iex ON iex.INDEX_OWNER=i.OWNER AND iex.INDEX_NAME=i.INDEX_NAME AND iex.COLUMN_POSITION=ic.COLUMN_POSITION\n" +
+                    "WHERE ");
             if (forTable == null) {
                 sql.append("i.OWNER=?");
             } else {
@@ -676,6 +678,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, "COLUMN_POSITION");
             boolean isAscending = "ASC".equals(JDBCUtils.safeGetStringTrimmed(dbResult, "DESCEND"));
+            String columnExpression = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_EXPRESSION");
 
             OracleTableColumn tableColumn = columnName == null ? null : parent.getAttribute(session.getProgressMonitor(), columnName);
             if (tableColumn == null) {
@@ -687,7 +690,8 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 object,
                 tableColumn,
                 ordinalPosition,
-                isAscending) };
+                isAscending,
+                columnExpression) };
         }
 
         @Override

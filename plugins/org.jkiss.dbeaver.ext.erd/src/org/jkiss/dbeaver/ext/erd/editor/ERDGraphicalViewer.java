@@ -156,7 +156,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         if (erdFont != null) {
             this.getControl().setFont(erdFont);
         }
-        editor.refreshDiagram(true);
+        editor.refreshDiagram(true, false);
 /*
         DiagramPart diagramPart = editor.getDiagramPart();
         if (diagramPart != null) {

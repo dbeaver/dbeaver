@@ -38,6 +38,14 @@
         </wizard>
         <wizard
             category="org.jkiss.dbeaver.import_config.third-party"
+            class="org.jkiss.dbeaver.ext.import_config.wizards.navicat.ConfigImportWizardNavicat"
+            id="org.jkiss.dbeaver.import_config.navicat"
+            name="Navicat"
+            icon="icons/navicat.png">
+            <description>Navicat</description>
+        </wizard>
+        <wizard
+            category="org.jkiss.dbeaver.import_config.third-party"
             class="org.jkiss.dbeaver.ext.import_config.wizards.custom.ConfigImportWizardCustom"
             id="org.jkiss.dbeaver.import_config.custom"
             name="Custom"

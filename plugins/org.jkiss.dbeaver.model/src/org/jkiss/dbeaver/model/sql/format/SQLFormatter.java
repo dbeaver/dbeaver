@@ -16,17 +16,17 @@
  */
 package org.jkiss.dbeaver.model.sql.format;
 
-
 /**
  * SQL Formatter
  */
 public interface SQLFormatter {
-	/**
-	 * Format the source SQL string.
-	 *
-	 * @param source original SQL string
-	 *
-	 * @return formatted version
-	 */
-	String format(String source, SQLFormatterConfiguration configuration);
+
+    /**
+     * Format the source SQL string.
+     *
+     * @param source original SQL string
+     * @return formatted version
+     */
+    String format(String source, SQLFormatterConfiguration configuration);
+
 }
