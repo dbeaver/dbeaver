@@ -399,17 +399,6 @@
         </tools>
     </extension>
     
-<!-- org.jkiss.dbeaver.debug.ui begins -->
-    <extension
-          point="org.eclipse.ui.menus">
-       <menuContribution
-             allPopups="false"
-             class="org.jkiss.dbeaver.debug.internal.ui.DebugContributionFactory"
-             locationURI="popup:org.eclipse.ui.popup.any?before=additions">
-       </menuContribution>
-    </extension>
-<!-- org.jkiss.dbeaver.debug.ui ends -->
-
 <!-- org.jkiss.dbeaver.postgresql.debug.core begins -->
     <extension
           point="org.eclipse.debug.core.launchConfigurationTypes">
@@ -480,6 +469,7 @@
           </configurationType>
        </shortcut>
     </extension>
+
     <extension
           point="org.eclipse.debug.ui.debugModelPresentations">
        <debugModelPresentation
