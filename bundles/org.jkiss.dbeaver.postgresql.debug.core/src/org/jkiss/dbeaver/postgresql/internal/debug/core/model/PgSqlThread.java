@@ -21,6 +21,7 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
 import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugTarget;
+import org.jkiss.dbeaver.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages;
 
 public class PgSqlThread extends DatabaseThread {
     
@@ -35,7 +36,7 @@ public class PgSqlThread extends DatabaseThread {
     @Override
     public String getName() throws DebugException
     {
-        String name = NLS.bind("Thread: pldbg", controller.getSessionId());
+        String name = NLS.bind(PostgreSqlDebugCoreMessages.PgSqlThread_name, controller.getSessionId());
         return name;
     }
 
