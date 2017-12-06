@@ -12,7 +12,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.debug.ui.DatabaseTab;
 import org.jkiss.dbeaver.ext.postgresql.PostgreActivator;
-import org.jkiss.dbeaver.postgresql.debug.core.PgSqlDebugCore;
+import org.jkiss.dbeaver.postgresql.debug.core.PostgreSqlDebugCore;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class PgSqlTab extends DatabaseTab {
@@ -52,7 +52,7 @@ public class PgSqlTab extends DatabaseTab {
     public void setDefaults(ILaunchConfigurationWorkingCopy configuration)
     {
         super.setDefaults(configuration);
-        configuration.setAttribute(PgSqlDebugCore.ATTR_OID, PgSqlDebugCore.ATTR_OID_DEFAULT);
+        configuration.setAttribute(PostgreSqlDebugCore.ATTR_OID, PostgreSqlDebugCore.ATTR_OID_DEFAULT);
     }
     
     @Override
@@ -66,11 +66,11 @@ public class PgSqlTab extends DatabaseTab {
     {
         String oid = null;
         try {
-            oid = configuration.getAttribute(PgSqlDebugCore.ATTR_OID, (String)null);
+            oid = configuration.getAttribute(PostgreSqlDebugCore.ATTR_OID, (String)null);
         } catch (CoreException e) {
         }
         if (oid == null) {
-            oid = PgSqlDebugCore.ATTR_OID_DEFAULT;
+            oid = PostgreSqlDebugCore.ATTR_OID_DEFAULT;
         }
         oidText.setText(oid);
     }
@@ -79,7 +79,7 @@ public class PgSqlTab extends DatabaseTab {
     public void performApply(ILaunchConfigurationWorkingCopy configuration)
     {
         super.performApply(configuration);
-        configuration.setAttribute(PgSqlDebugCore.ATTR_OID, oidText.getText());
+        configuration.setAttribute(PostgreSqlDebugCore.ATTR_OID, oidText.getText());
     }
 
 }
