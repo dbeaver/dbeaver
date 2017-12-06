@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.postgresql.pldbg.SessionInfo;
  * @author Andrey.Hitrin
  *
  */
+@SuppressWarnings("nls")
 public class SessionInfoPostgres implements SessionInfo<Integer> {
 	
 	final int pid;

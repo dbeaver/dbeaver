@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.postgresql.pldbg.DebugException;
  * @author Andrey.Hitrin
  *
  */
+@SuppressWarnings("nls")
 public class PostgresBreakpoint implements Breakpoint {
 	
 	private SessionInfoPostgres sessionInfo;
