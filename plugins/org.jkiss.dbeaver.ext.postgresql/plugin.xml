@@ -470,13 +470,6 @@
        </shortcut>
     </extension>
 
-    <extension
-          point="org.eclipse.debug.ui.debugModelPresentations">
-       <debugModelPresentation
-             class="org.jkiss.dbeaver.postgresql.internal.debug.ui.PgSqlDebugModelPresentation"
-             id="org.jkiss.dbeaver.postgresql.debug.core">
-       </debugModelPresentation>
-    </extension>
 <!-- org.jkiss.dbeaver.postgresql.debug.ui ends -->
 
 </plugin>
