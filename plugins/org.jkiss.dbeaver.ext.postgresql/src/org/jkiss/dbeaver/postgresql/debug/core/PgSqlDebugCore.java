@@ -10,7 +10,6 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.core.DebugCore;
-import org.jkiss.dbeaver.ext.postgresql.PostgreActivator;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
@@ -20,7 +19,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class PgSqlDebugCore {
     
-    public static final String MODEL_IDENTIFIER = "org.jkiss.dbeaver.postgresql.debug.core"; //$NON-NLS-1$
+    public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.postgresql.debug.core"; //$NON-NLS-1$
+    
+    public static final String MODEL_IDENTIFIER = BUNDLE_SYMBOLIC_NAME;
 
     public static final String CONFIGURATION_TYPE = MODEL_IDENTIFIER + '.' + "pgSQL";//$NON-NLS-1$
 
@@ -28,8 +29,6 @@ public class PgSqlDebugCore {
 
     public static final String ATTR_OID_DEFAULT = ""; //$NON-NLS-1$
 
-    public static final String BUNDLE_SYMBOLIC_NAME = PostgreActivator.PLUGIN_ID;
-    
     public static CoreException abort(String message) {
         return abort(message, null);
     }
