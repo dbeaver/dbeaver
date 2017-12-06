@@ -12,8 +12,6 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.core,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.ui.editors,
- org.eclipse.debug.core,
- org.jkiss.dbeaver.debug.core,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.ui.locks,
  net.sf.opencsv,
@@ -24,6 +22,5 @@ Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
 Bundle-Activator: org.jkiss.dbeaver.ext.postgresql.PostgreActivator
 Export-Package: org.jkiss.dbeaver.ext.postgresql,
- org.jkiss.dbeaver.ext.postgresql.model,
- org.jkiss.dbeaver.postgresql.debug.core
+ org.jkiss.dbeaver.ext.postgresql.model
 
