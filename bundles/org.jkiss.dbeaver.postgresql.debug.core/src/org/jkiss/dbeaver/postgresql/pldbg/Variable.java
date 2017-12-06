@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.postgresql.debug;
+package org.jkiss.dbeaver.postgresql.pldbg;
 
 public interface Variable<T> {
 	

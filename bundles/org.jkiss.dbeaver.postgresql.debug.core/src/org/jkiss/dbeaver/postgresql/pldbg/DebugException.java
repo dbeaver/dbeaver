@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.postgresql.debug;
+package org.jkiss.dbeaver.postgresql.pldbg;
 
 
 @SuppressWarnings("serial")
