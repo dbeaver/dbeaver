@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            class="org.jkiss.dbeaver.debug.internal.ui.DebugContributionFactory"
+            locationURI="popup:org.eclipse.ui.popup.any?before=additions">
+      </menuContribution>
+   </extension>
+
+</plugin>
