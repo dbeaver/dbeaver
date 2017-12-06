@@ -399,18 +399,4 @@
         </tools>
     </extension>
     
-<!-- org.jkiss.dbeaver.postgresql.debug.core begins -->
-    <extension
-          point="org.eclipse.debug.core.launchConfigurationTypes">
-       <launchConfigurationType
-             delegate="org.jkiss.dbeaver.postgresql.internal.debug.core.model.PgSqlLaunchDelegate"
-             delegateDescription="%launchConfigurationTypes.launchConfigurationType.pgSQL.delegateDescription"
-             delegateName="%launchConfigurationTypes.launchConfigurationType.pgSQL.delegateName"
-             id="org.jkiss.dbeaver.postgresql.debug.core.pgSQL"
-             modes="debug"
-             name="%launchConfigurationTypes.launchConfigurationType.pgSQL.name">
-       </launchConfigurationType>
-    </extension>
-<!-- org.jkiss.dbeaver.postgresql.debug.core ends -->
-
 </plugin>
