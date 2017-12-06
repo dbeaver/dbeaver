@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages;
 
 public class PostgreSqlDebugCore {
     
@@ -66,7 +67,7 @@ public class PostgreSqlDebugCore {
             throws CoreException {
         boolean isInstance = launchable instanceof PostgreProcedure;
         if (!isInstance) {
-            throw PostgreSqlDebugCore.abort("PostgreSQL procedure is required to create PL/pgSQL launch configuration");
+            throw PostgreSqlDebugCore.abort(PostgreSqlDebugCoreMessages.PostgreSqlDebugCore_e_procedure_required);
         }
         PostgreProcedure procedure = (PostgreProcedure) launchable;
         PostgreDataSource dataSource = procedure.getDataSource();
@@ -77,7 +78,7 @@ public class PostgreSqlDebugCore {
         String databaseName = database.getName();
         Object[] bindings = new Object[] {dataSourceContainer.getName(), databaseName,
                 procedure.getName(), schema.getName()};
-        String name = NLS.bind("{0}({1}) - {2}({3})", bindings);
+        String name = NLS.bind(PostgreSqlDebugCoreMessages.PostgreSqlDebugCore_launch_configuration_name, bindings);
         //Let's use metadata area for storage
         IContainer container = null;
         ILaunchConfigurationWorkingCopy workingCopy = createConfiguration(container, name);
