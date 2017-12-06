@@ -10,6 +10,10 @@ public class PostgreSqlDebugUiMessages extends NLS {
     public static String PgSqlLaunchShortcut_e_selection_empty;
     public static String PgSqlLaunchShortcut_select_procedure_message;
     public static String PgSqlLaunchShortcut_select_procedure_title;
+
+    public static String PgSqlTab_oid_group_text;
+
+    public static String PgSqlTab_oid_label_text;
     
     static {
         // initialize resource bundle
