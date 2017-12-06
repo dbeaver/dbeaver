@@ -7,7 +7,7 @@ import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.ui.LaunchShortcut;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.postgresql.debug.core.PgSqlDebugCore;
+import org.jkiss.dbeaver.postgresql.debug.core.PostgreSqlDebugCore;
 
 public class PgSqlLaunchShortcut extends LaunchShortcut {
 
@@ -38,7 +38,7 @@ public class PgSqlLaunchShortcut extends LaunchShortcut {
     @Override
     protected String getConfigurationTypeId()
     {
-        return PgSqlDebugCore.CONFIGURATION_TYPE;
+        return PostgreSqlDebugCore.CONFIGURATION_TYPE;
     }
 
     @Override
@@ -66,7 +66,7 @@ public class PgSqlLaunchShortcut extends LaunchShortcut {
         }
 
         try {
-            String oid = config.getAttribute(PgSqlDebugCore.ATTR_OID, String.valueOf(0));
+            String oid = config.getAttribute(PostgreSqlDebugCore.ATTR_OID, String.valueOf(0));
             long objectId = procedure.getObjectId();
             if (!(Long.parseLong(oid)==objectId)) {
                 return false;
@@ -81,7 +81,7 @@ public class PgSqlLaunchShortcut extends LaunchShortcut {
     @Override
     protected ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException
     {
-        ILaunchConfigurationWorkingCopy workingCopy = PgSqlDebugCore.createConfiguration(launchable);
+        ILaunchConfigurationWorkingCopy workingCopy = PostgreSqlDebugCore.createConfiguration(launchable);
         return workingCopy.doSave();
     }
 

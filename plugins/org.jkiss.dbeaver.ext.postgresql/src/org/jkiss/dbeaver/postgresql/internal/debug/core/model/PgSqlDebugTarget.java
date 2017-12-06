@@ -6,13 +6,13 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IProcess;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
-import org.jkiss.dbeaver.postgresql.debug.core.PgSqlDebugCore;
+import org.jkiss.dbeaver.postgresql.debug.core.PostgreSqlDebugCore;
 
 public class PgSqlDebugTarget extends DatabaseDebugTarget<PgSqlDebugController> {
     
     public PgSqlDebugTarget(ILaunch launch, IProcess process, PgSqlDebugController controller)
     {
-        super(PgSqlDebugCore.MODEL_IDENTIFIER, launch, process, controller);
+        super(PostgreSqlDebugCore.MODEL_IDENTIFIER, launch, process, controller);
     }
 
     @Override

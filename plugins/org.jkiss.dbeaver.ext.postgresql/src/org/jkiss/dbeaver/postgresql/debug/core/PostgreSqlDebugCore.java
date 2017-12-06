@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public class PgSqlDebugCore {
+public class PostgreSqlDebugCore {
     
     public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.postgresql.debug.core"; //$NON-NLS-1$
     
@@ -49,7 +49,7 @@ public class PgSqlDebugCore {
             throws CoreException {
         boolean isInstance = launchable instanceof PostgreProcedure;
         if (!isInstance) {
-            throw PgSqlDebugCore.abort("PostgreSQL procedure is required to create PL/pgSQL launch configuration");
+            throw PostgreSqlDebugCore.abort("PostgreSQL procedure is required to create PL/pgSQL launch configuration");
         }
         PostgreProcedure procedure = (PostgreProcedure) launchable;
         PostgreDataSource dataSource = procedure.getDataSource();
