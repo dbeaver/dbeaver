@@ -41,9 +41,9 @@ public class PgSqlTab extends DatabaseTab {
 
     protected void createOidComponent(Composite comp)
     {
-        Group datasourceGroup = UIUtils.createControlGroup(comp, "OID", 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Group datasourceGroup = UIUtils.createControlGroup(comp, PostgreSqlDebugUiMessages.PgSqlTab_oid_group_text, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
 
-        oidText = UIUtils.createLabelText(datasourceGroup, "OID", "");
+        oidText = UIUtils.createLabelText(datasourceGroup, PostgreSqlDebugUiMessages.PgSqlTab_oid_label_text, PostgreSqlDebugCore.ATTR_OID_DEFAULT);
         oidText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         oidText.addModifyListener(modifyListener);
     }
