@@ -348,6 +348,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_driver_manager_button_delete;
 	public static String dialog_driver_manager_button_edit;
 	public static String dialog_driver_manager_button_new;
+	public static String dialog_driver_manager_button_copy;
 	public static String dialog_driver_manager_label_unavailable;
 	public static String dialog_driver_manager_label_user_defined;
 	public static String dialog_driver_manager_message_cant_delete_text;
@@ -493,6 +494,10 @@ public class CoreMessages extends NLS {
 	public static String dialog_migrate_wizard_start_description;
 	public static String dialog_migrate_wizard_start_title;
 	public static String dialog_migrate_wizard_window_title;
+	public static String dialog_connection_network_socket_label_host;
+	public static String dialog_connection_network_socket_label_port;
+	public static String dialog_connection_network_socket_label_username;
+	public static String dialog_connection_network_socket_label_password;
 	public static String dialog_new_connection_wizard_monitor_load_data_sources;
 	public static String dialog_new_connection_wizard_start_description;
 	public static String dialog_new_connection_wizard_start_title;
@@ -938,14 +943,6 @@ public class CoreMessages extends NLS {
 	// New Connection Wizard
 	public static String dialog_setting_connection_wizard_title;
 	public static String dialog_setting_connection_general;
-	public static String dialog_setting_connection_host;
-	public static String dialog_setting_connection_port;
-	public static String dialog_setting_connection_database;
-	public static String dialog_setting_connection_user;
-	public static String dialog_setting_connection_password;
-	public static String dialog_setting_connection_settings;
-	public static String dialog_setting_connection_localClient;
-	public static String dialog_setting_connection_nondefaultDatabase;
 	public static String dialog_setting_connection_driver_properties_title;
 	public static String dialog_setting_connection_driver_properties_description;
 	public static String dialog_connection_network_title;
@@ -970,16 +967,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_socksproxy_password;
 	public static String dialog_connection_driver_treecontrol_initialText;
 	public static String dialog_connection_driver_project;
-	//public static String dialog_connection_driver_general;
-	public static String dialog_connection_network_postgres_ssl_certificates;
-	public static String dialog_connection_network_postgres_ssl_certificates_root;
-	public static String dialog_connection_network_postgres_ssl_certificates_ca;
-	public static String dialog_connection_network_postgres_ssl_certificates_ssl;
-	public static String dialog_connection_network_postgres_ssl_certificates_ssl_key;
-	public static String dialog_connection_network_postgres_ssl_advanced;
-	public static String dialog_connection_network_postgres_ssl_advanced_ssl_mode;
-	public static String dialog_connection_network_postgres_ssl_advanced_ssl_factory;
-
+	
 
 	//Preference/Properties
 	// ResultSetsMain
@@ -997,6 +985,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_label_structurize_complex_types_tip;
 	public static String pref_page_database_resultsets_group_grid;
 	public static String pref_page_database_resultsets_label_mark_odd_rows;
+	public static String pref_page_database_resultsets_label_colorize_data_types;
 	public static String pref_page_database_resultsets_label_right_justify_numbers_and_date;
 	public static String pref_page_database_resultsets_label_row_batch_size;
 	public static String pref_page_database_resultsets_label_show_cell_icons;
@@ -1004,6 +993,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_group_plain_text;
 	public static String pref_page_database_resultsets_lable_value_format;
 	public static String pref_page_database_resultsets_label_maximum_column_length;
+	public static String pref_page_database_resultsets_label_text_delimiter_leading;
+	public static String pref_page_database_resultsets_label_text_delimiter_trailing;
 	// Connections
 	public static String pref_page_database_client_name_group;
 	public static String pref_page_database_client_name_group_description;
@@ -1021,7 +1012,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_editor_group_result_view;
 	public static String pref_page_sql_editor_label_close_results_tab_on_error;
 	public static String pref_page_sql_editor_label_results_orientation;
-	public static String pref_page_sql_editor_label_results_orientation_tip;	
+	public static String pref_page_sql_editor_label_results_orientation_tip;
+	public static String pref_page_sql_editor_link_text_editor;
 	// SQLExecute
 	public static String pref_page_sql_editor_label_sql_timeout_tip;
 	public static String pref_page_sql_editor_enable_parameters_in_ddl;
@@ -1160,6 +1152,7 @@ public class CoreMessages extends NLS {
 
 	// Connection edit
 	public static String dialog_connection_edit_title;
+	public static String dialog_connection_edit_connection_settings_variables_hint_label;
 
 	public static String dialog_connection_edit_wizard_conn_conf_network_link;
 
@@ -1272,8 +1265,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_driver_download_auto_page_download_rate;
 	public static String dialog_driver_download_auto_page_download_failed_msg;
 	// Driver download
-	
-	
+		
 	// SQL editor resultset filter panel
 	public static String sql_editor_resultset_tool_item_log;
 	public static String sql_editor_resultset_tool_item_output;
@@ -1293,6 +1285,12 @@ public class CoreMessages extends NLS {
 	public static String sql_editor_resultset_filter_panel_control_no_data;
 	public static String sql_editor_resultset_filter_panel_control_execute_to_see_reslut;
 	// SQL editor resultset filter panel
+	
+	//object properties editor
+	public static String obj_editor_properties_control_action_filter_setting;
+	public static String obj_editor_properties_control_action_configure_columns;
+	public static String obj_editor_properties_control_action_configure_columns_description;
+	//object properties editor
 	
 	
 	

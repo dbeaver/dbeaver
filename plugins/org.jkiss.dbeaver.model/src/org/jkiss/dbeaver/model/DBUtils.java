@@ -866,7 +866,11 @@ public final class DBUtils {
      * Assumes that columns in both constraints are in the same order.
      */
     @Nullable
-    public static DBSEntityAttribute getReferenceAttribute(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull DBSEntityAttribute tableColumn) throws DBException
+    public static DBSEntityAttribute getReferenceAttribute(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityAssociation association,
+        @NotNull DBSEntityAttribute tableColumn,
+        boolean reference) throws DBException
     {
         final DBSEntityConstraint refConstr = association.getReferencedConstraint();
         if (association instanceof DBSEntityReferrer && refConstr instanceof DBSEntityReferrer) {
@@ -879,7 +883,12 @@ public final class DBUtils {
             final Iterator<? extends DBSEntityAttributeRef> ownIterator = ownAttrs.iterator();
             final Iterator<? extends DBSEntityAttributeRef> refIterator = refAttrs.iterator();
             while (ownIterator.hasNext()) {
-                if (ownIterator.next().getAttribute() == tableColumn) {
+                DBSEntityAttributeRef ownAttr = ownIterator.next();
+                if (reference) {
+                    if (ownAttr instanceof DBSTableForeignKeyColumn && ((DBSTableForeignKeyColumn) ownAttr).getReferencedColumn() == tableColumn) {
+                        return refIterator.next().getAttribute();
+                    }
+                } else if (ownAttr.getAttribute() == tableColumn) {
                     return refIterator.next().getAttribute();
                 }
                 refIterator.next();

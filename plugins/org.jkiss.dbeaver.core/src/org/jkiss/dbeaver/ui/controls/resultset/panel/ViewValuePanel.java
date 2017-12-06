@@ -323,7 +323,7 @@ public class ViewValuePanel implements IResultSetPanel, IAdaptable {
             previewController.updateValue(newValue, true);
             presentation.updateValueView();
         } catch (Exception e) {
-            DBUserInterface.getInstance().showError("Value save", "Can't save edited value", e);
+            DBUserInterface.getInstance().showError("Value apply", "Can't apply edited value", e);
         } finally {
             valueSaving = false;
         }
@@ -363,7 +363,7 @@ public class ViewValuePanel implements IResultSetPanel, IAdaptable {
             ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
 
         contributionManager.add(
-            new Action("Auto-save value", Action.AS_CHECK_BOX) {
+            new Action("Auto-apply value", Action.AS_CHECK_BOX) {
                 {
                     setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.LINK_TO_EDITOR));
                 }

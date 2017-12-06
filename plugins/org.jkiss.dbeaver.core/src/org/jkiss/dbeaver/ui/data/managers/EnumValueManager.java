@@ -118,7 +118,7 @@ public abstract class EnumValueManager extends BaseValueManager {
             editor.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-
+                    saveValue();
                 }
             });
             return editor;

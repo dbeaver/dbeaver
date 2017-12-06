@@ -72,5 +72,5 @@ public interface CoreCommands
     String CMD_SYNC_CONNECTION = "org.jkiss.dbeaver.ui.editors.sql.sync.connection";
 
     String CMD_SQL_RENAME = "org.jkiss.dbeaver.ui.editors.sql.rename";
-
+    String CMD_OBJECT_SET_ACTIVE = "org.jkiss.dbeaver.core.navigator.set.active";
 }

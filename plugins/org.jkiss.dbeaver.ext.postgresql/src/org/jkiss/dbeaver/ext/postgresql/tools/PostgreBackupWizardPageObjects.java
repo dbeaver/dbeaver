@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -60,9 +60,9 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
 
     PostgreBackupWizardPageObjects(PostgreBackupWizard wizard)
     {
-        super(wizard, "Schemas/tables");
-        setTitle("Choose objects to export");
-        setDescription("Schemas/tables/views which will be exported");
+        super(wizard, PostgresMessages.wizard_backup_page_object_title_schema_table);
+        setTitle(PostgresMessages.wizard_backup_page_object_title);
+        setDescription(PostgresMessages.wizard_backup_page_object_description);
     }
 
     @Override
@@ -76,7 +76,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Group objectsGroup = UIUtils.createControlGroup(composite, "Objects", 1, GridData.FILL_HORIZONTAL, 0);
+        Group objectsGroup = UIUtils.createControlGroup(composite, PostgresMessages.wizard_backup_page_object_group_object, 1, GridData.FILL_HORIZONTAL, 0);
         objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         SashForm sash = new CustomSashForm(objectsGroup, SWT.VERTICAL);
@@ -128,7 +128,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
 
             Composite buttonsPanel = UIUtils.createPlaceholder(tablesPanel, 3, 5);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            exportViewsCheck = UIUtils.createCheckbox(buttonsPanel, "Show views", false);
+            exportViewsCheck = UIUtils.createCheckbox(buttonsPanel, PostgresMessages.wizard_backup_page_object_checkbox_show_view, false);
             exportViewsCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {

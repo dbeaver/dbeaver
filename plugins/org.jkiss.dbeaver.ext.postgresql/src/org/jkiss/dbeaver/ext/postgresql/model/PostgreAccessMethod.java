@@ -42,6 +42,10 @@ public class PostgreAccessMethod extends PostgreInformation {
 
     private long oid;
     private String name;
+
+    private String handler;
+    private String type;
+
     private int operatorStrategies;
     private int supportRoutines;
     private boolean canOrder;
@@ -70,19 +74,25 @@ public class PostgreAccessMethod extends PostgreInformation {
     {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "amname");
-        this.operatorStrategies = JDBCUtils.safeGetInt(dbResult, "amstrategies");
-        this.supportRoutines = JDBCUtils.safeGetInt(dbResult, "amsupport");
-        this.canOrder = JDBCUtils.safeGetBoolean(dbResult, "amcanorder");
-        this.canOrderByOp = JDBCUtils.safeGetBoolean(dbResult, "amcanorderbyop");
-        this.canBackward = JDBCUtils.safeGetBoolean(dbResult, "amcanbackward");
-        this.canUnique = JDBCUtils.safeGetBoolean(dbResult, "amcanunique");
-        this.canMultiCol = JDBCUtils.safeGetBoolean(dbResult, "amcanmulticol");
-        this.optionalKey = JDBCUtils.safeGetBoolean(dbResult, "amoptionalkey");
-        this.searchArray = JDBCUtils.safeGetBoolean(dbResult, "amsearcharray");
-        this.searchNulls = JDBCUtils.safeGetBoolean(dbResult, "amsearchnulls");
-        this.storage = JDBCUtils.safeGetBoolean(dbResult, "amstorage");
-        this.clusterable = JDBCUtils.safeGetBoolean(dbResult, "amclusterable");
-        this.predLocks = JDBCUtils.safeGetBoolean(dbResult, "ampredlocks");
+        if (getDataSource().isServerVersionAtLeast(9, 6)) {
+            // New simpler version of pg_am
+            this.handler = JDBCUtils.safeGetString(dbResult, "amhandler");
+            this.type = JDBCUtils.safeGetString(dbResult, "amtype");
+        } else {
+            this.operatorStrategies = JDBCUtils.safeGetInt(dbResult, "amstrategies");
+            this.supportRoutines = JDBCUtils.safeGetInt(dbResult, "amsupport");
+            this.canOrder = JDBCUtils.safeGetBoolean(dbResult, "amcanorder");
+            this.canOrderByOp = JDBCUtils.safeGetBoolean(dbResult, "amcanorderbyop");
+            this.canBackward = JDBCUtils.safeGetBoolean(dbResult, "amcanbackward");
+            this.canUnique = JDBCUtils.safeGetBoolean(dbResult, "amcanunique");
+            this.canMultiCol = JDBCUtils.safeGetBoolean(dbResult, "amcanmulticol");
+            this.optionalKey = JDBCUtils.safeGetBoolean(dbResult, "amoptionalkey");
+            this.searchArray = JDBCUtils.safeGetBoolean(dbResult, "amsearcharray");
+            this.searchNulls = JDBCUtils.safeGetBoolean(dbResult, "amsearchnulls");
+            this.storage = JDBCUtils.safeGetBoolean(dbResult, "amstorage");
+            this.clusterable = JDBCUtils.safeGetBoolean(dbResult, "amclusterable");
+            this.predLocks = JDBCUtils.safeGetBoolean(dbResult, "ampredlocks");
+        }
     }
 
     @NotNull
@@ -97,6 +107,16 @@ public class PostgreAccessMethod extends PostgreInformation {
     @Override
     public long getObjectId() {
         return oid;
+    }
+
+    @Property(viewable = true, order = 3)
+    public String getHandler() {
+        return handler;
+    }
+
+    @Property(viewable = true, order = 4)
+    public String getType() {
+        return type;
     }
 
     @Property(category = CAT_ROUTINES, order = 100)

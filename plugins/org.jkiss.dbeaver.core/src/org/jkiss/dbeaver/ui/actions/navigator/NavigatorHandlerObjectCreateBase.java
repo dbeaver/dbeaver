@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerObjectBase {
 
@@ -143,13 +144,18 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                     }
                 }
 
-                // Open object in UI thread
-                DBeaverUI.syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        openNewObject();
+                {
+                    // Wait for a few seconds to let listeners to add new object's node in navigator node
+                    for (int i = 0; i < 50; i++) {
+                        if (DBeaverCore.getInstance().getNavigatorModel().findNode(newObject) != null) {
+                            break;
+                        }
+                        RuntimeUtils.pause(100);
                     }
-                });
+                }
+
+                // Open object in UI thread
+                DBeaverUI.syncExec(this::openNewObject);
 
                 return Status.OK_STATUS;
             } catch (Exception e) {
@@ -160,14 +166,13 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         private void openNewObject() {
             IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
             try {
-                final boolean openEditor = (objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_EDITOR_ON_CREATE) != 0;
-
                 final DBNDatabaseNode newChild = DBeaverCore.getInstance().getNavigatorModel().findNode(newObject);
                 if (newChild != null) {
                     DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
                     if (view != null) {
                         view.showNode(newChild);
                     }
+                    final boolean openEditor = (objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_EDITOR_ON_CREATE) != 0;
                     IDatabaseEditor editor = commandTarget.getEditor();
                     if (editor != null) {
                         // Just activate existing editor
