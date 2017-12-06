@@ -5,3 +5,6 @@ Bundle-SymbolicName: org.jkiss.dbeaver.postgresql.debug.core
 Bundle-Version: 1.0.0
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.eclipse.core.runtime,
+ org.jkiss.dbeaver.debug.core,
+ org.jkiss.dbeaver.ext.postgresql
