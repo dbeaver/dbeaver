@@ -9,6 +9,19 @@
             id="org.jkiss.dbeaver.postgresql.debug.ui.launchConfigurationTypeImages.launchConfigurationTypeImage.pgSQL">
       </launchConfigurationTypeImage>
    </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.jkiss.dbeaver.postgresql.internal.debug.ui.PgSqlLaunchConfigurationTabGroup"
+            description="%launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL.description"
+            id="org.jkiss.dbeaver.postgresql.debug.ui.launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL"
+            type="org.jkiss.dbeaver.postgresql.debug.core.pgSQL">
+         <launchMode
+               description="%launchConfigurationTabGroups.launchConfigurationTabGroup.launchMode.pgSQL.debug.description"
+               mode="debug">
+         </launchMode>
+      </launchConfigurationTabGroup>
+   </extension>
 
    <extension
          point="org.eclipse.debug.ui.debugModelPresentations">
