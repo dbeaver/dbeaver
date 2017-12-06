@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages;
 
 public class PgSqlDebugController extends DatabaseDebugController {
     
@@ -65,7 +66,7 @@ public class PgSqlDebugController extends DatabaseDebugController {
                             final Object cellValue = dbResult.getAttributeValue(0);
                             if (cellValue instanceof Integer) {
                                 this.sessionId = (Integer) cellValue;
-                                String applicationName = NLS.bind("Debug Mode : {0}", sessionId);
+                                String applicationName = NLS.bind(PostgreSqlDebugCoreMessages.PgSqlDebugController_connection_application_name, sessionId);
                                 try {
                                     jdbcSession.getOriginal().setClientInfo(PROPERTY_APPLICATION_NAME, applicationName);
                                 } catch (SQLException e) {
@@ -76,7 +77,7 @@ public class PgSqlDebugController extends DatabaseDebugController {
                     }
                 }
             } catch (DBCException e) {
-                String message = NLS.bind("Failed to open debug session for {0}", session.getDataSource());
+                String message = NLS.bind(PostgreSqlDebugCoreMessages.PgSqlDebugController_e_failed_session_open, session.getDataSource());
                 log.error(message, e);
             }
         }
@@ -92,7 +93,7 @@ public class PgSqlDebugController extends DatabaseDebugController {
                 prepared.setInt(1, sessionId);
                 prepared.execute();
             } catch (SQLException e) {
-                String message = NLS.bind("Failed to close debug session with id {0} for {1}", sessionId, session.getDataSource());
+                String message = NLS.bind(PostgreSqlDebugCoreMessages.PgSqlDebugController_e_failed_session_close, sessionId, session.getDataSource());
                 log.error(message, e);
             }
         }
