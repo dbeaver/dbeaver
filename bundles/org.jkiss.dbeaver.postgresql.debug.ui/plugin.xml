@@ -22,6 +22,40 @@
          </launchMode>
       </launchConfigurationTabGroup>
    </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            class="org.jkiss.dbeaver.postgresql.internal.debug.ui.PgSqlLaunchShortcut"
+            description="%launchShortcuts.shortcut.pgSQL.description"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
+            id="org.jkiss.dbeaver.postgresql.debug.ui.launchShortcuts.shortcut.pgSQL"
+            label="%launchShortcuts.shortcut.pgSQL.label"
+            modes="debug">
+         <configurationType
+               id="org.jkiss.dbeaver.postgresql.debug.core.pgSQL"></configurationType>
+         <contextualLaunch>
+            <contextLabel
+                  label="%launchShortcuts.shortcut.pgSQL.label"
+                  mode="debug">
+            </contextLabel>
+            <enablement>
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <adapt
+                           type="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure">
+                     </adapt>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+   </extension>
 
    <extension
          point="org.eclipse.debug.ui.debugModelPresentations">
