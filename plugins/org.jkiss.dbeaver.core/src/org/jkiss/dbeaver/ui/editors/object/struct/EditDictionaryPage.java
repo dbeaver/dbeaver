@@ -126,6 +126,14 @@ public class EditDictionaryPage extends AttributesSelectorPage {
     }
 
     @Override
+    public boolean isPageComplete() {
+        if (!CommonUtils.isEmpty(criteriaText.getText())) {
+            return true;
+        }
+        return super.isPageComplete();
+    }
+
+    @Override
     protected void performFinish()
     {
         dictionary.setDescriptionColumnNames(criteriaText.getText());
