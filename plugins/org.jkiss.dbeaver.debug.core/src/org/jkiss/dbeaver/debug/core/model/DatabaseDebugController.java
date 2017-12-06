@@ -9,6 +9,7 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -45,7 +46,7 @@ public class DatabaseDebugController implements IDatabaseDebugController {
             try {
                 dataSourceDescriptor.connect(dbrMonitor, true, true);
             } catch (DBException e) {
-                String message = NLS.bind("Unable to connect to {0}", dataSourceDescriptor);
+                String message = NLS.bind(DebugCoreMessages.DatabaseDebugController_e_connecting_datasource, dataSourceDescriptor);
                 IStatus error = new Status(IStatus.ERROR, DebugCore.BUNDLE_SYMBOLIC_NAME, message, e);
                 log.error(message, e);
                 return error;
@@ -53,11 +54,11 @@ public class DatabaseDebugController implements IDatabaseDebugController {
         }
         try {
             DBPDataSource dataSource = dataSourceDescriptor.getDataSource();
-            this.debugContext = dataSource.openIsolatedContext(dbrMonitor, "Debug");
-            this.debugSession = debugContext.openSession(dbrMonitor, DBCExecutionPurpose.UTIL, "Debug queries");
+            this.debugContext = dataSource.openIsolatedContext(dbrMonitor, DebugCoreMessages.DatabaseDebugController_debug_context_purpose);
+            this.debugSession = debugContext.openSession(dbrMonitor, DBCExecutionPurpose.UTIL, DebugCoreMessages.DatabaseDebugController_debug_session_name);
             afterSessionOpen(debugSession);
         } catch (DBException e) {
-            String message = NLS.bind("Unable to open debug context for {0}", dataSourceDescriptor);
+            String message = NLS.bind(DebugCoreMessages.DatabaseDebugController_e_opening_debug_context, dataSourceDescriptor);
             IStatus error = new Status(IStatus.ERROR, DebugCore.BUNDLE_SYMBOLIC_NAME, message, e);
             log.error(message, e);
             return error;
