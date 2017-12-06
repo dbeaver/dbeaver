@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.postgresql.pldbg.Variable;
  * @author Andrey.Hitrin
  *
  */
+@SuppressWarnings("nls")
 public class DebugSessionPostgres	implements DebugSession<SessionInfoPostgres, DebugObjectPostgres> {
 	
 	private final SessionInfoPostgres sessionInfo; 

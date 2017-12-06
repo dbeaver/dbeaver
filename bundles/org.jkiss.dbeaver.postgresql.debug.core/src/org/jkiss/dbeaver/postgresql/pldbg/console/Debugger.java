@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.postgresql.pldbg.impl.DebugManagerPostgres;
 import org.jkiss.dbeaver.postgresql.pldbg.impl.DebugObjectPostgres;
 import org.jkiss.dbeaver.postgresql.pldbg.impl.SessionInfoPostgres;
 
+@SuppressWarnings("nls")
 public class Debugger {
 	
     

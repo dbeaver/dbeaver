@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.postgresql.pldbg.DebugObject;
  * @author Andrey.Hitrin
  *
  */
+@SuppressWarnings("nls")
 public class DebugObjectPostgres implements DebugObject<Integer> {
 	
 	private final Integer oid;

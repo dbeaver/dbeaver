@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.postgresql.pldbg.control.DebugManager;
  * @author Andrey.Hitrin
  *
  */
+@SuppressWarnings("nls")
 public class DebugManagerPostgres implements DebugManager<Integer,Integer> {
 	
 	private final Connection connection;
