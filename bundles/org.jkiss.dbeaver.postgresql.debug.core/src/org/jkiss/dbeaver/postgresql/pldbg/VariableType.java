@@ -1,3 +1,3 @@
-package org.jkiss.dbeaver.postgresql.debug;
+package org.jkiss.dbeaver.postgresql.pldbg;
 
 public enum VariableType { NUMBER, TEXT, DATE, BLOB }
