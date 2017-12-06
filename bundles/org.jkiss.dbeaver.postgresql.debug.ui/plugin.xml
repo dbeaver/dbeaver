@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="org.jkiss.dbeaver.postgresql.debug.core.pgSQL"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
+            id="org.jkiss.dbeaver.postgresql.debug.ui.launchConfigurationTypeImages.launchConfigurationTypeImage.pgSQL">
+      </launchConfigurationTypeImage>
+   </extension>
 
    <extension
          point="org.eclipse.debug.ui.debugModelPresentations">

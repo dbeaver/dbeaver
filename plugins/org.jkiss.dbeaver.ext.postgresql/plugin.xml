@@ -415,14 +415,6 @@
 
 <!-- org.jkiss.dbeaver.postgresql.debug.ui begins -->
     <extension
-          point="org.eclipse.debug.ui.launchConfigurationTypeImages">
-       <launchConfigurationTypeImage
-             configTypeID="org.jkiss.dbeaver.postgresql.debug.core.pgSQL"
-             icon="icons/postgresql_icon.png"
-             id="org.jkiss.dbeaver.postgresql.debug.ui.launchConfigurationTypeImages.launchConfigurationTypeImage.pgSQL">
-       </launchConfigurationTypeImage>
-    </extension>
-    <extension
           point="org.eclipse.debug.ui.launchConfigurationTabGroups">
        <launchConfigurationTabGroup
              class="org.jkiss.dbeaver.postgresql.internal.debug.ui.PgSqlLaunchConfigurationTabGroup"
