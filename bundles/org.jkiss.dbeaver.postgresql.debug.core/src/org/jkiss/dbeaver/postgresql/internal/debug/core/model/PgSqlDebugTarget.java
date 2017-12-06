@@ -24,6 +24,7 @@ import org.eclipse.debug.core.model.IProcess;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
 import org.jkiss.dbeaver.postgresql.debug.core.PostgreSqlDebugCore;
+import org.jkiss.dbeaver.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages;
 
 public class PgSqlDebugTarget extends DatabaseDebugTarget<PgSqlDebugController> {
     
@@ -47,7 +48,7 @@ public class PgSqlDebugTarget extends DatabaseDebugTarget<PgSqlDebugController> 
     @Override
     protected String getDefaultName()
     {
-        return "PL/pgSQL Debug";
+        return PostgreSqlDebugCoreMessages.PgSqlDebugTarget_name_default;
     }
 
 }

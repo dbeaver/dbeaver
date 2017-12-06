@@ -24,6 +24,7 @@ public class PostgreSqlDebugCoreMessages extends NLS {
     public static String PgSqlDebugController_connection_application_name;
     public static String PgSqlDebugController_e_failed_session_close;
     public static String PgSqlDebugController_e_failed_session_open;
+    public static String PgSqlDebugTarget_name_default;
     public static String PostgreSqlDebugCore_e_procedure_required;
     public static String PostgreSqlDebugCore_launch_configuration_name;
     static {
