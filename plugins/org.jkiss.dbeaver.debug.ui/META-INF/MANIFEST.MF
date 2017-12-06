@@ -6,6 +6,8 @@ Bundle-Version: 1.0.0
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.expressions,
+ org.eclipse.jface.text,
  org.eclipse.ui,
  org.eclipse.debug.ui,
  org.jkiss.dbeaver.core,
