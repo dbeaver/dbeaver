@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="sqlBreakpointMarker"
+         name="%sqlBreakpointMarker.name"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.debug.core.breakpointMarker">
+      </super>
+   </extension>
+   <extension
+         id="sqlLineBreakpointMarker"
+         name="%sqlLineBreakpointMarker.name"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.debug.core.lineBreakpointMarker">
+      </super>
+      <super
+            type="org.jkiss.dbeaver.debug.core.sqlBreakpointMarker">
+      </super>
+   </extension>
+
+</plugin>
