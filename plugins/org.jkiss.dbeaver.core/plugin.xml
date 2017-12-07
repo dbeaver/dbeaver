@@ -103,7 +103,7 @@
             class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
             id="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
             namespace="org.jkiss.dbeaver.ui.editors.sql.util"
-            properties="canGenerate,hasTools"
+            properties="canGenerate,hasTools,isProcedure"
             type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
@@ -243,6 +243,7 @@
         <command id="org.jkiss.dbeaver.core.sql.editor.recent" name="%command.org.jkiss.dbeaver.core.sql.editor.recent.name" description="%command.org.jkiss.dbeaver.core.sql.editor.recent.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.sql.editor.create" name="%command.org.jkiss.dbeaver.core.sql.editor.create.name" description="%command.org.jkiss.dbeaver.core.sql.editor.create.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.sql.editor.forSelection" name="%command.org.jkiss.dbeaver.core.sql.editor.forSelection.name" description="%command.org.jkiss.dbeaver.core.sql.editor.forSelection.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="command.org.jkiss.dbeaver.core.procedure.execute" name="%command.org.jkiss.dbeaver.core.procedure.execute.name" description="%command.org.jkiss.dbeaver.core.procedure.execute.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.open" name="%command.org.jkiss.dbeaver.core.object.open.name" description="%command.org.jkiss.dbeaver.core.object.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.create" name="%command.org.jkiss.dbeaver.core.object.create.name" description="%command.org.jkiss.dbeaver.core.object.create.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.delete" name="%command.org.jkiss.dbeaver.core.object.delete.name" description="%command.org.jkiss.dbeaver.core.object.delete.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -1004,6 +1005,12 @@
                     </iterate>
                 </with>
             </enabledWhen>
+        </handler>
+        <handler commandId="command.org.jkiss.dbeaver.core.procedure.execute" class="org.jkiss.dbeaver.ui.editors.sql.handlers.RunProcedureConsoleHandler">
+            <parameter
+                    name="org.jkiss.dbeaver.core.resource.link.file.contenttype"
+                    value="org.jkiss.dbeaver.sql">
+            </parameter>
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.rename" class="org.jkiss.dbeaver.ui.editors.sql.handlers.RenameHandler">
@@ -2081,6 +2088,15 @@
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
             <separator name="data" visible="true"/>
 
+            <command
+                  commandId="command.org.jkiss.dbeaver.core.procedure.execute"
+                  label="%command.org.jkiss.dbeaver.core.procedure.execute.name">
+                <visibleWhen>
+                    <with variable="activePart">
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.util.isProcedure"/>
+                    </with>
+                </visibleWhen>
+            </command>
             <command
                   commandId="org.jkiss.dbeaver.core.sql.editor.forSelection"
                   label="%command.org.jkiss.dbeaver.core.sql.editor.forSelection.name">
