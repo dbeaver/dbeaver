@@ -7,7 +7,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IWorkbenchPart;
 
 public class ToggleSqlBreakpointTarget implements IToggleBreakpointsTargetExtension2 {
-
+    
     @Override
     public void toggleBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException
     {
@@ -23,8 +23,7 @@ public class ToggleSqlBreakpointTarget implements IToggleBreakpointsTargetExtens
     @Override
     public void toggleLineBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException
     {
-        // TODO Auto-generated method stub
-
+        //nothing by default
     }
 
     @Override
