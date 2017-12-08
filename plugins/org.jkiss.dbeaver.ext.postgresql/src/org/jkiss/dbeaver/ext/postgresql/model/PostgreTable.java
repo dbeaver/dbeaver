@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -50,6 +49,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     private static final Log log = Log.getLog(PostgreTable.class);
 
     private SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
+    //private List<PostgreTablePartition>  partitions  = null;
 
     private boolean hasOids;
     private long tablespaceId;
@@ -69,6 +69,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
 
         this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
+
     }
 
     // Copy constructor
@@ -76,6 +77,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         super(container, source, persisted);
         if (source instanceof PostgreTable) {
             this.hasOids = ((PostgreTable) source).hasOids;
+            //this.partitions = ((PostgreTable) source).partitions == null ? null : new ArrayList<>(((PostgreTable) source).partitions);
         }
     }
 
@@ -103,7 +105,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     }
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
         return getSchema().indexCache.getObjects(monitor, getSchema(), this);
     }
 
@@ -235,10 +237,13 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     public List<PostgreTableInheritance> getSubInheritance(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (subTables == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table inheritance info")) {
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT i.*,c.relnamespace " +
+                String sql = "SELECT i.*,c.relnamespace " +
                     "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
-                    "WHERE i.inhparent=? AND c.oid=i.inhrelid")) {
+                    "WHERE i.inhparent=? AND c.oid=i.inhrelid";
+                if (getDataSource().isServerVersionAtLeast(10, 0)) {
+                    sql += " AND c.relispartition=false";
+                }
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                     dbStat.setLong(1, getObjectId());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
@@ -275,4 +280,17 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         }
         return subTables;
     }
+
+    // TODO: fix partitions lookup (similar to getSubInheritance). Partitions may reside in different schema.
+    @Association
+    public Collection<PostgreTableBase> getPartitions(DBRProgressMonitor monitor) throws DBException {
+        List<PostgreTableBase> partitions = new ArrayList<>();
+        for(PostgreTableBase t : getSchema().tableCache.getCachedObjects()) {
+            if (t.isParentOf(this.getObjectId()) && t.isPartition()) {
+                partitions.add(t);
+            }
+        }
+	    return partitions;
+    }
+
 }

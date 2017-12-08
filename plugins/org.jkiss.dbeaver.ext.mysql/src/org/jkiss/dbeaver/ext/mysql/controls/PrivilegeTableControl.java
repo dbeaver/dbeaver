@@ -73,8 +73,7 @@ public class PrivilegeTableControl extends Composite {
         Composite buttonsPanel = UIUtils.createPlaceholder(privsGroup, 3);
         buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Button checkButton = UIUtils.createPushButton(buttonsPanel, "Check All", null);
-        checkButton.addSelectionListener(new SelectionAdapter() {
+        UIUtils.createPushButton(buttonsPanel, "Check All", null, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
@@ -86,8 +85,7 @@ public class PrivilegeTableControl extends Composite {
                 }
             }
         });
-        Button clearButton = UIUtils.createPushButton(buttonsPanel, "Clear All", null);
-        clearButton.addSelectionListener(new SelectionAdapter() {
+        UIUtils.createPushButton(buttonsPanel, "Clear All", null, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {

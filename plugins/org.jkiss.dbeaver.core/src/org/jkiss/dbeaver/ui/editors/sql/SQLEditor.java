@@ -985,7 +985,8 @@ public class SQLEditor extends SQLEditorBase implements
             // Execute statement under cursor or selected text (if selection present)
             SQLScriptElement sqlQuery = extractActiveQuery();
             if (sqlQuery == null) {
-                setStatus(CoreMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
+                //setStatus(CoreMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
+                DBUserInterface.getInstance().showError(CoreMessages.editors_sql_status_empty_query_string, CoreMessages.editors_sql_status_empty_query_string);
                 return;
             } else {
                 elements = Collections.singletonList(sqlQuery);
@@ -2154,7 +2155,9 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 boolean isInExecute = getTotalQueryRunning() > 0;
                 if (!isInExecute) {
-                    setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
+                    DBeaverUI.asyncExec(() -> {
+                        setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
+                    });
                 }
                 queryProcessor.curJobRunning.incrementAndGet();
                 synchronized (runningQueries) {
@@ -2186,7 +2189,9 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 queryProcessor.curJobRunning.decrementAndGet();
                 if (getTotalQueryRunning() <= 0) {
-                    setTitleImage(editorImage);
+                    DBeaverUI.asyncExec(() -> {
+                        setTitleImage(editorImage);
+                    });
                 }
 
                 if (isDisposed()) {

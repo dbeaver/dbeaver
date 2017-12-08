@@ -40,11 +40,13 @@ import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatterRegistry;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.PluginServiceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.sql.SQLFormatterConfigurationRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.KeepAliveJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
@@ -347,6 +349,11 @@ public class DBeaverCore implements DBPPlatform {
     @Override
     public DBERegistry getEditorsRegistry() {
         return EntityEditorsRegistry.getInstance();
+    }
+
+    @Override
+    public SQLFormatterRegistry getSQLFormatterRegistry() {
+        return SQLFormatterConfigurationRegistry.getInstance();
     }
 
     @NotNull

@@ -19,15 +19,14 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -38,7 +37,7 @@ import java.util.Map;
 /**
  * MySQLViewManager
  */
-public class MySQLViewManager extends SQLObjectEditor<MySQLTableBase, MySQLCatalog> {
+public class MySQLViewManager extends MySQLTableManager {
 
     @Nullable
     @Override
@@ -69,13 +68,18 @@ public class MySQLViewManager extends SQLObjectEditor<MySQLTableBase, MySQLCatal
     @Override
     protected MySQLView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom)
     {
-        MySQLView newCatalog = new MySQLView(parent);
-        newCatalog.setName("NewView"); //$NON-NLS-1$
-        return newCatalog;
+        MySQLView newView = new MySQLView(parent);
+        try {
+            newView.setName(getNewChildName(monitor, parent, "new_view"));
+        } catch (DBException e) {
+            // Never be here
+            log.error(e);
+        }
+        return newView;
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actions, (MySQLView) command.getObject());
     }
@@ -107,26 +111,5 @@ public class MySQLViewManager extends SQLObjectEditor<MySQLTableBase, MySQLCatal
         actions.add(new SQLDatabasePersistAction("Create view", decl.toString()));
     }
 
-/*
-    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseEditor activeEditor, final MySQLView object)
-    {
-        if (object.getContainer().isSystem()) {
-            return null;
-        }
-        return new ITabDescriptor[] {
-            new PropertyTabDescriptor(
-                PropertiesContributor.CATEGORY_INFO,
-                "view.definition", //$NON-NLS-1$
-                MySQLMessages.edit_view_manager_definition,
-                DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", MySQLMessages.edit_view_manager_definition) { //$NON-NLS-1$
-                    public ISection getSectionClass()
-                    {
-                        return new MySQLViewDefinitionSection(activeEditor);
-                    }
-                })
-        };
-    }
-*/
 }
 

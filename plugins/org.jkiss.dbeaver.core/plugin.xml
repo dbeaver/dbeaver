@@ -28,13 +28,14 @@
     <extension-point id="org.jkiss.dbeaver.dataTransfer" name="%extension-point.org.jkiss.dbeaver.dataTransfer.name" schema="schema/org.jkiss.dbeaver.dataTransfer.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataFormatter" name="%extension-point.org.jkiss.dbeaver.dataFormatter.name" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
     <extension-point id="org.jkiss.dbeaver.aggregateFunction" name="%extension-point.org.jkiss.dbeaver.aggregateFunction.name" schema="schema/org.jkiss.dbeaver.aggregateFunction.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sqlCommand" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resourceHandler" name="%extension-point.org.jkiss.dbeaver.resourceHandler.name" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.networkHandler" name="%extension-point.org.jkiss.dbeaver.networkHandler.name" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resources" name="%extension-point.org.jkiss.dbeaver.resources.name" schema="schema/org.jkiss.dbeaver.resources.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="%extension-point.org.jkiss.dbeaver.resultset.presentation.name" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.panel" name="%extension-point.org.jkiss.dbeaver.resultset.panel.name" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sql.covert" name="%extension-point.org.jkiss.dbeaver.sql.covertname" schema="schema/org.jkiss.dbeaver.sql.convert.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlCommand" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlFormatter" name="%extension-point.org.jkiss.dbeaver.sqlFormatter.name" schema="schema/org.jkiss.dbeaver.sqlFormatter.exsd"/>
     <extension-point id="org.jkiss.dbeaver.tools" name="%extension-point.org.jkiss.dbeaver.tools.name" schema="schema/org.jkiss.dbeaver.tools.exsd"/>
     <extension-point id="org.jkiss.dbeaver.product.bundles" name="%extension-point.org.jkiss.dbeaver.product.bundles.name" schema="schema/org.jkiss.dbeaver.product.bundles.exsd"/>
     <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="%extension-point.org.jkiss.dbeaver.workbenchHandler.name" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
@@ -1789,6 +1790,7 @@
             </toolbar>
         </menuContribution>
 
+<!--
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
             <toolbar id="dbeaver-edit" label="%toolbar.dbeaver-edit.label">
                 <command commandId="org.eclipse.ui.file.save"/>
@@ -1799,6 +1801,7 @@
             </toolbar>
 
         </menuContribution>
+-->
 
         <!-- Database Navigator menu & toolbar -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.databaseNavigator">
@@ -1819,7 +1822,6 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.databaseNavigator">
-            <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
             <command commandId="org.jkiss.dbeaver.core.new.connection"/>
             <command commandId="org.jkiss.dbeaver.core.new.folder"/>
             <separator name="additions" visible="true"/>
@@ -2744,6 +2746,9 @@
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.results.label" id="org.jkiss.dbeaver.ui.presentation.results">
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.results.description</description>
         </themeElementCategory>
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.datatypes.label" id="org.jkiss.dbeaver.ui.presentation.results.datatypes" parentId="org.jkiss.dbeaver.ui.presentation.results">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.datatypes.description</description>
+        </themeElementCategory>
         <fontDefinition id="org.jkiss.dbeaver.sql.resultset.font" categoryId="org.jkiss.dbeaver.ui.presentation.results" label="%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.label">
             <description>%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.description</description>
         </fontDefinition>
@@ -2862,6 +2867,44 @@
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.null.foreground.description</description>
         </colorDefinition>
 
+        <!-- Colors for data types -->
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.binary.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
+                id="org.jkiss.dbeaver.sql.resultset.color.binary.foreground"
+                value="100, 100, 100">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.binary.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.boolean.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
+                id="org.jkiss.dbeaver.sql.resultset.color.boolean.foreground"
+                value="255, 100, 0">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.boolean.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.datetime.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
+                id="org.jkiss.dbeaver.sql.resultset.color.datetime.foreground"
+                value="0, 102, 0">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.datetime.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.numeric.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
+                id="org.jkiss.dbeaver.sql.resultset.color.numeric.foreground"
+                value="0, 0, 255">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.numeric.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.string.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
+                id="org.jkiss.dbeaver.sql.resultset.color.string.foreground"
+                value="0, 0, 0">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.string.foreground.description</description>
+        </colorDefinition>
+
+        <!-- Colors for SQL editor -->
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.keyword.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
@@ -3255,6 +3298,12 @@
         <command id="set" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandSet" label="Set" description="Sets variable/parameter value"/>
         <command id="echo" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandEcho" label="Echo" description="Prints string to Output log"/>
         <command id="include" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandInclude" label="Include" description="Include another SQL script file"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlFormatter">
+        <formatter id="default" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedConfigurationPage" label="Default formatter" description="Default SQL formatter"/>
+        <formatter id="compact" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterCompact" label="Compact formatter" description="Compact SQL formatter. Similar to default formatter but with more compact output"/>
+        <formatter id="external" class="org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal" label="External formatter" description="External formatter. Uses configurable command-line executable to format SQL queries"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">

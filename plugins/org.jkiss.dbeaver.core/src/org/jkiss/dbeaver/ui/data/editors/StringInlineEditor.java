@@ -29,7 +29,9 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
 /**
-* StringInlineEditor
+* StringInlineEditor.
+ * TODO: use StyledText instead of Text? with fillDefaultStyledTextContextMenu it works better than Text
+ * TODO: however Text is native and has extra features. Can't decide.
 */
 public class StringInlineEditor extends BaseValueEditor<Text> {
 

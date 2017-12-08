@@ -755,14 +755,17 @@ public class EntityEditor extends MultiPageDatabaseEditor
     }
 
     public <T> T getNestedAdapter(Class<T> adapter) {
-        IEditorPart activeEditor = getActiveEditor();
-        if (activeEditor != null) {
-            Object result = activeEditor.getAdapter(adapter);
-            if (result != null) {
-                return adapter.cast(result);
-            }
-            if (adapter.isAssignableFrom(activeEditor.getClass())) {
-                return adapter.cast(activeEditor);
+        // restrict delegating to the UI thread for bug 144851
+        if (Display.getCurrent() != null) {
+            IEditorPart activeEditor = getActiveEditor();
+            if (activeEditor != null) {
+                Object result = activeEditor.getAdapter(adapter);
+                if (result != null) {
+                    return adapter.cast(result);
+                }
+                if (adapter.isAssignableFrom(activeEditor.getClass())) {
+                    return adapter.cast(activeEditor);
+                }
             }
         }
         return null;

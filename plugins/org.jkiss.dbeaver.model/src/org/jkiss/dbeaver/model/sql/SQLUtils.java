@@ -29,10 +29,9 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
-import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -45,7 +44,10 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -279,7 +281,11 @@ public final class SQLUtils {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
         SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(syntaxManager);
-        return new SQLTokenizedFormatter().format(query, configuration);
+        SQLFormatter formatter = dataSource.getDataSource().getContainer().getPlatform().getSQLFormatterRegistry().createFormatter(configuration);
+        if (formatter == null) {
+            return query;
+        }
+        return formatter.format(query, configuration);
     }
 
     public static void appendLikeCondition(StringBuilder sql, String value, boolean not)

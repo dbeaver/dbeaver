@@ -39,6 +39,8 @@ public class PrefPageConnections extends TargetPrefPage
     private Button overrideClientApplicationNameCheck;
     private Text clientApplicationNameText;
 
+    private Button connUseEnvVariables;
+
     public PrefPageConnections()
     {
         super();
@@ -51,7 +53,9 @@ public class PrefPageConnections extends TargetPrefPage
         return
             store.contains(ModelPreferences.META_CLIENT_NAME_DISABLE) ||
             store.contains(ModelPreferences.META_CLIENT_NAME_OVERRIDE) ||
-            store.contains(ModelPreferences.META_CLIENT_NAME_VALUE)
+            store.contains(ModelPreferences.META_CLIENT_NAME_VALUE) ||
+
+            store.contains(ModelPreferences.CONNECT_USE_ENV_VARS)
             ;
     }
 
@@ -85,6 +89,11 @@ public class PrefPageConnections extends TargetPrefPage
             clientApplicationNameText = UIUtils.createLabelText(clientNameGroup, CoreMessages.pref_page_database_label_client_application_name, "");
         }
 
+        {
+            Group connGroup = UIUtils.createControlGroup(composite, "General", 2, GridData.FILL_HORIZONTAL, 0);
+
+            connUseEnvVariables = UIUtils.createCheckbox(connGroup, "Use environment variables in connection parameters", null, false, 2);
+        }
         return composite;
     }
 
@@ -100,6 +109,8 @@ public class PrefPageConnections extends TargetPrefPage
             overrideClientApplicationNameCheck.setSelection(store.getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE));
             clientApplicationNameText.setText(store.getString(ModelPreferences.META_CLIENT_NAME_VALUE));
 
+            connUseEnvVariables.setSelection(store.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS));
+
             updateClientAppEnablement();
         } catch (Exception e) {
             log.warn(e);
@@ -113,6 +124,8 @@ public class PrefPageConnections extends TargetPrefPage
             store.setValue(ModelPreferences.META_CLIENT_NAME_DISABLE, disableClientApplicationNameCheck.getSelection());
             store.setValue(ModelPreferences.META_CLIENT_NAME_OVERRIDE, overrideClientApplicationNameCheck.getSelection());
             store.setValue(ModelPreferences.META_CLIENT_NAME_VALUE, clientApplicationNameText.getText());
+
+            store.setValue(ModelPreferences.CONNECT_USE_ENV_VARS, connUseEnvVariables.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -125,6 +138,8 @@ public class PrefPageConnections extends TargetPrefPage
         store.setToDefault(ModelPreferences.META_CLIENT_NAME_DISABLE);
         store.setToDefault(ModelPreferences.META_CLIENT_NAME_OVERRIDE);
         store.setToDefault(ModelPreferences.META_CLIENT_NAME_VALUE);
+
+        store.setToDefault(ModelPreferences.CONNECT_USE_ENV_VARS);
     }
 
     @Override

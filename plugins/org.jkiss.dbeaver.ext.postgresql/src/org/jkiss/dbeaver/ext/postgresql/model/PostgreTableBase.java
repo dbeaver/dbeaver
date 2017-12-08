@@ -48,11 +48,14 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 {
     private long oid;
     private long ownerId;
+    private Long[] parents;
     private String description;
+	private boolean isPartition;
 
     protected PostgreTableBase(PostgreSchema catalog)
     {
         super(catalog, false);
+        this.parents = new Long[0];
     }
 
     protected PostgreTableBase(
@@ -63,6 +66,10 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "relowner");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
+        this.parents = JDBCUtils.safeGetArray(dbResult, "parents");
+        Boolean isP = JDBCUtils.safeGetBoolean(dbResult, "relispartition");
+        this.isPartition = isP == null ? false :  isP;
+
     }
 
     // Copy constructor
@@ -70,6 +77,8 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         super(container, source, persisted);
         if (source instanceof PostgreTableBase) {
             this.description = ((PostgreTableBase) source).description;
+            this.parents = ((PostgreTableBase) source).parents;
+            this.isPartition = ((PostgreTableBase) source).isPartition;
         }
     }
 
@@ -220,4 +229,22 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             }
         }
     }
+
+	public Long[] getParents() {
+		return parents;
+	}
+    
+    public boolean isParentOf(long oid){
+    	if (parents == null) return false;
+    	for (long l : parents) {
+			if (l == oid) return true;
+		}
+    	return false;
+    }
+
+	public boolean isPartition() {
+		return isPartition;
+	}
+    
+    
 }
