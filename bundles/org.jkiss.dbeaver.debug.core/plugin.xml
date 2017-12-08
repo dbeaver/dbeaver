@@ -2,22 +2,22 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         id="sqlBreakpointMarker"
-         name="%sqlBreakpointMarker.name"
+         id="databaseBreakpointMarker"
+         name="%databaseBreakpointMarker.name"
          point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.debug.core.breakpointMarker">
       </super>
    </extension>
    <extension
-         id="sqlLineBreakpointMarker"
-         name="%sqlLineBreakpointMarker.name"
+         id="databaseLineBreakpointMarker"
+         name="%databaseLineBreakpointMarker.name"
          point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.debug.core.lineBreakpointMarker">
       </super>
       <super
-            type="org.jkiss.dbeaver.debug.core.sqlBreakpointMarker">
+            type="org.jkiss.dbeaver.debug.core.databaseBreakpointMarker">
       </super>
    </extension>
 
