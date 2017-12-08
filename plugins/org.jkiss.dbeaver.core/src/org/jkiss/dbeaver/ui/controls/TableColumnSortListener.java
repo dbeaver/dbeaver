@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.text.Collator;
 import java.util.Comparator;
@@ -38,6 +37,33 @@ public class TableColumnSortListener implements Listener {
         this.columnIndex = columnIndex;
     }
 
+    private static void sortTable(Table table, Comparator<TableItem> comparator)
+    {
+        int columnCount = table.getColumnCount();
+        String[] values = new String[columnCount];
+        TableItem[] items = table.getItems();
+        for (int i = 1; i < items.length; i++) {
+            for (int j = 0; j < i; j++) {
+                TableItem item = items[i];
+                if (comparator.compare(item, items[j]) < 0) {
+                    for (int k = 0; k < columnCount; k++) {
+                        values[k] = item.getText(k);
+                    }
+                    Object data = item.getData();
+                    boolean checked = item.getChecked();
+                    item.dispose();
+
+                    item = new TableItem(table, SWT.NONE, j);
+                    item.setText(values);
+                    item.setData(data);
+                    item.setChecked(checked);
+                    items = table.getItems();
+                    break;
+                }
+            }
+        }
+    }
+
     @Override
     public void handleEvent(Event e) {
         final Collator collator = Collator.getInstance(Locale.getDefault());
@@ -49,25 +75,22 @@ public class TableColumnSortListener implements Listener {
         prevColumn = column;
         this.table.setSortColumn(column);
         this.table.setSortDirection(sortDirection);
-        UIUtils.sortTable(this.table, new Comparator<TableItem>() {
-            @Override
-            public int compare(TableItem e1, TableItem e2) {
-                int mul = (sortDirection == SWT.UP ? 1 : -1);
-                String text1 = e1.getText(columnIndex);
-                String text2 = e2.getText(columnIndex);
-                try {
-                    Double num1 = getNumberFromString(text1);
-                    if (num1 != null) {
-                        Double num2 = getNumberFromString(text2);
-                        if (num2 != null) {
-                            return (int)(num1 - num2) * mul;
-                        }
+        sortTable(this.table, (e1, e2) -> {
+            int mul = (sortDirection == SWT.UP ? 1 : -1);
+            String text1 = e1.getText(columnIndex);
+            String text2 = e2.getText(columnIndex);
+            try {
+                Double num1 = getNumberFromString(text1);
+                if (num1 != null) {
+                    Double num2 = getNumberFromString(text2);
+                    if (num2 != null) {
+                        return (int)(num1 - num2) * mul;
                     }
-                } catch (NumberFormatException e3) {
-                    // Ignore
                 }
-                return collator.compare(text1, text2) * mul;
+            } catch (NumberFormatException e3) {
+                // Ignore
             }
+            return collator.compare(text1, text2) * mul;
         });
     }
 

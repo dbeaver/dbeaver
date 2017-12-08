@@ -69,6 +69,13 @@ public class DriverFileSource
         }
     }
 
+    public DriverFileSource(DriverFileSource copyFrom) {
+        this.url = copyFrom.url;
+        this.name = copyFrom.name;
+        this.instructions = copyFrom.instructions;
+        this.files.addAll(copyFrom.files);
+    }
+
     public String getUrl() {
         return url;
     }

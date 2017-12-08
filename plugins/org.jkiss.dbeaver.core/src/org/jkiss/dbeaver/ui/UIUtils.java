@@ -29,6 +29,7 @@ import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
@@ -51,6 +52,7 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -79,10 +81,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Locale;
-import java.util.SortedMap;
+import java.util.*;
 
 /**
  * UI Utils
@@ -336,33 +335,6 @@ public class UIUtils {
             }
         }
         return -1;
-    }
-
-    public static void sortTable(Table table, Comparator<TableItem> comparator)
-    {
-        int columnCount = table.getColumnCount();
-        String[] values = new String[columnCount];
-        TableItem[] items = table.getItems();
-        for (int i = 1; i < items.length; i++) {
-            for (int j = 0; j < i; j++) {
-                TableItem item = items[i];
-                if (comparator.compare(item, items[j]) < 0) {
-                    for (int k = 0; k < columnCount; k++) {
-                        values[k] = item.getText(k);
-                    }
-                    Object data = item.getData();
-                    boolean checked = item.getChecked();
-                    item.dispose();
-
-                    item = new TableItem(table, SWT.NONE, j);
-                    item.setText(values);
-                    item.setData(data);
-                    item.setChecked(checked);
-                    items = table.getItems();
-                    break;
-                }
-            }
-        }
     }
 
     public static TableItem getNextTableItem(Table table, TableItem item) {
@@ -851,6 +823,12 @@ public class UIUtils {
     @NotNull
     public static Button createPushButton(@NotNull Composite parent, @Nullable String label, @Nullable Image image)
     {
+        return createPushButton(parent, label, image, null);
+    }
+
+    @NotNull
+    public static Button createPushButton(@NotNull Composite parent, @Nullable String label, @Nullable Image image, @Nullable SelectionListener selectionListener)
+    {
         Button button = new Button(parent, SWT.PUSH);
         if (label != null) {
             button.setText(label);
@@ -858,8 +836,12 @@ public class UIUtils {
         if (image != null) {
             button.setImage(image);
         }
+        if (selectionListener != null) {
+            button.addSelectionListener(selectionListener);
+        }
         return button;
     }
+
 
     public static void setHelp(Control control, String pluginId, String helpContextID)
     {
@@ -1301,6 +1283,12 @@ public class UIUtils {
         menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_PASTE, text.getEditable(), text, ST.PASTE));
         menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_CUT, selectionRange.y > 0, text, ST.CUT));
         menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL, true, text, ST.SELECT_ALL));
+        IFindReplaceTarget stFindReplaceTarget = new StyledTextFindReplaceTarget(text);
+        menu.add(new FindReplaceAction(
+            ResourceBundle.getBundle("org.eclipse.ui.texteditor.ConstructedEditorMessages"),
+            "Editor.FindReplace.",
+            text.getShell(),
+            stFindReplaceTarget));
         menu.add(new GroupMarker("styled_text_additions"));
     }
 

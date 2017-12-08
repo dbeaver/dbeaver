@@ -21,18 +21,21 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.format.external.SQLExternalFormatter;
-import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * SQLFormatterConfiguration
  */
 public class SQLFormatterConfiguration {
+
+    private String formatterId;
 
     @NotNull
     private DBPIdentifierCase keywordCase;
@@ -41,15 +44,37 @@ public class SQLFormatterConfiguration {
     @NotNull
     private String sourceEncoding = GeneralUtils.DEFAULT_ENCODING;
 
+    private Map<String, Object> properties = new HashMap<>();
+
+    /**
+     * Create formatter config with default (set in properties) formatter
+     */
     public SQLFormatterConfiguration(SQLSyntaxManager syntaxManager)
+    {
+        this(syntaxManager, CommonUtils.notEmpty(syntaxManager.getPreferenceStore().getString(ModelPreferences.SQL_FORMAT_FORMATTER)).toUpperCase(Locale.ENGLISH));
+    }
+
+    public SQLFormatterConfiguration(SQLSyntaxManager syntaxManager, String formatterId)
     {
         this.syntaxManager = syntaxManager;
         this.keywordCase = syntaxManager.getKeywordCase();
+
+        this.formatterId = formatterId;
     }
 
     public SQLSyntaxManager getSyntaxManager()
     {
         return syntaxManager;
+    }
+
+    public String getFormatterId() {
+        return formatterId;
+    }
+
+    public void setFormatterId(String formatterId) {
+        this.formatterId = formatterId;
+        syntaxManager.getPreferenceStore().setValue(
+            ModelPreferences.SQL_FORMAT_FORMATTER, formatterId.toUpperCase(Locale.ENGLISH));
     }
 
     public String getIndentString()
@@ -85,12 +110,24 @@ public class SQLFormatterConfiguration {
         return syntaxManager.getDialect().getKeywordType(name) == DBPKeywordType.FUNCTION;
     }
 
-    public SQLFormatter createFormatter() {
-        final String formatterId = CommonUtils.notEmpty(syntaxManager.getPreferenceStore().getString(ModelPreferences.SQL_FORMAT_FORMATTER)).toUpperCase(Locale.ENGLISH);
-        if (SQLExternalFormatter.FORMATTER_ID.equals(formatterId)) {
-            return new SQLExternalFormatter();
-        } else {
-            return new SQLTokenizedFormatter();
-        }
+    public Object getProperty(String name) {
+        return properties.get(name);
     }
+
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
+    }
+
+    public DBPPreferenceStore getPreferenceStore() {
+        return syntaxManager.getPreferenceStore();
+    }
+
+    public void loadSettings() {
+
+    }
+
+    public void saveSettings() {
+
+    }
+
 }

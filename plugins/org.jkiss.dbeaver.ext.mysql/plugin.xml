@@ -154,7 +154,7 @@
                 <driver
                     id="mariaDB"
                     label="MariaDB"
-                    icon="icons/mariadb_icon.ico"
+                    icon="icons/mariadb_icon.png"
                     class="org.mariadb.jdbc.Driver"
                     sampleURL="jdbc:mariadb://{host}[:{port}]/[{database}]"
                     defaultPort="3306"

@@ -348,6 +348,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_driver_manager_button_delete;
 	public static String dialog_driver_manager_button_edit;
 	public static String dialog_driver_manager_button_new;
+	public static String dialog_driver_manager_button_copy;
 	public static String dialog_driver_manager_label_unavailable;
 	public static String dialog_driver_manager_label_user_defined;
 	public static String dialog_driver_manager_message_cant_delete_text;
@@ -984,6 +985,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_label_structurize_complex_types_tip;
 	public static String pref_page_database_resultsets_group_grid;
 	public static String pref_page_database_resultsets_label_mark_odd_rows;
+	public static String pref_page_database_resultsets_label_colorize_data_types;
 	public static String pref_page_database_resultsets_label_right_justify_numbers_and_date;
 	public static String pref_page_database_resultsets_label_row_batch_size;
 	public static String pref_page_database_resultsets_label_show_cell_icons;
@@ -1010,7 +1012,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_editor_group_result_view;
 	public static String pref_page_sql_editor_label_close_results_tab_on_error;
 	public static String pref_page_sql_editor_label_results_orientation;
-	public static String pref_page_sql_editor_label_results_orientation_tip;	
+	public static String pref_page_sql_editor_label_results_orientation_tip;
+	public static String pref_page_sql_editor_link_text_editor;
 	// SQLExecute
 	public static String pref_page_sql_editor_label_sql_timeout_tip;
 	public static String pref_page_sql_editor_enable_parameters_in_ddl;
@@ -1149,6 +1152,7 @@ public class CoreMessages extends NLS {
 
 	// Connection edit
 	public static String dialog_connection_edit_title;
+	public static String dialog_connection_edit_connection_settings_variables_hint_label;
 
 	public static String dialog_connection_edit_wizard_conn_conf_network_link;
 

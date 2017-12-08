@@ -40,6 +40,11 @@ public class ThemeConstants
     public static final String COLOR_SQL_RESULT_HEADER_FOREGROUND = RESULTS_PROP_PREFIX + "color.header.foreground"; //$NON-NLS-1$
     public static final String COLOR_SQL_RESULT_HEADER_SELECTED_BACKGROUND = RESULTS_PROP_PREFIX + "color.header.selected.background"; //$NON-NLS-1$
     public static final String COLOR_SQL_RESULT_NULL_FOREGROUND = RESULTS_PROP_PREFIX + "color.null.foreground"; //$NON-NLS-1$
+    public static final String COLOR_SQL_RESULT_BINARY_FOREGROUND = RESULTS_PROP_PREFIX + "color.binary.foreground"; //$NON-NLS-1$
+    public static final String COLOR_SQL_RESULT_BOOLEAN_FOREGROUND = RESULTS_PROP_PREFIX + "color.boolean.foreground"; //$NON-NLS-1$
+    public static final String COLOR_SQL_RESULT_DATETIME_FOREGROUND = RESULTS_PROP_PREFIX + "color.datetime.foreground"; //$NON-NLS-1$
+    public static final String COLOR_SQL_RESULT_NUMERIC_FOREGROUND = RESULTS_PROP_PREFIX + "color.numeric.foreground"; //$NON-NLS-1$
+    public static final String COLOR_SQL_RESULT_STRING_FOREGROUND = RESULTS_PROP_PREFIX + "color.string.foreground"; //$NON-NLS-1$
 
     public static final String COLOR_SQL_RESULT_LINES_NORMAL = RESULTS_PROP_PREFIX + "color.lines.normal"; //$NON-NLS-1$
     public static final String COLOR_SQL_RESULT_LINES_SELECTED = RESULTS_PROP_PREFIX + "color.lines.selected"; //$NON-NLS-1$

@@ -46,6 +46,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
     private Button gridShowOddRows;
     private Button rightJustifyNumbers;
+    private Button colorizeDataTypes;
     private Button transformComplexTypes;
     private Spinner gridRowBatchSize;
     private Button gridShowCellIcons;
@@ -71,6 +72,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.contains(DBeaverPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS) ||
+            store.contains(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES) ||
             store.contains(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS) ||
             store.contains(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
@@ -108,6 +110,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             Group uiGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_grid, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             gridShowOddRows = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_mark_odd_rows, null, false, 2);
+            colorizeDataTypes = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_colorize_data_types, null, false, 2);
             rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 2);
             gridRowBatchSize = UIUtils.createLabelSpinner(uiGroup, CoreMessages.pref_page_database_resultsets_label_row_batch_size, 1, 1, Short.MAX_VALUE);
             gridShowCellIcons = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_cell_icons, null, false, 2);
@@ -134,6 +137,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     {
         try {
             gridShowOddRows.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS));
+            colorizeDataTypes.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES));
             rightJustifyNumbers.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS));
             transformComplexTypes.setSelection(store.getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES));
 
@@ -160,6 +164,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     {
         try {
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS, gridShowOddRows.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES, colorizeDataTypes.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS, rightJustifyNumbers.getSelection());
             store.setValue(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES, transformComplexTypes.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE, gridRowBatchSize.getSelection());
@@ -183,6 +188,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     protected void clearPreferences(DBPPreferenceStore store)
     {
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
         store.setToDefault(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
         store.setToDefault(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);
 

@@ -22,6 +22,8 @@ import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.dialogs.PreferenceLinkArea;
+import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -38,6 +40,8 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 public class PrefPageSQLEditor extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqleditor"; //$NON-NLS-1$
+
+    public static final String TEXT_EDITOR_PAGE_ID = "org.eclipse.ui.preferencePages.GeneralTextEditor"; //$NON-NLS-1$
 
     private Button editorSeparateConnectionCheck;
     private Button connectOnActivationCheck;
@@ -141,6 +145,13 @@ public class PrefPageSQLEditor extends TargetPrefPage
             }
         }
 
+        {
+            new PreferenceLinkArea(composite, SWT.NONE,
+                PrefPageSQLEditor.TEXT_EDITOR_PAGE_ID,
+                "<a>''{0}''</a>" + CoreMessages.pref_page_sql_editor_link_text_editor,
+                (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
+
+        }
         return composite;
     }
 
