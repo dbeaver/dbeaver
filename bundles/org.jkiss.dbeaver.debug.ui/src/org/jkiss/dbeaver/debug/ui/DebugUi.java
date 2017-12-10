@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.debug.ui;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.Log;
@@ -48,6 +49,10 @@ public class DebugUi {
         return null;
     }
     
+    public static IStatus createError(String message) {
+        return new Status(IStatus.ERROR, BUNDLE_SYMBOLIC_NAME, message);
+    }
+
     public static void log(IStatus status) {
         DebugCore.log(log, status);
     }
