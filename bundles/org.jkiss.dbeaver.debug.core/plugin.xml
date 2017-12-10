@@ -3,7 +3,7 @@
 <plugin>
    <extension
          id="databaseBreakpointMarker"
-         name="%databaseBreakpointMarker.name"
+         name="%databaseBreakpoint.name"
          point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.debug.core.breakpointMarker">
@@ -11,7 +11,7 @@
    </extension>
    <extension
          id="databaseLineBreakpointMarker"
-         name="%databaseLineBreakpointMarker.name"
+         name="%databaseLineBreakpoint.name"
          point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.debug.core.lineBreakpointMarker">
@@ -19,6 +19,15 @@
       <super
             type="org.jkiss.dbeaver.debug.core.databaseBreakpointMarker">
       </super>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.breakpoints">
+      <breakpoint
+            class="org.jkiss.dbeaver.debug.core.model.DatabaseLineBreakpoint"
+            id="org.jkiss.dbeaver.debug.core.databaseLineBreakpoint"
+            markerType="org.jkiss.dbeaver.debug.core.databaseLineBreakpointMarker"
+            name="%databaseLineBreakpoint.name">
+      </breakpoint>
    </extension>
 
 </plugin>
