@@ -27,6 +27,7 @@
             locationURI="popup:org.eclipse.ui.popup.any?before=additions">
       </menuContribution>
    </extension>
+
    <extension
          point="org.eclipse.core.runtime.adapters">
       <factory
@@ -36,6 +37,14 @@
                type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget">
          </adapter>
       </factory>
+   </extension>
+
+   <extension
+         point="org.eclipse.debug.ui.detailPaneFactories">
+      <detailFactories
+            class="org.jkiss.dbeaver.debug.ui.details.DatabaseDetailPaneFactory"
+            id="org.jkiss.dbeaver.debug.ui.detailPaneFactories.detailFactories.database">
+      </detailFactories>
    </extension>
 
 </plugin>

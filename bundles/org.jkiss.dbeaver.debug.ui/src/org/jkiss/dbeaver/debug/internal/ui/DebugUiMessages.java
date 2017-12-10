@@ -21,6 +21,8 @@ import org.eclipse.osgi.util.NLS;
 
 public class DebugUiMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.debug.internal.ui.DebugUiMessages"; //$NON-NLS-1$
+    public static String DatabaseStandardBreakpointPane_description;
+    public static String DatabaseStandardBreakpointPane_name;
     public static String DatabaseTab_database_group_text;
     public static String DatabaseTab_database_label_text;
     public static String DatabaseTab_datasource_group_text;
