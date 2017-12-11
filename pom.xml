@@ -27,6 +27,10 @@
         <module>plugins/org.jkiss.dbeaver.runtime.ide.ui</module>
         <module>plugins/org.jkiss.dbeaver.core</module>
         <module>plugins/org.jkiss.dbeaver.ui</module>
+
+        <module>bundles/org.jkiss.dbeaver.debug.core</module>
+        <module>bundles/org.jkiss.dbeaver.debug.ui</module>
+
         <module>plugins/org.jkiss.dbeaver.core.application</module>
         <module>plugins/org.jkiss.dbeaver.core.eclipse</module>
         <module>plugins/org.jkiss.dbeaver.ext.db2</module>
@@ -44,7 +48,11 @@
         <module>plugins/org.jkiss.dbeaver.ext.netezza</module>
         <module>plugins/org.jkiss.dbeaver.ext.oracle</module>
         <module>plugins/org.jkiss.dbeaver.ext.phoenix</module>
+
         <module>plugins/org.jkiss.dbeaver.ext.postgresql</module>
+        <module>bundles/org.jkiss.dbeaver.postgresql.debug.core</module>
+        <module>bundles/org.jkiss.dbeaver.postgresql.debug.ui</module>
+
         <module>plugins/org.jkiss.dbeaver.ext.sqlite</module>
         <module>plugins/org.jkiss.dbeaver.ext.vertica</module>
         <module>plugins/org.jkiss.dbeaver.ext.teradata</module>
